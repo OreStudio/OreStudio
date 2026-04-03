@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <QComboBox>
+#include <QFutureWatcher>
 #include <QTableView>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -32,6 +33,7 @@
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.refdata.api/domain/asset_class_info.hpp"
 
 namespace ores::qt {
 
@@ -83,6 +85,7 @@ private slots:
     void onSelectionChanged();
     void onConnectionStateChanged();
     void onAssetClassFilterChanged(int index);
+    void onAssetClassesLoaded();
     void viewObservations();
 
 private:
@@ -90,6 +93,12 @@ private:
     void setupToolbar();
     void updateActionStates();
     void applyAssetClassFilter();
+    void loadAssetClasses();
+    void populateAssetClassCombo(
+        const std::vector<refdata::domain::asset_class_info>& classes);
+
+    using AssetClassFetchResult =
+        std::vector<refdata::domain::asset_class_info>;
 
     QVBoxLayout* verticalLayout_;
     QTableView* tableView_;
@@ -102,6 +111,7 @@ private:
 
     std::unique_ptr<ClientMarketSeriesModel> model_;
     QSortFilterProxyModel* proxyModel_;
+    QFutureWatcher<AssetClassFetchResult>* assetClassWatcher_;
     ClientManager* clientManager_;
     QString username_;
 };

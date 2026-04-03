@@ -40,13 +40,13 @@ namespace {
 
 domain::trade raw_row_to_trade(
     const std::vector<std::optional<std::string>>& row) {
-    // Column order matches explicit SELECT in read_latest_filtered CTE:
+    // Column order matches the table definition (SELECT * from the SQL functions):
     // 0:id, 1:tenant_id, 2:version, 3:party_id, 4:external_id, 5:book_id,
     // 6:portfolio_id, 7:successor_trade_id, 8:counterparty_id, 9:trade_type,
-    // 10:product_type, 11:instrument_id,
-    // 12:netting_set_id, 13:activity_type_code, 14:status_id, 15:trade_date,
-    // 16:execution_timestamp, 17:effective_date, 18:termination_date, 19:modified_by,
-    // 20:performed_by, 21:change_reason_code, 22:change_commentary, 23:valid_from
+    // 10:product_type, 11:instrument_id, 12:asset_class,
+    // 13:netting_set_id, 14:activity_type_code, 15:status_id, 16:trade_date,
+    // 17:execution_timestamp, 18:effective_date, 19:termination_date, 20:modified_by,
+    // 21:performed_by, 22:change_reason_code, 23:change_commentary, 24:valid_from
     domain::trade r;
     r.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value());
     r.tenant_id = utility::uuid::tenant_id::from_string(row[1].value()).value();
@@ -63,18 +63,19 @@ domain::trade raw_row_to_trade(
     r.product_type = row[10].value_or("");
     if (row[11].has_value())
         r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(*row[11]);
-    r.netting_set_id = row[12].value();
-    r.activity_type_code = row[13].value();
-    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[14].value());
-    r.trade_date = row[15].value();
-    r.execution_timestamp = row[16].value();
-    r.effective_date = row[17].value();
-    r.termination_date = row[18].value();
-    r.modified_by = row[19].value();
-    r.performed_by = row[20].value();
-    r.change_reason_code = row[21].value();
-    r.change_commentary = row[22].value();
-    r.recorded_at = timestamp_to_timepoint(std::string_view{row[23].value()});
+    r.asset_class = row[12];
+    r.netting_set_id = row[13].value();
+    r.activity_type_code = row[14].value();
+    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[15].value());
+    r.trade_date = row[16].value();
+    r.execution_timestamp = row[17].value();
+    r.effective_date = row[18].value();
+    r.termination_date = row[19].value();
+    r.modified_by = row[20].value();
+    r.performed_by = row[21].value();
+    r.change_reason_code = row[22].value();
+    r.change_commentary = row[23].value();
+    r.recorded_at = timestamp_to_timepoint(std::string_view{row[24].value()});
     return r;
 }
 
@@ -223,7 +224,7 @@ trade_repository::read_latest_filtered(context ctx,
         std::vector<domain::trade> result;
         result.reserve(rows.size());
         for (const auto& row : rows) {
-            if (row.size() >= 24)
+            if (row.size() >= 25)
                 result.push_back(raw_row_to_trade(row));
         }
         return result;

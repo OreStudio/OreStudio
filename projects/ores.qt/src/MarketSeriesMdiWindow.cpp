@@ -19,13 +19,17 @@
  */
 #include "ores.qt/MarketSeriesMdiWindow.hpp"
 
+#include <QtConcurrent>
 #include <QHeaderView>
 #include <QLabel>
+#include <QPointer>
 #include <QWidgetAction>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 
 namespace ores::qt {
 
@@ -45,6 +49,7 @@ MarketSeriesMdiWindow::MarketSeriesMdiWindow(
       assetClassCombo_(new QComboBox(this)),
       model_(std::make_unique<ClientMarketSeriesModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
+      assetClassWatcher_(new QFutureWatcher<AssetClassFetchResult>(this)),
       clientManager_(clientManager),
       username_(username) {
 
@@ -106,13 +111,18 @@ void MarketSeriesMdiWindow::setupUi() {
         }
     });
 
+    connect(assetClassWatcher_, &QFutureWatcher<AssetClassFetchResult>::finished,
+            this, &MarketSeriesMdiWindow::onAssetClassesLoaded);
+
     if (clientManager_) {
         connect(clientManager_, &ClientManager::connected,
                 this, &MarketSeriesMdiWindow::onConnectionStateChanged);
         connect(clientManager_, &ClientManager::reconnected,
                 this, &MarketSeriesMdiWindow::onConnectionStateChanged);
-        if (clientManager_->isConnected())
+        if (clientManager_->isConnected()) {
             model_->refresh();
+            loadAssetClasses();
+        }
     }
 
     updateActionStates();
@@ -148,15 +158,9 @@ void MarketSeriesMdiWindow::setupToolbar() {
     auto* filterLabel = new QLabel(tr("  Asset Class: "), this);
     toolBar_->addWidget(filterLabel);
 
+    // Populated dynamically from refdata.v1.asset-classes.list after connection.
+    // The "All" entry is always present; per-class items are added by loadAssetClasses().
     assetClassCombo_->addItem(tr("All"), QString{});
-    assetClassCombo_->addItem(tr("FX"),          "FX");
-    assetClassCombo_->addItem(tr("Rates"),       "Rates");
-    assetClassCombo_->addItem(tr("Credit"),      "Credit");
-    assetClassCombo_->addItem(tr("Equity"),      "Equity");
-    assetClassCombo_->addItem(tr("Commodity"),   "Commodity");
-    assetClassCombo_->addItem(tr("Inflation"),   "Inflation");
-    assetClassCombo_->addItem(tr("Bond"),        "Bond");
-    assetClassCombo_->addItem(tr("Cross Asset"), "Cross Asset");
     connect(assetClassCombo_,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MarketSeriesMdiWindow::onAssetClassFilterChanged);
@@ -209,8 +213,57 @@ void MarketSeriesMdiWindow::onSelectionChanged() {
 }
 
 void MarketSeriesMdiWindow::onConnectionStateChanged() {
-    if (clientManager_ && clientManager_->isConnected())
+    if (clientManager_ && clientManager_->isConnected()) {
         model_->refresh();
+        loadAssetClasses();
+    }
+}
+
+void MarketSeriesMdiWindow::loadAssetClasses() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<MarketSeriesMdiWindow> self = this;
+    QFuture<AssetClassFetchResult> future =
+        QtConcurrent::run([self]() -> AssetClassFetchResult {
+            return exception_helper::wrap_async_fetch<AssetClassFetchResult>(
+                [&]() -> AssetClassFetchResult {
+                    if (!self || !self->clientManager_)
+                        return {};
+                    refdata::messaging::get_asset_classes_request req;
+                    req.coding_scheme_code = "ORE_ASSET_CLASS";
+                    auto result =
+                        self->clientManager_->process_authenticated_request(
+                            std::move(req));
+                    if (!result) return {};
+                    return std::move(result->asset_classes);
+                }, "asset classes");
+        });
+    assetClassWatcher_->setFuture(future);
+}
+
+void MarketSeriesMdiWindow::onAssetClassesLoaded() {
+    const auto classes = assetClassWatcher_->result();
+    if (!classes.empty())
+        populateAssetClassCombo(classes);
+}
+
+void MarketSeriesMdiWindow::populateAssetClassCombo(
+    const std::vector<refdata::domain::asset_class_info>& classes) {
+    const QString current = assetClassCombo_->currentData().toString();
+
+    assetClassCombo_->clear();
+    assetClassCombo_->addItem(tr("All"), QString{});
+    for (const auto& ac : classes) {
+        const auto label = QString::fromStdString(ac.description);
+        assetClassCombo_->addItem(label, label);
+    }
+
+    // Restore previous selection if it still exists.
+    if (!current.isEmpty()) {
+        const int idx = assetClassCombo_->findData(current);
+        if (idx >= 0)
+            assetClassCombo_->setCurrentIndex(idx);
+    }
 }
 
 void MarketSeriesMdiWindow::onAssetClassFilterChanged(int /*index*/) {

@@ -155,6 +155,17 @@ select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Placeholder for datasets that do not follow a formal coding scheme. Used when data uses ad-hoc or proprietary identifiers without a standardized format.'
 );
 
+-- ORE asset class coding scheme
+select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'ORE_ASSET_CLASS',
+    'ORE Asset Class',
+    'industry',
+    'Market Data',
+    'Reference Data',
+    'https://ore.opensourcerisk.org',
+    'Open Risk Engine (ORE) asset class codes. Eight codes cover all ORE-supported asset classes: fx, rates, credit, equity, commodity, inflation, bond, cross_asset. Used for classifying market data series and trades.'
+);
+
 -- =============================================================================
 -- Summary
 -- =============================================================================

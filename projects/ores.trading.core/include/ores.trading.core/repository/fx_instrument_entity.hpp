@@ -44,7 +44,7 @@ struct fx_instrument_entity {
     double bought_amount = 0.0;
     std::string sold_currency;
     double sold_amount = 0.0;
-    std::string value_date;
+    std::optional<std::string> value_date;
     std::optional<std::string> settlement;
     std::optional<std::string> option_type;
     std::optional<double> strike_price;

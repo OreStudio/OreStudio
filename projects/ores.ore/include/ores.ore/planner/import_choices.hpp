@@ -121,6 +121,17 @@ struct import_choices {
     std::optional<boost::uuids::uuid> existing_parent_portfolio_id;
 
     /**
+     * @brief UUID of an existing book to import all trades into.
+     *
+     * When set, the portfolio/book hierarchy creation step is skipped.
+     * All trades are stamped with this book_id and the book's
+     * parent_portfolio_id (from existing_parent_portfolio_id) is used for
+     * portfolio_id.  create_parent_portfolio and parent_portfolio_name are
+     * ignored.
+     */
+    std::optional<boost::uuids::uuid> existing_target_book_id;
+
+    /**
      * @brief Party that owns the imported entities.
      *
      * Taken from ClientManager::currentPartyId() in the wizard.

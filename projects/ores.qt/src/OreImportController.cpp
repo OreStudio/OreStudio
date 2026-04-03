@@ -34,21 +34,33 @@ OreImportController::OreImportController(ClientManager* clientManager,
       clientManager_(clientManager) {}
 
 void OreImportController::trigger(QWidget* parent,
-                                   std::optional<boost::uuids::uuid> portfolioId,
-                                   const std::string& portfolioName) {
+                                   std::optional<boost::uuids::uuid> bookId,
+                                   const std::string& bookName) {
     BOOST_LOG_SEV(lg(), info) << "Opening ORE import wizard";
 
-    OreImportWizard wizard(clientManager_, portfolioId, portfolioName, parent);
+    OreImportWizard wizard(clientManager_, bookId, bookName, parent);
 
     if (wizard.exec() == QDialog::Accepted && wizard.importSuccess()) {
         BOOST_LOG_SEV(lg(), info) << "ORE import wizard accepted";
 
-        const auto msg = QString("ORE import complete: %1 currencies, %2 portfolios, "
-                                 "%3 books, %4 trades.")
-            .arg(wizard.savedCurrencies())
-            .arg(wizard.savedPortfolios())
-            .arg(wizard.savedBooks())
-            .arg(wizard.savedTrades());
+        const int instrFailed = wizard.savedInstrumentFailures();
+        const auto msg = instrFailed == 0
+            ? QString("ORE import complete: %1 currencies, %2 portfolios, "
+                      "%3 books, %4 trades, %5 instruments.")
+                .arg(wizard.savedCurrencies())
+                .arg(wizard.savedPortfolios())
+                .arg(wizard.savedBooks())
+                .arg(wizard.savedTrades())
+                .arg(wizard.savedInstruments())
+            : QString("ORE import complete: %1 currencies, %2 portfolios, "
+                      "%3 books, %4 trades, %5 instruments saved, "
+                      "%6 instruments failed — check the import log.")
+                .arg(wizard.savedCurrencies())
+                .arg(wizard.savedPortfolios())
+                .arg(wizard.savedBooks())
+                .arg(wizard.savedTrades())
+                .arg(wizard.savedInstruments())
+                .arg(instrFailed);
 
         emit statusMessage(msg);
         emit importCompleted();

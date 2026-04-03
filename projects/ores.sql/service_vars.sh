@@ -37,4 +37,5 @@ SERVICE_NAMES=(
     compute
     synthetic
     workflow
+    marketdata
 )

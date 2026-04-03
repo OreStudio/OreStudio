@@ -42,6 +42,7 @@ Arguments:
 Options:
     -h, --host HOST             PostgreSQL host (default: localhost)
     -y, --yes                   Skip confirmation prompt
+    -k, --kill                  Kill active database connections before dropping
     -H, --help                  Show this help message
 
 Environment Variables:
@@ -62,6 +63,7 @@ EOF
 # Parse arguments
 HOST="localhost"
 ASSUME_YES=""
+KILL_CONNECTIONS=""
 DB_NAME=""
 
 while [[ $# -gt 0 ]]; do
@@ -72,6 +74,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -y|--yes)
             ASSUME_YES="1"
+            shift
+            ;;
+        -k|--kill)
+            KILL_CONNECTIONS="1"
             shift
             ;;
         -H|--help)
@@ -122,7 +128,11 @@ if [[ -z "${DB_EXISTS}" ]]; then
 fi
 
 # Check for active connections
+if [[ -n "${KILL_CONNECTIONS}" ]]; then
+    "${SCRIPT_DIR}/utility/kill_db_connections.sh" "${DB_NAME}"
+fi
 if ! check_db_connections "${DB_NAME}" "${HOST}"; then
+    echo "Hint: Use --kill (-k) flag to automatically terminate connections."
     exit 1
 fi
 

@@ -1,0 +1,540 @@
+#+title: Instrument–Trade Model Refactor and ORE Portfolio Export
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+This plan has two interlocking goals:
+
+1. *Correct the instrument–trade data model* so that the relationship is
+   formally expressed in the schema, instruments have independent identity and
+   full bitemporal records, and any consumer can navigate trade → instrument
+   without application-layer decoding of ORE type strings.
+
+2. *Implement ORE portfolio export* end-to-end: a single server-side NATS
+   request fetches all trades and instruments for a portfolio, the =ores.ore=
+   library reconstructs the ORE XML using its existing reverse mappers, and the
+   Qt client saves the file.
+
+The two goals share a dependency: the export pipeline needs the instrument
+family discriminator (added in Phase 1) to route each trade to the correct
+reverse mapper.
+
+* Architecture Decisions
+
+** Instrument–Trade Relationship
+
+Instruments are logically dependent on trades for OTC derivatives — one trade,
+one instrument, same lifecycle. However, instruments must be able to exist
+*without* a trade in specific future cases (e.g. reference instruments,
+security master entries). The model must support both without compromise.
+
+Chosen model:
+- Each instrument table has its own =UUID= primary key, independent of the trade.
+- Each instrument table carries a nullable =trade_id= foreign key back to the
+  trade. =NULL= means the instrument is standalone.
+- Each instrument table keeps its *own* bitemporal and audit fields
+  (=valid_from=, =valid_to=, =modified_by=, etc.) — instruments have their own
+  versioning history independent of the trade envelope.
+- The =trades= table gains two columns: =instrument_family= (enum discriminator)
+  and =instrument_id= (UUID FK to whichever extension table the instrument lives
+  in). Both nullable — a trade with no mapped instrument has =NULL= in both.
+
+The routing discriminator lives on the trade. The instrument owns its own
+identity. No intermediate base table is needed.
+
+#+begin_src
+trades
+  instrument_family  instrument_family_t NULL   -- 'swap','fx','bond',...
+  instrument_id      UUID                NULL   -- FK into the extension table
+
+fx_instruments
+  id         UUID PRIMARY KEY               -- own identity
+  trade_id   UUID NULL → trades(id)         -- back-reference (nullable)
+  ...full fx fields + bitemporal + audit...
+
+bond_instruments
+  id         UUID PRIMARY KEY
+  trade_id   UUID NULL → trades(id)
+  ...
+
+swap_legs
+  instrument_id  UUID → instruments_tbl(id) OR fx_instruments(id)?
+  ...
+#+end_src
+
+** Trade → Instrument Navigation
+
+Given =trade.instrument_family= and =trade.instrument_id=, any consumer can
+fetch the instrument with a single indexed PK lookup in the correct extension
+table — no join required, no application-layer string mapping.
+
+The NATS protocol exposes this as a single request: =get_instrument_request {
+trade_id }=. The handler reads =trade.instrument_family= and =trade.instrument_id=,
+fetches the extension record, and returns an =instrument_mapping_result= variant.
+Callers never need to know the family in advance.
+
+** Portfolio Export
+
+Export is synchronous and server-side: the trading service handles
+=export_portfolio_request=, queries all trades and their instruments, and returns
+a structured response containing =std::vector<trade_export_item>= where each
+item carries the domain trade and its =instrument_mapping_result=. The client
+(Qt) passes this to =ore::xml::exporter::export_portfolio()= which calls the
+existing reverse mappers and serialises via =domain::save_data(portfolio)=.
+
+The trading service does *not* produce XML — it returns typed domain data. The
+ORE XML assembly happens in =ores.ore=, which already owns the reverse mapper
+infrastructure. This keeps concerns cleanly separated.
+
+* What Already Exists (Do Not Re-Implement)
+
+- All 8 instrument extension tables with full field coverage.
+- All reverse mappers in =ores.ore= for all 131 trade types (Phases 3–9 of the
+  previous plan).
+- =domain::save_data(portfolio)= XSD serialisation.
+- =ore::xml::exporter::export_currency_config()= as the Qt export pattern.
+- =get_trades_request= with =book_id= / =portfolio_id= filtering.
+- Per-family =save_*_instrument_request= and paginated list requests.
+
+* Phase 1 — Schema Refactor
+
+** Goal
+
+Formalise the instrument–trade relationship in the database. Give instruments
+independent identity and full bitemporal records. Add the routing discriminator
+to the trades table.
+
+** SQL changes
+
+*** 1a. New enum type
+
+#+begin_src sql
+CREATE TYPE instrument_family_t AS ENUM (
+    'swap', 'fx', 'bond', 'credit',
+    'equity', 'commodity', 'composite', 'scripted'
+);
+#+end_src
+
+*** 1b. Extend trades table
+
+#+begin_src sql
+ALTER TABLE ores_trading_trades_tbl
+    ADD COLUMN instrument_family instrument_family_t NULL,
+    ADD COLUMN instrument_id      UUID               NULL;
+
+CREATE INDEX idx_trades_instrument_family
+    ON ores_trading_trades_tbl (tenant_id, instrument_family)
+    WHERE instrument_family IS NOT NULL;
+#+end_src
+
+*** 1c. Refactor each extension table
+
+Each instrument table currently uses =trade.id= as its primary key (implicit
+shared-UUID convention). Refactor to own UUID primary key with a nullable
+=trade_id= back-reference. All bitemporal and audit fields remain in place.
+
+Template (applied to all 8 tables):
+
+#+begin_src sql
+-- fx_instruments shown; same pattern for all families
+ALTER TABLE ores_trading_fx_instruments_tbl
+    -- Existing id column becomes its own identity, not derived from trade
+    ADD COLUMN trade_id UUID NULL
+        REFERENCES ores_trading_trades_tbl(id) ON DELETE SET NULL,
+    ADD CONSTRAINT uq_fx_instruments_trade_id UNIQUE (trade_id);  -- 1:1
+
+CREATE INDEX idx_fx_instruments_trade_id
+    ON ores_trading_fx_instruments_tbl (trade_id)
+    WHERE trade_id IS NOT NULL;
+#+end_src
+
+For swap legs: =instrument_id= already references the instruments table; update
+FK target to =fx_instruments= or retain as-is depending on current schema.
+
+*** 1d. Data migration
+
+For existing records (where instrument.id = trade.id by convention):
+
+#+begin_src sql
+-- Set trade_id on each extension table from the existing shared-UUID records
+UPDATE ores_trading_fx_instruments_tbl fi
+SET trade_id = fi.id  -- currently id == trade.id by convention
+WHERE EXISTS (SELECT 1 FROM ores_trading_trades_tbl t WHERE t.id = fi.id);
+
+-- Populate instrument_family and instrument_id on trades
+UPDATE ores_trading_trades_tbl t
+SET instrument_family = 'fx', instrument_id = fi.id
+FROM ores_trading_fx_instruments_tbl fi
+WHERE fi.trade_id = t.id;
+
+-- Repeat for all 8 families
+#+end_src
+
+** Files
+
+- =projects/ores.sql/create/trading/trading_trades_create.sql= — add columns
+- =projects/ores.sql/create/trading/trading_fx_instruments_create.sql= — add
+  =trade_id=, UNIQUE constraint, index (repeat for all 8)
+- =projects/ores.sql/create/trading/instrument_family_type.sql= — new enum DDL
+- =projects/ores.sql/migrate/= — migration script for existing data
+
+* Phase 2 — C++ Domain Model
+
+** Goal
+
+Bring the C++ domain types in line with the refactored schema. The =trade=
+struct gains =instrument_family= and =instrument_id=. Instrument structs become
+truly independent (own =id=, optional =trade_id=).
+
+** trades domain struct
+
+#+begin_src cpp
+// projects/ores.trading.api/include/ores.trading.api/domain/trade.hpp
+struct trade {
+    // ... existing fields ...
+    std::string                        instrument_family; // "" if unmapped
+    std::optional<boost::uuids::uuid>  instrument_id;
+};
+#+end_src
+
+** instrument domain structs
+
+Each instrument struct already has =id=. Add =trade_id=:
+
+#+begin_src cpp
+// e.g. fx_instrument.hpp
+struct fx_instrument {
+    boost::uuids::uuid                id;        // own UUID
+    std::optional<boost::uuids::uuid> trade_id;  // nullable back-ref
+    // ... existing fields unchanged ...
+};
+#+end_src
+
+** New helper: instrument_family enum
+
+#+begin_src cpp
+// projects/ores.trading.api/include/ores.trading.api/domain/instrument_family.hpp
+enum class instrument_family {
+    swap, fx, bond, credit, equity, commodity, composite, scripted
+};
+
+std::string to_string(instrument_family f);
+std::optional<instrument_family> from_string(const std::string& s);
+#+end_src
+
+** Files to modify
+
+- =ores.trading.api/domain/trade.hpp= — add two fields
+- =ores.trading.api/domain/fx_instrument.hpp= (and all 7 other families) — add =trade_id=
+- New: =ores.trading.api/domain/instrument_family.hpp=
+- Repository implementations: update INSERT/SELECT for new columns
+- All existing save handlers: pass =trade_id= when saving instruments
+
+* Phase 3 — Import Pipeline Update
+
+** Goal
+
+During import, generate an independent UUID for each instrument (not derived
+from the trade UUID). Set =trade.instrument_family= and =trade.instrument_id=.
+Pass =trade_id= through the save requests.
+
+** Changes in =importer.cpp=
+
+#+begin_src cpp
+// After map_instrument():
+item.instrument = domain::trade_mapper::map_instrument(t);
+
+boost::uuids::random_generator uuid_gen;  // created once, outside the loop
+std::visit([&](auto& r) {
+    if constexpr (!std::is_same_v<std::decay_t<decltype(r)>, std::monostate>) {
+        r.instrument.id = uuid_gen();  // own UUID
+        r.instrument.trade_id = item.trade.id;                 // back-ref
+        if constexpr (requires { r.legs; })
+            for (auto& leg : r.legs)
+                leg.instrument_id = r.instrument.id;
+    }
+}, item.instrument);
+
+// Set routing discriminator on trade
+item.trade.instrument_family = family_of(item.instrument); // helper
+item.trade.instrument_id     = instrument_id_of(item.instrument);
+#+end_src
+
+** Changes in =ImportTradeDialog.cpp=
+
+After =save_trade_request= succeeds, the instrument save requests already fire.
+Update them to use the new independent =instrument.id= (not =trade.id=).
+=trade.instrument_family= and =trade.instrument_id= must be included in the
+=save_trade_request= payload so the server persists the routing columns.
+
+** Files
+
+- =projects/ores.ore/src/xml/importer.cpp=
+- =projects/ores.ore/include/ores.ore/xml/importer.hpp= — update =trade_import_item=
+- =projects/ores.qt/src/ImportTradeDialog.cpp=
+- =projects/ores.trading.api/messaging/instrument_protocol.hpp= — add =trade_id=
+  field to all =save_*_instrument_request= structs
+- All =save_*_instrument= handler implementations
+
+* Phase 4 — Single-Instrument Fetch Protocol
+
+** Goal
+
+Add a single NATS request that fetches the instrument for a given trade. The
+server reads =trade.instrument_family= and =trade.instrument_id=, fetches the
+correct extension table, and returns an =instrument_mapping_result= variant.
+The caller never needs to know the family.
+
+** New NATS messages
+
+#+begin_src cpp
+// projects/ores.trading.api/messaging/instrument_protocol.hpp
+
+struct get_instrument_for_trade_request {
+    using response_type = get_instrument_for_trade_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.instruments.get_for_trade";
+    std::string instrument_family;  // "fx", "swap", etc.
+    std::string instrument_id;      // UUID string of the instrument record
+};
+
+struct get_instrument_for_trade_response {
+    bool success = false;
+    std::string message;
+    ore::domain::instrument_mapping_result instrument; // monostate if unmapped
+};
+#+end_src
+
+** Server handler (trading service)
+
+#+begin_src cpp
+// Pseudocode
+auto get_instrument_for_trade(const request& req) {
+    auto trade = trade_repo_.find(req.trade_id);
+    if (!trade || trade->instrument_family.empty())
+        return {.success=true, .instrument=std::monostate{}};
+
+    auto family = from_string(trade->instrument_family);
+    switch (*family) {
+        case instrument_family::fx: {
+            auto fi = fx_repo_.find(*trade->instrument_id);
+            if (fi) return {true, {}, fx_mapping_result{*fi}};
+        }
+        // ... all 8 families
+    }
+}
+#+end_src
+
+** Files
+
+- =ores.trading.api/messaging/instrument_protocol.hpp= — new request/response
+- =ores.trading.core/messaging/instrument_handler.hpp/.cpp= — new handler
+- =ores.trading.core/service/instrument_service.hpp/.cpp= — =find_for_trade()=
+  helper that dispatches to the right sub-service
+
+* Phase 5 — Portfolio Export Protocol
+
+** Goal
+
+Add =export_portfolio_request= to the trading service. The server fetches all
+trades for the requested portfolio/book, then for each trade fetches its
+instrument using the Phase 4 dispatch logic. Returns structured data — not XML.
+The ORE XML assembly is client-side in =ores.ore=.
+
+** New NATS messages
+
+#+begin_src cpp
+struct trade_export_item {
+    trading::domain::trade              trade;
+    ore::domain::instrument_mapping_result instrument;
+};
+
+struct export_portfolio_request {
+    using response_type = export_portfolio_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.portfolio.export";
+    std::optional<boost::uuids::uuid> portfolio_id;
+    std::optional<boost::uuids::uuid> book_id;
+    // Both optional — at least one must be set
+};
+
+struct export_portfolio_response {
+    bool success = false;
+    std::string message;
+    std::vector<trade_export_item> items;
+};
+#+end_src
+
+** Server handler
+
+#+begin_src cpp
+// Pseudocode in trading service export handler
+auto export_portfolio(const request& req) {
+    auto trades = trade_repo_.list_filtered(req.portfolio_id, req.book_id);
+    std::vector<trade_export_item> items;
+    items.reserve(trades.size());
+
+    for (const auto& t : trades) {
+        trade_export_item item;
+        item.trade = t;
+        item.instrument = fetch_instrument_for_trade(t); // Phase 4 logic
+        items.push_back(std::move(item));
+    }
+    return {true, {}, std::move(items)};
+}
+#+end_src
+
+For large portfolios this runs entirely server-side in one NATS round-trip.
+The response payload is proportional to portfolio size; for very large books a
+streaming / chunked variant can be added later.
+
+** Files
+
+- =ores.trading.api/messaging/trade_protocol.hpp= — new request/response structs
+  and =trade_export_item= type
+- =ores.trading.core/messaging/trade_handler.hpp/.cpp= — new handler
+- =ores.trading.core/service/trade_service.hpp/.cpp= — =export_portfolio()=
+
+* Phase 6 — ores.ore Exporter
+
+** Goal
+
+Implement =exporter::export_portfolio()= which takes a vector of
+=trade_export_item= (from Phase 5), calls the correct reverse mapper for each
+item, reconstructs the XSD =<Envelope>=, assembles a =portfolio= XSD struct,
+and serialises to XML via =domain::save_data(portfolio)=.
+
+** Envelope reconstruction
+
+Each per-family =reverse_*= method returns a partial XSD =trade= (data element
+only). The exporter fills the envelope:
+
+#+begin_src cpp
+// Envelope fields come from the domain trade, not the instrument
+xsd_trade.id = t.external_id;                  // ORE TradeId
+xsd_trade.envelope.DateType = t.trade_date;
+if (!t.netting_set_id.empty())
+    xsd_trade.envelope.NettingSetDetails = make_netting_set(t.netting_set_id);
+// TradeType already set by the reverse_* method
+#+end_src
+
+** New method
+
+#+begin_src cpp
+// projects/ores.ore/include/ores.ore/xml/exporter.hpp
+class exporter {
+public:
+    static std::string export_currency_config(...);  // existing
+
+    // New: takes paired (trade, instrument) items, returns ORE portfolio XML
+    static std::string export_portfolio(
+        const std::vector<trading::messaging::trade_export_item>& items);
+};
+#+end_src
+
+** Dispatch design
+
+#+begin_src cpp
+std::string exporter::export_portfolio(const auto& items) {
+    portfolio p;
+    for (const auto& item : items) {
+        std::visit([&](const auto& r) {
+            using T = std::decay_t<decltype(r)>;
+            domain::trade xsd_trade;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                return; // skip unmapped trades
+            } else if constexpr (std::is_same_v<T, swap_mapping_result>) {
+                xsd_trade = swap_instrument_mapper::reverse_swap(
+                    r.instrument, r.legs);
+            } else if constexpr (std::is_same_v<T, fx_mapping_result>) {
+                xsd_trade = fx_instrument_mapper::reverse_fx(r.instrument);
+            }
+            // ... all 8 families ...
+            fill_envelope(xsd_trade, item.trade);
+            p.Trade.push_back(std::move(xsd_trade));
+        }, item.instrument);
+    }
+    return domain::save_data(p);
+}
+#+end_src
+
+** Files
+
+- =projects/ores.ore/include/ores.ore/xml/exporter.hpp= — add declaration
+- =projects/ores.ore/src/xml/exporter.cpp= — implement =export_portfolio()=
+- New: =projects/ores.ore/tests/xml_export_roundtrip_tests.cpp= — import a
+  known portfolio XML → export → compare output XML (structural equivalence,
+  not byte-for-byte)
+
+* Phase 7 — Qt: Open Instrument from Trade UI
+
+** Goal
+
+Add an "Open Instrument" action to the trade list view. When triggered,
+fire =get_instrument_for_trade_request=, receive the =instrument_mapping_result=
+variant, and open the appropriate instrument detail window.
+
+** UI flow
+
+#+begin_src
+Trade list → select row → right-click → "Open Instrument"
+  → get_instrument_for_trade_request { trade_id }
+  → response.instrument holds the variant
+  → std::visit dispatches to correct detail window:
+      fx_mapping_result   → FxInstrumentDetailWindow
+      bond_mapping_result → BondInstrumentDetailWindow
+      swap_mapping_result → SwapInstrumentDetailWindow
+      monostate           → "No instrument data available" message
+#+end_src
+
+** Files
+
+- Existing trade list MDI window — add toolbar action and context menu item
+- New per-family instrument detail windows (or a single tabbed
+  =InstrumentDetailWindow= with family-specific panels)
+- =ores.qt= CMakeLists to include new files
+
+* Phase 8 — Qt: Export Portfolio
+
+** Goal
+
+Add an "Export to ORE XML" action to the book/portfolio view. On trigger:
+fire =export_portfolio_request=, receive =trade_export_item= vector, pass to
+=exporter::export_portfolio()=, prompt for file path, write XML.
+
+** UI flow
+
+#+begin_src
+Book view toolbar → "Export to ORE XML"
+  → export_portfolio_request { book_id = current_book.id }
+  → (background thread, progress indicator)
+  → receive export_portfolio_response
+  → ore::xml::exporter::export_portfolio(response.items) → std::string xml
+  → QFileDialog::getSaveFileName("portfolio.xml")
+  → write file
+  → QDesktopServices::openUrl(file)
+#+end_src
+
+The same pattern applies at portfolio level (=portfolio_id= instead of =book_id=).
+
+** Files
+
+- Book/portfolio MDI window — add export action
+- Mirrors the =CurrencyMdiWindow::exportToXML()= pattern exactly
+
+* PR Organisation
+
+Phases are grouped so that each PR is independently buildable and testable.
+
+| PR | Phases | Contents                                                    |
+|----+--------+-------------------------------------------------------------|
+|  1 | 1      | Schema refactor + data migration                            |
+|  2 | 2      | C++ domain model update (trade + instrument structs)        |
+|  3 | 3      | Import pipeline: independent instrument UUIDs + routing     |
+|  4 | 4      | Single-instrument fetch (get_instrument_for_trade)          |
+|  5 | 5      | Portfolio export protocol (server-side data assembly)       |
+|  6 | 6      | ores.ore exporter + roundtrip tests                         |
+|  7 | 7+8    | Qt: Open Instrument + Export Portfolio                      |
+
+Each PR depends on the previous. Phase 1 is the critical path — every
+subsequent change depends on the schema columns added there.

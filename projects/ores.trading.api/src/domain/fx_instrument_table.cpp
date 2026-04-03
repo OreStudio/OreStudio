@@ -38,7 +38,7 @@ std::string convert_to_table(const std::vector<fx_instrument>& v) {
               << t.trade_type_code
               << t.bought_currency + " " + std::to_string(t.bought_amount)
               << t.sold_currency + " " + std::to_string(t.sold_amount)
-              << t.value_date
+              << t.value_date.value_or("")
               << t.settlement
               << t.modified_by
               << t.version

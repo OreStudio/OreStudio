@@ -185,7 +185,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     const auto r = load_and_map("FX_Average_Forward.xml");
 
     CHECK(r.instrument.trade_type_code == "FxAverageForward");
-    CHECK(!r.instrument.value_date.empty());
+    CHECK(r.instrument.value_date.has_value());
     CHECK(!r.instrument.bought_currency.empty());
     CHECK(!r.instrument.sold_currency.empty());
     CHECK(!r.instrument.underlying_code.empty());

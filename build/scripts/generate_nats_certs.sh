@@ -42,6 +42,7 @@ SERVICES=(
     ores.reporting.service
     ores.telemetry.service
     ores.trading.service
+    ores.marketdata.service
     ores.compute.service
     ores.workflow.service
     ores.http.server

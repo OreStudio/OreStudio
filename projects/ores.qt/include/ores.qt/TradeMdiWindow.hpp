@@ -69,14 +69,12 @@ signals:
     void tradeDeleted(const QString& code);
     void showTradeHistory(const trading::domain::trade& trade);
     void importTradesRequested();
-    void openInstrumentRequested(const trading::domain::trade& trade);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    void openInstrumentSelected();
 
 private slots:
     void onDataLoaded();
@@ -112,7 +110,6 @@ private:
     QAction* deleteAction_;
     QAction* historyAction_;
     QAction* importAction_;
-    QAction* openInstrumentAction_;
 };
 
 }

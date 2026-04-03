@@ -84,8 +84,12 @@ struct fx_instrument final {
 
     /**
      * @brief Settlement/value date (ISO 8601 date string, e.g. 2026-06-30).
+     *
+     * Absent for FX options: the settlement date is derived from the expiry
+     * date and the currency pair's spot-day convention, not carried in the
+     * trade structure.
      */
-    std::string value_date;
+    std::optional<std::string> value_date;
 
     /**
      * @brief Optional settlement method (e.g. Cash, Physical).

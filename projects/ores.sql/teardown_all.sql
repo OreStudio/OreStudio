@@ -153,6 +153,7 @@ drop role if exists ores_scheduler_service;
 drop role if exists ores_reporting_service;
 drop role if exists ores_telemetry_service;
 drop role if exists ores_trading_service;
+drop role if exists ores_marketdata_service;
 drop role if exists ores_http_user;
 drop role if exists ores_test_ddl_user;
 drop role if exists ores_test_dml_user;

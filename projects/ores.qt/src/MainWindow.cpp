@@ -93,7 +93,6 @@
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/InstrumentController.hpp"
-#include "ores.qt/FxInstrumentController.hpp"
 #include "ores.qt/BondInstrumentController.hpp"
 #include "ores.qt/CreditInstrumentController.hpp"
 #include "ores.qt/EquityInstrumentController.hpp"
@@ -263,7 +262,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionPaymentFrequencyTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionLegTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
-    ui_->ActionFxInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
     ui_->ActionBondInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionCreditInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionEquityInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
@@ -841,10 +839,6 @@ MainWindow::MainWindow(QWidget* parent) :
         if (instrumentController_)
             instrumentController_->showListWindow();
     });
-    connect(ui_->ActionFxInstruments, &QAction::triggered, this, [this]() {
-        if (fxInstrumentController_)
-            fxInstrumentController_->showListWindow();
-    });
     connect(ui_->ActionBondInstruments, &QAction::triggered, this, [this]() {
         if (bondInstrumentController_)
             bondInstrumentController_->showListWindow();
@@ -1313,7 +1307,6 @@ void MainWindow::updateMenuState() {
     ui_->ActionPaymentFrequencyTypes->setEnabled(isLoggedIn);
     ui_->ActionLegTypes->setEnabled(isLoggedIn);
     ui_->ActionInstruments->setEnabled(isLoggedIn);
-    ui_->ActionFxInstruments->setEnabled(isLoggedIn);
     ui_->ActionBondInstruments->setEnabled(isLoggedIn);
     ui_->ActionCreditInstruments->setEnabled(isLoggedIn);
     ui_->ActionEquityInstruments->setEnabled(isLoggedIn);
@@ -2169,23 +2162,6 @@ void MainWindow::createControllers() {
     connect(instrumentController_.get(), &InstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    fxInstrumentController_ = std::make_unique<FxInstrumentController>(
-        this, mdiArea_, clientManager_,
-        QString::fromStdString(username_), this);
-
-    connect(fxInstrumentController_.get(), &FxInstrumentController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(fxInstrumentController_.get(), &FxInstrumentController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(fxInstrumentController_.get(), &FxInstrumentController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(fxInstrumentController_.get(), &FxInstrumentController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
     bondInstrumentController_ = std::make_unique<BondInstrumentController>(
         this, mdiArea_, clientManager_,
         QString::fromStdString(username_), this);
@@ -2287,43 +2263,6 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Dispatch "Open Instrument" result from TradeController to the correct
-    // per-family instrument controller.
-    connect(tradeController_.get(), &TradeController::openInstrumentResult,
-            this, [this](const trading::messaging::instrument_export_result& r) {
-        using namespace trading::messaging;
-        std::visit([this](const auto& v) {
-            using T = std::decay_t<decltype(v)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-                // handled upstream
-            } else if constexpr (std::is_same_v<T, swap_export_result>) {
-                if (instrumentController_)
-                    instrumentController_->openEdit(v.instrument);
-            } else if constexpr (std::is_same_v<T, trading::domain::fx_instrument>) {
-                if (fxInstrumentController_)
-                    fxInstrumentController_->openEdit(v);
-            } else if constexpr (std::is_same_v<T, trading::domain::bond_instrument>) {
-                if (bondInstrumentController_)
-                    bondInstrumentController_->openEdit(v);
-            } else if constexpr (std::is_same_v<T, trading::domain::credit_instrument>) {
-                if (creditInstrumentController_)
-                    creditInstrumentController_->openEdit(v);
-            } else if constexpr (std::is_same_v<T, trading::domain::equity_instrument>) {
-                if (equityInstrumentController_)
-                    equityInstrumentController_->openEdit(v);
-            } else if constexpr (std::is_same_v<T, trading::domain::commodity_instrument>) {
-                if (commodityInstrumentController_)
-                    commodityInstrumentController_->openEdit(v);
-            } else if constexpr (std::is_same_v<T, composite_export_result>) {
-                if (compositeInstrumentController_)
-                    compositeInstrumentController_->openEdit(v.instrument, v.legs);
-            } else if constexpr (std::is_same_v<T, trading::domain::scripted_instrument>) {
-                if (scriptedInstrumentController_)
-                    scriptedInstrumentController_->openEdit(v);
-            }
-        }, r);
-    });
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),

@@ -1,0 +1,326 @@
+#+title: Unified Trade + Instrument Detail Dialog
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+The current UI separates trades and instruments into independent windows. Users
+must first open a trade detail window and then separately invoke "Open
+Instrument" to reach the instrument data. This is poor UX: trades and their
+instruments are inseparable in practice (one trade, one instrument, same
+lifecycle).
+
+This plan merges all instrument fields into =TradeDetailDialog= as additional
+tabs, and deletes the entire standalone per-family instrument window stack
+(controller, list window, detail dialog, history dialog, client model). There
+is no backwards compatibility requirement. For future trade-less instruments, a
+synthetic trade will own the instrument so the unified dialog can be reused.
+
+* Goals
+
+1. Add instrument-specific tabs to =TradeDetailDialog=, populated asynchronously
+   after the trade loads.
+2. Use a single Save button that saves whichever entities (trade, instrument)
+   have changed.
+3. Split instrument fields into logical sub-tabs where it reduces cognitive
+   load; hide tabs entirely when they do not apply to the current instrument's
+   trade type.
+4. Remove all standalone per-family instrument infrastructure from the codebase.
+5. Work one or two families per PR so the UI can be smoke-tested between merges.
+
+* Provenance and Change Management
+
+** Business rules
+
+- If the instrument changes, the trade version *must* also change so that
+  downstream consumers are notified of any modification to the deal terms.
+- If the trade envelope changes (counterparty, book, dates) but the instrument
+  is untouched, the trade version bumps but the instrument version does not.
+- A single change reason selection covers both records when both are saved
+  together; it is applied identically to whichever entity records are written.
+
+** Save ordering
+
+When Save is clicked the dialog applies the following logic:
+
+#+begin_src
+if instrumentHasChanges_ and instrumentLoaded_:
+    1. save instrument  (save_*_instrument_request)
+    2. on success: save trade  (save_trade_request)  -- always bumps trade version
+    3. on failure: surface error, do not save trade
+elif hasChanges_ (trade only):
+    1. save trade only
+#+end_src
+
+This client-side ordering guarantees the invariant in the happy path.
+A proper server-side atomic operation (single NATS call, single DB transaction)
+is a future enhancement noted in Open Questions.
+
+** Provenance tab layout
+
+A single "Provenance" tab contains two =QGroupBox= sections:
+
+- *Trade* (top): version, modified_by, performed_by, recorded_at,
+  change_reason_code, change_commentary — populated from the trade record.
+- *Instrument* (bottom): same fields — populated from the instrument record
+  once it loads. Hidden (group invisible) until an instrument is present.
+
+Each section embeds an =ores::qt::ProvenanceWidget= via the existing custom
+widget promotion mechanism. The base-class =provenanceWidget()= override
+continues to return the trade's widget; the instrument widget is managed
+separately by =TradeDetailDialog= itself.
+
+* Architecture
+
+** Merged dialog tab structure
+
+=TradeDetailDialog= gains instrument tabs alongside its existing trade tabs.
+The complete tab set for a trade with a loaded instrument is:
+
+| Tab | Content | Visibility |
+|-----+---------+------------|
+| General | Book, Counterparty, External ID, Trade Type, Lifecycle Event, Netting Set | Always |
+| Dates | Trade Date, Effective Date, Termination Date, Execution Timestamp | Always |
+| /family tabs/ | Per-family instrument fields — see breakdown below | Shown once instrument is loaded |
+| Trade Provenance | Trade version, modified_by, recorded_at, change reason | Always |
+| Instrument Provenance | Instrument version, modified_by, recorded_at, change reason | Shown once instrument is loaded |
+
+In create mode all instrument tabs are hidden. When an existing trade is opened
+and =trade.instrument_family= is set, the dialog loads the instrument via the
+existing =get_instrument_for_trade_request= NATS call and reveals the instrument
+tabs on success.
+
+** Instrument load sequence
+
+#+begin_src
+setTrade(trade)
+  → populate trade fields
+  → if trade.instrument_family != ""
+      emit statusMessage("Loading instrument...")
+      async: get_instrument_for_trade_request { instrument_family, instrument_id }
+      → on success: setInstrumentFromResult(result)
+          show family tabs + Instrument Provenance tab
+          populate fields
+      → on failure: log warning, leave tabs hidden
+#+end_src
+
+The async pattern is identical to the existing =loadBooks()= / =loadCounterparties()=
+calls in =TradeDetailDialog=: =QtConcurrent::run= + =QFutureWatcher= + =QPointer= guard.
+
+** Save semantics
+
+A single Save button handles whichever entities have changed:
+
+1. If instrument fields changed and instrument is loaded:
+   call =save_*_instrument_request=.
+2. If trade fields changed: call =save_trade_request=.
+3. Either or both can be dirty independently; the Save button is enabled if
+   either has changes.
+4. The change reason prompt is shown once; the selected reason and commentary
+   are applied to whichever entity records are being saved.
+5. Partial failures (e.g. instrument save succeeds, trade save fails) are
+   surfaced as error messages without closing the dialog.
+
+** Instrument tab visibility rules
+
+Family tabs are shown or hidden as a unit when an instrument loads. Within a
+family, individual sub-tabs are shown or hidden based on the instrument's trade
+type (see per-family breakdown). This logic lives in a private
+=updateInstrumentTabVisibility()= helper that is called once after instrument
+data is populated, and again whenever the trade type changes.
+
+** What is removed
+
+Per family (template, applied to all 8):
+
+| File pattern | Count |
+|--------------|-------|
+| =*InstrumentController.hpp/cpp= | 8 pairs |
+| =*InstrumentDetailDialog.hpp/cpp/.ui= | 8 triples |
+| =*InstrumentHistoryDialog.hpp/cpp/.ui= | 8 triples |
+| =*InstrumentMdiWindow.hpp/cpp= | 8 pairs |
+| =Client*InstrumentModel.hpp/cpp= | 8 pairs |
+
+Total: ~80 source/header/UI files deleted.
+
+In =MainWindow=:
+
+- All 8 per-family controller members, their constructor calls, and all
+  signal/slot connections.
+- Per-family menu actions and toolbar buttons (Instruments menu or submenu).
+- =openInstrumentResult= signal dispatch (Phase 7 of prior plan).
+
+In =TradeMdiWindow= / =TradeController=:
+
+- =openInstrumentAction_= toolbar button.
+- =TradeMdiWindow::openInstrumentSelected()= slot and =openInstrumentRequested= signal.
+- =TradeController::onOpenInstrumentRequested()= slot and =openInstrumentResult= signal.
+- =TradeController= includes for instrument protocol headers.
+
+* Per-family tab breakdown
+
+** FX Instruments
+
+Trade types: FxForward, FxSwap, FxOption, FxBarrierOption, FxDigitalOption,
+FxCollar, FxVarianceSwap, FxVolatilitySwap, FxAccumulator, FxTARF, and others.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| FX Economics | Trade Type, Bought Currency, Bought Amount, Sold Currency, Sold Amount, Value Date, Settlement, Description | Always |
+| FX Options | Option Type, Strike Price, Expiry Date | Only for: FxOption, FxBarrierOption, FxDigitalOption, FxCollar |
+
+The FX Options tab is hidden entirely for vanilla forwards and swaps. The
+presence/absence is driven by =trade_type_code=: if it contains "Option",
+"Barrier", "Digital", or "Collar" the tab is shown; otherwise hidden.
+
+** Swap / Rates Instruments (base =instrument= family)
+
+Trade types: Swap, ForwardRateAgreement, OvernightIndexedSwap, BasisSwap,
+CrossCurrencyBasisSwap, InflationSwap, BalanceGuaranteedSwap, KnockOutSwap,
+CallableSwap, RiskParticipationAgreement, and many others.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Swap Core | Trade Type, Notional, Currency, Start Date, Maturity Date, Description | Always |
+| Rates Extensions | FRA Fixing Date, FRA Settlement Date, Lockout Days, Callable Dates (JSON), RPA Counterparty, Inflation Index Code, Base CPI | Only for trade types that use these fields: ForwardRateAgreement, BalanceGuaranteedSwap, KnockOutSwap, CallableSwap, RiskParticipationAgreement, InflationSwap |
+
+For plain Swap, OvernightIndexedSwap, BasisSwap, CrossCurrencyBasisSwap: the
+Rates Extensions tab is hidden. The rule is: show the tab if any of the
+extension fields are non-empty after loading, OR if the trade type string is
+in the extension-applicable set.
+
+** Bond Instruments
+
+Trade types: Bond, ForwardBond, CallableBond, ConvertibleBond, BondRepo,
+BondFuture, BondOption, BondTRS, BondPosition, Ascot.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Bond Economics | Trade Type, Issuer, Currency, Face Value, Coupon Rate, Coupon Frequency, Day Count, Issue Date, Maturity Date | Always |
+| Bond Optional | Settlement Days, Call Date, Conversion Ratio, Description | Always |
+| Bond Extensions | Future Expiry Date, Option Type, Option Expiry Date, Option Strike, TRS Return Type, TRS Funding Leg, ASCOT Option Type | Only for: BondFuture, BondOption, BondTRS, Ascot |
+
+Bond is the most field-rich family; splitting into three tabs prevents the
+single-scroll-wall that the current 900px dialog produces.
+
+** Credit Instruments
+
+Trade types: CreditDefaultSwap, CreditDefaultSwapOption, IndexCreditDefaultSwap,
+and others.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| CDS Economics | Trade Type, Reference Entity, Currency, Notional, Spread | Always |
+| Credit Extensions | Extension fields (confirm from =CreditInstrumentDetailDialog.ui=) | Only for option/index variants |
+
+Exact field list and tab condition to be confirmed when reading the .ui file
+during implementation.
+
+** Equity Instruments
+
+Trade types: ~16 variants including EquityForward, EquityOption, EquitySwap,
+EquityBarrierOption, EquityAsianOption, EquityVarianceSwap, EquityVolatilitySwap,
+EquityTRS, EquityPosition, and others.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Equity Core | Trade Type, Underlying Code, Currency, Notional, Quantity, Dividend Yield, Volatility, Start Date, Maturity Date, Description | Always |
+| Equity Options | Option Type, Strike, Expiry Date, Barrier fields | Only for option and barrier trade types |
+| Equity Extensions | TRS / variance / volatility swap fields | Only for: EquityTRS, EquityVarianceSwap, EquityVolatilitySwap |
+
+** Commodity Instruments
+
+Trade types: ~23 variants including CommodityForward, CommodityOption,
+CommoditySwap, CommodityFuture, CommoditySpreadOption, and others.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Commodity Core | Trade Type, Commodity Code, Currency, Quantity, Unit, Spot Price, Start Date, End Date, Description | Always |
+| Commodity Extensions | Forward Price, Volatility, futures/option/swap-specific fields | Only for option and complex derivative types |
+
+Exact split to be confirmed from =CommodityInstrumentDetailDialog.ui= during
+implementation.
+
+** Composite Instruments
+
+Trade types: CompositeTrade, MultiLegOption.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Composite Info | Trade Type, Description | Always |
+| Legs | =CompositeLegsWidget= (table of constituent trade IDs) | Always |
+
+The =CompositeLegsWidget= is already a reusable sub-widget; it can be promoted
+directly in the =TradeDetailDialog.ui= using the existing custom widget
+declaration.
+
+** Scripted Instruments
+
+Trade types: ScriptedTrade and variants.
+
+| Tab | Fields | Condition |
+|-----+--------+-----------|
+| Script Definition | Trade Type, Script Name, Description | Always |
+| Script Body | Script Body (=QPlainTextEdit=, large) | Always |
+
+Scripted is the simplest family to merge; no conditional tab logic.
+
+* PR Organisation
+
+| PR | Families | Rationale |
+|----+----------+-----------|
+| 1 | FX | Simplest family; validates the merge pattern; one conditional tab (FX Options) |
+| 2 | Swap / Rates | Medium complexity; Rates Extensions tab conditional on subtype |
+| 3 | Bond + Credit | Debt families; Bond has the richest field set and three sub-tabs |
+| 4 | Equity + Commodity | Both have option extension tabs; largest trade type enumerations |
+| 5 | Composite | CompositeLegsWidget already reusable; clean merge |
+| 6 | Scripted | Simplest content; removes last standalone classes |
+
+* Files changed per PR (template)
+
+** Added or modified
+- =projects/ores.qt/ui/TradeDetailDialog.ui= — new instrument tab pages for the family
+- =projects/ores.qt/include/ores.qt/TradeDetailDialog.hpp= — instrument state members,
+  async load helpers, =instrumentHasChanges_= flag
+- =projects/ores.qt/src/TradeDetailDialog.cpp= — instrument tab wiring, async load,
+  =updateInstrumentTabVisibility()=, dual-entity save
+
+** Deleted
+- =projects/ores.qt/include/ores.qt/*InstrumentController.hpp=
+- =projects/ores.qt/src/*InstrumentController.cpp=
+- =projects/ores.qt/include/ores.qt/*InstrumentDetailDialog.hpp=
+- =projects/ores.qt/src/*InstrumentDetailDialog.cpp=
+- =projects/ores.qt/ui/*InstrumentDetailDialog.ui=
+- =projects/ores.qt/include/ores.qt/*InstrumentHistoryDialog.hpp=
+- =projects/ores.qt/src/*InstrumentHistoryDialog.cpp=
+- =projects/ores.qt/ui/*InstrumentHistoryDialog.ui=
+- =projects/ores.qt/include/ores.qt/*InstrumentMdiWindow.hpp=
+- =projects/ores.qt/src/*InstrumentMdiWindow.cpp=
+- =projects/ores.qt/include/ores.qt/Client*InstrumentModel.hpp=
+- =projects/ores.qt/src/Client*InstrumentModel.cpp=
+
+** Updated
+- =projects/ores.qt/src/MainWindow.cpp= — remove family controller, connections, menu items
+- =projects/ores.qt/include/ores.qt/MainWindow.hpp= — remove controller member
+- =projects/ores.qt/CMakeLists.txt= — remove deleted sources, add none
+
+In PR 1 additionally:
+- =projects/ores.qt/include/ores.qt/TradeMdiWindow.hpp= — remove =openInstrumentAction_=
+- =projects/ores.qt/src/TradeMdiWindow.cpp= — remove action and slot
+- =projects/ores.qt/include/ores.qt/TradeController.hpp= — remove signal/slot
+- =projects/ores.qt/src/TradeController.cpp= — remove =onOpenInstrumentRequested=
+
+* Open Questions
+
+1. *Instrument delete in the merged dialog*: Each standalone dialog currently
+   has a Delete button that removes the instrument record. In the merged dialog,
+   instrument deletion should clear the instrument tabs and nullify
+   =trade.instrument_family= + =trade.instrument_id= on the server. Decide
+   per-PR whether to implement this or defer until all families are merged.
+
+2. *Instrument history*: The =*InstrumentHistoryDialog= classes are removed with
+   the standalone windows. The Instrument Provenance tab shows only the current
+   version's metadata. Full instrument version history browsing is out of scope
+   for this plan and can be added as a separate feature if needed.
+
+3. *Instrument Provenance tab label*: Rename the existing "Provenance" tab to
+   "Trade Provenance" in PR 1 so the two provenance tabs are unambiguous.

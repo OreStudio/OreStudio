@@ -73,7 +73,7 @@ ore_import_plan ore_import_planner::plan() {
                               << " currencies";
 
     // =========================================================================
-    // Step 2: Portfolio / Book hierarchy
+    // Step 2: Portfolio / Book hierarchy (or existing-book fast path)
     // =========================================================================
     hierarchy::ore_hierarchy_builder builder(
         scan_result_.portfolio_files,
@@ -82,6 +82,44 @@ ore_import_plan ore_import_planner::plan() {
                                         choices_.hierarchy_strip.end()));
 
     const auto nodes = builder.build();
+
+    // When the user selected an existing book as the import target, stamp all
+    // trades into that book directly — no new portfolios or books are created.
+    if (choices_.existing_target_book_id && choices_.existing_parent_portfolio_id) {
+        const auto target_book_id      = *choices_.existing_target_book_id;
+        const auto target_portfolio_id = *choices_.existing_parent_portfolio_id;
+        const auto& defs = choices_.defaults;
+
+        for (const auto& node : nodes) {
+            if (node.type != hierarchy::import_node::node_type::book)
+                continue;
+            for (const auto& source_file : node.source_files) {
+                auto items = xml::importer::import_portfolio_with_context(source_file);
+                for (auto& item : items) {
+                    item.trade.id           = uuid_gen();
+                    item.trade.book_id      = target_book_id;
+                    item.trade.portfolio_id = target_portfolio_id;
+                    item.trade.party_id     = choices_.party_id;
+                    if (!defs.trade_date.empty())
+                        item.trade.trade_date = defs.trade_date;
+                    if (!defs.effective_date.empty())
+                        item.trade.effective_date = defs.effective_date;
+                    if (!defs.termination_date.empty())
+                        item.trade.termination_date = defs.termination_date;
+                    if (!defs.activity_type_code.empty())
+                        item.trade.activity_type_code = defs.activity_type_code;
+                    if (defs.default_counterparty_id)
+                        item.trade.counterparty_id = defs.default_counterparty_id;
+                    result.trades.push_back(std::move(item));
+                }
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Import plan (existing book): "
+                                  << result.currencies.size() << " currencies, "
+                                  << result.trades.size() << " trades into existing book";
+        return result;
+    }
 
     // Node index → assigned UUID (covers both portfolios and books)
     std::vector<boost::uuids::uuid> node_uuids(nodes.size());

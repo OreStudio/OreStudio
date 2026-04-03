@@ -131,10 +131,6 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
-    <addaction name="ActionInstruments"/>
-    <addaction name="ActionFxInstruments"/>
-    <addaction name="ActionBondInstruments"/>
-    <addaction name="ActionCreditInstruments"/>
     <addaction name="ActionEquityInstruments"/>
     <addaction name="ActionCommodityInstruments"/>
     <addaction name="ActionCompositeInstruments"/>
@@ -708,38 +704,6 @@
    </property>
    <property name="toolTip">
     <string>Manage leg type reference data</string>
-   </property>
-  </action>
-  <action name="ActionInstruments">
-   <property name="text">
-    <string>&amp;Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage rates instruments</string>
-   </property>
-  </action>
-  <action name="ActionFxInstruments">
-   <property name="text">
-    <string>&amp;FX Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage FX instruments</string>
-   </property>
-  </action>
-  <action name="ActionBondInstruments">
-   <property name="text">
-    <string>&amp;Bond Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage bond instruments</string>
-   </property>
-  </action>
-  <action name="ActionCreditInstruments">
-   <property name="text">
-    <string>&amp;Credit Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage credit instruments</string>
    </property>
   </action>
   <action name="ActionEquityInstruments">

@@ -38,6 +38,7 @@
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 
 namespace ores::qt {
 
@@ -349,7 +350,7 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     const std::string id_str = boost::uuids::to_string(workunit_.id);
     {
         // Preserve the full extension (e.g. ".csv") for local inspection.
-        const std::string base = "api/v1/compute/workunits/" + id_str + "/input";
+        const std::string base = ores::compute::net::compute_storage::input_path(id_str);
         if (!selectedInputFilePath_.isEmpty()) {
             const std::string ext =
                 QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
@@ -359,7 +360,7 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
         }
     }
     if (!selectedConfigFilePath_.isEmpty()) {
-        const std::string base = "api/v1/compute/workunits/" + id_str + "/config";
+        const std::string base = ores::compute::net::compute_storage::config_path(id_str);
         const std::string ext =
             QFileInfo(selectedConfigFilePath_).completeSuffix().toStdString();
         workunit_.config_uri = base + (ext.empty() ? "" : "." + ext);
@@ -465,9 +466,9 @@ void WorkunitDetailDialog::onSaveClicked() {
     if (!selectedInputFilePath_.isEmpty()) {
         const QString ext_in = QFileInfo(selectedInputFilePath_).completeSuffix();
         QUrl inputUrl = httpBaseUrl_;
-        inputUrl.setPath("/api/v1/compute/workunits/"
-            + QString::fromStdString(id_str) + "/input"
-            + (ext_in.isEmpty() ? QString{} : "." + ext_in));
+        inputUrl.setPath(QString::fromStdString(
+            ores::compute::net::compute_storage::input_path(
+                id_str, ext_in.isEmpty() ? "" : "." + ext_in.toStdString())));
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -485,7 +486,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                       QByteArray("application/octet-stream"));
 
         QPointer<WorkunitDetailDialog> self = this;
-        auto* inputReply = nm->post(req, inputFile);
+        auto* inputReply = nm->put(req, inputFile);
 
         connect(inputReply, &QNetworkReply::finished, this,
                 [self, inputReply, inputFile, nm, id_str]() {
@@ -520,9 +521,9 @@ void WorkunitDetailDialog::onSaveClicked() {
                 const QString ext_cfg =
                     QFileInfo(self->selectedConfigFilePath_).completeSuffix();
                 QUrl configUrl = self->httpBaseUrl_;
-                configUrl.setPath("/api/v1/compute/workunits/"
-                    + QString::fromStdString(id_str) + "/config"
-                    + (ext_cfg.isEmpty() ? QString{} : "." + ext_cfg));
+                configUrl.setPath(QString::fromStdString(
+                    ores::compute::net::compute_storage::config_path(
+                        id_str, ext_cfg.isEmpty() ? "" : "." + ext_cfg.toStdString())));
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {
@@ -539,7 +540,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                 req2.setHeader(QNetworkRequest::ContentTypeHeader,
                                QByteArray("application/octet-stream"));
 
-                auto* configReply = nm2->post(req2, configFile);
+                auto* configReply = nm2->put(req2, configFile);
 
                 connect(configReply, &QNetworkReply::finished, self,
                         [self, configReply, configFile, nm2, id_str]() {

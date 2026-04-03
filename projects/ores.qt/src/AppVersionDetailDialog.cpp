@@ -351,7 +351,7 @@ void AppVersionDetailDialog::updateVersionFromUi() {
     }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
     {
-        const std::string base_uri = "api/v1/compute/packages/" +
+        const std::string base_uri = "api/v1/storage/compute/packages/" +
             boost::uuids::to_string(app_version_.id);
         if (!selectedPackageFilePath_.isEmpty()) {
             // Preserve the full extension (e.g. ".tar.gz") for local inspection.
@@ -448,7 +448,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
     const QString ext = QFileInfo(selectedPackageFilePath_).completeSuffix();
-    const QString path = "/api/v1/compute/packages/"
+    const QString path = "/api/v1/storage/compute/packages/"
         + QString::fromStdString(id_str)
         + (ext.isEmpty() ? QString{} : "." + ext);
     QUrl uploadUrl = httpBaseUrl_;
@@ -474,7 +474,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
                       QByteArray("application/octet-stream"));
 
     QPointer<AppVersionDetailDialog> self = this;
-    auto* reply = networkManager->post(request, file);
+    auto* reply = networkManager->put(request, file);
 
     connect(reply, &QNetworkReply::finished, this,
             [self, reply, file, networkManager, ext]() {
@@ -504,7 +504,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
 
         // Update in-memory package_uri with the extension-bearing path so that
         // any subsequent save will persist the correct URI.
-        const std::string new_uri = "api/v1/compute/packages/"
+        const std::string new_uri = "api/v1/storage/compute/packages/"
             + boost::uuids::to_string(self->app_version_.id)
             + (ext.isEmpty() ? std::string{} : "." + ext.toStdString());
         self->app_version_.package_uri = new_uri;

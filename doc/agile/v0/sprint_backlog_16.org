@@ -892,6 +892,35 @@ from the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-ser
       - Step 3: =reporting.v1.runs.trigger= ={ party_id }=
 - [ ] Register both executors in workflow service wiring
 - [ ] Integration tests for both workflows (happy path + compensation)
+*** TODO Qt: instrument creation in TradeDetailDialog                  :code:
+
+When a trade is created in =TradeDetailDialog=, the instrument tabs are hidden
+and no instrument can be entered. This is because instruments are currently only
+loaded asynchronously from an existing server record. The standalone per-family
+instrument dialogs (which previously allowed direct instrument creation) have
+been removed as part of the unified-dialog plan.
+
+The fix is to reveal the instrument tabs in create mode once the user selects a
+=product_type= (via the trade type field or a new family selector combo), and to
+send a =save_*_instrument_request= for the new instrument before the
+=save_trade_request= on first save.
+
+Affects all instrument families: FX (PR 1), Swap/Rates (PR 2), Bond + Credit
+(PR 3), Equity + Commodity (PR 4), Composite (PR 5), Scripted (PR 6).
+
+***** Tasks
+
+- [ ] Add a "Product Type" selector (QComboBox) to the General tab that maps to
+      =trade.product_type=; pre-populate with all known families
+- [ ] In create mode: show the relevant instrument tabs when a product type is
+      selected (hide them when none is selected)
+- [ ] On save in create mode: if instrument tabs are visible, send the
+      appropriate =save_*_instrument_request= first, then use the returned
+      instrument ID to populate =trade.instrument_id= before sending
+      =save_trade_request=
+- [ ] Handle save failure for the new instrument (surface error, do not save
+      the trade)
+- [ ] Apply to all six instrument families as each PR is merged
 
 * Footer
 

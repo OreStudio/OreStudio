@@ -23,7 +23,11 @@
 /**
  * @brief Generic object storage API for ORE Studio.
  *
- * Provides bucket name constants and HTTP path helpers for the generic S3-like object storage API (PUT/GET/DELETE/HEAD /api/v1/storage/{bucket}/{key}). The storage layer replaces compute-specific HTTP endpoints with a reusable abstraction that can back ORE imports, compute artifacts, and any future binary payload transfer. The filesystem-backed HTTP implementation lives in ores.http.core.
+ * Provides HTTP path helpers for the generic S3-like object storage API
+ * (PUT/GET/DELETE /api/v1/storage/{bucket}/{key}). The storage layer is
+ * application-agnostic; bucket name constants are defined by each domain
+ * library (e.g. ores.compute.api). The filesystem-backed HTTP implementation
+ * lives in ores.http.core.
  */
 namespace ores::storage {}
 

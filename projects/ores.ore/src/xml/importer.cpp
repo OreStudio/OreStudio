@@ -27,6 +27,7 @@
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
 #include "ores.ore/domain/calendar_adjustment_mapper.hpp"
+#include "ores.ore/domain/conventions_mapper.hpp"
 #include "ores.ore/domain/trade_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -209,6 +210,23 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
                                << " trades with context.";
+    return r;
+}
+
+domain::mapped_conventions
+importer::import_conventions(const std::filesystem::path& path) {
+    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+
+    using namespace ores::platform::filesystem;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+
+    domain::conventions conv;
+    domain::load_data(c, conv);
+    const auto r = domain::conventions_mapper::map(conv);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from "
+                               << path.generic_string();
     return r;
 }
 

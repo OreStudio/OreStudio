@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.ore/domain/trade_mapper.hpp"
+#include "ores.ore/domain/conventions_mapper.hpp"
 
 namespace ores::ore::xml {
 
@@ -97,6 +98,22 @@ public:
      */
     static std::vector<refdata::domain::calendar_adjustment>
     import_calendar_adjustments(const std::filesystem::path& path);
+
+    /**
+     * @brief Imports all recognised conventions from an ORE conventions XML file.
+     *
+     * Parses the ORE @c conventions.xml and maps the nine supported convention
+     * categories (Zero, Deposit, Swap, OIS, FRA, IborIndex, OvernightIndex,
+     * FX, CDS) to ORES refdata domain types. Additional ORE convention types
+     * (AverageOIS, TenorBasisSwap, CrossCurrencyBasis, InflationSwap, etc.)
+     * are present in the file but are not yet modelled and are silently
+     * skipped.
+     *
+     * @param path Path to the conventions.xml file
+     * @return @c mapped_conventions struct containing one vector per convention type
+     */
+    static domain::mapped_conventions
+    import_conventions(const std::filesystem::path& path);
 
     /**
      * @brief Validates a trade against minimum import requirements.

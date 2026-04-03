@@ -103,7 +103,6 @@ class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
 class PaymentFrequencyTypeController;
 class LegTypeController;
-class InstrumentController;
 class BondInstrumentController;
 class CreditInstrumentController;
 class EquityInstrumentController;
@@ -675,7 +674,6 @@ private:
     std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
     std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
     std::unique_ptr<LegTypeController> legTypeController_;
-    std::unique_ptr<InstrumentController> instrumentController_;
     std::unique_ptr<BondInstrumentController> bondInstrumentController_;
     std::unique_ptr<CreditInstrumentController> creditInstrumentController_;
     std::unique_ptr<EquityInstrumentController> equityInstrumentController_;

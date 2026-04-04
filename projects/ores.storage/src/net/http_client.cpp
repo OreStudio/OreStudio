@@ -72,7 +72,7 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
     http::response_parser<http::file_body> parser;
     parser.body_limit(std::numeric_limits<std::uint64_t>::max());
     beast::error_code open_ec;
-    parser.get().body().open(dest.c_str(), beast::file_mode::write, open_ec);
+    parser.get().body().open(dest.string().c_str(), beast::file_mode::write, open_ec);
     if (open_ec)
         throw std::runtime_error("http_client: cannot open for writing: " + dest.string());
 
@@ -102,7 +102,7 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
     req.set(http::field::user_agent, "ores.storage/1.0");
     req.set(http::field::content_type, "application/octet-stream");
     beast::error_code open_ec;
-    req.body().open(src.c_str(), beast::file_mode::read, open_ec);
+    req.body().open(src.string().c_str(), beast::file_mode::read, open_ec);
     if (open_ec)
         throw std::runtime_error("http_client: cannot open for reading: " + src.string());
     req.prepare_payload();

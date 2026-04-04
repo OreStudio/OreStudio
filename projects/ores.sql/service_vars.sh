@@ -39,4 +39,5 @@ SERVICE_NAMES=(
     workflow
     ore
     marketdata
+    controller
 )

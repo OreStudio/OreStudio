@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "controller",
+    "full_name": "ores.controller",
+    "brief": "Service lifecycle management for ORE Studio backend services.",
+    "description": "Tracks desired service configuration (definitions) and actual running state\n(instances) for all ORE Studio backend services. Supports multiple replicas,\nautomatic restart policies, and a full historical event log for audit and\ndiagnostics. Terminology follows Kubernetes conventions: ServiceDefinition\n(Deployment), ServiceInstance (Pod), ServiceEvent (Event)."
+  }
+}

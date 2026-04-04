@@ -19,21 +19,8 @@
  */
 
 -- =============================================================================
--- Drop Row-Level Security Policies
+-- Row-Level Security Policies for Controller Tables
 -- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
-
-\ir ../controller/controller_rls_policies_drop.sql
-\ir ../marketdata/marketdata_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+-- Controller tables are system-level and have no tenant_id column. They are
+-- owned by the controller service and are not subject to tenant isolation.
+-- No RLS policies are applied.

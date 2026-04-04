@@ -208,6 +208,10 @@ select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'MarketdataServi
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'marketdata::*');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'iam::tenants:read');
 
+-- Controller service: full own-component access (system-level, no tenant isolation)
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'Service lifecycle controller');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'controller::*');
+
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()

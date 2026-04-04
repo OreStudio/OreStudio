@@ -228,6 +228,19 @@
           {"table": "ores_iam_tenants_tbl"}
         ],
         "select_prefixes": []
+      },
+      {
+        "name": "controller",
+        "psql_var": "controller_service",
+        "env_key": "CONTROLLER_SERVICE",
+        "iam_role": "ControllerService",
+        "description": "Service Controller",
+        "email": "controller_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_controller_"}
+        ],
+        "select_tables": [],
+        "select_prefixes": []
       }
     ]
   }

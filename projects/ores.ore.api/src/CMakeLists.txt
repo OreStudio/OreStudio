@@ -16,7 +16,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.storage")
+set(name "ores.ore.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -35,14 +35,11 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
-find_package(LibArchive REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.storage.lib
         ores.logging.lib
-        Boost::boost
     PRIVATE
-        ores.utility.lib
-        LibArchive::LibArchive)
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

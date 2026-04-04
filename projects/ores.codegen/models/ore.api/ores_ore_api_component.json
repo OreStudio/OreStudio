@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "ore.api",
+    "full_name": "ores.ore.api",
+    "brief": "ORE import API types and protocol",
+    "description": "Protocol types and bucket helpers for server-side ORE import. Contains the ore_import_request/response/item_error structs and the ore_storage bucket helper that mirrors compute_storage."
+  }
+}

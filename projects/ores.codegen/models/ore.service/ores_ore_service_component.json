@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "ore.service",
+    "full_name": "ores.ore.service",
+    "brief": "ORE import microservice",
+    "description": "Standalone NATS microservice that receives ORE import workflow requests, downloads and unpacks ORE directory tarballs from storage, plans the import using ore_import_planner, and orchestrates saga steps against refdata, trading, and marketdata services with full compensation support."
+  }
+}

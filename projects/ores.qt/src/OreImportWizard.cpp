@@ -34,12 +34,18 @@
 #include "ores.ore/planner/ore_import_planner.hpp"
 #include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.qt/OreImporter.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -206,6 +212,8 @@ void OreDirectoryPage::startScan() {
     dirEdit_->setEnabled(false);
 
     const std::filesystem::path root = path.toStdString();
+    wizard_->setOreDir(root);
+
     const auto& excl_vec = wizard_->choices().scan_exclusions;
     const std::unordered_set<std::string> scan_exclusions(excl_vec.begin(),
                                                            excl_vec.end());
@@ -776,9 +784,9 @@ void OreTradeImportPage::startImport() {
     importStarted_ = true;
     emit completeChanged();  // disable Next while import runs
 
-    // Capture defaults from form
+    // Capture defaults from form into choices
     auto& defs = wizard_->choices().defaults;
-    defs.trade_date      = tradeDateEdit_->text().trimmed().toStdString();
+    defs.trade_date = tradeDateEdit_->text().trimmed().toStdString();
     defs.activity_type_code = lifecycleEventCombo_->currentData().toString().toStdString();
 
     const QString cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
@@ -793,85 +801,99 @@ void OreTradeImportPage::startImport() {
         defs.default_counterparty_id = std::nullopt;
     }
 
+    progressBar_->setRange(0, 2);
     progressBar_->setValue(0);
     progressBar_->show();
     logOutput_->show();
-    statusLabel_->setText(tr("Building import plan…"));
+    statusLabel_->setText(tr("Uploading ORE directory to storage…"));
+    appendLog(tr("Step 1/2: Packing and uploading ORE directory…"));
 
-    // Build plan on background thread
-    const auto sr       = wizard_->scanResult();
-    const auto existing = wizard_->existingIsoCodes();
-    const auto choices  = wizard_->choices();
-
+    const auto ore_dir = wizard_->oreDir();
+    const auto http_base_url = wizard_->httpBaseUrl();
+    const auto choices = wizard_->choices();
+    const auto request_id = boost::uuids::to_string(boost::uuids::random_generator()());
     auto* cm = wizard_->clientManager();
 
-    using Result = ore::planner::ore_import_result;
-    auto* watcher = new QFutureWatcher<Result>(this);
-    connect(watcher, &QFutureWatcher<Result>::finished,
+    using Response = ores::ore::messaging::ore_import_response;
+    auto* watcher = new QFutureWatcher<Response>(this);
+    connect(watcher, &QFutureWatcher<Response>::finished,
             this, &OreTradeImportPage::onImportFinished);
 
-    watcher->setFuture(QtConcurrent::run([sr, existing, choices, cm]() -> Result {
-        OreImporter importer(cm);
-        return importer.execute(sr, existing, choices);
-    }));
+    watcher->setFuture(QtConcurrent::run(
+        [ore_dir, http_base_url, choices, request_id, cm]() -> Response {
+            // Step 1: pack and upload the ORE directory to storage
+            try {
+                ores::storage::net::storage_transfer transfer(http_base_url);
+                transfer.pack_and_upload(ore_dir,
+                    std::string(ores::ore::net::ore_storage::bucket),
+                    ores::ore::net::ore_storage::import_key(request_id));
+            } catch (const std::exception& e) {
+                return Response{
+                    .success = false,
+                    .message = std::string("Upload failed: ") + e.what(),
+                    .correlation_id = request_id};
+            }
+
+            // Step 2: send NATS request to the import service
+            ores::ore::messaging::ore_import_request req;
+            req.request_id = request_id;
+            req.import_choices_json = rfl::json::write(choices);
+            req.correlation_id = request_id;
+
+            // Allow up to 10 minutes for large datasets
+            const auto result = cm->process_authenticated_request(
+                req, std::chrono::minutes(10));
+            if (!result) {
+                return Response{
+                    .success = false,
+                    .message = result.error(),
+                    .correlation_id = request_id};
+            }
+            return *result;
+        }));
 }
 
 void OreTradeImportPage::onImportFinished() {
-    using Result = ore::planner::ore_import_result;
-    auto* fw = static_cast<QFutureWatcher<Result>*>(sender());
+    using Response = ores::ore::messaging::ore_import_response;
+    auto* fw = static_cast<QFutureWatcher<Response>*>(sender());
     if (!fw) return;
 
-    const auto res = fw->result();
+    const auto resp = fw->result();
     fw->deleteLater();
 
-    progressBar_->setValue(4);
-    wizard_->setImportSuccess(res.success);
-    wizard_->setImportError(QString::fromStdString(res.error));
+    progressBar_->setValue(2);
+    wizard_->setImportResponse(resp);
 
-    if (res.success) {
-        appendLog(tr("Saved %1 currencies.").arg(res.currencies));
-        appendLog(tr("Saved %1 portfolios.").arg(res.portfolios));
-        appendLog(tr("Saved %1 books.").arg(res.books));
-        appendLog(tr("Saved %1 trades.").arg(res.trades));
-
-        const int failed = static_cast<int>(res.instrument_errors.size());
-        if (failed == 0) {
-            appendLog(tr("Saved %1 instruments.").arg(res.instruments));
-        } else {
-            appendLog(tr("Saved %1 instruments, %2 failed:").arg(res.instruments).arg(failed));
-            for (const auto& err : res.instrument_errors)
-                appendLog(tr("  [instrument error] %1: %2")
-                    .arg(QString::fromStdString(err.trade_external_id),
-                         QString::fromStdString(err.message)));
-        }
-
-        if (failed == 0) {
+    if (resp.success) {
+        const int n_errors = static_cast<int>(resp.item_errors.size());
+        appendLog(tr("Step 2/2: Import service completed."));
+        if (n_errors == 0) {
+            appendLog(tr("Import finished with no trade errors."));
             statusLabel_->setText(tr("Import completed successfully."));
         } else {
+            appendLog(tr("%1 trade(s) could not be saved — see Done page for details.")
+                .arg(n_errors));
             statusLabel_->setText(
-                tr("Import completed with %1 instrument failure(s). "
-                   "See the log below for details.").arg(failed));
+                tr("Import completed with %1 trade error(s).").arg(n_errors));
         }
+        if (!resp.correlation_id.empty())
+            appendLog(tr("Correlation ID: %1").arg(
+                QString::fromStdString(resp.correlation_id)));
 
-        wizard_->setImportResults(res.currencies, res.portfolios, res.books, res.trades,
-                                  res.instruments, failed);
+        BOOST_LOG_SEV(lg(), info) << "ORE import service complete: "
+            << n_errors << " trade errors, corr=" << resp.correlation_id;
 
-        BOOST_LOG_SEV(lg(), info) << "ORE import complete: "
-            << res.currencies << " currencies, "
-            << res.portfolios << " portfolios, "
-            << res.books << " books, "
-            << res.trades << " trades, "
-            << res.instruments << " instruments saved, "
-            << failed << " instruments failed";
         importDone_ = true;
         emit completeChanged();
     } else {
-        appendLog(tr("Error: %1").arg(QString::fromStdString(res.error)));
+        appendLog(tr("Error: %1").arg(QString::fromStdString(resp.message)));
+        if (!resp.correlation_id.empty())
+            appendLog(tr("Correlation ID: %1").arg(
+                QString::fromStdString(resp.correlation_id)));
         statusLabel_->setText(tr("Import failed. See the error log below. "
                                   "Click Cancel to abort the wizard."));
-        BOOST_LOG_SEV(lg(), error) << "ORE import failed: " << res.error;
+        BOOST_LOG_SEV(lg(), error) << "ORE import failed: " << resp.message;
 
-        // Turn progress bar red to signal failure
         QPalette pal = progressBar_->palette();
         pal.setColor(QPalette::Highlight, Qt::red);
         progressBar_->setPalette(pal);
@@ -897,29 +919,38 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
 }
 
 void OreDonePage::initializePage() {
+    const auto& resp = wizard_->importResponse();
+
     if (wizard_->importSuccess()) {
-        const int failed = wizard_->savedInstrumentFailures();
-        const QString instrLine = failed == 0
-            ? tr("<li>Instruments: %1</li>").arg(wizard_->savedInstruments())
-            : tr("<li>Instruments: %1 saved, <b>%2 failed</b> — see import log for details</li>")
-                .arg(wizard_->savedInstruments()).arg(failed);
-        const QString heading = failed == 0
-            ? tr("<p><b>Import succeeded.</b></p>")
-            : tr("<p><b>Import completed with instrument failures.</b></p>");
-        summaryLabel_->setText(
-            heading +
-            tr("<ul>"
-               "<li>Currencies: %1</li>"
-               "<li>Portfolios: %2</li>"
-               "<li>Books: %3</li>"
-               "<li>Trades: %4</li>")
-            .arg(wizard_->savedCurrencies())
-            .arg(wizard_->savedPortfolios())
-            .arg(wizard_->savedBooks())
-            .arg(wizard_->savedTrades())
-            + instrLine +
-            tr("</ul>"
-               "<p>The data is now available in the Portfolio Explorer.</p>"));
+        const auto& errors = resp.item_errors;
+        const int n_errors = static_cast<int>(errors.size());
+
+        QString html;
+        if (n_errors == 0) {
+            html += tr("<p><b>Import succeeded.</b></p>");
+        } else {
+            html += tr("<p><b>Import completed with %1 trade error(s).</b></p>")
+                .arg(n_errors);
+        }
+        html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
+
+        if (!resp.correlation_id.empty()) {
+            html += tr("<p style='color:gray;font-size:small;'>Correlation ID: %1</p>")
+                .arg(QString::fromStdString(resp.correlation_id));
+        }
+
+        if (n_errors > 0) {
+            html += tr("<p><b>Trade errors:</b></p><ul>");
+            for (const auto& err : errors) {
+                const QString src = QString::fromStdString(err.source_file);
+                const QString id = QString::fromStdString(err.item_id);
+                const QString msg = QString::fromStdString(err.message);
+                html += tr("<li>[%1] %2: %3</li>").arg(src, id, msg);
+            }
+            html += QStringLiteral("</ul>");
+        }
+
+        summaryLabel_->setText(html);
     } else {
         summaryLabel_->setText(
             tr("<p><b>Import failed.</b></p><p>%1</p>")

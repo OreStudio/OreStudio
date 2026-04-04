@@ -68,6 +68,13 @@ public:
                  std::optional<boost::uuids::uuid> bookId = std::nullopt,
                  const std::string& bookName = "");
 
+    /**
+     * @brief Set the HTTP base URL for storage uploads.
+     *
+     * Called by MainWindow when the HTTP server is discovered.
+     */
+    void setHttpBaseUrl(const std::string& url) { http_base_url_ = url; }
+
 signals:
     /**
      * @brief Emitted when an import completes successfully.
@@ -83,6 +90,7 @@ signals:
 
 private:
     ClientManager* clientManager_;
+    std::string http_base_url_;
 };
 
 }

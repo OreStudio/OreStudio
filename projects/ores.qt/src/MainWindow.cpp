@@ -92,7 +92,6 @@
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
-#include "ores.qt/CompositeInstrumentController.hpp"
 #include "ores.qt/ScriptedInstrumentController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/AppController.hpp"
@@ -256,7 +255,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionFloatingIndexTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionPaymentFrequencyTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionLegTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
-    ui_->ActionCompositeInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionScriptedInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
@@ -825,10 +823,6 @@ MainWindow::MainWindow(QWidget* parent) :
         if (legTypeController_)
             legTypeController_->showListWindow();
     });
-    connect(ui_->ActionCompositeInstruments, &QAction::triggered, this, [this]() {
-        if (compositeInstrumentController_)
-            compositeInstrumentController_->showListWindow();
-    });
     connect(ui_->ActionScriptedInstruments, &QAction::triggered, this, [this]() {
         if (scriptedInstrumentController_)
             scriptedInstrumentController_->showListWindow();
@@ -1276,7 +1270,6 @@ void MainWindow::updateMenuState() {
     ui_->ActionFloatingIndexTypes->setEnabled(isLoggedIn);
     ui_->ActionPaymentFrequencyTypes->setEnabled(isLoggedIn);
     ui_->ActionLegTypes->setEnabled(isLoggedIn);
-    ui_->ActionCompositeInstruments->setEnabled(isLoggedIn);
     ui_->ActionScriptedInstruments->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
@@ -2108,23 +2101,6 @@ void MainWindow::createControllers() {
     connect(legTypeController_.get(), &LegTypeController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(legTypeController_.get(), &LegTypeController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    compositeInstrumentController_ = std::make_unique<CompositeInstrumentController>(
-        this, mdiArea_, clientManager_,
-        QString::fromStdString(username_), this);
-
-    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     scriptedInstrumentController_ = std::make_unique<ScriptedInstrumentController>(

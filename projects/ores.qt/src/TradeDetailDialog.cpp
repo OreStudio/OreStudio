@@ -32,6 +32,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/CompositeLegsWidget.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
@@ -452,6 +453,14 @@ void TradeDetailDialog::setupConnections() {
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TradeDetailDialog::onInstrumentFieldChanged);
 
+    // Composite instrument fields
+    connect(ui_->compositeTradeTypeCombo, &QComboBox::currentTextChanged, this,
+            &TradeDetailDialog::onCompositeTradeTypeChanged);
+    connect(ui_->compositeDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->compositeLegsWidget, &CompositeLegsWidget::legsChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+
     // FX instrument fields
     connect(ui_->fxTradeTypeCodeEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFxTradeTypeChanged);
@@ -628,6 +637,8 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         loadEquityInstrument();
     else if (trade_.product_type == "commodity" && trade_.instrument_id.has_value())
         loadCommodityInstrument();
+    else if (trade_.product_type == "composite" && trade_.instrument_id.has_value())
+        loadCompositeInstrument();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
@@ -669,6 +680,10 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
         ui_->tabWidget->indexOf(ui_->commodityCoreTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->commodityExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->compositeCoreTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->compositeLegsTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 
     setProvenanceEnabled(!createMode);
@@ -697,6 +712,7 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     setCreditReadOnly(readOnly);
     setEquityReadOnly(readOnly);
     setCommodityReadOnly(readOnly);
+    setCompositeReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -1759,6 +1775,13 @@ void TradeDetailDialog::onCommodityTradeTypeChanged(const QString&) {
     }
 }
 
+void TradeDetailDialog::onCompositeTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateSaveButtonState();
+    }
+}
+
 void TradeDetailDialog::updateSaveButtonState() {
     const bool canSave =
         (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
@@ -1804,6 +1827,8 @@ void TradeDetailDialog::onSaveClicked() {
             updateEquityInstrumentFromUi();
         else if (trade_.product_type == "commodity")
             updateCommodityInstrumentFromUi();
+        else if (trade_.product_type == "composite")
+            updateCompositeInstrumentFromUi();
     }
 
     const auto crOpType = createMode_
@@ -1837,6 +1862,9 @@ void TradeDetailDialog::onSaveClicked() {
         } else if (trade_.product_type == "commodity") {
             commodityInstrument_.change_reason_code = crSel->reason_code;
             commodityInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "composite") {
+            compositeInstrument_.change_reason_code = crSel->reason_code;
+            compositeInstrument_.change_commentary  = crSel->commentary;
         }
     }
 
@@ -1865,6 +1893,10 @@ void TradeDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Saving commodity instrument then trade: "
                                       << trade_.external_id;
             saveCommodityThenTrade(trade_, commodityInstrument_);
+        } else if (trade_.product_type == "composite") {
+            BOOST_LOG_SEV(lg(), info) << "Saving composite instrument then trade: "
+                                      << trade_.external_id;
+            saveCompositeThenTrade(trade_, compositeInstrument_, compositeLegs_);
         }
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
@@ -2481,6 +2513,165 @@ void TradeDetailDialog::saveCommodityThenTrade(
             return {false, "Dialog closed"};
         trading::messaging::save_commodity_instrument_request req;
         req.data = instrument;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Composite instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadCompositeInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct CompositeResult {
+        bool success;
+        std::string message;
+        trading::domain::composite_instrument instrument;
+        std::vector<trading::domain::composite_leg> legs;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CompositeResult>(self);
+    connect(watcher, &QFutureWatcher<CompositeResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load composite instrument: " << result.message;
+            return;
+        }
+
+        self->compositeInstrument_ = std::move(result.instrument);
+        self->compositeLegs_ = std::move(result.legs);
+        self->instrumentLoaded_ = true;
+        self->populateCompositeInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> CompositeResult {
+        if (!cm)
+            return {false, "Dialog closed", {}, {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}, {}};
+        if (!r->success)
+            return {false, r->message, {}, {}};
+
+        const auto* comp =
+            std::get_if<trading::messaging::composite_export_result>(&r->instrument);
+        if (!comp)
+            return {false, "Unexpected instrument type in response", {}, {}};
+
+        return {true, {}, comp->instrument, comp->legs};
+    }));
+}
+
+void TradeDetailDialog::populateCompositeInstrument() {
+    ui_->compositeTradeTypeCombo->blockSignals(true);
+    ui_->compositeDescriptionEdit->blockSignals(true);
+    ui_->compositeLegsWidget->blockSignals(true);
+
+    const auto idx = ui_->compositeTradeTypeCombo->findText(
+        QString::fromStdString(compositeInstrument_.trade_type_code));
+    if (idx >= 0)
+        ui_->compositeTradeTypeCombo->setCurrentIndex(idx);
+    ui_->compositeDescriptionEdit->setPlainText(
+        QString::fromStdString(compositeInstrument_.description));
+    ui_->compositeLegsWidget->setLegs(compositeLegs_);
+
+    ui_->compositeTradeTypeCombo->blockSignals(false);
+    ui_->compositeDescriptionEdit->blockSignals(false);
+    ui_->compositeLegsWidget->blockSignals(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        compositeInstrument_.version,
+        compositeInstrument_.modified_by,
+        compositeInstrument_.performed_by,
+        compositeInstrument_.recorded_at,
+        compositeInstrument_.change_reason_code,
+        compositeInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateCompositeTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateCompositeInstrumentFromUi() {
+    compositeInstrument_.trade_type_code =
+        ui_->compositeTradeTypeCombo->currentText().toStdString();
+    compositeInstrument_.description =
+        ui_->compositeDescriptionEdit->toPlainText().trimmed().toStdString();
+    compositeLegs_ = ui_->compositeLegsWidget->legs();
+    compositeInstrument_.modified_by = username_;
+    compositeInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateCompositeTabVisibility() {
+    const bool show = instrumentLoaded_;
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->compositeCoreTab), show);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->compositeLegsTab), show);
+}
+
+void TradeDetailDialog::setCompositeReadOnly(bool readOnly) {
+    ui_->compositeTradeTypeCombo->setEnabled(!readOnly);
+    ui_->compositeDescriptionEdit->setReadOnly(readOnly);
+    ui_->compositeLegsWidget->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveCompositeThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::composite_instrument& instrument,
+    const std::vector<trading::domain::composite_leg>& legs) {
+
+    struct CompositeSaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CompositeSaveResult>(self);
+    connect(watcher, &QFutureWatcher<CompositeSaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Composite instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save composite instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Composite instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument, legs]() -> CompositeSaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_composite_instrument_request req;
+        req.data = instrument;
+        req.legs = legs;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};
         return {r->success, r->message};

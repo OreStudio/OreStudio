@@ -1032,6 +1032,311 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="equityCoreTab">
+      <attribute name="title">
+       <string>Equity Core</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="equityCoreLayout">
+       <item>
+        <widget class="QGroupBox" name="equityCoreGroup">
+         <property name="title"><string>Equity Core</string></property>
+         <layout class="QFormLayout" name="equityCoreFormLayout">
+          <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QLineEdit" name="equityTradeTypeCodeEdit"/></item>
+          <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Underlying Code:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="equityUnderlyingCodeEdit"/></item>
+          <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Currency:</string></property></widget></item>
+          <item row="2" column="1"><widget class="QLineEdit" name="equityCurrencyEdit"/></item>
+          <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Notional:</string></property></widget></item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="equityNotionalSpinBox">
+            <property name="decimals"><number>2</number></property>
+            <property name="maximum"><double>999999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Quantity:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="equityQuantitySpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Start Date:</string></property></widget></item>
+          <item row="5" column="1"><widget class="QLineEdit" name="equityStartDateEdit"/></item>
+          <item row="6" column="0"><widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget></item>
+          <item row="6" column="1"><widget class="QLineEdit" name="equityMaturityDateEdit"/></item>
+          <item row="7" column="0"><widget class="QLabel"><property name="text"><string>Description:</string></property></widget></item>
+          <item row="7" column="1">
+           <widget class="QPlainTextEdit" name="equityDescriptionEdit">
+            <property name="maximumHeight"><number>80</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="equityCoreSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="equityOptionsTab">
+      <attribute name="title">
+       <string>Equity Options</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="equityOptionsLayout">
+       <item>
+        <widget class="QGroupBox" name="equityOptionsGroup">
+         <property name="title"><string>Options / Barriers</string></property>
+         <layout class="QFormLayout" name="equityOptionsFormLayout">
+          <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QLineEdit" name="equityOptionTypeEdit"/></item>
+          <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Exercise Type:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="equityExerciseTypeEdit"/></item>
+          <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Strike Price:</string></property></widget></item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="equityStrikePriceSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Barrier Type:</string></property></widget></item>
+          <item row="3" column="1"><widget class="QLineEdit" name="equityBarrierTypeEdit"/></item>
+          <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Lower Barrier:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="equityLowerBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Upper Barrier:</string></property></widget></item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="equityUpperBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="equityOptionsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="equityExtensionsTab">
+      <attribute name="title">
+       <string>Equity Extensions</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="equityExtensionsLayout">
+       <item>
+        <widget class="QGroupBox" name="equityExtensionsGroup">
+         <property name="title"><string>Extensions</string></property>
+         <layout class="QFormLayout" name="equityExtensionsFormLayout">
+          <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Average Type:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QLineEdit" name="equityAverageTypeEdit"/></item>
+          <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Averaging Start Date:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="equityAveragingStartDateEdit"/></item>
+          <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget></item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="equityVarianceStrikeSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Cliquet Frequency:</string></property></widget></item>
+          <item row="3" column="1"><widget class="QLineEdit" name="equityCliquetFrequencyCodeEdit"/></item>
+          <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Accumulation Amount:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="equityAccumulationAmountSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Knock-Out Barrier:</string></property></widget></item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="equityKnockOutBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="6" column="0"><widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget></item>
+          <item row="6" column="1"><widget class="QLineEdit" name="equityDayCountCodeEdit"/></item>
+          <item row="7" column="0"><widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget></item>
+          <item row="7" column="1"><widget class="QLineEdit" name="equityPaymentFrequencyCodeEdit"/></item>
+          <item row="8" column="0"><widget class="QLabel"><property name="text"><string>Return Type:</string></property></widget></item>
+          <item row="8" column="1"><widget class="QLineEdit" name="equityReturnTypeEdit"/></item>
+          <item row="9" column="0"><widget class="QLabel"><property name="text"><string>Basket (JSON):</string></property></widget></item>
+          <item row="9" column="1">
+           <widget class="QPlainTextEdit" name="equityBasketJsonEdit">
+            <property name="maximumHeight"><number>80</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="equityExtensionsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="commodityCoreTab">
+      <attribute name="title">
+       <string>Commodity Core</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="commodityCoreLayout">
+       <item>
+        <widget class="QGroupBox" name="commodityCoreGroup">
+         <property name="title"><string>Commodity Core</string></property>
+         <layout class="QFormLayout" name="commodityCoreFormLayout">
+          <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QLineEdit" name="commodityTradeTypeCodeEdit"/></item>
+          <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Commodity Code:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="commodityCommodityCodeEdit"/></item>
+          <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Currency:</string></property></widget></item>
+          <item row="2" column="1"><widget class="QLineEdit" name="commodityCurrencyEdit"/></item>
+          <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Quantity:</string></property></widget></item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="commodityQuantitySpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Unit:</string></property></widget></item>
+          <item row="4" column="1"><widget class="QLineEdit" name="commodityUnitEdit"/></item>
+          <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Start Date:</string></property></widget></item>
+          <item row="5" column="1"><widget class="QLineEdit" name="commodityStartDateEdit"/></item>
+          <item row="6" column="0"><widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget></item>
+          <item row="6" column="1"><widget class="QLineEdit" name="commodityMaturityDateEdit"/></item>
+          <item row="7" column="0"><widget class="QLabel"><property name="text"><string>Fixed Price:</string></property></widget></item>
+          <item row="7" column="1">
+           <widget class="QDoubleSpinBox" name="commodityFixedPriceSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="commodityCoreSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="commodityExtensionsTab">
+      <attribute name="title">
+       <string>Commodity Extensions</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="commodityExtensionsLayout">
+       <item>
+        <widget class="QGroupBox" name="commodityExtensionsGroup">
+         <property name="title"><string>Commodity Extensions</string></property>
+         <layout class="QFormLayout" name="commodityExtensionsFormLayout">
+          <item row="0" column="0"><widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QLineEdit" name="commodityOptionTypeEdit"/></item>
+          <item row="1" column="0"><widget class="QLabel"><property name="text"><string>Exercise Type:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="commodityExerciseTypeEdit"/></item>
+          <item row="2" column="0"><widget class="QLabel"><property name="text"><string>Strike Price:</string></property></widget></item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="commodityStrikePriceSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="3" column="0"><widget class="QLabel"><property name="text"><string>Barrier Type:</string></property></widget></item>
+          <item row="3" column="1"><widget class="QLineEdit" name="commodityBarrierTypeEdit"/></item>
+          <item row="4" column="0"><widget class="QLabel"><property name="text"><string>Lower Barrier:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="commodityLowerBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel"><property name="text"><string>Upper Barrier:</string></property></widget></item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="commodityUpperBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="6" column="0"><widget class="QLabel"><property name="text"><string>Average Type:</string></property></widget></item>
+          <item row="6" column="1"><widget class="QLineEdit" name="commodityAverageTypeEdit"/></item>
+          <item row="7" column="0"><widget class="QLabel"><property name="text"><string>Averaging Start Date:</string></property></widget></item>
+          <item row="7" column="1"><widget class="QLineEdit" name="commodityAveragingStartDateEdit"/></item>
+          <item row="8" column="0"><widget class="QLabel"><property name="text"><string>Averaging End Date:</string></property></widget></item>
+          <item row="8" column="1"><widget class="QLineEdit" name="commodityAveragingEndDateEdit"/></item>
+          <item row="9" column="0"><widget class="QLabel"><property name="text"><string>Spread Commodity:</string></property></widget></item>
+          <item row="9" column="1"><widget class="QLineEdit" name="commoditySpreadCommodityCodeEdit"/></item>
+          <item row="10" column="0"><widget class="QLabel"><property name="text"><string>Spread Amount:</string></property></widget></item>
+          <item row="10" column="1">
+           <widget class="QDoubleSpinBox" name="commoditySpreadAmountSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="11" column="0"><widget class="QLabel"><property name="text"><string>Strip Frequency:</string></property></widget></item>
+          <item row="11" column="1"><widget class="QLineEdit" name="commodityStripFrequencyCodeEdit"/></item>
+          <item row="12" column="0"><widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget></item>
+          <item row="12" column="1">
+           <widget class="QDoubleSpinBox" name="commodityVarianceStrikeSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="13" column="0"><widget class="QLabel"><property name="text"><string>Accumulation Amount:</string></property></widget></item>
+          <item row="13" column="1">
+           <widget class="QDoubleSpinBox" name="commodityAccumulationAmountSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="14" column="0"><widget class="QLabel"><property name="text"><string>Knock-Out Barrier:</string></property></widget></item>
+          <item row="14" column="1">
+           <widget class="QDoubleSpinBox" name="commodityKnockOutBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="maximum"><double>999999999.000000</double></property>
+           </widget>
+          </item>
+          <item row="15" column="0"><widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget></item>
+          <item row="15" column="1"><widget class="QLineEdit" name="commodityDayCountCodeEdit"/></item>
+          <item row="16" column="0"><widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget></item>
+          <item row="16" column="1"><widget class="QLineEdit" name="commodityPaymentFrequencyCodeEdit"/></item>
+          <item row="17" column="0"><widget class="QLabel"><property name="text"><string>Swaption Expiry Date:</string></property></widget></item>
+          <item row="17" column="1"><widget class="QLineEdit" name="commoditySwaptionExpiryDateEdit"/></item>
+          <item row="18" column="0"><widget class="QLabel"><property name="text"><string>Basket (JSON):</string></property></widget></item>
+          <item row="18" column="1">
+           <widget class="QPlainTextEdit" name="commodityBasketJsonEdit">
+            <property name="maximumHeight"><number>80</number></property>
+           </widget>
+          </item>
+          <item row="19" column="0"><widget class="QLabel"><property name="text"><string>Description:</string></property></widget></item>
+          <item row="19" column="1">
+           <widget class="QPlainTextEdit" name="commodityDescriptionEdit">
+            <property name="maximumHeight"><number>80</number></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="commodityExtensionsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="provenanceTab">
       <attribute name="title">
        <string>Provenance</string>

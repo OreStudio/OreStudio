@@ -90,6 +90,7 @@ grant usage, select on all sequences in schema public
     :compute_service_user,
     :synthetic_service_user,
     :workflow_service_user,
+    :ore_service_user,
     :marketdata_service_user;
 
 alter default privileges in schema public
@@ -107,6 +108,7 @@ alter default privileges in schema public
     :compute_service_user,
     :synthetic_service_user,
     :workflow_service_user,
+    :ore_service_user,
     :marketdata_service_user;
 
 -- ---------------------------------------------------------------------------
@@ -201,6 +203,12 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_iam_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_refdata_parties', :'workflow_service_user');
 grant select on ores_iam_tenants_tbl to :workflow_service_user;
+
+-- ---------------------------------------------------------------------------
+-- ore_service: ORE Import domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_workflow_', :'ore_service_user');
+grant select on ores_iam_tenants_tbl to :ore_service_user;
 
 -- ---------------------------------------------------------------------------
 -- marketdata_service: Market Data domain service

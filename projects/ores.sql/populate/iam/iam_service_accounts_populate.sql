@@ -53,6 +53,7 @@
 \set compute_service_pw    `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
 \set synthetic_service_pw    `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
 \set workflow_service_pw    `echo "$ORES_WORKFLOW_SERVICE_DB_PASSWORD"`
+\set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
 \set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
@@ -181,6 +182,13 @@ select ores_iam_service_accounts_upsert_fn(
     'workflow_service@system.ores',
     'System service account for Workflow Orchestration NATS domain service',
     :'workflow_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'ore_service_user',
+    'ore_service@system.ores',
+    'System service account for ORE Import NATS domain service',
+    :'ore_service_pw'
 );
 
 select ores_iam_service_accounts_upsert_fn(

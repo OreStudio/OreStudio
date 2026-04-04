@@ -200,6 +200,21 @@
         "select_prefixes": []
       },
       {
+        "name": "ore",
+        "psql_var": "ore_service",
+        "env_key": "ORE_SERVICE",
+        "iam_role": "OreService",
+        "description": "ORE Import",
+        "email": "ore_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_workflow_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
         "name": "marketdata",
         "psql_var": "marketdata_service",
         "env_key": "MARKETDATA_SERVICE",

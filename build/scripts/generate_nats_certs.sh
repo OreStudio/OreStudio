@@ -44,6 +44,7 @@ SERVICES=(
     ores.trading.service
     ores.marketdata.service
     ores.compute.service
+    ores.ore.service
     ores.workflow.service
     ores.http.server
     ores.wt.service

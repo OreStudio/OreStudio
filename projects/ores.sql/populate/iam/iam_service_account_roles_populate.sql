@@ -69,6 +69,9 @@ select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'workflow_service_user', 'WorkflowService');
 
 select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'ore_service_user', 'OreService');
+
+select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'marketdata_service_user', 'MarketdataService');
 
 -- Summary

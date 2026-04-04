@@ -198,6 +198,11 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Synt
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'compute::*');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'telemetry::*');
 
+-- ORE Import service: workflow management + delegated refdata/trading writes
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'workflow::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'iam::tenants:read');
+
 -- Market data service: full access to market data domain
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'Market data domain service');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'marketdata::*');

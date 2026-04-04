@@ -339,7 +339,7 @@ launch ores.http.server \
     --port "$HTTP_PORT" \
     --nats-url "$NATS_URL" \
     --nats-subject-prefix "$NATS_PREFIX" \
-    --compute-storage-dir ../compute \
+    --storage-dir ../storage \
     "${http_tls_args[@]}"
 echo ""
 

@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "controller.service",
+    "full_name": "ores.controller.service",
+    "brief": "ORE Studio service controller binary.",
+    "description": "Executable entry point for the service lifecycle controller. Parses\ncommand-line arguments, connects to NATS and PostgreSQL, initialises\nores.controller.core, and runs the supervisor loop that manages all\nregistered ORE Studio backend services."
+  }
+}

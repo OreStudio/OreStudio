@@ -68,6 +68,11 @@ if(WIN32)
         set(CPACK_WIX_PRODUCT_GUID "798CF43E-EF4E-1CB4-BFAB-25685E7E0F38")
         set(CPACK_WIX_UPGRADE_GUID "4D54BB3A-9CF6-25F4-AA1B-30E2969BBF36")
         set(CPACK_WIX_PRODUCT_ICON "${CMAKE_SOURCE_DIR}/assets/images/modern-icon.png")
+        # Split large CABs to avoid makecab.exe 2GB limit. Each service exe
+        # brings its own vcpkg DLL copies (via applocal.ps1), so the install
+        # tree grows proportionally with the number of projects. 200MB chunks
+        # keep individual cabinet files well within the WiX 3.x limit.
+        set(CPACK_WIX_SIZEOF_CABINET_SPLIT_SIZE "200")
     else()
         set(CPACK_GENERATOR "NSIS")
         # set(CPACK_SOURCE_GENERATOR "ZIP")

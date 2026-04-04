@@ -138,11 +138,18 @@ public:
         sample.instance_id = hb->instance_id;
         sample.version = hb->version;
 
-        database::repository::telemetry_repository repo;
-        repo.insert_service_sample(ctx_, sample);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
-            << "Stored heartbeat: " << sample.service_name
-            << " instance=" << sample.instance_id;
+        try {
+            database::repository::telemetry_repository repo;
+            repo.insert_service_sample(ctx_, sample);
+            BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                << "Stored heartbeat: " << sample.service_name
+                << " instance=" << sample.instance_id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                << "Failed to store heartbeat for " << sample.service_name
+                << " instance=" << sample.instance_id
+                << ": " << e.what();
+        }
     }
 
     void service_samples_list(ores::nats::message msg) {

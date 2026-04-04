@@ -2612,7 +2612,7 @@ void TradeDetailDialog::populateCompositeInstrument() {
 
 void TradeDetailDialog::updateCompositeInstrumentFromUi() {
     compositeInstrument_.trade_type_code =
-        ui_->compositeTradeTypeCombo->currentText().toStdString();
+        ui_->compositeTradeTypeCombo->currentText().trimmed().toStdString();
     compositeInstrument_.description =
         ui_->compositeDescriptionEdit->toPlainText().trimmed().toStdString();
     compositeLegs_ = ui_->compositeLegsWidget->legs();

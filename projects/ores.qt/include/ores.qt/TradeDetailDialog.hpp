@@ -34,6 +34,8 @@
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -103,6 +105,7 @@ private slots:
     void onCreditTradeTypeChanged(const QString& text);
     void onEquityTradeTypeChanged(const QString& text);
     void onCommodityTradeTypeChanged(const QString& text);
+    void onCompositeTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -171,6 +174,16 @@ private:
     void saveCommodityThenTrade(const trading::domain::trade& trade,
                                 const trading::domain::commodity_instrument& instrument);
 
+    // Composite instrument support
+    void loadCompositeInstrument();
+    void populateCompositeInstrument();
+    void updateCompositeInstrumentFromUi();
+    void updateCompositeTabVisibility();
+    void setCompositeReadOnly(bool readOnly);
+    void saveCompositeThenTrade(const trading::domain::trade& trade,
+                                const trading::domain::composite_instrument& instrument,
+                                const std::vector<trading::domain::composite_leg>& legs);
+
     void saveTrade(const trading::domain::trade& trade);
 
     Ui::TradeDetailDialog* ui_;
@@ -191,6 +204,8 @@ private:
     trading::domain::credit_instrument creditInstrument_;
     trading::domain::equity_instrument equityInstrument_;
     trading::domain::commodity_instrument commodityInstrument_;
+    trading::domain::composite_instrument compositeInstrument_;
+    std::vector<trading::domain::composite_leg> compositeLegs_;
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};
 };

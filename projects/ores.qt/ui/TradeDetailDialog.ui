@@ -1337,6 +1337,61 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="compositeCoreTab">
+      <attribute name="title">
+       <string>Composite Info</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="compositeCoreTabLayout">
+       <item>
+        <widget class="QGroupBox" name="compositeInfoGroup">
+         <property name="title">
+          <string>Basic Information</string>
+         </property>
+         <layout class="QFormLayout" name="compositeInfoFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelCompositeTradeTypeCode">
+            <property name="text"><string>Trade Type:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="compositeTradeTypeCombo">
+            <item><property name="text"><string>CompositeTrade</string></property></item>
+            <item><property name="text"><string>MultiLegOption</string></property></item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelCompositeDescription">
+            <property name="text"><string>Description:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPlainTextEdit" name="compositeDescriptionEdit">
+            <property name="minimumSize"><size><width>0</width><height>80</height></size></property>
+            <property name="maximumSize"><size><width>16777215</width><height>150</height></size></property>
+            <property name="placeholderText"><string>Optional description</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="compositeCoreTabSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="compositeLegsTab">
+      <attribute name="title">
+       <string>Legs</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="compositeLegsTabLayout">
+       <item>
+        <widget class="ores::qt::CompositeLegsWidget" name="compositeLegsWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="provenanceTab">
       <attribute name="title">
        <string>Provenance</string>
@@ -1418,6 +1473,12 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::CompositeLegsWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/CompositeLegsWidget.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

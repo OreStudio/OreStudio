@@ -34,7 +34,13 @@ set_target_properties(${tests_target_name}
 # aggressively, increasing per-frame stack usage. Windows default stack is 1MB;
 # bump to 8MB to prevent stack overflow on complex ORE XML documents.
 if(WIN32)
-    target_link_options(${tests_target_name} PRIVATE /STACK:8388608)
+    if(MSVC)
+        # MSVC and clang-cl: /STACK is a native linker flag
+        target_link_options(${tests_target_name} PRIVATE /STACK:8388608)
+    else()
+        # Plain clang++ on Windows uses lld; pass via -Wl,
+        target_link_options(${tests_target_name} PRIVATE -Wl,/STACK:8388608)
+    endif()
 endif()
 
 target_link_libraries(${tests_target_name}

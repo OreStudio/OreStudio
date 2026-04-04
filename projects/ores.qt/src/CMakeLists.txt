@@ -86,7 +86,12 @@ target_link_libraries(${lib_target_name}
         Qt6::Charts)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
 
-install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
+# ores.qt is an application-internal static library. It is linked statically
+# into ores.qt.exe and is not useful as a redistributable artifact. On Windows
+# debug builds the .lib exceeds WiX 3.x's 2GB per-file limit (LGHT0263).
+if(NOT WIN32)
+    install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
+endif()
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)

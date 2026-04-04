@@ -131,7 +131,6 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
-    <addaction name="ActionScriptedInstruments"/>
     <addaction name="separator"/>
     <addaction name="ActionDayCountFractionTypes"/>
     <addaction name="ActionBusinessDayConventionTypes"/>
@@ -701,14 +700,6 @@
    </property>
    <property name="toolTip">
     <string>Manage leg type reference data</string>
-   </property>
-  </action>
-  <action name="ActionScriptedInstruments">
-   <property name="text">
-    <string>S&amp;cripted Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage scripted instruments</string>
    </property>
   </action>
   <action name="ActionJobDefinitions">

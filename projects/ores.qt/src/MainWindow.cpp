@@ -825,7 +825,6 @@ MainWindow::MainWindow(QWidget* parent) :
         if (legTypeController_)
             legTypeController_->showListWindow();
     });
-    });
     connect(ui_->ActionCompositeInstruments, &QAction::triggered, this, [this]() {
         if (compositeInstrumentController_)
             compositeInstrumentController_->showListWindow();

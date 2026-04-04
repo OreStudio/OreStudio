@@ -220,7 +220,7 @@
                 "msvc-cl"
             ],
             "cacheVariables": {
-                "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded"
+                "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "ProgramDatabase"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {

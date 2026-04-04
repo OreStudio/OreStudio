@@ -33,7 +33,10 @@ endif()
 
 add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
-    $<$<CXX_COMPILER_ID:MSVC>:/WX>)
+    $<$<CXX_COMPILER_ID:MSVC>:/WX>
+    # /FS forces synchronous PDB writes so sccache can cache /Zi compilations.
+    # Without it, parallel cl.exe invocations race on the shared .pdb file.
+    $<$<CXX_COMPILER_ID:MSVC>:/FS>)
 
 #
 # Catch2 args: common args, reporters specified per test target.

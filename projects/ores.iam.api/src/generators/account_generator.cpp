@@ -44,10 +44,19 @@ domain::account generate_synthetic_account(
 
     r.id = ctx.generate_uuid();
 
+    // Use a UUID-based suffix to prevent duplicate key violations when many
+    // accounts are written within the same test tenant in a single test run.
+    const auto id_str = boost::uuids::to_string(r.id);
+    const auto suffix = id_str.substr(0, 8);
+
     auto first = std::string(faker::person::firstName());
     auto last  = std::string(faker::person::lastName());
-    r.username = faker::internet::username(first, last);
-    r.email = faker::internet::email(first, last);
+    r.username = faker::internet::username(first, last) + "_" + suffix;
+    auto email = std::string(faker::internet::email(first, last));
+    const auto at_pos = email.find('@');
+    if (at_pos != std::string::npos)
+        email.insert(at_pos, "_" + suffix);
+    r.email = std::move(email);
 
     r.password_hash = ctx.alphanumeric(64);
     r.password_salt = ctx.alphanumeric(32);

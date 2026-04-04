@@ -103,8 +103,6 @@ class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
 class PaymentFrequencyTypeController;
 class LegTypeController;
-class EquityInstrumentController;
-class CommodityInstrumentController;
 class CompositeInstrumentController;
 class ScriptedInstrumentController;
 class OreImportController;
@@ -672,8 +670,6 @@ private:
     std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
     std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
     std::unique_ptr<LegTypeController> legTypeController_;
-    std::unique_ptr<EquityInstrumentController> equityInstrumentController_;
-    std::unique_ptr<CommodityInstrumentController> commodityInstrumentController_;
     std::unique_ptr<CompositeInstrumentController> compositeInstrumentController_;
     std::unique_ptr<ScriptedInstrumentController> scriptedInstrumentController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;

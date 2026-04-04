@@ -73,6 +73,30 @@ static bool isCreditExtensionType(const QString& tradeTypeCode) {
            tradeTypeCode == "IndexCreditDefaultSwap";
 }
 
+static bool isEquityOptionType(const QString& tradeTypeCode) {
+    return tradeTypeCode.contains("Option", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Barrier", Qt::CaseInsensitive);
+}
+
+static bool isEquityExtensionType(const QString& tradeTypeCode) {
+    return tradeTypeCode == "EquityTRS" ||
+           tradeTypeCode == "EquityVarianceSwap" ||
+           tradeTypeCode == "EquityVolatilitySwap" ||
+           tradeTypeCode.contains("Cliquet", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Accumulator", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Asian", Qt::CaseInsensitive);
+}
+
+static bool isCommodityExtensionType(const QString& tradeTypeCode) {
+    return tradeTypeCode.contains("Option", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Spread", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Swaption", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Accumulator", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Strip", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Average", Qt::CaseInsensitive) ||
+           tradeTypeCode.contains("Variance", Qt::CaseInsensitive);
+}
+
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -129,6 +153,16 @@ void TradeDetailDialog::setupUi() {
         ui_->tabWidget->indexOf(ui_->creditEconomicsTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->creditExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityCoreTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityOptionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityCoreTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityExtensionsTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 }
 
@@ -290,6 +324,131 @@ void TradeDetailDialog::setupConnections() {
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TradeDetailDialog::onInstrumentFieldChanged);
     connect(ui_->creditTrancheDetachmentSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+
+    // Equity instrument fields
+    connect(ui_->equityTradeTypeCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onEquityTradeTypeChanged);
+    connect(ui_->equityUnderlyingCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityCurrencyEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityStartDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityMaturityDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityOptionTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityExerciseTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityBarrierTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityAverageTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityAveragingStartDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityCliquetFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityDayCountCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityPaymentFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityReturnTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityBasketJsonEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityNotionalSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityQuantitySpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityStrikePriceSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityLowerBarrierSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityUpperBarrierSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityVarianceStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityAccumulationAmountSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->equityKnockOutBarrierSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+
+    // Commodity instrument fields
+    connect(ui_->commodityTradeTypeCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onCommodityTradeTypeChanged);
+    connect(ui_->commodityCommodityCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityCurrencyEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityUnitEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityStartDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityMaturityDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityOptionTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityExerciseTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityBarrierTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityAverageTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityAveragingStartDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityAveragingEndDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commoditySpreadCommodityCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityStripFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityDayCountCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityPaymentFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commoditySwaptionExpiryDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityBasketJsonEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityQuantitySpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityFixedPriceSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityStrikePriceSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityLowerBarrierSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityUpperBarrierSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commoditySpreadAmountSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityVarianceStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityAccumulationAmountSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->commodityKnockOutBarrierSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TradeDetailDialog::onInstrumentFieldChanged);
 
@@ -465,6 +624,10 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         loadBondInstrument();
     else if (trade_.product_type == "credit" && trade_.instrument_id.has_value())
         loadCreditInstrument();
+    else if (trade_.product_type == "equity" && trade_.instrument_id.has_value())
+        loadEquityInstrument();
+    else if (trade_.product_type == "commodity" && trade_.instrument_id.has_value())
+        loadCommodityInstrument();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
@@ -496,6 +659,16 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
         ui_->tabWidget->indexOf(ui_->creditEconomicsTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->creditExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityCoreTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityOptionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityCoreTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityExtensionsTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 
     setProvenanceEnabled(!createMode);
@@ -522,6 +695,8 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     setSwapReadOnly(readOnly);
     setBondReadOnly(readOnly);
     setCreditReadOnly(readOnly);
+    setEquityReadOnly(readOnly);
+    setCommodityReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -1568,6 +1743,22 @@ void TradeDetailDialog::onCreditTradeTypeChanged(const QString&) {
     }
 }
 
+void TradeDetailDialog::onEquityTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateEquityTabVisibility();
+        updateSaveButtonState();
+    }
+}
+
+void TradeDetailDialog::onCommodityTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateCommodityTabVisibility();
+        updateSaveButtonState();
+    }
+}
+
 void TradeDetailDialog::updateSaveButtonState() {
     const bool canSave =
         (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
@@ -1609,6 +1800,10 @@ void TradeDetailDialog::onSaveClicked() {
             updateBondInstrumentFromUi();
         else if (trade_.product_type == "credit")
             updateCreditInstrumentFromUi();
+        else if (trade_.product_type == "equity")
+            updateEquityInstrumentFromUi();
+        else if (trade_.product_type == "commodity")
+            updateCommodityInstrumentFromUi();
     }
 
     const auto crOpType = createMode_
@@ -1636,6 +1831,12 @@ void TradeDetailDialog::onSaveClicked() {
         } else if (trade_.product_type == "credit") {
             creditInstrument_.change_reason_code = crSel->reason_code;
             creditInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "equity") {
+            equityInstrument_.change_reason_code = crSel->reason_code;
+            equityInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "commodity") {
+            commodityInstrument_.change_reason_code = crSel->reason_code;
+            commodityInstrument_.change_commentary  = crSel->commentary;
         }
     }
 
@@ -1656,11 +1857,634 @@ void TradeDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Saving credit instrument then trade: "
                                       << trade_.external_id;
             saveCreditThenTrade(trade_, creditInstrument_);
+        } else if (trade_.product_type == "equity") {
+            BOOST_LOG_SEV(lg(), info) << "Saving equity instrument then trade: "
+                                      << trade_.external_id;
+            saveEquityThenTrade(trade_, equityInstrument_);
+        } else if (trade_.product_type == "commodity") {
+            BOOST_LOG_SEV(lg(), info) << "Saving commodity instrument then trade: "
+                                      << trade_.external_id;
+            saveCommodityThenTrade(trade_, commodityInstrument_);
         }
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
         saveTrade(trade_);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Equity instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadEquityInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct EquityResult {
+        bool success;
+        std::string message;
+        trading::domain::equity_instrument instrument;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<EquityResult>(self);
+    connect(watcher, &QFutureWatcher<EquityResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load equity instrument: " << result.message;
+            return;
+        }
+
+        self->equityInstrument_ = std::move(result.instrument);
+        self->instrumentLoaded_ = true;
+        self->populateEquityInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> EquityResult {
+        if (!cm)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}};
+        if (!r->success)
+            return {false, r->message, {}};
+
+        const auto* eq =
+            std::get_if<trading::domain::equity_instrument>(&r->instrument);
+        if (!eq)
+            return {false, "Unexpected instrument type in response", {}};
+
+        return {true, {}, *eq};
+    }));
+}
+
+void TradeDetailDialog::populateEquityInstrument() {
+    const auto block = [this](bool b) {
+        ui_->equityTradeTypeCodeEdit->blockSignals(b);
+        ui_->equityUnderlyingCodeEdit->blockSignals(b);
+        ui_->equityCurrencyEdit->blockSignals(b);
+        ui_->equityNotionalSpinBox->blockSignals(b);
+        ui_->equityQuantitySpinBox->blockSignals(b);
+        ui_->equityStartDateEdit->blockSignals(b);
+        ui_->equityMaturityDateEdit->blockSignals(b);
+        ui_->equityOptionTypeEdit->blockSignals(b);
+        ui_->equityStrikePriceSpinBox->blockSignals(b);
+        ui_->equityExerciseTypeEdit->blockSignals(b);
+        ui_->equityBarrierTypeEdit->blockSignals(b);
+        ui_->equityLowerBarrierSpinBox->blockSignals(b);
+        ui_->equityUpperBarrierSpinBox->blockSignals(b);
+        ui_->equityAverageTypeEdit->blockSignals(b);
+        ui_->equityAveragingStartDateEdit->blockSignals(b);
+        ui_->equityVarianceStrikeSpinBox->blockSignals(b);
+        ui_->equityCliquetFrequencyCodeEdit->blockSignals(b);
+        ui_->equityAccumulationAmountSpinBox->blockSignals(b);
+        ui_->equityKnockOutBarrierSpinBox->blockSignals(b);
+        ui_->equityBasketJsonEdit->blockSignals(b);
+        ui_->equityDayCountCodeEdit->blockSignals(b);
+        ui_->equityPaymentFrequencyCodeEdit->blockSignals(b);
+        ui_->equityReturnTypeEdit->blockSignals(b);
+        ui_->equityDescriptionEdit->blockSignals(b);
+    };
+
+    block(true);
+    ui_->equityTradeTypeCodeEdit->setText(
+        QString::fromStdString(equityInstrument_.trade_type_code));
+    ui_->equityUnderlyingCodeEdit->setText(
+        QString::fromStdString(equityInstrument_.underlying_code));
+    ui_->equityCurrencyEdit->setText(
+        QString::fromStdString(equityInstrument_.currency));
+    ui_->equityNotionalSpinBox->setValue(equityInstrument_.notional);
+    ui_->equityQuantitySpinBox->setValue(equityInstrument_.quantity);
+    ui_->equityStartDateEdit->setText(
+        QString::fromStdString(equityInstrument_.start_date));
+    ui_->equityMaturityDateEdit->setText(
+        QString::fromStdString(equityInstrument_.maturity_date));
+    ui_->equityOptionTypeEdit->setText(
+        QString::fromStdString(equityInstrument_.option_type));
+    ui_->equityStrikePriceSpinBox->setValue(equityInstrument_.strike_price);
+    ui_->equityExerciseTypeEdit->setText(
+        QString::fromStdString(equityInstrument_.exercise_type));
+    ui_->equityBarrierTypeEdit->setText(
+        QString::fromStdString(equityInstrument_.barrier_type));
+    ui_->equityLowerBarrierSpinBox->setValue(equityInstrument_.lower_barrier);
+    ui_->equityUpperBarrierSpinBox->setValue(equityInstrument_.upper_barrier);
+    ui_->equityAverageTypeEdit->setText(
+        QString::fromStdString(equityInstrument_.average_type));
+    ui_->equityAveragingStartDateEdit->setText(
+        QString::fromStdString(equityInstrument_.averaging_start_date));
+    ui_->equityVarianceStrikeSpinBox->setValue(equityInstrument_.variance_strike);
+    ui_->equityCliquetFrequencyCodeEdit->setText(
+        QString::fromStdString(equityInstrument_.cliquet_frequency_code));
+    ui_->equityAccumulationAmountSpinBox->setValue(
+        equityInstrument_.accumulation_amount);
+    ui_->equityKnockOutBarrierSpinBox->setValue(equityInstrument_.knock_out_barrier);
+    ui_->equityBasketJsonEdit->setPlainText(
+        QString::fromStdString(equityInstrument_.basket_json));
+    ui_->equityDayCountCodeEdit->setText(
+        QString::fromStdString(equityInstrument_.day_count_code));
+    ui_->equityPaymentFrequencyCodeEdit->setText(
+        QString::fromStdString(equityInstrument_.payment_frequency_code));
+    ui_->equityReturnTypeEdit->setText(
+        QString::fromStdString(equityInstrument_.return_type));
+    ui_->equityDescriptionEdit->setPlainText(
+        QString::fromStdString(equityInstrument_.description));
+    block(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        equityInstrument_.version,
+        equityInstrument_.modified_by,
+        equityInstrument_.performed_by,
+        equityInstrument_.recorded_at,
+        equityInstrument_.change_reason_code,
+        equityInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateEquityTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateEquityInstrumentFromUi() {
+    equityInstrument_.trade_type_code =
+        ui_->equityTradeTypeCodeEdit->text().trimmed().toStdString();
+    equityInstrument_.underlying_code =
+        ui_->equityUnderlyingCodeEdit->text().trimmed().toStdString();
+    equityInstrument_.currency =
+        ui_->equityCurrencyEdit->text().trimmed().toStdString();
+    equityInstrument_.notional = ui_->equityNotionalSpinBox->value();
+    equityInstrument_.quantity = ui_->equityQuantitySpinBox->value();
+    equityInstrument_.start_date =
+        ui_->equityStartDateEdit->text().trimmed().toStdString();
+    equityInstrument_.maturity_date =
+        ui_->equityMaturityDateEdit->text().trimmed().toStdString();
+    equityInstrument_.option_type =
+        ui_->equityOptionTypeEdit->text().trimmed().toStdString();
+    equityInstrument_.strike_price = ui_->equityStrikePriceSpinBox->value();
+    equityInstrument_.exercise_type =
+        ui_->equityExerciseTypeEdit->text().trimmed().toStdString();
+    equityInstrument_.barrier_type =
+        ui_->equityBarrierTypeEdit->text().trimmed().toStdString();
+    equityInstrument_.lower_barrier = ui_->equityLowerBarrierSpinBox->value();
+    equityInstrument_.upper_barrier = ui_->equityUpperBarrierSpinBox->value();
+    equityInstrument_.average_type =
+        ui_->equityAverageTypeEdit->text().trimmed().toStdString();
+    equityInstrument_.averaging_start_date =
+        ui_->equityAveragingStartDateEdit->text().trimmed().toStdString();
+    equityInstrument_.variance_strike = ui_->equityVarianceStrikeSpinBox->value();
+    equityInstrument_.cliquet_frequency_code =
+        ui_->equityCliquetFrequencyCodeEdit->text().trimmed().toStdString();
+    equityInstrument_.accumulation_amount =
+        ui_->equityAccumulationAmountSpinBox->value();
+    equityInstrument_.knock_out_barrier =
+        ui_->equityKnockOutBarrierSpinBox->value();
+    equityInstrument_.basket_json =
+        ui_->equityBasketJsonEdit->toPlainText().trimmed().toStdString();
+    equityInstrument_.day_count_code =
+        ui_->equityDayCountCodeEdit->text().trimmed().toStdString();
+    equityInstrument_.payment_frequency_code =
+        ui_->equityPaymentFrequencyCodeEdit->text().trimmed().toStdString();
+    equityInstrument_.return_type =
+        ui_->equityReturnTypeEdit->text().trimmed().toStdString();
+    equityInstrument_.description =
+        ui_->equityDescriptionEdit->toPlainText().trimmed().toStdString();
+    equityInstrument_.modified_by = username_;
+    equityInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateEquityTabVisibility() {
+    const QString tradeType = ui_->equityTradeTypeCodeEdit->text().trimmed();
+    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
+    const bool showOptions = instrumentLoaded_ && isEquityOptionType(tradeType);
+    const bool showExtensions = instrumentLoaded_ &&
+        (isEquityExtensionType(tradeType) ||
+         !qFuzzyIsNull(ui_->equityVarianceStrikeSpinBox->value()) ||
+         !qFuzzyIsNull(ui_->equityAccumulationAmountSpinBox->value()) ||
+         !ui_->equityBasketJsonEdit->toPlainText().trimmed().isEmpty() ||
+         !ui_->equityReturnTypeEdit->text().trimmed().isEmpty());
+
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityCoreTab), showCore);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityOptionsTab), showOptions);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), showExtensions);
+}
+
+void TradeDetailDialog::setEquityReadOnly(bool readOnly) {
+    ui_->equityTradeTypeCodeEdit->setReadOnly(readOnly);
+    ui_->equityUnderlyingCodeEdit->setReadOnly(readOnly);
+    ui_->equityCurrencyEdit->setReadOnly(readOnly);
+    ui_->equityNotionalSpinBox->setReadOnly(readOnly);
+    ui_->equityQuantitySpinBox->setReadOnly(readOnly);
+    ui_->equityStartDateEdit->setReadOnly(readOnly);
+    ui_->equityMaturityDateEdit->setReadOnly(readOnly);
+    ui_->equityOptionTypeEdit->setReadOnly(readOnly);
+    ui_->equityStrikePriceSpinBox->setReadOnly(readOnly);
+    ui_->equityExerciseTypeEdit->setReadOnly(readOnly);
+    ui_->equityBarrierTypeEdit->setReadOnly(readOnly);
+    ui_->equityLowerBarrierSpinBox->setReadOnly(readOnly);
+    ui_->equityUpperBarrierSpinBox->setReadOnly(readOnly);
+    ui_->equityAverageTypeEdit->setReadOnly(readOnly);
+    ui_->equityAveragingStartDateEdit->setReadOnly(readOnly);
+    ui_->equityVarianceStrikeSpinBox->setReadOnly(readOnly);
+    ui_->equityCliquetFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->equityAccumulationAmountSpinBox->setReadOnly(readOnly);
+    ui_->equityKnockOutBarrierSpinBox->setReadOnly(readOnly);
+    ui_->equityBasketJsonEdit->setReadOnly(readOnly);
+    ui_->equityDayCountCodeEdit->setReadOnly(readOnly);
+    ui_->equityPaymentFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->equityReturnTypeEdit->setReadOnly(readOnly);
+    ui_->equityDescriptionEdit->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveEquityThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::equity_instrument& instrument) {
+
+    struct EquitySaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<EquitySaveResult>(self);
+    connect(watcher, &QFutureWatcher<EquitySaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Equity instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save equity instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Equity instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument]() -> EquitySaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_equity_instrument_request req;
+        req.data = instrument;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Commodity instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadCommodityInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct CommodityResult {
+        bool success;
+        std::string message;
+        trading::domain::commodity_instrument instrument;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CommodityResult>(self);
+    connect(watcher, &QFutureWatcher<CommodityResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load commodity instrument: " << result.message;
+            return;
+        }
+
+        self->commodityInstrument_ = std::move(result.instrument);
+        self->instrumentLoaded_ = true;
+        self->populateCommodityInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> CommodityResult {
+        if (!cm)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}};
+        if (!r->success)
+            return {false, r->message, {}};
+
+        const auto* com =
+            std::get_if<trading::domain::commodity_instrument>(&r->instrument);
+        if (!com)
+            return {false, "Unexpected instrument type in response", {}};
+
+        return {true, {}, *com};
+    }));
+}
+
+void TradeDetailDialog::populateCommodityInstrument() {
+    const auto block = [this](bool b) {
+        ui_->commodityTradeTypeCodeEdit->blockSignals(b);
+        ui_->commodityCommodityCodeEdit->blockSignals(b);
+        ui_->commodityCurrencyEdit->blockSignals(b);
+        ui_->commodityQuantitySpinBox->blockSignals(b);
+        ui_->commodityUnitEdit->blockSignals(b);
+        ui_->commodityStartDateEdit->blockSignals(b);
+        ui_->commodityMaturityDateEdit->blockSignals(b);
+        ui_->commodityFixedPriceSpinBox->blockSignals(b);
+        ui_->commodityOptionTypeEdit->blockSignals(b);
+        ui_->commodityStrikePriceSpinBox->blockSignals(b);
+        ui_->commodityExerciseTypeEdit->blockSignals(b);
+        ui_->commodityAverageTypeEdit->blockSignals(b);
+        ui_->commodityAveragingStartDateEdit->blockSignals(b);
+        ui_->commodityAveragingEndDateEdit->blockSignals(b);
+        ui_->commoditySpreadCommodityCodeEdit->blockSignals(b);
+        ui_->commoditySpreadAmountSpinBox->blockSignals(b);
+        ui_->commodityStripFrequencyCodeEdit->blockSignals(b);
+        ui_->commodityVarianceStrikeSpinBox->blockSignals(b);
+        ui_->commodityAccumulationAmountSpinBox->blockSignals(b);
+        ui_->commodityKnockOutBarrierSpinBox->blockSignals(b);
+        ui_->commodityBarrierTypeEdit->blockSignals(b);
+        ui_->commodityLowerBarrierSpinBox->blockSignals(b);
+        ui_->commodityUpperBarrierSpinBox->blockSignals(b);
+        ui_->commodityBasketJsonEdit->blockSignals(b);
+        ui_->commodityDayCountCodeEdit->blockSignals(b);
+        ui_->commodityPaymentFrequencyCodeEdit->blockSignals(b);
+        ui_->commoditySwaptionExpiryDateEdit->blockSignals(b);
+        ui_->commodityDescriptionEdit->blockSignals(b);
+    };
+
+    block(true);
+    ui_->commodityTradeTypeCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.trade_type_code));
+    ui_->commodityCommodityCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.commodity_code));
+    ui_->commodityCurrencyEdit->setText(
+        QString::fromStdString(commodityInstrument_.currency));
+    ui_->commodityQuantitySpinBox->setValue(commodityInstrument_.quantity);
+    ui_->commodityUnitEdit->setText(
+        QString::fromStdString(commodityInstrument_.unit));
+    ui_->commodityStartDateEdit->setText(
+        QString::fromStdString(commodityInstrument_.start_date));
+    ui_->commodityMaturityDateEdit->setText(
+        QString::fromStdString(commodityInstrument_.maturity_date));
+    ui_->commodityFixedPriceSpinBox->setValue(
+        commodityInstrument_.fixed_price.value_or(0.0));
+    ui_->commodityOptionTypeEdit->setText(
+        QString::fromStdString(commodityInstrument_.option_type));
+    ui_->commodityStrikePriceSpinBox->setValue(
+        commodityInstrument_.strike_price.value_or(0.0));
+    ui_->commodityExerciseTypeEdit->setText(
+        QString::fromStdString(commodityInstrument_.exercise_type));
+    ui_->commodityAverageTypeEdit->setText(
+        QString::fromStdString(commodityInstrument_.average_type));
+    ui_->commodityAveragingStartDateEdit->setText(
+        QString::fromStdString(commodityInstrument_.averaging_start_date));
+    ui_->commodityAveragingEndDateEdit->setText(
+        QString::fromStdString(commodityInstrument_.averaging_end_date));
+    ui_->commoditySpreadCommodityCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.spread_commodity_code));
+    ui_->commoditySpreadAmountSpinBox->setValue(
+        commodityInstrument_.spread_amount.value_or(0.0));
+    ui_->commodityStripFrequencyCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.strip_frequency_code));
+    ui_->commodityVarianceStrikeSpinBox->setValue(
+        commodityInstrument_.variance_strike.value_or(0.0));
+    ui_->commodityAccumulationAmountSpinBox->setValue(
+        commodityInstrument_.accumulation_amount.value_or(0.0));
+    ui_->commodityKnockOutBarrierSpinBox->setValue(
+        commodityInstrument_.knock_out_barrier.value_or(0.0));
+    ui_->commodityBarrierTypeEdit->setText(
+        QString::fromStdString(commodityInstrument_.barrier_type));
+    ui_->commodityLowerBarrierSpinBox->setValue(
+        commodityInstrument_.lower_barrier.value_or(0.0));
+    ui_->commodityUpperBarrierSpinBox->setValue(
+        commodityInstrument_.upper_barrier.value_or(0.0));
+    ui_->commodityBasketJsonEdit->setPlainText(
+        QString::fromStdString(commodityInstrument_.basket_json));
+    ui_->commodityDayCountCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.day_count_code));
+    ui_->commodityPaymentFrequencyCodeEdit->setText(
+        QString::fromStdString(commodityInstrument_.payment_frequency_code));
+    ui_->commoditySwaptionExpiryDateEdit->setText(
+        QString::fromStdString(commodityInstrument_.swaption_expiry_date));
+    ui_->commodityDescriptionEdit->setPlainText(
+        QString::fromStdString(commodityInstrument_.description));
+    block(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        commodityInstrument_.version,
+        commodityInstrument_.modified_by,
+        commodityInstrument_.performed_by,
+        commodityInstrument_.recorded_at,
+        commodityInstrument_.change_reason_code,
+        commodityInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateCommodityTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateCommodityInstrumentFromUi() {
+    commodityInstrument_.trade_type_code =
+        ui_->commodityTradeTypeCodeEdit->text().trimmed().toStdString();
+    commodityInstrument_.commodity_code =
+        ui_->commodityCommodityCodeEdit->text().trimmed().toStdString();
+    commodityInstrument_.currency =
+        ui_->commodityCurrencyEdit->text().trimmed().toStdString();
+    commodityInstrument_.quantity = ui_->commodityQuantitySpinBox->value();
+    commodityInstrument_.unit =
+        ui_->commodityUnitEdit->text().trimmed().toStdString();
+    commodityInstrument_.start_date =
+        ui_->commodityStartDateEdit->text().trimmed().toStdString();
+    commodityInstrument_.maturity_date =
+        ui_->commodityMaturityDateEdit->text().trimmed().toStdString();
+    {
+        const double v = ui_->commodityFixedPriceSpinBox->value();
+        commodityInstrument_.fixed_price = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    commodityInstrument_.option_type =
+        ui_->commodityOptionTypeEdit->text().trimmed().toStdString();
+    {
+        const double v = ui_->commodityStrikePriceSpinBox->value();
+        commodityInstrument_.strike_price = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    commodityInstrument_.exercise_type =
+        ui_->commodityExerciseTypeEdit->text().trimmed().toStdString();
+    commodityInstrument_.average_type =
+        ui_->commodityAverageTypeEdit->text().trimmed().toStdString();
+    commodityInstrument_.averaging_start_date =
+        ui_->commodityAveragingStartDateEdit->text().trimmed().toStdString();
+    commodityInstrument_.averaging_end_date =
+        ui_->commodityAveragingEndDateEdit->text().trimmed().toStdString();
+    commodityInstrument_.spread_commodity_code =
+        ui_->commoditySpreadCommodityCodeEdit->text().trimmed().toStdString();
+    {
+        const double v = ui_->commoditySpreadAmountSpinBox->value();
+        commodityInstrument_.spread_amount = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    commodityInstrument_.strip_frequency_code =
+        ui_->commodityStripFrequencyCodeEdit->text().trimmed().toStdString();
+    {
+        const double v = ui_->commodityVarianceStrikeSpinBox->value();
+        commodityInstrument_.variance_strike = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->commodityAccumulationAmountSpinBox->value();
+        commodityInstrument_.accumulation_amount = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->commodityKnockOutBarrierSpinBox->value();
+        commodityInstrument_.knock_out_barrier = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    commodityInstrument_.barrier_type =
+        ui_->commodityBarrierTypeEdit->text().trimmed().toStdString();
+    {
+        const double v = ui_->commodityLowerBarrierSpinBox->value();
+        commodityInstrument_.lower_barrier = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->commodityUpperBarrierSpinBox->value();
+        commodityInstrument_.upper_barrier = (v != 0.0)
+            ? std::optional<double>(v) : std::nullopt;
+    }
+    commodityInstrument_.basket_json =
+        ui_->commodityBasketJsonEdit->toPlainText().trimmed().toStdString();
+    commodityInstrument_.day_count_code =
+        ui_->commodityDayCountCodeEdit->text().trimmed().toStdString();
+    commodityInstrument_.payment_frequency_code =
+        ui_->commodityPaymentFrequencyCodeEdit->text().trimmed().toStdString();
+    commodityInstrument_.swaption_expiry_date =
+        ui_->commoditySwaptionExpiryDateEdit->text().trimmed().toStdString();
+    commodityInstrument_.description =
+        ui_->commodityDescriptionEdit->toPlainText().trimmed().toStdString();
+    commodityInstrument_.modified_by = username_;
+    commodityInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateCommodityTabVisibility() {
+    const QString tradeType = ui_->commodityTradeTypeCodeEdit->text().trimmed();
+    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
+    const bool showExtensions = instrumentLoaded_ &&
+        (isCommodityExtensionType(tradeType) ||
+         !qFuzzyIsNull(ui_->commodityFixedPriceSpinBox->value()) ||
+         !qFuzzyIsNull(ui_->commodityStrikePriceSpinBox->value()) ||
+         !ui_->commoditySpreadCommodityCodeEdit->text().trimmed().isEmpty() ||
+         !qFuzzyIsNull(ui_->commodityVarianceStrikeSpinBox->value()) ||
+         !ui_->commoditySwaptionExpiryDateEdit->text().trimmed().isEmpty());
+
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityCoreTab), showCore);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->commodityExtensionsTab), showExtensions);
+}
+
+void TradeDetailDialog::setCommodityReadOnly(bool readOnly) {
+    ui_->commodityTradeTypeCodeEdit->setReadOnly(readOnly);
+    ui_->commodityCommodityCodeEdit->setReadOnly(readOnly);
+    ui_->commodityCurrencyEdit->setReadOnly(readOnly);
+    ui_->commodityQuantitySpinBox->setReadOnly(readOnly);
+    ui_->commodityUnitEdit->setReadOnly(readOnly);
+    ui_->commodityStartDateEdit->setReadOnly(readOnly);
+    ui_->commodityMaturityDateEdit->setReadOnly(readOnly);
+    ui_->commodityFixedPriceSpinBox->setReadOnly(readOnly);
+    ui_->commodityOptionTypeEdit->setReadOnly(readOnly);
+    ui_->commodityStrikePriceSpinBox->setReadOnly(readOnly);
+    ui_->commodityExerciseTypeEdit->setReadOnly(readOnly);
+    ui_->commodityAverageTypeEdit->setReadOnly(readOnly);
+    ui_->commodityAveragingStartDateEdit->setReadOnly(readOnly);
+    ui_->commodityAveragingEndDateEdit->setReadOnly(readOnly);
+    ui_->commoditySpreadCommodityCodeEdit->setReadOnly(readOnly);
+    ui_->commoditySpreadAmountSpinBox->setReadOnly(readOnly);
+    ui_->commodityStripFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->commodityVarianceStrikeSpinBox->setReadOnly(readOnly);
+    ui_->commodityAccumulationAmountSpinBox->setReadOnly(readOnly);
+    ui_->commodityKnockOutBarrierSpinBox->setReadOnly(readOnly);
+    ui_->commodityBarrierTypeEdit->setReadOnly(readOnly);
+    ui_->commodityLowerBarrierSpinBox->setReadOnly(readOnly);
+    ui_->commodityUpperBarrierSpinBox->setReadOnly(readOnly);
+    ui_->commodityBasketJsonEdit->setReadOnly(readOnly);
+    ui_->commodityDayCountCodeEdit->setReadOnly(readOnly);
+    ui_->commodityPaymentFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->commoditySwaptionExpiryDateEdit->setReadOnly(readOnly);
+    ui_->commodityDescriptionEdit->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveCommodityThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::commodity_instrument& instrument) {
+
+    struct CommoditySaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CommoditySaveResult>(self);
+    connect(watcher, &QFutureWatcher<CommoditySaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Commodity instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save commodity instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Commodity instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument]() -> CommoditySaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_commodity_instrument_request req;
+        req.data = instrument;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
 }
 
 void TradeDetailDialog::saveFxThenTrade(

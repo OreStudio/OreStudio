@@ -32,6 +32,8 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/equity_instrument.hpp"
+#include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -99,6 +101,8 @@ private slots:
     void onSwapTradeTypeChanged(const QString& text);
     void onBondTradeTypeChanged(const QString& text);
     void onCreditTradeTypeChanged(const QString& text);
+    void onEquityTradeTypeChanged(const QString& text);
+    void onCommodityTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -149,6 +153,24 @@ private:
     void saveCreditThenTrade(const trading::domain::trade& trade,
                              const trading::domain::credit_instrument& instrument);
 
+    // Equity instrument support
+    void loadEquityInstrument();
+    void populateEquityInstrument();
+    void updateEquityInstrumentFromUi();
+    void updateEquityTabVisibility();
+    void setEquityReadOnly(bool readOnly);
+    void saveEquityThenTrade(const trading::domain::trade& trade,
+                             const trading::domain::equity_instrument& instrument);
+
+    // Commodity instrument support
+    void loadCommodityInstrument();
+    void populateCommodityInstrument();
+    void updateCommodityInstrumentFromUi();
+    void updateCommodityTabVisibility();
+    void setCommodityReadOnly(bool readOnly);
+    void saveCommodityThenTrade(const trading::domain::trade& trade,
+                                const trading::domain::commodity_instrument& instrument);
+
     void saveTrade(const trading::domain::trade& trade);
 
     Ui::TradeDetailDialog* ui_;
@@ -167,6 +189,8 @@ private:
     std::vector<trading::domain::swap_leg> swapLegs_;
     trading::domain::bond_instrument bondInstrument_;
     trading::domain::credit_instrument creditInstrument_;
+    trading::domain::equity_instrument equityInstrument_;
+    trading::domain::commodity_instrument commodityInstrument_;
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};
 };

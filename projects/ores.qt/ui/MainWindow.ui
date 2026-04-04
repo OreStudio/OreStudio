@@ -131,8 +131,6 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
-    <addaction name="ActionEquityInstruments"/>
-    <addaction name="ActionCommodityInstruments"/>
     <addaction name="ActionCompositeInstruments"/>
     <addaction name="ActionScriptedInstruments"/>
     <addaction name="separator"/>
@@ -704,22 +702,6 @@
    </property>
    <property name="toolTip">
     <string>Manage leg type reference data</string>
-   </property>
-  </action>
-  <action name="ActionEquityInstruments">
-   <property name="text">
-    <string>&amp;Equity Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage equity instruments</string>
-   </property>
-  </action>
-  <action name="ActionCommodityInstruments">
-   <property name="text">
-    <string>&amp;Commodity Instruments</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage commodity instruments</string>
    </property>
   </action>
   <action name="ActionCompositeInstruments">

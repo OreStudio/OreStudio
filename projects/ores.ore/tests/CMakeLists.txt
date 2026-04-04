@@ -29,6 +29,14 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
+# The xsdcpp XML parser in domain.cpp uses deep recursion (parseElement calls
+# itself for each nested child element). In release mode, Clang inlines
+# aggressively, increasing per-frame stack usage. Windows default stack is 1MB;
+# bump to 8MB to prevent stack overflow on complex ORE XML documents.
+if(WIN32)
+    target_link_options(${tests_target_name} PRIVATE /STACK:8388608)
+endif()
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}

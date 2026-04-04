@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         ores.utility.lib
         sqlgen::sqlgen
-        Boost::boost)
+        Boost::boost
+        Boost::process)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

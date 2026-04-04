@@ -33,6 +33,7 @@
 #include "ores.controller.api/messaging/service_instance_protocol.hpp"
 #include "ores.controller.core/repository/service_instance_repository.hpp"
 #include "ores.controller.core/repository/service_event_repository.hpp"
+#include "ores.controller.core/service/process_supervisor.hpp"
 
 namespace ores::controller::messaging {
 
@@ -55,8 +56,10 @@ class service_instance_handler {
 public:
     service_instance_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        service::process_supervisor* supervisor = nullptr)
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier))
+        , supervisor_(supervisor) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto cid =
@@ -89,25 +92,52 @@ public:
     void start(ores::nats::message msg) {
         [[maybe_unused]] const auto cid =
             log_handler_entry(service_instance_handler_lg(), msg);
-        handle_lifecycle<api::messaging::start_service_request,
-            api::messaging::start_service_response>(
-            std::move(msg), "running", "started");
+        if (supervisor_) {
+            dispatch_to_supervisor<api::messaging::start_service_request,
+                api::messaging::start_service_response>(
+                std::move(msg),
+                [this](const std::string& svc, int r) {
+                    supervisor_->request_launch(svc, r);
+                });
+        } else {
+            handle_lifecycle<api::messaging::start_service_request,
+                api::messaging::start_service_response>(
+                std::move(msg), "running", "started");
+        }
     }
 
     void stop(ores::nats::message msg) {
         [[maybe_unused]] const auto cid =
             log_handler_entry(service_instance_handler_lg(), msg);
-        handle_lifecycle<api::messaging::stop_service_request,
-            api::messaging::stop_service_response>(
-            std::move(msg), "stopped", "stopped");
+        if (supervisor_) {
+            dispatch_to_supervisor<api::messaging::stop_service_request,
+                api::messaging::stop_service_response>(
+                std::move(msg),
+                [this](const std::string& svc, int r) {
+                    supervisor_->request_stop(svc, r);
+                });
+        } else {
+            handle_lifecycle<api::messaging::stop_service_request,
+                api::messaging::stop_service_response>(
+                std::move(msg), "stopped", "stopped");
+        }
     }
 
     void restart(ores::nats::message msg) {
         [[maybe_unused]] const auto cid =
             log_handler_entry(service_instance_handler_lg(), msg);
-        handle_lifecycle<api::messaging::restart_service_request,
-            api::messaging::restart_service_response>(
-            std::move(msg), "running", "restarted");
+        if (supervisor_) {
+            dispatch_to_supervisor<api::messaging::restart_service_request,
+                api::messaging::restart_service_response>(
+                std::move(msg),
+                [this](const std::string& svc, int r) {
+                    supervisor_->request_restart(svc, r);
+                });
+        } else {
+            handle_lifecycle<api::messaging::restart_service_request,
+                api::messaging::restart_service_response>(
+                std::move(msg), "running", "restarted");
+        }
     }
 
 private:
@@ -204,9 +234,36 @@ private:
         event_repo.insert(ctx_, ev);
     }
 
+    template<typename Req, typename Resp, typename Fn>
+    void dispatch_to_supervisor(ores::nats::message msg, Fn&& action) {
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "controller::instances:manage")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<Req>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(service_instance_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            return;
+        }
+        const int replica = req->replica_index.value_or(0);
+        action(req->service_name, replica);
+        Resp resp;
+        resp.success = true;
+        reply(nats_, msg, resp);
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    service::process_supervisor* supervisor_;
 };
 
 } // namespace ores::controller::messaging

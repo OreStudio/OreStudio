@@ -17,28 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONTROLLER_CORE_MESSAGING_REGISTRAR_HPP
-#define ORES_CONTROLLER_CORE_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_ENTITY_HPP
+#define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_ENTITY_HPP
 
-#include <optional>
-#include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <string>
+#include "sqlgen/PrimaryKey.hpp"
 
-namespace ores::controller::service { class process_supervisor; }
+namespace ores::controller::repository {
 
-namespace ores::controller::messaging {
+/**
+ * @brief Database entity for a service startup dependency.
+ *
+ * Maps to ores_controller_service_dependencies_tbl. Non-bitemporal.
+ * A row (service_name, depends_on) means service_name must not launch
+ * until depends_on has signalled readiness.
+ */
+struct service_dependency_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename =
+        "ores_controller_service_dependencies_tbl";
 
-class registrar {
-public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier =
-            std::nullopt,
-        service::process_supervisor* supervisor = nullptr);
+    sqlgen::PrimaryKey<std::string> service_name;
+    sqlgen::PrimaryKey<std::string> depends_on;
 };
 
 }

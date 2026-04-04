@@ -18,7 +18,24 @@
  *
  */
 
-\ir ./controller_service_definitions_create.sql
-\ir ./controller_service_dependencies_create.sql
-\ir ./controller_service_instances_create.sql
-\ir ./controller_service_events_create.sql
+/**
+ * Service Dependencies Table
+ *
+ * Records the startup dependencies between managed services. A row
+ * (service_name, depends_on) means service_name must not be launched until
+ * depends_on has signalled readiness (i.e. "Service ready" appears in its
+ * log file).
+ *
+ * The process_supervisor reads this table at startup, builds a directed
+ * acyclic graph, and starts services in topological order — waiting for each
+ * service to become ready before launching services that depend on it.
+ *
+ * This is intentionally non-bitemporal: dependency relationships are static
+ * configuration that does not require a full audit history.
+ */
+
+create table if not exists ores_controller_service_dependencies_tbl (
+    "service_name" text not null,
+    "depends_on"   text not null,
+    primary key ("service_name", "depends_on")
+);

@@ -19,12 +19,14 @@
  */
 #include "ores.controller.service/app/application.hpp"
 
+#include <filesystem>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.controller.core/messaging/registrar.hpp"
+#include "ores.controller.core/service/process_supervisor.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 
@@ -63,6 +65,19 @@ application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.controller.service", 0, 1);
 
+    const auto db_ctx = make_context(cfg.database);
+    const auto bin_dir =
+        std::filesystem::canonical("/proc/self/exe").parent_path();
+    const auto log_level = cfg.logging ? cfg.logging->severity : std::string("info");
+
+    service::process_supervisor supervisor(
+        io_ctx, bin_dir, cfg.nats, log_level, db_ctx);
+
+    // Start all services in the background (dependency-ordered: IAM first,
+    // then dependents). Runs concurrently with our own NATS connect and JWKS
+    // fetch so the controller does not block on IAM startup.
+    boost::asio::co_spawn(io_ctx, supervisor.start_all(), boost::asio::detached);
+
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
     BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url
@@ -72,10 +87,10 @@ application::run(boost::asio::io_context& io_ctx,
                               << "')";
 
     co_await ores::service::service::run(
-        io_ctx, nats, make_context(cfg.database), "ores.controller.service",
-        [](auto& n, auto c, auto v) {
+        io_ctx, nats, db_ctx, "ores.controller.service",
+        [&nats, &supervisor](auto& n, auto c, auto v) {
             return ores::controller::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), std::move(v), &supervisor);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

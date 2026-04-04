@@ -17,28 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONTROLLER_CORE_MESSAGING_REGISTRAR_HPP
-#define ORES_CONTROLLER_CORE_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_REPOSITORY_HPP
+#define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_REPOSITORY_HPP
 
-#include <optional>
+#include <string>
+#include <utility>
 #include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
 
-namespace ores::controller::service { class process_supervisor; }
+namespace ores::controller::repository {
 
-namespace ores::controller::messaging {
+/**
+ * @brief Read-only access to the service startup dependency table.
+ */
+class service_dependency_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.controller.repository.service_dependency_repository";
 
-class registrar {
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier =
-            std::nullopt,
-        service::process_supervisor* supervisor = nullptr);
+    using context = ores::database::context;
+
+    /**
+     * @brief Returns all rows as (service_name, depends_on) pairs.
+     */
+    std::vector<std::pair<std::string, std::string>>
+    read_all(context ctx);
 };
 
 }

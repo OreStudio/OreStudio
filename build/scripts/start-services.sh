@@ -11,8 +11,8 @@
 # The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
 # Use --preset to switch presets without re-running init-environment.sh.
 #
-# Services are started in dependency order: IAM first (JWKS provider), then
-# all other domain services in parallel, then HTTP and WT servers.
+# Start order: NATS → controller (which spawns IAM then all domain services)
+#              → HTTP server → WT server → compute wrapper nodes.
 # PIDs are written to publish/run/ for use by stop-services.sh.
 
 set -euo pipefail
@@ -264,22 +264,6 @@ wait_for_ready() {
     return 1
 }
 
-# Discover NATS domain services from .env (matches ores/nats-domain-services in
-# ores-prodigy.el). Scans for ORES_*_SERVICE_DB_USER entries and derives binary
-# names from the matched component (e.g. ASSETS -> ores.assets.service).
-discover_nats_services() {
-    local services=()
-    while IFS='=' read -r key _value; do
-        [[ "$key" =~ ^ORES_(.+)_SERVICE_DB_USER$ ]] || continue
-        local component="${BASH_REMATCH[1]}"
-        # lowercase and replace _ with . to get binary name component
-        component="${component,,}"
-        component="${component//_/.}"
-        services+=("ores.$component.service")
-    done < "$ENV_FILE"
-    printf '%s\n' "${services[@]}"
-}
-
 # ============================================================
 echo "Starting ORE Studio services"
 echo "  Preset : $PRESET"
@@ -307,19 +291,23 @@ fi
 wait_for_nats "$NATS_PORT"
 echo ""
 
-# 1. IAM first — all other services fetch JWKS from it on startup.
-echo "[IAM]"
-launch_nats_service ores.iam.service
-wait_for_ready ores.iam.service
-echo ""
-
-# 2. All other NATS domain services (discovered from .env).
-echo "[Domain services]"
-while IFS= read -r svc; do
-    [[ "$svc" == "ores.iam.service" ]] && continue
-    [[ -x "$BIN_DIR/$svc" ]] || { echo "  miss    $svc (binary not found, skipping)"; continue; }
-    launch_nats_service "$svc"
-done < <(discover_nats_services)
+# 1. Controller — spawns IAM and all domain services.
+echo "[Controller]"
+controller_tls_args=()
+if [[ -n "$NATS_TLS_CA" ]]; then
+    controller_tls_args+=(
+        --nats-tls-ca   "$KEYS_DIR/ca.crt"
+        --nats-tls-cert "$KEYS_DIR/ores.controller.service.crt"
+        --nats-tls-key  "$KEYS_DIR/ores.controller.service.key"
+    )
+fi
+launch ores.controller.service \
+    --log-enabled \
+    --log-level "$LOG_LEVEL" \
+    --log-directory ../log \
+    --nats-url "$NATS_URL" \
+    --nats-subject-prefix "$NATS_PREFIX" \
+    "${controller_tls_args[@]}"
 echo ""
 
 # 3. HTTP server

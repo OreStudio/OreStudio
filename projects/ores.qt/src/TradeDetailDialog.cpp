@@ -462,7 +462,7 @@ void TradeDetailDialog::setupConnections() {
             &TradeDetailDialog::onInstrumentFieldChanged);
 
     // Scripted instrument fields
-    connect(ui_->scriptTradeTypeCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->scriptTradeTypeCodeEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onScriptTradeTypeChanged);
     connect(ui_->scriptNameEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onInstrumentFieldChanged);
@@ -2744,6 +2744,7 @@ void TradeDetailDialog::loadScriptedInstrument() {
         if (!result.success) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to load scripted instrument: " << result.message;
+            emit self->errorMessage(QString::fromStdString(result.message));
             return;
         }
 
@@ -2776,7 +2777,7 @@ void TradeDetailDialog::loadScriptedInstrument() {
 }
 
 void TradeDetailDialog::populateScriptedInstrument() {
-    ui_->scriptTradeTypeCombo->blockSignals(true);
+    ui_->scriptTradeTypeCodeEdit->blockSignals(true);
     ui_->scriptNameEdit->blockSignals(true);
     ui_->scriptDescriptionEdit->blockSignals(true);
     ui_->scriptBodyEdit->blockSignals(true);
@@ -2784,10 +2785,8 @@ void TradeDetailDialog::populateScriptedInstrument() {
     ui_->scriptUnderlyingsJsonEdit->blockSignals(true);
     ui_->scriptParametersJsonEdit->blockSignals(true);
 
-    const auto idx = ui_->scriptTradeTypeCombo->findText(
+    ui_->scriptTradeTypeCodeEdit->setText(
         QString::fromStdString(scriptedInstrument_.trade_type_code));
-    if (idx >= 0)
-        ui_->scriptTradeTypeCombo->setCurrentIndex(idx);
     ui_->scriptNameEdit->setText(
         QString::fromStdString(scriptedInstrument_.script_name));
     ui_->scriptDescriptionEdit->setPlainText(
@@ -2801,7 +2800,7 @@ void TradeDetailDialog::populateScriptedInstrument() {
     ui_->scriptParametersJsonEdit->setPlainText(
         QString::fromStdString(scriptedInstrument_.parameters_json));
 
-    ui_->scriptTradeTypeCombo->blockSignals(false);
+    ui_->scriptTradeTypeCodeEdit->blockSignals(false);
     ui_->scriptNameEdit->blockSignals(false);
     ui_->scriptDescriptionEdit->blockSignals(false);
     ui_->scriptBodyEdit->blockSignals(false);
@@ -2825,7 +2824,7 @@ void TradeDetailDialog::populateScriptedInstrument() {
 
 void TradeDetailDialog::updateScriptedInstrumentFromUi() {
     scriptedInstrument_.trade_type_code =
-        ui_->scriptTradeTypeCombo->currentText().trimmed().toStdString();
+        ui_->scriptTradeTypeCodeEdit->text().trimmed().toStdString();
     scriptedInstrument_.script_name =
         ui_->scriptNameEdit->text().trimmed().toStdString();
     scriptedInstrument_.description =
@@ -2851,7 +2850,7 @@ void TradeDetailDialog::updateScriptedTabVisibility() {
 }
 
 void TradeDetailDialog::setScriptedReadOnly(bool readOnly) {
-    ui_->scriptTradeTypeCombo->setEnabled(!readOnly);
+    ui_->scriptTradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->scriptNameEdit->setReadOnly(readOnly);
     ui_->scriptDescriptionEdit->setReadOnly(readOnly);
     ui_->scriptBodyEdit->setReadOnly(readOnly);

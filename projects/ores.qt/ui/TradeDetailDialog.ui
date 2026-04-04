@@ -1409,11 +1409,8 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="scriptTradeTypeCombo">
-            <item><property name="text"><string>ScriptedTrade</string></property></item>
-            <item><property name="text"><string>Autocallable_01</string></property></item>
-            <item><property name="text"><string>DoubleDigitalOption</string></property></item>
-            <item><property name="text"><string>PerformanceOption_01</string></property></item>
+           <widget class="QLineEdit" name="scriptTradeTypeCodeEdit">
+            <property name="placeholderText"><string>Trade type code</string></property>
            </widget>
           </item>
           <item row="1" column="0">

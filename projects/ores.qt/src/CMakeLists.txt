@@ -53,6 +53,8 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.ore.lib
+        ores.ore.api.lib
+        ores.storage.lib
         ores.marketdata.api.lib
         ores.http.api.lib
         ores.refdata.core.lib

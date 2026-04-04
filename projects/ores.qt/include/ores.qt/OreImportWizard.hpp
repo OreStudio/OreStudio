@@ -37,12 +37,15 @@
 #include <QTreeWidget>
 #include <QComboBox>
 #include <QDateEdit>
+#include <filesystem>
+#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.ore/scanner/scan_result.hpp"
 #include "ores.ore/planner/import_choices.hpp"
 #include "ores.ore/planner/ore_import_plan.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 
 namespace ores::qt {
 
@@ -98,27 +101,25 @@ public:
 
     void setScanResult(ore::scanner::scan_result r) { scanResult_ = std::move(r); }
 
-    // Results set by Page_TradeImport
-    int savedCurrencies() const { return savedCurrencies_; }
-    int savedPortfolios() const { return savedPortfolios_; }
-    int savedBooks() const { return savedBooks_; }
-    int savedTrades() const { return savedTrades_; }
-    int savedInstruments() const { return savedInstruments_; }
-    int savedInstrumentFailures() const { return savedInstrumentFailures_; }
+    // ORE directory picked on Page_Directory — needed by Page_TradeImport for upload
+    void setOreDir(std::filesystem::path dir) { ore_dir_ = std::move(dir); }
+    const std::filesystem::path& oreDir() const { return ore_dir_; }
+
+    // HTTP base URL set by OreImportController before the wizard is shown
+    void setHttpBaseUrl(std::string url) { http_base_url_ = std::move(url); }
+    const std::string& httpBaseUrl() const { return http_base_url_; }
+
+    // Results set by Page_TradeImport after the server-side import completes
+    void setImportResponse(ores::ore::messaging::ore_import_response response) {
+        import_response_ = std::move(response);
+        importSuccess_ = import_response_.success;
+        importError_ = QString::fromStdString(import_response_.message);
+    }
     bool importSuccess() const { return importSuccess_; }
     QString importError() const { return importError_; }
-
-    void setImportResults(int currencies, int portfolios, int books, int trades,
-                          int instruments, int instrumentFailures = 0) {
-        savedCurrencies_ = currencies;
-        savedPortfolios_ = portfolios;
-        savedBooks_ = books;
-        savedTrades_ = trades;
-        savedInstruments_ = instruments;
-        savedInstrumentFailures_ = instrumentFailures;
+    const ores::ore::messaging::ore_import_response& importResponse() const {
+        return import_response_;
     }
-    void setImportSuccess(bool ok) { importSuccess_ = ok; }
-    void setImportError(const QString& msg) { importError_ = msg; }
 
     // Existing ISO codes fetched on Page_Currency
     const std::set<std::string>& existingIsoCodes() const { return existingIsoCodes_; }
@@ -145,12 +146,9 @@ private:
     std::set<std::string> existingIsoCodes_;
     std::vector<std::string> existingPortfolioNames_;
 
-    int savedCurrencies_ = 0;
-    int savedPortfolios_ = 0;
-    int savedBooks_ = 0;
-    int savedTrades_ = 0;
-    int savedInstruments_ = 0;
-    int savedInstrumentFailures_ = 0;
+    std::filesystem::path ore_dir_;
+    std::string http_base_url_;
+    ores::ore::messaging::ore_import_response import_response_;
     bool importSuccess_ = false;
     QString importError_;
 };

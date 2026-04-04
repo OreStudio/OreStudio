@@ -2849,6 +2849,8 @@ void MainWindow::setHttpBaseUrl(const std::string& url) {
         appVersionController_->setHttpBaseUrl(url);
     if (computeConsoleController_)
         computeConsoleController_->setHttpBaseUrl(url);
+    if (oreImportController_)
+        oreImportController_->setHttpBaseUrl(url);
 }
 
 void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {

@@ -39,28 +39,17 @@ void OreImportController::trigger(QWidget* parent,
     BOOST_LOG_SEV(lg(), info) << "Opening ORE import wizard";
 
     OreImportWizard wizard(clientManager_, bookId, bookName, parent);
+    wizard.setHttpBaseUrl(http_base_url_);
 
     if (wizard.exec() == QDialog::Accepted && wizard.importSuccess()) {
         BOOST_LOG_SEV(lg(), info) << "ORE import wizard accepted";
 
-        const int instrFailed = wizard.savedInstrumentFailures();
-        const auto msg = instrFailed == 0
-            ? QString("ORE import complete: %1 currencies, %2 portfolios, "
-                      "%3 books, %4 trades, %5 instruments.")
-                .arg(wizard.savedCurrencies())
-                .arg(wizard.savedPortfolios())
-                .arg(wizard.savedBooks())
-                .arg(wizard.savedTrades())
-                .arg(wizard.savedInstruments())
-            : QString("ORE import complete: %1 currencies, %2 portfolios, "
-                      "%3 books, %4 trades, %5 instruments saved, "
-                      "%6 instruments failed — check the import log.")
-                .arg(wizard.savedCurrencies())
-                .arg(wizard.savedPortfolios())
-                .arg(wizard.savedBooks())
-                .arg(wizard.savedTrades())
-                .arg(wizard.savedInstruments())
-                .arg(instrFailed);
+        const auto& resp = wizard.importResponse();
+        const int item_errors = static_cast<int>(resp.item_errors.size());
+        const auto msg = item_errors == 0
+            ? QString("ORE import completed successfully.")
+            : QString("ORE import completed with %1 trade error(s) — see the import log.")
+                .arg(item_errors);
 
         emit statusMessage(msg);
         emit importCompleted();

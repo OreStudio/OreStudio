@@ -19,7 +19,7 @@
  */
 #include "ores.storage/net/http_client.hpp"
 
-#include <fstream>
+#include <limits>
 #include <stdexcept>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -68,33 +68,26 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
 
     http::write(stream, req);
 
-    beast::flat_buffer buf;
-    http::response<http::string_body> res;
-    http::read(stream, buf, res);
-
-    if (res.result_int() < 200 || res.result_int() >= 300) {
-        throw std::runtime_error(
-            "http_client: GET " + url + " returned HTTP " +
-            std::to_string(res.result_int()));
-    }
-
     std::filesystem::create_directories(dest.parent_path());
-    std::ofstream f(dest, std::ios::binary | std::ios::trunc);
-    if (!f)
+    http::response_parser<http::file_body> parser;
+    parser.body_limit(std::numeric_limits<std::uint64_t>::max());
+    beast::error_code open_ec;
+    parser.get().body().open(dest.c_str(), beast::file_mode::write, open_ec);
+    if (open_ec)
         throw std::runtime_error("http_client: cannot open for writing: " + dest.string());
-    f.write(res.body().data(), static_cast<std::streamsize>(res.body().size()));
+
+    beast::flat_buffer buf;
+    http::read(stream, buf, parser);
+
+    if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP "
+            + std::to_string(parser.get().result_int()));
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);
 }
 
 void http_client::put(const std::string& url, const std::filesystem::path& src) {
-    std::ifstream f(src, std::ios::binary);
-    if (!f)
-        throw std::runtime_error("http_client: cannot open for reading: " + src.string());
-    const std::string body((std::istreambuf_iterator<char>(f)),
-                            std::istreambuf_iterator<char>());
-
     const auto parts = parse_url(url);
 
     asio::io_context ioc;
@@ -104,11 +97,14 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
     const auto results = resolver.resolve(parts.host, parts.port);
     stream.connect(results);
 
-    http::request<http::string_body> req{http::verb::put, parts.path, 11};
+    http::request<http::file_body> req{http::verb::put, parts.path, 11};
     req.set(http::field::host, parts.host);
     req.set(http::field::user_agent, "ores.storage/1.0");
     req.set(http::field::content_type, "application/octet-stream");
-    req.body() = body;
+    beast::error_code open_ec;
+    req.body().open(src.c_str(), beast::file_mode::read, open_ec);
+    if (open_ec)
+        throw std::runtime_error("http_client: cannot open for reading: " + src.string());
     req.prepare_payload();
 
     http::write(stream, req);
@@ -117,11 +113,9 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
     http::response<http::string_body> res;
     http::read(stream, buf, res);
 
-    if (res.result_int() < 200 || res.result_int() >= 300) {
-        throw std::runtime_error(
-            "http_client: PUT " + url + " returned HTTP " +
-            std::to_string(res.result_int()));
-    }
+    if (res.result_int() < 200 || res.result_int() >= 300)
+        throw std::runtime_error("http_client: PUT " + url + " returned HTTP "
+            + std::to_string(res.result_int()));
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);

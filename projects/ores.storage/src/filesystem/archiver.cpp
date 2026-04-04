@@ -81,6 +81,9 @@ void archiver::pack(const fs::path& src_dir, const fs::path& dest_archive) {
             throw std::runtime_error(std::string("archiver: write header error: ")
                 + archive_error_string(a.get()));
         std::ifstream in(e.path(), std::ios::binary);
+        if (!in)
+            throw std::runtime_error("archiver: failed to open file for reading: "
+                + e.path().string());
         std::array<char, 16384> buf{};
         while (in.read(buf.data(), buf.size()) || in.gcount()) {
             if (archive_write_data(a.get(), buf.data(),

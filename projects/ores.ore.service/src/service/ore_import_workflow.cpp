@@ -166,8 +166,10 @@ bool ore_import_workflow::execute(ores::database::context /*ctx*/,
     std::set<std::string> existing_iso_codes;
     {
         ores::refdata::messaging::get_currencies_request list_req;
+        // Currencies are a small reference dataset; this limit covers any realistic deployment.
+        constexpr int max_currency_fetch = 10'000;
         list_req.offset = 0;
-        list_req.limit = 10000;  // fetch all — currency table is small
+        list_req.limit = max_currency_fetch;
         auto list_resp = nats_call(nats, list_req, error_);
         if (!list_resp) {
             BOOST_LOG_SEV(lg(), error) << "ore_import_workflow step 2 failed | corr="

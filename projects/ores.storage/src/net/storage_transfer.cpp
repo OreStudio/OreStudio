@@ -43,8 +43,9 @@ inline static std::string_view logger_name = "ores.storage.net.storage_transfer"
 }
 
 fs::path make_temp_archive() {
-    const auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-    return fs::temp_directory_path() / (uuid + ".tar.gz");
+    // Instantiate the generator on the stack per call for thread safety.
+    boost::uuids::random_generator gen;
+    return fs::temp_directory_path() / (boost::uuids::to_string(gen()) + ".tar.gz");
 }
 
 }

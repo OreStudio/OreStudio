@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -84,6 +85,18 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
         reply(nats_, msg, ore_import_response{
             .success = false,
             .message = "request_id is required.",
+            .correlation_id = correlation_id});
+        return;
+    }
+
+    // Validate request_id — must contain only alphanumeric characters and hyphens
+    // to prevent path traversal when constructing the work directory path.
+    const bool safe = std::all_of(req->request_id.begin(), req->request_id.end(),
+        [](unsigned char c) { return std::isalnum(c) || c == '-'; });
+    if (!safe) {
+        reply(nats_, msg, ore_import_response{
+            .success = false,
+            .message = "request_id contains invalid characters.",
             .correlation_id = correlation_id});
         return;
     }

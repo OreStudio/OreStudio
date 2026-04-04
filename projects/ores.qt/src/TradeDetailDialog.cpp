@@ -2069,10 +2069,10 @@ void TradeDetailDialog::updateEquityTabVisibility() {
     const bool showOptions = instrumentLoaded_ && isEquityOptionType(tradeType);
     const bool showExtensions = instrumentLoaded_ &&
         (isEquityExtensionType(tradeType) ||
-         equityInstrument_.variance_strike != 0.0 ||
-         equityInstrument_.accumulation_amount != 0.0 ||
-         !equityInstrument_.basket_json.empty() ||
-         !equityInstrument_.return_type.empty());
+         !qFuzzyIsNull(ui_->equityVarianceStrikeSpinBox->value()) ||
+         !qFuzzyIsNull(ui_->equityAccumulationAmountSpinBox->value()) ||
+         !ui_->equityBasketJsonEdit->toPlainText().trimmed().isEmpty() ||
+         !ui_->equityReturnTypeEdit->text().trimmed().isEmpty());
 
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->equityCoreTab), showCore);
@@ -2402,11 +2402,11 @@ void TradeDetailDialog::updateCommodityTabVisibility() {
     const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
     const bool showExtensions = instrumentLoaded_ &&
         (isCommodityExtensionType(tradeType) ||
-         commodityInstrument_.fixed_price.has_value() ||
-         commodityInstrument_.strike_price.has_value() ||
-         !commodityInstrument_.spread_commodity_code.empty() ||
-         commodityInstrument_.variance_strike.has_value() ||
-         !commodityInstrument_.swaption_expiry_date.empty());
+         !qFuzzyIsNull(ui_->commodityFixedPriceSpinBox->value()) ||
+         !qFuzzyIsNull(ui_->commodityStrikePriceSpinBox->value()) ||
+         !ui_->commoditySpreadCommodityCodeEdit->text().trimmed().isEmpty() ||
+         !qFuzzyIsNull(ui_->commodityVarianceStrikeSpinBox->value()) ||
+         !ui_->commoditySwaptionExpiryDateEdit->text().trimmed().isEmpty());
 
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->commodityCoreTab), showCore);

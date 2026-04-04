@@ -37,10 +37,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.database.lib
         ores.utility.lib
-        sqlgen::sqlgen
         Boost::boost)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

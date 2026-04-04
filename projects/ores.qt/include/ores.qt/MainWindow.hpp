@@ -103,7 +103,6 @@ class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
 class PaymentFrequencyTypeController;
 class LegTypeController;
-class ScriptedInstrumentController;
 class OreImportController;
 class MarketDataController;
 class PortfolioExplorerMdiWindow;
@@ -669,7 +668,6 @@ private:
     std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
     std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
     std::unique_ptr<LegTypeController> legTypeController_;
-    std::unique_ptr<ScriptedInstrumentController> scriptedInstrumentController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
     std::unique_ptr<AppController> appController_;
     std::unique_ptr<AppVersionController> appVersionController_;

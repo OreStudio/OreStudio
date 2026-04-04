@@ -461,6 +461,22 @@ void TradeDetailDialog::setupConnections() {
     connect(ui_->compositeLegsWidget, &CompositeLegsWidget::legsChanged, this,
             &TradeDetailDialog::onInstrumentFieldChanged);
 
+    // Scripted instrument fields
+    connect(ui_->scriptTradeTypeCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onScriptTradeTypeChanged);
+    connect(ui_->scriptNameEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->scriptDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->scriptBodyEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->scriptEventsJsonEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->scriptUnderlyingsJsonEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->scriptParametersJsonEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+
     // FX instrument fields
     connect(ui_->fxTradeTypeCodeEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFxTradeTypeChanged);
@@ -639,6 +655,8 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         loadCommodityInstrument();
     else if (trade_.product_type == "composite" && trade_.instrument_id.has_value())
         loadCompositeInstrument();
+    else if (trade_.product_type == "scripted" && trade_.instrument_id.has_value())
+        loadScriptedInstrument();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
@@ -684,6 +702,10 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
         ui_->tabWidget->indexOf(ui_->compositeCoreTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->compositeLegsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->scriptDefinitionTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->scriptBodyTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 
     setProvenanceEnabled(!createMode);
@@ -713,6 +735,7 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     setEquityReadOnly(readOnly);
     setCommodityReadOnly(readOnly);
     setCompositeReadOnly(readOnly);
+    setScriptedReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -1782,6 +1805,13 @@ void TradeDetailDialog::onCompositeTradeTypeChanged(const QString&) {
     }
 }
 
+void TradeDetailDialog::onScriptTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateSaveButtonState();
+    }
+}
+
 void TradeDetailDialog::updateSaveButtonState() {
     const bool canSave =
         (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
@@ -1829,6 +1859,8 @@ void TradeDetailDialog::onSaveClicked() {
             updateCommodityInstrumentFromUi();
         else if (trade_.product_type == "composite")
             updateCompositeInstrumentFromUi();
+        else if (trade_.product_type == "scripted")
+            updateScriptedInstrumentFromUi();
     }
 
     const auto crOpType = createMode_
@@ -1865,6 +1897,9 @@ void TradeDetailDialog::onSaveClicked() {
         } else if (trade_.product_type == "composite") {
             compositeInstrument_.change_reason_code = crSel->reason_code;
             compositeInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "scripted") {
+            scriptedInstrument_.change_reason_code = crSel->reason_code;
+            scriptedInstrument_.change_commentary  = crSel->commentary;
         }
     }
 
@@ -1897,6 +1932,10 @@ void TradeDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Saving composite instrument then trade: "
                                       << trade_.external_id;
             saveCompositeThenTrade(trade_, compositeInstrument_, compositeLegs_);
+        } else if (trade_.product_type == "scripted") {
+            BOOST_LOG_SEV(lg(), info) << "Saving scripted instrument then trade: "
+                                      << trade_.external_id;
+            saveScriptedThenTrade(trade_, scriptedInstrument_);
         }
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
@@ -2672,6 +2711,190 @@ void TradeDetailDialog::saveCompositeThenTrade(
         trading::messaging::save_composite_instrument_request req;
         req.data = instrument;
         req.legs = legs;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Scripted instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadScriptedInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct ScriptedResult {
+        bool success;
+        std::string message;
+        trading::domain::scripted_instrument instrument;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<ScriptedResult>(self);
+    connect(watcher, &QFutureWatcher<ScriptedResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load scripted instrument: " << result.message;
+            emit self->errorMessage(QString::fromStdString(result.message));
+            return;
+        }
+
+        self->scriptedInstrument_ = std::move(result.instrument);
+        self->instrumentLoaded_ = true;
+        self->populateScriptedInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> ScriptedResult {
+        if (!cm)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}};
+        if (!r->success)
+            return {false, r->message, {}};
+
+        const auto* inst =
+            std::get_if<trading::domain::scripted_instrument>(&r->instrument);
+        if (!inst)
+            return {false, "Unexpected instrument type in response", {}};
+
+        return {true, {}, *inst};
+    }));
+}
+
+void TradeDetailDialog::populateScriptedInstrument() {
+    ui_->scriptTradeTypeCodeEdit->blockSignals(true);
+    ui_->scriptNameEdit->blockSignals(true);
+    ui_->scriptDescriptionEdit->blockSignals(true);
+    ui_->scriptBodyEdit->blockSignals(true);
+    ui_->scriptEventsJsonEdit->blockSignals(true);
+    ui_->scriptUnderlyingsJsonEdit->blockSignals(true);
+    ui_->scriptParametersJsonEdit->blockSignals(true);
+
+    ui_->scriptTradeTypeCodeEdit->setText(
+        QString::fromStdString(scriptedInstrument_.trade_type_code));
+    ui_->scriptNameEdit->setText(
+        QString::fromStdString(scriptedInstrument_.script_name));
+    ui_->scriptDescriptionEdit->setPlainText(
+        QString::fromStdString(scriptedInstrument_.description));
+    ui_->scriptBodyEdit->setPlainText(
+        QString::fromStdString(scriptedInstrument_.script_body));
+    ui_->scriptEventsJsonEdit->setPlainText(
+        QString::fromStdString(scriptedInstrument_.events_json));
+    ui_->scriptUnderlyingsJsonEdit->setPlainText(
+        QString::fromStdString(scriptedInstrument_.underlyings_json));
+    ui_->scriptParametersJsonEdit->setPlainText(
+        QString::fromStdString(scriptedInstrument_.parameters_json));
+
+    ui_->scriptTradeTypeCodeEdit->blockSignals(false);
+    ui_->scriptNameEdit->blockSignals(false);
+    ui_->scriptDescriptionEdit->blockSignals(false);
+    ui_->scriptBodyEdit->blockSignals(false);
+    ui_->scriptEventsJsonEdit->blockSignals(false);
+    ui_->scriptUnderlyingsJsonEdit->blockSignals(false);
+    ui_->scriptParametersJsonEdit->blockSignals(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        scriptedInstrument_.version,
+        scriptedInstrument_.modified_by,
+        scriptedInstrument_.performed_by,
+        scriptedInstrument_.recorded_at,
+        scriptedInstrument_.change_reason_code,
+        scriptedInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateScriptedTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateScriptedInstrumentFromUi() {
+    scriptedInstrument_.trade_type_code =
+        ui_->scriptTradeTypeCodeEdit->text().trimmed().toStdString();
+    scriptedInstrument_.script_name =
+        ui_->scriptNameEdit->text().trimmed().toStdString();
+    scriptedInstrument_.description =
+        ui_->scriptDescriptionEdit->toPlainText().trimmed().toStdString();
+    scriptedInstrument_.script_body =
+        ui_->scriptBodyEdit->toPlainText().toStdString();
+    scriptedInstrument_.events_json =
+        ui_->scriptEventsJsonEdit->toPlainText().toStdString();
+    scriptedInstrument_.underlyings_json =
+        ui_->scriptUnderlyingsJsonEdit->toPlainText().toStdString();
+    scriptedInstrument_.parameters_json =
+        ui_->scriptParametersJsonEdit->toPlainText().toStdString();
+    scriptedInstrument_.modified_by = username_;
+    scriptedInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateScriptedTabVisibility() {
+    const bool show = instrumentLoaded_;
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->scriptDefinitionTab), show);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->scriptBodyTab), show);
+}
+
+void TradeDetailDialog::setScriptedReadOnly(bool readOnly) {
+    ui_->scriptTradeTypeCodeEdit->setReadOnly(readOnly);
+    ui_->scriptNameEdit->setReadOnly(readOnly);
+    ui_->scriptDescriptionEdit->setReadOnly(readOnly);
+    ui_->scriptBodyEdit->setReadOnly(readOnly);
+    ui_->scriptEventsJsonEdit->setReadOnly(readOnly);
+    ui_->scriptUnderlyingsJsonEdit->setReadOnly(readOnly);
+    ui_->scriptParametersJsonEdit->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveScriptedThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::scripted_instrument& instrument) {
+
+    struct ScriptedSaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<ScriptedSaveResult>(self);
+    connect(watcher, &QFutureWatcher<ScriptedSaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Scripted instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save scripted instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Scripted instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument]() -> ScriptedSaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_scripted_instrument_request req;
+        req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};
         return {r->success, r->message};

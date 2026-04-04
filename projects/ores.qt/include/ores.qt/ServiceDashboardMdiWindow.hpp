@@ -20,25 +20,36 @@
 #ifndef ORES_QT_SERVICE_DASHBOARD_MDI_WINDOW_HPP
 #define ORES_QT_SERVICE_DASHBOARD_MDI_WINDOW_HPP
 
+#include <string>
+#include <vector>
 #include <QTimer>
 #include <QLabel>
 #include <QWidget>
+#include <QSpinBox>
 #include <QToolBar>
+#include <QGroupBox>
+#include <QSplitter>
+#include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.controller.api/domain/service_definition.hpp"
 
 namespace ores::qt {
 
 /**
  * @brief MDI window showing the live status of all running services.
  *
- * Queries telemetry.v1.services.list every 30 seconds and displays one row per
- * (service_name, instance_id) with a RAG indicator derived from sampled_at:
+ * Overview panel: one row per (service_name, instance_id) from telemetry
+ * heartbeats with a RAG indicator derived from sampled_at:
  *   Green  — last heartbeat < 30 s ago
  *   Amber  — 30–90 s ago
- *   Red    — > 90 s ago (service likely down)
+ *   Offline — > 90 s ago
+ *
+ * Detail panel (shown when a row is selected): fetches service instance data
+ * from the controller API and shows per-replica details. Also allows changing
+ * the desired_replicas count for the service.
  */
 class ServiceDashboardMdiWindow final : public QWidget {
     Q_OBJECT
@@ -59,7 +70,7 @@ public:
         QWidget* parent = nullptr);
     ~ServiceDashboardMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {700, 400}; }
+    QSize sizeHint() const override { return {800, 600}; }
 
 public slots:
     void refresh();
@@ -70,11 +81,14 @@ signals:
 
 private slots:
     void onRefreshToggled(bool checked);
+    void onRowSelected(int row);
+    void onApplyReplicas();
 
 private:
     void setupUi();
     void setupToolbar();
     void loadSamples();
+    void loadInstanceDetails(const QString& serviceName);
 
     ClientManager* clientManager_;
 
@@ -82,10 +96,24 @@ private:
     QAction* refreshAction_;
     QAction* autoRefreshAction_;
 
+    // Overview table
     QTableWidget* table_;
+
+    // Detail panel (shown when a service row is selected)
+    QGroupBox* detailGroup_;
+    QLabel* detailServiceLabel_;
+    QSpinBox* replicasSpinBox_;
+    QPushButton* applyReplicasButton_;
+    QTableWidget* detailTable_;
 
     // Auto-refresh timer (30 seconds)
     QTimer* autoRefreshTimer_;
+
+    // Currently selected service name (empty if none)
+    std::string selectedServiceName_;
+
+    // Loaded service definitions (for replicas setting)
+    std::vector<controller::api::domain::service_definition> serviceDefinitions_;
 };
 
 }

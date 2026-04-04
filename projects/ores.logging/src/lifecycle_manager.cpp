@@ -20,6 +20,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 
 #include <string_view>
+#include <optional>
 #include <boost/make_shared.hpp>
 #include <boost/core/null_deleter.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -32,6 +33,7 @@
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/support/date_time.hpp>
 #include "ores.logging/logging_options_validator.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::logging {
 
@@ -39,20 +41,35 @@ using namespace boost::log;
 
 namespace {
 
-/**
- * @brief Builds the log filename, optionally including the PID.
- */
-std::string build_filename(const std::string& filename, bool include_pid) {
-    if (!include_pid) {
-        return filename;
-    }
+auto& lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.logging.lifecycle_manager");
+    return instance;
+}
 
-    const auto pid = std::to_string(boost::process::v2::current_pid());
+/**
+ * @brief Builds the log filename, optionally including replica index and PID.
+ *
+ * Inserts replica_index (if set) and then PID (if include_pid) before the
+ * file extension.  For example: "app.log" with replica_index=0 and
+ * include_pid=true becomes "app.0.<pid>.log".
+ */
+std::string build_filename(const std::string& filename,
+    std::optional<int> replica_index, bool include_pid) {
+
     const auto dot_pos = filename.rfind('.');
-    if (dot_pos != std::string::npos) {
-        return filename.substr(0, dot_pos) + "." + pid + filename.substr(dot_pos);
-    }
-    return filename + "." + pid;
+    const auto base = (dot_pos != std::string::npos)
+        ? filename.substr(0, dot_pos) : filename;
+    const auto ext = (dot_pos != std::string::npos)
+        ? filename.substr(dot_pos) : "";
+
+    std::string result = base;
+    if (replica_index)
+        result += "." + std::to_string(*replica_index);
+    if (include_pid)
+        result += "." + std::to_string(boost::process::v2::current_pid());
+    result += ext;
+    return result;
 }
 
 }
@@ -164,11 +181,16 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     }
 
     if (!cfg.filename.empty()) {
-        const auto filename = build_filename(cfg.filename, cfg.include_pid);
+        const auto filename = build_filename(
+            cfg.filename, cfg.replica_index, cfg.include_pid);
         const auto path(cfg.output_directory / filename);
         file_sink_ = make_file_sink(path, sl, cfg.tag);
         boost::log::core::get()->add_sink(file_sink_);
     }
+
+    if (cfg.replica_index)
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Replica index: " << *cfg.replica_index;
 
     /*
      * Finally, add the timestamp attributes.

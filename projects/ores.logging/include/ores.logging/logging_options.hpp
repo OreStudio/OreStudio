@@ -21,6 +21,7 @@
 #define ORES_LOGGING_LOGGING_OPTIONS_HPP
 
 #include <iosfwd>
+#include <optional>
 #include <string>
 #include <filesystem>
 
@@ -53,6 +54,13 @@ struct logging_options final {
      * extension. For example: "app.log" becomes "app.12345.log".
      */
     bool include_pid = false;
+    /**
+     * @brief If set, embeds the replica index in the log filename before the
+     * extension (and before the PID if include_pid is also set).
+     *
+     * For example: "app.log" with replica_index=0 becomes "app.0.log".
+     */
+    std::optional<int> replica_index;
     /**
      * @brief Tag to filter the logging. If supplied, only messages with this
      * tag will be logged.

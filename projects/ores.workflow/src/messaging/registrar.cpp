@@ -55,12 +55,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             wh->provision_parties(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        run_report_message::nats_subject, qg,
-        [wh](ores::nats::message msg) {
-            wh->run_report(std::move(msg));
-        }));
-
     BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size()
                                << " workflow message handlers.";
     return subs;

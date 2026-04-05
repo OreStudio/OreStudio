@@ -76,6 +76,43 @@ struct workflow_step final {
     std::string error;
 
     /**
+     * @brief NATS subject to which the step command is published.
+     */
+    std::string command_subject;
+
+    /**
+     * @brief Serialised JSON body of the command published to the domain service.
+     * Persisted before publish so it survives a restart.
+     */
+    std::string command_json;
+
+    /**
+     * @brief Timestamp set after the command was successfully published.
+     * Null means the command has not yet been published (or publish failed).
+     * On restart, steps with state=in_progress and null command_published_at
+     * have their command re-published.
+     */
+    std::optional<std::chrono::system_clock::time_point> command_published_at;
+
+    /**
+     * @brief Idempotency key echoed back in the step-completed event.
+     * Equal to the step id as a string; used by domain services to detect
+     * re-dispatched commands and avoid double-execution.
+     */
+    std::string idempotency_key;
+
+    /**
+     * @brief NATS subject for the compensation command (empty if no compensation).
+     */
+    std::string compensation_subject;
+
+    /**
+     * @brief Serialised JSON body of the compensation command.
+     * Built from step result when compensation is triggered.
+     */
+    std::string compensation_json;
+
+    /**
      * @brief Timestamp when the step began executing.
      */
     std::optional<std::chrono::system_clock::time_point> started_at;

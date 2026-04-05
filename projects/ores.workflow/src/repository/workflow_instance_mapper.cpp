@@ -43,8 +43,12 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
     r.error = v.error.value_or("");
     r.correlation_id = v.correlation_id.value_or("");
     r.created_by = v.created_by;
+    r.current_step_index = v.current_step_index;
+    r.step_count = v.step_count;
     if (v.completed_at)
         r.completed_at = timestamp_to_timepoint(*v.completed_at);
+    if (v.last_event_at)
+        r.last_event_at = timestamp_to_timepoint(*v.last_event_at);
     if (!v.created_at)
         throw std::logic_error("Cannot map entity with null created_at to domain object.");
     r.created_at = timestamp_to_timepoint(*v.created_at);
@@ -79,8 +83,12 @@ workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     r.correlation_id = v.correlation_id.empty()
         ? std::nullopt : std::optional<std::string>(v.correlation_id);
     r.created_by = v.created_by;
+    r.current_step_index = v.current_step_index;
+    r.step_count = v.step_count;
     if (v.completed_at)
         r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
+    if (v.last_event_at)
+        r.last_event_at = timepoint_to_timestamp(*v.last_event_at, lg());
     r.created_at = timepoint_to_timestamp(v.created_at, lg());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain object to entity.";

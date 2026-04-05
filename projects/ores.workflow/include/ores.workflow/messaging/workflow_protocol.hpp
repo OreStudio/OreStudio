@@ -88,22 +88,6 @@ struct provision_parties_response {
     std::string correlation_id;
 };
 
-/**
- * @brief Fire-and-forget message published by the reporting service when a
- *        report instance has been created and needs to be executed.
- *
- * Published to workflow.v1.reports.run after report_instance_handler::trigger()
- * saves the pending instance. The workflow service subscribes, creates a
- * workflow_instance record, and runs run_report_workflow to drive the
- * ORE execution lifecycle.
- */
-struct run_report_message {
-    static constexpr std::string_view nats_subject = "workflow.v1.reports.run";
-    std::string report_instance_id;
-    std::string tenant_id;
-    std::string definition_id;
-};
-
 }
 
 #endif

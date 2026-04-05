@@ -42,6 +42,13 @@ workflow_step_mapper::map(const workflow_step_entity& v) {
     r.request_json = v.request_json;
     r.response_json = v.response_json.value_or("");
     r.error = v.error.value_or("");
+    r.command_subject = v.command_subject;
+    r.command_json = v.command_json;
+    if (v.command_published_at)
+        r.command_published_at = timestamp_to_timepoint(*v.command_published_at);
+    r.idempotency_key = v.idempotency_key;
+    r.compensation_subject = v.compensation_subject;
+    r.compensation_json = v.compensation_json;
     if (v.started_at)
         r.started_at = timestamp_to_timepoint(*v.started_at);
     if (v.completed_at)
@@ -78,6 +85,13 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
         ? std::nullopt : std::optional<std::string>(v.response_json);
     r.error = v.error.empty()
         ? std::nullopt : std::optional<std::string>(v.error);
+    r.command_subject = v.command_subject;
+    r.command_json = v.command_json;
+    if (v.command_published_at)
+        r.command_published_at = timepoint_to_timestamp(*v.command_published_at, lg());
+    r.idempotency_key = v.idempotency_key;
+    r.compensation_subject = v.compensation_subject;
+    r.compensation_json = v.compensation_json;
     if (v.started_at)
         r.started_at = timepoint_to_timestamp(*v.started_at, lg());
     if (v.completed_at)

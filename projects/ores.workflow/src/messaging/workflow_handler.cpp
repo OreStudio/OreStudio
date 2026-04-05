@@ -33,8 +33,6 @@
 #include "ores.workflow/repository/workflow_instance_repository.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/provision_parties_workflow.hpp"
-#include "ores.workflow/service/run_report_workflow.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -157,91 +155,6 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
 
     BOOST_LOG_SEV(lg(), debug) << "provision_parties_workflow completed.";
     reply(nats_, msg, executor.result());
-}
-
-void workflow_handler::run_report(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
-
-    auto req = decode<run_report_message>(msg);
-    if (!req) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode run_report_message";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "run_report: instance=" << req->report_instance_id
-                              << " tenant=" << req->tenant_id;
-
-    // Build a tenant-scoped database context from the tenant_id in the message.
-    const auto tid_result = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
-    if (!tid_result) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid tenant_id in run_report_message: "
-                                   << req->tenant_id;
-        return;
-    }
-    const auto tenant_ctx = ctx_.with_tenant(*tid_result, ctx_.service_account());
-
-    // Load FSM states for workflow instances.
-    const auto instance_states = service::load_fsm_states(outbound_nats_, "workflow_instance");
-
-    const auto request_json = rfl::json::write(*req);
-
-    // Create workflow instance record.
-    domain::workflow_instance instance;
-    instance.id = boost::uuids::random_generator()();
-    instance.tenant_id = tid_result->to_uuid();
-    instance.type = "run_report_workflow";
-    instance.state_id = instance_states.require("in_progress");
-    instance.request_json = request_json;
-    instance.created_by = tenant_ctx.service_account();
-    instance.created_at = std::chrono::system_clock::now();
-
-    repository::workflow_instance_repository instance_repo;
-    instance_repo.create(tenant_ctx, instance);
-
-    // Run the executor.
-    service::run_report_workflow executor(
-        instance.id,
-        req->report_instance_id,
-        req->tenant_id,
-        req->definition_id);
-
-    bool ok = false;
-    try {
-        ok = executor.execute(tenant_ctx, outbound_nats_);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Unhandled exception in run_report_workflow: " << e.what();
-        instance_repo.update_state(tenant_ctx, instance.id,
-            instance_states.require("failed"), "", e.what());
-        return;
-    }
-
-    if (!ok) {
-        BOOST_LOG_SEV(lg(), warn) << "run_report_workflow failed: "
-                                  << executor.failure_reason()
-                                  << ". Starting compensation.";
-
-        instance_repo.update_state(tenant_ctx, instance.id,
-            instance_states.require("compensating"), "", executor.failure_reason());
-
-        try {
-            executor.compensate(tenant_ctx, outbound_nats_);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Unhandled exception in run_report_workflow compensation: "
-                << e.what();
-        }
-
-        instance_repo.update_state(tenant_ctx, instance.id,
-            instance_states.require("compensated"), "", executor.failure_reason());
-        return;
-    }
-
-    instance_repo.update_state(tenant_ctx, instance.id,
-        instance_states.require("completed"), "{}", "");
-
-    BOOST_LOG_SEV(lg(), info) << "run_report_workflow completed for instance "
-                              << req->report_instance_id;
 }
 
 }

@@ -284,8 +284,10 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
     entry->replica_index = replica_index;
 
     try {
-        // bp2 uses boost::filesystem::path; convert from std::filesystem::path.
-        bp2::filesystem::path bp_exe(exe.string());
+        // cd into bin_dir then exec with a relative name (like the shell would
+        // do with `cd "$BIN_DIR" && exec ./binary`), so that `ps` shows the
+        // short name instead of the full absolute path.
+        bp2::filesystem::path bp_exe("./" + def.binary_name);
         bp2::filesystem::path bp_dir(bin_dir_.string());
         entry->proc.emplace(executor, bp_exe, args,
             bp2::process_start_dir(bp_dir));
@@ -470,10 +472,24 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
     co_await do_launch(service_name, replica_index);
 
-    // Update restart count on the new entry.
+    // Update restart count on the new in-memory entry.
     auto new_it = processes_.find(key);
     if (new_it != processes_.end())
         new_it->second->restart_count = next_restart;
+
+    // Persist restart count to DB so the dashboard reflects it.
+    try {
+        repository::service_instance_repository inst_repo;
+        auto inst = inst_repo.read(db_ctx_, service_name, replica_index);
+        if (inst) {
+            inst->restart_count = next_restart;
+            inst_repo.update_phase(db_ctx_, *inst);
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to persist restart_count for " << service_name
+            << "[" << replica_index << "]: " << e.what();
+    }
 }
 
 void process_supervisor::request_launch(

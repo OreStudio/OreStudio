@@ -108,6 +108,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         trigger_report_instance_message::nats_subject, "ores.reporting.service",
         [rih](ores::nats::message msg) { rih->trigger(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        mark_report_instance_running_request::nats_subject, "ores.reporting.service",
+        [rih](ores::nats::message msg) { rih->mark_running(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        mark_report_instance_completed_request::nats_subject, "ores.reporting.service",
+        [rih](ores::nats::message msg) { rih->mark_completed(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        mark_report_instance_failed_request::nats_subject, "ores.reporting.service",
+        [rih](ores::nats::message msg) { rih->mark_failed(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Concurrency policies

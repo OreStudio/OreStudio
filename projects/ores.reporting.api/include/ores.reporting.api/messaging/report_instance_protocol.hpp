@@ -92,6 +92,69 @@ struct trigger_report_instance_message {
     std::int64_t job_instance_id = 0;
 };
 
+// ============================================================================
+// Workflow lifecycle state transitions (called by ores.workflow.service)
+// ============================================================================
+
+/**
+ * @brief Mark a report instance as running (execution has started).
+ *
+ * Called by the run_report_workflow executor when it begins ORE execution.
+ * Sets started_at = now() and writes a new temporal version.
+ */
+struct mark_report_instance_running_request {
+    using response_type = struct mark_report_instance_running_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-instances.mark-running";
+    std::string instance_id;
+    std::string tenant_id;
+};
+
+struct mark_report_instance_running_response {
+    bool success = false;
+    std::string message;
+};
+
+/**
+ * @brief Mark a report instance as successfully completed.
+ *
+ * Called by the run_report_workflow executor after ORE execution succeeds.
+ * Sets completed_at = now() and stores the output message.
+ */
+struct mark_report_instance_completed_request {
+    using response_type = struct mark_report_instance_completed_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-instances.mark-completed";
+    std::string instance_id;
+    std::string tenant_id;
+    std::string output_message;
+};
+
+struct mark_report_instance_completed_response {
+    bool success = false;
+    std::string message;
+};
+
+/**
+ * @brief Mark a report instance as failed.
+ *
+ * Called by run_report_workflow compensation when execution fails.
+ * Sets completed_at = now() and stores the error message.
+ */
+struct mark_report_instance_failed_request {
+    using response_type = struct mark_report_instance_failed_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-instances.mark-failed";
+    std::string instance_id;
+    std::string tenant_id;
+    std::string error_message;
+};
+
+struct mark_report_instance_failed_response {
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

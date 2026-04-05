@@ -63,6 +63,16 @@ public:
      */
     void provision_parties(ores::nats::message msg);
 
+    /**
+     * @brief Handles workflow.v1.reports.run fire-and-forget messages.
+     *
+     * Receives a run_report_message published by the reporting service after
+     * a report instance is created. Creates a workflow_instance record and
+     * drives run_report_workflow through the ORE execution lifecycle.
+     * No reply is sent (fire-and-forget).
+     */
+    void run_report(ores::nats::message msg);
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

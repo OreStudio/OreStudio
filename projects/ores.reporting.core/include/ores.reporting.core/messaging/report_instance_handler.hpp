@@ -20,14 +20,20 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_INSTANCE_HANDLER_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_INSTANCE_HANDLER_HPP
 
+#include <chrono>
 #include <optional>
+#include <span>
+#include <cstddef>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -239,9 +245,156 @@ public:
                 << "Created report instance " << inst.id
                 << " for definition " << def->id
                 << " (job_instance_id=" << trigger_msg->job_instance_id << ")";
+
+            // Fire-and-forget: hand off to the workflow service for execution.
+            const auto wf_payload = std::string{
+                "{\"report_instance_id\":\""} +
+                boost::uuids::to_string(inst.id) + "\","
+                "\"tenant_id\":\"" + trigger_msg->tenant_id + "\","
+                "\"definition_id\":\"" + trigger_msg->report_definition_id + "\"}";
+            const auto wf_bytes = std::as_bytes(
+                std::span{wf_payload.data(), wf_payload.size()});
+            nats_.publish("workflow.v1.reports.run", wf_bytes);
+
+            BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+                << "Published run_report_message for instance " << inst.id;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_handler_lg(), error)
                 << "Failed to create report instance for trigger: " << e.what();
+        }
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Marks a report instance as running (called by workflow service).
+     *
+     * Trusted internal message — no JWT auth check. Sets started_at = now()
+     * and writes a new temporal version of the instance.
+     */
+    void mark_running(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto req = decode<mark_report_instance_running_request>(msg);
+        if (!req) {
+            reply(nats_, msg, mark_report_instance_running_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            const auto tid = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
+            if (!tid) {
+                reply(nats_, msg, mark_report_instance_running_response{
+                    .success = false, .message = "Invalid tenant_id"});
+                return;
+            }
+            const auto tenant_ctx = ctx_.with_tenant(*tid, ctx_.service_account());
+            service::report_instance_service svc(tenant_ctx);
+            auto inst = svc.find_instance(req->instance_id);
+            if (!inst) {
+                reply(nats_, msg, mark_report_instance_running_response{
+                    .success = false, .message = "Instance not found: " + req->instance_id});
+                return;
+            }
+            inst->started_at = std::chrono::system_clock::now();
+            inst->version++;
+            inst->modified_by = tenant_ctx.service_account();
+            inst->performed_by = tenant_ctx.service_account();
+            inst->change_reason_code = "system.workflow_transition";
+            inst->change_commentary = "Marked running by run_report_workflow";
+            svc.save_instance(*inst);
+            reply(nats_, msg, mark_report_instance_running_response{.success = true});
+        } catch (const std::exception& e) {
+            reply(nats_, msg, mark_report_instance_running_response{
+                .success = false, .message = e.what()});
+        }
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Marks a report instance as completed (called by workflow service).
+     */
+    void mark_completed(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto req = decode<mark_report_instance_completed_request>(msg);
+        if (!req) {
+            reply(nats_, msg, mark_report_instance_completed_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            const auto tid = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
+            if (!tid) {
+                reply(nats_, msg, mark_report_instance_completed_response{
+                    .success = false, .message = "Invalid tenant_id"});
+                return;
+            }
+            const auto tenant_ctx = ctx_.with_tenant(*tid, ctx_.service_account());
+            service::report_instance_service svc(tenant_ctx);
+            auto inst = svc.find_instance(req->instance_id);
+            if (!inst) {
+                reply(nats_, msg, mark_report_instance_completed_response{
+                    .success = false, .message = "Instance not found: " + req->instance_id});
+                return;
+            }
+            inst->completed_at = std::chrono::system_clock::now();
+            inst->output_message = req->output_message;
+            inst->version++;
+            inst->modified_by = tenant_ctx.service_account();
+            inst->performed_by = tenant_ctx.service_account();
+            inst->change_reason_code = "system.workflow_transition";
+            inst->change_commentary = "Marked completed by run_report_workflow";
+            svc.save_instance(*inst);
+            reply(nats_, msg, mark_report_instance_completed_response{.success = true});
+        } catch (const std::exception& e) {
+            reply(nats_, msg, mark_report_instance_completed_response{
+                .success = false, .message = e.what()});
+        }
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Marks a report instance as failed (called by workflow compensation).
+     */
+    void mark_failed(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto req = decode<mark_report_instance_failed_request>(msg);
+        if (!req) {
+            reply(nats_, msg, mark_report_instance_failed_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            const auto tid = ores::utility::uuid::tenant_id::from_string(req->tenant_id);
+            if (!tid) {
+                reply(nats_, msg, mark_report_instance_failed_response{
+                    .success = false, .message = "Invalid tenant_id"});
+                return;
+            }
+            const auto tenant_ctx = ctx_.with_tenant(*tid, ctx_.service_account());
+            service::report_instance_service svc(tenant_ctx);
+            auto inst = svc.find_instance(req->instance_id);
+            if (!inst) {
+                reply(nats_, msg, mark_report_instance_failed_response{
+                    .success = false, .message = "Instance not found: " + req->instance_id});
+                return;
+            }
+            inst->completed_at = std::chrono::system_clock::now();
+            inst->output_message = req->error_message;
+            inst->version++;
+            inst->modified_by = tenant_ctx.service_account();
+            inst->performed_by = tenant_ctx.service_account();
+            inst->change_reason_code = "system.workflow_transition";
+            inst->change_commentary = "Marked failed by run_report_workflow";
+            svc.save_instance(*inst);
+            reply(nats_, msg, mark_report_instance_failed_response{.success = true});
+        } catch (const std::exception& e) {
+            reply(nats_, msg, mark_report_instance_failed_response{
+                .success = false, .message = e.what()});
         }
         BOOST_LOG_SEV(report_instance_handler_lg(), debug)
             << "Completed " << msg.subject;

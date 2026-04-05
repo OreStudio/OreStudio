@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: a3f7c2d1-8e4b-4f9a-b6c3-2d1e8f5a7b9c
+:END:
+#+title: Report Definition to Instance Pipeline
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+#+status: COMPLETED
+
+* Overview
+
+This document describes the pipeline from a report definition through
+to the creation of a report instance. This pipeline is the first of
+two phases in the reporting lifecycle; the second (report execution) is
+described in a separate plan.
+
+This pipeline is fully implemented as of sprint 16.
+
+* Domain model
+
+** Report definition
+
+A ~report_definition~ is a persistent, versioned template that describes
+what report to run, when to run it, and how to handle concurrent
+executions. Type-specific configuration (e.g. ORE risk parameters) lives
+in a companion table.
+
+Key fields:
+- ~report_type~ — code FK to ~ores_reporting_report_types_tbl~ (currently: ~risk~)
+- ~schedule_expression~ — validated cron expression (e.g. ~0 6 * * 1-5~)
+- ~concurrency_policy~ — ~skip~, ~queue~, or ~fail~
+- ~scheduler_job_id~ — UUID FK to ~ores_scheduler_job_definitions_tbl~; present only when active
+- ~fsm_state_id~ — current lifecycle state
+
+** Risk report config
+
+A ~risk_report_config~ is a 1:1 companion to ~report_definition~ for
+report type ~risk~. It carries all ORE-level parameters:
+
+- Base currency, observation model, thread count
+- Market data convention: ~live~, ~eod~, or ~date~-specific
+- Analytics flags: NPV, cashflows, curves, sensitivity, simulation, XVA,
+  stress, parametric VaR, SIMM/initial margin, PFE
+- XVA settings: CVA/DVA/FVA/COLVA/DIM with quantiles and horizons
+- VaR settings: quantiles and method
+- SIMM version and calculation currency
+
+Portfolio and book scope are stored in separate temporal junction tables:
+~ores_reporting_risk_report_config_portfolios_tbl~ and
+~ores_reporting_risk_report_config_books_tbl~. An empty set in either
+table means "all visible to the tenant".
+
+** Report definition lifecycle FSM
+
+#+begin_example
+draft ──→ active ──→ suspended ──→ archived
+  └──────────────────────────────→ archived
+#+end_example
+
+- ~draft~ — editable, not yet scheduled
+- ~active~ — scheduler job registered; cron is live
+- ~suspended~ — scheduler job removed; can be reactivated
+- ~archived~ (terminal) — retained for history only
+
+** Report instance
+
+A ~report_instance~ is one execution record created each time the
+scheduler fires for an active definition. It carries:
+
+- ~definition_id~ — FK to the parent definition
+- ~fsm_state_id~ — current execution lifecycle state
+- ~trigger_run_id~ — scheduler job instance ID that caused creation
+- ~started_at~, ~completed_at~ — execution timing
+- ~output_message~ — execution log or error text
+
+** Report instance lifecycle FSM
+
+#+begin_example
+[concurrency check at creation time]
+  no running instance      → pending
+  running + policy=queue   → queued
+  running + policy=skip    → skipped  (terminal)
+  running + policy=fail    → failed   (terminal)
+
+pending ──→ running ──→ completed (terminal)
+   └──────────────────→ failed    (terminal)
+   └──────────────────→ cancelled (terminal)
+queued  ──→ pending
+queued  ──→ cancelled (terminal)
+running ──→ cancelled (terminal)
+#+end_example
+
+Note: the ~running~ state and its successors are managed by the report
+execution pipeline (see separate plan). This pipeline only creates
+instances in ~pending~ or one of the terminal initial states.
+
+* Pipeline
+
+** Step 1: user creates and activates a report definition
+
+The user creates a ~report_definition~ (and a companion ~risk_report_config~
+for type ~risk~), then requests scheduling via the UI or API.
+
+The reporting service handles ~reporting.v1.report-definitions.schedule~:
+
+1. Validates the cron expression.
+2. Builds a scheduler ~job_definition~ with ~action_type = nats_publish~
+   and ~action_payload = {subject, report_definition_id, tenant_id}~.
+3. Sends ~scheduler.v1.jobs.schedule~ to ~ores.scheduler.service~.
+4. On success, persists ~scheduler_job_id~ on the definition and
+   transitions FSM to ~active~.
+
+** Step 2: reconciliation on startup
+
+When ~ores.reporting.service~ starts (or detects a definition change via
+PostgreSQL LISTEN/NOTIFY), ~report_scheduling_service::reconcile()~:
+
+1. Queries IAM for all active tenants.
+2. For each tenant, queries unscheduled active definitions.
+3. Sends a batch schedule request to the scheduler.
+4. Persists ~scheduler_job_id~ on each accepted definition.
+
+This ensures no definition is left unscheduled across service restarts.
+
+** Step 3: scheduler fires
+
+At the scheduled time, pg_cron fires the job. The scheduler's
+~nats_publish_action_handler~ publishes a ~trigger_report_instance_message~
+to ~reporting.v1.report-instances.trigger~:
+
+#+begin_example
+{
+  "report_definition_id": "<uuid>",
+  "tenant_id":            "<uuid>",
+  "job_instance_id":      <int64>
+}
+#+end_example
+
+** Step 4: instance creation
+
+~report_instance_handler::trigger()~ in ~ores.reporting.service~:
+
+1. Parses tenant ID and builds a tenant-scoped DB context.
+2. Looks up the report definition.
+3. Checks for running instances of the same definition (concurrency policy).
+4. Determines initial FSM state: ~pending~, ~queued~, ~skipped~, or ~failed~.
+5. Creates and persists the ~report_instance~ record.
+6. If the instance is ~pending~: publishes a fire-and-forget message to
+   kick off report execution (see report execution plan).
+
+* Implementation status
+
+| Component                      | Status    |
+|--------------------------------+-----------+
+| report_definition domain + SQL | DONE      |
+| risk_report_config domain + SQL| DONE      |
+| Portfolio/book scope tables    | DONE      |
+| report_definition_lifecycle FSM| DONE      |
+| report_scheduling_service      | DONE      |
+| Scheduler reconciliation       | DONE      |
+| report_instance domain + SQL   | DONE      |
+| report_instance_lifecycle FSM  | DONE (7 states, concurrency not yet applied in code) |
+| trigger() handler              | DONE (concurrency check and FSM state init missing) |
+
+** Known gaps
+
+- ~trigger()~ does not yet set ~fsm_state_id~ on the created instance
+  (leaves it as ~null~); concurrency policy is not yet evaluated.
+- The FSM ~pending~, ~queued~, ~skipped~, ~failed~ initial-state selection
+  is described in the SQL comments but not implemented in C++.
+
+These gaps are to be addressed as part of the report execution plan.

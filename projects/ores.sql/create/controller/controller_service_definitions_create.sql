@@ -40,6 +40,7 @@ create table if not exists "ores_controller_service_definitions_tbl" (
     "max_restart_count" integer not null default 3,
     "enabled" integer not null default 1,
     "args_template" text null,
+    "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

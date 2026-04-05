@@ -86,6 +86,11 @@ struct service_definition final {
     std::optional<std::string> args_template;
 
     /**
+     * @brief Human-readable description of the service's role.
+     */
+    std::optional<std::string> description;
+
+    /**
      * @brief Username of the person who last modified this definition.
      */
     std::string modified_by;

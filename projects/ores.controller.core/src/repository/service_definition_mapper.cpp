@@ -43,6 +43,7 @@ service_definition_mapper::map(const service_definition_entity& v) {
     r.max_restart_count = v.max_restart_count;
     r.enabled = v.enabled;
     r.args_template = v.args_template;
+    r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -70,6 +71,7 @@ service_definition_mapper::map(const api::domain::service_definition& v) {
     r.max_restart_count = v.max_restart_count;
     r.enabled = v.enabled;
     r.args_template = v.args_template;
+    r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

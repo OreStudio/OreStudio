@@ -48,6 +48,7 @@ struct service_definition_entity {
     int max_restart_count = 3;
     int enabled = 1;
     std::optional<std::string> args_template;
+    std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

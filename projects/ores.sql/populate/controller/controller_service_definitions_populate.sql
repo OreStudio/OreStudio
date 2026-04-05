@@ -41,7 +41,7 @@ declare
     v_reason        text := 'system.initial_load';
     v_commentary    text := 'Initial controller service definition seed';
     v_infinity      timestamptz := ores_utility_infinity_timestamp_fn();
-    -- Each row: (service_name, binary_name, desired_replicas, args_template)
+    -- Each row: (service_name, binary_name, desired_replicas, args_template, description)
     -- args_template NULL → supervisor uses built-in default template.
     svc             record;
 begin
@@ -49,34 +49,36 @@ begin
         select *
         from (values
             -- NATS domain services: standard args template (NULL = use default)
-            ('ores.iam.service',        'ores.iam.service',        1, null::text),
-            ('ores.refdata.service',    'ores.refdata.service',    1, null),
-            ('ores.dq.service',         'ores.dq.service',         1, null),
-            ('ores.variability.service','ores.variability.service', 1, null),
-            ('ores.assets.service',     'ores.assets.service',     1, null),
-            ('ores.scheduler.service',  'ores.scheduler.service',  1, null),
-            ('ores.reporting.service',  'ores.reporting.service',  1, null),
-            ('ores.telemetry.service',  'ores.telemetry.service',  1, null),
-            ('ores.trading.service',    'ores.trading.service',    1, null),
-            ('ores.compute.service',    'ores.compute.service',    1, null),
-            ('ores.synthetic.service',  'ores.synthetic.service',  1, null),
-            ('ores.workflow.service',   'ores.workflow.service',   1, null),
-            ('ores.ore.service',        'ores.ore.service',        1, null),
-            ('ores.marketdata.service', 'ores.marketdata.service', 1, null),
+            ('ores.iam.service',        'ores.iam.service',        1, null::text, 'Identity and access management'),
+            ('ores.refdata.service',    'ores.refdata.service',    1, null,       'Reference data — currencies, countries, parties'),
+            ('ores.dq.service',         'ores.dq.service',         1, null,       'Data quality governance and cataloguing'),
+            ('ores.variability.service','ores.variability.service', 1, null,       'Feature flags and system configuration'),
+            ('ores.assets.service',     'ores.assets.service',     1, null,       'Digital assets — images and tags'),
+            ('ores.scheduler.service',  'ores.scheduler.service',  1, null,       'Job scheduling and execution'),
+            ('ores.reporting.service',  'ores.reporting.service',  1, null,       'Risk report generation and management'),
+            ('ores.telemetry.service',  'ores.telemetry.service',  1, null,       'Service telemetry and health monitoring'),
+            ('ores.trading.service',    'ores.trading.service',    1, null,       'Trading instruments and trades'),
+            ('ores.compute.service',    'ores.compute.service',    1, null,       'Compute grid orchestration'),
+            ('ores.synthetic.service',  'ores.synthetic.service',  1, null,       'Synthetic data generation'),
+            ('ores.workflow.service',   'ores.workflow.service',   1, null,       'Workflow execution engine'),
+            ('ores.ore.service',        'ores.ore.service',        1, null,       'ORE pricing engine integration'),
+            ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
             -- HTTP server: needs --port and --storage-dir; no --log-replica-index.
             -- Port 51000 = local1 debug default; update DB row to change it.
             ('ores.http.server', 'ores.http.server', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
-                ' --port 51000 --storage-dir ../storage'),
+                ' --port 51000 --storage-dir ../storage',
+                'HTTP API gateway'),
             -- WT server: Wt args passed after --; no --log-replica-index.
             -- Port 51002 = local1 debug default; update DB row to change it.
             ('ores.wt.service', 'ores.wt.service', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
-                ' -- --http-address 0.0.0.0 --docroot . --http-port 51002'),
+                ' -- --http-address 0.0.0.0 --docroot . --http-port 51002',
+                'Web UI server (Wt framework)'),
             -- Compute wrapper nodes: 5 replicas, one per grid node.
             -- {host_id} = stable UUID derived from hostname:replica_index.
             -- {work_dir} = ../run/wrappers/node_N.
@@ -87,8 +89,9 @@ begin
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
                 ' --host-id {host_id} --tenant-id {tenant_id}'
-                ' --work-dir {work_dir} --http-base-url http://localhost:51000')
-        ) as t(service_name, binary_name, desired_replicas, args_template)
+                ' --work-dir {work_dir} --http-base-url http://localhost:51000',
+                'Compute grid worker nodes')
+        ) as t(service_name, binary_name, desired_replicas, args_template, description)
     loop
         if not exists (
             select 1 from ores_controller_service_definitions_tbl
@@ -105,6 +108,7 @@ begin
                 max_restart_count,
                 enabled,
                 args_template,
+                description,
                 modified_by,
                 performed_by,
                 change_reason_code,
@@ -121,6 +125,7 @@ begin
                 3,
                 1,
                 svc.args_template,
+                svc.description,
                 v_actor,
                 v_actor,
                 v_reason,

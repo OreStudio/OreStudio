@@ -57,8 +57,8 @@ public:
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
                      std::string service_account = "")
-    : connection_pool_(std::move(connection_pool), std::move(tenant_id),
-                       std::move(actor), service_account),
+    : connection_pool_(std::move(connection_pool), credentials,
+                       std::move(tenant_id), std::move(actor), service_account),
       credentials_(std::move(credentials)),
       service_account_(std::move(service_account)) {}
 
@@ -72,9 +72,10 @@ public:
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
                      std::string service_account = "")
-    : connection_pool_(std::move(connection_pool), std::move(tenant_id),
-                       party_id, std::move(visible_party_ids),
-                       std::move(actor), service_account),
+    : connection_pool_(std::move(connection_pool), credentials,
+                       std::move(tenant_id), party_id,
+                       std::move(visible_party_ids), std::move(actor),
+                       service_account),
       credentials_(std::move(credentials)),
       service_account_(std::move(service_account)) {}
 
@@ -161,8 +162,7 @@ public:
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id,
                                       std::string actor) const {
         return context(connection_pool_.underlying_pool(), credentials_,
-                       std::move(tenant_id), std::move(actor),
-                       service_account_);
+                       std::move(tenant_id), std::move(actor), service_account_);
     }
 
     /**

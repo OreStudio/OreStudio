@@ -183,29 +183,53 @@ void postgres_listener_service::listen_loop() {
     }
     ready_cv_.notify_all();
 
+    static constexpr std::chrono::seconds min_backoff{1};
+    static constexpr std::chrono::seconds max_backoff{30};
+    auto backoff = min_backoff;
+
     while (running_) {
+        bool connection_ok = true;
         {
             std::lock_guard lock(mutex_);
 
             if (!connection_.has_value()) {
-                BOOST_LOG_SEV(lg(), error) << "Connection lost in listen_loop.";
-                running_ = false;
-                break;
-            }
-
-            // Consume any available input from the server
-            if (!(*connection_)->consume_input()) {
+                connection_ok = false;
+            } else if (!(*connection_)->consume_input()) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Connection error while consuming input.";
-                running_ = false;
-                break;
+                connection_ = std::nullopt;
+                connection_ok = false;
+            } else {
+                backoff = min_backoff; // reset on successful poll
+                auto notifications = (*connection_)->get_notifications();
+                for (const auto& notification : notifications) {
+                    handle_notification(notification);
+                }
             }
+        }
 
-            // Process any pending notifications
-            auto notifications = (*connection_)->get_notifications();
-            for (const auto& notification : notifications) {
-                handle_notification(notification);
+        if (!connection_ok) {
+            if (!running_) break;
+
+            BOOST_LOG_SEV(lg(), warn)
+                << "Listener connection lost. Reconnecting in "
+                << backoff.count() << "s...";
+            std::this_thread::sleep_for(backoff);
+            backoff = std::min(backoff * 2, max_backoff);
+
+            if (!running_) break;
+
+            std::lock_guard lock(mutex_);
+            auto result = sqlgen::postgres::connect(ctx_.credentials());
+            if (!result) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Reconnect failed: " << result.error().what();
+                continue; // will retry after next backoff
             }
+            connection_ = std::move(*result);
+            BOOST_LOG_SEV(lg(), info) << "Listener reconnected. Reissuing LISTENs.";
+            issue_pending_listens();
+            continue;
         }
 
         // Sleep briefly before checking again

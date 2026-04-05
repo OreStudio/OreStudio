@@ -20,10 +20,12 @@
 #ifndef ORES_DATABASE_TENANT_AWARE_POOL_HPP
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
 #include <sqlgen/ConnectionPool.hpp>
+#include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -60,10 +62,14 @@ public:
      * @brief Constructs a tenant-aware pool wrapper (tenant-only).
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
+                      sqlgen::postgres::Credentials credentials,
                       utility::uuid::tenant_id tenant_id,
                       std::string actor = "",
                       std::string service_account = "")
-        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
+        : pool_(std::move(pool)), credentials_(std::move(credentials)),
+          pool_size_(pool_.size()),
+          reconnect_mutex_(std::make_shared<std::mutex>()),
+          tenant_id_(std::move(tenant_id)),
           actor_(std::move(actor)),
           service_account_(std::move(service_account)) {}
 
@@ -71,12 +77,16 @@ public:
      * @brief Constructs a tenant-and-party-aware pool wrapper.
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
+                      sqlgen::postgres::Credentials credentials,
                       utility::uuid::tenant_id tenant_id,
                       boost::uuids::uuid party_id,
                       std::vector<boost::uuids::uuid> visible_party_ids,
                       std::string actor = "",
                       std::string service_account = "")
-        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
+        : pool_(std::move(pool)), credentials_(std::move(credentials)),
+          pool_size_(pool_.size()),
+          reconnect_mutex_(std::make_shared<std::mutex>()),
+          tenant_id_(std::move(tenant_id)),
           party_id_(party_id),
           visible_party_ids_(std::move(visible_party_ids)),
           actor_(std::move(actor)),
@@ -84,6 +94,10 @@ public:
 
     /**
      * @brief Acquires a session and sets the tenant (and party) context.
+     *
+     * If the probing ROLLBACK fails (dead connection after a DB restart), the
+     * entire pool is rebuilt from the stored credentials and the acquire is
+     * retried once.
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
@@ -96,7 +110,47 @@ public:
         // Speculatively rollback any aborted transaction left by a previous
         // failed operation. PostgreSQL accepts ROLLBACK even when no
         // transaction is active, so this is always safe.
-        (*session_result)->execute("ROLLBACK");
+        // If ROLLBACK itself fails the connection is dead — rebuild the pool.
+        bool needs_rebuild = false;
+        std::string rollback_error;
+        {
+            auto rollback_result = (*session_result)->execute("ROLLBACK");
+            if (!rollback_result) {
+                needs_rebuild = true;
+                rollback_error = rollback_result.error().what();
+            }
+        } // session_result still held here intentionally
+
+        if (needs_rebuild) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Pool connection dead (ROLLBACK failed: "
+                << rollback_error << "). Rebuilding pool...";
+            // Drop session so the connection flag is released before we
+            // replace the pool (avoids use-after-free of the old pool entry).
+            session_result = pool_.acquire(); // re-acquire to replace below
+            {
+                std::lock_guard lock(*reconnect_mutex_);
+                sqlgen::ConnectionPoolConfig cfg{
+                    .size = pool_size_,
+                    .num_attempts = 3,
+                    .wait_time_in_seconds = 1
+                };
+                auto new_pool = sqlgen::make_connection_pool<Connection>(
+                    cfg, credentials_);
+                if (new_pool) {
+                    pool_ = std::move(*new_pool);
+                    BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
+                } else {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Pool rebuild failed: " << new_pool.error().what();
+                    return sqlgen::error("Pool rebuild failed: " +
+                        std::string(new_pool.error().what()));
+                }
+            }
+            session_result = pool_.acquire();
+            if (!session_result) return session_result;
+            (*session_result)->execute("ROLLBACK"); // best-effort on fresh conn
+        }
 
         const auto tenant_id_str = tenant_id_.to_string();
         const std::string sql =
@@ -232,6 +286,9 @@ public:
 
 private:
     sqlgen::ConnectionPool<Connection> pool_;
+    sqlgen::postgres::Credentials credentials_;
+    std::size_t pool_size_;
+    std::shared_ptr<std::mutex> reconnect_mutex_;
     utility::uuid::tenant_id tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;
     std::vector<boost::uuids::uuid> visible_party_ids_;

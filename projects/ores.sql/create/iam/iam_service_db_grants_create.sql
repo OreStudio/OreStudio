@@ -90,7 +90,9 @@ grant usage, select on all sequences in schema public
     :compute_service_user,
     :synthetic_service_user,
     :workflow_service_user,
-    :marketdata_service_user;
+    :ore_service_user,
+    :marketdata_service_user,
+    :controller_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -107,7 +109,9 @@ alter default privileges in schema public
     :compute_service_user,
     :synthetic_service_user,
     :workflow_service_user,
-    :marketdata_service_user;
+    :ore_service_user,
+    :marketdata_service_user,
+    :controller_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
@@ -203,10 +207,21 @@ select _ores_grant_dml_fn('ores_refdata_parties', :'workflow_service_user');
 grant select on ores_iam_tenants_tbl to :workflow_service_user;
 
 -- ---------------------------------------------------------------------------
+-- ore_service: ORE Import domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_workflow_', :'ore_service_user');
+grant select on ores_iam_tenants_tbl to :ore_service_user;
+
+-- ---------------------------------------------------------------------------
 -- marketdata_service: Market Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
 grant select on ores_iam_tenants_tbl to :marketdata_service_user;
+
+-- ---------------------------------------------------------------------------
+-- controller_service: Service Controller domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_controller_', :'controller_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

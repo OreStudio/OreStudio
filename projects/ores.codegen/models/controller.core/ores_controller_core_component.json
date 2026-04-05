@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "controller.core",
+    "full_name": "ores.controller.core",
+    "brief": "Core lifecycle management logic for the ORE Studio service controller.",
+    "description": "Contains the process supervisor, replica manager, restart policy engine,\nand NATS message handlers for the service controller. Reads service\ndefinitions from the database, spawns and monitors OS processes, writes\nservice instance state and lifecycle events, and handles NATS commands\nfor starting, stopping, and restarting individual service replicas."
+  }
+}

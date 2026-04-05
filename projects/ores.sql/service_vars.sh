@@ -37,5 +37,7 @@ SERVICE_NAMES=(
     compute
     synthetic
     workflow
+    ore
     marketdata
+    controller
 )

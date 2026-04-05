@@ -138,6 +138,15 @@ alter  user :workflow_service_user with password :'workflow_service_password';
 grant :service_role to :workflow_service_user;
 alter  role :workflow_service_user set search_path to public;
 
+-- ORE Import domain service
+select set_config('ores.cur_user', :'ore_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :ore_service_user with password :'ore_service_password';
+grant :service_role to :ore_service_user;
+alter  role :ore_service_user set search_path to public;
+
 -- Market Data domain service
 select set_config('ores.cur_user', :'marketdata_service_user', false);
 do $$ begin
@@ -146,4 +155,13 @@ do $$ begin
 alter  user :marketdata_service_user with password :'marketdata_service_password';
 grant :service_role to :marketdata_service_user;
 alter  role :marketdata_service_user set search_path to public;
+
+-- Service Controller domain service
+select set_config('ores.cur_user', :'controller_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :controller_service_user with password :'controller_service_password';
+grant :service_role to :controller_service_user;
+alter  role :controller_service_user set search_path to public;
 

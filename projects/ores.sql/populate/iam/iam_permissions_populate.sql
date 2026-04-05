@@ -384,6 +384,17 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdat
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
 -- =============================================================================
+-- Controller Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::instances:read',   'View service instance status');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::instances:manage', 'Start, stop, and restart service instances');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::definitions:read',  'View service definitions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::definitions:write', 'Create and modify service definitions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::events:read',       'View service lifecycle events');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::*', 'Full access to all controller operations');
+
+-- =============================================================================
 -- Global Wildcard Permission
 -- =============================================================================
 

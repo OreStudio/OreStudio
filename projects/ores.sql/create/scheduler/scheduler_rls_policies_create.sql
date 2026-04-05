@@ -61,3 +61,22 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
     OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Job Instances
+-- -----------------------------------------------------------------------------
+-- Write policy: the scheduler service (system tenant context) may write job
+-- instances for any tenant, including null-tenant system jobs.
+-- Tenant-scoped callers may only write instances for their own tenant.
+create policy ores_scheduler_job_instances_write_policy
+on ores_scheduler_job_instances_tbl
+for all using (
+    tenant_id is null
+    OR tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+)
+with check (
+    tenant_id is null
+    OR tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+);

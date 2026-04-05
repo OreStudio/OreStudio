@@ -32,6 +32,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 SERVICES=(
+    ores.controller.service
     ores.iam.service
     ores.refdata.service
     ores.dq.service
@@ -44,6 +45,7 @@ SERVICES=(
     ores.trading.service
     ores.marketdata.service
     ores.compute.service
+    ores.ore.service
     ores.workflow.service
     ores.http.server
     ores.wt.service

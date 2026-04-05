@@ -1,0 +1,125 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "controller",
+    "entity_singular": "service_definition",
+    "entity_plural": "service_definitions",
+    "entity_title": "Service Definition",
+    "has_tenant_id": false,
+    "brief": "Desired state configuration for a managed ORE Studio service.",
+    "description": "Represents a Kubernetes-style Deployment: the desired configuration for a\nnamed service, including how many replicas to run, the binary name, restart\npolicy, and whether the service is enabled. This is a bitemporal table so\nthat the full history of configuration changes is preserved for audit.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the service definition."
+    },
+
+    "natural_keys": [
+      {
+        "column": "service_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique name of the service (e.g. ores.iam.service)."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "binary_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Executable filename (may differ from service_name for multi-instance services)."
+      },
+      {
+        "name": "desired_replicas",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "1",
+        "description": "Number of replicas to maintain."
+      },
+      {
+        "name": "restart_policy",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'always'",
+        "description": "Restart policy: always, on-failure, or never."
+      },
+      {
+        "name": "max_restart_count",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "3",
+        "description": "Maximum number of automatic restarts before marking the instance failed."
+      },
+      {
+        "name": "enabled",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "1",
+        "description": "1 if the service should be started, 0 if it should remain stopped."
+      },
+      {
+        "name": "args_template",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional command-line argument template; NULL means use the default launch arguments."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_controller_service_definitions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "service_definition",
+      "entity_plural_short": "service_definitions",
+      "entity_singular_words": "service definition",
+      "entity_plural_words": "service definitions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>"]
+      },
+      "iterator_var": "sd"
+    },
+
+    "qt": {
+      "domain_include": "ores.controller/domain/service_definition.hpp",
+      "domain_class": "controller::domain::service_definition",
+      "protocol_include": "ores.controller/messaging/service_definition_protocol.hpp",
+      "collection_name": "service_definitions",
+      "item_var": "service_definition",
+      "key_field": "service_name",
+      "has_uuid_primary_key": true,
+      "has_pagination": false,
+
+      "get_request_class": "controller::messaging::list_service_definitions_request",
+      "get_response_class": "controller::messaging::list_service_definitions_response",
+
+      "columns": [
+        {"enum_name": "ServiceName",      "field": "service_name",      "header": "Service",         "is_string": true, "width": 200},
+        {"enum_name": "BinaryName",       "field": "binary_name",       "header": "Binary",          "is_string": true, "width": 180},
+        {"enum_name": "DesiredReplicas",  "field": "desired_replicas",  "header": "Replicas",        "is_int": true,    "width": 70},
+        {"enum_name": "RestartPolicy",    "field": "restart_policy",    "header": "Restart Policy",  "is_string": true, "width": 100},
+        {"enum_name": "MaxRestartCount",  "field": "max_restart_count", "header": "Max Restarts",    "is_int": true,    "width": 90},
+        {"enum_name": "Enabled",          "field": "enabled",           "header": "Enabled",         "is_int": true,    "width": 60},
+        {"enum_name": "Version",          "field": "version",           "header": "Version",         "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",       "field": "modified_by",       "header": "Modified By",     "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "ServiceDefinitionListWindow",
+      "window_title": "Service Definitions",
+      "icon": "Server"
+    }
+  }
+}

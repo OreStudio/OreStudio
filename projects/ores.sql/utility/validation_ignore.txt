@@ -189,6 +189,17 @@ TENANT_001 ores_compute_app_version_platforms_tbl
 TENANT_001 ores_telemetry_service_samples_tbl
 
 # =============================================================================
+# Controller tables - system-level service lifecycle management.
+# These tables track the desired state and operational state of ORE Studio
+# backend services. They are not tenant-specific; controller is a system-level
+# component that runs outside the tenant isolation model.
+# =============================================================================
+TENANT_001 ores_controller_service_definitions_tbl
+TENANT_001 ores_controller_service_instances_tbl
+TENANT_001 ores_controller_service_events_tbl
+TENANT_001 ores_controller_service_dependencies_tbl
+
+# =============================================================================
 # Market data TimescaleDB hypertables — observations and fixings.
 # These tables use (id, date) as the primary key because TimescaleDB requires
 # the partition column in the PK. GIST exclusion is incompatible with

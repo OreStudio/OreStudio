@@ -1,0 +1,123 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "controller",
+    "entity_singular": "service_instance",
+    "entity_plural": "service_instances",
+    "entity_title": "Service Instance",
+    "has_tenant_id": false,
+    "brief": "Operational state of a single running replica of a managed service.",
+    "description": "Represents a Kubernetes-style Pod: one concrete running instance of a\nservice definition. Tracks the OS process ID, lifecycle phase, start/stop\ntimes, and how many times the instance has been restarted. Non-temporal:\nonly the current state is kept here; history is captured in service_events.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the service instance."
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "service_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Name of the service definition this instance belongs to."
+      },
+      {
+        "name": "replica_index",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Zero-based replica number; used to generate unique log file names."
+      },
+      {
+        "name": "pid",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": true,
+        "description": "OS process ID while running; NULL when stopped or pending."
+      },
+      {
+        "name": "phase",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'pending'",
+        "description": "Lifecycle phase: pending, running, stopping, stopped, failed."
+      },
+      {
+        "name": "started_at",
+        "type": "timestamp with time zone",
+        "cpp_type": "std::chrono::system_clock::time_point",
+        "nullable": true,
+        "description": "Timestamp when the process was last successfully started."
+      },
+      {
+        "name": "stopped_at",
+        "type": "timestamp with time zone",
+        "cpp_type": "std::chrono::system_clock::time_point",
+        "nullable": true,
+        "description": "Timestamp when the process last stopped or was stopped."
+      },
+      {
+        "name": "restart_count",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Number of times this instance has been automatically restarted."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_controller_service_instances_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "service_instance",
+      "entity_plural_short": "service_instances",
+      "entity_singular_words": "service instance",
+      "entity_plural_words": "service instances"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<chrono>"]
+      },
+      "iterator_var": "si"
+    },
+
+    "qt": {
+      "domain_include": "ores.controller/domain/service_instance.hpp",
+      "domain_class": "controller::domain::service_instance",
+      "protocol_include": "ores.controller/messaging/service_instance_protocol.hpp",
+      "collection_name": "service_instances",
+      "item_var": "service_instance",
+      "key_field": "id",
+      "has_uuid_primary_key": true,
+      "has_pagination": false,
+
+      "get_request_class": "controller::messaging::list_service_instances_request",
+      "get_response_class": "controller::messaging::list_service_instances_response",
+
+      "columns": [
+        {"enum_name": "ServiceName",   "field": "service_name",   "header": "Service",       "is_string": true,    "width": 200},
+        {"enum_name": "ReplicaIndex",  "field": "replica_index",  "header": "Replica",       "is_int": true,       "width": 60},
+        {"enum_name": "Phase",         "field": "phase",          "header": "Phase",         "is_string": true,    "width": 80},
+        {"enum_name": "Pid",           "field": "pid",            "header": "PID",           "is_int": true,       "width": 70},
+        {"enum_name": "StartedAt",     "field": "started_at",     "header": "Started",       "is_timestamp": true, "width": 140},
+        {"enum_name": "StoppedAt",     "field": "stopped_at",     "header": "Stopped",       "is_timestamp": true, "width": 140},
+        {"enum_name": "RestartCount",  "field": "restart_count",  "header": "Restarts",      "is_int": true,       "width": 70}
+      ],
+
+      "settings_group": "ServiceInstanceListWindow",
+      "window_title": "Service Instances",
+      "icon": "Server"
+    }
+  }
+}

@@ -64,12 +64,14 @@ std::int64_t job_instance_repository::write_started(
         ores::platform::time::datetime::format_time_point_utc(inst.started_at);
     const auto status = job_status_to_string(inst.status);
 
+    // NULLIF converts an empty string to NULL so nullable uuid columns
+    // don't fail the ::uuid cast when tenant_id / party_id are absent.
     const std::string insert_sql =
         "INSERT INTO ores_scheduler_job_instances_tbl "
         "  (tenant_id, party_id, job_definition_id, action_type, status, "
         "   triggered_at, started_at) "
         "VALUES "
-        "  ($1::uuid, $2::uuid, $3::uuid, $4, $5, "
+        "  (NULLIF($1,'')::uuid, NULLIF($2,'')::uuid, $3::uuid, $4, $5, "
         "   $6::timestamptz, $7::timestamptz) "
         "RETURNING id";
 

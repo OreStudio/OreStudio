@@ -198,10 +198,19 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Synt
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'compute::*');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'telemetry::*');
 
+-- ORE Import service: workflow management + delegated refdata/trading writes
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'ORE Import workflow domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'workflow::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'OreService', 'iam::tenants:read');
+
 -- Market data service: full access to market data domain
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'Market data domain service');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'marketdata::*');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'MarketdataService', 'iam::tenants:read');
+
+-- Controller service: full own-component access (system-level, no tenant isolation)
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'Service lifecycle controller');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'controller::*');
 
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl

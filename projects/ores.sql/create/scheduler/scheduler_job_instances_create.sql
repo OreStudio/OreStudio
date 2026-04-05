@@ -31,7 +31,7 @@ create table if not exists ores_scheduler_job_instances_tbl (
     party_id          uuid,
     job_definition_id uuid        not null,
     action_type       text        not null default 'execute_sql',
-    status            text        not null check (status in ('started','succeeded','failed')),
+    status            text        not null check (status in ('starting','succeeded','failed')),
     triggered_at      timestamptz not null,
     started_at        timestamptz not null default now(),
     completed_at      timestamptz,
@@ -94,4 +94,5 @@ create policy ores_scheduler_job_instances_read_policy
 on ores_scheduler_job_instances_tbl for select using (
     tenant_id is null  -- system jobs visible to all
     or tenant_id = ores_iam_current_tenant_id_fn()
+    or ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );

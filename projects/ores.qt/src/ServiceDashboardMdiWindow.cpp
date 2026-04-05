@@ -19,36 +19,185 @@
  */
 #include "ores.qt/ServiceDashboardMdiWindow.hpp"
 
+#include <climits>
 #include <chrono>
+#include "ores.platform/time/datetime.hpp"
+#include <QPainter>
 #include <QDateTime>
+#include <QHBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QMessageBox>
 #include <QPointer>
 #include <QHeaderView>
+#include <QApplication>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
+#include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
-#include "ores.compute.api/messaging/telemetry_protocol.hpp"
+#include "ores.controller.api/messaging/service_instance_protocol.hpp"
+#include "ores.controller.api/messaging/service_definition_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace compute = ores::compute;
+namespace controller_api = ores::controller::api;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Local types
+// ─────────────────────────────────────────────────────────────────────────────
 
 namespace {
 
-struct ServiceSamplesResult {
-    bool success{false};
-    QString error;
-    std::vector<telemetry::domain::service_sample> samples;
-    // Grid stats for wrapper node row (optional — absent if compute service unavailable)
-    bool has_grid_stats{false};
-    int total_hosts{0};
-    int online_hosts{0};
-    std::chrono::system_clock::time_point grid_sampled_at;
+// Main overview table columns
+enum class Col { Status = 0, Service, Description, Replicas, Version, LastSeen };
+// Instance detail table columns
+enum class DCol { Replica = 0, Phase, Pid, StartedAt, StoppedAt, Restarts, Uuid };
+
+// Per-service aggregated data built from heartbeat samples + service definitions.
+struct ServiceRow {
+    std::string service_name;
+    std::string description;
+    int desired_replicas = 1;
+    int online_replicas  = 0;   // samples with age < 120 s (telemetry heartbeat)
+    int running_replicas = 0;   // instances with phase == "running" (controller DB)
+    std::string version;        // from most-recent sample
+    long long   last_seen_secs = LLONG_MAX; // age in seconds, LLONG_MAX = never seen
 };
 
+struct SamplesResult {
+    bool success{false};
+    QString error;
+    std::vector<ServiceRow> rows;
+    std::vector<controller_api::domain::service_definition> service_definitions;
+};
+
+struct InstancesResult {
+    bool success{false};
+    QString error;
+    std::vector<controller_api::domain::service_instance> instances;
+};
+
+struct ServiceActionResult {
+    bool success{false};
+    QString error;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+QString relative_time(long long secs) {
+    if (secs == LLONG_MAX) return QStringLiteral("Never");
+    if (secs < 60)   return QStringLiteral("%1s ago").arg(secs);
+    if (secs < 3600) return QStringLiteral("%1m ago").arg(secs / 60);
+    return QStringLiteral("%1h ago").arg(secs / 3600);
 }
+
+QString format_timepoint(
+    std::optional<std::chrono::system_clock::time_point> tp) {
+    if (!tp) return QStringLiteral("-");
+    return QString::fromStdString(
+        ores::platform::time::datetime::format_time_point_utc(*tp));
+}
+
+std::pair<QString, QColor> status_for_row(const ServiceRow& r) {
+    // Services with NATS telemetry heartbeats: use heartbeat-based status.
+    if (r.last_seen_secs != LLONG_MAX) {
+        if (r.online_replicas == 0)
+            return { QStringLiteral("Offline"), color_constants::level_trace };
+        if (r.online_replicas < r.desired_replicas || r.last_seen_secs >= 30)
+            return { QStringLiteral("Degraded"), color_constants::level_warn };
+        return { QStringLiteral("Online"), color_constants::level_info };
+    }
+    // No heartbeat telemetry (HTTP server, WT, compute wrappers): fall back to
+    // controller instance phase.
+    if (r.running_replicas == 0)
+        return { QStringLiteral("Offline"), color_constants::level_trace };
+    if (r.running_replicas < r.desired_replicas)
+        return { QStringLiteral("Degraded"), color_constants::level_warn };
+    return { QStringLiteral("Running"), color_constants::level_debug };
+}
+
+QColor phase_color(const QString& phase) {
+    if (phase == "running")  return color_constants::level_info;
+    if (phase == "failed")   return color_constants::level_error;
+    if (phase == "starting") return color_constants::level_debug;
+    return color_constants::level_trace; // stopped, unknown
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Badge delegate — used for both the main status column and the phase column
+// in the detail table. The column that needs badge rendering is identified by
+// the Qt::UserRole data being the string "badge".
+// ─────────────────────────────────────────────────────────────────────────────
+
+class BadgeDelegate final : public QStyledItemDelegate {
+public:
+    explicit BadgeDelegate(QObject* parent = nullptr)
+        : QStyledItemDelegate(parent) {}
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+               const QModelIndex& index) const override {
+        if (index.data(Qt::UserRole).toString() != QStringLiteral("badge")) {
+            QStyledItemDelegate::paint(painter, option, index);
+            return;
+        }
+
+        QStyleOptionViewItem opt = option;
+        initStyleOption(&opt, index);
+        QApplication::style()->drawPrimitive(
+            QStyle::PE_PanelItemViewItem, &opt, painter);
+
+        const QString text   = index.data(Qt::DisplayRole).toString();
+        const QColor  bg     = index.data(Qt::UserRole + 1).value<QColor>();
+        const QColor  fg     = color_constants::level_text;
+
+        QFont badgeFont = opt.font;
+        badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+        badgeFont.setBold(true);
+
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, text, bg, fg, badgeFont);
+    }
+
+    QSize sizeHint(const QStyleOptionViewItem& option,
+                   const QModelIndex& index) const override {
+        QSize s = QStyledItemDelegate::sizeHint(option, index);
+        if (index.data(Qt::UserRole).toString() == QStringLiteral("badge"))
+            s = QSize(qMax(s.width(), 80), qMax(s.height(), 24));
+        return s;
+    }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: make a badge QTableWidgetItem (tagged with UserRole = "badge")
+// ─────────────────────────────────────────────────────────────────────────────
+
+QTableWidgetItem* make_badge_item(const QString& text, const QColor& bg) {
+    auto* item = new QTableWidgetItem(text);
+    item->setData(Qt::UserRole,     QStringLiteral("badge"));
+    item->setData(Qt::UserRole + 1, bg); // badge color — NOT BackgroundRole (avoids coloring whole cell)
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    return item;
+}
+
+QTableWidgetItem* make_item(const QString& text) {
+    auto* item = new QTableWidgetItem(text);
+    item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    return item;
+}
+
+} // namespace
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceDashboardMdiWindow
+// ─────────────────────────────────────────────────────────────────────────────
 
 ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
     ClientManager* clientManager,
@@ -59,10 +208,17 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
       refreshAction_(nullptr),
       autoRefreshAction_(nullptr),
       table_(nullptr),
+      detailGroup_(nullptr),
+      detailServiceLabel_(nullptr),
+      replicasSpinBox_(nullptr),
+      applyReplicasButton_(nullptr),
+      stopButton_(nullptr),
+      restartButton_(nullptr),
+      detailTable_(nullptr),
       autoRefreshTimer_(nullptr) {
 
     autoRefreshTimer_ = new QTimer(this);
-    autoRefreshTimer_->setInterval(30000);  // 30 seconds
+    autoRefreshTimer_->setInterval(30000);
     connect(autoRefreshTimer_, &QTimer::timeout, this,
             &ServiceDashboardMdiWindow::refresh);
 
@@ -78,23 +234,98 @@ void ServiceDashboardMdiWindow::setupUi() {
     setupToolbar();
     mainLayout->addWidget(toolbar_);
 
+    // ── Overview table ────────────────────────────────────────────────────
     table_ = new QTableWidget(this);
-    table_->setColumnCount(5);
+    table_->setColumnCount(6);
     table_->setHorizontalHeaderLabels({
-        tr("Status"), tr("Service"), tr("Instance"), tr("Version"), tr("Last Seen")
+        tr("Status"), tr("Service"), tr("Description"),
+        tr("Replicas"), tr("Version"), tr("Last Seen")
     });
+    table_->setItemDelegate(new BadgeDelegate(table_));
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
     table_->setAlternatingRowColors(true);
-    table_->horizontalHeader()->setStretchLastSection(true);
+    table_->horizontalHeader()->setStretchLastSection(false);
+    table_->horizontalHeader()->setSectionResizeMode(
+        static_cast<int>(Col::Description), QHeaderView::Stretch);
     table_->verticalHeader()->setVisible(false);
     table_->setSortingEnabled(true);
+    table_->setColumnWidth(static_cast<int>(Col::Status), 80);
+    connect(table_, &QTableWidget::currentCellChanged, this,
+            [this](int row, int, int, int) { onRowSelected(row); });
 
-    // Fixed width for status column
-    table_->setColumnWidth(0, 70);
+    // ── Detail panel ──────────────────────────────────────────────────────
+    detailGroup_ = new QGroupBox(tr("Service Details"), this);
+    detailGroup_->setVisible(false);
 
-    mainLayout->addWidget(table_);
+    auto* detailLayout = new QVBoxLayout(detailGroup_);
+    detailLayout->setSpacing(4);
+
+    detailServiceLabel_ = new QLabel(detailGroup_);
+    detailLayout->addWidget(detailServiceLabel_);
+
+    // Controls row: replicas + stop/restart
+    auto* ctrlRow = new QHBoxLayout;
+    ctrlRow->addWidget(new QLabel(tr("Desired Replicas:"), detailGroup_));
+    replicasSpinBox_ = new QSpinBox(detailGroup_);
+    replicasSpinBox_->setRange(0, 64);
+    replicasSpinBox_->setFixedWidth(70);
+    ctrlRow->addWidget(replicasSpinBox_);
+    applyReplicasButton_ = new QPushButton(tr("Apply"), detailGroup_);
+    applyReplicasButton_->setFixedWidth(70);
+    ctrlRow->addWidget(applyReplicasButton_);
+
+    ctrlRow->addSpacing(16);
+
+    stopButton_ = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::Delete, color_constants::level_error),
+        tr("Stop All"), detailGroup_);
+    stopButton_->setFixedWidth(90);
+    ctrlRow->addWidget(stopButton_);
+
+    restartButton_ = new QPushButton(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Restart All"), detailGroup_);
+    restartButton_->setFixedWidth(100);
+    ctrlRow->addWidget(restartButton_);
+
+    ctrlRow->addStretch();
+    detailLayout->addLayout(ctrlRow);
+
+    connect(applyReplicasButton_, &QPushButton::clicked,
+            this, &ServiceDashboardMdiWindow::onApplyReplicas);
+    connect(stopButton_,    &QPushButton::clicked,
+            this, &ServiceDashboardMdiWindow::onStopService);
+    connect(restartButton_, &QPushButton::clicked,
+            this, &ServiceDashboardMdiWindow::onRestartService);
+
+    // Instance table
+    detailTable_ = new QTableWidget(detailGroup_);
+    detailTable_->setColumnCount(7);
+    detailTable_->setHorizontalHeaderLabels({
+        tr("Replica"), tr("Phase"), tr("PID"),
+        tr("Started At"), tr("Stopped At"), tr("Restarts"), tr("UUID")
+    });
+    detailTable_->setItemDelegate(new BadgeDelegate(detailTable_));
+    detailTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    detailTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    detailTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    detailTable_->setAlternatingRowColors(true);
+    detailTable_->horizontalHeader()->setStretchLastSection(false);
+    detailTable_->horizontalHeader()->setSectionResizeMode(
+        static_cast<int>(DCol::Uuid), QHeaderView::Stretch);
+    detailTable_->verticalHeader()->setVisible(false);
+    detailLayout->addWidget(detailTable_);
+
+    // Splitter
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+    splitter->addWidget(table_);
+    splitter->addWidget(detailGroup_);
+    splitter->setStretchFactor(0, 2);
+    splitter->setStretchFactor(1, 1);
+
+    mainLayout->addWidget(splitter);
 }
 
 void ServiceDashboardMdiWindow::setupToolbar() {
@@ -104,16 +335,14 @@ void ServiceDashboardMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh service status"));
     connect(refreshAction_, &QAction::triggered,
             this, &ServiceDashboardMdiWindow::refresh);
 
     autoRefreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowSync, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Auto-Refresh"));
     autoRefreshAction_->setToolTip(tr("Toggle automatic refresh every 30 seconds"));
     autoRefreshAction_->setCheckable(true);
@@ -127,197 +356,412 @@ void ServiceDashboardMdiWindow::refresh() {
         emit statusChanged(tr("Not connected"));
         return;
     }
-
     refreshAction_->setEnabled(false);
     emit statusChanged(tr("Refreshing service dashboard..."));
     loadSamples();
+    if (!selectedServiceName_.empty())
+        loadInstanceDetails(QString::fromStdString(selectedServiceName_));
 }
 
 void ServiceDashboardMdiWindow::loadSamples() {
     QPointer<ServiceDashboardMdiWindow> self = this;
 
-    QFuture<ServiceSamplesResult> future =
-        QtConcurrent::run([self]() -> ServiceSamplesResult {
+    QFuture<SamplesResult> future =
+        QtConcurrent::run([self]() -> SamplesResult {
             if (!self || !self->clientManager_)
                 return {};
 
-            auto resp = self->clientManager_->process_authenticated_request(
-                telemetry::messaging::get_service_samples_request{});
+            // 1. Fetch service definitions (required — drives the row list).
+            std::vector<controller_api::domain::service_definition> defs;
+            try {
+                auto dr = self->clientManager_->process_authenticated_request(
+                    controller_api::messaging::list_service_definitions_request{});
+                if (dr && dr->success)
+                    defs = dr->service_definitions;
+            } catch (...) {}
 
-            if (!resp || !resp->success) {
-                ServiceSamplesResult r;
-                r.error = QString::fromStdString(
-                    resp ? resp->message : "Failed to contact telemetry service");
+            if (defs.empty()) {
+                SamplesResult r;
+                r.error = QStringLiteral(
+                    "Could not load service definitions from controller");
                 return r;
             }
 
-            ServiceSamplesResult r;
-            r.success = true;
-            r.samples = resp->samples;
-
-            // Fetch grid stats for the wrapper node row (best-effort).
+            // 2. Fetch heartbeat samples (best-effort).
+            std::vector<telemetry::domain::service_sample> samples;
             try {
-                auto grid = self->clientManager_->process_authenticated_request(
-                    compute::messaging::get_grid_stats_request{});
-                if (grid && grid->success) {
-                    r.has_grid_stats = true;
-                    r.total_hosts    = grid->total_hosts;
-                    r.online_hosts   = grid->online_hosts;
-                    const auto qdt = QDateTime::fromString(
-                        QString::fromStdString(grid->sampled_at), Qt::ISODate);
-                    if (qdt.isValid())
-                        r.grid_sampled_at = std::chrono::system_clock::from_time_t(
-                            qdt.toSecsSinceEpoch());
-                }
-            } catch (...) {
-                // Compute service unavailable — omit the wrapper row.
-            }
+                auto sr = self->clientManager_->process_authenticated_request(
+                    telemetry::messaging::get_service_samples_request{});
+                if (sr && sr->success)
+                    samples = sr->samples;
+            } catch (...) {}
 
+            // 3. Fetch service instances from controller — used to determine
+            // "running" status for services that don't publish NATS heartbeats
+            // (http.server, wt.service, compute.wrapper, etc.).
+            std::vector<controller_api::domain::service_instance> all_instances;
+            try {
+                controller_api::messaging::list_service_instances_request inst_req;
+                inst_req.service_name = ""; // empty = all services
+                auto ir = self->clientManager_->process_authenticated_request(
+                    inst_req);
+                if (ir && ir->success)
+                    all_instances = ir->service_instances;
+            } catch (...) {}
+
+            // 4. Aggregate: one ServiceRow per definition.
+            const auto now = std::chrono::system_clock::now();
+            SamplesResult r;
+            r.success = true;
+            r.service_definitions = defs;
+
+            for (const auto& def : defs) {
+                ServiceRow row;
+                row.service_name     = def.service_name;
+                row.description      = def.description.value_or(std::string{});
+                row.desired_replicas = def.desired_replicas;
+
+                for (const auto& s : samples) {
+                    if (s.service_name != def.service_name) continue;
+                    using namespace std::chrono;
+                    const long long age =
+                        duration_cast<seconds>(now - s.sampled_at).count();
+                    if (age < row.last_seen_secs) {
+                        row.last_seen_secs = age;
+                        row.version        = s.version;
+                    }
+                    if (age < 120) ++row.online_replicas;
+                }
+
+                for (const auto& inst : all_instances) {
+                    if (inst.service_name != def.service_name) continue;
+                    if (inst.phase == "running") ++row.running_replicas;
+                }
+
+                r.rows.push_back(std::move(row));
+            }
             return r;
         });
 
-    auto* watcher = new QFutureWatcher<ServiceSamplesResult>(this);
-    connect(watcher, &QFutureWatcher<ServiceSamplesResult>::finished, this,
+    auto* watcher = new QFutureWatcher<SamplesResult>(this);
+    connect(watcher, &QFutureWatcher<SamplesResult>::finished, this,
             [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
-
         if (!self) return;
 
         self->refreshAction_->setEnabled(true);
 
         if (!result.success) {
             const QString msg = result.error.isEmpty()
-                ? tr("Failed to load service samples")
+                ? tr("Failed to load service dashboard")
                 : result.error;
-            BOOST_LOG_SEV(lg(), error) << "Service dashboard load failed: "
-                                       << msg.toStdString();
+            BOOST_LOG_SEV(lg(), error) << msg.toStdString();
             emit self->errorOccurred(msg);
             return;
         }
 
-        const auto now = std::chrono::system_clock::now();
+        // Update definitions cache for the detail panel (replicas spinbox).
+        self->serviceDefinitions_ = result.service_definitions;
 
-        const int extra_rows = result.has_grid_stats ? 1 : 0;
         self->table_->setSortingEnabled(false);
-        self->table_->setRowCount(
-            static_cast<int>(result.samples.size()) + extra_rows);
+        self->table_->setRowCount(static_cast<int>(result.rows.size()));
 
         int row = 0;
-        for (const auto& sample : result.samples) {
-            using namespace std::chrono;
-            const auto age_secs = duration_cast<seconds>(
-                now - sample.sampled_at).count();
+        for (const auto& sr : result.rows) {
+            auto [status_text, status_color] = status_for_row(sr);
 
-            // RAG status: Green=recent, Amber=slightly stale, Offline=stopped
-            QString status_text;
-            QColor  status_color;
-            if (age_secs < 30) {
-                status_text  = tr("Green");
-                status_color = color_constants::level_info;
-            } else if (age_secs < 120) {
-                status_text  = tr("Amber");
-                status_color = color_constants::level_warn;
-            } else {
-                status_text  = tr("Offline");
-                status_color = color_constants::level_trace;
-            }
+            self->table_->setItem(row, static_cast<int>(Col::Status),
+                make_badge_item(status_text, status_color));
+            self->table_->setItem(row, static_cast<int>(Col::Service),
+                make_item(QString::fromStdString(sr.service_name)));
+            self->table_->setItem(row, static_cast<int>(Col::Description),
+                make_item(QString::fromStdString(sr.description)));
 
-            auto makeItem = [](const QString& text) {
-                auto* item = new QTableWidgetItem(text);
-                item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-                return item;
-            };
+            // Replicas: "running / desired"
+            // For telemetry services: use heartbeat-based online_replicas.
+            // For non-telemetry services: fall back to controller running_replicas.
+            const int display_replicas = (sr.last_seen_secs != LLONG_MAX)
+                ? sr.online_replicas
+                : sr.running_replicas;
+            const QString replicas =
+                tr("%1 / %2").arg(display_replicas).arg(sr.desired_replicas);
+            self->table_->setItem(row, static_cast<int>(Col::Replicas),
+                make_item(replicas));
 
-            auto* statusItem = new QTableWidgetItem(status_text);
-            statusItem->setTextAlignment(Qt::AlignCenter);
-            statusItem->setForeground(status_color);
-            QFont f = statusItem->font();
-            f.setBold(true);
-            statusItem->setFont(f);
-
-            self->table_->setItem(row, 0, statusItem);
-            self->table_->setItem(row, 1,
-                makeItem(QString::fromStdString(sample.service_name)));
-            self->table_->setItem(row, 2,
-                makeItem(QString::fromStdString(sample.instance_id)));
-            self->table_->setItem(row, 3,
-                makeItem(QString::fromStdString(sample.version)));
-
-            // Format last-seen as relative time
-            QString last_seen;
-            if (age_secs < 60)
-                last_seen = tr("%1s ago").arg(age_secs);
-            else if (age_secs < 3600)
-                last_seen = tr("%1m ago").arg(age_secs / 60);
-            else
-                last_seen = tr("%1h ago").arg(age_secs / 3600);
-            self->table_->setItem(row, 4, makeItem(last_seen));
-
+            const QString ver = sr.version.empty()
+                ? QStringLiteral("-")
+                : QString::fromStdString(sr.version);
+            self->table_->setItem(row, static_cast<int>(Col::Version),
+                make_item(ver));
+            self->table_->setItem(row, static_cast<int>(Col::LastSeen),
+                make_item(relative_time(sr.last_seen_secs)));
             ++row;
-        }
-
-        // Wrapper nodes row
-        if (result.has_grid_stats) {
-            using namespace std::chrono;
-            const auto age_secs = duration_cast<seconds>(
-                now - result.grid_sampled_at).count();
-
-            QString status_text;
-            QColor  status_color;
-            if (result.online_hosts > 0 && age_secs < 90) {
-                status_text  = tr("Green");
-                status_color = color_constants::level_info;
-            } else if (result.total_hosts > 0) {
-                status_text  = tr("Amber");
-                status_color = color_constants::level_warn;
-            } else {
-                status_text  = tr("Red");
-                status_color = color_constants::level_error;
-            }
-
-            auto makeItem = [](const QString& text) {
-                auto* item = new QTableWidgetItem(text);
-                item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-                return item;
-            };
-
-            auto* statusItem = new QTableWidgetItem(status_text);
-            statusItem->setTextAlignment(Qt::AlignCenter);
-            statusItem->setForeground(status_color);
-            QFont f = statusItem->font();
-            f.setBold(true);
-            statusItem->setFont(f);
-
-            const QString instance_text =
-                tr("%1 node(s), %2 online")
-                    .arg(result.total_hosts)
-                    .arg(result.online_hosts);
-
-            QString last_seen;
-            if (age_secs < 60)
-                last_seen = tr("%1s ago").arg(age_secs);
-            else if (age_secs < 3600)
-                last_seen = tr("%1m ago").arg(age_secs / 60);
-            else
-                last_seen = tr("%1h ago").arg(age_secs / 3600);
-
-            self->table_->setItem(row, 0, statusItem);
-            self->table_->setItem(row, 1, makeItem(tr("ores.compute.wrapper")));
-            self->table_->setItem(row, 2, makeItem(instance_text));
-            self->table_->setItem(row, 3, makeItem(tr("-")));
-            self->table_->setItem(row, 4, makeItem(last_seen));
         }
 
         self->table_->setSortingEnabled(true);
         self->table_->resizeColumnsToContents();
-        self->table_->horizontalHeader()->setStretchLastSection(true);
+        self->table_->horizontalHeader()->setSectionResizeMode(
+            static_cast<int>(Col::Description), QHeaderView::Stretch);
+        self->table_->setColumnWidth(static_cast<int>(Col::Status), 80);
 
         BOOST_LOG_SEV(lg(), debug) << "Service dashboard: "
-                                   << result.samples.size() << " services";
+                                   << result.rows.size() << " services";
         emit self->statusChanged(
-            tr("Service dashboard updated: %1 service instance(s)")
-                .arg(result.samples.size()));
+            tr("Service dashboard updated: %1 service(s)")
+                .arg(result.rows.size()));
+    });
+    watcher->setFuture(future);
+}
+
+void ServiceDashboardMdiWindow::onRowSelected(int row) {
+    if (row < 0 || row >= table_->rowCount()) {
+        detailGroup_->setVisible(false);
+        selectedServiceName_.clear();
+        return;
+    }
+    const auto* item = table_->item(row, static_cast<int>(Col::Service));
+    if (!item) {
+        detailGroup_->setVisible(false);
+        selectedServiceName_.clear();
+        return;
+    }
+
+    const QString serviceName = item->text();
+    selectedServiceName_ = serviceName.toStdString();
+    detailServiceLabel_->setText(
+        tr("Service: <b>%1</b>").arg(serviceName));
+
+    // Populate replicas spinbox from the definition cache.
+    int desiredReplicas = 1;
+    for (const auto& def : serviceDefinitions_) {
+        if (def.service_name == selectedServiceName_) {
+            desiredReplicas = def.desired_replicas;
+            break;
+        }
+    }
+    replicasSpinBox_->setValue(desiredReplicas);
+
+    detailGroup_->setVisible(true);
+    loadInstanceDetails(serviceName);
+}
+
+void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<ServiceDashboardMdiWindow> self = this;
+    const std::string svcName = serviceName.toStdString();
+
+    QFuture<InstancesResult> future =
+        QtConcurrent::run([self, svcName]() -> InstancesResult {
+            if (!self || !self->clientManager_) return {};
+
+            controller_api::messaging::list_service_instances_request req;
+            req.service_name = svcName;
+            auto resp = self->clientManager_->process_authenticated_request(req);
+            if (!resp || !resp->success) {
+                InstancesResult r;
+                r.error = QString::fromStdString(
+                    resp ? resp->message : "Failed to contact controller");
+                return r;
+            }
+            InstancesResult r;
+            r.success   = true;
+            r.instances = resp->service_instances;
+            return r;
+        });
+
+    auto* watcher = new QFutureWatcher<InstancesResult>(this);
+    connect(watcher, &QFutureWatcher<InstancesResult>::finished, this,
+            [self, watcher, serviceName]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        if (serviceName.toStdString() != self->selectedServiceName_) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not load instances for "
+                << serviceName.toStdString();
+            self->detailTable_->setRowCount(0);
+            return;
+        }
+
+        self->detailTable_->setSortingEnabled(false);
+        self->detailTable_->setRowCount(
+            static_cast<int>(result.instances.size()));
+
+        int row = 0;
+        for (const auto& inst : result.instances) {
+            const QString phase =
+                QString::fromStdString(inst.phase);
+
+            self->detailTable_->setItem(row, static_cast<int>(DCol::Replica),
+                make_item(QString::number(inst.replica_index)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::Phase),
+                make_badge_item(phase, phase_color(phase)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::Pid),
+                make_item(inst.pid ? QString::number(*inst.pid)
+                                   : QStringLiteral("-")));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::StartedAt),
+                make_item(format_timepoint(inst.started_at)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::StoppedAt),
+                make_item(format_timepoint(inst.stopped_at)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::Restarts),
+                make_item(QString::number(inst.restart_count)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::Uuid),
+                make_item(QString::fromStdString(
+                    boost::uuids::to_string(inst.id))));
+            ++row;
+        }
+
+        self->detailTable_->setSortingEnabled(true);
+        self->detailTable_->resizeColumnsToContents();
+        self->detailTable_->horizontalHeader()->setSectionResizeMode(
+            static_cast<int>(DCol::Uuid), QHeaderView::Stretch);
+    });
+    watcher->setFuture(future);
+}
+
+void ServiceDashboardMdiWindow::onApplyReplicas() {
+    if (selectedServiceName_.empty() || !clientManager_ ||
+            !clientManager_->isConnected())
+        return;
+
+    controller_api::domain::service_definition def;
+    bool found = false;
+    for (const auto& d : serviceDefinitions_) {
+        if (d.service_name == selectedServiceName_) {
+            def = d;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        QMessageBox::warning(this, tr("Apply Replicas"),
+            tr("No definition found for '%1'. Is the controller running?")
+                .arg(QString::fromStdString(selectedServiceName_)));
+        return;
+    }
+
+    def.desired_replicas = replicasSpinBox_->value();
+
+    QPointer<ServiceDashboardMdiWindow> self = this;
+    const std::string svcName     = selectedServiceName_;
+    const int         newReplicas = def.desired_replicas;
+
+    QFuture<bool> future = QtConcurrent::run([self, def]() -> bool {
+        if (!self || !self->clientManager_) return false;
+        controller_api::messaging::save_service_definition_request req;
+        req.service_definition = def;
+        req.change_reason_code = "MANUAL";
+        req.change_commentary  = "Set via service dashboard";
+        auto resp = self->clientManager_->process_authenticated_request(req);
+        return resp && resp->success;
+    });
+
+    auto* watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this,
+            [self, watcher, svcName, newReplicas]() {
+        const bool ok = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        if (ok) {
+            emit self->statusChanged(
+                tr("Updated desired replicas for '%1' to %2.")
+                    .arg(QString::fromStdString(svcName)).arg(newReplicas));
+            self->loadSamples();
+        } else {
+            QMessageBox::critical(self, tr("Apply Replicas"),
+                tr("Failed to update desired replicas for '%1'.")
+                    .arg(QString::fromStdString(svcName)));
+        }
+    });
+    watcher->setFuture(future);
+}
+
+void ServiceDashboardMdiWindow::onStopService() {
+    if (selectedServiceName_.empty() || !clientManager_ ||
+            !clientManager_->isConnected())
+        return;
+
+    QPointer<ServiceDashboardMdiWindow> self = this;
+    const std::string svcName = selectedServiceName_;
+
+    QFuture<ServiceActionResult> future =
+        QtConcurrent::run([self, svcName]() -> ServiceActionResult {
+            if (!self || !self->clientManager_) return {};
+            controller_api::messaging::stop_service_request req;
+            req.service_name = svcName;
+            auto resp = self->clientManager_->process_authenticated_request(req);
+            ServiceActionResult r;
+            r.success = resp && resp->success;
+            if (!r.success)
+                r.error = QString::fromStdString(
+                    resp ? resp->message : "No response from controller");
+            return r;
+        });
+
+    auto* watcher = new QFutureWatcher<ServiceActionResult>(this);
+    connect(watcher, &QFutureWatcher<ServiceActionResult>::finished, this,
+            [self, watcher, svcName]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        if (result.success) {
+            emit self->statusChanged(
+                tr("Stop requested for '%1'.")
+                    .arg(QString::fromStdString(svcName)));
+            self->refresh();
+        } else {
+            QMessageBox::critical(self, tr("Stop Service"),
+                tr("Failed to stop '%1': %2")
+                    .arg(QString::fromStdString(svcName))
+                    .arg(result.error));
+        }
+    });
+    watcher->setFuture(future);
+}
+
+void ServiceDashboardMdiWindow::onRestartService() {
+    if (selectedServiceName_.empty() || !clientManager_ ||
+            !clientManager_->isConnected())
+        return;
+
+    QPointer<ServiceDashboardMdiWindow> self = this;
+    const std::string svcName = selectedServiceName_;
+
+    QFuture<ServiceActionResult> future =
+        QtConcurrent::run([self, svcName]() -> ServiceActionResult {
+            if (!self || !self->clientManager_) return {};
+            controller_api::messaging::restart_service_request req;
+            req.service_name = svcName;
+            auto resp = self->clientManager_->process_authenticated_request(req);
+            ServiceActionResult r;
+            r.success = resp && resp->success;
+            if (!r.success)
+                r.error = QString::fromStdString(
+                    resp ? resp->message : "No response from controller");
+            return r;
+        });
+
+    auto* watcher = new QFutureWatcher<ServiceActionResult>(this);
+    connect(watcher, &QFutureWatcher<ServiceActionResult>::finished, this,
+            [self, watcher, svcName]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        if (result.success) {
+            emit self->statusChanged(
+                tr("Restart requested for '%1'.")
+                    .arg(QString::fromStdString(svcName)));
+            self->refresh();
+        } else {
+            QMessageBox::critical(self, tr("Restart Service"),
+                tr("Failed to restart '%1': %2")
+                    .arg(QString::fromStdString(svcName))
+                    .arg(result.error));
+        }
     });
     watcher->setFuture(future);
 }

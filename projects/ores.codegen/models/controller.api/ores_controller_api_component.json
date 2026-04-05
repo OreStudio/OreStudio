@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "controller.api",
+    "full_name": "ores.controller.api",
+    "brief": "NATS protocol types for the ORE Studio service controller.",
+    "description": "Defines the messaging protocol for the service lifecycle controller:\nrequests, responses, and domain types exchanged over NATS between the\ncontroller service and other components (Qt client, HTTP gateway, etc.).\nIncludes service definition, instance state, and event protocol types."
+  }
+}

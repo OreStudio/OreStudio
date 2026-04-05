@@ -69,7 +69,13 @@ select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'workflow_service_user', 'WorkflowService');
 
 select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'ore_service_user', 'OreService');
+
+select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'marketdata_service_user', 'MarketdataService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'controller_service_user', 'ControllerService');
 
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count

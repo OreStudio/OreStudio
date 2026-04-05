@@ -74,6 +74,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.lib
         ores.variability.api.lib
         ores.telemetry.lib
+        ores.controller.api.lib
         ores.security.lib
         ores.utility.lib
         ores.platform.lib

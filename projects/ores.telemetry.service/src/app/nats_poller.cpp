@@ -210,17 +210,32 @@ void nats_poller::poll_streams() {
 }
 
 void nats_poller::poll_once() {
+    bool any_ok = false;
+
     try {
         poll_server();
+        any_ok = true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "NATS server poll failed: " << e.what();
+        if (consecutive_failures_ == 0)
+            BOOST_LOG_SEV(lg(), warn) << "NATS server poll failed: " << e.what();
+        else
+            BOOST_LOG_SEV(lg(), debug) << "NATS server poll failed: " << e.what();
     }
 
     try {
         poll_streams();
+        any_ok = true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "NATS stream poll failed: " << e.what();
+        if (consecutive_failures_ == 0)
+            BOOST_LOG_SEV(lg(), warn) << "NATS stream poll failed: " << e.what();
+        else
+            BOOST_LOG_SEV(lg(), debug) << "NATS stream poll failed: " << e.what();
     }
+
+    if (any_ok)
+        consecutive_failures_ = 0;
+    else
+        ++consecutive_failures_;
 }
 
 // ============================================================================

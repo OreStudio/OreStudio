@@ -130,7 +130,7 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     logging::logger_t& lg) {
     using namespace ores::logging;
 
-    const auto s = platform::time::datetime::format_time_point(tp);
+    const auto s = platform::time::datetime::format_time_point_utc(tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";

@@ -104,9 +104,7 @@ void service_instance_repository::update_phase(context ctx,
     ) | where("id"_c == entity.id.value());
 
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
+        .and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Phase updated.";

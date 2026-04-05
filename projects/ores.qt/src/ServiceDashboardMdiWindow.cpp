@@ -19,9 +19,9 @@
  */
 #include "ores.qt/ServiceDashboardMdiWindow.hpp"
 
-#include <ctime>
 #include <climits>
 #include <chrono>
+#include "ores.platform/time/datetime.hpp"
 #include <QPainter>
 #include <QDateTime>
 #include <QHBoxLayout>
@@ -101,10 +101,8 @@ QString relative_time(long long secs) {
 QString format_timepoint(
     std::optional<std::chrono::system_clock::time_point> tp) {
     if (!tp) return QStringLiteral("-");
-    const auto t = std::chrono::system_clock::to_time_t(*tp);
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
-    return QString::fromLatin1(buf);
+    return QString::fromStdString(
+        ores::platform::time::datetime::format_time_point_utc(*tp));
 }
 
 std::pair<QString, QColor> status_for_row(const ServiceRow& r) {

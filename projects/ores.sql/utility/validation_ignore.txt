@@ -197,6 +197,7 @@ TENANT_001 ores_telemetry_service_samples_tbl
 TENANT_001 ores_controller_service_definitions_tbl
 TENANT_001 ores_controller_service_instances_tbl
 TENANT_001 ores_controller_service_events_tbl
+TENANT_001 ores_controller_service_dependencies_tbl
 
 # =============================================================================
 # Market data TimescaleDB hypertables — observations and fixings.

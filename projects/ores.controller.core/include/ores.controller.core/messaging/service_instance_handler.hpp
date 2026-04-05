@@ -193,9 +193,16 @@ private:
                 transition_instance(inst_repo, event_repo, service_name,
                     0, new_phase, event_type);
             } else {
-                for (auto& inst : instances)
-                    transition_instance(inst_repo, event_repo, service_name,
-                        inst.replica_index, new_phase, event_type);
+                for (auto& inst : instances) {
+                    try {
+                        transition_instance(inst_repo, event_repo, service_name,
+                            inst.replica_index, new_phase, event_type);
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(service_instance_handler_lg(), error)
+                            << "Failed to transition instance "
+                            << inst.replica_index << ": " << e.what();
+                    }
+                }
             }
         }
     }

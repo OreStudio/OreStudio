@@ -48,17 +48,20 @@ workflow_engine::workflow_engine(ores::nats::service::client& nats,
 
 void workflow_engine::publish_command(
     const domain::workflow_step& step,
-    const boost::uuids::uuid& instance_id) {
+    const boost::uuids::uuid& instance_id,
+    const boost::uuids::uuid& tenant_id) {
 
     const auto step_id_str = boost::uuids::to_string(step.id);
     const auto inst_id_str = boost::uuids::to_string(instance_id);
+    const auto tenant_id_str = boost::uuids::to_string(tenant_id);
 
     const auto data = std::as_bytes(
         std::span{step.command_json.data(), step.command_json.size()});
 
     nats_.publish(step.command_subject, data, {
         {"X-Workflow-Step-Id",     step_id_str},
-        {"X-Workflow-Instance-Id", inst_id_str}
+        {"X-Workflow-Instance-Id", inst_id_str},
+        {"X-Tenant-Id",            tenant_id_str}
     });
 }
 
@@ -119,7 +122,7 @@ void workflow_engine::dispatch_next_step(
     step_repo_.create(ctx_, next_step);
 
     // Publish the command.
-    publish_command(next_step, instance.id);
+    publish_command(next_step, instance.id, instance.tenant_id);
 
     // Record that the command was published.
     step_repo_.mark_command_published(ctx_, next_id);
@@ -351,7 +354,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     step.created_at = std::chrono::system_clock::now();
 
     step_repo_.create(ctx_, step);
-    publish_command(step, instance_id);
+    publish_command(step, instance_id, tenant_id);
     step_repo_.mark_command_published(ctx_, step_id);
 
     BOOST_LOG_SEV(lg(), info)
@@ -392,7 +395,7 @@ void workflow_engine::recover_in_progress() {
             // Re-publish the command with the same step_id (idempotency key).
             // Domain services will detect the duplicate and re-publish their
             // step-completed event without re-executing the operation.
-            publish_command(*it, instance.id);
+            publish_command(*it, instance.id, instance.tenant_id);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Recovery failed for instance "

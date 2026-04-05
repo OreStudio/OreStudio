@@ -23,7 +23,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/nats_client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
@@ -32,14 +31,9 @@ namespace ores::workflow::messaging {
 /**
  * @brief NATS message handler for workflow orchestration endpoints.
  *
- * Handles inbound workflow requests, creates workflow instance records,
- * drives the appropriate executor, and replies with the outcome.
- *
- * The handler uses @p signer to validate the caller's JWT and extract
- * the per-request database context (tenant, actor, roles).  It uses
- * @p outbound_nats (already authenticated as the workflow service) with
- * delegation set to the caller's JWT to forward identity to downstream
- * services.
+ * Handles inbound workflow requests, validates the caller's JWT, and
+ * dispatches one start_workflow_message per item to the engine via NATS
+ * (fire-and-forget).  Replies immediately with pre-generated IDs.
  */
 class workflow_handler {
 private:
@@ -55,11 +49,14 @@ private:
 public:
     workflow_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        ores::nats::service::nats_client outbound_nats);
+        ores::security::jwt::jwt_authenticator signer);
 
     /**
      * @brief Handles workflow.v1.parties.provision requests.
+     *
+     * Validates the JWT, pre-generates one UUID per party, dispatches one
+     * start_workflow_message per party, and replies immediately with the
+     * pre-generated party_ids.  Workflow execution is asynchronous.
      */
     void provision_parties(ores::nats::message msg);
 
@@ -67,7 +64,6 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
-    ores::nats::service::nats_client outbound_nats_;
 };
 
 }

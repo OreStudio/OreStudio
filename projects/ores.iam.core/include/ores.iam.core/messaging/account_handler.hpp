@@ -31,6 +31,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
@@ -174,6 +175,66 @@ public:
     }
 
     void save(ores::nats::message msg) {
+        using ores::service::messaging::is_workflow_command;
+        using ores::service::messaging::extract_workflow_header;
+        using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::workflow_step_id_header;
+        using ores::service::messaging::workflow_instance_id_header;
+
+        // Workflow step command: bypass JWT auth; tenant derived from @hostname.
+        if (is_workflow_command(msg)) {
+            const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
+            const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+
+            auto req = decode<save_account_request>(msg);
+            if (!req) {
+                publish_step_completion(nats_, step_id, inst_id, false, "",
+                    "Failed to decode save_account_request");
+                return;
+            }
+            try {
+                std::string username = req->principal;
+                ores::database::context op_ctx = ctx_;
+                const auto at_pos = req->principal.rfind('@');
+                if (at_pos != std::string::npos) {
+                    username = req->principal.substr(0, at_pos);
+                    const auto hostname = req->principal.substr(at_pos + 1);
+                    repository::tenant_repository tenant_repo(ctx_);
+                    auto tenants = tenant_repo.read_latest_by_hostname(hostname);
+                    if (!tenants.empty()) {
+                        using ores::database::service::tenant_context;
+                        op_ctx = tenant_context::with_tenant(
+                            ctx_, boost::uuids::to_string(tenants.front().id));
+                    } else {
+                        throw std::runtime_error(
+                            "Tenant not found for hostname: " + hostname);
+                    }
+                }
+
+                service::account_service acct_svc(op_ctx);
+                auto auth_svc =
+                    std::make_shared<service::authorization_service>(op_ctx);
+                service::account_setup_service setup_svc(acct_svc, auth_svc);
+                auto acct = setup_svc.create_account(
+                    username, req->email, req->password,
+                    ctx_.service_account());
+
+                BOOST_LOG_SEV(account_handler_lg(), debug)
+                    << "Workflow step completed: " << msg.subject;
+                const auto resp = save_account_response{
+                    .success = true,
+                    .account_id = boost::uuids::to_string(acct.id)};
+                publish_step_completion(nats_, step_id, inst_id, true,
+                    rfl::json::write(resp), "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), error)
+                    << "Workflow step failed: " << msg.subject
+                    << " — " << e.what();
+                publish_step_completion(nats_, step_id, inst_id, false, "", e.what());
+            }
+            return;
+        }
+
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(account_handler_lg(), msg);
         auto req = decode<save_account_request>(msg);

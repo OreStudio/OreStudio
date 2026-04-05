@@ -44,6 +44,15 @@ inline constexpr std::string_view workflow_instance_id_header =
     "X-Workflow-Instance-Id";
 
 /**
+ * @brief NATS header name for the tenant that owns the workflow instance.
+ *
+ * Set by the workflow engine on all step-command publishes. Domain service
+ * handlers use this to build the correct tenant-scoped database context when
+ * processing a workflow step command (i.e. when is_workflow_command() is true).
+ */
+inline constexpr std::string_view workflow_tenant_id_header = "X-Tenant-Id";
+
+/**
  * @brief Publishes a step-completed event to the workflow engine.
  *
  * Domain service handlers that participate in a workflow call this after

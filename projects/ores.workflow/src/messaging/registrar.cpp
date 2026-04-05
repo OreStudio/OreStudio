@@ -87,11 +87,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // ----------------------------------------------------------------
-    // Legacy synchronous handler (provision_parties request/reply)
-    // Will be replaced by the event-driven engine in Phase 2.1.
+    // Provision parties request/reply handler.
+    // Validates JWT, pre-generates party UUIDs, and dispatches one
+    // start_workflow_message per party (fire-and-forget).
     // ----------------------------------------------------------------
     auto wh = std::make_shared<workflow_handler>(
-        nats, std::move(ctx), std::move(signer), std::move(outbound_nats));
+        nats, std::move(ctx), std::move(signer));
 
     subs.push_back(nats.queue_subscribe(
         provision_parties_request::nats_subject, qg,

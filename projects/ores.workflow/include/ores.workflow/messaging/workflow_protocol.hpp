@@ -77,15 +77,46 @@ struct provision_parties_request {
 struct provision_parties_response {
     bool success = false;
     std::string message;
+    /**
+     * @brief Pre-generated party UUIDs, in input order.
+     *
+     * Available immediately — UUIDs are generated before workflow dispatch.
+     */
     std::vector<std::string> party_ids;
-    std::vector<std::string> account_ids;
+    /**
+     * @brief Workflow instance UUIDs, one per party.
+     *
+     * Each workflow runs asynchronously; use these IDs to query status.
+     */
+    std::vector<std::string> workflow_instance_ids;
     /**
      * @brief Correlation ID echoed back for client-side logging and support.
-     *
-     * Set to the Nats-Correlation-Id header value from the inbound request
-     * (or a freshly generated UUID if the caller did not provide one).
      */
     std::string correlation_id;
+};
+
+/**
+ * @brief Internal per-party workflow request used as workflow_instance.request_json.
+ *
+ * The provision_parties handler pre-generates the party UUID and bundles all
+ * party and account fields into one struct. The step command builders in
+ * provision_parties_definitions.hpp deserialize this to construct each step's
+ * NATS command payload.
+ */
+struct provision_party_workflow_request {
+    std::string party_id;            ///< Pre-generated UUID for the party.
+    std::string full_name;
+    std::string short_code;
+    std::string party_category;
+    std::string party_type;
+    std::string business_center_code;
+    std::optional<std::string> parent_party_id;
+    std::string status;              ///< Initial party status (e.g. "Inactive").
+    std::string principal;           ///< IAM account login name (username@hostname).
+    std::string password;
+    std::string totp_secret;
+    std::string email;
+    std::string account_type;
 };
 
 }

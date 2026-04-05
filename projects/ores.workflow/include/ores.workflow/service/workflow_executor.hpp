@@ -29,50 +29,22 @@ namespace ores::workflow::service {
 /**
  * @brief Abstract base for saga workflow executors.
  *
- * An executor encapsulates one named workflow type.  The handler calls
- * execute(); on failure it calls compensate() to roll back completed steps.
+ * Used by ores.ore.service::ore_import_workflow until Phase 2.2 migrates it
+ * to the event-driven engine.  New workflows must use workflow_definition /
+ * workflow_registry instead of inheriting from this class.
  *
- * Each concrete executor:
- *  - Tracks per-step progress internally.
- *  - Writes workflow_step records to the database via the injected context.
- *  - Calls downstream services via the injected nats_client.
- *
- * The nats_client passed in should already have the end-user JWT set as
- * the delegation token (via nats_client::with_delegation) so that downstream
- * services receive the original caller's context.
+ * @deprecated Will be removed in Phase 2.2 once ore_import is migrated.
  */
 class workflow_executor {
 public:
     virtual ~workflow_executor() = default;
 
-    /**
-     * @brief Execute all saga steps in order.
-     *
-     * @param ctx  Per-request database context for writing step records.
-     * @param nats Authenticated NATS client (with delegation) for calling
-     *             downstream services.
-     * @return true on full success; false if any step fails (executor has
-     *         already stored the error via error()).
-     */
     virtual bool execute(ores::database::context ctx,
         ores::nats::service::nats_client& nats) = 0;
 
-    /**
-     * @brief Compensate completed steps in reverse order.
-     *
-     * Called by the handler when execute() returns false.  Must be idempotent.
-     *
-     * @param ctx  Per-request database context.
-     * @param nats Authenticated NATS client (with delegation).
-     */
     virtual void compensate(ores::database::context ctx,
         ores::nats::service::nats_client& nats) = 0;
 
-    /**
-     * @brief Human-readable reason for a failed execution.
-     *
-     * Valid only after execute() returns false.
-     */
     [[nodiscard]] virtual const std::string& failure_reason() const = 0;
 };
 

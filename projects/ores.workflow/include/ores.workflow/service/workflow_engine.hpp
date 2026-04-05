@@ -102,11 +102,13 @@ private:
     /**
      * @brief Publishes a step command to the domain service.
      *
-     * Includes X-Workflow-Instance-Id and X-Workflow-Step-Id NATS headers
-     * so domain services can extract the idempotency key.
+     * Includes X-Workflow-Instance-Id, X-Workflow-Step-Id, and X-Tenant-Id
+     * NATS headers so domain services can extract the idempotency key and
+     * build the correct tenant-scoped database context.
      */
     void publish_command(const domain::workflow_step& step,
-        const boost::uuids::uuid& instance_id);
+        const boost::uuids::uuid& instance_id,
+        const boost::uuids::uuid& tenant_id);
 
     /**
      * @brief Dispatches the next step in the workflow after a success.

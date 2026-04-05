@@ -99,7 +99,7 @@ public:
         ores::database::context db_ctx);
 
     // -------------------------------------------------------------------------
-    // Bulk start
+    // Bulk start / stop
 
     /**
      * @brief Reads all enabled service definitions and their dependencies,
@@ -113,6 +113,15 @@ public:
      * NATS/JWKS setup proceeds concurrently.
      */
     boost::asio::awaitable<void> start_all();
+
+    /**
+     * @brief Gracefully stops all supervised processes.
+     *
+     * Sends SIGTERM to every running replica, waits up to 10 seconds for
+     * them to exit cleanly, then sends SIGKILL to any that are still
+     * running. Should be called when the controller itself is shutting down.
+     */
+    boost::asio::awaitable<void> stop_all();
 
     // -------------------------------------------------------------------------
     // Per-service operations (called from NATS handlers)

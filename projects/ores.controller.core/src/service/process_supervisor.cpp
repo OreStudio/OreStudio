@@ -492,6 +492,60 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     }
 }
 
+boost::asio::awaitable<void> process_supervisor::stop_all() {
+    BOOST_LOG_SEV(lg(), info)
+        << "Stopping all supervised services (" << processes_.size() << " processes)";
+
+    // 1. Mark every entry as stop_requested and send SIGTERM so each child's
+    //    signal_set fires its shutdown path (drain, log "Shutdown complete").
+    for (auto& [key, entry] : processes_) {
+        entry->stop_requested = true;
+        if (entry->proc) {
+            boost::system::error_code ec;
+            entry->proc->request_exit(ec);
+            if (ec)
+                BOOST_LOG_SEV(lg(), warn)
+                    << "request_exit failed for " << key.first
+                    << "[" << key.second << "]: " << ec.message();
+            else
+                BOOST_LOG_SEV(lg(), info)
+                    << "Sent SIGTERM to " << key.first
+                    << "[" << key.second << "] PID=" << entry->proc->id();
+        }
+    }
+
+    // 2. Poll until all processes exit or the 10-second grace period expires.
+    //    monitor_process() erases entries from processes_ on exit, so an empty
+    //    map means everyone has gone away.
+    auto executor = co_await boost::asio::this_coro::executor;
+    constexpr auto grace = std::chrono::seconds(10);
+    const auto deadline = std::chrono::steady_clock::now() + grace;
+
+    while (!processes_.empty() && std::chrono::steady_clock::now() < deadline) {
+        boost::asio::steady_timer t(executor);
+        t.expires_after(std::chrono::milliseconds(200));
+        co_await t.async_wait(boost::asio::use_awaitable);
+    }
+
+    // 3. SIGKILL any stragglers that outlived the grace period.
+    if (!processes_.empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << processes_.size()
+            << " process(es) did not exit within grace period — sending SIGKILL";
+        for (auto& [key, entry] : processes_) {
+            if (entry->proc) {
+                boost::system::error_code ec;
+                entry->proc->terminate(ec);
+                BOOST_LOG_SEV(lg(), warn)
+                    << "SIGKILL sent to " << key.first
+                    << "[" << key.second << "] PID=" << entry->proc->id();
+            }
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "All supervised services stopped.";
+}
+
 void process_supervisor::request_launch(
     const std::string& service_name, int replica_index) {
 

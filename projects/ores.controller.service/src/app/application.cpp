@@ -100,6 +100,11 @@ application::run(boost::asio::io_context& io_ctx,
                 boost::asio::detached);
         });
 
+    // Controller received shutdown signal — gracefully stop all child processes
+    // before we exit. Without this, children never receive SIGTERM and keep
+    // running as orphans.
+    co_await supervisor.stop_all();
+
     co_return;
 }
 

@@ -24,7 +24,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/nats_client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
@@ -33,10 +32,10 @@ namespace ores::ore::service::messaging {
 /**
  * @brief NATS handler for workflow.v1.ore.import requests.
  *
- * Authenticates the caller JWT, creates a workflow_instance record,
- * drives the ore_import_workflow saga, and replies with
- * ore_import_response.  All log lines carry correlation_id so the full
- * server-side trace for one import can be grepped across services.
+ * Authenticates the caller JWT, validates the request, then dispatches an
+ * asynchronous ore_import_workflow via a start_workflow_message fire-and-forget
+ * publish.  Returns immediately with an ore_import_response carrying the
+ * pre-generated workflow_instance_id so the client can poll for status.
  */
 class ore_import_handler {
 private:
@@ -52,10 +51,7 @@ private:
 public:
     ore_import_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        ores::nats::service::nats_client outbound_nats,
-        std::string http_base_url,
-        std::string work_dir);
+        ores::security::jwt::jwt_authenticator signer);
 
     /**
      * @brief Handles a workflow.v1.ore.import NATS request.
@@ -66,9 +62,6 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
-    ores::nats::service::nats_client outbound_nats_;
-    std::string http_base_url_;
-    std::string work_dir_;
 };
 
 }

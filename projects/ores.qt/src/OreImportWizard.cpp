@@ -865,23 +865,34 @@ void OreTradeImportPage::onImportFinished() {
     wizard_->setImportResponse(resp);
 
     if (resp.success) {
-        const int n_errors = static_cast<int>(resp.item_errors.size());
-        appendLog(tr("Step 2/2: Import service completed."));
-        if (n_errors == 0) {
-            appendLog(tr("Import finished with no trade errors."));
-            statusLabel_->setText(tr("Import completed successfully."));
+        appendLog(tr("Step 2/2: Import service accepted the request."));
+
+        if (!resp.workflow_instance_id.empty()) {
+            // Asynchronous path: import is running in the background.
+            appendLog(tr("Import submitted asynchronously (workflow ID: %1).")
+                .arg(QString::fromStdString(resp.workflow_instance_id)));
+            statusLabel_->setText(tr("Import submitted. It is running in the background."));
+            BOOST_LOG_SEV(lg(), info) << "ORE import submitted async: instance="
+                << resp.workflow_instance_id << " corr=" << resp.correlation_id;
         } else {
-            appendLog(tr("%1 trade(s) could not be saved — see Done page for details.")
-                .arg(n_errors));
-            statusLabel_->setText(
-                tr("Import completed with %1 trade error(s).").arg(n_errors));
+            // Synchronous path (legacy / direct): check item_errors.
+            const int n_errors = static_cast<int>(resp.item_errors.size());
+            if (n_errors == 0) {
+                appendLog(tr("Import finished with no trade errors."));
+                statusLabel_->setText(tr("Import completed successfully."));
+            } else {
+                appendLog(tr("%1 trade(s) could not be saved — see Done page for details.")
+                    .arg(n_errors));
+                statusLabel_->setText(
+                    tr("Import completed with %1 trade error(s).").arg(n_errors));
+            }
+            BOOST_LOG_SEV(lg(), info) << "ORE import service complete: "
+                << n_errors << " trade errors, corr=" << resp.correlation_id;
         }
+
         if (!resp.correlation_id.empty())
             appendLog(tr("Correlation ID: %1").arg(
                 QString::fromStdString(resp.correlation_id)));
-
-        BOOST_LOG_SEV(lg(), info) << "ORE import service complete: "
-            << n_errors << " trade errors, corr=" << resp.correlation_id;
 
         importDone_ = true;
         emit completeChanged();
@@ -922,32 +933,43 @@ void OreDonePage::initializePage() {
     const auto& resp = wizard_->importResponse();
 
     if (wizard_->importSuccess()) {
-        const auto& errors = resp.item_errors;
-        const int n_errors = static_cast<int>(errors.size());
-
         QString html;
-        if (n_errors == 0) {
-            html += tr("<p><b>Import succeeded.</b></p>");
+
+        if (!resp.workflow_instance_id.empty()) {
+            // Asynchronous path: import is running in the background.
+            html += tr("<p><b>Import submitted successfully.</b></p>");
+            html += tr("<p>The import is processing in the background. "
+                       "Check the workflow status for results.</p>");
+            html += tr("<p style='color:gray;font-size:small;'>Workflow ID: %1</p>")
+                .arg(QString::fromStdString(resp.workflow_instance_id));
         } else {
-            html += tr("<p><b>Import completed with %1 trade error(s).</b></p>")
-                .arg(n_errors);
+            // Synchronous path (legacy / direct).
+            const auto& errors = resp.item_errors;
+            const int n_errors = static_cast<int>(errors.size());
+
+            if (n_errors == 0) {
+                html += tr("<p><b>Import succeeded.</b></p>");
+            } else {
+                html += tr("<p><b>Import completed with %1 trade error(s).</b></p>")
+                    .arg(n_errors);
+            }
+            html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
+
+            if (n_errors > 0) {
+                html += tr("<p><b>Trade errors:</b></p><ul>");
+                for (const auto& err : errors) {
+                    const QString src = QString::fromStdString(err.source_file);
+                    const QString id = QString::fromStdString(err.item_id);
+                    const QString msg = QString::fromStdString(err.message);
+                    html += tr("<li>[%1] %2: %3</li>").arg(src, id, msg);
+                }
+                html += QStringLiteral("</ul>");
+            }
         }
-        html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
 
         if (!resp.correlation_id.empty()) {
             html += tr("<p style='color:gray;font-size:small;'>Correlation ID: %1</p>")
                 .arg(QString::fromStdString(resp.correlation_id));
-        }
-
-        if (n_errors > 0) {
-            html += tr("<p><b>Trade errors:</b></p><ul>");
-            for (const auto& err : errors) {
-                const QString src = QString::fromStdString(err.source_file);
-                const QString id = QString::fromStdString(err.item_id);
-                const QString msg = QString::fromStdString(err.message);
-                html += tr("<li>[%1] %2: %3</li>").arg(src, id, msg);
-            }
-            html += QStringLiteral("</ul>");
         }
 
         summaryLabel_->setText(html);

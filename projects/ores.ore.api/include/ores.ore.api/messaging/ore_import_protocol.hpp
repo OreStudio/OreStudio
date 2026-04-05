@@ -66,6 +66,14 @@ struct ore_import_response {
     std::string message;
     std::vector<ore_import_item_error> item_errors;
     std::string correlation_id;  ///< Echoed back for display and log lookup
+    /**
+     * @brief Workflow instance UUID, non-empty when the import was dispatched
+     *        asynchronously via the workflow engine.
+     *
+     * When set, the import is running in the background and item_errors is
+     * always empty in this response.  Use this ID to query workflow status.
+     */
+    std::string workflow_instance_id;
 };
 
 }

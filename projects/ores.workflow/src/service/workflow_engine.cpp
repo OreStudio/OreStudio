@@ -319,8 +319,18 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         return;
     }
 
-    // Create the workflow instance.
-    const auto instance_id = boost::uuids::random_generator()();
+    // Create the workflow instance (reuse caller-provided UUID if present).
+    boost::uuids::uuid instance_id;
+    if (!req.instance_id.empty()) {
+        try {
+            instance_id = boost::lexical_cast<boost::uuids::uuid>(req.instance_id);
+        } catch (...) {
+            BOOST_LOG_SEV(lg(), error) << "Invalid instance_id: " << req.instance_id;
+            return;
+        }
+    } else {
+        instance_id = boost::uuids::random_generator()();
+    }
     domain::workflow_instance instance;
     instance.id = instance_id;
     instance.tenant_id = tenant_id;

@@ -22,7 +22,9 @@
 #include <memory>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
+#include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 
 namespace ores::ore::service::messaging {
 
@@ -48,14 +50,35 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.ore.service";
 
+    // ----------------------------------------------------------------
+    // Inbound client handler: validates JWT, dispatches workflow start.
+    // ----------------------------------------------------------------
     auto h = std::make_shared<ore_import_handler>(
-        nats, std::move(ctx), std::move(signer), std::move(outbound_nats),
-        std::move(http_base_url), std::move(work_dir));
+        nats, ctx, std::move(signer));
 
     subs.push_back(nats.queue_subscribe(
         ores::ore::messaging::ore_import_request::nats_subject, qg,
         [h](ores::nats::message msg) {
             h->ore_import(std::move(msg));
+        }));
+
+    // ----------------------------------------------------------------
+    // Engine-dispatched step handlers: execute and rollback.
+    // ----------------------------------------------------------------
+    auto eh = std::make_shared<ore_import_execute_handler>(
+        nats, std::move(outbound_nats),
+        std::move(http_base_url), std::move(work_dir));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::ore::messaging::ore_import_execute_request::nats_subject), qg,
+        [eh](ores::nats::message msg) {
+            eh->execute(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject), qg,
+        [eh](ores::nats::message msg) {
+            eh->rollback(std::move(msg));
         }));
 
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size()

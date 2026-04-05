@@ -101,6 +101,19 @@ struct start_workflow_message {
      * @brief Optional distributed tracing correlation ID.
      */
     std::string correlation_id;
+
+    /**
+     * @brief Optional pre-generated workflow instance UUID.
+     *
+     * When non-empty the engine uses this UUID for the new workflow_instance
+     * record instead of generating one. Callers that need to return the
+     * instance ID before the engine has processed the message (e.g. the
+     * ore_import handler) pre-generate a UUID here so they can include it
+     * in the synchronous response to the client.
+     *
+     * Empty string (default) means the engine generates a fresh UUID.
+     */
+    std::string instance_id;
 };
 
 }

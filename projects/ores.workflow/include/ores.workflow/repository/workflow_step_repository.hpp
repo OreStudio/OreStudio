@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -50,6 +51,23 @@ public:
     std::vector<domain::workflow_step> read(context ctx);
 
     /**
+     * @brief Finds a workflow step by primary key (no tenant filter).
+     *
+     * Used by the engine which processes step-completed events cross-tenant.
+     * Returns nullopt if no record with @p id exists.
+     */
+    std::optional<domain::workflow_step>
+    find_by_id(context ctx, const boost::uuids::uuid& id);
+
+    /**
+     * @brief Returns all steps belonging to a workflow instance.
+     *
+     * Results are returned in step_index ascending order.
+     */
+    std::vector<domain::workflow_step>
+    find_by_workflow_id(context ctx, const boost::uuids::uuid& workflow_id);
+
+    /**
      * @brief Inserts a new workflow step record.
      */
     void create(context ctx, const domain::workflow_step& v);
@@ -63,6 +81,14 @@ public:
         const boost::uuids::uuid& state_id,
         const std::string& response_json,
         const std::string& error);
+
+    /**
+     * @brief Records that the step command was successfully published.
+     *
+     * Sets command_published_at = now(). Called after nats.publish() succeeds
+     * so a restart can detect unpublished commands and re-dispatch them.
+     */
+    void mark_command_published(context ctx, const boost::uuids::uuid& id);
 };
 
 }

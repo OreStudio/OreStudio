@@ -37,6 +37,41 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
+std::optional<domain::workflow_instance>
+workflow_instance_repository::find_by_id(
+    context ctx, const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding workflow instance by id: "
+                               << boost::uuids::to_string(id);
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+        where("id"_c == id_str);
+
+    auto results = execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+        ctx, query,
+        [](const auto& entities) { return workflow_instance_mapper::map(entities); },
+        lg(), "Finding workflow instance by id");
+
+    if (results.empty()) return std::nullopt;
+    return results.front();
+}
+
+std::vector<domain::workflow_instance>
+workflow_instance_repository::find_by_state(
+    context ctx, const boost::uuids::uuid& state_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding workflow instances by state: "
+                               << boost::uuids::to_string(state_id);
+
+    const auto state_id_str = boost::uuids::to_string(state_id);
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+        where("state_id"_c == state_id_str);
+
+    return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
+        ctx, query,
+        [](const auto& entities) { return workflow_instance_mapper::map(entities); },
+        lg(), "Finding workflow instances by state");
+}
+
 std::vector<domain::workflow_instance>
 workflow_instance_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow instances.";
@@ -98,6 +133,30 @@ void workflow_instance_repository::update_state(
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow instance state updated.";
+}
+
+void workflow_instance_repository::update_step_progress(
+    context ctx, const boost::uuids::uuid& id, int next_index) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating step progress for instance: "
+                               << boost::uuids::to_string(id)
+                               << " -> step " << next_index;
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto now = timepoint_to_timestamp(
+        std::chrono::system_clock::now(), lg());
+    using ts_t = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+    const auto opt_now = std::optional<ts_t>(now);
+
+    const auto query = sqlgen::update<workflow_instance_entity>(
+        "current_step_index"_c.set(next_index),
+        "last_event_at"_c.set(opt_now)
+    ) | where("id"_c == id_str);
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(query);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Step progress updated.";
 }
 
 }

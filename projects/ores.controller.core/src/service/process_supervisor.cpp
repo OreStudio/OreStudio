@@ -250,8 +250,11 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
     entry->replica_index = replica_index;
 
     try {
-        entry->proc = bp2::process(executor, exe, args,
-            bp2::process_start_dir(bin_dir_));
+        // bp2 uses boost::filesystem::path; convert from std::filesystem::path.
+        bp2::filesystem::path bp_exe(exe.string());
+        bp2::filesystem::path bp_dir(bin_dir_.string());
+        entry->proc.emplace(executor, bp_exe, args,
+            bp2::process_start_dir(bp_dir));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Failed to launch " << service_name << "[" << replica_index
@@ -259,7 +262,7 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         co_return;
     }
 
-    const auto pid = entry->proc.id();
+    const auto pid = entry->proc->id();
     BOOST_LOG_SEV(lg(), info)
         << "Launched " << service_name << "[" << replica_index
         << "] PID=" << pid;
@@ -325,9 +328,9 @@ boost::asio::awaitable<void> process_supervisor::do_stop(
 
     BOOST_LOG_SEV(lg(), info)
         << "Sending SIGTERM to " << service_name << "[" << replica_index
-        << "] PID=" << entry.proc.id();
+        << "] PID=" << entry.proc->id();
     boost::system::error_code ec;
-    entry.proc.request_exit(ec);
+    entry.proc->request_exit(ec);
     if (ec)
         BOOST_LOG_SEV(lg(), warn)
             << "request_exit failed: " << ec.message();
@@ -342,12 +345,12 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
     BOOST_LOG_SEV(lg(), debug)
         << "Monitoring " << service_name << "[" << replica_index
-        << "] PID=" << entry->proc.id();
+        << "] PID=" << entry->proc->id();
 
     boost::system::error_code ec;
     int exit_code = 0;
     try {
-        exit_code = co_await entry->proc.async_wait(boost::asio::use_awaitable);
+        exit_code = co_await entry->proc->async_wait(boost::asio::use_awaitable);
     } catch (const boost::system::system_error& e) {
         ec = e.code();
     }

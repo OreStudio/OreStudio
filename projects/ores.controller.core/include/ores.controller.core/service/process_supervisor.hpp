@@ -22,6 +22,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 #include <filesystem>
@@ -80,7 +81,7 @@ private:
     using process_key = std::pair<std::string, int>; // (service_name, replica_index)
 
     struct process_entry {
-        boost::process::v2::process proc;
+        std::optional<boost::process::v2::process> proc;
         api::domain::service_definition def;
         int replica_index = 0;
         int restart_count = 0;

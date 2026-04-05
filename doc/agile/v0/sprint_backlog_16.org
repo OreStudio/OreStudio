@@ -922,6 +922,51 @@ Affects all instrument families: FX (PR 1), Swap/Rates (PR 2), Bond + Credit
       the trade)
 - [ ] Apply to all six instrument families as each PR is merged
 
+*** TODO NATS-based health for all services: HTTP, WT and compute wrapper :code:
+
+Currently =ores.http.server=, =ores.wt.service=, and =ores.compute.wrapper=
+do not publish NATS heartbeats, so the Service Dashboard can only show them
+as "Running" (process-alive via the controller) rather than "Online"
+(confirmed healthy via NATS telemetry). All services should be first-class
+NATS participants so that a single, uniform health signal is used across the
+board.
+
+***** Background
+
+The three services that are not NATS-based:
+
+- =ores.http.server= — REST gateway; no NATS messaging today.
+- =ores.wt.service= — Wt web-UI server; no NATS messaging today.
+- =ores.compute.wrapper= — Grid worker node; communicates directly with the
+  compute service over NATS work/result subjects, but does not publish a
+  standard heartbeat and has no service identity in the NATS namespace.
+
+***** Scope
+
+- =ores.http.server=: add NATS connectivity and publish a standard
+  =service_heartbeat_message= every 15 s via =heartbeat_publisher=. Register
+  the service in the NATS subject namespace under =ores.http.server=.
+
+- =ores.wt.service=: same as above — connect to NATS and publish heartbeats.
+
+- =ores.compute.wrapper=: register each replica as a named NATS participant.
+  Publish heartbeats including the replica index so the controller can track
+  each worker individually. The existing compute work/result subjects are
+  unaffected.
+
+***** Tasks
+
+- [ ] =ores.http.server=: add NATS client + heartbeat_publisher (mirrors
+      pattern in all domain services)
+- [ ] =ores.wt.service=: same
+- [ ] =ores.compute.wrapper=: add NATS heartbeat per replica; include
+      replica index and host-id in heartbeat payload
+- [ ] Update Service Dashboard: remove "Running" fallback path once all
+      services send heartbeats; "Online" becomes the single source of truth
+- [ ] Update =controller_service_definitions_populate.sql=: remove custom
+      args_templates for http/wt/wrapper once they no longer need to diverge
+      from the default
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

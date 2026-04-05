@@ -99,7 +99,7 @@ begin
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
 
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_iam_system_tenant_id_fn(), NEW.change_reason_code);
 
     return NEW;
 end;

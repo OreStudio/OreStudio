@@ -89,6 +89,7 @@ private:
     std::uint32_t interval_seconds_;
     ores::database::context ctx_;
     database::repository::telemetry_repository repo_;
+    unsigned int consecutive_failures_{0};
 };
 
 }

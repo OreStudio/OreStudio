@@ -56,7 +56,14 @@ begin
             ('ores.assets.service',     'ores.assets.service',     1, null,       'Digital assets — images and tags'),
             ('ores.scheduler.service',  'ores.scheduler.service',  1, null,       'Job scheduling and execution'),
             ('ores.reporting.service',  'ores.reporting.service',  1, null,       'Risk report generation and management'),
-            ('ores.telemetry.service',  'ores.telemetry.service',  1, null,       'Service telemetry and health monitoring'),
+            -- Telemetry: custom args to set local1 NATS monitoring port (8221).
+            ('ores.telemetry.service', 'ores.telemetry.service', 1,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-replica-index {replica_index}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' --nats-monitor-url http://localhost:8221',
+                'Service telemetry and health monitoring'),
             ('ores.trading.service',    'ores.trading.service',    1, null,       'Trading instruments and trades'),
             ('ores.compute.service',    'ores.compute.service',    1, null,       'Compute grid orchestration'),
             ('ores.synthetic.service',  'ores.synthetic.service',  1, null,       'Synthetic data generation'),

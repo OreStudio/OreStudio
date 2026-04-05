@@ -21,16 +21,16 @@
 /**
  * Controller Service Definitions Population Script
  *
- * Seeds the ores_controller_service_definitions_tbl with one row per NATS
- * domain service that the controller is responsible for launching and
- * monitoring. The controller itself, the HTTP server, and the WT server are
- * NOT included — they are started by the shell launch script or have
- * non-standard arg patterns.
+ * Seeds the ores_controller_service_definitions_tbl with one row per service
+ * that the controller is responsible for launching and monitoring.
  *
- * args_template is NULL so the supervisor uses the built-in default template:
+ * NATS domain services (args_template = NULL): use the built-in default:
  *   --log-enabled --log-level {log_level} --log-directory {log_dir}
  *   --log-replica-index {replica_index}
- *   --nats-url {nats_url} --nats-subject-prefix {nats_prefix}
+ *   --nats-url {nats_url} --nats-subject-prefix {nats_prefix} {nats_tls_args}
+ *
+ * HTTP/WT/wrapper services have a custom args_template.  Ports are seeded with
+ * local1-debug defaults (51000 / 51002); update the DB row to change them.
  *
  * This script is idempotent: each INSERT is guarded by WHERE NOT EXISTS.
  */
@@ -41,29 +41,58 @@ declare
     v_reason        text := 'system.initial_load';
     v_commentary    text := 'Initial controller service definition seed';
     v_infinity      timestamptz := ores_utility_infinity_timestamp_fn();
-    svc_name        text;
-    svc_binary      text;
+    -- Each row: (service_name, binary_name, desired_replicas, args_template)
+    -- args_template NULL → supervisor uses built-in default template.
+    svc             record;
 begin
-    for svc_name, svc_binary in
-        values
-            ('ores.iam.service',        'ores.iam.service'),
-            ('ores.refdata.service',    'ores.refdata.service'),
-            ('ores.dq.service',         'ores.dq.service'),
-            ('ores.variability.service','ores.variability.service'),
-            ('ores.assets.service',     'ores.assets.service'),
-            ('ores.scheduler.service',  'ores.scheduler.service'),
-            ('ores.reporting.service',  'ores.reporting.service'),
-            ('ores.telemetry.service',  'ores.telemetry.service'),
-            ('ores.trading.service',    'ores.trading.service'),
-            ('ores.compute.service',    'ores.compute.service'),
-            ('ores.synthetic.service',  'ores.synthetic.service'),
-            ('ores.workflow.service',   'ores.workflow.service'),
-            ('ores.ore.service',        'ores.ore.service'),
-            ('ores.marketdata.service', 'ores.marketdata.service')
+    for svc in
+        select *
+        from (values
+            -- NATS domain services: standard args template (NULL = use default)
+            ('ores.iam.service',        'ores.iam.service',        1, null::text),
+            ('ores.refdata.service',    'ores.refdata.service',    1, null),
+            ('ores.dq.service',         'ores.dq.service',         1, null),
+            ('ores.variability.service','ores.variability.service', 1, null),
+            ('ores.assets.service',     'ores.assets.service',     1, null),
+            ('ores.scheduler.service',  'ores.scheduler.service',  1, null),
+            ('ores.reporting.service',  'ores.reporting.service',  1, null),
+            ('ores.telemetry.service',  'ores.telemetry.service',  1, null),
+            ('ores.trading.service',    'ores.trading.service',    1, null),
+            ('ores.compute.service',    'ores.compute.service',    1, null),
+            ('ores.synthetic.service',  'ores.synthetic.service',  1, null),
+            ('ores.workflow.service',   'ores.workflow.service',   1, null),
+            ('ores.ore.service',        'ores.ore.service',        1, null),
+            ('ores.marketdata.service', 'ores.marketdata.service', 1, null),
+            -- HTTP server: needs --port and --storage-dir; no --log-replica-index.
+            -- Port 51000 = local1 debug default; update DB row to change it.
+            ('ores.http.server', 'ores.http.server', 1,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' --port 51000 --storage-dir ../storage'),
+            -- WT server: Wt args passed after --; no --log-replica-index.
+            -- Port 51002 = local1 debug default; update DB row to change it.
+            ('ores.wt.service', 'ores.wt.service', 1,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' -- --http-address 0.0.0.0 --docroot . --http-port 51002'),
+            -- Compute wrapper nodes: 5 replicas, one per grid node.
+            -- {host_id} = stable UUID derived from hostname:replica_index.
+            -- {work_dir} = ../run/wrappers/node_N.
+            -- All replicas share the same certificate (ores.compute.wrapper.crt).
+            ('ores.compute.wrapper', 'ores.compute.wrapper', 5,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-filename {log_filename}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' --host-id {host_id} --tenant-id {tenant_id}'
+                ' --work-dir {work_dir} --http-base-url http://localhost:51000')
+        ) as t(service_name, binary_name, desired_replicas, args_template)
     loop
         if not exists (
             select 1 from ores_controller_service_definitions_tbl
-            where service_name = svc_name
+            where service_name = svc.service_name
               and valid_to = v_infinity
         ) then
             insert into ores_controller_service_definitions_tbl (
@@ -85,13 +114,13 @@ begin
             ) values (
                 gen_random_uuid(),
                 0,
-                svc_name,
-                svc_binary,
-                1,
+                svc.service_name,
+                svc.binary_name,
+                svc.desired_replicas,
                 'always',
                 3,
                 1,
-                null,
+                svc.args_template,
                 v_actor,
                 v_actor,
                 v_reason,

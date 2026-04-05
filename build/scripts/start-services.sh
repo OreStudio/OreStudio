@@ -11,9 +11,10 @@
 # The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
 # Use --preset to switch presets without re-running init-environment.sh.
 #
-# Start order: NATS → controller (which spawns IAM then all domain services)
-#              → HTTP server → WT server → compute wrapper nodes.
-# PIDs are written to publish/run/ for use by stop-services.sh.
+# Start order: NATS → controller.
+# The controller reads service definitions from the DB and spawns all other
+# services (IAM, domain services, HTTP, WT, compute wrappers) in dependency
+# order.  PIDs are written to publish/run/ for use by stop-services.sh.
 
 set -euo pipefail
 
@@ -310,59 +311,11 @@ launch ores.controller.service \
     "${controller_tls_args[@]}"
 echo ""
 
-# 3. HTTP server
-echo "[HTTP server]"
-http_tls_args=()
-if [[ -n "$NATS_TLS_CA" ]]; then
-    http_tls_args+=(
-        --nats-tls-ca   "$KEYS_DIR/ca.crt"
-        --nats-tls-cert "$KEYS_DIR/ores.http.server.crt"
-        --nats-tls-key  "$KEYS_DIR/ores.http.server.key"
-    )
-fi
-launch ores.http.server \
-    --log-enabled \
-    --log-level "$LOG_LEVEL" \
-    --log-directory ../log \
-    --port "$HTTP_PORT" \
-    --nats-url "$NATS_URL" \
-    --nats-subject-prefix "$NATS_PREFIX" \
-    --storage-dir ../storage \
-    "${http_tls_args[@]}"
-echo ""
-
-# 4. WT server
-echo "[WT server]"
-wt_tls_args=()
-if [[ -n "$NATS_TLS_CA" ]]; then
-    wt_tls_args+=(
-        --nats-tls-ca   "$KEYS_DIR/ca.crt"
-        --nats-tls-cert "$KEYS_DIR/ores.wt.service.crt"
-        --nats-tls-key  "$KEYS_DIR/ores.wt.service.key"
-    )
-fi
-launch ores.wt.service \
-    --log-enabled \
-    --log-level "$LOG_LEVEL" \
-    --log-directory ../log \
-    "${wt_tls_args[@]}" \
-    -- \
-    --http-address 0.0.0.0 \
-    --docroot . \
-    --http-port "$WT_PORT"
-echo ""
-
-# 5. Compute wrapper nodes (test environment grid)
+# Provision JetStream streams (needed by compute wrappers that the controller spawns).
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
-    # Provision JetStream streams before launching nodes.
     provision_tls_args=()
     [[ -n "$NATS_TLS_CA" ]] && provision_tls_args+=(--nats-tls-ca "$NATS_TLS_CA")
     "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX" "${provision_tls_args[@]}"
-
-    echo "[Compute wrapper nodes]"
-    for n in 1 2 3 4 5; do
-        launch_wrapper_node "$n"
-    done
     echo ""
 fi
 

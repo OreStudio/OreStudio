@@ -32,6 +32,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 SERVICES=(
+    ores.controller.service
     ores.iam.service
     ores.refdata.service
     ores.dq.service

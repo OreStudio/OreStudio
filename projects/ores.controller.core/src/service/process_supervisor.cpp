@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 #include <fstream>
+#include <unistd.h>
 #include <sstream>
 #include <chrono>
 #include <boost/asio/co_spawn.hpp>
@@ -31,6 +32,8 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/name_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include "ores.logging/boost_severity.hpp"
@@ -95,9 +98,40 @@ std::vector<std::string> process_supervisor::build_args(
 
     replace_all(tmpl, "{nats_url}",       nats_.url);
     replace_all(tmpl, "{nats_prefix}",    nats_.subject_prefix);
+    replace_all(tmpl, "{tenant_id}",      nats_.subject_prefix);
     replace_all(tmpl, "{log_level}",      log_level_);
     replace_all(tmpl, "{log_dir}",        "../log");
     replace_all(tmpl, "{replica_index}",  std::to_string(replica_index));
+
+    // {nats_tls_args}: derive per-service certs from controller's own cert directory.
+    std::string tls_args;
+    if (!nats_.tls_ca_cert.empty()) {
+        const auto keys_dir =
+            std::filesystem::path(nats_.tls_client_cert).parent_path();
+        const auto cert = keys_dir / (def.service_name + ".crt");
+        const auto key  = keys_dir / (def.service_name + ".key");
+        tls_args = "--nats-tls-ca " + nats_.tls_ca_cert
+                 + " --nats-tls-cert " + cert.string()
+                 + " --nats-tls-key "  + key.string();
+    }
+    replace_all(tmpl, "{nats_tls_args}", tls_args);
+
+    // {host_id}: stable UUID for compute wrapper nodes (hostname:replica_index).
+    char hostname_buf[256] = {};
+    ::gethostname(hostname_buf, sizeof(hostname_buf));
+    const std::string host_key = std::string(hostname_buf) + ":" + std::to_string(replica_index);
+    static const auto ns_uuid =
+        boost::uuids::string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    boost::uuids::name_generator name_gen(ns_uuid);
+    replace_all(tmpl, "{host_id}",   boost::uuids::to_string(name_gen(host_key)));
+
+    // {work_dir}: per-replica working directory for compute wrapper nodes.
+    replace_all(tmpl, "{work_dir}",  "../run/wrappers/node_" + std::to_string(replica_index));
+
+    // {log_filename}: explicit log filename (used by services that don't support
+    // --log-replica-index, e.g. compute wrapper with per-node names).
+    replace_all(tmpl, "{log_filename}",
+        def.service_name + "." + std::to_string(replica_index) + ".log");
 
     return tokenise(tmpl);
 }

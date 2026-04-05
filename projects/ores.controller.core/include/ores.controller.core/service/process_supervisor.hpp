@@ -70,13 +70,16 @@ private:
     }
 
     // Default args template used when service_definition.args_template is empty.
+    // {nats_tls_args} expands to "--nats-tls-ca … --nats-tls-cert … --nats-tls-key …"
+    // when mTLS is configured, or to an empty string otherwise.
     static constexpr std::string_view default_args_template =
         "--log-enabled "
         "--log-level {log_level} "
         "--log-directory {log_dir} "
         "--log-replica-index {replica_index} "
         "--nats-url {nats_url} "
-        "--nats-subject-prefix {nats_prefix}";
+        "--nats-subject-prefix {nats_prefix} "
+        "{nats_tls_args}";
 
     using process_key = std::pair<std::string, int>; // (service_name, replica_index)
 

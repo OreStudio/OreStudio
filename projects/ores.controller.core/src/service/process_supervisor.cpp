@@ -128,11 +128,6 @@ std::vector<std::string> process_supervisor::build_args(
     // {work_dir}: per-replica working directory for compute wrapper nodes.
     replace_all(tmpl, "{work_dir}",  "../run/wrappers/node_" + std::to_string(replica_index));
 
-    // {log_filename}: explicit log filename (used by services that don't support
-    // --log-replica-index, e.g. compute wrapper with per-node names).
-    replace_all(tmpl, "{log_filename}",
-        def.service_name + "." + std::to_string(replica_index) + ".log");
-
     return tokenise(tmpl);
 }
 

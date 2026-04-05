@@ -63,18 +63,20 @@ begin
             ('ores.workflow.service',   'ores.workflow.service',   1, null,       'Workflow execution engine'),
             ('ores.ore.service',        'ores.ore.service',        1, null,       'ORE pricing engine integration'),
             ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
-            -- HTTP server: needs --port and --storage-dir; no --log-replica-index.
+            -- HTTP server: needs --port and --storage-dir.
             -- Port 51000 = local1 debug default; update DB row to change it.
             ('ores.http.server', 'ores.http.server', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
                 ' --port 51000 --storage-dir ../storage',
                 'HTTP API gateway'),
-            -- WT server: Wt args passed after --; no --log-replica-index.
+            -- WT server: Wt args passed after --.
             -- Port 51002 = local1 debug default; update DB row to change it.
             ('ores.wt.service', 'ores.wt.service', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
                 ' -- --http-address 0.0.0.0 --docroot . --http-port 51002',
@@ -85,7 +87,7 @@ begin
             -- All replicas share the same certificate (ores.compute.wrapper.crt).
             ('ores.compute.wrapper', 'ores.compute.wrapper', 5,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
-                ' --log-filename {log_filename}'
+                ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
                 ' --host-id {host_id} --tenant-id {tenant_id}'

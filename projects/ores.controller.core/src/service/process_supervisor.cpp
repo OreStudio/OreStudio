@@ -22,7 +22,6 @@
 #include <map>
 #include <set>
 #include <fstream>
-#include <unistd.h>
 #include <sstream>
 #include <chrono>
 #include <boost/asio/co_spawn.hpp>

@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.iam.api.lib
         ores.service.lib
+        ores.storage.lib
         ores.trading.api.lib
         ores.utility.lib
         ores.workflow.lib

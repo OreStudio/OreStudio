@@ -22,10 +22,12 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
+#include <rfl/msgpack.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
@@ -71,15 +73,27 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request,
 
 } // namespace
 
+namespace {
+
+constexpr std::string_view report_data_bucket = "report-data";
+
+std::string trades_storage_key(const std::string& instance_id) {
+    return instance_id + "/trades.msgpack";
+}
+
+} // namespace
+
 report_execution_handler::report_execution_handler(
     ores::nats::service::client& nats,
     ores::database::context ctx,
     ores::nats::service::nats_client svc_nats,
-    ores::workflow::service::fsm_state_map instance_states)
+    ores::workflow::service::fsm_state_map instance_states,
+    std::string http_base_url)
     : nats_(nats)
     , ctx_(std::move(ctx))
     , svc_nats_(std::move(svc_nats))
-    , instance_states_(std::move(instance_states)) {}
+    , instance_states_(std::move(instance_states))
+    , http_base_url_(std::move(http_base_url)) {}
 
 void report_execution_handler::gather_trades(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
@@ -175,11 +189,20 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
             inst_svc.save_instance(*inst);
         }
 
+        // ── Serialise to MsgPack and upload to storage ────────────────
+        const auto key = trades_storage_key(req.report_instance_id);
+        {
+            const auto blob = rfl::msgpack::write(all_items);
+            ores::storage::net::storage_transfer transfer(http_base_url_);
+            transfer.upload_blob(
+                std::string(report_data_bucket), key, blob);
+        }
+
         // ── Build result ─────────────────────────────────────────────
         gather_trades_result result;
         result.success = true;
         result.trade_count = static_cast<int>(all_items.size());
-        result.trades_json = rfl::json::write(all_items);
+        result.storage_key = key;
         result.message = std::format("Gathered {} trades from {} books",
             all_items.size(), book_ids.size());
 

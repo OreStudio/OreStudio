@@ -109,9 +109,10 @@ application::run(boost::asio::io_context& io_ctx,
 
     co_await ores::service::service::run(
         io_ctx, nats, db_ctx, "ores.reporting.service",
-        [&svc_nats](auto& n, auto c, auto v) {
+        [&svc_nats, &cfg](auto& n, auto c, auto v) {
             return ores::reporting::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), svc_nats);
+                n, std::move(c), std::move(v), svc_nats,
+                cfg.http_base_url);
         },
         [&nats, &svc_nats, db_ctx](boost::asio::io_context& ioc) {
             // Reconcile scheduler jobs for all unscheduled report definitions.

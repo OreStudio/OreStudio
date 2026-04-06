@@ -59,7 +59,7 @@ struct gather_trades_result {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string trades_json;
+    std::string storage_key;  ///< Object storage key for MsgPack-serialised trades
 };
 
 /**
@@ -81,7 +81,7 @@ struct gather_market_data_result {
     bool success = false;
     std::string message;
     int series_count = 0;
-    std::string market_data_json;
+    std::string storage_key;  ///< Object storage key for MsgPack-serialised market data
 };
 
 /**

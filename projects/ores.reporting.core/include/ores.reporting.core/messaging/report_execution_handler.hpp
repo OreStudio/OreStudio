@@ -56,7 +56,8 @@ public:
     report_execution_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
         ores::nats::service::nats_client svc_nats,
-        ores::workflow::service::fsm_state_map instance_states);
+        ores::workflow::service::fsm_state_map instance_states,
+        std::string http_base_url);
 
     void gather_trades(ores::nats::message msg);
     void assemble_bundle(ores::nats::message msg);
@@ -68,6 +69,7 @@ private:
     ores::database::context ctx_;
     ores::nats::service::nats_client svc_nats_;
     ores::workflow::service::fsm_state_map instance_states_;
+    std::string http_base_url_;
 };
 
 }

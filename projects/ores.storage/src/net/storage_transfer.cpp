@@ -20,6 +20,7 @@
 #include "ores.storage/net/storage_transfer.hpp"
 
 #include <chrono>
+#include <fstream>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -138,6 +139,50 @@ void storage_transfer::fetch_and_unpack(const std::string& bucket,
         download(bucket, key, tmp);
         unpack(tmp, dest_dir);
         fs::remove(tmp);
+    } catch (...) {
+        std::error_code ec;
+        fs::remove(tmp, ec);
+        throw;
+    }
+}
+
+void storage_transfer::upload_blob(const std::string& bucket,
+    const std::string& key, std::span<const char> data) {
+    BOOST_LOG_SEV(lg(), debug) << "upload_blob: bucket=" << bucket
+                               << " key=" << key
+                               << " bytes=" << data.size();
+    boost::uuids::random_generator gen;
+    const auto tmp = fs::temp_directory_path() /
+        (boost::uuids::to_string(gen()) + ".blob");
+    try {
+        {
+            std::ofstream out(tmp, std::ios::binary);
+            out.write(data.data(), static_cast<std::streamsize>(data.size()));
+        }
+        upload(bucket, key, tmp);
+        fs::remove(tmp);
+    } catch (...) {
+        std::error_code ec;
+        fs::remove(tmp, ec);
+        throw;
+    }
+}
+
+std::vector<char> storage_transfer::download_blob(const std::string& bucket,
+    const std::string& key) {
+    BOOST_LOG_SEV(lg(), debug) << "download_blob: bucket=" << bucket
+                               << " key=" << key;
+    boost::uuids::random_generator gen;
+    const auto tmp = fs::temp_directory_path() /
+        (boost::uuids::to_string(gen()) + ".blob");
+    try {
+        download(bucket, key, tmp);
+        const auto size = fs::file_size(tmp);
+        std::vector<char> buf(size);
+        std::ifstream in(tmp, std::ios::binary);
+        in.read(buf.data(), static_cast<std::streamsize>(size));
+        fs::remove(tmp);
+        return buf;
     } catch (...) {
         std::error_code ec;
         fs::remove(tmp, ec);

@@ -42,7 +42,8 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    ores::nats::service::nats_client& svc_nats) {
+    ores::nats::service::nats_client& svc_nats,
+    std::string http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
@@ -141,7 +142,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report execution workflow step handlers
     // ----------------------------------------------------------------
     auto reh = std::make_shared<report_execution_handler>(
-        nats, ctx, svc_nats, instance_states);
+        nats, ctx, svc_nats, instance_states, std::move(http_base_url));
 
     subs.push_back(nats.queue_subscribe(
         std::string(gather_trades_request::nats_subject), "ores.reporting.service",

@@ -55,6 +55,8 @@ public:
     std::vector<domain::pricing_model_config>
     read_latest(context ctx, const std::string& id);
     std::vector<domain::pricing_model_config>
+    read_latest_by_name(context ctx, const std::string& name);
+    std::vector<domain::pricing_model_config>
     read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);

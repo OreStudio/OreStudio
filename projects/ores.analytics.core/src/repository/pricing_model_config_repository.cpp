@@ -92,6 +92,26 @@ pricing_model_config_repository::read_latest(
 }
 
 std::vector<domain::pricing_model_config>
+pricing_model_config_repository::read_latest_by_name(
+    context ctx, const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest pricing model config by name: " << name;
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<pricing_model_config_entity>> |
+        where("tenant_id"_c == tid && "name"_c == name
+            && "valid_to"_c == max.value());
+
+    return execute_read_query<
+        pricing_model_config_entity, domain::pricing_model_config>(
+        ctx, query,
+        [](const auto& entities) {
+            return pricing_model_config_mapper::map(entities);
+        },
+        lg(), "Reading latest pricing model config by name.");
+}
+
+std::vector<domain::pricing_model_config>
 pricing_model_config_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading all pricing model config versions. id: " << id;

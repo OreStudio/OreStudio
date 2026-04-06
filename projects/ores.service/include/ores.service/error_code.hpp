@@ -49,7 +49,15 @@ enum class error_code {
      * The JWT was valid but the caller's permission list does not contain
      * the permission required by this handler.
      */
-    forbidden
+    forbidden,
+
+    /**
+     * @brief The request payload was malformed or could not be decoded.
+     *
+     * The message body was not valid JSON or did not match the expected
+     * request type. The client should check its serialisation logic.
+     */
+    bad_request
 };
 
 } // namespace ores::service

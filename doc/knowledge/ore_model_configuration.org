@@ -437,8 +437,7 @@ attributes. Not every pricing engine type maps back to an instrument type.
 A *pricing configuration* is a named, versioned bundle of valuation settings that
 fully determines how the pricing engine values a set of trades. It is the bridge
 between a report definition (which says /what/ to compute) and the engine (which
-needs to know /how/ to compute it). See [[file:/home/marco/Development/Notebooks/summaries/pricing-configuration.org][pricing-configuration.org]] for the full
-conceptual analysis.
+needs to know /how/ to compute it).
 
 The pricing configuration is composed of five independently versioned layers.
 Each layer is a first-class bitemporal entity that can be reused across multiple

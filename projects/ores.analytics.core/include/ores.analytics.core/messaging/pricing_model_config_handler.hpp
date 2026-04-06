@@ -115,6 +115,7 @@ public:
         } else {
             BOOST_LOG_SEV(pricing_model_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -145,6 +146,7 @@ public:
         } else {
             BOOST_LOG_SEV(pricing_model_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
@@ -180,6 +182,7 @@ public:
         } else {
             BOOST_LOG_SEV(pricing_model_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 

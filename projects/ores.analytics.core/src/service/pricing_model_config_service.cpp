@@ -21,7 +21,6 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 
 namespace ores::analytics::service {
 
@@ -48,11 +47,9 @@ std::optional<domain::pricing_model_config>
 pricing_model_config_service::find_config_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug)
         << "Finding pricing model config by name: " << name;
-    auto all = repo_.read_latest(ctx_);
-    const auto it = std::find_if(all.begin(), all.end(),
-        [&name](const auto& c) { return c.name == name; });
-    if (it == all.end()) return std::nullopt;
-    return *it;
+    auto results = repo_.read_latest_by_name(ctx_, name);
+    if (results.empty()) return std::nullopt;
+    return results.front();
 }
 
 void pricing_model_config_service::save_config(

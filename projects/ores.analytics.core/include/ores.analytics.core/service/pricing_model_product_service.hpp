@@ -63,6 +63,9 @@ public:
 
     void remove_products_for_config(const std::string& config_id);
 
+    std::vector<domain::pricing_model_product>
+    get_product_history(const std::string& id);
+
 private:
     context ctx_;
     repository::pricing_model_product_repository repo_;

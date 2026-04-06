@@ -80,4 +80,11 @@ void pricing_model_product_service::remove_products_for_config(
         << "Removed pricing model products for config: " << config_id;
 }
 
+std::vector<domain::pricing_model_product>
+pricing_model_product_service::get_product_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting history for pricing model product: " << id;
+    return repo_.read_all(ctx_, id);
+}
+
 }

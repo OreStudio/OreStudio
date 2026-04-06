@@ -69,6 +69,9 @@ public:
 
     void remove_parameters_for_product(const std::string& product_id);
 
+    std::vector<domain::pricing_model_product_parameter>
+    get_parameter_history(const std::string& id);
+
 private:
     context ctx_;
     repository::pricing_model_product_parameter_repository repo_;

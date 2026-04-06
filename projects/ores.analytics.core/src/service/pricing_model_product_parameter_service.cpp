@@ -109,4 +109,12 @@ void pricing_model_product_parameter_service::remove_parameters_for_product(
         << product_id;
 }
 
+std::vector<domain::pricing_model_product_parameter>
+pricing_model_product_parameter_service::get_parameter_history(
+    const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting history for pricing model product parameter: " << id;
+    return repo_.read_all(ctx_, id);
+}
+
 }

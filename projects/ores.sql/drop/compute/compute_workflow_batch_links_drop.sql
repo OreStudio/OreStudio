@@ -18,19 +18,4 @@
  *
  */
 
--- Drop RLS policies first, then notify triggers, then tables (reverse dependency order)
-\ir ./reporting_rls_policies_drop.sql
-\ir ./reporting_report_input_bundles_drop.sql
-\ir ./reporting_report_instances_notify_trigger_drop.sql
-\ir ./reporting_report_instances_drop.sql
-\ir ./reporting_risk_report_config_books_drop.sql
-\ir ./reporting_risk_report_config_portfolios_drop.sql
-\ir ./reporting_risk_report_configs_notify_trigger_drop.sql
-\ir ./reporting_risk_report_configs_drop.sql
-\ir ./reporting_report_definitions_notify_trigger_drop.sql
-\ir ./reporting_report_definitions_drop.sql
-\ir ./reporting_concurrency_policies_notify_trigger_drop.sql
-\ir ./reporting_concurrency_policies_drop.sql
-\ir ./reporting_report_types_notify_trigger_drop.sql
-\ir ./reporting_report_types_drop.sql
-\ir ./reporting_functions_drop.sql
+drop table if exists "ores_compute_workflow_batch_links_tbl";

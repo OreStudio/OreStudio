@@ -63,6 +63,29 @@ struct delete_market_series_response {
     std::string message;
 };
 
+/**
+ * @brief Exports all market data series to object storage.
+ *
+ * The handler fetches all series for the tenant, serialises to MsgPack,
+ * compresses with gzip, and uploads to storage. Returns the storage key
+ * and series count. Used by the report execution workflow.
+ */
+struct export_market_data_to_storage_request {
+    using response_type = struct export_market_data_to_storage_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.series.export-to-storage";
+
+    std::string storage_bucket;
+    std::string storage_key;
+};
+
+struct export_market_data_to_storage_response {
+    bool success = false;
+    std::string message;
+    int series_count = 0;
+    std::string storage_key;
+};
+
 }
 
 #endif

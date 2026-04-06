@@ -967,6 +967,53 @@ The three services that are not NATS-based:
       args_templates for http/wt/wrapper once they no longer need to diverge
       from the default
 
+*** TODO Trade-aware market data filtering for report execution        :code:
+
+#+begin_quote
+The report execution workflow currently fetches all market data series for the
+tenant when gathering market data (Phase 3.5). This is correct but wasteful:
+a portfolio of interest rate swaps only needs yield curves and fixings, not
+FX vol surfaces or commodity curves.
+
+Implement trade-aware market data derivation: given the trade portfolio
+gathered in step 0, determine which market data series are actually required
+for the ORE computation. This requires inspecting trade types, currencies,
+underliers, and the analytics flags in risk_report_config to build a
+precise list of required series types, currencies, and tenors.
+#+end_quote
+
+***** Background
+
+The report execution pipeline gathers data in stages. Step 0 (gather_trades)
+produces a MsgPack blob in object storage containing all trades and
+instruments in scope. Step 1 (gather_market_data) currently fetches all
+tenant market data because we lack the logic to derive requirements from
+the trade portfolio.
+
+ORE (Open Source Risk Engine) requires specific market data for each trade
+type:
+- Interest rate swaps: discount curves, forecast curves, fixings
+- FX forwards/options: FX spot rates, FX vol surfaces
+- Credit default swaps: default probability curves, recovery rates
+- Equity options: equity spot prices, equity vol surfaces
+- Commodities: commodity price curves
+
+The mapping from trade type → required market data is ORE-domain knowledge
+that belongs in =ores.ore= (not in =ores.reporting=).
+
+***** Tasks
+
+- [ ] Design a =market_data_requirements= struct that captures the set of
+      required series types, currency pairs, and tenors
+- [ ] Implement =derive_market_data_requirements(trades, risk_report_config)=
+      in =ores.ore= that inspects the trade portfolio and analytics flags
+- [ ] Add a NATS request/reply API for market data derivation so the
+      reporting service can call it without pulling in ORE domain logic
+- [ ] Update =gather_market_data= step to use derived requirements instead
+      of fetching everything
+- [ ] Add unit tests with representative trade portfolios (IR swaps, FX,
+      credit, equity, commodity) verifying correct market data derivation
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

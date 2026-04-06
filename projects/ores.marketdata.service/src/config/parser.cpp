@@ -38,6 +38,7 @@ const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
+const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -52,11 +53,18 @@ options_description make_options_description() {
     using ores::utility::program_options::common_configuration;
     using ores::nats::config::nats_configuration;
 
+    options_description storage("Storage");
+    storage.add_options()
+        (http_base_url_arg.c_str(),
+            value<std::string>()->default_value("http://localhost:8080"),
+            "Base URL of the storage HTTP API");
+
     options_description r;
     r.add(common_configuration::make_options_description());
     r.add(logging_configuration::make_options_description("ores.marketdata.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+    r.add(storage);
     return r;
 }
 
@@ -114,6 +122,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    r.http_base_url = vm[http_base_url_arg].as<std::string>();
     return r;
 }
 

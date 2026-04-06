@@ -85,7 +85,41 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     }
 
     // ----------------------------------------------------------------
-    // Step 1: assemble report input bundle
+    // Step 1: gather market data
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "gather_market_data";
+        s.command_subject = std::string(gather_market_data_request::nats_subject);
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>&) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+            return rfl::json::write(gather_market_data_request{
+                .report_instance_id = req->report_instance_id,
+                .definition_id      = req->definition_id,
+                .tenant_id          = req->tenant_id,
+                .correlation_id     = req->correlation_id});
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<gather_market_data_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during market data gathering"});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 2: assemble report input bundle
     // ----------------------------------------------------------------
     {
         workflow_step_def s;
@@ -108,7 +142,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     }
 
     // ----------------------------------------------------------------
-    // Step 2: finalise report instance
+    // Step 3: finalise report instance
     // ----------------------------------------------------------------
     {
         workflow_step_def s;

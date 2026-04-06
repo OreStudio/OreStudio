@@ -30,6 +30,7 @@
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -77,6 +78,10 @@ constexpr std::string_view report_data_bucket = "report-data";
 
 std::string trades_storage_key(const std::string& instance_id) {
     return instance_id + "/trades.msgpack";
+}
+
+std::string market_data_storage_key(const std::string& instance_id) {
+    return instance_id + "/market_data.msgpack";
 }
 
 } // namespace
@@ -214,6 +219,59 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         wf->complete(rfl::json::write(result));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
+        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        wf->fail(e.what());
+    }
+}
+
+void report_execution_handler::gather_market_data(ores::nats::message msg) {
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf) return;
+
+    const std::string_view sv(
+        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = rfl::json::read<gather_market_data_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode gather_market_data_request");
+        return;
+    }
+    const auto& req = *parsed;
+
+    BOOST_LOG_SEV(lg(), info) << "gather_market_data starting | instance="
+                              << req.report_instance_id;
+
+    try {
+        // Ask marketdata service to export all series to storage.
+        const auto key = market_data_storage_key(req.report_instance_id);
+        ores::marketdata::messaging::export_market_data_to_storage_request md_req;
+        md_req.storage_bucket = std::string(report_data_bucket);
+        md_req.storage_key = key;
+
+        std::string err;
+        auto md_resp = nats_call(svc_nats_, md_req, err);
+        if (!md_resp || !md_resp->success) {
+            const auto failure = "export_market_data_to_storage failed: "
+                + (err.empty()
+                    ? (md_resp ? md_resp->message : "(no response)") : err);
+            mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+            wf->fail(failure);
+            return;
+        }
+
+        gather_market_data_result result;
+        result.success = true;
+        result.series_count = md_resp->series_count;
+        result.storage_key = md_resp->storage_key;
+        result.message = std::format("Gathered {} market data series",
+            md_resp->series_count);
+
+        BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
+                                  << req.report_instance_id
+                                  << " series=" << md_resp->series_count;
+
+        wf->complete(rfl::json::write(result));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
     }

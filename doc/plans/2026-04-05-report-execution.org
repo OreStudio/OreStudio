@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ID: b4e8d3f2-9c5a-4b7e-c7d4-3e2f9a6c8d0e
+:END:
+#+title: Report Execution Pipeline
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+#+status: DRAFT
+
+* Overview
+
+This document describes the pipeline that takes a ~pending~ report
+instance and drives it through to completion. This is the second phase
+of the reporting lifecycle; instance creation is described in the
+report definition to instance plan.
+
+Report execution is a long-running, multi-service workflow. It is
+implemented using the generalised durable workflow engine described in
+the workflow engine generalisation plan.
+
+* Design principles
+
+** Engine-agnostic data gathering
+
+Steps 1–4 (data gathering) are entirely independent of the computation
+engine. The reporting service gathers structured data — trades, market
+data, reference data, pricing config — using its own domain knowledge
+and the ORE Studio service APIs. The result is an engine-agnostic
+~report_input_bundle~.
+
+This separation is deliberate: future non-ORE computation engines
+(Python analytics, Bloomberg, etc.) will receive the same bundle and
+perform their own engine-specific mapping. Only step 5 is ORE-specific.
+
+** Ownership
+
+#+begin_example
+ores.reporting.service  — owns steps 1–4 and 8–11 (data gathering, result processing)
+ores.ore.service        — owns step 5 (ORE-specific: XML mapping, tarball packaging)
+ores.compute.service    — owns steps 6–7 (grid dispatch and execution)
+ores.workflow           — orchestrates the saga, provides audit trail
+#+end_example
+
+~ores.workflow~ knows the step sequence and compensation order. It does
+not contain any domain or engine logic.
+
+* Report instance lifecycle FSM (extended)
+
+The FSM for ~report_instance_lifecycle~ is extended beyond the 7 states
+used for instance creation to cover the full execution lifecycle:
+
+#+begin_example
+pending ──→ gathering_inputs ──→ preparing_package ──→ submitted_to_compute
+                                                              │
+                                                         computing (async wait)
+                                                              │
+                                                     processing_results
+                                                              │
+                                                          completed
+
+Any state ──→ failed    (terminal, error in output_message)
+Any state ──→ cancelled (terminal, user or archival)
+queued    ──→ pending   (prior instance finished)
+#+end_example
+
+States:
+- ~pending~ — instance created, waiting for execution to begin
+- ~queued~ — waiting for a prior concurrent instance to complete
+- ~gathering_inputs~ — reporting service is querying trades, market data,
+  ref data, and pricing config
+- ~preparing_package~ — ORE service is mapping data to ORE XML and
+  packaging per-book tarballs
+- ~submitted_to_compute~ — compute batch and workunits have been created
+- ~computing~ — grid is executing; workflow is in async wait
+- ~processing_results~ — downloading outputs, pushing to downstream services
+- ~completed~ (terminal) — all steps succeeded
+- ~failed~ (terminal) — any step failed; error stored in ~output_message~
+- ~cancelled~ (terminal) — user or archival cancelled
+- ~skipped~ (terminal initial) — concurrent instance, skip policy applied
+
+* Pipeline steps
+
+** Step 1: gather trading data
+
+~ores.reporting.service~ receives the execution command and begins
+data gathering.
+
+- Reads ~risk_report_config~ for the instance's definition
+- Resolves portfolio and book scope from junction tables
+  (empty set = all visible to tenant)
+- Calls ~ores.trading.service~ for all trades in the resolved books
+- Result: structured list of trades (engine-agnostic)
+
+** Step 2: gather market data
+
+- Inspects the trade portfolio to determine required market data
+  (yield curves, FX rates, volatility surfaces, fixings)
+- Calls ~ores.marketdata.service~ for the required data as-of the
+  market data date in ~risk_report_config~
+- Result: structured market data bundle (engine-agnostic)
+
+** Step 3: gather reference data
+
+- Determines required conventions for the trade portfolio
+  (business day calendars, day count fractions, index definitions)
+- Calls ~ores.refdata.service~ for the required conventions
+- Result: structured reference data bundle (engine-agnostic)
+
+** Step 4: assemble report input bundle
+
+The three data sets plus ~risk_report_config~ are assembled into a
+~report_input_bundle~ and persisted (referenced by ~instance_id~).
+This is the engine-agnostic handoff point.
+
+** Step 5: ORE mapping and package generation (engine-specific)
+
+~ores.ore.service~ receives the ~report_input_bundle~ reference.
+
+- Maps trades → ORE portfolio XML
+- Maps market data → ORE market data XML
+- Maps ref data → ORE conventions XML
+- Maps ~risk_report_config~ analytics flags → ORE analytics config XML
+- Packages one tarball per book (all required XML files + ORE config)
+- Uploads each tarball to object storage via ~ores.http.server~
+- Returns ~{book_id → tarball_uri}~ mapping
+
+** Step 6: submit to compute grid
+
+~ores.compute.service~ receives the tarball URIs.
+
+- Creates a ~batch~ record linked to the ~report_instance_id~
+- Creates one ~workunit~ per tarball, each pointing to its tarball URI
+- Dispatches ~work_assignment_event~ to the COMPUTE JetStream stream
+- Returns ~batch_id~
+
+~batch_id~ is stored on the ~report_instance~ for traceability.
+
+** Step 7: grid execution (async wait)
+
+BOINC-style compute wrappers consume ~work_assignment_event~ from
+JetStream, execute ORE, and upload results to object storage.
+
+The workflow is in async wait (~computing~ FSM state). When all workunits
+complete, ~ores.compute.service~ publishes a ~batch-completed~ event.
+The workflow engine receives this event and advances to step 8.
+
+** Step 8: process results
+
+~ores.reporting.service~ receives the batch completion notification.
+
+- For each workunit result: downloads output tarball from storage
+- Unpacks and validates the ORE output
+- Pushes outputs to downstream services (results storage, analytics, etc.)
+
+** Step 9: finalise
+
+- Marks ~report_instance~ FSM as ~completed~ (or ~failed~ on error)
+- Stores execution summary in ~output_message~
+- Records ~completed_at~ timestamp
+
+* Compensation
+
+On failure at any step, the workflow engine triggers compensation in
+reverse step order:
+
+| Step failed         | Compensation action                              |
+|---------------------+--------------------------------------------------|
+| gather_* steps      | No compensation needed (read-only queries)       |
+| prepare_package     | Delete uploaded tarballs from storage            |
+| submit_to_compute   | Cancel batch and workunits in compute service    |
+| computing           | Cancel batch; delete tarballs                    |
+| process_results     | Delete any partially pushed results              |
+
+In all cases the ~report_instance~ FSM transitions to ~failed~ with
+the error stored in ~output_message~.
+
+* Domain model additions required
+
+** report_input_bundle (new)
+
+A new entity in ~ores.reporting~ to persist the engine-agnostic data
+gathered in steps 1–4:
+
+#+begin_example
+report_input_bundle:
+  instance_id      uuid (FK to report_instance)
+  trades_json      text (serialised trade list)
+  market_data_json text (serialised market data)
+  ref_data_json    text (serialised conventions)
+  config_json      text (serialised risk_report_config snapshot)
+  created_at       timestamptz
+#+end_example
+
+Alternatively: stored in object storage (referenced by URI on the
+instance), avoiding large DB rows. Decision deferred.
+
+** report_instance additions
+
+- ~batch_id~ — FK to ~ores_compute_batches_tbl~; set after step 6
+- ~input_bundle_ref~ — reference to the report input bundle
+
+* Implementation status
+
+| Step | Description                  | Status       |
+|------+------------------------------+--------------|
+|    1 | Gather trades                | NOT STARTED  |
+|    2 | Gather market data           | NOT STARTED  |
+|    3 | Gather ref data              | NOT STARTED  |
+|    4 | Assemble input bundle        | NOT STARTED  |
+|    5 | ORE mapping + packaging      | NOT STARTED  |
+|    6 | Submit to compute            | NOT STARTED  |
+|    7 | Grid execution (async wait)  | NOT STARTED  |
+|    8 | Process results              | NOT STARTED  |
+|    9 | Finalise instance            | NOT STARTED  |
+
+FSM state additions (gathering_inputs, preparing_package, etc.) are
+not yet in the SQL.
+
+* Dependencies
+
+This plan depends on the workflow engine generalisation plan (see
+separate document). Specifically:
+- Event-driven step dispatch and completion
+- Async wait / resume on batch-completed event
+- Idempotency contract for domain service handlers
+- Startup recovery for in-flight workflows
+
+Until the generalised engine is in place, no execution steps should
+be implemented. The ~run_report_workflow~ code introduced in session
+2026-04-05 (synchronous saga, wrong pattern) is to be reverted.

@@ -19,20 +19,17 @@
  */
 #include "ores.workflow/messaging/workflow_handler.hpp"
 
-#include <chrono>
+#include <span>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.service/error_code.hpp"
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.workflow/domain/workflow_instance.hpp"
-#include "ores.workflow/messaging/workflow_protocol.hpp"
-#include "ores.workflow/repository/workflow_instance_repository.hpp"
-#include "ores.workflow/service/fsm_state_map.hpp"
-#include "ores.workflow/service/provision_parties_workflow.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -41,19 +38,17 @@ using namespace ores::service::messaging;
 
 workflow_handler::workflow_handler(ores::nats::service::client& nats,
     ores::database::context ctx,
-    ores::security::jwt::jwt_authenticator signer,
-    ores::nats::service::nats_client outbound_nats)
+    ores::security::jwt::jwt_authenticator signer)
     : nats_(nats)
     , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , outbound_nats_(std::move(outbound_nats)) {}
+    , signer_(std::move(signer)) {}
 
 void workflow_handler::provision_parties(ores::nats::message msg) {
     const auto correlation_id =
         ores::nats::extract_or_generate_correlation_id(msg);
     BOOST_LOG_SEV(lg(), info) << "provision_parties correlation_id=" << correlation_id;
 
-    // Validate JWT and build per-request context
+    // Validate JWT and build per-request context.
     auto ctx_expected = ores::service::service::make_request_context(
         ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>(signer_));
     if (!ctx_expected) {
@@ -67,7 +62,6 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         return;
     }
 
-    // Decode request
     auto req = decode<provision_parties_request>(msg);
     if (!req) {
         reply(nats_, msg, provision_parties_response{
@@ -81,80 +75,51 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         return;
     }
 
-    // Build the outbound nats_client with the caller's JWT delegated so
-    // downstream services can build the correct DB context.
-    const auto bearer = ores::nats::service::extract_bearer(msg);
-    auto delegated_nats = outbound_nats_
-        .with_delegation(bearer)
-        .with_correlation_id(correlation_id);
+    const auto tenant_id_str =
+        boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
 
-    // Load FSM states for workflow instances (one NATS round-trip).
-    const auto instance_states = service::load_fsm_states(
-        delegated_nats, "workflow_instance");
+    provision_parties_response resp;
+    resp.success = true;
+    resp.correlation_id = correlation_id;
 
-    // Serialize the request for audit storage
-    const auto request_json = rfl::json::write(*req);
+    boost::uuids::random_generator gen;
+    for (const auto& input : req->parties) {
+        const auto party_id = gen();
+        const auto party_id_str = boost::uuids::to_string(party_id);
 
-    // Create workflow instance
-    domain::workflow_instance instance;
-    instance.id = boost::uuids::random_generator()();
-    instance.tenant_id = req_ctx.tenant_id().to_uuid();
-    instance.type = "provision_parties_workflow";
-    instance.state_id = instance_states.require("in_progress");
-    instance.request_json = request_json;
-    instance.correlation_id = correlation_id;
-    instance.created_by = delegated_actor(req_ctx);
-    instance.created_at = std::chrono::system_clock::now();
+        // Build the per-party workflow request that the engine will store and
+        // pass to the step builders.
+        provision_party_workflow_request wf_req;
+        wf_req.party_id            = party_id_str;
+        wf_req.full_name           = input.full_name;
+        wf_req.short_code          = input.short_code;
+        wf_req.party_category      = input.party_category;
+        wf_req.party_type          = input.party_type;
+        wf_req.business_center_code = input.business_center_code;
+        wf_req.parent_party_id     = input.parent_party_id;
+        wf_req.status              = "Inactive"; // wizard fires on first login
+        wf_req.principal           = input.principal;
+        wf_req.password            = input.password;
+        wf_req.totp_secret         = input.totp_secret;
+        wf_req.email               = input.email;
+        wf_req.account_type        = input.account_type;
 
-    repository::workflow_instance_repository instance_repo;
-    instance_repo.create(req_ctx, instance);
+        start_workflow_message start_msg;
+        start_msg.type         = "provision_parties_workflow";
+        start_msg.tenant_id    = tenant_id_str;
+        start_msg.request_json = rfl::json::write(wf_req);
+        start_msg.correlation_id = correlation_id;
 
-    // Run the saga executor
-    service::provision_parties_workflow executor(
-        instance.id, std::move(*req), correlation_id);
+        const auto json = rfl::json::write(start_msg);
+        const auto data = std::as_bytes(std::span{json.data(), json.size()});
+        nats_.publish(start_workflow_message::nats_subject, data);
 
-    bool ok = false;
-    try {
-        ok = executor.execute(req_ctx, delegated_nats);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Unhandled exception in workflow execution: " << e.what();
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("failed"), "", e.what());
-        reply(nats_, msg, provision_parties_response{
-            .success = false, .message = e.what()});
-        return;
+        resp.party_ids.push_back(party_id_str);
     }
 
-    if (!ok) {
-        BOOST_LOG_SEV(lg(), warn) << "provision_parties_workflow failed: "
-                                     << executor.failure_reason()
-                                     << ". Starting compensation.";
-
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("compensating"), "", executor.failure_reason());
-
-        try {
-            executor.compensate(req_ctx, delegated_nats);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Unhandled exception in workflow compensation: " << e.what();
-        }
-
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("compensated"), "", executor.failure_reason());
-
-        reply(nats_, msg, provision_parties_response{
-            .success = false, .message = executor.failure_reason()});
-        return;
-    }
-
-    const auto result_json = rfl::json::write(executor.result());
-    instance_repo.update_state(req_ctx, instance.id,
-        instance_states.require("completed"), result_json, "");
-
-    BOOST_LOG_SEV(lg(), debug) << "provision_parties_workflow completed.";
-    reply(nats_, msg, executor.result());
+    BOOST_LOG_SEV(lg(), debug) << "provision_parties dispatched "
+        << req->parties.size() << " workflow(s).";
+    reply(nats_, msg, resp);
 }
 
 }

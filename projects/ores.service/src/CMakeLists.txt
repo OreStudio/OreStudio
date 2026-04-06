@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         ores.database.lib
         ores.utility.lib
+        ores.workflow.api.lib
         Boost::boost
     PRIVATE
         ores.logging.lib)

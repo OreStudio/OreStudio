@@ -21,12 +21,15 @@
 #define ORES_REPORTING_MESSAGING_REPORT_INSTANCE_HANDLER_HPP
 
 #include <optional>
+#include <span>
+#include <cstddef>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -239,6 +242,19 @@ public:
                 << "Created report instance " << inst.id
                 << " for definition " << def->id
                 << " (job_instance_id=" << trigger_msg->job_instance_id << ")";
+
+            // Fire-and-forget: hand off to the workflow service for execution.
+            const auto wf_payload = std::string{
+                "{\"report_instance_id\":\""} +
+                boost::uuids::to_string(inst.id) + "\","
+                "\"tenant_id\":\"" + trigger_msg->tenant_id + "\","
+                "\"definition_id\":\"" + trigger_msg->report_definition_id + "\"}";
+            const auto wf_bytes = std::as_bytes(
+                std::span{wf_payload.data(), wf_payload.size()});
+            nats_.publish("workflow.v1.reports.run", wf_bytes);
+
+            BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+                << "Published run_report_message for instance " << inst.id;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_handler_lg(), error)
                 << "Failed to create report instance for trigger: " << e.what();

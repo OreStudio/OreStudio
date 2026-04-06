@@ -81,9 +81,24 @@ struct workflow_instance final {
     std::string created_by;
 
     /**
+     * @brief Zero-based index of the step currently being executed.
+     */
+    int current_step_index = 0;
+
+    /**
+     * @brief Total number of steps in this workflow definition.
+     */
+    int step_count = 0;
+
+    /**
      * @brief Timestamp when the workflow reached a terminal state.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;
+
+    /**
+     * @brief Timestamp of the most recent step-completed event processed.
+     */
+    std::optional<std::chrono::system_clock::time_point> last_event_at;
 
     /**
      * @brief Timestamp when this record was created.

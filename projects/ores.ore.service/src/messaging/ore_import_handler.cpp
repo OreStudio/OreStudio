@@ -20,19 +20,18 @@
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 
 #include <algorithm>
-#include <chrono>
+#include <span>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.service/error_code.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.workflow/domain/workflow_instance.hpp"
-#include "ores.workflow/repository/workflow_instance_repository.hpp"
-#include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
-#include "ores.ore.service/service/ore_import_workflow.hpp"
+#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::ore::service::messaging {
 
@@ -41,22 +40,17 @@ using namespace ores::service::messaging;
 
 ore_import_handler::ore_import_handler(ores::nats::service::client& nats,
     ores::database::context ctx,
-    ores::security::jwt::jwt_authenticator signer,
-    ores::nats::service::nats_client outbound_nats,
-    std::string http_base_url,
-    std::string work_dir)
+    ores::security::jwt::jwt_authenticator signer)
     : nats_(nats)
     , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , outbound_nats_(std::move(outbound_nats))
-    , http_base_url_(std::move(http_base_url))
-    , work_dir_(std::move(work_dir)) {}
+    , signer_(std::move(signer)) {}
 
 void ore_import_handler::ore_import(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_request;
     using ores::ore::messaging::ore_import_response;
+    using ores::ore::messaging::ore_import_execute_request;
+    using ores::workflow::messaging::start_workflow_message;
 
-    // Extract (or generate) correlation ID — propagated from the Qt client.
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
     BOOST_LOG_SEV(lg(), info) << "ore.import received | corr=" << correlation_id;
 
@@ -89,8 +83,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
         return;
     }
 
-    // Validate request_id — must contain only alphanumeric characters and hyphens
-    // to prevent path traversal when constructing the work directory path.
+    // Validate request_id — must contain only alphanumeric characters and
+    // hyphens to prevent path traversal when constructing the work directory.
     const bool safe = std::all_of(req->request_id.begin(), req->request_id.end(),
         [](unsigned char c) { return std::isalnum(c) || c == '-'; });
     if (!safe) {
@@ -101,89 +95,43 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import starting | corr=" << correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import dispatching workflow | corr=" << correlation_id
                               << " request_id=" << req->request_id;
 
-    // Build outbound NATS client with caller's JWT delegated.
+    // Pre-generate the workflow instance UUID so we can return it immediately.
+    const auto instance_uuid = boost::uuids::random_generator()();
+    const auto instance_id_str = boost::uuids::to_string(instance_uuid);
+
+    // Extract bearer token to delegate the caller's identity inside the saga.
     const auto bearer = ores::nats::service::extract_bearer(msg);
-    auto delegated_nats = outbound_nats_
-        .with_delegation(bearer)
-        .with_correlation_id(correlation_id);
 
-    // Load FSM states for workflow instances.
-    const auto instance_states = ores::workflow::service::load_fsm_states(
-        delegated_nats, "workflow_instance");
+    // Build the internal execute request (stored as workflow_instance.request_json).
+    ore_import_execute_request execute_req;
+    execute_req.request_id         = req->request_id;
+    execute_req.import_choices_json = req->import_choices_json;
+    execute_req.correlation_id     = correlation_id;
+    execute_req.bearer_token       = bearer;
 
-    const auto request_json = rfl::json::write(*req);
+    // Dispatch start_workflow_message — fire and forget.
+    start_workflow_message swm;
+    swm.type           = "ore_import_workflow";
+    swm.tenant_id      = boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
+    swm.request_json   = rfl::json::write(execute_req);
+    swm.correlation_id = correlation_id;
+    swm.instance_id    = instance_id_str;
 
-    // Create workflow instance record.
-    ores::workflow::domain::workflow_instance instance;
-    instance.id = boost::uuids::random_generator()();
-    instance.tenant_id = req_ctx.tenant_id().to_uuid();
-    instance.type = "ore_import_workflow";
-    instance.state_id = instance_states.require("in_progress");
-    instance.request_json = request_json;
-    instance.correlation_id = correlation_id;
-    instance.created_by = delegated_actor(req_ctx);
-    instance.created_at = std::chrono::system_clock::now();
+    const auto swm_json = rfl::json::write(swm);
+    const auto data = std::as_bytes(std::span{swm_json.data(), swm_json.size()});
+    nats_.publish(start_workflow_message::nats_subject, data);
 
-    ores::workflow::repository::workflow_instance_repository instance_repo;
-    instance_repo.create(req_ctx, instance);
+    BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
+                              << " instance_id=" << instance_id_str;
 
-    BOOST_LOG_SEV(lg(), debug) << "ore.import workflow_instance created | corr=" << correlation_id
-                               << " workflow_id=" << boost::uuids::to_string(instance.id);
-
-    // Run the saga executor.
-    ores::ore::service::service::ore_import_workflow executor(
-        instance.id, std::move(*req), correlation_id, http_base_url_, work_dir_);
-
-    bool ok = false;
-    try {
-        ok = executor.execute(req_ctx, delegated_nats);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "ore.import unhandled exception | corr="
-                                   << correlation_id << " error=" << e.what();
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("failed"), "", e.what());
-        reply(nats_, msg, ore_import_response{
-            .success = false,
-            .message = e.what(),
-            .correlation_id = correlation_id});
-        return;
-    }
-
-    if (!ok) {
-        BOOST_LOG_SEV(lg(), warn) << "ore.import workflow failed | corr=" << correlation_id
-                                  << " reason=" << executor.failure_reason()
-                                  << ". Starting compensation.";
-
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("compensating"), "", executor.failure_reason());
-
-        try {
-            executor.compensate(req_ctx, delegated_nats);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "ore.import compensation exception | corr="
-                                       << correlation_id << " error=" << e.what();
-        }
-
-        instance_repo.update_state(req_ctx, instance.id,
-            instance_states.require("compensated"), "", executor.failure_reason());
-
-        reply(nats_, msg, ore_import_response{
-            .success = false,
-            .message = executor.failure_reason(),
-            .correlation_id = correlation_id});
-        return;
-    }
-
-    const auto result_json = rfl::json::write(executor.result());
-    instance_repo.update_state(req_ctx, instance.id,
-        instance_states.require("completed"), result_json, "");
-
-    BOOST_LOG_SEV(lg(), info) << "ore.import complete | corr=" << correlation_id
-                              << " item_errors=" << executor.result().item_errors.size();
-    reply(nats_, msg, executor.result());
+    reply(nats_, msg, ore_import_response{
+        .success              = true,
+        .message              = "ORE import submitted.",
+        .correlation_id       = correlation_id,
+        .workflow_instance_id = instance_id_str});
 }
 
 }

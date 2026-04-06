@@ -39,7 +39,10 @@ create table if not exists "ores_workflow_workflow_instances_tbl" (
     "error" text null,
     "correlation_id" text null,
     "created_by" text not null,
+    "current_step_index" integer not null default 0,
+    "step_count" integer not null default 0,
     "completed_at" timestamptz null,
+    "last_event_at" timestamptz null,
     "created_at" timestamp with time zone not null default current_timestamp,
     primary key (id),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)

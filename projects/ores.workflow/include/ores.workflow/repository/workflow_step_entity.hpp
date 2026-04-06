@@ -43,6 +43,12 @@ struct workflow_step_entity {
     std::string request_json;
     std::optional<std::string> response_json;
     std::optional<std::string> error;
+    std::string command_subject;
+    std::string command_json;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> command_published_at;
+    std::string idempotency_key;
+    std::string compensation_subject;
+    std::string compensation_json;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;

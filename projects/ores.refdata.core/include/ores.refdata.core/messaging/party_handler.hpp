@@ -26,8 +26,10 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.core/service/party_service.hpp"
@@ -91,6 +93,43 @@ public:
     }
 
     void save(ores::nats::message msg) {
+        using ores::service::messaging::is_workflow_command;
+        using ores::service::messaging::extract_workflow_header;
+        using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::workflow_step_id_header;
+        using ores::service::messaging::workflow_instance_id_header;
+        using ores::service::messaging::workflow_tenant_id_header;
+
+        // Workflow step command: bypass JWT auth; use X-Tenant-Id for context.
+        if (is_workflow_command(msg)) {
+            const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
+            const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+            const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+
+            auto req = decode<save_party_request>(msg);
+            if (!req) {
+                publish_step_completion(nats_, step_id, inst_id, false, "",
+                    "Failed to decode save_party_request");
+                return;
+            }
+            try {
+                using ores::database::service::tenant_context;
+                auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
+                service::party_service svc(wf_ctx);
+                svc.save_party(req->data);
+                BOOST_LOG_SEV(party_handler_lg(), debug)
+                    << "Workflow step completed: " << msg.subject;
+                publish_step_completion(nats_, step_id, inst_id, true,
+                    rfl::json::write(save_party_response{.success = true}), "");
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(party_handler_lg(), error)
+                    << "Workflow step failed: " << msg.subject
+                    << " — " << e.what();
+                publish_step_completion(nats_, step_id, inst_id, false, "", e.what());
+            }
+            return;
+        }
+
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(party_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(

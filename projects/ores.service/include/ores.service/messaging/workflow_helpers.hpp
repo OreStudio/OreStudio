@@ -80,12 +80,27 @@ inline void publish_step_completion(
     // Build the event JSON manually to avoid a dependency on ores.workflow.
     // The step_completed_event struct is defined in ores.workflow/messaging/
     // workflow_events.hpp; we replicate the field names here for independence.
+
+    // JSON-escape the error message (may contain quotes or backslashes).
+    std::string escaped_error;
+    escaped_error.reserve(error_msg.size() + 8);
+    for (const char c : error_msg) {
+        switch (c) {
+        case '"':  escaped_error += "\\\""; break;
+        case '\\': escaped_error += "\\\\"; break;
+        case '\n': escaped_error += "\\n";  break;
+        case '\r': escaped_error += "\\r";  break;
+        case '\t': escaped_error += "\\t";  break;
+        default:   escaped_error += c;      break;
+        }
+    }
+
     std::string json = "{";
     json += "\"workflow_instance_id\":\"" + instance_id + "\",";
     json += "\"step_id\":\"" + step_id + "\",";
     json += "\"success\":" + std::string(success ? "true" : "false") + ",";
     json += "\"result_json\":" + (result_json.empty() ? "\"\"" : result_json) + ",";
-    json += "\"error_message\":\"" + error_msg + "\"";
+    json += "\"error_message\":\"" + escaped_error + "\"";
     json += "}";
 
     const auto data = std::as_bytes(std::span{json.data(), json.size()});

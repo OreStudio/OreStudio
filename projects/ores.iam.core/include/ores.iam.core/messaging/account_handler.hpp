@@ -181,10 +181,12 @@ public:
         using ores::service::messaging::workflow_step_id_header;
         using ores::service::messaging::workflow_instance_id_header;
 
-        // Workflow step command: bypass JWT auth; tenant derived from @hostname.
+        // Workflow step command: bypass JWT auth; use X-Tenant-Id header.
         if (is_workflow_command(msg)) {
+            using ores::service::messaging::workflow_tenant_id_header;
             const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
             const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
+            const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
 
             auto req = decode<save_account_request>(msg);
             if (!req) {
@@ -193,27 +195,18 @@ public:
                 return;
             }
             try {
-                std::string username = req->principal;
-                ores::database::context op_ctx = ctx_;
-                const auto at_pos = req->principal.rfind('@');
-                if (at_pos != std::string::npos) {
-                    username = req->principal.substr(0, at_pos);
-                    const auto hostname = req->principal.substr(at_pos + 1);
-                    repository::tenant_repository tenant_repo(ctx_);
-                    auto tenants = tenant_repo.read_latest_by_hostname(hostname);
-                    if (!tenants.empty()) {
-                        using ores::database::service::tenant_context;
-                        op_ctx = tenant_context::with_tenant(
-                            ctx_, boost::uuids::to_string(tenants.front().id));
-                    } else {
-                        throw std::runtime_error(
-                            "Tenant not found for hostname: " + hostname);
-                    }
-                }
+                using ores::database::service::tenant_context;
+                auto wf_ctx = tenant_context::with_tenant(ctx_, tenant_id);
 
-                service::account_service acct_svc(op_ctx);
+                // Extract username from principal (strip @hostname suffix).
+                std::string username = req->principal;
+                const auto at_pos = req->principal.rfind('@');
+                if (at_pos != std::string::npos)
+                    username = req->principal.substr(0, at_pos);
+
+                service::account_service acct_svc(wf_ctx);
                 auto auth_svc =
-                    std::make_shared<service::authorization_service>(op_ctx);
+                    std::make_shared<service::authorization_service>(wf_ctx);
                 service::account_setup_service setup_svc(acct_svc, auth_svc);
                 auto acct = setup_svc.create_account(
                     username, req->email, req->password,

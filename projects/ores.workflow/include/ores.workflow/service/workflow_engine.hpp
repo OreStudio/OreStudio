@@ -122,11 +122,24 @@ private:
     /**
      * @brief Begins saga compensation for a failed workflow instance.
      *
-     * Iterates completed steps in reverse order, builds and publishes
-     * compensation commands, and transitions the instance to compensating.
+     * Iterates completed forward steps in reverse order, builds and
+     * publishes compensation commands (with X-Tenant-Id header), and
+     * transitions the instance to compensating. Does NOT mark as
+     * compensated — that happens when all compensation step-completed
+     * events are received.
      */
     void begin_compensation(const domain::workflow_instance& instance,
         const std::string& failure_msg);
+
+    /**
+     * @brief Checks whether all compensation steps have finished.
+     *
+     * Called after each compensation step-completed event. When no
+     * in-progress compensation steps remain, transitions the instance
+     * to the compensated state.
+     */
+    void check_compensation_complete(
+        const domain::workflow_instance& instance);
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

@@ -95,10 +95,10 @@ void workflow_engine::dispatch_next_step(
     const auto& step_def = def->steps[next_index];
     const auto all_steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
 
+    // Only include forward step results (step_index >= 0), not compensation.
     std::vector<std::string> results;
-    results.reserve(all_steps.size());
     for (const auto& s : all_steps) {
-        if (!s.response_json.empty())
+        if (s.step_index >= 0 && !s.response_json.empty())
             results.push_back(s.response_json);
     }
 
@@ -158,12 +158,15 @@ void workflow_engine::begin_compensation(
         return;
     }
 
-    // Load completed steps in reverse order for compensation.
+    // Load completed forward steps in reverse order for compensation.
     auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
     std::ranges::reverse(steps);
 
+    bool dispatched_any = false;
     for (const auto& s : steps) {
-        // Only compensate successfully completed steps.
+        // Only compensate successfully completed forward steps.
+        if (s.step_index < 0)
+            continue;
         if (s.state_id != step_states_.require("completed"))
             continue;
 
@@ -194,20 +197,42 @@ void workflow_engine::begin_compensation(
         comp_step.created_at = std::chrono::system_clock::now();
         step_repo_.create(ctx_, comp_step);
 
-        // Publish compensation command (fire-and-forget; no step-completed
-        // event expected from compensation in Phase 1 — see plan Phase 1.2).
-        const auto data = std::as_bytes(
-            std::span{comp_json.data(), comp_json.size()});
-        nats_.publish(step_def.compensation_subject, data, {
-            {"X-Workflow-Step-Id",     boost::uuids::to_string(comp_id)},
-            {"X-Workflow-Instance-Id", boost::uuids::to_string(instance.id)}
-        });
-
+        // Publish compensation command with tenant header.
+        publish_command(comp_step, instance.id, instance.tenant_id);
         step_repo_.mark_command_published(ctx_, comp_id);
+        dispatched_any = true;
     }
 
+    // If no compensation steps were dispatched (e.g. no completed forward
+    // steps with compensation subjects), transition directly to compensated.
+    if (!dispatched_any) {
+        BOOST_LOG_SEV(lg(), info)
+            << "No compensation steps needed for workflow "
+            << boost::uuids::to_string(instance.id);
+        instance_repo_.update_state(ctx_, instance.id,
+            instance_states_.require("compensated"), "", failure_msg);
+    }
+}
+
+void workflow_engine::check_compensation_complete(
+    const domain::workflow_instance& instance) {
+
+    const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+
+    for (const auto& s : steps) {
+        if (s.step_index >= 0) continue; // skip forward steps
+        if (s.state_id == step_states_.require("in_progress")) {
+            // At least one compensation step is still running.
+            return;
+        }
+    }
+
+    // All compensation steps have finished (completed or failed).
+    BOOST_LOG_SEV(lg(), info)
+        << "All compensation steps finished for workflow "
+        << boost::uuids::to_string(instance.id);
     instance_repo_.update_state(ctx_, instance.id,
-        instance_states_.require("compensated"), "", failure_msg);
+        instance_states_.require("compensated"), "", "");
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
@@ -279,10 +304,22 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         return;
     }
 
-    if (event.success) {
-        dispatch_next_step(*instance, event.result_json);
+    // Distinguish between forward steps and compensation steps.
+    if (step->step_index < 0) {
+        // Compensation step completed — check if all compensations are done.
+        if (!event.success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Compensation step " << event.step_id << " failed: "
+                << event.error_message;
+        }
+        check_compensation_complete(*instance);
     } else {
-        begin_compensation(*instance, event.error_message);
+        // Forward step completed.
+        if (event.success) {
+            dispatch_next_step(*instance, event.result_json);
+        } else {
+            begin_compensation(*instance, event.error_message);
+        }
     }
 }
 
@@ -376,36 +413,35 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
 void workflow_engine::recover_in_progress() {
     BOOST_LOG_SEV(lg(), info) << "Starting workflow recovery pass.";
 
+    // Recover both in-progress and compensating instances.
     const auto in_progress_id = instance_states_.require("in_progress");
-    const auto instances = instance_repo_.find_by_state(ctx_, in_progress_id);
+    const auto compensating_id = instance_states_.require("compensating");
+
+    auto instances = instance_repo_.find_by_state(ctx_, in_progress_id);
+    auto compensating = instance_repo_.find_by_state(ctx_, compensating_id);
+    instances.insert(instances.end(),
+        std::make_move_iterator(compensating.begin()),
+        std::make_move_iterator(compensating.end()));
 
     BOOST_LOG_SEV(lg(), info)
-        << "Found " << instances.size() << " in-progress workflow instance(s).";
+        << "Found " << instances.size()
+        << " recoverable workflow instance(s).";
 
     for (const auto& instance : instances) {
         try {
-            // Find the current in-progress step for this instance.
+            // Find all in-progress steps for this instance and re-dispatch.
             const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
-            const auto it = std::ranges::find_if(steps, [&](const auto& s) {
-                return s.state_id == step_states_.require("in_progress");
-            });
+            for (const auto& s : steps) {
+                if (s.state_id != step_states_.require("in_progress"))
+                    continue;
 
-            if (it == steps.end()) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "In-progress instance " << boost::uuids::to_string(instance.id)
-                    << " has no in-progress step; skipping.";
-                continue;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Re-dispatching step " << s.step_index
+                    << " (" << s.name << ") for instance "
+                    << boost::uuids::to_string(instance.id);
+
+                publish_command(s, instance.id, instance.tenant_id);
             }
-
-            BOOST_LOG_SEV(lg(), info)
-                << "Re-dispatching step " << it->step_index
-                << " (" << it->name << ") for instance "
-                << boost::uuids::to_string(instance.id);
-
-            // Re-publish the command with the same step_id (idempotency key).
-            // Domain services will detect the duplicate and re-publish their
-            // step-completed event without re-executing the operation.
-            publish_command(*it, instance.id, instance.tenant_id);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Recovery failed for instance "

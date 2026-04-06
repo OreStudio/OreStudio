@@ -22,12 +22,10 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
@@ -116,7 +114,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
             ctx_, req.tenant_id);
 
-        // ── Load risk_report_config for book/portfolio scope ─────────
+        // ── Load risk_report_config ──────────────────────────────────
         repository::risk_report_config_repository config_repo;
         const auto config = config_repo.find_by_definition_id(
             tenant_ctx, req.definition_id);
@@ -128,75 +126,12 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
 
         const auto config_id = boost::uuids::to_string(config->id);
 
-        // ── Resolve scope and fetch trades ───────────────────────────
-        std::vector<ores::trading::messaging::trade_export_item> all_items;
-        const auto book_ids = config_repo.get_book_scope(tenant_ctx, config_id);
+        // ── Resolve book scope via SQL function ──────────────────────
+        const auto book_ids = config_repo.resolve_book_ids(
+            tenant_ctx, config_id);
 
-        if (!book_ids.empty()) {
-            // Explicit book scope — fetch per book.
-            for (const auto& bid : book_ids) {
-                try {
-                    ores::trading::messaging::export_portfolio_request exp_req;
-                    exp_req.book_id = bid;
-                    std::string err;
-                    auto resp = nats_call(svc_nats_, exp_req, err);
-                    if (!resp || !resp->success) {
-                        const auto failure = err.empty() ? resp->message : err;
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "gather_trades: export failed for book " << bid
-                            << ": " << failure;
-                        continue;
-                    }
-                    all_items.insert(all_items.end(),
-                        std::make_move_iterator(resp->items.begin()),
-                        std::make_move_iterator(resp->items.end()));
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "gather_trades: exception exporting book " << bid
-                        << ": " << e.what();
-                }
-            }
-        } else {
-            // No book scope — try portfolio scope, fetching trades directly.
-            const auto portfolio_ids = config_repo.get_portfolio_scope(
-                tenant_ctx, config_id);
-            for (const auto& pid : portfolio_ids) {
-                try {
-                    ores::trading::messaging::export_portfolio_request exp_req;
-                    exp_req.portfolio_id = pid;
-                    std::string err;
-                    auto resp = nats_call(svc_nats_, exp_req, err);
-                    if (!resp || !resp->success) {
-                        const auto failure = err.empty() ? resp->message : err;
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "gather_trades: export failed for portfolio "
-                            << pid << ": " << failure;
-                        continue;
-                    }
-                    all_items.insert(all_items.end(),
-                        std::make_move_iterator(resp->items.begin()),
-                        std::make_move_iterator(resp->items.end()));
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "gather_trades: exception exporting portfolio "
-                        << pid << ": " << e.what();
-                }
-            }
-
-            if (portfolio_ids.empty()) {
-                // No scope at all — means "all trades for tenant".
-                // Fetch via a single unscoped export call.
-                BOOST_LOG_SEV(lg(), info)
-                    << "gather_trades: no book/portfolio scope; "
-                    << "fetching all tenant trades";
-                ores::trading::messaging::export_portfolio_request exp_req;
-                std::string err;
-                auto resp = nats_call(svc_nats_, exp_req, err);
-                if (resp && resp->success) {
-                    all_items = std::move(resp->items);
-                }
-            }
-        }
+        BOOST_LOG_SEV(lg(), info) << "gather_trades: resolved "
+                                  << book_ids.size() << " book(s) in scope";
 
         // ── Update instance state to running ─────────────────────────
         service::report_instance_service inst_svc(tenant_ctx);
@@ -208,26 +143,33 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         inst->fsm_state_id = instance_states_.require("running");
         inst_svc.save_instance(*inst);
 
-        // ── Serialise to MsgPack and upload to storage ────────────────
+        // ── Ask trading service to export trades to storage ──────────
         const auto key = trades_storage_key(req.report_instance_id);
-        {
-            const auto blob = rfl::msgpack::write(all_items);
-            ores::storage::net::storage_transfer transfer(http_base_url_);
-            transfer.upload_blob(
-                std::string(report_data_bucket), key, blob);
+        ores::trading::messaging::export_trades_to_storage_request exp_req;
+        exp_req.book_ids = book_ids;
+        exp_req.storage_bucket = std::string(report_data_bucket);
+        exp_req.storage_key = key;
+
+        std::string err;
+        auto exp_resp = nats_call(svc_nats_, exp_req, err);
+        if (!exp_resp || !exp_resp->success) {
+            const auto failure = err.empty()
+                ? (exp_resp ? exp_resp->message : "(no response)") : err;
+            wf->fail("export_trades_to_storage failed: " + failure);
+            return;
         }
 
         // ── Build result ─────────────────────────────────────────────
         gather_trades_result result;
         result.success = true;
-        result.trade_count = static_cast<int>(all_items.size());
-        result.storage_key = key;
+        result.trade_count = exp_resp->trade_count;
+        result.storage_key = exp_resp->storage_key;
         result.message = std::format("Gathered {} trades from {} books",
-            all_items.size(), book_ids.size());
+            exp_resp->trade_count, book_ids.size());
 
         BOOST_LOG_SEV(lg(), info) << "gather_trades complete | instance="
                                   << req.report_instance_id
-                                  << " trades=" << all_items.size()
+                                  << " trades=" << exp_resp->trade_count
                                   << " books=" << book_ids.size();
 
         wf->complete(rfl::json::write(result));

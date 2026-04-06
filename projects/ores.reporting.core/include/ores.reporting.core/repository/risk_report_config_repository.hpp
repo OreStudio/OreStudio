@@ -58,6 +58,16 @@ public:
     find_by_definition_id(context ctx, const std::string& definition_id);
 
     /**
+     * @brief Resolves the full set of book UUIDs in scope for a config.
+     *
+     * Calls ores_reporting_resolve_book_ids_for_config_fn which checks
+     * explicit book scope, then portfolio scope (with subtree expansion),
+     * then falls back to all tenant books.
+     */
+    std::vector<std::string>
+    resolve_book_ids(context ctx, const std::string& config_id);
+
+    /**
      * @brief Returns the active book UUIDs scoped to a risk_report_config.
      *
      * Empty vector means "all books within the selected portfolios".

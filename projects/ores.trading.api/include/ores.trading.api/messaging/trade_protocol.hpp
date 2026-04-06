@@ -123,6 +123,33 @@ struct export_portfolio_response {
     std::vector<trade_export_item> items;
 };
 
+/**
+ * @brief Exports trades for the given book IDs to object storage.
+ *
+ * The handler resolves trade IDs via ores_trading_get_trade_ids_by_books_fn,
+ * loads full trade_export_items, serialises to MsgPack, compresses with gzip,
+ * and uploads to storage. Returns the storage key and trade count.
+ *
+ * Used by the report execution workflow to offload large trade data sets
+ * to storage instead of passing them through NATS.
+ */
+struct export_trades_to_storage_request {
+    using response_type = struct export_trades_to_storage_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.trades.export-to-storage";
+
+    std::vector<std::string> book_ids;
+    std::string storage_bucket;  ///< Target bucket (e.g. "report-data")
+    std::string storage_key;     ///< Target key (e.g. "{instance_id}/trades.msgpack")
+};
+
+struct export_trades_to_storage_response {
+    bool success = false;
+    std::string message;
+    int trade_count = 0;
+    std::string storage_key;    ///< Echoed back for confirmation
+};
+
 }
 
 #endif

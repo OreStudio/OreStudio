@@ -66,6 +66,23 @@ struct portfolio_scope_entity {
 
 } // namespace
 
+std::vector<std::string>
+risk_report_config_repository::resolve_book_ids(
+    context ctx, const std::string& config_id) {
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "Resolving book IDs for config: " << config_id;
+
+    const auto tid = ctx.tenant_id().to_string();
+    const std::string sql =
+        "SELECT id::text FROM "
+        "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid)";
+
+    return execute_parameterized_string_query(
+        ctx, sql, {tid, config_id}, lg(),
+        "Resolving book IDs for risk_report_config");
+}
+
 std::optional<domain::risk_report_config>
 risk_report_config_repository::find_by_definition_id(
     context ctx, const std::string& definition_id) {

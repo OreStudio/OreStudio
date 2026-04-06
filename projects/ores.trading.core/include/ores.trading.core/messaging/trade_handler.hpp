@@ -21,6 +21,7 @@
 #define ORES_TRADING_MESSAGING_TRADE_HANDLER_HPP
 
 #include <optional>
+#include <rfl/msgpack.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -29,6 +30,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
@@ -62,8 +64,10 @@ class trade_handler {
 public:
     trade_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        std::string http_base_url = {})
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)),
+          http_base_url_(std::move(http_base_url)) {}
 
     void list_activity_types(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug)
@@ -325,10 +329,121 @@ public:
         reply(nats_, msg, resp);
     }
 
+    void export_trades_to_storage(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_trades_to_storage_response resp;
+        try {
+            auto req = decode<export_trades_to_storage_request>(msg);
+            if (!req || req->book_ids.empty()) {
+                resp.message = "Invalid request or empty book_ids.";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            // Fetch trades for all requested books.
+            service::trade_service svc(ctx);
+            std::vector<trade_export_item> all_items;
+            for (const auto& bid : req->book_ids) {
+                try {
+                    boost::uuids::string_generator gen;
+                    auto trades = svc.list_trades_filtered(0, 100000,
+                        std::optional<boost::uuids::uuid>(gen(bid)),
+                        std::nullopt);
+                    for (auto& t : trades) {
+                        trade_export_item item;
+                        item.trade = t;
+                        if (t.instrument_id && !t.product_type.empty()) {
+                            const auto id =
+                                boost::uuids::to_string(*t.instrument_id);
+                            const auto& fam = t.product_type;
+                            if (fam == "swap") {
+                                service::instrument_service isvc(ctx);
+                                if (auto r = isvc.find_instrument(id)) {
+                                    swap_export_result ex;
+                                    ex.instrument = std::move(*r);
+                                    ex.legs = isvc.get_legs(id);
+                                    item.instrument = std::move(ex);
+                                }
+                            } else if (fam == "fx") {
+                                service::fx_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_fx_instrument(id))
+                                    item.instrument = std::move(*r);
+                            } else if (fam == "bond") {
+                                service::bond_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_bond_instrument(id))
+                                    item.instrument = std::move(*r);
+                            } else if (fam == "credit") {
+                                service::credit_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_credit_instrument(id))
+                                    item.instrument = std::move(*r);
+                            } else if (fam == "equity") {
+                                service::equity_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_equity_instrument(id))
+                                    item.instrument = std::move(*r);
+                            } else if (fam == "commodity") {
+                                service::commodity_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_commodity_instrument(id))
+                                    item.instrument = std::move(*r);
+                            } else if (fam == "composite") {
+                                service::composite_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_composite_instrument(id)) {
+                                    composite_export_result ex;
+                                    ex.instrument = std::move(*r);
+                                    ex.legs = isvc.get_legs(id);
+                                    item.instrument = std::move(ex);
+                                }
+                            } else if (fam == "scripted") {
+                                service::scripted_instrument_service isvc(ctx);
+                                if (auto r = isvc.find_scripted_instrument(id))
+                                    item.instrument = std::move(*r);
+                            }
+                        }
+                        all_items.push_back(std::move(item));
+                    }
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(trade_handler_lg(), warn)
+                        << "export_trades_to_storage: book " << bid
+                        << " failed: " << e.what();
+                }
+            }
+
+            // Serialise to MsgPack and upload to storage.
+            const auto blob = rfl::msgpack::write(all_items);
+            ores::storage::net::storage_transfer transfer(http_base_url_);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+
+            resp.success = true;
+            resp.trade_count = static_cast<int>(all_items.size());
+            resp.storage_key = req->storage_key;
+            resp.message = "Exported " + std::to_string(all_items.size())
+                + " trades to storage.";
+
+            BOOST_LOG_SEV(trade_handler_lg(), info)
+                << "export_trades_to_storage: exported "
+                << all_items.size() << " trades, "
+                << blob.size() << " bytes (pre-compression) to "
+                << req->storage_bucket << "/" << req->storage_key;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    std::string http_base_url_;
 };
 
 } // namespace ores::trading::messaging

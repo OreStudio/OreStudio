@@ -30,6 +30,8 @@
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/messaging/host_handler.hpp"
 #include "ores.compute.core/messaging/app_handler.hpp"
+#include "ores.compute.core/messaging/report_submit_handler.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.compute.core/messaging/app_version_handler.hpp"
 #include "ores.compute.core/messaging/batch_handler.hpp"
 #include "ores.compute.core/messaging/workunit_handler.hpp"
@@ -160,6 +162,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         list_platforms_request::nats_subject, "ores.compute.service",
         [ph](ores::nats::message msg) { ph->list(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Report execution: submit to compute grid (workflow step handler).
+    // ----------------------------------------------------------------
+    auto rsh = std::make_shared<report_submit_handler>(nats, ctx);
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::reporting::messaging::submit_compute_request::nats_subject),
+        "ores.compute.service",
+        [rsh](ores::nats::message msg) { rsh->submit(std::move(msg)); }));
 
     return subs;
 }

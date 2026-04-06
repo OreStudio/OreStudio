@@ -225,7 +225,50 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     }
 
     // ----------------------------------------------------------------
-    // Step 4: finalise report instance
+    // Step 4: submit to compute grid (compute.service)
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "submit_compute";
+        s.command_subject = std::string(submit_compute_request::nats_subject);
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>& results) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+
+            submit_compute_request cmd;
+            cmd.report_instance_id = req->report_instance_id;
+            cmd.tenant_id          = req->tenant_id;
+            cmd.correlation_id     = req->correlation_id;
+
+            // Extract tarball URIs from step 3 (prepare_ore_package) result.
+            if (results.size() > 3) {
+                if (auto r = rfl::json::read<prepare_ore_package_result>(results[3])) {
+                    cmd.tarball_uris = r->tarball_uris;
+                }
+            }
+
+            return rfl::json::write(cmd);
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<submit_compute_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during compute submission"});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 5: finalise report instance
     // ----------------------------------------------------------------
     {
         workflow_step_def s;

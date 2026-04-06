@@ -47,6 +47,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.logging.lib
         ores.platform.lib
+        ores.reporting.api.lib
         faker-cxx::faker-cxx
         libfort::fort)
 

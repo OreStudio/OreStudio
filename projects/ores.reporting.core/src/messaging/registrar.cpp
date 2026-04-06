@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <optional>
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -31,6 +32,7 @@
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
+#include "ores.workflow/service/fsm_state_map.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -40,6 +42,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
     ores::nats::service::nats_client& svc_nats) {
     std::vector<ores::nats::service::subscription> subs;
+
+    // ----------------------------------------------------------------
+    // Load FSM state maps (one NATS round-trip each).
+    // ----------------------------------------------------------------
+    const auto instance_states =
+        ores::workflow::service::load_fsm_states(svc_nats, "report_instance_lifecycle");
 
     // ----------------------------------------------------------------
     // Report definition templates
@@ -92,7 +100,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report instances
     // ----------------------------------------------------------------
-    auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier);
+    auto rih = std::make_shared<report_instance_handler>(
+        nats, ctx, verifier, instance_states);
     subs.push_back(nats.queue_subscribe(
         get_report_instances_request::nats_subject, "ores.reporting.service",
         [rih](ores::nats::message msg) { rih->list(std::move(msg)); }));

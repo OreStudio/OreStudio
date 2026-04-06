@@ -46,6 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.service.lib
         ores.utility.lib
+        ores.workflow.lib
         ores.security.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx

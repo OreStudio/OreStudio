@@ -20,9 +20,11 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_INSTANCE_HANDLER_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_INSTANCE_HANDLER_HPP
 
+#include <chrono>
 #include <optional>
 #include <span>
 #include <cstddef>
+#include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -35,8 +37,11 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow/service/fsm_state_map.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -59,8 +64,10 @@ class report_instance_handler {
 public:
     report_instance_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        ores::workflow::service::fsm_state_map instance_states)
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)),
+          instance_states_(std::move(instance_states)) {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(report_instance_handler_lg(), debug)
@@ -183,8 +190,9 @@ public:
      * @brief Fire-and-forget handler for scheduler trigger messages.
      *
      * Receives a trigger_report_instance_message published by the scheduler
-     * when a report job fires. Looks up the report definition and creates a
-     * new report_instance. No reply is sent (publish, not request/reply).
+     * when a report job fires. Applies the definition's concurrency policy,
+     * creates a report_instance with the correct FSM state, and dispatches
+     * a start_workflow_message for pending instances.
      */
     void trigger(ores::nats::message msg) {
         BOOST_LOG_SEV(report_instance_handler_lg(), debug)
@@ -197,7 +205,6 @@ public:
         }
 
         try {
-            // Create a tenant-specific context from the tenant_id in the message.
             const auto tid_result = ores::utility::uuid::tenant_id::from_string(
                 trigger_msg->tenant_id);
             if (!tid_result) {
@@ -209,7 +216,6 @@ public:
             const auto tenant_ctx = ctx_.with_tenant(*tid_result,
                 ctx_.service_account());
 
-            // Look up the report definition.
             service::report_definition_service def_svc(tenant_ctx);
             const auto def = def_svc.find_definition(
                 trigger_msg->report_definition_id);
@@ -220,7 +226,37 @@ public:
                 return;
             }
 
-            // Create and save the report instance.
+            // ── Concurrency check ────────────────────────────────────
+            service::report_instance_service inst_svc(tenant_ctx);
+            const auto existing = inst_svc.list_instances();
+            const auto pending_id = instance_states_.require("pending");
+            const auto running_id = instance_states_.require("running");
+            bool has_active = false;
+            for (const auto& e : existing) {
+                if (e.definition_id != def->id) continue;
+                if (e.fsm_state_id == pending_id ||
+                    e.fsm_state_id == running_id) {
+                    has_active = true;
+                    break;
+                }
+            }
+
+            // ── Determine initial FSM state ──────────────────────────
+            boost::uuids::uuid initial_state;
+            bool should_dispatch = false;
+            if (!has_active) {
+                initial_state = pending_id;
+                should_dispatch = true;
+            } else if (def->concurrency_policy == "queue") {
+                initial_state = instance_states_.require("queued");
+            } else if (def->concurrency_policy == "skip") {
+                initial_state = instance_states_.require("skipped");
+            } else {
+                // "fail" policy or unknown — mark as failed.
+                initial_state = instance_states_.require("failed");
+            }
+
+            // ── Create instance ──────────────────────────────────────
             boost::uuids::random_generator rg;
             domain::report_instance inst;
             inst.id = rg();
@@ -229,44 +265,64 @@ public:
             inst.definition_id = def->id;
             inst.name = def->name;
             inst.description = def->description;
+            inst.fsm_state_id = initial_state;
             inst.trigger_run_id = trigger_msg->job_instance_id;
+            inst.started_at = std::chrono::system_clock::now();
             inst.modified_by = ctx_.service_account();
             inst.performed_by = ctx_.service_account();
             inst.change_reason_code = "system.scheduler_trigger";
             inst.change_commentary = "Created by scheduler trigger";
 
-            service::report_instance_service inst_svc(tenant_ctx);
             inst_svc.save_instance(inst);
 
+            const auto inst_id_str = boost::uuids::to_string(inst.id);
             BOOST_LOG_SEV(report_instance_handler_lg(), info)
-                << "Created report instance " << inst.id
+                << "Created report instance " << inst_id_str
                 << " for definition " << def->id
+                << " state=" << (should_dispatch ? "pending" :
+                    (def->concurrency_policy == "queue" ? "queued" :
+                     def->concurrency_policy))
                 << " (job_instance_id=" << trigger_msg->job_instance_id << ")";
 
-            // Fire-and-forget: hand off to the workflow service for execution.
-            const auto wf_payload = std::string{
-                "{\"report_instance_id\":\""} +
-                boost::uuids::to_string(inst.id) + "\","
-                "\"tenant_id\":\"" + trigger_msg->tenant_id + "\","
-                "\"definition_id\":\"" + trigger_msg->report_definition_id + "\"}";
-            const auto wf_bytes = std::as_bytes(
-                std::span{wf_payload.data(), wf_payload.size()});
-            nats_.publish("workflow.v1.reports.run", wf_bytes);
+            // ── Dispatch workflow for pending instances ───────────────
+            if (should_dispatch) {
+                const auto wf_instance_id = boost::uuids::to_string(rg());
 
-            BOOST_LOG_SEV(report_instance_handler_lg(), debug)
-                << "Published run_report_message for instance " << inst.id;
+                report_execution_request exec_req{
+                    .report_instance_id = inst_id_str,
+                    .definition_id = trigger_msg->report_definition_id,
+                    .tenant_id = trigger_msg->tenant_id,
+                    .correlation_id = inst_id_str};
+
+                ores::workflow::messaging::start_workflow_message swm{
+                    .type           = "report_execution_workflow",
+                    .tenant_id      = trigger_msg->tenant_id,
+                    .request_json   = rfl::json::write(exec_req),
+                    .correlation_id = inst_id_str,
+                    .instance_id    = wf_instance_id};
+
+                const auto swm_json = rfl::json::write(swm);
+                const auto data = std::as_bytes(
+                    std::span{swm_json.data(), swm_json.size()});
+                nats_.publish(
+                    ores::workflow::messaging::start_workflow_message::nats_subject,
+                    data);
+
+                BOOST_LOG_SEV(report_instance_handler_lg(), info)
+                    << "Dispatched report_execution_workflow for instance "
+                    << inst_id_str << " wf_instance=" << wf_instance_id;
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(report_instance_handler_lg(), error)
                 << "Failed to create report instance for trigger: " << e.what();
         }
-        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
-            << "Completed " << msg.subject;
     }
 
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    ores::workflow::service::fsm_state_map instance_states_;
 };
 
 } // namespace ores::reporting::messaging

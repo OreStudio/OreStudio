@@ -38,3 +38,4 @@
 \ir ../marketdata/marketdata_rls_policies_create.sql
 \ir ../reporting/reporting_rls_policies_create.sql
 \ir ../controller/controller_rls_policies_create.sql
+\ir ../analytics/analytics_rls_policies_create.sql

@@ -128,66 +128,85 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
 
         const auto config_id = boost::uuids::to_string(config->id);
 
-        // ── Resolve book scope ───────────────────────────────────────
-        auto book_ids = config_repo.get_book_scope(tenant_ctx, config_id);
-        if (book_ids.empty()) {
-            // No explicit books — get all portfolios and export from each.
-            auto portfolio_ids = config_repo.get_portfolio_scope(
+        // ── Resolve scope and fetch trades ───────────────────────────
+        std::vector<ores::trading::messaging::trade_export_item> all_items;
+        const auto book_ids = config_repo.get_book_scope(tenant_ctx, config_id);
+
+        if (!book_ids.empty()) {
+            // Explicit book scope — fetch per book.
+            for (const auto& bid : book_ids) {
+                try {
+                    ores::trading::messaging::export_portfolio_request exp_req;
+                    exp_req.book_id = bid;
+                    std::string err;
+                    auto resp = nats_call(svc_nats_, exp_req, err);
+                    if (!resp || !resp->success) {
+                        const auto failure = err.empty() ? resp->message : err;
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "gather_trades: export failed for book " << bid
+                            << ": " << failure;
+                        continue;
+                    }
+                    all_items.insert(all_items.end(),
+                        std::make_move_iterator(resp->items.begin()),
+                        std::make_move_iterator(resp->items.end()));
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "gather_trades: exception exporting book " << bid
+                        << ": " << e.what();
+                }
+            }
+        } else {
+            // No book scope — try portfolio scope, fetching trades directly.
+            const auto portfolio_ids = config_repo.get_portfolio_scope(
                 tenant_ctx, config_id);
+            for (const auto& pid : portfolio_ids) {
+                try {
+                    ores::trading::messaging::export_portfolio_request exp_req;
+                    exp_req.portfolio_id = pid;
+                    std::string err;
+                    auto resp = nats_call(svc_nats_, exp_req, err);
+                    if (!resp || !resp->success) {
+                        const auto failure = err.empty() ? resp->message : err;
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "gather_trades: export failed for portfolio "
+                            << pid << ": " << failure;
+                        continue;
+                    }
+                    all_items.insert(all_items.end(),
+                        std::make_move_iterator(resp->items.begin()),
+                        std::make_move_iterator(resp->items.end()));
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "gather_trades: exception exporting portfolio "
+                        << pid << ": " << e.what();
+                }
+            }
+
             if (portfolio_ids.empty()) {
-                // No scope at all — this is valid (means "all trades").
-                // For now, produce an empty result.
+                // No scope at all — means "all trades for tenant".
+                // Fetch via a single unscoped export call.
                 BOOST_LOG_SEV(lg(), info)
                     << "gather_trades: no book/portfolio scope; "
-                    << "producing empty trade set";
-            }
-            // For each portfolio, fetch trades.
-            for (const auto& pid : portfolio_ids) {
+                    << "fetching all tenant trades";
                 ores::trading::messaging::export_portfolio_request exp_req;
-                exp_req.portfolio_id = pid;
                 std::string err;
                 auto resp = nats_call(svc_nats_, exp_req, err);
-                if (!resp || !resp->success) {
-                    const auto failure = err.empty() ? resp->message : err;
-                    wf->fail("Failed to export portfolio " + pid + ": " + failure);
-                    return;
+                if (resp && resp->success) {
+                    all_items = std::move(resp->items);
                 }
-                for (auto& item : resp->items)
-                    book_ids.push_back(
-                        boost::uuids::to_string(item.trade.book_id));
             }
-            // Deduplicate book_ids gathered from portfolios.
-            std::sort(book_ids.begin(), book_ids.end());
-            book_ids.erase(
-                std::unique(book_ids.begin(), book_ids.end()), book_ids.end());
-        }
-
-        // ── Fetch trades per book ────────────────────────────────────
-        std::vector<ores::trading::messaging::trade_export_item> all_items;
-        for (const auto& bid : book_ids) {
-            ores::trading::messaging::export_portfolio_request exp_req;
-            exp_req.book_id = bid;
-            std::string err;
-            auto resp = nats_call(svc_nats_, exp_req, err);
-            if (!resp || !resp->success) {
-                const auto failure = err.empty() ? resp->message : err;
-                BOOST_LOG_SEV(lg(), warn)
-                    << "gather_trades: export failed for book " << bid
-                    << ": " << failure;
-                continue; // partial failure: skip book
-            }
-            all_items.insert(all_items.end(),
-                std::make_move_iterator(resp->items.begin()),
-                std::make_move_iterator(resp->items.end()));
         }
 
         // ── Update instance state to running ─────────────────────────
         service::report_instance_service inst_svc(tenant_ctx);
         auto inst = inst_svc.find_instance(req.report_instance_id);
-        if (inst) {
-            inst->fsm_state_id = instance_states_.require("running");
-            inst_svc.save_instance(*inst);
+        if (!inst) {
+            wf->fail("Report instance not found: " + req.report_instance_id);
+            return;
         }
+        inst->fsm_state_id = instance_states_.require("running");
+        inst_svc.save_instance(*inst);
 
         // ── Serialise to MsgPack and upload to storage ────────────────
         const auto key = trades_storage_key(req.report_instance_id);

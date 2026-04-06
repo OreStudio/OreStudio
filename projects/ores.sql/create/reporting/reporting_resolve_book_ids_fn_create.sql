@@ -86,16 +86,13 @@ begin
         return;
     end if;
 
-    -- No scope — return all active books for the tenant.
-    return query
-        select b.id
-        from ores_refdata_books_tbl b
-        where b.tenant_id = p_tenant_id
-          and b.valid_to = ores_utility_infinity_timestamp_fn();
+    -- No scope configured — return empty set.
+    -- The application layer treats this as a configuration error.
+    return;
 end;
 $$ language plpgsql stable security definer;
 
 comment on function ores_reporting_resolve_book_ids_for_config_fn(uuid, uuid) is
 'Resolves the set of book UUIDs in scope for a risk_report_config. Checks
- explicit book scope first, then portfolio scope (with subtree expansion),
- then falls back to all tenant books.';
+ explicit book scope first, then portfolio scope (with subtree expansion).
+ Returns an empty set when neither scope is configured.';

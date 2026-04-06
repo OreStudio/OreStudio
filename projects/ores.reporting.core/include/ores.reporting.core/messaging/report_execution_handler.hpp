@@ -65,6 +65,10 @@ public:
     void fail(ores::nats::message msg);
 
 private:
+    void mark_instance_failed(const std::string& tenant_id,
+        const std::string& instance_id,
+        const std::string& error_message);
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::nats::service::nats_client svc_nats_;

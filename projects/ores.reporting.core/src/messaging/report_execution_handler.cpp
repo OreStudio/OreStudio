@@ -81,6 +81,30 @@ std::string trades_storage_key(const std::string& instance_id) {
 
 } // namespace
 
+void report_execution_handler::mark_instance_failed(
+    const std::string& tenant_id,
+    const std::string& instance_id,
+    const std::string& error_message) {
+    try {
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
+            ctx_, tenant_id);
+        service::report_instance_service inst_svc(tenant_ctx);
+        auto inst = inst_svc.find_instance(instance_id);
+        if (inst) {
+            inst->fsm_state_id = instance_states_.require("failed");
+            inst->completed_at = std::chrono::system_clock::now();
+            inst->output_message = error_message;
+            inst_svc.save_instance(*inst);
+            BOOST_LOG_SEV(lg(), info) << "Marked report instance " << instance_id
+                                      << " as failed: " << error_message;
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to mark instance " << instance_id
+            << " as failed: " << e.what();
+    }
+}
+
 report_execution_handler::report_execution_handler(
     ores::nats::service::client& nats,
     ores::database::context ctx,
@@ -119,8 +143,10 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         const auto config = config_repo.find_by_definition_id(
             tenant_ctx, req.definition_id);
         if (!config) {
-            wf->fail("risk_report_config not found for definition "
-                + req.definition_id);
+            const auto err = "risk_report_config not found for definition "
+                + req.definition_id;
+            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
+            wf->fail(err);
             return;
         }
 
@@ -129,6 +155,17 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         // ── Resolve book scope via SQL function ──────────────────────
         const auto book_ids = config_repo.resolve_book_ids(
             tenant_ctx, config_id);
+
+        if (book_ids.empty()) {
+            const std::string err =
+                "Report has no trades: the risk report configuration "
+                "has no books or portfolios in scope. Please add at least "
+                "one portfolio or book to the report definition before "
+                "running.";
+            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
+            wf->fail(err);
+            return;
+        }
 
         BOOST_LOG_SEV(lg(), info) << "gather_trades: resolved "
                                   << book_ids.size() << " book(s) in scope";
@@ -153,9 +190,11 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         std::string err;
         auto exp_resp = nats_call(svc_nats_, exp_req, err);
         if (!exp_resp || !exp_resp->success) {
-            const auto failure = err.empty()
-                ? (exp_resp ? exp_resp->message : "(no response)") : err;
-            wf->fail("export_trades_to_storage failed: " + failure);
+            const auto failure = "export_trades_to_storage failed: "
+                + (err.empty()
+                    ? (exp_resp ? exp_resp->message : "(no response)") : err);
+            mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+            wf->fail(failure);
             return;
         }
 
@@ -175,6 +214,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         wf->complete(rfl::json::write(result));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
+        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
     }
 }
@@ -270,20 +310,8 @@ void report_execution_handler::fail(ores::nats::message msg) {
                               << " error=" << req.error_message;
 
     try {
-        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
-            ctx_, req.tenant_id);
-
-        service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.find_instance(req.report_instance_id);
-        if (!inst) {
-            wf->fail("Report instance not found: " + req.report_instance_id);
-            return;
-        }
-
-        inst->fsm_state_id = instance_states_.require("failed");
-        inst->completed_at = std::chrono::system_clock::now();
-        inst->output_message = req.error_message;
-        inst_svc.save_instance(*inst);
+        mark_instance_failed(req.tenant_id, req.report_instance_id,
+            req.error_message);
 
         fail_report_result result;
         result.success = true;

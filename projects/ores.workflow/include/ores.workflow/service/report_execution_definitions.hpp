@@ -56,7 +56,8 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
         workflow_step_def s;
         s.name = "gather_trades";
         s.command_subject = std::string(gather_trades_request::nats_subject);
-        // Read-only step: no compensation needed.
+        // Compensation marks the report instance as failed.
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
 
         s.build_command = [](const std::string& request_json,
             const std::vector<std::string>&) -> std::string {
@@ -67,6 +68,17 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
                 .definition_id      = req->definition_id,
                 .tenant_id          = req->tenant_id,
                 .correlation_id     = req->correlation_id});
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<gather_trades_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during trade gathering"});
         };
 
         def.steps.push_back(std::move(s));

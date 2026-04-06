@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "analytics.core",
+    "full_name": "ores.analytics.core",
+    "brief": "Core implementation for ORE Studio analytics.",
+    "description": "Repositories, services and database access for the analytics component.\nManages pricing engine types, pricing model configurations, products and\nnormalised parameter rows. Depends on ores.analytics.api."
+  }
+}

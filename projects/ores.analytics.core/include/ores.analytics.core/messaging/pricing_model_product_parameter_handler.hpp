@@ -69,22 +69,120 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::pricing_model_product_parameter_service svc(req_ctx);
         get_pricing_model_product_parameters_response resp;
-        try {
-            if (auto req =
-                    decode<get_pricing_model_product_parameters_request>(msg)) {
+        if (auto req = decode<get_pricing_model_product_parameters_request>(msg)) {
+            try {
                 resp.parameters = svc.list_parameters(req->config_id);
                 resp.total_available_count =
                     static_cast<int>(resp.parameters.size());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
         }
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_product_parameters:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        if (auto req = decode<save_pricing_model_product_parameter_request>(msg)) {
+            try {
+                svc.save_parameter(req->data);
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg,
+                    save_pricing_model_product_parameter_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_pricing_model_product_parameter_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        if (auto req = decode<get_pricing_model_product_parameter_history_request>(msg)) {
+            try {
+                auto hist = svc.get_parameter_history(req->id);
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, get_pricing_model_product_parameter_history_response{
+                    .parameters = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, get_pricing_model_product_parameter_history_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_product_parameters:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::pricing_model_product_parameter_service svc(req_ctx);
+        if (auto req = decode<delete_pricing_model_product_parameter_request>(msg)) {
+            try {
+                for (const auto& id : req->ids)
+                    svc.remove_parameter(id);
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg,
+                    delete_pricing_model_product_parameter_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, delete_pricing_model_product_parameter_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
     }
 
     void list_for_config(ores::nats::message msg) {
@@ -100,9 +198,7 @@ public:
         service::pricing_model_product_parameter_service svc(req_ctx);
         get_pricing_model_product_parameters_for_config_response resp;
         try {
-            if (auto req =
-                    decode<get_pricing_model_product_parameters_for_config_request>(
-                        msg)) {
+            if (auto req = decode<get_pricing_model_product_parameters_for_config_request>(msg)) {
                 resp.parameters = svc.list_parameters(req->config_id);
             }
         } catch (const std::exception& e) {
@@ -129,11 +225,8 @@ public:
         service::pricing_model_product_parameter_service svc(req_ctx);
         get_pricing_model_product_parameters_for_product_response resp;
         try {
-            if (auto req =
-                    decode<get_pricing_model_product_parameters_for_product_request>(
-                        msg)) {
-                resp.parameters =
-                    svc.list_parameters_for_product(req->product_id);
+            if (auto req = decode<get_pricing_model_product_parameters_for_product_request>(msg)) {
+                resp.parameters = svc.list_parameters_for_product(req->product_id);
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), error)
@@ -144,104 +237,6 @@ public:
         BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx,
-                "analytics::pricing_model_product_parameters:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        if (auto req =
-                decode<save_pricing_model_product_parameter_request>(msg)) {
-            try {
-                svc.save_parameter(req->data);
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(),
-                    debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_pricing_model_product_parameter_response{
-                        .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(),
-                    error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg,
-                    save_pricing_model_product_parameter_response{
-                        .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        // History is not yet implemented for pricing model product parameters.
-        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg,
-            get_pricing_model_product_parameter_history_response{
-                .success = true});
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx,
-                "analytics::pricing_model_product_parameters:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::pricing_model_product_parameter_service svc(req_ctx);
-        if (auto req =
-                decode<delete_pricing_model_product_parameter_request>(msg)) {
-            try {
-                for (const auto& id : req->ids)
-                    svc.remove_parameter(id);
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(),
-                    debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_pricing_model_product_parameter_response{
-                        .success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(),
-                    error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg,
-                    delete_pricing_model_product_parameter_response{
-                        .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
     }
 
 private:

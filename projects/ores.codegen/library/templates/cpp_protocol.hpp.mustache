@@ -5,7 +5,7 @@
 
 #include <string>
 #include <vector>
-#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 
 namespace ores::{{component}}::messaging {
 
@@ -13,6 +13,9 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
+{{#list_filter_column}}
+    std::string {{list_filter_column}};
+{{/list_filter_column}}
 };
 
 struct get_{{entity_plural}}_response {
@@ -69,6 +72,21 @@ struct get_{{entity_singular}}_history_response {
     std::string message;
 };
 
+{{#extra_list_requests}}
+struct get_{{entity_plural}}_{{name_suffix}}_request {
+    using response_type = struct get_{{entity_plural}}_{{name_suffix}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{entity_plural}}.{{nats_suffix}}";
+    std::string {{filter_column}};
+};
+
+struct get_{{entity_plural}}_{{name_suffix}}_response {
+    std::vector<ores::{{component}}::domain::{{entity_singular}}> {{entity_plural_short}};
+    bool success = true;
+    std::string message;
+};
+
+{{/extra_list_requests}}
 }
 
 #endif
@@ -79,7 +97,7 @@ struct get_{{entity_singular}}_history_response {
 
 #include <string>
 #include <vector>
-#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 
 namespace ores::{{component}}::messaging {
 
@@ -87,6 +105,9 @@ struct get_{{entity_plural}}_request {
     using response_type = struct get_{{entity_plural}}_response;
     static constexpr std::string_view nats_subject =
         "{{component}}.v1.{{entity_plural}}.list";
+{{#list_filter_column}}
+    std::string {{list_filter_column}};
+{{/list_filter_column}}
 };
 
 struct get_{{entity_plural}}_response {

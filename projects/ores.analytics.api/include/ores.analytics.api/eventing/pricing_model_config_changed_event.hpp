@@ -28,10 +28,9 @@
 namespace ores::analytics::eventing {
 
 /**
- * @brief Domain event indicating that pricing model configuration data has
- * changed.
+ * @brief Domain event indicating that pricing model configuration data has changed.
  *
- * Published when any pricing model config entity is created, updated, or
+ * Published when any pricing model configuration entity is created, updated, or
  * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct pricing_model_config_changed_event final {
@@ -41,7 +40,7 @@ struct pricing_model_config_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief UUIDs of pricing model configs that changed (as strings).
+     * @brief UUIDs of pricing model configurations that changed (as strings).
      */
     std::vector<std::string> config_ids;
 

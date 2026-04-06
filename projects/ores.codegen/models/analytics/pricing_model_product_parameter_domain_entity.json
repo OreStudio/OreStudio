@@ -3,6 +3,13 @@
     "schema": "public",
     "product": "ores",
     "component": "analytics",
+    "component_include": "analytics.api",
+    "component_core": "analytics.core",
+    "list_filter_column": "config_id",
+    "extra_list_requests": [
+      {"name_suffix": "for_config", "nats_suffix": "list_for_config", "filter_column": "config_id", "service_method": "list_parameters"},
+      {"name_suffix": "for_product", "nats_suffix": "list_for_product", "filter_column": "product_id", "service_method": "list_parameters_for_product"}
+    ],
     "entity_singular": "pricing_model_product_parameter",
     "entity_plural": "pricing_model_product_parameters",
     "entity_title": "Pricing Model Product Parameter",

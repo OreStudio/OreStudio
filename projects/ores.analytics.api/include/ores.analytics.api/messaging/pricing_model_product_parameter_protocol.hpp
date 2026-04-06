@@ -34,8 +34,7 @@ struct get_pricing_model_product_parameters_request {
 };
 
 struct get_pricing_model_product_parameters_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter>
-        parameters;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     int total_available_count = 0;
     bool success = true;
     std::string message;
@@ -54,8 +53,7 @@ struct save_pricing_model_product_parameter_response {
 };
 
 struct delete_pricing_model_product_parameter_request {
-    using response_type =
-        struct delete_pricing_model_product_parameter_response;
+    using response_type = struct delete_pricing_model_product_parameter_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.delete";
     std::vector<std::string> ids;
@@ -67,46 +65,40 @@ struct delete_pricing_model_product_parameter_response {
 };
 
 struct get_pricing_model_product_parameter_history_request {
-    using response_type =
-        struct get_pricing_model_product_parameter_history_response;
+    using response_type = struct get_pricing_model_product_parameter_history_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.history";
     std::string id;
 };
 
 struct get_pricing_model_product_parameter_history_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter>
-        parameters;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     bool success = false;
     std::string message;
 };
 
 struct get_pricing_model_product_parameters_for_config_request {
-    using response_type =
-        struct get_pricing_model_product_parameters_for_config_response;
+    using response_type = struct get_pricing_model_product_parameters_for_config_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.list_for_config";
     std::string config_id;
 };
 
 struct get_pricing_model_product_parameters_for_config_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter>
-        parameters;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     bool success = true;
     std::string message;
 };
 
 struct get_pricing_model_product_parameters_for_product_request {
-    using response_type =
-        struct get_pricing_model_product_parameters_for_product_response;
+    using response_type = struct get_pricing_model_product_parameters_for_product_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.list_for_product";
     std::string product_id;
 };
 
 struct get_pricing_model_product_parameters_for_product_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter>
-        parameters;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     bool success = true;
     std::string message;
 };

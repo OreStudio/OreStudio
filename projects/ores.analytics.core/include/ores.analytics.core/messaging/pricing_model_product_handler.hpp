@@ -69,17 +69,17 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::pricing_model_product_service svc(req_ctx);
         get_pricing_model_products_response resp;
-        try {
-            if (auto req = decode<get_pricing_model_products_request>(msg)) {
+        if (auto req = decode<get_pricing_model_products_request>(msg)) {
+            try {
                 resp.products = svc.list_products(req->config_id);
                 resp.total_available_count =
                     static_cast<int>(resp.products.size());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(pricing_model_product_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
         }
         BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug)
             << "Completed " << msg.subject;
@@ -96,8 +96,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx,
-                "analytics::pricing_model_products:write")) {
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -130,11 +129,25 @@ public:
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        // History is not yet implemented for pricing model products.
-        BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, get_pricing_model_product_history_response{
-            .success = true});
+        const auto& req_ctx = *req_ctx_expected;
+        service::pricing_model_product_service svc(req_ctx);
+        if (auto req = decode<get_pricing_model_product_history_request>(msg)) {
+            try {
+                auto hist = svc.get_product_history(req->id);
+                BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, get_pricing_model_product_history_response{
+                    .products = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_product_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, get_pricing_model_product_history_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
     }
 
     void remove(ores::nats::message msg) {
@@ -147,8 +160,7 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx,
-                "analytics::pricing_model_products:write")) {
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

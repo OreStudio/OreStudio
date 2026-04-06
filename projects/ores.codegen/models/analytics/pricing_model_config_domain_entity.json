@@ -3,9 +3,11 @@
     "schema": "public",
     "product": "ores",
     "component": "analytics",
+    "component_include": "analytics.api",
+    "component_core": "analytics.core",
     "entity_singular": "pricing_model_config",
     "entity_plural": "pricing_model_configs",
-    "entity_title": "Pricing Model Config",
+    "entity_title": "Pricing Model Configuration",
     "has_tenant_id": true,
     "brief": "Named pricing model configuration mapping pricing engine types to models and engines.",
     "description": "Header entity for a pricing model configuration. Each config contains product mappings\n(in pricing_model_products) and parameters (in pricing_model_product_parameters).\nCorresponds to ORE's pricingengine.xml.",
@@ -56,8 +58,8 @@
     "repository": {
       "entity_singular_short": "config",
       "entity_plural_short": "configs",
-      "entity_singular_words": "pricing model config",
-      "entity_plural_words": "pricing model configs"
+      "entity_singular_words": "pricing model configuration",
+      "entity_plural_words": "pricing model configurations"
     },
 
     "cpp": {

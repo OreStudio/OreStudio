@@ -11,8 +11,8 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.{{component}}/messaging/{{entity_singular}}_protocol.hpp"
-#include "ores.{{component}}.core/service/{{entity_singular}}_service.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 {{#system_tenant_validation}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}
@@ -67,6 +67,21 @@ public:
         service::{{entity_singular}}_service svc(req_ctx);
 {{/system_tenant_validation}}
         get_{{entity_plural}}_response resp;
+{{#list_filter_column}}
+        if (auto req = decode<get_{{entity_plural}}_request>(msg)) {
+            try {
+                resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}(req->{{list_filter_column}});
+                resp.total_available_count =
+                    static_cast<int>(resp.{{entity_plural_short}}.size());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        }
+{{/list_filter_column}}
+{{^list_filter_column}}
         try {
             resp.{{entity_plural_short}} = svc.list_{{entity_plural_short}}();
             resp.total_available_count =
@@ -77,6 +92,7 @@ public:
             resp.success = false;
             resp.message = e.what();
         }
+{{/list_filter_column}}
         BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -194,6 +210,35 @@ public:
         }
     }
 
+{{#extra_list_requests}}
+    void list_{{name_suffix}}(ores::nats::message msg) {
+        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::{{entity_singular}}_service svc(req_ctx);
+        get_{{entity_plural}}_{{name_suffix}}_response resp;
+        try {
+            if (auto req = decode<get_{{entity_plural}}_{{name_suffix}}_request>(msg)) {
+                resp.{{entity_plural_short}} = svc.{{service_method}}(req->{{filter_column}});
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+{{/extra_list_requests}}
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
@@ -216,8 +261,8 @@ private:
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.{{component}}/messaging/{{entity_singular}}_protocol.hpp"
-#include "ores.{{component}}.core/service/{{entity_singular}}_service.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 {{#system_tenant_validation}}
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}

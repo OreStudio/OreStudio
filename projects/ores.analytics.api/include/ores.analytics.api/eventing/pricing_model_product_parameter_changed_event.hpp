@@ -28,12 +28,10 @@
 namespace ores::analytics::eventing {
 
 /**
- * @brief Domain event indicating that pricing model product parameter data has
- * changed.
+ * @brief Domain event indicating that pricing model product parameter data has changed.
  *
- * Published when any pricing model product parameter entity is created,
- * updated, or deleted. Subscribers use the timestamp to query for changes
- * since that point.
+ * Published when any pricing model product parameter entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct pricing_model_product_parameter_changed_event final {
     /**
@@ -42,8 +40,7 @@ struct pricing_model_product_parameter_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief UUIDs of pricing model product parameters that changed (as
-     * strings).
+     * @brief UUIDs of pricing model product parameters that changed (as strings).
      */
     std::vector<std::string> parameter_ids;
 
@@ -58,12 +55,10 @@ struct pricing_model_product_parameter_changed_event final {
 namespace ores::eventing::domain {
 
 /**
- * @brief Event traits specialization for
- * pricing_model_product_parameter_changed_event.
+ * @brief Event traits specialization for pricing_model_product_parameter_changed_event.
  */
 template<>
-struct event_traits<
-    ores::analytics::eventing::pricing_model_product_parameter_changed_event> {
+struct event_traits<ores::analytics::eventing::pricing_model_product_parameter_changed_event> {
     static constexpr std::string_view name =
         "ores.analytics.pricing_model_product_parameter_changed";
 };

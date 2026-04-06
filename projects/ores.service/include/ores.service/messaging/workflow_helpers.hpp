@@ -20,11 +20,14 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
+#include <rfl/json.hpp>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::service::messaging {
 
@@ -53,69 +56,20 @@ inline constexpr std::string_view workflow_instance_id_header =
 inline constexpr std::string_view workflow_tenant_id_header = "X-Tenant-Id";
 
 /**
- * @brief Publishes a step-completed event to the workflow engine.
+ * @brief Returns true if the inbound message is part of a workflow execution.
  *
- * Domain service handlers that participate in a workflow call this after
- * processing a workflow step command. The workflow engine receives this event
- * and advances or compensates the workflow accordingly.
- *
- * The caller must echo back the @p step_id and @p instance_id values received
- * in the X-Workflow-Step-Id and X-Workflow-Instance-Id headers of the command.
- *
- * @param nats        Raw NATS client (fire-and-forget publish).
- * @param step_id     Step UUID echoed from X-Workflow-Step-Id header.
- * @param instance_id Workflow instance UUID echoed from X-Workflow-Instance-Id.
- * @param success     true if the step operation succeeded, false otherwise.
- * @param result_json Serialised JSON result payload (empty string on failure).
- * @param error_msg   Human-readable error description (empty string on success).
+ * A message is a workflow step command if it carries the X-Workflow-Step-Id
+ * header. Domain service handlers use this to switch between normal and
+ * workflow-driven execution paths.
  */
-inline void publish_step_completion(
-    ores::nats::service::client& nats,
-    const std::string& step_id,
-    const std::string& instance_id,
-    bool success,
-    const std::string& result_json,
-    const std::string& error_msg) {
-
-    // Build the event JSON manually to avoid a dependency on ores.workflow.
-    // The step_completed_event struct is defined in ores.workflow/messaging/
-    // workflow_events.hpp; we replicate the field names here for independence.
-
-    // JSON-escape the error message (may contain quotes or backslashes).
-    std::string escaped_error;
-    escaped_error.reserve(error_msg.size() + 8);
-    for (const char c : error_msg) {
-        switch (c) {
-        case '"':  escaped_error += "\\\""; break;
-        case '\\': escaped_error += "\\\\"; break;
-        case '\n': escaped_error += "\\n";  break;
-        case '\r': escaped_error += "\\r";  break;
-        case '\t': escaped_error += "\\t";  break;
-        default:   escaped_error += c;      break;
-        }
-    }
-
-    std::string json = "{";
-    json += "\"workflow_instance_id\":\"" + instance_id + "\",";
-    json += "\"step_id\":\"" + step_id + "\",";
-    json += "\"success\":" + std::string(success ? "true" : "false") + ",";
-    json += "\"result_json\":" + (result_json.empty() ? "\"\"" : result_json) + ",";
-    json += "\"error_message\":\"" + escaped_error + "\"";
-    json += "}";
-
-    const auto data = std::as_bytes(std::span{json.data(), json.size()});
-    nats.publish("workflow.v1.events.step-completed", data);
+inline bool is_workflow_command(const ores::nats::message& msg) {
+    return msg.headers.contains(std::string(workflow_step_id_header));
 }
 
 /**
  * @brief Extracts a workflow header value from an inbound NATS message.
  *
- * Returns empty string if the header is absent. Domain service handlers use
- * this to obtain the X-Workflow-Step-Id and X-Workflow-Instance-Id values
- * for idempotency checking and step-completion publishing.
- *
- * @param msg         Inbound NATS message.
- * @param header_name One of workflow_step_id_header or workflow_instance_id_header.
+ * Returns empty string if the header is absent.
  */
 inline std::string extract_workflow_header(
     const ores::nats::message& msg,
@@ -127,14 +81,111 @@ inline std::string extract_workflow_header(
 }
 
 /**
- * @brief Returns true if the inbound message is part of a workflow execution.
+ * @brief Context for a workflow step extracted from an inbound NATS message.
  *
- * A message is a workflow step command if it carries the X-Workflow-Step-Id
- * header. Domain service handlers use this to switch between normal and
- * workflow-driven execution paths.
+ * Captures the step_id, instance_id, and tenant_id headers plus a reference
+ * to the NATS client.  Provides complete() and fail() helpers so domain
+ * service handlers can publish step-completed events without touching
+ * low-level NATS details.
+ *
+ * Typical usage:
+ * @code
+ *   auto wf = workflow_step_context::from_message(nats_, msg);
+ *   if (!wf) return;           // not a workflow command
+ *   try {
+ *       auto result = do_work(wf->tenant_id, ...);
+ *       wf->complete(rfl::json::write(result));
+ *   } catch (const std::exception& e) {
+ *       wf->fail(e.what());
+ *   }
+ * @endcode
  */
-inline bool is_workflow_command(const ores::nats::message& msg) {
-    return msg.headers.contains(std::string(workflow_step_id_header));
+struct workflow_step_context {
+    std::string step_id;
+    std::string instance_id;
+    std::string tenant_id;
+    ores::nats::service::client* nats;
+
+    /**
+     * @brief Extracts the workflow context from a NATS message.
+     *
+     * Returns std::nullopt if the message is not a workflow step command
+     * (i.e. missing the X-Workflow-Step-Id header).
+     */
+    [[nodiscard]] static std::optional<workflow_step_context>
+    from_message(ores::nats::service::client& nats,
+        const ores::nats::message& msg) {
+
+        if (!is_workflow_command(msg)) return std::nullopt;
+        return workflow_step_context{
+            .step_id     = extract_workflow_header(msg, workflow_step_id_header),
+            .instance_id = extract_workflow_header(msg, workflow_instance_id_header),
+            .tenant_id   = extract_workflow_header(msg, workflow_tenant_id_header),
+            .nats        = &nats};
+    }
+
+    /**
+     * @brief Publishes a successful step-completed event.
+     *
+     * @param result_json Serialised JSON result payload.
+     */
+    void complete(const std::string& result_json) const {
+        publish(true, result_json, "");
+    }
+
+    /**
+     * @brief Publishes a failed step-completed event.
+     *
+     * @param error_msg Human-readable error description.
+     */
+    void fail(const std::string& error_msg) const {
+        publish(false, "", error_msg);
+    }
+
+private:
+    void publish(bool success, const std::string& result_json,
+        const std::string& error_msg) const {
+
+        ores::workflow::messaging::step_completed_event event{
+            .workflow_instance_id = instance_id,
+            .step_id              = step_id,
+            .success              = success,
+            .result_json          = result_json,
+            .error_message        = error_msg};
+
+        const auto json = rfl::json::write(event);
+        const auto data = std::as_bytes(
+            std::span{json.data(), json.size()});
+        nats->publish(
+            ores::workflow::messaging::step_completed_event::nats_subject, data);
+    }
+};
+
+/**
+ * @brief Publishes a step-completed event to the workflow engine.
+ *
+ * Low-level function for cases where a workflow_step_context is not
+ * convenient.  Prefer workflow_step_context::complete() / fail() for
+ * new code.
+ */
+inline void publish_step_completion(
+    ores::nats::service::client& nats,
+    const std::string& step_id,
+    const std::string& instance_id,
+    bool success,
+    const std::string& result_json,
+    const std::string& error_msg) {
+
+    workflow_step_context ctx{
+        .step_id = step_id,
+        .instance_id = instance_id,
+        .tenant_id = {},
+        .nats = &nats};
+
+    if (success)
+        ctx.complete(result_json);
+    else
+        ctx.fail(error_msg);
 }
 
 }

@@ -31,7 +31,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
-#include "ores.workflow/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::ore::service::messaging {
 

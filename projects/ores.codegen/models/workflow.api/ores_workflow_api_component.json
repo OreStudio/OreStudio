@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "workflow.api",
+    "full_name": "ores.workflow.api",
+    "brief": "Workflow public API types and helpers",
+    "description": "Lightweight shared types for the workflow engine: event structs,\nprotocol messages, and step-completion helpers. Has minimal dependencies\nso that any domain service can participate in workflows without pulling\nin the full workflow engine."
+  }
+}

@@ -30,7 +30,7 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.workflow/messaging/workflow_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow/service/workflow_definition.hpp"
 #include "ores.workflow/service/workflow_registry.hpp"
 

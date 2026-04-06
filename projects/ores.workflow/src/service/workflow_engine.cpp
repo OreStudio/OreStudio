@@ -29,7 +29,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.workflow/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::workflow::service {
 

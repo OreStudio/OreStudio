@@ -21,9 +21,9 @@
 
 #include <memory>
 #include "ores.logging/make_logger.hpp"
-#include "ores.workflow/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow/messaging/workflow_handler.hpp"
-#include "ores.workflow/messaging/workflow_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/workflow_engine.hpp"
 #include "ores.workflow/service/workflow_registry.hpp"

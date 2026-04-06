@@ -28,8 +28,8 @@
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.workflow/messaging/workflow_events.hpp"
-#include "ores.workflow/messaging/workflow_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/workflow_protocol.hpp"
 
 namespace ores::workflow::messaging {
 

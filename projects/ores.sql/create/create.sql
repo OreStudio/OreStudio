@@ -50,6 +50,7 @@
 \ir ./workflow/workflow_create.sql
 \ir ./marketdata/marketdata_create.sql
 \ir ./controller/controller_create.sql
+\ir ./analytics/analytics_create.sql
 
 -- =============================================================================
 -- 5. Row-Level Security Policies (depend on all tables and IAM functions)

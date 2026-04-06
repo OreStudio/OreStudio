@@ -71,16 +71,32 @@
       ]
     },
     "protocol": {
-      "description": "Messaging protocol (request/response)",
+      "description": "NATS messaging protocol (header-only request/response structs)",
       "model_types": ["domain_entity", "schema"],
       "templates": [
         {
           "template": "cpp_protocol.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/messaging/{entity}_protocol.hpp"
-        },
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/messaging/{entity}_protocol.hpp"
+        }
+      ]
+    },
+    "nats-eventing": {
+      "description": "NATS domain changed-event struct with event_traits specialization",
+      "model_types": ["domain_entity", "schema"],
+      "templates": [
         {
-          "template": "cpp_protocol.cpp.mustache",
-          "output": "projects/ores.{component}/src/messaging/{entity}_protocol.cpp"
+          "template": "cpp_nats_changed_event.hpp.mustache",
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/eventing/{entity}_changed_event.hpp"
+        }
+      ]
+    },
+    "nats-handler": {
+      "description": "NATS message handler class (header-only) for list/save/remove/history operations",
+      "model_types": ["domain_entity", "schema"],
+      "templates": [
+        {
+          "template": "cpp_nats_handler.hpp.mustache",
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/messaging/{entity}_handler.hpp"
         }
       ]
     },

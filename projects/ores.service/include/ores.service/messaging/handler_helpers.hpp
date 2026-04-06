@@ -203,6 +203,7 @@ inline void error_reply(ores::nats::service::client& nats,
     switch (code) {
         case ores::service::error_code::token_expired: error_str = "token_expired"; break;
         case ores::service::error_code::forbidden:     error_str = "forbidden";     break;
+        case ores::service::error_code::bad_request:   error_str = "bad_request";   break;
         default:                                       error_str = "unauthorized";  break;
     }
     nats.publish(msg.reply_subject, std::span<const std::byte>{},

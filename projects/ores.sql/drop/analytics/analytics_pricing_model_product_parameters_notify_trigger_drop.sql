@@ -1,0 +1,2 @@
+drop trigger if exists ores_analytics_pricing_model_product_parameters_notify_trg on "ores_analytics_pricing_model_product_parameters_tbl";
+drop function if exists ores_analytics_pricing_model_product_parameters_notify_fn;

@@ -1,0 +1,95 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "analytics",
+    "component_include": "analytics.api",
+    "component_core": "analytics.core",
+    "list_filter_column": "config_id",
+    "extra_list_requests": [
+      {"name_suffix": "for_config", "nats_suffix": "list_for_config", "filter_column": "config_id", "service_method": "list_parameters"},
+      {"name_suffix": "for_product", "nats_suffix": "list_for_product", "filter_column": "product_id", "service_method": "list_parameters_for_product"}
+    ],
+    "entity_singular": "pricing_model_product_parameter",
+    "entity_plural": "pricing_model_product_parameters",
+    "entity_title": "Pricing Model Product Parameter",
+    "has_tenant_id": true,
+    "brief": "Normalised key-value parameter for a pricing model product or global configuration.",
+    "description": "Stores model parameters, engine parameters, and global parameters as normalised rows\nfor granular diffing. Product-scoped parameters have pricing_model_product_id set;\nglobal parameters have it NULL with parameter_scope = 'global'.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this parameter row.",
+      "detail": "Surrogate key for the parameter."
+    },
+
+    "columns": [
+      {
+        "name": "pricing_model_config_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Parent pricing model configuration.",
+        "detail": "Soft FK to ores_analytics_pricing_model_configs_tbl. Always set.",
+        "generator_expr": "ctx.generate_uuid()"
+      },
+      {
+        "name": "pricing_model_product_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Parent product mapping, if product-scoped.",
+        "detail": "Soft FK to ores_analytics_pricing_model_products_tbl. NULL for global parameters.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "parameter_scope",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Scope of the parameter.",
+        "detail": "One of: 'model', 'engine', 'global'.",
+        "generator_expr": "std::string(\"model\")"
+      },
+      {
+        "name": "parameter_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Parameter name.",
+        "detail": "Examples: 'Calibration', 'Reversion', 'sy', 'ContinueOnCalibrationError'.",
+        "generator_expr": "std::string(\"Reversion\")"
+      },
+      {
+        "name": "parameter_value",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Parameter value as text.",
+        "detail": "All values stored as text. Examples: '0.03', 'Bootstrap', 'Y', '1.0,2.0,3.0'.",
+        "generator_expr": "std::string(\"0.03\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_analytics_pricing_model_product_parameters_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "parameter",
+      "entity_plural_short": "parameters",
+      "entity_singular_words": "pricing model product parameter",
+      "entity_plural_words": "pricing model product parameters"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pp"
+    }
+  }
+}

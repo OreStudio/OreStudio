@@ -370,10 +370,14 @@ def resolve_output_path(output_pattern, model_data, model_type):
     if model_type == 'domain_entity' and 'domain_entity' in model_data:
         entity = model_data['domain_entity']
         component = entity.get('component', 'unknown')
+        component_include = entity.get('component_include', component)
+        component_core = entity.get('component_core', component)
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
+        result = result.replace('{component_include}', component_include)
+        result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
@@ -427,10 +431,14 @@ def resolve_output_path(output_pattern, model_data, model_type):
         # Handle entity schema models (files ending with _entity.json)
         entity = model_data['entity']
         component = entity.get('component', 'unknown')
+        component_include = entity.get('component_include', component)
+        component_core = entity.get('component_core', component)
         entity_singular = entity.get('entity_singular', 'unknown')
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
+        result = result.replace('{component_include}', component_include)
+        result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{entity_plural}', entity_plural)
@@ -1166,6 +1174,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Mark last item in artefact_indexes list
         if 'artefact_indexes' in entity:
             _mark_last_item(entity['artefact_indexes'])
+        # Add component_include for include path generation (api/core/service split)
+        if 'component' in entity:
+            entity['component_upper'] = entity['component'].upper()
+            if 'component_include' not in entity:
+                entity['component_include'] = entity['component']
+            entity['component_include_upper'] = (
+                entity['component_include'].replace('.', '_').upper()
+            )
+            if 'component_core' not in entity:
+                entity['component_core'] = entity['component']
+            entity['component_core_upper'] = (
+                entity['component_core'].replace('.', '_').upper()
+            )
         # Store entity at top level for easier template access
         data['entity'] = entity
 
@@ -1210,6 +1231,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Add uppercase versions for C++ include guards
         if 'component' in domain_entity:
             domain_entity['component_upper'] = domain_entity['component'].upper()
+            # component_include: the include path prefix (e.g. 'analytics.api' for
+            # components with api/core/service split). Falls back to component.
+            if 'component_include' not in domain_entity:
+                domain_entity['component_include'] = domain_entity['component']
+            domain_entity['component_include_upper'] = (
+                domain_entity['component_include'].replace('.', '_').upper()
+            )
+            # component_core: the implementation component (e.g. 'analytics.core').
+            # Falls back to component if not set.
+            if 'component_core' not in domain_entity:
+                domain_entity['component_core'] = domain_entity['component']
+            domain_entity['component_core_upper'] = (
+                domain_entity['component_core'].replace('.', '_').upper()
+            )
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
             # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")

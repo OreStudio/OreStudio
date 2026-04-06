@@ -1,0 +1,121 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#define ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+
+#include <chrono>
+#include <vector>
+#include <string>
+#include "ores.eventing/domain/event_traits.hpp"
+
+namespace ores::{{component}}::eventing {
+
+/**
+ * @brief Domain event indicating that {{entity_title_lower}} data has changed.
+ *
+ * Published when any {{entity_title_lower}} entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
+ */
+struct {{entity_singular}}_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+{{#primary_key.is_text}}
+    /**
+     * @brief Codes of {{entity_title_lower}}s that changed.
+     */
+    std::vector<std::string> {{entity_singular}}_codes;
+
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    /**
+     * @brief UUIDs of {{entity_title_lower}}s that changed (as strings).
+     */
+    std::vector<std::string> {{entity_singular_short}}_ids;
+
+{{/primary_key.is_uuid}}
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
+};
+
+}
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits specialization for {{entity_singular}}_changed_event.
+ */
+template<>
+struct event_traits<ores::{{component}}::eventing::{{entity_singular}}_changed_event> {
+    static constexpr std::string_view name =
+        "ores.{{component}}.{{entity_singular}}_changed";
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#entity}}
+#ifndef ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+#define ORES_{{component_upper}}_EVENTING_{{entity_singular_upper}}_CHANGED_EVENT_HPP
+
+#include <chrono>
+#include <vector>
+#include <string>
+#include "ores.eventing/domain/event_traits.hpp"
+
+namespace ores::{{component}}::eventing {
+
+/**
+ * @brief Domain event indicating that {{entity_title_lower}} data has changed.
+ *
+ * Published when any {{entity_title_lower}} entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
+ */
+struct {{entity_singular}}_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+{{#primary_key.is_text}}
+    /**
+     * @brief Codes of {{entity_title_lower}}s that changed.
+     */
+    std::vector<std::string> {{entity_singular}}_codes;
+
+{{/primary_key.is_text}}
+{{^primary_key.is_text}}
+    /**
+     * @brief UUIDs of {{entity_title_lower}}s that changed (as strings).
+     */
+    std::vector<std::string> {{entity_singular_short}}_ids;
+
+{{/primary_key.is_text}}
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
+    std::string tenant_id;
+};
+
+}
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits specialization for {{entity_singular}}_changed_event.
+ */
+template<>
+struct event_traits<ores::{{component}}::eventing::{{entity_singular}}_changed_event> {
+    static constexpr std::string_view name =
+        "ores.{{component}}.{{entity_singular}}_changed";
+};
+
+}
+
+#endif
+{{/entity}}

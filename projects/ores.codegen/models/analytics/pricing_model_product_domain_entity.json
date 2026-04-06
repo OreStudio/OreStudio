@@ -1,0 +1,82 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "analytics",
+    "component_include": "analytics.api",
+    "component_core": "analytics.core",
+    "list_filter_column": "config_id",
+    "entity_singular": "pricing_model_product",
+    "entity_plural": "pricing_model_products",
+    "entity_title": "Pricing Model Product",
+    "has_tenant_id": true,
+    "brief": "Maps a pricing engine type to a model and engine within a pricing model configuration.",
+    "description": "Detail row within a pricing model configuration. Each row maps a pricing engine type\n(e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and\nnumerical engine (e.g. Grid, AMC). Product-specific parameters are stored in\npricing_model_product_parameters.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this product mapping.",
+      "detail": "Surrogate key for the pricing model product."
+    },
+
+    "columns": [
+      {
+        "name": "pricing_model_config_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Parent pricing model configuration.",
+        "detail": "Soft FK to ores_analytics_pricing_model_configs_tbl.",
+        "generator_expr": "ctx.generate_uuid()"
+      },
+      {
+        "name": "pricing_engine_type_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Pricing engine type this mapping applies to.",
+        "detail": "Soft FK to ores_analytics_pricing_engine_types_tbl. Examples: 'Swap', 'EuropeanSwaption', 'CMS'.",
+        "generator_expr": "std::string(\"Swap\")"
+      },
+      {
+        "name": "model",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Pricing model name.",
+        "detail": "Examples: 'DiscountedCashflows', 'LGM', 'BlackBachelier', 'GarmanKohlhagen', 'CrossAssetModel'.",
+        "generator_expr": "std::string(\"DiscountedCashflows\")"
+      },
+      {
+        "name": "engine",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Numerical engine name.",
+        "detail": "Examples: 'DiscountingSwapEngine', 'Grid', 'AMC', 'AnalyticEuropeanEngine'.",
+        "generator_expr": "std::string(\"DiscountingSwapEngine\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_analytics_pricing_model_products_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "product",
+      "entity_plural_short": "products",
+      "entity_singular_words": "pricing model product",
+      "entity_plural_words": "pricing model products"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pmp"
+    }
+  }
+}

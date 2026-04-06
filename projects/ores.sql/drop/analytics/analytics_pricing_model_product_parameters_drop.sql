@@ -1,0 +1,4 @@
+drop rule if exists ores_analytics_pricing_model_product_parameters_delete_rule on "ores_analytics_pricing_model_product_parameters_tbl";
+drop trigger if exists ores_analytics_pricing_model_product_parameters_insert_trg on "ores_analytics_pricing_model_product_parameters_tbl";
+drop function if exists ores_analytics_pricing_model_product_parameters_insert_fn;
+drop table if exists "ores_analytics_pricing_model_product_parameters_tbl";

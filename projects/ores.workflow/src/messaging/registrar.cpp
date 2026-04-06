@@ -29,6 +29,7 @@
 #include "ores.workflow/service/workflow_registry.hpp"
 #include "ores.workflow/service/provision_parties_definitions.hpp"
 #include "ores.workflow/service/ore_import_definitions.hpp"
+#include "ores.workflow/service/report_execution_definitions.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -66,6 +67,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto registry = std::make_shared<service::workflow_registry>();
     service::register_provision_parties_workflow(*registry);
     service::register_ore_import_workflow(*registry);
+    service::register_report_execution_workflow(*registry);
 
     // ----------------------------------------------------------------
     // Create the engine (shared across all engine subscriptions).

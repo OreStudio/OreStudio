@@ -1,0 +1,137 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_WORKFLOW_SERVICE_REPORT_EXECUTION_DEFINITIONS_HPP
+#define ORES_WORKFLOW_SERVICE_REPORT_EXECUTION_DEFINITIONS_HPP
+
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.workflow/service/workflow_definition.hpp"
+#include "ores.workflow/service/workflow_registry.hpp"
+
+namespace ores::workflow::service {
+
+/**
+ * @brief Registers the report_execution_workflow definition.
+ *
+ * Initial implementation: 3 steps.
+ *   0. gather_trades     — fetch trades by book scope (ores.reporting.service)
+ *   1. assemble_bundle   — persist aggregated input data (ores.reporting.service)
+ *   2. finalise          — mark report instance completed (ores.reporting.service)
+ *
+ * Additional steps (gather_market_data, prepare_ore_package,
+ * submit_compute) are wired in as they are implemented.
+ *
+ * Compensation: gather_trades is read-only (no compensation).
+ * assemble_bundle compensation deletes the bundle row.
+ * On any failure, fail_report marks the instance as failed.
+ */
+inline void register_report_execution_workflow(workflow_registry& registry) {
+    using namespace ores::reporting::messaging;
+
+    workflow_definition def;
+    def.type_name = "report_execution_workflow";
+
+    // ----------------------------------------------------------------
+    // Step 0: gather trades
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "gather_trades";
+        s.command_subject = std::string(gather_trades_request::nats_subject);
+        // Read-only step: no compensation needed.
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>&) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+            return rfl::json::write(gather_trades_request{
+                .report_instance_id = req->report_instance_id,
+                .definition_id      = req->definition_id,
+                .tenant_id          = req->tenant_id,
+                .correlation_id     = req->correlation_id});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 1: assemble report input bundle
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "assemble_bundle";
+        s.command_subject = std::string(assemble_bundle_request::nats_subject);
+        // TODO: compensation_subject for deleting the bundle row.
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>&) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+            return rfl::json::write(assemble_bundle_request{
+                .report_instance_id = req->report_instance_id,
+                .definition_id      = req->definition_id,
+                .tenant_id          = req->tenant_id,
+                .correlation_id     = req->correlation_id});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 2: finalise report instance
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "finalise";
+        s.command_subject = std::string(finalise_report_request::nats_subject);
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>&) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+            return rfl::json::write(finalise_report_request{
+                .report_instance_id = req->report_instance_id,
+                .tenant_id          = req->tenant_id,
+                .correlation_id     = req->correlation_id});
+        };
+
+        // Compensation: mark report as failed.
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<finalise_report_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Workflow compensation triggered"});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    registry.register_definition(std::move(def));
+}
+
+}
+
+#endif

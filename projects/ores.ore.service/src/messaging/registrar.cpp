@@ -25,6 +25,8 @@
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
+#include "ores.ore.service/messaging/report_package_handler.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 
 namespace ores::ore::service::messaging {
 
@@ -79,6 +81,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject), qg,
         [eh](ores::nats::message msg) {
             eh->rollback(std::move(msg));
+        }));
+
+    // ----------------------------------------------------------------
+    // Report package preparation (workflow step for report execution).
+    // ----------------------------------------------------------------
+    auto rph = std::make_shared<report_package_handler>(nats, http_base_url);
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::reporting::messaging::prepare_ore_package_request::nats_subject),
+        qg,
+        [rph](ores::nats::message msg) {
+            rph->prepare_package(std::move(msg));
         }));
 
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size()

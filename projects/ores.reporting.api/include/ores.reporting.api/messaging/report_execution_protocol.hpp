@@ -113,14 +113,20 @@ struct assemble_bundle_result {
 
 /**
  * @brief Step 3: ORE mapping and tarball packaging (ores.ore.service).
+ *
+ * Storage keys are forwarded by the workflow engine from the
+ * assemble_bundle_result so that ore.service can download the blobs
+ * without an extra round-trip to the reporting database.
  */
 struct prepare_ore_package_request {
     static constexpr std::string_view nats_subject =
         "ore.v1.report.prepare-package";
     std::string report_instance_id;
-    std::string bundle_ref;
+    std::string bundle_id;
     std::string tenant_id;
     std::string correlation_id;
+    std::string trades_storage_key;
+    std::string market_data_storage_key;
 };
 
 struct prepare_ore_package_result {

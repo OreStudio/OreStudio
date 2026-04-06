@@ -21,6 +21,7 @@
 
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
 
 namespace ores::reporting::repository {
@@ -34,7 +35,7 @@ void report_input_bundle_repository::create(
     context ctx, const report_input_bundle_entity& bundle) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating report_input_bundle: "
-                               << *bundle.id;
+                               << bundle.id.value();
 
     const auto r = sqlgen::session(ctx.connection_pool())
         .and_then(insert(bundle));

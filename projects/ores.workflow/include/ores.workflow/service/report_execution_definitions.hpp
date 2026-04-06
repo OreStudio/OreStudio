@@ -171,7 +171,61 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     }
 
     // ----------------------------------------------------------------
-    // Step 3: finalise report instance
+    // Step 3: ORE package preparation (ore.service)
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "prepare_ore_package";
+        s.command_subject = std::string(prepare_ore_package_request::nats_subject);
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>& results) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+
+            prepare_ore_package_request cmd;
+            cmd.report_instance_id = req->report_instance_id;
+            cmd.tenant_id          = req->tenant_id;
+            cmd.correlation_id     = req->correlation_id;
+
+            // Extract bundle info from step 2 (assemble_bundle) result.
+            if (results.size() > 2) {
+                if (auto r = rfl::json::read<assemble_bundle_result>(results[2])) {
+                    cmd.bundle_id = r->bundle_id;
+                }
+            }
+            // Forward storage keys from step 0 and step 1 results.
+            if (results.size() > 0) {
+                if (auto r = rfl::json::read<gather_trades_result>(results[0])) {
+                    cmd.trades_storage_key = r->storage_key;
+                }
+            }
+            if (results.size() > 1) {
+                if (auto r = rfl::json::read<gather_market_data_result>(results[1])) {
+                    cmd.market_data_storage_key = r->storage_key;
+                }
+            }
+
+            return rfl::json::write(cmd);
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<prepare_ore_package_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during ORE package preparation"});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 4: finalise report instance
     // ----------------------------------------------------------------
     {
         workflow_step_def s;

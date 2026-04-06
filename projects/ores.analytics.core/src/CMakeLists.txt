@@ -36,7 +36,10 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.api.lib
     PRIVATE
+        ores.service.lib
         ores.database.lib
         ores.utility.lib
         sqlgen::sqlgen

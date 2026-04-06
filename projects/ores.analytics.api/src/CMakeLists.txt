@@ -36,11 +36,12 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.lib
+        ores.platform.lib
     PRIVATE
-        ores.database.lib
         ores.utility.lib
-        sqlgen::sqlgen
-        Boost::boost)
+        libfort::fort)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

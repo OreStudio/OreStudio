@@ -1,0 +1,71 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "analytics",
+    "entity_singular": "pricing_model_config",
+    "entity_plural": "pricing_model_configs",
+    "entity_title": "Pricing Model Config",
+    "has_tenant_id": true,
+    "brief": "Named pricing model configuration mapping pricing engine types to models and engines.",
+    "description": "Header entity for a pricing model configuration. Each config contains product mappings\n(in pricing_model_products) and parameters (in pricing_model_product_parameters).\nCorresponds to ORE's pricingengine.xml.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this pricing model configuration.",
+      "detail": "Surrogate key for the pricing model configuration."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for this configuration.",
+        "detail": "Unique per tenant. Examples: 'Standard', 'AMC', 'DeltaGamma', 'SABR'.",
+        "generator_expr": "std::string(\"config_\") + std::to_string(++counter)"
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Detailed description of this pricing model configuration.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "config_variant",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Configuration variant tag.",
+        "detail": "Examples: 'standard', 'amc', 'amccg', 'dg', 'sabr', 'ad'.",
+        "generator_expr": "std::string(\"standard\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_analytics_pricing_model_configs_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "config",
+      "entity_plural_short": "configs",
+      "entity_singular_words": "pricing model config",
+      "entity_plural_words": "pricing model configs"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "pmc"
+    }
+  }
+}

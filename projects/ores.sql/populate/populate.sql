@@ -109,6 +109,14 @@
 \ir compute/compute_platforms_seed.sql
 \ir compute/compute_ore_app_seed.sql
 
+-- =============================================================================
+-- Analytics Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Analytics Layer ---'
+\ir analytics/populate_analytics.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 
@@ -196,4 +204,8 @@ from ores_compute_app_versions_tbl where valid_to = ores_utility_infinity_timest
 union all
 select 'Compute: Platforms', count(*)
 from ores_compute_platforms_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+-- Analytics
+union all
+select 'Analytics: Pricing Engine Types', count(*)
+from ores_analytics_pricing_engine_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

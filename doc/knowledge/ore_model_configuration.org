@@ -1,0 +1,561 @@
+:PROPERTIES:
+:ID: A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C
+:END:
+#+title: ORE Model Configuration
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+This document analyses the model configuration files used by [[https://github.com/OpenSourceRisk/Engine][Open Source Risk
+Engine (ORE)]] and proposes how to represent them as persisted domain entities in
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. The analysis is based on ~1,486 XML files found under
+=external/ore/examples/=.
+
+* Background
+
+ORE Studio already has domain support for:
+
+- *Trades*: via =ores.trading= (instruments, legs, swap legs, lifecycle events).
+- *Market data*: via =ores.marketdata= (fixings, observations, series).
+- *Reference data*: via =ores.refdata= (currencies, counterparties, conventions,
+  curve configs, etc.).
+- *Calendar adjustments*: via =ores.refdata= (business centres, holidays).
+
+What is *missing* is support for *model configuration* --- the files that tell ORE
+/how/ to price, simulate, and analyse risk. These are not market data or
+reference data; they are parameterised recipes that combine models, numerical
+methods, and market structure into runnable analytics.
+
+The =ores.ore= component already has XSD-generated C++ types and roundtrip tests
+for all of these XML formats. The gap is the persisted domain layer: database
+schema, repositories, temporal versioning, and UI integration.
+
+* Configuration File Types
+
+Eight distinct configuration types were identified (calendar adjustments are
+excluded as they are already handled elsewhere).
+
+** Pricing Engine Configuration
+
+- *ORE filename*: =pricingengine*.xml= (~72 files with variants for AMC, SABR,
+  delta-gamma).
+- *Root element*: =<PricingEngines>=.
+- *Purpose*: Maps each product type to a pricing model, model parameters, engine
+  implementation, and engine parameters.
+
+*** Schema
+
+Each file contains zero or more =Product= elements plus an optional
+=GlobalParameters= section:
+
+#+begin_example
+<PricingEngines>
+  <Product type="Swap">
+    <Model>DiscountedCashflows</Model>
+    <ModelParameters/>
+    <Engine>DiscountingSwapEngine</Engine>
+    <EngineParameters/>
+  </Product>
+  <GlobalParameters>
+    <Parameter name="ContinueOnCalibrationError">true</Parameter>
+  </GlobalParameters>
+</PricingEngines>
+#+end_example
+
+Key fields per =Product=:
+
+| Field              | Required | Description                                                 |
+|--------------------+----------+-------------------------------------------------------------|
+| =@type=            | Yes      | Product type (~50+: Swap, FxOption, BermudanSwaption, etc.) |
+| =Model=            | Yes      | Pricing model (DiscountedCashflows, LGM, BlackBachelier...) |
+| =ModelParameters=  | Yes      | Named parameter list (Calibration, Reversion, Volatility)   |
+| =Engine=           | Yes      | Numerical engine (DiscountingSwapEngine, Grid, AMC, etc.)   |
+| =EngineParameters= | Yes      | Engine-specific settings (Samples, Seed, TimeGrid, etc.)    |
+
+*** Variants
+
+- *Standard*: analytical/discounting engines.
+- *AMC* (=_amc=): American Monte Carlo with training samples, Sobol sequences.
+- *AMC-CG* (=_amccg=): Combined AMC with computational graph.
+- *Delta-Gamma* (=_dg=): Adds ComputeDelta, ComputeGamma, BucketTimes.
+- *SABR* (=_sabr=): SABR calibration, pseudo-currency support.
+
+** Simulation Configuration
+
+- *ORE filename*: =simulation*.xml= (~83 files with variants for XVA, credit,
+  inflation).
+- *Root element*: =<Simulation>=.
+- *Purpose*: Defines the cross-asset stochastic model, Monte Carlo parameters,
+  and market structure for scenario generation.
+
+*** Schema
+
+Three top-level sections:
+
+**** Parameters
+
+| Field            | Required | Description                                             |
+|------------------+----------+---------------------------------------------------------|
+| =Discretization= | Yes      | Time discretization scheme (Exact)                      |
+| =Grid=           | Yes      | Time grid ("42,3M" or explicit tenor list)              |
+| =Calendar=       | Yes      | Comma-separated calendar codes                          |
+| =Sequence=       | Yes      | RNG type (SobolBrownianBridge, MersenneTwisterAntithetic) |
+| =Scenario=       | Yes      | Scenario type (Simple, Multi)                           |
+| =Seed=           | Yes      | Integer seed                                            |
+| =Samples=        | Yes      | Number of MC paths                                      |
+| =CloseOutLag=    | No       | Tenor for MPOR (e.g. "2W")                              |
+| =MporMode=       | No       | StickyDate, MoneyMarketStickyDate                       |
+| =DayCounter=     | No       | A365F, Actual360, etc.                                  |
+
+**** CrossAssetModel
+
+Defines per-currency interest rate models and per-FX-pair models:
+
+- =DomesticCcy=: base currency.
+- =Currencies=: list of currencies in the model.
+- =InterestRateModels=: one =LGM= block per currency with calibration type,
+  volatility/reversion parameters, calibration swaptions, and parameter
+  transformations.
+- =ForeignExchangeModels=: one =CrossCcyLGM= block per FX pair with sigma
+  calibration and calibration options.
+- =InstantaneousCorrelations=: pairwise factor correlations.
+
+Specialised models also appear for:
+
+- *Inflation*: Jarrow-Yildirim (JY) or Dodgson-Kainth (DK) models per inflation index.
+- *Credit*: Cox-Ingersoll-Ross (CIR) or linear Gaussian models per credit name.
+- *Equity/Commodity*: Black-Scholes type models.
+
+**** Market
+
+Defines the projected market structure:
+
+- Yield curves: tenors, interpolation (LogLinear, LinearZero), extrapolation.
+- Indices and swap indices.
+- Default curves: names, tenors, simulation flags.
+- Swaption/FX/Cap-floor volatilities: simulate flag, reaction to time decay,
+  expiry/term/strike grids.
+- Benchmark curves, aggregation scenario data.
+
+** Sensitivity Analysis Configuration
+
+- *ORE filename*: =sensitivity.xml= (~36 files).
+- *Root element*: =<SensitivityAnalysis>=.
+- *Purpose*: Defines bump-and-revalue shift specifications per market risk factor
+  type for Greeks computation.
+
+*** Schema
+
+Each market factor type has its own section with a consistent shift specification
+pattern:
+
+| Field          | Required | Description                              |
+|----------------+----------+------------------------------------------|
+| =ShiftType=    | Yes      | Absolute or Relative                     |
+| =ShiftSize=    | Yes      | Numeric bump size                        |
+| =ShiftScheme=  | No       | Forward, Backward, Central               |
+| =ShiftTenors=  | Yes      | Comma-separated tenor grid for the bumps |
+
+Market factor sections (each contains zero or more elements keyed by
+currency/index/pair):
+
+- =DiscountCurves= (keyed by =@ccy=) --- with optional =ParConversion= sub-section.
+- =IndexCurves= (keyed by =@index=, e.g. EUR-EURIBOR-6M).
+- =YieldCurves= (keyed by =@name=).
+- =FxSpots= (keyed by =@ccypair=).
+- =FxVolatilities= (keyed by =@ccypair=) --- adds =ShiftExpiries=, =ShiftStrikes=.
+- =SwaptionVolatilities= (keyed by =@ccy=) --- adds =ShiftExpiries=, =ShiftTerms=.
+- =CapFloorVolatilities= (keyed by =@ccy=) --- adds =Index= reference.
+- =CreditCurves= (keyed by =@name=) --- adds =Currency=.
+- =CDSVolatilities= (keyed by =@name=).
+- =EquitySpots=, =EquityVolatilities= (keyed by =@equity=).
+- =DividendYieldCurves=, =ZeroInflationIndexCurves=, =YYInflationIndexCurves=.
+- =BaseCorrelations= (keyed by =@indexName=).
+- =SecuritySpreads= (keyed by =@security=).
+
+Optional global flags: =ComputeGamma=, =UseSpreadedTermStructures=,
+=CrossGammaFilter=, =ParConversionExcludes=.
+
+** Stress Test Configuration
+
+- *ORE filename*: =stresstest.xml= (~14 files).
+- *Root element*: =<StressTesting>=.
+- *Purpose*: Defines named stress scenarios with market shifts applied to curves,
+  spots, and volatility surfaces.
+
+*** Schema
+
+Contains zero or more =StressTest= elements, each with a unique =@id=:
+
+#+begin_example
+<StressTesting>
+  <StressTest id="parallel_rates_up">
+    <DiscountCurves>
+      <DiscountCurve ccy="EUR">
+        <ShiftType>Absolute</ShiftType>
+        <ShiftTenors>6M,1Y,2Y,3Y,5Y,7Y,10Y,15Y,20Y</ShiftTenors>
+        <Shifts>0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01</Shifts>
+      </DiscountCurve>
+    </DiscountCurves>
+    <FxSpots>
+      <FxSpot ccypair="USDEUR">
+        <ShiftType>Relative</ShiftType>
+        <ShiftSize>0.01</ShiftSize>
+      </FxSpot>
+    </FxSpots>
+  </StressTest>
+</StressTesting>
+#+end_example
+
+Market shift sections mirror the sensitivity config but allow:
+- *Multi-tenor shift vectors*: non-uniform shifts (twist, butterfly).
+- *Matrix shifts*: for vol surfaces with =<Shift expiry="1Y" term="5Y">= format.
+- *ParShifts* flags: control which curve types use par conversion.
+
+Sections: DiscountCurves, IndexCurves, YieldCurves, FxSpots, FxVolatilities,
+SwaptionVolatilities, CapFloorVolatilities, EquitySpots, EquityVolatilities,
+CommodityCurves, CommodityVolatilities, SecuritySpreads, RecoveryRates,
+SurvivalProbabilities.
+
+** ORE Orchestration Configuration
+
+- *ORE filename*: =ore.xml= and =ore_*.xml= (~370 files).
+- *Root element*: =<ORE>=.
+- *Purpose*: Top-level configuration that ties everything together --- specifies
+  input paths, market configs, and which analytics to run.
+
+*** Schema
+
+Three sections:
+
+**** Setup
+
+Key-value parameters:
+
+| Parameter            | Required | Description                          |
+|----------------------+----------+--------------------------------------|
+| =asofDate=           | Yes      | Valuation date (YYYY-MM-DD)          |
+| =inputPath=          | Yes      | Directory for input files            |
+| =outputPath=         | Yes      | Directory for output files           |
+| =marketDataFile=     | Yes      | Market data filename                 |
+| =fixingDataFile=     | Yes      | Historical fixings filename          |
+| =pricingEnginesFile= | Yes      | Pricing engine config filename       |
+| =portfolioFile=      | Yes      | Trade portfolio filename             |
+| =curveConfigFile=    | Yes      | Curve configuration filename         |
+| =conventionsFile=    | Yes      | Conventions filename                 |
+| =logFile=            | No       | Log output file                      |
+| =nThreads=           | No       | Parallel execution threads           |
+| =observationModel=   | No       | Disable or ObservationDate           |
+
+**** Markets
+
+Names which market configuration to use for each purpose:
+
+- =lgmcalibration=: config for LGM model calibration.
+- =fxcalibration=: config for FX model calibration.
+- =pricing=: config for trade pricing.
+- =simulation=: config for MC scenario generation.
+- =sensitivity=: config for sensitivity analysis.
+
+**** Analytics
+
+Multiple =Analytic= elements with =@type= attribute. Each analytic type has its own
+parameter set:
+
+| Analytic Type       | Key Parameters                                              |
+|---------------------+-------------------------------------------------------------|
+| =npv=               | baseCurrency, outputFileName                                |
+| =cashflow=          | outputFileName                                              |
+| =curves=            | configuration, grid, outputFileName                         |
+| =simulation=        | simulationConfigFile, pricingEnginesFile, baseCurrency, amc  |
+| =xva=               | csaFile, cubeFile, cva/dva/fva flags, DIM settings          |
+| =sensitivity=       | sensitivityConfigFile, parSensitivity, outputJacobi         |
+| =xvaSensitivity=    | sensitivityConfigFile, marketConfigFile                     |
+| =initialMargin=     | method (SIMM, SA-CCR)                                      |
+| =scenarioStatistics= | market statistics aggregation                               |
+
+The XVA analytic is the most complex, with ~30+ parameters covering exposure
+profiles, CVA/DVA/FVA/COLVA calculations, dynamic initial margin (DIM) with
+regression models, and output file specifications.
+
+** Counterparty Information
+
+- *ORE filename*: =counterparty.xml= (~10 files).
+- *Root element*: =<CounterpartyInformation>=.
+- *Purpose*: Maps counterparty IDs to regulatory risk weights for CVA and initial
+  margin calculations.
+
+*** Schema
+
+#+begin_example
+<CounterpartyInformation>
+  <Counterparties>
+    <Counterparty>
+      <CounterpartyId>CPTY_A</CounterpartyId>
+      <CreditQuality>IG</CreditQuality>
+      <BaCvaRiskWeight>0.5</BaCvaRiskWeight>
+      <SaCcrRiskWeight>1.0</SaCcrRiskWeight>
+      <SaCvaRiskBucket>3</SaCvaRiskBucket>
+    </Counterparty>
+  </Counterparties>
+</CounterpartyInformation>
+#+end_example
+
+This may overlap with existing =ores.refdata= counterparty entities; the
+regulatory risk weights could be additional attributes on the existing
+=counterparties= entity.
+
+** Collateral Balances
+
+- *ORE filename*: =collateralbalances.xml= (~10 files).
+- *Root element*: =<CollateralBalances>=.
+- *Purpose*: Specifies initial collateral positions (IM, VM) per netting set at
+  valuation date.
+
+*** Schema
+
+#+begin_example
+<CollateralBalances>
+  <CollateralBalance>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <Currency>EUR</Currency>
+    <InitialMargin>500000</InitialMargin>
+    <VariationMargin>0</VariationMargin>
+  </CollateralBalance>
+</CollateralBalances>
+#+end_example
+
+** Script Library
+
+- *ORE filename*: =scriptlibrary.xml= (~10 files).
+- *Root element*: =<ScriptLibrary>=.
+- *Purpose*: Defines custom payoff scripts in ORE's domain-specific language for
+  structured products.
+
+*** Schema
+
+Each =Script= element contains a name, one or more engine-specific
+implementations (MC, FD), embedded DSL code in CDATA sections, NPV expressions,
+and optional =CalibrationSpec= for model calibration grid specification.
+
+This is a specialised configuration used for scripted/exotic trades. It is
+closely related to the existing =scripted_instruments= entity in =ores.trading=.
+
+* Relationships Between Configurations
+
+#+begin_example
+ore.xml (orchestration)
+ ├── pricingengine.xml ──── product-to-model-engine mappings
+ ├── simulation.xml ─────── cross-asset model + MC parameters
+ │     └── references market config (todaysmarket.xml)
+ ├── sensitivity.xml ────── shift specs per risk factor
+ ├── stresstest.xml ─────── named stress scenarios
+ ├── counterparty.xml ───── regulatory risk weights
+ └── collateralbalances.xml ── initial collateral state
+#+end_example
+
+The =ore.xml= orchestration config references all other configs by filename. In
+ORE Studio, these references would become foreign keys or named associations.
+
+* Product Taxonomies
+
+ORE Studio uses two product classification systems that serve different purposes.
+
+** Instrument Types (existing, =ores.trading=)
+
+The *instrument type* (currently named =trade_type= in the codebase) classifies
+the financial product for booking, lifecycle management, and regulatory
+reporting. It answers: /what is this trade?/
+
+Examples: =Swap=, =Swaption=, =FxOption=, =Bond=, =CreditDefaultSwap=,
+=CommodityForward=, =ScriptedTrade=.
+
+Currently seeded with ~90 codes in =ores_trading_trade_types_tbl=. This taxonomy
+aligns with the ISDA Product Taxonomy at the base product level. In industry
+standards (FpML, CDM), attributes like exercise style are properties of the
+product, not separate product types.
+
+** Pricing Engine Types (new, =ores.analytics=)
+
+The *pricing engine type* is a pricing-specific classification at the granularity
+needed by the pricing engine to select the correct model and numerical method. It
+answers: /how should this trade be priced?/
+
+Examples: =EuropeanSwaption=, =BermudanSwaption=, =AmericanSwaption=, =CMS=,
+=CMSSpread=, =CapFlooredIborLeg=, =CapFlooredOvernightIndexedCouponLeg=.
+
+This is not an industry-standard taxonomy --- it is an ORE/QuantLib implementation
+concept. It exists because the pricing engine needs a lookup key to select the
+model and numerical engine, and that key must be finer-grained than the
+instrument type:
+
+1. *Exercise style determines the numerical method*: A European swaption uses
+   Black-Bachelier (analytic), a Bermudan uses LGM + Grid (finite difference), an
+   American uses LGM + FD. Same instrument type, completely different numerical
+   methods.
+
+2. *Coupon and leg-level pricers*: =CMS=, =CMSSpread=, =CapFlooredIborLeg= are
+   coupon or leg-level pricers. They do not correspond to any instrument type but
+   are needed by the pricing engine to value specific leg types within a trade.
+
+3. *Product variants need different engines*: =FxOption= (European) uses
+   =AnalyticEuropeanEngine=; =FxOptionAmerican= needs
+   =FdBlackScholesVanillaEngine=.
+
+This taxonomy lives in =ores.analytics= as =ores_analytics_pricing_engine_types_tbl=:
+
+| Column                | Type      | Null     | Description                                           |
+|-----------------------+-----------+----------+-------------------------------------------------------|
+| =code=                | text      | NOT NULL | PK. E.g. =EuropeanSwaption=, =CMS=                   |
+| =description=         | text      | NULL     | Human-readable description                            |
+| =instrument_type_code= | text    | NULL     | Optional FK to =ores_trading_trade_types_tbl=         |
+
+The FK is null for coupon/leg-level types (=CMS=, =CapFlooredIborLeg=, etc.)
+that have no corresponding instrument type.
+
+** Relationship Between Taxonomies
+
+The mapping from instrument type to pricing engine type is determined at pricing
+time based on trade attributes:
+
+#+begin_example
+Instrument Type + Trade Attributes → Pricing Engine Type → Model + Engine
+
+Examples:
+  Swaption + European exercise   → EuropeanSwaption  → BlackBachelier + BlackBachelierSwaptionEngine
+  Swaption + Bermudan exercise   → BermudanSwaption   → LGM + Grid
+  Swaption + American exercise   → AmericanSwaption   → LGM + FD
+  FxOption + European style      → FxOption            → GarmanKohlhagen + AnalyticEuropeanEngine
+  FxOption + American style      → FxOptionAmerican    → GarmanKohlhagen + FdBlackScholesVanillaEngine
+  Swap (with CMS leg)            → CMS (leg-level)     → LinearTSR + LinearTSRPricer
+#+end_example
+
+One instrument type can map to multiple pricing engine types depending on
+attributes. Not every pricing engine type maps back to an instrument type.
+
+* Pricing Configuration Domain Model
+
+A *pricing configuration* is a named, versioned bundle of valuation settings that
+fully determines how the pricing engine values a set of trades. It is the bridge
+between a report definition (which says /what/ to compute) and the engine (which
+needs to know /how/ to compute it). See [[file:/home/marco/Development/Notebooks/summaries/pricing-configuration.org][pricing-configuration.org]] for the full
+conceptual analysis.
+
+The pricing configuration is composed of five independently versioned layers.
+Each layer is a first-class bitemporal entity that can be reused across multiple
+pricing configurations.
+
+#+begin_example
+pricing_configuration (named composition)
+ ├── FK → pricing_model_config        (layer 1)
+ ├── FK → smile_surface_config        (layer 2)
+ ├── FK → greek_config                (layer 3)
+ ├── FK → general_valuation_settings  (layer 4)
+ └── FK → model_parameter_set         (layer 5)
+#+end_example
+
+** Why Composition, Not Embedding
+
+Each layer must be independently:
+
+- *Versionable*: changing Greek settings does not version the pricing model config.
+- *Reusable*: FO and Finance may share the same smile surface but use different
+  model parameters.
+- *Diffable*: P&L attribution requires granular comparison --- "the reversion
+  changed from 0.03 to 0.05 for LGM" must be a diffable field, not buried in a
+  JSON blob.
+- *Overridable*: the layering model (system → report definition → report instance
+  → deal-level) can swap individual layers without duplicating the whole config.
+
+** Layer 1: Pricing Model Configuration
+
+Maps each pricing engine type to the pricing model and numerical engine used to
+value it. In ORE terms, this is the =<PricingEngines>= document.
+
+#+begin_example
+pricing_model_config (header)
+ ├── pricing_model_config_parameters (global params, no product FK)
+ ├── pricing_model_products (one row per pricing engine type)
+ │    └── pricing_model_product_parameters (per-product params)
+#+end_example
+
+- *Header*: name, description, variant tag.
+- *Global parameters*: normalised rows (name, value) with FK to header only.
+  These are ORE's =<GlobalParameters>= (e.g. =ContinueOnCalibrationError=).
+- *Product rows*: one per pricing engine type, each mapping to a model and engine.
+  The =pricing_engine_type_code= references
+  =ores_analytics_pricing_engine_types_tbl=.
+- *Product parameters*: normalised rows (name, value) with FK to product row.
+  These are ORE's =<ModelParameters>= and =<EngineParameters>=, distinguished by
+  a =parameter_scope= column (=model= or =engine=).
+
+All parameters are stored as normalised rows (not JSON) to support granular
+diffing. Each parameter is a name-value pair where the value is always text
+(numerics, booleans, comma-separated lists are all text in ORE).
+
+** Layer 2: Smile Surface Configuration
+
+Determines the vol surface model per currency pair. Three settings per pair:
+smile model (SABR, 5-point spline, BS flat), parameter form (ATM + RR + STR,
+raw vols), and interpolation method (ATM curve, linear in variance, physical,
+market). Supports system defaults with per-pair overrides and force-override
+mode.
+
+** Layer 3: Greek Configuration
+
+Defines which sensitivities to compute and how: selection from canonical Greeks
+(PV, Delta, Gamma, Vega, Theta, Rho, etc.), computation mode per Greek
+(unbumped, bumped, analytic, weighted, model-specific), and bump parameters.
+Greek sets are reusable templates selected by name.
+
+** Layer 4: General Valuation Settings
+
+Cross-model parameters: rates/vols interpolation, ATM curve usage, roll types
+(spot, vol, rates), PV offset in days, coupon handling, brokerage inclusion,
+multi-threading, default bump sizes.
+
+** Layer 5: Model Parameters
+
+Scalar and term-structure parameters per pricing model. Scalar parameters may be
+report-specific (e.g. MC simulation count) or fixed (e.g. mean reversion). Term
+structure parameters have values at each tenor.
+
+** Mapping ORE XML to the Domain Model
+
+ORE's XML files do not map 1:1 to the domain layers. The mapping is:
+
+| ORE File              | Domain Layer(s)              | Notes                                      |
+|-----------------------+------------------------------+--------------------------------------------|
+| =pricingengine.xml=   | Layer 1 + inline Layer 5     | Product→model→engine + model/engine params |
+| =simulation.xml=      | Layer 5 (partially)          | Cross-asset model calibration parameters   |
+| =sensitivity.xml=     | Layer 3 (partially)          | Bump specifications per risk factor        |
+| =stresstest.xml=      | (separate concept)           | Scenario definitions, not pricing config   |
+| =ore.xml=             | Orchestration (references)   | Ties configs together for a run            |
+
+When importing =pricingengine.xml=, the inline model/engine parameters should be
+extracted into the normalised parameter model (layer 5 or as detail rows under
+layer 1, depending on whether parameters are considered part of the
+product-model mapping or a separate concern).
+
+** Diffing and P&L Attribution
+
+Diffing pricing configurations is a core requirement for:
+
+1. *Impact of Pricing Configuration* reports: quantify P&L difference between
+   configs.
+2. *Model Risk Unit (MRU) analysis*: compare baseline vs alternative configs.
+3. *Audit*: track what changed between versions.
+
+The compositional model supports this naturally: diff at the layer level first
+(which layers changed?), then diff within each changed layer. Normalised
+parameter rows enable SQL-native set diffs.
+
+* Component Home: =ores.analytics=
+
+All pricing configuration entities live in the new =ores.analytics= component.
+This component encompasses pricing, simulation, sensitivity, stress testing, XVA,
+and initial margin configurations.
+
+Counterparty risk weights extend =ores.refdata.counterparties=. Script libraries
+stay close to =ores.trading.scripted_instruments=.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

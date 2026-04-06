@@ -1,0 +1,2 @@
+drop trigger if exists ores_analytics_pricing_engine_types_notify_trg on "ores_analytics_pricing_engine_types_tbl";
+drop function if exists ores_analytics_pricing_engine_types_notify_fn;

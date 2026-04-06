@@ -19,28 +19,23 @@
  */
 
 -- =============================================================================
--- Compute Grid Tables
+-- Workflow batch links: async bridge between compute batches and workflow steps.
+--
+-- When the compute service receives a submit_compute workflow step command, it
+-- creates a batch and inserts a row here linking the batch_id to the workflow
+-- step context (step_id + instance_id). The batch_workflow_bridge polls this
+-- table; when the batch reaches a terminal state it publishes a
+-- step_completed_event and deletes the row.
 -- =============================================================================
--- BOINC-inspired distributed compute grid: hosts, apps, workunits, results,
--- and batch orchestration.
 
-\ir ./compute_apps_create.sql
-\ir ./compute_apps_notify_trigger_create.sql
-\ir ./compute_app_versions_create.sql
-\ir ./compute_app_versions_notify_trigger_create.sql
-\ir ./compute_platforms_create.sql
-\ir ./compute_app_version_platforms_create.sql
-\ir ./compute_app_version_platforms_notify_trigger_create.sql
-\ir ./compute_hosts_create.sql
-\ir ./compute_hosts_notify_trigger_create.sql
-\ir ./compute_batches_create.sql
-\ir ./compute_batches_notify_trigger_create.sql
-\ir ./compute_batch_dependencies_create.sql
-\ir ./compute_workunits_create.sql
-\ir ./compute_workunits_notify_trigger_create.sql
-\ir ./compute_results_create.sql
-\ir ./compute_results_notify_trigger_create.sql
-\ir ./compute_workflow_batch_links_create.sql
-\ir ./compute_grid_samples_create.sql
-\ir ./compute_node_samples_create.sql
-\ir ./compute_grid_stats_fn_create.sql
+CREATE TABLE ores_compute_workflow_batch_links_tbl (
+    batch_id           UUID    NOT NULL,
+    tenant_id          UUID    NOT NULL,
+    workflow_step_id   TEXT    NOT NULL,
+    workflow_instance_id TEXT  NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    PRIMARY KEY (batch_id)
+);
+
+CREATE INDEX ores_compute_workflow_batch_links_tenant_idx
+    ON ores_compute_workflow_batch_links_tbl(tenant_id);

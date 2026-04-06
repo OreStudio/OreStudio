@@ -31,6 +31,7 @@
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 
 namespace ores::compute::messaging {
@@ -130,22 +131,22 @@ void report_submit_handler::submit(ores::nats::message msg) {
                 << "Dispatched work assignment for workunit " << wu_id;
         }
 
-        submit_compute_result result;
-        result.success = true;
-        result.batch_id = batch_id;
-        result.message = std::format(
-            "Created batch {} with {} workunit(s)",
-            batch_id, workunit_ids.size());
+        // Record the async bridge row: batch_workflow_bridge will publish
+        // step_completed_event once the batch reaches "closed" status.
+        repository::workflow_batch_link_entity link;
+        link.batch_id             = batch_id;
+        link.tenant_id            = req.tenant_id;
+        link.workflow_step_id     = wf->step_id;
+        link.workflow_instance_id = wf->instance_id;
 
-        BOOST_LOG_SEV(lg(), info) << "submit_compute complete | instance="
-                                  << req.report_instance_id
-                                  << " batch=" << batch_id
-                                  << " workunits=" << workunit_ids.size();
+        repository::workflow_batch_link_repository link_repo;
+        link_repo.create(tenant_ctx, link);
 
-        // Phase 3.9: complete immediately for end-to-end validation.
-        // Phase 3.10 will change this to async (assimilator fires
-        // step_completed when the batch terminates).
-        wf->complete(rfl::json::write(result));
+        BOOST_LOG_SEV(lg(), info)
+            << "submit_compute deferred | instance=" << req.report_instance_id
+            << " batch=" << batch_id
+            << " workunits=" << workunit_ids.size()
+            << " step=" << wf->step_id;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "submit_compute failed: " << e.what();

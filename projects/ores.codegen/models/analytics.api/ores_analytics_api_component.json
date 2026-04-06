@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "analytics.api",
+    "full_name": "ores.analytics.api",
+    "brief": "Public API types for ORE Studio analytics.",
+    "description": "Domain types, generators, messaging protocols and eventing for the\nanalytics component. Defines pricing engine types, pricing model\nconfigurations, products and parameters as C++ domain types exchanged\nbetween the analytics service and other components."
+  }
+}

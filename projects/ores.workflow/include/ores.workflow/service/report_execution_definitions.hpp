@@ -125,17 +125,46 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
         workflow_step_def s;
         s.name = "assemble_bundle";
         s.command_subject = std::string(assemble_bundle_request::nats_subject);
-        // TODO: compensation_subject for deleting the bundle row.
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
 
         s.build_command = [](const std::string& request_json,
-            const std::vector<std::string>&) -> std::string {
+            const std::vector<std::string>& results) -> std::string {
             auto req = rfl::json::read<report_execution_request>(request_json);
             if (!req) return "{}";
-            return rfl::json::write(assemble_bundle_request{
-                .report_instance_id = req->report_instance_id,
-                .definition_id      = req->definition_id,
-                .tenant_id          = req->tenant_id,
-                .correlation_id     = req->correlation_id});
+
+            assemble_bundle_request cmd;
+            cmd.report_instance_id = req->report_instance_id;
+            cmd.definition_id      = req->definition_id;
+            cmd.tenant_id          = req->tenant_id;
+            cmd.correlation_id     = req->correlation_id;
+
+            // Extract trades info from step 0 result.
+            if (results.size() > 0) {
+                if (auto r = rfl::json::read<gather_trades_result>(results[0])) {
+                    cmd.trades_storage_key = r->storage_key;
+                    cmd.trade_count        = r->trade_count;
+                }
+            }
+            // Extract market data info from step 1 result.
+            if (results.size() > 1) {
+                if (auto r = rfl::json::read<gather_market_data_result>(results[1])) {
+                    cmd.market_data_storage_key = r->storage_key;
+                    cmd.series_count            = r->series_count;
+                }
+            }
+
+            return rfl::json::write(cmd);
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<assemble_bundle_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during bundle assembly"});
         };
 
         def.steps.push_back(std::move(s));

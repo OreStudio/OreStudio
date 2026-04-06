@@ -87,8 +87,10 @@ struct gather_market_data_result {
 /**
  * @brief Step 2: assemble and persist the report input bundle.
  *
- * Aggregates trade data and market data from prior steps into a
- * report_input_bundle and persists it.
+ * Aggregates the object-storage keys produced by gather_trades and
+ * gather_market_data into a report_input_bundle record and persists it.
+ * Storage keys and counts are forwarded from prior step results by the
+ * workflow engine via the build_command lambda.
  */
 struct assemble_bundle_request {
     static constexpr std::string_view nats_subject =
@@ -97,12 +99,16 @@ struct assemble_bundle_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+    std::string trades_storage_key;
+    std::string market_data_storage_key;
+    int trade_count = 0;
+    int series_count = 0;
 };
 
 struct assemble_bundle_result {
     bool success = false;
     std::string message;
-    std::string bundle_ref;
+    std::string bundle_id;   ///< UUID of the persisted report_input_bundle
 };
 
 /**

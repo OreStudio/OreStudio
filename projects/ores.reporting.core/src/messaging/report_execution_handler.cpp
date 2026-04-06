@@ -23,12 +23,14 @@
 #include <format>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 
@@ -291,18 +293,57 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     const auto& req = *parsed;
 
     BOOST_LOG_SEV(lg(), info) << "assemble_bundle starting | instance="
-                              << req.report_instance_id;
+                              << req.report_instance_id
+                              << " trades_key=" << req.trades_storage_key
+                              << " market_data_key=" << req.market_data_storage_key;
 
-    // Stub: in Phase 3.6 this will persist a report_input_bundle entity.
-    // For now, pass through successfully so finalise can run.
-    assemble_bundle_result result;
-    result.success = true;
-    result.message = "Bundle assembly not yet implemented; passing through.";
-    result.bundle_ref = req.report_instance_id;
+    try {
+        if (req.trades_storage_key.empty()) {
+            wf->fail("assemble_bundle: trades_storage_key is missing");
+            return;
+        }
+        if (req.market_data_storage_key.empty()) {
+            wf->fail("assemble_bundle: market_data_storage_key is missing");
+            return;
+        }
 
-    BOOST_LOG_SEV(lg(), info) << "assemble_bundle complete (stub) | instance="
-                              << req.report_instance_id;
-    wf->complete(rfl::json::write(result));
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
+            ctx_, req.tenant_id);
+
+        const auto bundle_id = boost::uuids::to_string(
+            boost::uuids::random_generator()());
+
+        repository::report_input_bundle_entity bundle;
+        bundle.id = bundle_id;
+        bundle.tenant_id = req.tenant_id;
+        bundle.report_instance_id = req.report_instance_id;
+        bundle.definition_id = req.definition_id;
+        bundle.trades_storage_key = req.trades_storage_key;
+        bundle.market_data_storage_key = req.market_data_storage_key;
+        bundle.trade_count = req.trade_count;
+        bundle.series_count = req.series_count;
+        bundle.created_at = std::nullopt;  // DB default (current_timestamp)
+
+        repository::report_input_bundle_repository bundle_repo;
+        bundle_repo.create(tenant_ctx, bundle);
+
+        assemble_bundle_result result;
+        result.success = true;
+        result.bundle_id = bundle_id;
+        result.message = std::format(
+            "Bundle persisted: {} trades, {} market data series",
+            req.trade_count, req.series_count);
+
+        BOOST_LOG_SEV(lg(), info) << "assemble_bundle complete | instance="
+                                  << req.report_instance_id
+                                  << " bundle=" << bundle_id;
+
+        wf->complete(rfl::json::write(result));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
+        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        wf->fail(e.what());
+    }
 }
 
 void report_execution_handler::finalise(ores::nats::message msg) {

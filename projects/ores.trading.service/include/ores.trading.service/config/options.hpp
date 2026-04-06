@@ -44,6 +44,12 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief Base URL of the storage HTTP API, e.g. "http://localhost:8080".
+     *
+     * Used by export-to-storage handlers to upload serialised data blobs.
+     */
+    std::string http_base_url;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

@@ -20,7 +20,9 @@
 #include "ores.storage/net/storage_transfer.hpp"
 
 #include <chrono>
+#include <fstream>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/compression/gzip.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -138,6 +140,70 @@ void storage_transfer::fetch_and_unpack(const std::string& bucket,
         download(bucket, key, tmp);
         unpack(tmp, dest_dir);
         fs::remove(tmp);
+    } catch (...) {
+        std::error_code ec;
+        fs::remove(tmp, ec);
+        throw;
+    }
+}
+
+void storage_transfer::upload_blob(const std::string& bucket,
+    const std::string& key, std::span<const char> data) {
+    using ores::utility::compression::gzip_compress;
+
+    BOOST_LOG_SEV(lg(), debug) << "upload_blob: bucket=" << bucket
+                               << " key=" << key
+                               << " raw_bytes=" << data.size();
+
+    const auto compressed = gzip_compress(data);
+    BOOST_LOG_SEV(lg(), debug) << "upload_blob: compressed "
+                               << data.size() << " -> "
+                               << compressed.size() << " bytes";
+
+    boost::uuids::random_generator gen;
+    const auto tmp = fs::temp_directory_path() /
+        (boost::uuids::to_string(gen()) + ".blob.gz");
+    try {
+        {
+            std::ofstream out(tmp, std::ios::binary);
+            out.write(compressed.data(),
+                static_cast<std::streamsize>(compressed.size()));
+        }
+        upload(bucket, key, tmp);
+        fs::remove(tmp);
+    } catch (...) {
+        std::error_code ec;
+        fs::remove(tmp, ec);
+        throw;
+    }
+}
+
+std::vector<char> storage_transfer::download_blob(const std::string& bucket,
+    const std::string& key) {
+    using ores::utility::compression::gzip_decompress;
+
+    BOOST_LOG_SEV(lg(), debug) << "download_blob: bucket=" << bucket
+                               << " key=" << key;
+
+    boost::uuids::random_generator gen;
+    const auto tmp = fs::temp_directory_path() /
+        (boost::uuids::to_string(gen()) + ".blob.gz");
+    try {
+        download(bucket, key, tmp);
+        const auto compressed_size = fs::file_size(tmp);
+        std::vector<char> compressed(compressed_size);
+        {
+            std::ifstream in(tmp, std::ios::binary);
+            in.read(compressed.data(),
+                static_cast<std::streamsize>(compressed_size));
+        }
+        fs::remove(tmp);
+
+        auto result = gzip_decompress(compressed);
+        BOOST_LOG_SEV(lg(), debug) << "download_blob: decompressed "
+                                   << compressed_size << " -> "
+                                   << result.size() << " bytes";
+        return result;
     } catch (...) {
         std::error_code ec;
         fs::remove(tmp, ec);

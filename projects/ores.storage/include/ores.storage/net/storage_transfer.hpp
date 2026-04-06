@@ -20,7 +20,10 @@
 #ifndef ORES_STORAGE_NET_STORAGE_TRANSFER_HPP
 #define ORES_STORAGE_NET_STORAGE_TRANSFER_HPP
 
+#include <cstddef>
+#include <span>
 #include <string>
+#include <vector>
 #include <filesystem>
 
 namespace ores::storage::net {
@@ -112,6 +115,25 @@ public:
      */
     void fetch_and_unpack(const std::string& bucket, const std::string& key,
         const std::filesystem::path& dest_dir);
+
+    /**
+     * @brief Upload an in-memory blob to storage.
+     *
+     * Writes @p data to a UUID-named temp file, uploads it, then removes
+     * the temp file.  Useful for serialised binary payloads (e.g. MsgPack)
+     * that are too large for NATS messages.
+     */
+    void upload_blob(const std::string& bucket, const std::string& key,
+        std::span<const char> data);
+
+    /**
+     * @brief Download a blob from storage into memory.
+     *
+     * Downloads to a UUID-named temp file, reads it into a vector, then
+     * removes the temp file.
+     */
+    std::vector<char> download_blob(const std::string& bucket,
+        const std::string& key);
 
 private:
     std::string http_base_url_;

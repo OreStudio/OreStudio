@@ -28,7 +28,8 @@ namespace ores::marketdata::messaging {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::optional<ores::security::jwt::jwt_authenticator> verifier,
+    std::string http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.marketdata.service";
 
@@ -104,6 +105,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             import_handler h(nats, ctx, verifier);
             h.import(std::move(msg));
+        }));
+
+    // Export to storage (report execution workflow)
+    subs.push_back(nats.queue_subscribe(
+        std::string(export_market_data_to_storage_request::nats_subject), queue,
+        [&nats, ctx, verifier, http_base_url](ores::nats::message msg) mutable {
+            market_series_handler h(nats, ctx, verifier, http_base_url);
+            h.export_to_storage(std::move(msg));
         }));
 
     return subs;

@@ -88,6 +88,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
         Boost::exception
+        Boost::iostreams
         Boost::program_options
     PRIVATE
         OpenSSL::Crypto

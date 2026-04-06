@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <optional>
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -31,6 +32,9 @@
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
+#include "ores.reporting.core/messaging/report_execution_handler.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.workflow/service/fsm_state_map.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -38,8 +42,15 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    ores::nats::service::nats_client& svc_nats) {
+    ores::nats::service::nats_client& svc_nats,
+    std::string http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
+
+    // ----------------------------------------------------------------
+    // Load FSM state maps (one NATS round-trip each).
+    // ----------------------------------------------------------------
+    const auto instance_states =
+        ores::workflow::service::load_fsm_states(svc_nats, "report_instance_lifecycle");
 
     // ----------------------------------------------------------------
     // Report definition templates
@@ -92,7 +103,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report instances
     // ----------------------------------------------------------------
-    auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier);
+    auto rih = std::make_shared<report_instance_handler>(
+        nats, ctx, verifier, instance_states);
     subs.push_back(nats.queue_subscribe(
         get_report_instances_request::nats_subject, "ores.reporting.service",
         [rih](ores::nats::message msg) { rih->list(std::move(msg)); }));
@@ -125,6 +137,36 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_concurrency_policy_history_request::nats_subject, "ores.reporting.service",
         [cph](ores::nats::message msg) { cph->history(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Report execution workflow step handlers
+    // ----------------------------------------------------------------
+    auto reh = std::make_shared<report_execution_handler>(
+        nats, ctx, svc_nats, instance_states, std::move(http_base_url));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(gather_trades_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->gather_trades(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(gather_market_data_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->gather_market_data(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(assemble_bundle_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(collect_compute_results_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(finalise_report_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(fail_report_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->fail(std::move(msg)); }));
 
     return subs;
 }

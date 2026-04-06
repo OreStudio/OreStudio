@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <optional>
+#include <rfl/msgpack.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -32,6 +33,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 
@@ -56,8 +58,10 @@ class market_series_handler {
 public:
     market_series_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        std::string http_base_url = {})
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)),
+          http_base_url_(std::move(http_base_url)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -172,10 +176,56 @@ public:
         }
     }
 
+    void export_to_storage(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(market_series_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_market_data_to_storage_response resp;
+        try {
+            auto req = decode<export_market_data_to_storage_request>(msg);
+            if (!req) {
+                resp.message = "Failed to decode request.";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            service::market_series_service svc(ctx);
+            const auto series = svc.list();
+
+            const auto blob = rfl::msgpack::write(series);
+            ores::storage::net::storage_transfer transfer(http_base_url_);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+
+            resp.success = true;
+            resp.series_count = static_cast<int>(series.size());
+            resp.storage_key = req->storage_key;
+            resp.message = "Exported " + std::to_string(series.size())
+                + " series to storage.";
+
+            BOOST_LOG_SEV(market_series_handler_lg(), info)
+                << "export_to_storage: exported " << series.size()
+                << " series, " << blob.size()
+                << " bytes (pre-compression) to "
+                << req->storage_bucket << "/" << req->storage_key;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(market_series_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    std::string http_base_url_;
 };
 
 } // namespace ores::marketdata::messaging

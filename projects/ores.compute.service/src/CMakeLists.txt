@@ -46,7 +46,9 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.lib)
+        ores.telemetry.lib
+    PRIVATE
+        ores.workflow.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

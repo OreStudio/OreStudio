@@ -24,6 +24,7 @@
 
 \ir ./compute_node_samples_drop.sql
 \ir ./compute_grid_samples_drop.sql
+\ir ./compute_workflow_batch_links_drop.sql
 \ir ./compute_results_notify_trigger_drop.sql
 \ir ./compute_results_drop.sql
 \ir ./compute_workunits_notify_trigger_drop.sql

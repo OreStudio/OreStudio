@@ -211,3 +211,17 @@ for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- Report Input Bundles
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_report_input_bundles_tbl enable row level security;
+
+create policy ores_reporting_report_input_bundles_tenant_isolation_policy
+on ores_reporting_report_input_bundles_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -127,9 +127,9 @@ application::run(boost::asio::io_context& io_ctx,
 
     co_await ores::service::service::run(
         io_ctx, nats, make_context(cfg.database), "ores.trading.service",
-        [](auto& n, auto c, auto v) {
+        [&cfg](auto& n, auto c, auto v) {
             return ores::trading::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), std::move(v), cfg.http_base_url);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

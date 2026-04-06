@@ -40,6 +40,7 @@
 #include <boost/asio/detached.hpp>
 #include "ores.compute.core/messaging/registrar.hpp"
 #include "ores.compute.service/app/compute_grid_poller.hpp"
+#include "ores.compute.service/app/batch_workflow_bridge.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 
@@ -183,9 +184,10 @@ application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
-    // Create a separate context for the poller so the main context can be
+    // Create separate contexts for pollers so the main context can be
     // moved into run() for the subscription handlers.
     auto poller_ctx = make_context(cfg.database);
+    auto bridge_ctx = make_context(cfg.database);
     const auto telemetry_interval = cfg.telemetry_interval_seconds;
 
     co_await ores::service::service::run(
@@ -194,7 +196,10 @@ application::run(boost::asio::io_context& io_ctx,
             return ores::compute::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [telemetry_interval, poller_ctx = std::move(poller_ctx), &nats]
+        [telemetry_interval,
+         poller_ctx = std::move(poller_ctx),
+         bridge_ctx = std::move(bridge_ctx),
+         &nats]
         (boost::asio::io_context& ioc) mutable {
             if (telemetry_interval > 0) {
                 auto poller = std::make_shared<app::compute_grid_poller>(
@@ -203,6 +208,13 @@ application::run(boost::asio::io_context& io_ctx,
                     [poller]() { return poller->run(); },
                     boost::asio::detached);
             }
+            // Async bridge: fires step_completed_event when batches close.
+            constexpr std::uint32_t bridge_interval_seconds = 10;
+            auto bridge = std::make_shared<app::batch_workflow_bridge>(
+                bridge_interval_seconds, nats, std::move(bridge_ctx));
+            boost::asio::co_spawn(ioc,
+                [bridge]() { return bridge->run(); },
+                boost::asio::detached);
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc,

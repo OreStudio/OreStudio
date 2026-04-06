@@ -346,6 +346,32 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     }
 }
 
+void report_execution_handler::collect_results(ores::nats::message msg) {
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf) return;
+
+    const std::string_view sv(
+        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = rfl::json::read<collect_compute_results_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode collect_compute_results_request");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "collect_compute_results: stub pass-through | instance="
+        << parsed->report_instance_id
+        << " batch=" << parsed->batch_id;
+
+    // Phase 3.11 stub: pass through immediately.
+    // A future phase will download output tarballs, parse ORE result data,
+    // and persist structured results to the reporting database.
+    collect_compute_results_result result;
+    result.success = true;
+    result.message = "Pass-through (Phase 3.11 stub)";
+    wf->complete(rfl::json::write(result));
+}
+
 void report_execution_handler::finalise(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) return;

@@ -154,6 +154,27 @@ struct submit_compute_result {
 };
 
 /**
+ * @brief Step 5: collect and persist compute results (ores.reporting.service).
+ *
+ * Phase 3.11 stub: immediately passes through so the end-to-end workflow
+ * can be validated. A future phase will download output tarballs from object
+ * storage, parse ORE result XML/CSV, and persist structured results.
+ */
+struct collect_compute_results_request {
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report.collect-compute-results";
+    std::string report_instance_id;
+    std::string tenant_id;
+    std::string correlation_id;
+    std::string batch_id;  ///< UUID of the compute batch from submit_compute_result
+};
+
+struct collect_compute_results_result {
+    bool success = false;
+    std::string message;
+};
+
+/**
  * @brief Final step: mark the report instance as completed.
  */
 struct finalise_report_request {

@@ -62,6 +62,7 @@ public:
     void gather_trades(ores::nats::message msg);
     void gather_market_data(ores::nats::message msg);
     void assemble_bundle(ores::nats::message msg);
+    void collect_results(ores::nats::message msg);
     void finalise(ores::nats::message msg);
     void fail(ores::nats::message msg);
 

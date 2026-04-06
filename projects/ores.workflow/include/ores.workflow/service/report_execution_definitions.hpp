@@ -268,7 +268,50 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     }
 
     // ----------------------------------------------------------------
-    // Step 5: finalise report instance
+    // Step 5: collect compute results (stub pass-through — Phase 3.11)
+    // ----------------------------------------------------------------
+    {
+        workflow_step_def s;
+        s.name = "collect_compute_results";
+        s.command_subject = std::string(collect_compute_results_request::nats_subject);
+        s.compensation_subject = std::string(fail_report_request::nats_subject);
+
+        s.build_command = [](const std::string& request_json,
+            const std::vector<std::string>& results) -> std::string {
+            auto req = rfl::json::read<report_execution_request>(request_json);
+            if (!req) return "{}";
+
+            collect_compute_results_request cmd;
+            cmd.report_instance_id = req->report_instance_id;
+            cmd.tenant_id          = req->tenant_id;
+            cmd.correlation_id     = req->correlation_id;
+
+            // Extract batch_id from step 4 (submit_compute) result.
+            if (results.size() > 4) {
+                if (auto r = rfl::json::read<submit_compute_result>(results[4])) {
+                    cmd.batch_id = r->batch_id;
+                }
+            }
+
+            return rfl::json::write(cmd);
+        };
+
+        s.build_compensation = [](const std::string& cmd_json,
+            const std::string&) -> std::string {
+            auto cmd = rfl::json::read<collect_compute_results_request>(cmd_json);
+            if (!cmd) return "{}";
+            return rfl::json::write(fail_report_request{
+                .report_instance_id = cmd->report_instance_id,
+                .tenant_id          = cmd->tenant_id,
+                .correlation_id     = cmd->correlation_id,
+                .error_message      = "Report execution failed during result collection"});
+        };
+
+        def.steps.push_back(std::move(s));
+    }
+
+    // ----------------------------------------------------------------
+    // Step 6: finalise report instance
     // ----------------------------------------------------------------
     {
         workflow_step_def s;

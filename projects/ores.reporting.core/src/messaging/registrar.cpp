@@ -157,6 +157,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
+        std::string(collect_compute_results_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
         std::string(finalise_report_request::nats_subject), "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); }));
 

@@ -32,6 +32,8 @@
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
+#include "ores.reporting.core/messaging/report_execution_handler.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 
 namespace ores::reporting::messaging {
@@ -134,6 +136,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_concurrency_policy_history_request::nats_subject, "ores.reporting.service",
         [cph](ores::nats::message msg) { cph->history(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Report execution workflow step handlers
+    // ----------------------------------------------------------------
+    auto reh = std::make_shared<report_execution_handler>(
+        nats, ctx, svc_nats, instance_states);
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(gather_trades_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->gather_trades(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(assemble_bundle_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(finalise_report_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(fail_report_request::nats_subject), "ores.reporting.service",
+        [reh](ores::nats::message msg) { reh->fail(std::move(msg)); }));
 
     return subs;
 }

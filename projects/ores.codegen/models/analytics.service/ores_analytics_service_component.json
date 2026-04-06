@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "analytics.service",
+    "full_name": "ores.analytics.service",
+    "brief": "ORE Studio analytics service binary.",
+    "description": "Executable entry point for the analytics service. Parses command-line\narguments, connects to NATS and PostgreSQL, initialises ores.analytics.core,\nand handles pricing model configuration requests from other services."
+  }
+}

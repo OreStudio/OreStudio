@@ -16,43 +16,41 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_LEGACY_PLUGIN_HPP
-#define ORES_QT_LEGACY_PLUGIN_HPP
+#ifndef ORES_QT_MKTDATA_PLUGIN_HPP
+#define ORES_QT_MKTDATA_PLUGIN_HPP
 
 #include <memory>
 #include <QObject>
 #include <QList>
-#include <QPointer>
 #include "ores.qt/IPlugin.hpp"
 
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
-class PortfolioController;
-class BookController;
-class BookStatusController;
-class TradeController;
-class PortfolioExplorerMdiWindow;
-class OrgExplorerMdiWindow;
+class CurrencyMarketTierController;
+class MarketDataController;
+class PricingEngineTypeController;
+class PricingModelConfigController;
+class PricingModelProductController;
+class PricingModelProductParameterController;
+class DataLibrarianWindow;
 
 /**
- * @brief Transitional plugin wrapping non-admin, non-compute legacy controllers.
+ * @brief Market data plugin: market series, fixings, pricing model config,
+ *        currency market tiers, and the data librarian.
  *
- * Holds domain entity controllers not yet extracted into domain-specific plugins.
- * On login the controllers are created; on logout they are destroyed.  Domain
- * menus are built in code by create_menus() and inserted into the host menu bar.
- *
- * This class will be split into domain-specific plugins in Steps 5–8.
+ * Extracted from LegacyPlugin in Step 7 of the Qt plugin refactor.
+ * Owns the Market Data and Analytics menus.
  */
-class LegacyPlugin : public QObject, public IPlugin {
+class MktdataPlugin : public QObject, public IPlugin {
     Q_OBJECT
 
 public:
-    explicit LegacyPlugin(QObject* parent = nullptr);
-    ~LegacyPlugin() override;
+    explicit MktdataPlugin(QObject* parent = nullptr);
+    ~MktdataPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.legacy"); }
-    int load_order() const override { return 999; }
+    QString name() const override { return QStringLiteral("ores.qt.mktdata"); }
+    int load_order() const override { return 500; }
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
@@ -76,15 +74,16 @@ private:
 
     plugin_context ctx_;
 
-    // Singleton MDI sub-windows (nullptr when not open)
-    DetachableMdiSubWindow* portfolio_explorer_sub_window_{nullptr};
-    DetachableMdiSubWindow* org_explorer_sub_window_{nullptr};
+    // Singleton MDI sub-window for Data Librarian (nullptr when not open)
+    DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<PortfolioController>                   portfolioController_;
-    std::unique_ptr<BookController>                        bookController_;
-    std::unique_ptr<BookStatusController>                  bookStatusController_;
-    std::unique_ptr<TradeController>                       tradeController_;
+    std::unique_ptr<CurrencyMarketTierController>            currencyMarketTierController_;
+    std::unique_ptr<MarketDataController>                    marketDataController_;
+    std::unique_ptr<PricingEngineTypeController>             pricingEngineTypeController_;
+    std::unique_ptr<PricingModelConfigController>            pricingModelConfigController_;
+    std::unique_ptr<PricingModelProductController>           pricingModelProductController_;
+    std::unique_ptr<PricingModelProductParameterController>  pricingModelProductParameterController_;
 };
 
 }

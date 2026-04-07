@@ -57,6 +57,8 @@ target_link_libraries(${lib_target_name}
         ores.qt.admin.lib        # admin plugin: accounts, roles, tenants, settings, apps
         ores.qt.compute.lib      # compute plugin: jobs, queues, reports, dashboards
         ores.qt.refdata.lib      # refdata plugin: currencies, countries, datasets, conventions
+        ores.qt.party.lib        # party plugin: parties, counterparties, business units, org types
+        ores.qt.mktdata.lib      # mktdata plugin: market data, analytics, currency tiers, data librarian
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib

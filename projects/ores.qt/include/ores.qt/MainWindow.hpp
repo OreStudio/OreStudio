@@ -60,6 +60,7 @@ class AdminPlugin;
 class ComputePlugin;
 class RefdataPlugin;
 class PartyPlugin;
+class MktdataPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
@@ -197,6 +198,9 @@ private:
 
     /** @brief Party plugin: parties, counterparties, business units, and org types. */
     std::unique_ptr<PartyPlugin> partyPlugin_;
+
+    /** @brief Market data plugin: market series, fixings, analytics, currency tiers, data librarian. */
+    std::unique_ptr<MktdataPlugin> mktdataPlugin_;
 
     /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
     std::unique_ptr<LegacyPlugin> legacyPlugin_;

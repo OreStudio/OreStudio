@@ -28,17 +28,10 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
-#include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
-#include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
-#include "ores.qt/PricingEngineTypeController.hpp"
-#include "ores.qt/PricingModelConfigController.hpp"
-#include "ores.qt/PricingModelProductController.hpp"
-#include "ores.qt/PricingModelProductParameterController.hpp"
-#include "ores.qt/MarketDataController.hpp"
 
 namespace ores::qt {
 
@@ -82,42 +75,11 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(bookStatusController_.get());
 
-    currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(currencyMarketTierController_.get());
-
     tradeController_ = std::make_unique<TradeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(tradeController_.get());
 
-    pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingEngineTypeController_.get());
-
-    pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelConfigController_.get());
-
-    pricingModelProductController_ = std::make_unique<PricingModelProductController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelProductController_.get());
-
-    pricingModelProductParameterController_ = std::make_unique<PricingModelProductParameterController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelProductParameterController_.get());
-
-    marketDataController_ = std::make_unique<MarketDataController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
-    connect(marketDataController_.get(), &MarketDataController::statusMessage,
-            this, &LegacyPlugin::status_message);
-    connect(marketDataController_.get(), &MarketDataController::errorMessage,
-            this, &LegacyPlugin::status_message);
-    connect(marketDataController_.get(), &MarketDataController::detachableWindowCreated,
-            this, &LegacyPlugin::window_created);
-    connect(marketDataController_.get(), &MarketDataController::detachableWindowDestroyed,
-            this, &LegacyPlugin::window_destroyed);
 }
 
 // ---------------------------------------------------------------------------
@@ -143,49 +105,9 @@ QList<QMenu*> LegacyPlugin::create_menus() {
 
     // Auxiliary Data submenu
     auto* menuAux = menuData->addMenu(tr("A&uxiliary Data"));
-    auto* actCurrencyMarketTiers = menuAux->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
-    connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
-        if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
-    });
-    menuAux->addSeparator();
     auto* actBookStatuses = menuAux->addAction(ico(Icon::Flag), tr("Book &Statuses"));
     connect(actBookStatuses, &QAction::triggered, this, [this]() {
         if (bookStatusController_) bookStatusController_->showListWindow();
-    });
-
-    // Assets submenu (DataLibrarianWindow moves to mktdata in Step 7)
-    auto* menuAssets = menuData->addMenu(tr("&Assets"));
-    auto* actDataLibrarian = menuAssets->addAction(ico(Icon::Library), tr("Data &Librarian"));
-    connect(actDataLibrarian, &QAction::triggered, this, [this]() {
-        if (data_librarian_window_) {
-            ctx_.mdi_area->setActiveSubWindow(
-                qobject_cast<QMdiSubWindow*>(data_librarian_window_->parent()));
-            return;
-        }
-
-        auto* librarianWindow = new DataLibrarianWindow(
-            ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
-
-        auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
-        subWindow->setWidget(librarianWindow);
-        subWindow->setWindowTitle(tr("Data Librarian"));
-        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            Icon::Library, IconUtils::DefaultIconColor));
-        subWindow->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(librarianWindow, &DataLibrarianWindow::statusChanged,
-                this, [this](const QString& msg) { emit status_message(msg); });
-        connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
-                this, [this](const QString& msg) { emit status_message(msg); });
-
-        data_librarian_window_ = subWindow;
-        connect(subWindow, &QObject::destroyed, this, [this]() {
-            data_librarian_window_ = nullptr;
-        });
-
-        ctx_.mdi_area->addSubWindow(subWindow);
-        subWindow->resize(librarianWindow->sizeHint());
-        subWindow->show();
     });
 
     // ---- Trading ----------------------------------------------------
@@ -268,45 +190,7 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     connect(actTrades, &QAction::triggered, this, [this]() {
         if (tradeController_) tradeController_->showListWindow();
     });
-    // ---- Analytics --------------------------------------------------
-    auto* menuAnalytics = new QMenu(tr("&Analytics"));
-
-    auto* actPricingEngineTypes = menuAnalytics->addAction(
-        ico(Icon::Tag), tr("&Pricing Engine Types"));
-    connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
-        if (pricingEngineTypeController_) pricingEngineTypeController_->showListWindow();
-    });
-    menuAnalytics->addSeparator();
-    auto* actPricingModelConfigs = menuAnalytics->addAction(
-        ico(Icon::Chart), tr("Pricing &Model Configs"));
-    connect(actPricingModelConfigs, &QAction::triggered, this, [this]() {
-        if (pricingModelConfigController_) pricingModelConfigController_->showListWindow();
-    });
-    auto* actPricingModelProducts = menuAnalytics->addAction(
-        ico(Icon::Table), tr("Pricing Model &Products"));
-    connect(actPricingModelProducts, &QAction::triggered, this, [this]() {
-        if (pricingModelProductController_) pricingModelProductController_->showListWindow();
-    });
-    auto* actPricingModelProductParameters = menuAnalytics->addAction(
-        ico(Icon::Settings), tr("Pricing Model Product &Parameters"));
-    connect(actPricingModelProductParameters, &QAction::triggered, this, [this]() {
-        if (pricingModelProductParameterController_)
-            pricingModelProductParameterController_->showListWindow();
-    });
-
-    // ---- Market Data ------------------------------------------------
-    auto* menuMarketData = new QMenu(tr("&Market Data"));
-
-    auto* actMarketSeries = menuMarketData->addAction(ico(Icon::ChartMultiple), tr("Market &Series"));
-    connect(actMarketSeries, &QAction::triggered, this, [this]() {
-        if (marketDataController_) marketDataController_->showListWindow();
-    });
-    auto* actMarketFixings = menuMarketData->addAction(ico(Icon::Chart), tr("Market &Fixings"));
-    connect(actMarketFixings, &QAction::triggered, this, [this]() {
-        if (marketDataController_) marketDataController_->showFixingsWindow();
-    });
-
-    return {menuData, menuTrading, menuAnalytics, menuMarketData};
+    return {menuData, menuTrading};
 }
 
 // ---------------------------------------------------------------------------
@@ -321,18 +205,7 @@ void LegacyPlugin::on_logout() {
         org_explorer_sub_window_->close();
         org_explorer_sub_window_ = nullptr;
     }
-    if (data_librarian_window_) {
-        data_librarian_window_->close();
-        data_librarian_window_ = nullptr;
-    }
-
-    marketDataController_.reset();
-    pricingModelProductParameterController_.reset();
-    pricingModelProductController_.reset();
-    pricingModelConfigController_.reset();
-    pricingEngineTypeController_.reset();
     tradeController_.reset();
-    currencyMarketTierController_.reset();
     bookStatusController_.reset();
     bookController_.reset();
     portfolioController_.reset();

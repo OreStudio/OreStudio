@@ -45,9 +45,14 @@ set_target_properties(${lib_target_name} PROPERTIES
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR})
 
+# Export the ui/ directory path so consumers (e.g. ores.qt) can add it to their
+# AUTOUIC_SEARCH_PATHS without hard-coding the source layout.
+set(ORES_QT_API_UI_DIR "${ORES_QT_API_DIR}/ui" CACHE INTERNAL "ores.qt.api UI forms directory")
+
 target_include_directories(${lib_target_name} PUBLIC
-    ${ORES_QT_API_DIR}/include
-    # Expose AUTOUIC-generated ui_*.h headers to consumers.
+    ${ORES_QT_API_DIR}/include)
+# The autogen include dir (ui_*.h) is only needed internally; keep it PRIVATE.
+target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
 
 target_link_libraries(${lib_target_name}

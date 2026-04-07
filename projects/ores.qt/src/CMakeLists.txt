@@ -41,7 +41,7 @@ list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 add_library(${lib_target_name} STATIC ${lib_files} ${HEADERS} ${FORMS})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
-    AUTOUIC_SEARCH_PATHS "${ORES_QT_DIR}/ui;${CMAKE_SOURCE_DIR}/projects/ores.qt.api/ui")
+    AUTOUIC_SEARCH_PATHS "${ORES_QT_DIR}/ui;${ORES_QT_API_UI_DIR}")
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 

@@ -212,30 +212,64 @@ host and plugins: ~ClientManager~, caches, the event bus adapter.
 Every public symbol in =ores.qt.api.so= must carry an export annotation so the
 Windows linker can find it when plugin .dlls link back to the framework.
 
+The project already depends on Boost, which provides cross-platform visibility
+macros in =boost/config.hpp=:
+
+| Macro                  | MSVC                      | GCC / Clang                          |
+|------------------------+---------------------------+--------------------------------------|
+| ~BOOST_SYMBOL_EXPORT~  | ~__declspec(dllexport)~   | ~__attribute__((visibility("default")))~ |
+| ~BOOST_SYMBOL_IMPORT~  | ~__declspec(dllimport)~   | ~__attribute__((visibility("default")))~ |
+
+Usage pattern — identical to how Boost's own libraries define their export
+macros (e.g. ~BOOST_FILESYSTEM_DECL~):
+
 #+begin_src cpp
 // ores.qt.api/include/ores.qt.api/export.hpp
 #pragma once
-#include <QtCore/QtGlobal>
+#include <boost/config.hpp>
 
 #ifdef ORES_QT_API_LIBRARY
-#  define ORES_QT_API Q_DECL_EXPORT
+#  define ORES_QT_API BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_QT_API Q_DECL_IMPORT
+#  define ORES_QT_API BOOST_SYMBOL_IMPORT
 #endif
 #+end_src
 
+Apply to every public class and free function that crosses the .so/.dll
+boundary:
+
+#+begin_src cpp
+class ORES_QT_API ClientManager : public QObject { ... };
+class ORES_QT_API EntityController : public QObject { ... };
+class ORES_QT_API PluginRegistry : public QObject { ... };
+struct ORES_QT_API plugin_context { ... };
+#+end_src
+
+Inline functions, templates, and private implementation classes do not need the
+annotation.
+
 The =ores.qt.api= CMakeLists.txt defines =ORES_QT_API_LIBRARY= privately when
-building the library and does not define it when consumers include the headers:
+building the shared library and does not define it for consumers:
 
 #+begin_src cmake
 add_library(ores.qt.api SHARED ...)
 target_compile_definitions(ores.qt.api PRIVATE ORES_QT_API_LIBRARY)
 #+end_src
 
-Each plugin similarly defines its own export macro (=ORES_QT_REFDATA_LIBRARY=,
-etc.) for its own exported symbols.  The plugin classes themselves only need to
-export their factory entry point, which Qt handles automatically via
-~Q_PLUGIN_METADATA~.
+On Linux / macOS, add =-fvisibility=hidden= to the compile options for all
+shared library targets so that unexported symbols are hidden by default — this
+matches Windows linker behaviour and keeps the exported surface minimal:
+
+#+begin_src cmake
+target_compile_options(ores.qt.api PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -fvisibility=hidden -fvisibility-inlines-hidden>)
+#+end_src
+
+Each plugin defines its own export macro in the same way
+(=ORES_QT_REFDATA_LIBRARY=, etc.).  Plugin classes themselves only need to
+export the class that implements ~IPlugin~ — the Qt plugin factory entry point
+is handled automatically by ~Q_PLUGIN_METADATA~.
 
 ** ~plugin_context~
 

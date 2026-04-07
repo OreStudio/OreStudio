@@ -129,27 +129,45 @@ For =ores.COMPONENT.service= (if needed):
 
 ** Step 3: Run the code generator
 
-From the =projects/ores.codegen= directory, run once per part:
+From the =projects/ores.codegen= directory, use the matching profile for each
+part:
 
 #+begin_src bash
-./run_generator.sh models/COMPONENT/ores_COMPONENT_api_component.json --profile component
-./run_generator.sh models/COMPONENT/ores_COMPONENT_core_component.json --profile component
-./run_generator.sh models/COMPONENT/ores_COMPONENT_service_component.json --profile component
+./run_generator.sh models/COMPONENT/ores_COMPONENT_api_component.json --profile component-api
+./run_generator.sh models/COMPONENT/ores_COMPONENT_core_component.json --profile component-core
+./run_generator.sh models/COMPONENT/ores_COMPONENT_service_component.json --profile component-service
 #+end_src
 
-Each run generates the complete project scaffold under =projects/ores.COMPONENT.PART/=:
+Each profile generates files tailored to its role. The =.api= and =.core=
+profiles both produce 9 files; =component-service= produces 18:
 
-| Generated file                                           | Description                        |
-|----------------------------------------------------------+------------------------------------|
-| =CMakeLists.txt=                                         | Root CMake file with subdirectories |
-| =src/CMakeLists.txt=                                     | Library build configuration        |
-| =tests/CMakeLists.txt=                                   | Test binary configuration          |
-| =modeling/CMakeLists.txt=                                | PlantUML diagram target            |
-| =include/ores.COMPONENT/ores.COMPONENT.hpp=              | Namespace documentation header     |
-| =include/ores.COMPONENT/domain/stub.hpp=                 | Stub domain type                   |
-| =src/domain/stub.cpp=                                    | Stub implementation                |
-| =tests/main.cpp=                                         | Catch2 test main with listeners    |
-| =tests/stub_tests.cpp=                                   | Stub test case                     |
+| Generated file                                                  | api | core | service |
+|-----------------------------------------------------------------+-----+------+---------|
+| =CMakeLists.txt=                                                | ✓   | ✓    | ✓       |
+| =src/CMakeLists.txt= (deps vary per profile)                    | ✓   | ✓    | ✓       |
+| =tests/CMakeLists.txt=                                          | ✓   | ✓    | ✓       |
+| =modeling/CMakeLists.txt=                                       | ✓   | ✓    | ✓       |
+| =include/ores.COMPONENT.PART/ores.COMPONENT.PART.hpp=           | ✓   | ✓    | ✓       |
+| =include/ores.COMPONENT.PART/domain/stub.hpp=                   | ✓   | ✓    |         |
+| =src/domain/stub.cpp=                                           | ✓   | ✓    |         |
+| =tests/main.cpp=                                                | ✓   | ✓    | ✓       |
+| =tests/stub_tests.cpp=                                          | ✓   | ✓    | ✓       |
+| =include/ores.COMPONENT.service/app/application*.hpp= (×3)      |     |      | ✓       |
+| =include/ores.COMPONENT.service/config/*.hpp= (×3)              |     |      | ✓       |
+| =src/app/application.cpp=, =src/app/host.cpp=                   |     |      | ✓       |
+| =src/config/options.cpp=, =src/config/parser.cpp=               |     |      | ✓       |
+| =src/main.cpp=                                                   |     |      | ✓       |
+
+The generated =src/CMakeLists.txt= deps per profile:
+
+| Profile             | PUBLIC deps                                      | PRIVATE deps                                               |
+|---------------------+--------------------------------------------------+------------------------------------------------------------|
+| =component-api=     | =ores.eventing.lib=, =ores.platform.lib=         | =ores.utility.lib=, =faker-cxx=, =libfort=                 |
+| =component-core=    | =ores.COMPONENT.api.lib=, =ores.nats.lib=        | =ores.service.lib=, =ores.platform.lib=, =ores.utility.lib=, =ores.security.lib=, =faker-cxx=, =libfort= |
+| =component-service= | =ores.service.lib=, =ores.security.lib=, =ores.COMPONENT.core.lib=, =ores.eventing.lib=, =ores.nats.lib=, =ores.database.lib=, =ores.utility.lib=, =ores.telemetry.lib= | |
+
+After generation, adjust the =target_link_libraries= in =src/CMakeLists.txt= to
+match the actual dependencies of your component.
 
 ** Step 4: Register in =projects/CMakeLists.txt=
 

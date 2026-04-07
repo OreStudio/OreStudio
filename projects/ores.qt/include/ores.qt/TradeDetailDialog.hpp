@@ -29,9 +29,6 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -95,8 +92,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onCompositeTradeTypeChanged(const QString& text);
-    void onScriptTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -109,25 +104,6 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
-
-    // Composite instrument support
-    void loadCompositeInstrument();
-    void populateCompositeInstrument();
-    void updateCompositeInstrumentFromUi();
-    void updateCompositeTabVisibility();
-    void setCompositeReadOnly(bool readOnly);
-    void saveCompositeThenTrade(const trading::domain::trade& trade,
-                                const trading::domain::composite_instrument& instrument,
-                                const std::vector<trading::domain::composite_leg>& legs);
-
-    // Scripted instrument support
-    void loadScriptedInstrument();
-    void populateScriptedInstrument();
-    void updateScriptedInstrumentFromUi();
-    void updateScriptedTabVisibility();
-    void setScriptedReadOnly(bool readOnly);
-    void saveScriptedThenTrade(const trading::domain::trade& trade,
-                               const trading::domain::scripted_instrument& instrument);
 
     void saveTrade(const trading::domain::trade& trade);
 
@@ -146,11 +122,6 @@ private:
     InstrumentFormRegistry instrumentFormRegistry_;
     IInstrumentForm* activeForm_ = nullptr;
 
-    // Legacy per-family state for the two instrument families that have
-    // not yet been migrated to IInstrumentForm subclasses.
-    trading::domain::composite_instrument compositeInstrument_;
-    std::vector<trading::domain::composite_leg> compositeLegs_;
-    trading::domain::scripted_instrument scriptedInstrument_;
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};
 };

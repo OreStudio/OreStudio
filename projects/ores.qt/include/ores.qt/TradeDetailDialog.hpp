@@ -29,8 +29,6 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/instrument.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
@@ -101,7 +99,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onSwapTradeTypeChanged(const QString& text);
     void onBondTradeTypeChanged(const QString& text);
     void onCreditTradeTypeChanged(const QString& text);
     void onEquityTradeTypeChanged(const QString& text);
@@ -120,16 +117,6 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
-
-    // Swap / Rates instrument support
-    void loadSwapInstrument();
-    void populateSwapInstrument();
-    void updateSwapInstrumentFromUi();
-    void updateSwapTabVisibility();
-    void setSwapReadOnly(bool readOnly);
-    void saveSwapThenTrade(const trading::domain::trade& trade,
-                           const trading::domain::instrument& instrument,
-                           const std::vector<trading::domain::swap_leg>& legs);
 
     // Bond instrument support
     void loadBondInstrument();
@@ -203,10 +190,8 @@ private:
     InstrumentFormRegistry instrumentFormRegistry_;
     IInstrumentForm* activeForm_ = nullptr;
 
-    // Legacy per-family state for the seven instrument families that have
+    // Legacy per-family state for the six instrument families that have
     // not yet been migrated to IInstrumentForm subclasses.
-    trading::domain::instrument swapInstrument_;
-    std::vector<trading::domain::swap_leg> swapLegs_;
     trading::domain::bond_instrument bondInstrument_;
     trading::domain::credit_instrument creditInstrument_;
     trading::domain::equity_instrument equityInstrument_;

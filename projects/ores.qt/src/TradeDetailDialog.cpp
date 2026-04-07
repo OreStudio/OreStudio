@@ -50,15 +50,6 @@ using PT = ores::trading::domain::product_type;
 // Trade type detection helpers
 // ---------------------------------------------------------------------------
 
-static bool isSwapRatesExtensionType(const QString& tradeTypeCode) {
-    return tradeTypeCode == "ForwardRateAgreement" ||
-           tradeTypeCode == "BalanceGuaranteedSwap" ||
-           tradeTypeCode == "KnockOutSwap" ||
-           tradeTypeCode == "CallableSwap" ||
-           tradeTypeCode == "RiskParticipationAgreement" ||
-           tradeTypeCode == "InflationSwap";
-}
-
 static bool isBondExtensionType(const QString& tradeTypeCode) {
     return tradeTypeCode == "BondFuture" ||
            tradeTypeCode == "BondOption" ||
@@ -166,10 +157,6 @@ void TradeDetailDialog::setupUi() {
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapRatesTab), false);
-    ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->bondEconomicsTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->bondOptionalTab), false);
@@ -221,37 +208,6 @@ void TradeDetailDialog::setupConnections() {
             &TradeDetailDialog::onFieldChanged);
     connect(ui_->executionTimestampEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFieldChanged);
-
-    // Swap instrument fields
-    connect(ui_->swapTradeTypeCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onSwapTradeTypeChanged);
-    connect(ui_->swapCurrencyEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapStartDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapMaturityDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapDescriptionEdit, &QPlainTextEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapFraFixingDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapFraSettlementDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapRpaCounterpartyEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapInflationIndexCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapCallableDatesJsonEdit, &QPlainTextEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapNotionalSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapLockoutDaysSpinBox,
-            QOverload<int>::of(&QSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->swapBaseCpiSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
 
     // Bond instrument fields
     connect(ui_->bondTradeTypeCodeEdit, &QLineEdit::textChanged, this,
@@ -680,9 +636,7 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         return;
     }
 
-    if (trade_.product_type == PT::swap && trade_.instrument_id.has_value())
-        loadSwapInstrument();
-    else if (trade_.product_type == PT::bond && trade_.instrument_id.has_value())
+    if (trade_.product_type == PT::bond && trade_.instrument_id.has_value())
         loadBondInstrument();
     else if (trade_.product_type == PT::credit && trade_.instrument_id.has_value())
         loadCreditInstrument();
@@ -710,10 +664,6 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     // creation is enabled in Phase 6 once the registry covers all families).
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->instrumentTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapRatesTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->bondEconomicsTab), false);
     ui_->tabWidget->setTabVisible(
@@ -765,7 +715,6 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     if (activeForm_) activeForm_->setReadOnly(readOnly);
-    setSwapReadOnly(readOnly);
     setBondReadOnly(readOnly);
     setCreditReadOnly(readOnly);
     setEquityReadOnly(readOnly);
@@ -832,240 +781,6 @@ void TradeDetailDialog::updateTradeFromUi() {
         ui_->executionTimestampEdit->text().trimmed().toStdString();
     trade_.modified_by = username_;
     trade_.performed_by = username_;
-}
-
-// ---------------------------------------------------------------------------
-// Swap / Rates instrument support
-// ---------------------------------------------------------------------------
-
-void TradeDetailDialog::loadSwapInstrument() {
-    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
-
-    const auto family = PT::swap;
-    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
-
-    struct SwapResult {
-        bool success;
-        std::string message;
-        trading::domain::instrument instrument;
-        std::vector<trading::domain::swap_leg> legs;
-    };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<SwapResult>(self);
-    connect(watcher, &QFutureWatcher<SwapResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load swap instrument: " << result.message;
-            return;
-        }
-
-        self->swapInstrument_ = std::move(result.instrument);
-        self->swapLegs_ = std::move(result.legs);
-        self->instrumentLoaded_ = true;
-        self->populateSwapInstrument();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> SwapResult {
-        if (!cm)
-            return {false, "Dialog closed", {}, {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = family;
-        req.instrument_id = id;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}, {}};
-        if (!r->success)
-            return {false, r->message, {}, {}};
-
-        const auto* sw =
-            std::get_if<trading::messaging::swap_export_result>(&r->instrument);
-        if (!sw)
-            return {false, "Unexpected instrument type in response", {}, {}};
-
-        return {true, {}, sw->instrument, sw->legs};
-    }));
-}
-
-void TradeDetailDialog::populateSwapInstrument() {
-    const auto block = [this](bool b) {
-        ui_->swapTradeTypeCodeEdit->blockSignals(b);
-        ui_->swapNotionalSpinBox->blockSignals(b);
-        ui_->swapCurrencyEdit->blockSignals(b);
-        ui_->swapStartDateEdit->blockSignals(b);
-        ui_->swapMaturityDateEdit->blockSignals(b);
-        ui_->swapDescriptionEdit->blockSignals(b);
-        ui_->swapFraFixingDateEdit->blockSignals(b);
-        ui_->swapFraSettlementDateEdit->blockSignals(b);
-        ui_->swapLockoutDaysSpinBox->blockSignals(b);
-        ui_->swapCallableDatesJsonEdit->blockSignals(b);
-        ui_->swapRpaCounterpartyEdit->blockSignals(b);
-        ui_->swapInflationIndexCodeEdit->blockSignals(b);
-        ui_->swapBaseCpiSpinBox->blockSignals(b);
-    };
-
-    block(true);
-    ui_->swapTradeTypeCodeEdit->setText(
-        QString::fromStdString(swapInstrument_.trade_type_code));
-    ui_->swapNotionalSpinBox->setValue(swapInstrument_.notional);
-    ui_->swapCurrencyEdit->setText(
-        QString::fromStdString(swapInstrument_.currency));
-    ui_->swapStartDateEdit->setText(
-        QString::fromStdString(swapInstrument_.start_date));
-    ui_->swapMaturityDateEdit->setText(
-        QString::fromStdString(swapInstrument_.maturity_date));
-    ui_->swapDescriptionEdit->setPlainText(
-        QString::fromStdString(swapInstrument_.description));
-    ui_->swapFraFixingDateEdit->setText(
-        QString::fromStdString(swapInstrument_.fra_fixing_date));
-    ui_->swapFraSettlementDateEdit->setText(
-        QString::fromStdString(swapInstrument_.fra_settlement_date));
-    ui_->swapLockoutDaysSpinBox->setValue(
-        swapInstrument_.lockout_days.value_or(0));
-    ui_->swapCallableDatesJsonEdit->setPlainText(
-        QString::fromStdString(swapInstrument_.callable_dates_json));
-    ui_->swapRpaCounterpartyEdit->setText(
-        QString::fromStdString(swapInstrument_.rpa_counterparty));
-    ui_->swapInflationIndexCodeEdit->setText(
-        QString::fromStdString(swapInstrument_.inflation_index_code));
-    ui_->swapBaseCpiSpinBox->setValue(
-        swapInstrument_.base_cpi.value_or(0.0));
-    block(false);
-
-    ui_->instrumentProvenanceWidget->populate(
-        swapInstrument_.version,
-        swapInstrument_.modified_by,
-        swapInstrument_.performed_by,
-        swapInstrument_.recorded_at,
-        swapInstrument_.change_reason_code,
-        swapInstrument_.change_commentary);
-    ui_->instrumentProvenanceGroup->setVisible(true);
-
-    instrumentHasChanges_ = false;
-    updateSwapTabVisibility();
-    updateSaveButtonState();
-}
-
-void TradeDetailDialog::updateSwapInstrumentFromUi() {
-    swapInstrument_.trade_type_code =
-        ui_->swapTradeTypeCodeEdit->text().trimmed().toStdString();
-    swapInstrument_.notional = ui_->swapNotionalSpinBox->value();
-    swapInstrument_.currency =
-        ui_->swapCurrencyEdit->text().trimmed().toStdString();
-    swapInstrument_.start_date =
-        ui_->swapStartDateEdit->text().trimmed().toStdString();
-    swapInstrument_.maturity_date =
-        ui_->swapMaturityDateEdit->text().trimmed().toStdString();
-    swapInstrument_.description =
-        ui_->swapDescriptionEdit->toPlainText().trimmed().toStdString();
-    swapInstrument_.fra_fixing_date =
-        ui_->swapFraFixingDateEdit->text().trimmed().toStdString();
-    swapInstrument_.fra_settlement_date =
-        ui_->swapFraSettlementDateEdit->text().trimmed().toStdString();
-    {
-        const int ld = ui_->swapLockoutDaysSpinBox->value();
-        swapInstrument_.lockout_days = (ld > 0)
-            ? std::optional<int>(ld) : std::nullopt;
-    }
-    swapInstrument_.callable_dates_json =
-        ui_->swapCallableDatesJsonEdit->toPlainText().trimmed().toStdString();
-    swapInstrument_.rpa_counterparty =
-        ui_->swapRpaCounterpartyEdit->text().trimmed().toStdString();
-    swapInstrument_.inflation_index_code =
-        ui_->swapInflationIndexCodeEdit->text().trimmed().toStdString();
-    {
-        const double cpi = ui_->swapBaseCpiSpinBox->value();
-        swapInstrument_.base_cpi = (cpi > 0.0)
-            ? std::optional<double>(cpi) : std::nullopt;
-    }
-    swapInstrument_.modified_by = username_;
-    swapInstrument_.performed_by = username_;
-}
-
-void TradeDetailDialog::updateSwapTabVisibility() {
-    const QString tradeType = ui_->swapTradeTypeCodeEdit->text().trimmed();
-    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
-    const bool showRates = instrumentLoaded_ &&
-        (isSwapRatesExtensionType(tradeType) ||
-         !swapInstrument_.fra_fixing_date.empty() ||
-         !swapInstrument_.fra_settlement_date.empty() ||
-         swapInstrument_.lockout_days.has_value() ||
-         !swapInstrument_.callable_dates_json.empty() ||
-         !swapInstrument_.rpa_counterparty.empty() ||
-         !swapInstrument_.inflation_index_code.empty() ||
-         swapInstrument_.base_cpi.has_value());
-
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapCoreTab), showCore);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->swapRatesTab), showRates);
-}
-
-void TradeDetailDialog::setSwapReadOnly(bool readOnly) {
-    ui_->swapTradeTypeCodeEdit->setReadOnly(readOnly);
-    ui_->swapNotionalSpinBox->setReadOnly(readOnly);
-    ui_->swapCurrencyEdit->setReadOnly(readOnly);
-    ui_->swapStartDateEdit->setReadOnly(readOnly);
-    ui_->swapMaturityDateEdit->setReadOnly(readOnly);
-    ui_->swapDescriptionEdit->setReadOnly(readOnly);
-    ui_->swapFraFixingDateEdit->setReadOnly(readOnly);
-    ui_->swapFraSettlementDateEdit->setReadOnly(readOnly);
-    ui_->swapLockoutDaysSpinBox->setReadOnly(readOnly);
-    ui_->swapCallableDatesJsonEdit->setReadOnly(readOnly);
-    ui_->swapRpaCounterpartyEdit->setReadOnly(readOnly);
-    ui_->swapInflationIndexCodeEdit->setReadOnly(readOnly);
-    ui_->swapBaseCpiSpinBox->setReadOnly(readOnly);
-}
-
-void TradeDetailDialog::saveSwapThenTrade(
-    const trading::domain::trade& trade,
-    const trading::domain::instrument& instrument,
-    const std::vector<trading::domain::swap_leg>& legs) {
-
-    struct SwapSaveResult { bool success; std::string message; };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<SwapSaveResult>(self);
-    connect(watcher, &QFutureWatcher<SwapSaveResult>::finished,
-            self, [self, watcher, trade]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Swap instrument save failed: "
-                                       << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed",
-                tr("Failed to save swap instrument:\n%1").arg(errorMsg));
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Swap instrument saved; saving trade";
-        self->instrumentHasChanges_ = false;
-        self->saveTrade(trade);
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument, legs]() -> SwapSaveResult {
-        if (!cm)
-            return {false, "Dialog closed"};
-        trading::messaging::save_instrument_request req;
-        req.data = instrument;
-        req.legs = legs;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
-        return {r->success, r->message};
-    }));
 }
 
 // ---------------------------------------------------------------------------
@@ -1622,14 +1337,6 @@ void TradeDetailDialog::onInstrumentFieldChanged() {
     updateSaveButtonState();
 }
 
-void TradeDetailDialog::onSwapTradeTypeChanged(const QString&) {
-    if (instrumentLoaded_) {
-        instrumentHasChanges_ = true;
-        updateSwapTabVisibility();
-        updateSaveButtonState();
-    }
-}
-
 void TradeDetailDialog::onBondTradeTypeChanged(const QString&) {
     if (instrumentLoaded_) {
         instrumentHasChanges_ = true;
@@ -1712,8 +1419,6 @@ void TradeDetailDialog::onSaveClicked() {
         if (activeForm_ &&
             instrumentFormRegistry_.contains(trade_.product_type)) {
             activeForm_->writeUiToInstrument();
-        } else if (trade_.product_type == PT::swap) {
-            updateSwapInstrumentFromUi();
         } else if (trade_.product_type == PT::bond) {
             updateBondInstrumentFromUi();
         } else if (trade_.product_type == PT::credit) {
@@ -1746,9 +1451,6 @@ void TradeDetailDialog::onSaveClicked() {
             instrumentFormRegistry_.contains(trade_.product_type)) {
             activeForm_->setChangeReason(
                 crSel->reason_code, crSel->commentary);
-        } else if (trade_.product_type == PT::swap) {
-            swapInstrument_.change_reason_code = crSel->reason_code;
-            swapInstrument_.change_commentary  = crSel->commentary;
         } else if (trade_.product_type == PT::bond) {
             bondInstrument_.change_reason_code = crSel->reason_code;
             bondInstrument_.change_commentary  = crSel->commentary;
@@ -1795,11 +1497,7 @@ void TradeDetailDialog::onSaveClicked() {
                 });
             return;
         }
-        if (trade_.product_type == PT::swap) {
-            BOOST_LOG_SEV(lg(), info) << "Saving swap instrument then trade: "
-                                      << trade_.external_id;
-            saveSwapThenTrade(trade_, swapInstrument_, swapLegs_);
-        } else if (trade_.product_type == PT::bond) {
+        if (trade_.product_type == PT::bond) {
             BOOST_LOG_SEV(lg(), info) << "Saving bond instrument then trade: "
                                       << trade_.external_id;
             saveBondThenTrade(trade_, bondInstrument_);

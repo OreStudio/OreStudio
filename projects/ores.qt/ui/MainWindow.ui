@@ -47,16 +47,6 @@
     <property name="title">
      <string>&amp;System</string>
     </property>
-    <widget class="QMenu" name="menuIdentity">
-     <property name="title">
-      <string>&amp;Identity</string>
-     </property>
-     <addaction name="ActionAccounts"/>
-     <addaction name="ActionRoles"/>
-     <addaction name="ActionTenants"/>
-     <addaction name="separator"/>
-     <addaction name="ActionOnboardTenant"/>
-    </widget>
     <widget class="QMenu" name="menuTelemetry">
      <property name="title">
       <string>&amp;Telemetry</string>
@@ -79,20 +69,12 @@
      <addaction name="separator"/>
      <addaction name="ActionTelemetrySettings"/>
     </widget>
-    <widget class="QMenu" name="menuConfiguration">
-     <property name="title">
-      <string>&amp;Configuration</string>
-     </property>
-     <addaction name="ActionFeatureFlags"/>
-    </widget>
     <widget class="QMenu" name="menuMessageQueue">
      <property name="title">
       <string>&amp;Message Queue</string>
      </property>
      <addaction name="ActionQueueMonitor"/>
     </widget>
-    <addaction name="menuIdentity"/>
-    <addaction name="menuConfiguration"/>
     <addaction name="menuMessageQueue"/>
     <addaction name="menuTelemetry"/>
    </widget>
@@ -176,38 +158,6 @@
     <string>Detach all MDI windows to floating windows</string>
    </property>
   </action>
-  <action name="ActionAccounts">
-   <property name="text">
-    <string>&amp;Accounts</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage user accounts (Admin only)</string>
-   </property>
-  </action>
-  <action name="ActionRoles">
-   <property name="text">
-    <string>&amp;Roles</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage roles and permissions</string>
-   </property>
-  </action>
-  <action name="ActionTenants">
-   <property name="text">
-    <string>&amp;Tenants</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage tenants (Admin only)</string>
-   </property>
-  </action>
-  <action name="ActionFeatureFlags">
-   <property name="text">
-    <string>&amp;Feature Flags</string>
-   </property>
-   <property name="toolTip">
-    <string>Manage feature flags</string>
-   </property>
-  </action>
   <action name="ActionRecordSession">
    <property name="checkable">
     <bool>true</bool>
@@ -281,14 +231,6 @@
    </property>
    <property name="toolTip">
     <string>Manage saved server connections</string>
-   </property>
-  </action>
-  <action name="ActionOnboardTenant">
-   <property name="text">
-    <string>&amp;Onboard Tenant...</string>
-   </property>
-   <property name="toolTip">
-    <string>Provision a new tenant</string>
    </property>
   </action>
   <action name="ActionQueueMonitor">

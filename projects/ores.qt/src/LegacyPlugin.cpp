@@ -31,10 +31,6 @@
 #include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/CountryController.hpp"
-#include "ores.qt/AccountController.hpp"
-#include "ores.qt/RoleController.hpp"
-#include "ores.qt/TenantController.hpp"
-#include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
@@ -76,8 +72,6 @@
 #include "ores.qt/PricingModelProductController.hpp"
 #include "ores.qt/PricingModelProductParameterController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
-#include "ores.qt/AppController.hpp"
-#include "ores.qt/AppVersionController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
@@ -125,27 +119,6 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(countryController_.get());
-
-    accountController_ = std::make_unique<AccountController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, ctx_.badge_cache, this);
-    connect_controller_signals(accountController_.get());
-
-    roleController_ = std::make_unique<RoleController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(roleController_.get());
-
-    tenantController_ = std::make_unique<TenantController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(tenantController_.get());
-    connect(tenantController_.get(), &TenantController::onboardRequested,
-            this, &LegacyPlugin::onboard_requested);
-
-    systemSettingController_ = std::make_unique<SystemSettingController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(systemSettingController_.get());
 
     changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
@@ -357,18 +330,6 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
         ctx_.change_reason_cache, this);
     connect_controller_signals(jobDefinitionController_.get());
-
-    appController_ = std::make_unique<AppController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(appController_.get());
-
-    appVersionController_ = std::make_unique<AppVersionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    if (!ctx_.http_base_url.empty())
-        appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect_controller_signals(appVersionController_.get());
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
@@ -815,14 +776,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
         if (computeConsoleController_) computeConsoleController_->showConsole();
     });
     menuCompute->addSeparator();
-    auto* actComputeApps = menuCompute->addAction(ico(Icon::TasksApp), tr("&Apps"));
-    connect(actComputeApps, &QAction::triggered, this, [this]() {
-        if (appController_) appController_->showListWindow();
-    });
-    auto* actComputeAppVersions = menuCompute->addAction(ico(Icon::Code), tr("App &Versions"));
-    connect(actComputeAppVersions, &QAction::triggered, this, [this]() {
-        if (appVersionController_) appVersionController_->showListWindow();
-    });
 
     // ---- Reporting --------------------------------------------------
     auto* menuReporting = new QMenu(tr("&Reporting"));
@@ -881,8 +834,6 @@ void LegacyPlugin::on_logout() {
     serviceDashboardController_.reset();
     computeConsoleController_.reset();
     computeDashboardController_.reset();
-    appVersionController_.reset();
-    appController_.reset();
     jobDefinitionController_.reset();
     pricingModelProductParameterController_.reset();
     pricingModelProductController_.reset();
@@ -924,10 +875,6 @@ void LegacyPlugin::on_logout() {
     originDimensionController_.reset();
     changeReasonController_.reset();
     changeReasonCategoryController_.reset();
-    systemSettingController_.reset();
-    tenantController_.reset();
-    roleController_.reset();
-    accountController_.reset();
     countryController_.reset();
     currencyController_.reset();
 
@@ -937,22 +884,6 @@ void LegacyPlugin::on_logout() {
 // ---------------------------------------------------------------------------
 // Public show methods — called by the host to drive System menu items
 // ---------------------------------------------------------------------------
-void LegacyPlugin::show_accounts() {
-    if (accountController_) accountController_->showListWindow();
-}
-
-void LegacyPlugin::show_roles() {
-    if (roleController_) roleController_->showListWindow();
-}
-
-void LegacyPlugin::show_tenants() {
-    if (tenantController_) tenantController_->showListWindow();
-}
-
-void LegacyPlugin::show_feature_flags() {
-    if (systemSettingController_) systemSettingController_->showListWindow();
-}
-
 void LegacyPlugin::show_queue_monitor() {
     if (queueMonitorController_) queueMonitorController_->showListWindow();
 }

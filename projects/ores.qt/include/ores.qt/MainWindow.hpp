@@ -56,13 +56,14 @@ class ImageCache;
 class ChangeReasonCache;
 class BadgeCache;
 class LegacyPlugin;
+class AdminPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
  *
  * Owns shared infrastructure (ClientManager, caches, event bus) and drives the
- * plugin lifecycle.  Domain entity management is delegated to LegacyPlugin
- * (and future domain-specific plugins) via the IPlugin interface.
+ * plugin lifecycle.  Domain entity management is delegated to AdminPlugin,
+ * LegacyPlugin, and future domain-specific plugins via the IPlugin interface.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -138,7 +139,6 @@ private:
     void showSignUpDialog(const QString& host, int port);
     void showSystemProvisionerWizard(
         const QString& username = {}, const QString& password = {});
-    void showTenantOnboardingWizard();
     void showTenantProvisioningWizard();
     void showPartyProvisioningWizard();
 
@@ -183,7 +183,10 @@ private:
     QIcon recordOffIcon_;
     QIcon recordOnIcon_;
 
-    /** @brief The transitional legacy plugin owning all domain entity controllers. */
+    /** @brief Admin plugin: accounts, roles, tenants, settings, badges, apps. */
+    std::unique_ptr<AdminPlugin> adminPlugin_;
+
+    /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
     std::unique_ptr<LegacyPlugin> legacyPlugin_;
 
     /** @brief Menus inserted into the menu bar by plugins; removed on logout. */

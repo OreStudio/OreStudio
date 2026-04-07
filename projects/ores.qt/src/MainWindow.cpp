@@ -43,12 +43,12 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/SystemProvisionerWizard.hpp"
-#include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/TenantProvisioningWizard.hpp"
 #include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
+#include "ores.qt/AdminPlugin.hpp"
 #include "ores.qt/LegacyPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -164,10 +164,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
     ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
-    ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
-    ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
-    ui_->ActionTenants->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingSkyscraper, IconUtils::DefaultIconColor));
-    ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionQueueMonitor->setIcon(IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
@@ -411,6 +407,15 @@ MainWindow::MainWindow(QWidget* parent) :
         QMessageBox::warning(this, tr("Image Loading Error"), message);
     });
 
+    // Create admin plugin — controllers are instantiated in on_login()
+    adminPlugin_ = std::make_unique<AdminPlugin>(this);
+    connect(adminPlugin_.get(), &AdminPlugin::status_message,
+            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
+    connect(adminPlugin_.get(), &AdminPlugin::window_created,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(adminPlugin_.get(), &AdminPlugin::window_destroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
     // Create legacy plugin — controllers are instantiated in on_login()
     legacyPlugin_ = std::make_unique<LegacyPlugin>(this);
     connect(legacyPlugin_.get(), &LegacyPlugin::status_message,
@@ -419,10 +424,8 @@ MainWindow::MainWindow(QWidget* parent) :
             this, &MainWindow::onDetachableWindowCreated);
     connect(legacyPlugin_.get(), &LegacyPlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
-    connect(legacyPlugin_.get(), &LegacyPlugin::onboard_requested,
-            this, &MainWindow::showTenantOnboardingWizard);
 
-    // (Domain action connections wired by LegacyPlugin::create_menus() after login)
+    // (Domain action connections wired by plugin create_menus() after login)
 
     // Initially disable data-related actions until logged in
     updateMenuState();
@@ -642,11 +645,6 @@ void MainWindow::updateMenuState() {
 
     // System menu enabled when logged in
     ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
-    ui_->ActionAccounts->setEnabled(isLoggedIn);
-    ui_->ActionRoles->setEnabled(isLoggedIn);
-    ui_->ActionTenants->setEnabled(isLoggedIn);
-    ui_->ActionOnboardTenant->setEnabled(isLoggedIn);
-    ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
     ui_->ActionQueueMonitor->setEnabled(isLoggedIn);
 
     // File menu items requiring authentication
@@ -682,17 +680,19 @@ void MainWindow::onDisconnectTriggered() {
 }
 
 void MainWindow::performDisconnectCleanup() {
-    if (legacyPlugin_) {
+    if (legacyPlugin_)
         legacyPlugin_->on_logout();
-        for (auto* menu : plugin_menus_) {
-            menuBar()->removeAction(menu->menuAction());
-            delete menu;
-        }
-        plugin_menus_.clear();
+    if (adminPlugin_)
+        adminPlugin_->on_logout();
+
+    for (auto* menu : plugin_menus_) {
+        menuBar()->removeAction(menu->menuAction());
+        delete menu;
     }
-    if (clientManager_) {
+    plugin_menus_.clear();
+
+    if (clientManager_)
         clientManager_->disconnect();
-    }
 }
 
 bool MainWindow::initializeConnectionManager() {
@@ -1476,27 +1476,22 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.username            = username;
     ctx.http_base_url       = httpBaseUrl_;
 
+    // Drive plugin lifecycle in load_order sequence
+    adminPlugin_->on_login(ctx);
     legacyPlugin_->on_login(ctx);
 
-    // Insert domain menus before Help
-    auto menus = legacyPlugin_->create_menus();
+    // Insert domain menus from all plugins before Help
     auto* helpAction = ui_->menuHelp->menuAction();
-    for (auto* menu : menus) {
-        menuBar()->insertMenu(helpAction, menu);
-        plugin_menus_.append(menu);
+    for (auto* plugin : {static_cast<IPlugin*>(adminPlugin_.get()),
+                         static_cast<IPlugin*>(legacyPlugin_.get())}) {
+        for (auto* menu : plugin->create_menus()) {
+            menuBar()->insertMenu(helpAction, menu);
+            plugin_menus_.append(menu);
+        }
     }
 
-    // Wire System menu actions to plugin show methods
-    connect(ui_->ActionAccounts, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_accounts(); });
-    connect(ui_->ActionRoles, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_roles(); });
-    connect(ui_->ActionTenants, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_tenants(); });
-    connect(ui_->ActionOnboardTenant, &QAction::triggered, this,
-        &MainWindow::showTenantOnboardingWizard);
-    connect(ui_->ActionFeatureFlags, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_feature_flags(); });
+    // Wire remaining System menu actions (QueueMonitor and ServiceDashboard
+    // are still in LegacyPlugin pending their extraction in later steps)
     connect(ui_->ActionQueueMonitor, &QAction::triggered, this,
         [this]() { legacyPlugin_->show_queue_monitor(); });
     connect(ui_->ActionServiceDashboard, &QAction::triggered, this,
@@ -1598,24 +1593,6 @@ void MainWindow::showSystemProvisionerWizard(
         if (clientManager_) {
             clientManager_->disconnect();
         }
-    });
-
-    wizard->show();
-}
-
-void MainWindow::showTenantOnboardingWizard() {
-    BOOST_LOG_SEV(lg(), info) << "Showing Tenant Onboarding Wizard";
-
-    auto* wizard = new TenantOnboardingWizard(clientManager_, this);
-    wizard->setWindowModality(Qt::ApplicationModal);
-    wizard->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(wizard, &TenantOnboardingWizard::onboardingCompleted,
-            this, [this](const QString& tenantName) {
-        BOOST_LOG_SEV(lg(), info) << "Tenant onboarding completed: "
-                                  << tenantName.toStdString();
-        ui_->statusbar->showMessage(
-            tr("Tenant '%1' onboarded successfully.").arg(tenantName));
     });
 
     wizard->show();

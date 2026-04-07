@@ -1,0 +1,575 @@
+:PROPERTIES:
+:ID: B7E4D1F3-9A2C-4B8E-C3D6-E5F8A1B2C4D7
+:END:
+#+title: ORE Studio Qt Plugin Refactor — Implementation Plan
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+See [[file:qt-plugin-architecture.org][qt-plugin-architecture.org]] for the architectural rationale.
+
+This document is the step-by-step implementation plan.  Each step is a
+separate PR that must pass CI before the next begins.  Trading is extracted
+last (Step 7) to avoid conflicts with in-flight work on that domain.
+
+* Overview
+
+| Step | PR title                               | Risk   |
+|------+----------------------------------------+--------|
+|    1 | Extract =ores.qt.api= shared lib       | High   |
+|    2 | Introduce plugin interface + LegacyPlugin | High |
+|    3 | Extract =ores.qt.admin= plugin         | Low    |
+|    4 | Extract =ores.qt.compute= plugin       | Low    |
+|    5 | Extract =ores.qt.refdata= plugin       | Medium |
+|    6 | Extract =ores.qt.party= plugin         | Low    |
+|    7 | Extract =ores.qt.mktdata= plugin       | Low    |
+|    8 | Extract =ores.qt.trading= plugin       | Medium |
+|    9 | Rename, clean up, final polish         | Low    |
+
+Steps 1–2 are the most disruptive.  Steps 3–8 are mechanical (move files,
+write one plugin class, wire CMake).  Step 8 is deferred until the in-flight
+trading PR is merged.
+
+* Step 1 — Extract =ores.qt.api= as a Shared Library
+
+*Goal*: carve the framework out of the monolith into a new shared library.
+No plugin interface yet — just the move.  The application binary must be
+identical to before.
+
+** Create the project skeleton
+
+#+begin_src
+projects/ores.qt.api/
+  CMakeLists.txt
+  include/ores.qt.api/
+    export.hpp
+  src/
+  modeling/
+    ores.qt.api.org
+#+end_src
+
+The include prefix changes from =ores.qt/= to =ores.qt.api/= for all moved
+files.  All internal =ores.qt= consumers update their =#include= paths in one
+shot.  No forwarding headers.
+
+CMakeLists.txt uses Boost export macros and hides symbols by default on
+GCC/Clang (see architecture doc).
+
+** Files moving from =ores.qt= → =ores.qt.api=
+
+| Category        | Files                                                             |
+|-----------------+-------------------------------------------------------------------|
+| Plugin contract | =export.hpp= (new), =IPlugin.hpp= (new), =plugin_context.hpp=    |
+|                 | (new), =PluginRegistry.hpp/.cpp= (new)                           |
+| Client          | =ClientManager.hpp/.cpp=                                          |
+| Controller base | =EntityController.hpp/.cpp=, =EntityListMdiWindow.hpp/.cpp=,      |
+|                 | =DetailDialogBase.hpp/.cpp=, =EntityDetailDialog.hpp/.cpp=,       |
+|                 | =EntityDetailOperations.hpp/.cpp=, =EntityItemDelegate.hpp/.cpp=  |
+| MDI             | =DetachableMdiSubWindow.hpp/.cpp=, =MdiAreaWithBackground.hpp/.cpp=, |
+|                 | =MdiUtils.hpp/.cpp=                                               |
+| Models          | =AbstractClientModel.hpp/.cpp=, =ColumnMetadata.hpp=,             |
+|                 | =ClientResultModel.hpp/.cpp=, =ClientResultItemDelegate.hpp/.cpp= |
+| Caches          | =ImageCache.hpp/.cpp=, =BadgeCache.hpp/.cpp=,                     |
+|                 | =ChangeReasonCache.hpp/.cpp=, =HostDisplayNameCache.hpp/.cpp=     |
+| Cross-domain UI | =ChangeReasonDialog.hpp/.cpp=, =ChangeReasonItemDelegate.hpp/.cpp= |
+|                 | =PartyPickerDialog.hpp/.cpp= (†)                                   |
+| Widgets         | =PaginationWidget.hpp/.cpp=, =ProvenanceWidget.hpp/.cpp=,         |
+|                 | =TagSelectorWidget.hpp/.cpp=, =FlagIconHelper.hpp/.cpp=,          |
+|                 | =FlagSelectorDialog.hpp/.cpp=, =AddItemDialog.hpp/.cpp=,          |
+|                 | =LookupFetcher.hpp/.cpp=, =PasswordMatchIndicator.hpp/.cpp=       |
+| Utilities       | =ColorConstants.hpp=, =DialogStyles.hpp=, =ExceptionHelper.hpp=,  |
+|                 | =DelegatePaintUtils.hpp/.cpp=, =FontUtils.hpp/.cpp=,              |
+|                 | =IconUtils.hpp/.cpp=, =TextUtils.hpp/.cpp=, =WidgetUtils.hpp/.cpp=, |
+|                 | =MessageBoxHelper.hpp/.cpp=, =TimestampFormat.hpp/.cpp=,          |
+|                 | =RelativeTimeHelper.hpp/.cpp=, =UiPersistence.hpp/.cpp=,          |
+|                 | =RecencyPulseManager.hpp/.cpp=, =RecencyTracker.hpp/.cpp=         |
+
+(†) ~PartyPickerDialog~ only appears in ~LoginDialog~ (host) today.  Moving it
+here avoids a future dependency of =ores.qt.app= on =ores.qt.party.so=.
+
+** =ores.qt.api= CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.api PUBLIC
+    Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Concurrent Qt6::Network Qt6::Svg
+    ores.nats.lib
+    ores.eventing.lib
+    ores.iam.api.lib
+    ores.refdata.api.lib   # ChangeReasonDialog, PartyPickerDialog use NATS
+                           # request types from these APIs
+    ores.logging.lib
+    ores.utility.lib
+    ores.platform.lib)
+#+end_src
+
+** =ores.qt= after the move
+
+=ores.qt= retains all domain controllers and dialogs.  Its CMakeLists.txt
+replaces the large PUBLIC list with just:
+
+#+begin_src cmake
+target_link_libraries(ores.qt.lib PUBLIC
+    ores.qt.api            # shared — provides everything above
+    ores.ore.lib ores.ore.api.lib ores.storage.lib
+    ores.marketdata.api.lib ores.http.api.lib ores.refdata.core.lib
+    ores.analytics.api.lib ores.trading.api.lib ores.compute.api.lib
+    ores.scheduler.api.lib ores.reporting.api.lib
+    ores.shell.lib ores.dq.api.lib ores.synthetic.api.lib
+    ores.assets.api.lib ores.workflow.lib
+    ores.connections.lib ores.variability.api.lib
+    ores.telemetry.lib ores.controller.api.lib ores.security.lib
+    Qt6::Charts)
+#+end_src
+
+** AUTOMOC and AUTOUIC note
+
+=ores.qt.api= sets =CMAKE_AUTOMOC ON= (for Q_OBJECT classes).  It has a
+small number of =.ui= files (=EntityDetailDialog.ui=, =ProvenanceWidget.ui=)
+which are moved alongside their classes.  AUTOUIC search path is set to the
+=ores.qt.api/ui/= subdirectory.
+
+=ores.qt= retains the rest of the =ui/= directory.  The AUTOUIC search path
+on =ores.qt.lib= points to both =ores.qt/ui/= and the generated include dirs
+from =ores.qt.api=.
+
+** Include path strategy
+
+All public headers in =ores.qt.api= use the include prefix =ores.qt.api/=.
+Every file in =ores.qt= that includes a moved header changes from:
+
+#+begin_src cpp
+#include "ores.qt/EntityController.hpp"
+#+end_src
+
+to:
+
+#+begin_src cpp
+#include "ores.qt.api/EntityController.hpp"
+#+end_src
+
+This is a mechanical search-and-replace across the whole =ores.qt= source
+tree.  Do it as a single commit so the diff is obviously a rename with no
+logic changes.
+
+** Export annotation pass
+
+All classes and free functions in =ores.qt.api= that are used by consumers
+(plugins or the host) must be annotated with =ORES_QT_API=:
+
+#+begin_src cpp
+class ORES_QT_API ClientManager : public QObject { ... };
+class ORES_QT_API EntityController : public QObject { ... };
+struct ORES_QT_API plugin_context { ... };
+#+end_src
+
+Inline functions, private implementation classes, and template helpers do
+not need the annotation.  The Q_OBJECT macro classes need it so that their
+=staticMetaObject= is exported and =qobject_cast= works across the .so/.dll
+boundary.
+
+** Risks and checks for Step 1
+
+- Verify =qobject_cast<EntityController*>= still works across the boundary
+  (the critical test: open a currency window after login).
+- On Windows: verify =ores.qt.api.dll= is produced and all symbols resolve.
+  If any symbol is missing =ORES_QT_API=, the linker will give a specific
+  unresolved symbol error — fix it.
+- The =ores.qt.lib= size on Windows should now be well under 2 GB in debug.
+
+* Step 2 — Introduce IPlugin + LegacyPlugin
+
+*Goal*: rewire =MainWindow= to drive the plugin registry, without moving any
+domain code.  The application is still functionally identical.
+
+** Add plugin interface to =ores.qt.api=
+
+=IPlugin=, =plugin_context=, =PluginRegistry= are already present from
+Step 1 (their files were created in the skeleton).  In this step, add the
+full implementation of =PluginRegistry::load_from_directory()= (see
+architecture doc).
+
+** Create =LegacyPlugin= in =ores.qt=
+
+=LegacyPlugin= is a temporary glue class.  It holds all the controller
+=unique_ptr= members that currently live in =MainWindow=, and implements
+=IPlugin=:
+
+#+begin_src cpp
+class LegacyPlugin final : public QObject, public IPlugin {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0" FILE "legacy_plugin.json")
+    Q_INTERFACES(ores::qt::api::IPlugin)
+public:
+    QString name() const override { return "ores.qt.legacy"; }
+    int load_order() const override { return 999; } // loads last
+    void initialize(QMainWindow*, QMdiArea*) override {}
+    void on_login(const plugin_context& ctx) override;
+    void on_logout() override;
+    QList<QMenu*> create_menus() override;
+private:
+    // all 50+ controller unique_ptrs move here
+    std::unique_ptr<CurrencyController> currencyController_;
+    // ...
+};
+#+end_src
+
+=LegacyPlugin= is built as a shared lib (=ores.qt.legacy=) deployed to
+=plugins/=.  It links everything =ores.qt.lib= currently links.
+
+** Redesign =MainWindow=
+
+=MainWindow= sheds all controller members and all domain-specific menu
+connections.  What remains:
+
+- MDI area, status bar, system tray
+- Login/logout flow (calls =PluginRegistry::instance().load_from_directory()=
+  then =plugin->on_login()= on each)
+- Window menu management (iterates =DetachableMdiSubWindow= tracked by plugins)
+- File, Connection, Window, Help menus (the only host-owned menus)
+
+** Redesign =MainWindow.ui=
+
+The =MainWindow.ui= currently has 20+ hardcoded domain menus (menuTrading,
+menuRefData, menuSystem, etc.).  Strip it to:
+
+- =menuFile= (Exit, About)
+- =menuConnection= (Connect, Disconnect, Connection Browser)
+- =menuWindow= (Tile, Cascade, Detach All, window list)
+- =menuHelp=
+
+All domain menus are inserted dynamically after =menuConnection= and before
+=menuWindow= by iterating =plugin->create_menus()= on login.
+
+=LegacyPlugin::create_menus()= re-creates the full set of current menus as
+=QMenu*= objects constructed in code (no .ui), using the same action names
+and connections as today.  This is the largest piece of work in Step 2 but
+is entirely within =LegacyPlugin=.
+
+** Plugin loading in =main.cpp=
+
+#+begin_src cpp
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    const QString plugin_dir =
+        QCoreApplication::applicationDirPath() + "/plugins";
+    PluginRegistry::instance().load_from_directory(plugin_dir);
+
+    MainWindow mw;
+    mw.show();
+    return app.exec();
+}
+#+end_src
+
+** Risks and checks for Step 2
+
+- All 20+ menus must appear and function as before (populated by LegacyPlugin).
+- Window menu "list of open windows" still works (controllers register their
+  windows via the shared =allDetachableWindows_= mechanism; this now goes
+  through plugin context signals).
+- Plugin loading failure should print a clear error and continue, not crash.
+
+* Step 3 — Extract =ores.qt.admin=
+
+*Goal*: move ~42 admin files out of =LegacyPlugin= into a standalone plugin.
+
+** New project =projects/ores.qt.admin/=
+
+Structure mirrors =ores.qt.api= (include/src/ui/modeling).
+
+** Files moving from =ores.qt= → =ores.qt.admin=
+
+Account*, Role*, Tenant*, TenantType*, SystemSetting*, BadgeDefinition*,
+BadgeSeverity*, App*, AppVersion* — controllers, detail dialogs, history
+dialogs, MDI windows, item delegates, and widgets.
+
+Also: TenantOnboardingWizard, TenantProvisioningWizard, AppProvisionerWizard.
+
+Client models: ClientAccountModel, ClientRoleModel, ClientTenantModel,
+ClientTenantTypeModel, ClientSystemSettingModel, ClientBadgeDefinitionModel,
+ClientBadgeSeverityModel, ClientAppModel, ClientAppVersionModel, ClientHostModel.
+
+The corresponding =.ui= files move to =ores.qt.admin/ui/=.
+
+** =AdminPlugin= implementation
+
+=AdminPlugin::on_login()= creates all admin controllers (same logic currently
+in =LegacyPlugin::on_login()= for these types).
+
+=AdminPlugin::create_menus()= returns:
+- =Admin= menu: Accounts, Roles, Tenants, System Settings
+- =Configuration= menu: Badges, Apps, App Versions
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.admin PRIVATE
+    ores.qt.api
+    ores.iam.api.lib
+    ores.controller.api.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets)
+#+end_src
+
+** Risks and checks for Step 3
+
+- =BadgeCache= remains in =ores.qt.api=; =BadgeDefinitionController= (which
+  populates it) moves to admin.  After login, admin plugin populates the
+  cache via =plugin_context.badge_cache=.
+- All admin menu items open the correct windows.
+- =LegacyPlugin= shrinks by the admin section.
+
+* Step 4 — Extract =ores.qt.compute=
+
+*Goal*: move ~45 compute/reporting/jobs/queue files into their own plugin.
+
+** Files moving from =ores.qt= → =ores.qt.compute=
+
+Compute* (DashboardController, DashboardMdiWindow, ConsoleController,
+ConsoleWindow, TaskViewModel, TransferModel), JobDefinition*,
+Queue* (ChartWindow, DetailDialog, MonitorController, MonitorMdiWindow,
+CreateQueueDialog), Report* (all four entity types: Type, Definition,
+Instance + corresponding dialogs), Batch*, Workunit*,
+CronEditorDialog, CronExpressionWidget, CronFieldWidget,
+TransferProgressDelegate.
+
+Client models: ClientJobDefinitionModel, ClientQueueModel,
+ClientReportTypeModel, ClientReportDefinitionModel, ClientReportInstanceModel,
+ClientBatchModel, ClientWorkunitModel.
+
+** =ComputePlugin= menus
+
+- =Compute= menu: Compute Dashboard, Compute Console, Job Definitions,
+  Queues
+- =Reporting= menu: Report Types, Report Definitions, Report Instances
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.compute PRIVATE
+    ores.qt.api
+    ores.compute.api.lib
+    ores.scheduler.api.lib
+    ores.reporting.api.lib
+    ores.workflow.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Charts)
+#+end_src
+
+* Step 5 — Extract =ores.qt.refdata=
+
+*Goal*: move ~150 reference-data files.  Largest single extraction.
+
+** Files moving from =ores.qt= → =ores.qt.refdata=
+
+Currency*, Country*, ChangeReasonCategory*, ChangeReason* (controller,
+detail dialog, history dialog, MDI window — *not* ChangeReasonDialog or
+ChangeReasonCache, those stay in =ores.qt.api=), OriginDimension*,
+NatureDimension*, TreatmentDimension*, CodingSchemeAuthorityType*,
+CodeDomain*, DataDomain*, SubjectArea*, Catalog*, CodingScheme*,
+Methodology*, Dataset* (all four variants + ViewDialog),
+DatasetBundle*, DayCountFractionType*, BusinessDayConventionType*,
+FloatingIndexType*, PaymentFrequencyType*, LegType*, MonetaryNature*,
+RoundingType*, PurposeType*, ConcurrencyPolicy*.
+
+Also: ImportCurrencyDialog, OreImporter (if ORE import is
+refdata-scoped — otherwise moves to trading in Step 8).
+
+Client models for all the above (~30 Client*Model classes).
+
+** =RefdataPlugin= menus
+
+Menus map to the current menu groupings in MainWindow.ui:
+- =Data= menu
+- =Auxiliary Data= menu
+- =Classifications= menu
+- =Dimensions= menu
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.refdata PRIVATE
+    ores.qt.api
+    ores.refdata.core.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets)
+#+end_src
+
+** Risks and checks for Step 5
+
+- =ChangeReasonController= and =ChangeReasonCategoryController= move here.
+  =ChangeReasonCache= and =ChangeReasonDialog= stay in =ores.qt.api=.
+  Double-check that the includes are correct after the move.
+- Cross-domain signal =CurrencyController::showRoundingTypesRequested()=:
+  replace the =MainWindow= wiring with an event bus message published by
+  =CurrencyController= and subscribed to by =RefdataPlugin=.
+
+* Step 6 — Extract =ores.qt.party=
+
+*Goal*: move ~35 party files.
+
+** Files moving from =ores.qt= → =ores.qt.party=
+
+Party* (Controller, DetailOperations, HistoryDialog, MdiWindow),
+Counterparty* (Controller, DetailOperations, HistoryDialog, MdiWindow),
+BusinessCentre*, BusinessUnit*, BusinessUnitType*, PartyType*,
+PartyStatus*, PartyIdScheme*, ContactType*, LeiEntityPicker,
+PartyProvisioningWizard.
+
+Client models: ClientPartyModel, ClientCounterpartyModel,
+ClientBusinessCentreModel, ClientBusinessUnitModel,
+ClientBusinessUnitTypeModel, ClientPartyTypeModel, ClientPartyStatusModel,
+ClientPartyIdSchemeModel, ClientContactTypeModel.
+
+** =PartyPlugin= menus
+
+- =Organization= menu: Parties, Counterparties, Business Centres,
+  Business Units
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.party PRIVATE
+    ores.qt.api
+    ores.refdata.core.lib   # party domain types
+    Qt6::Core Qt6::Gui Qt6::Widgets)
+#+end_src
+
+* Step 7 — Extract =ores.qt.mktdata=
+
+*Goal*: move ~35 market data / pricing files.
+
+** Files moving from =ores.qt= → =ores.qt.mktdata=
+
+MarketDataController, MarketFixingsMdiWindow, MarketFixingDetailMdiWindow,
+MarketObservationMdiWindow, MarketSeriesMdiWindow, PricingEngineType*,
+PricingModelConfig*, PricingModelProduct*, PricingModelProductParameter*,
+CurrencyMarketTier*, DataLibrarianWindow, PublicationHistoryDialog,
+PublishBundleWizard, PublishDatasetsDialog.
+
+Client models: ClientMarketFixingModel, ClientMarketObservationModel,
+ClientMarketSeriesModel, ClientPricingEngineTypeModel,
+ClientPricingModelConfigModel, ClientPricingModelProductModel,
+ClientPricingModelProductParameterModel, ClientCurrencyMarketTierModel.
+
+** =MarketDataPlugin= menus
+
+- =Market Data= menu: Market Fixings, Observations, Series, Pricing Models
+- =Assets= menu (if applicable)
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.mktdata PRIVATE
+    ores.qt.api
+    ores.marketdata.api.lib
+    ores.analytics.api.lib
+    ores.variability.api.lib
+    ores.assets.api.lib
+    ores.dq.api.lib
+    ores.synthetic.api.lib
+    ores.http.api.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Charts)
+#+end_src
+
+* Step 8 — Extract =ores.qt.trading= (deferred — after trading PR merges)
+
+*Goal*: move ~35 trading files.  Scheduled after the in-flight trading PR
+is merged into main to eliminate conflict risk.
+
+** Files moving from =ores.qt= → =ores.qt.trading=
+
+Portfolio*, Book*, BookStatus*, Trade* (controller, detail dialog, history,
+MDI window), OrgExplorerMdiWindow, OrgExplorerTradeModel,
+OrgExplorerTreeModel, PortfolioExplorerMdiWindow, PortfolioExplorerTradeModel,
+PortfolioExplorerTreeModel, ImportTradeDialog, OreImportController,
+OreImportWizard, OreImporter, CompositeLegsWidget.
+
+Also: =IInstrumentForm=, =InstrumentFormRegistry=, all =*InstrumentForm=
+classes added by the recent trade dialog PRs.
+
+Client models: ClientPortfolioModel, ClientBookModel, ClientBookStatusModel,
+ClientTradeModel.
+
+** =TradingPlugin= menus
+
+- =Trading= menu: Portfolios, Books, Trades, Import, ORE Import
+
+** CMake dependencies
+
+#+begin_src cmake
+target_link_libraries(ores.qt.trading PRIVATE
+    ores.qt.api
+    ores.trading.api.lib
+    ores.ore.lib
+    ores.ore.api.lib
+    ores.storage.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets)
+#+end_src
+
+After this step =LegacyPlugin= should be empty (no more controllers).  It
+can be deleted.
+
+* Step 9 — Rename and Final Cleanup
+
+*Goal*: rename the shell, remove the LegacyPlugin, final structural polish.
+
+** Tasks
+
+1. Rename =ores.qt= project directory to =ores.qt.app=.  The executable
+   output name stays =ores.qt= (=OUTPUT_NAME ores.qt=).
+2. Delete =LegacyPlugin= class and its CMake target.
+3. Update the top-level =CMakeLists.txt= (projects list),
+   =projects/modeling/system_model.org=, and CI configuration.
+4. Update =doc/skills/component-creator/SKILL.org= (now there are 7 Qt
+   plugin projects, not 1).
+5. Rename the analysis branch and raise the final PR against main.
+
+* Shared Implementation Notes
+
+** =.ui= file distribution
+
+Each extracted project gets a =ui/= subdirectory.  AUTOUIC is configured
+per-target:
+
+#+begin_src cmake
+set(CMAKE_AUTOUIC ON)
+set_target_properties(ores.qt.admin PROPERTIES
+    AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../ui)
+#+end_src
+
+** Include path convention
+
+During the migration, moved headers retain the =ores.qt/= include prefix
+within their new project (e.g., =ores.qt.admin/include/ores.qt/AccountController.hpp=).
+This keeps the number of source-file changes manageable — only files in
+=ores.qt= that include moved headers need updating (to use the new target's
+include directory, which exposes the same path prefix).
+
+Post-migration (optional, Step 9 or later): rename prefixes to
+=ores.qt.admin/=, =ores.qt.refdata/=, etc. to align with the rest of the
+project naming convention.  This is a separate mechanical PR.
+
+** Event bus UI messages
+
+Define a header =ores.qt.api/include/ores.qt.api/ui_events.hpp= with
+=constexpr std::string_view= constants for all inter-plugin navigation
+messages.  This prevents string drift as more cross-plugin navigation is
+identified during the extraction steps.
+
+#+begin_src cpp
+namespace ores::qt::api::ui_events {
+    constexpr std::string_view show_rounding_types  = "ui.show.rounding_types";
+    constexpr std::string_view show_monetary_natures = "ui.show.monetary_natures";
+    constexpr std::string_view show_market_tiers     = "ui.show.currency_market_tiers";
+    // ... add more as discovered during extraction
+}
+#+end_src
+
+** Per-step verification checklist
+
+For each extraction step, confirm before raising the PR:
+
+- [ ] Plugin .so/.dll produced and placed in =plugins/= by the build
+- [ ] Application starts and loads the plugin without errors in the log
+- [ ] All menus for the extracted domain appear and are functional
+- [ ] Login and logout cycle works (windows open, close cleanly on logout)
+- [ ] CI passes (Linux + Windows build)
+- [ ] =LegacyPlugin= no longer contains the extracted controllers

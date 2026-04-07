@@ -1,0 +1,898 @@
+:PROPERTIES:
+:ID: A3F9B2C1-4E72-4D8A-B1C5-F2A73E9D0456
+:END:
+#+title: ORE Studio Qt Plugin Architecture Analysis
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Background
+
+=ores.qt= is currently a single monolithic project: ~800 source/header files,
+~145K lines of C++, all compiled into one static library and one executable.
+=MainWindow= directly owns 50+ ~unique_ptr<XxxController>~ members and must
+include every domain controller header at compile time.
+
+This document analyses how to split the monolith into a plugin-based
+architecture and recommends a concrete approach.
+
+* Current State
+
+** Structure
+
+| Item            | Count |
+|-----------------+-------|
+| Header files    |   406 |
+| Source files    |   394 |
+| Lines of code   | ~145K |
+| Controllers     |    50 |
+| Flat directory? | Yes   |
+
+Everything lives in two flat directories: =include/ores.qt/= and =src/=.
+There is no sub-organisation by domain.
+
+** Dependency problem
+
+The static library declares almost every API lib in the system as a PUBLIC
+dependency:
+
+#+begin_src cmake
+target_link_libraries(ores.qt.lib PUBLIC
+    ores.ore.lib ores.ore.api.lib ores.storage.lib
+    ores.marketdata.api.lib ores.http.api.lib ores.refdata.core.lib
+    ores.analytics.api.lib ores.trading.api.lib ores.compute.api.lib
+    ores.scheduler.api.lib ores.reporting.api.lib ores.nats.lib
+    ores.shell.lib ores.dq.api.lib ores.synthetic.api.lib
+    ores.assets.api.lib ores.iam.api.lib ores.workflow.lib
+    ores.connections.lib ores.eventing.lib ores.variability.api.lib
+    ores.telemetry.lib ores.controller.api.lib ores.security.lib
+    ores.utility.lib ores.platform.lib Qt6::Core Qt6::Gui ...)
+#+end_src
+
+This means any change anywhere in the system potentially rebuilds the entire Qt
+application.
+
+** Pain points
+
+1. *Compilation time*: changing one dialog header causes the whole lib to
+   rebuild (AUTOMOC scans every header).
+2. *Cognitive load*: navigating 800 files in a single directory is hard;
+   nothing communicates which files belong together.
+3. *Coupling*: =MainWindow= cannot be compiled or tested without pulling in
+   every domain — trading, compute, market data, IAM, etc.
+4. *Windows build size*: the debug static lib exceeds WiX's 2 GB per-file
+   limit, requiring an explicit workaround in CMake.
+5. *Cross-controller coupling*: controllers emit signals like
+   ~showRoundingTypesRequested()~ which =MainWindow= wires to another
+   controller — encoding domain knowledge inside the host.
+
+* Qt Idioms for Large Applications
+
+Three canonical Qt patterns address the large-application problem.
+
+** 1. Qt Plugin System (~QPluginLoader~) — recommended
+
+Plugins are built as shared libraries (.so on Linux, .dll on Windows).  The
+host loads them at runtime via ~QPluginLoader~ by scanning a plugins directory.
+Each plugin implements a pure-virtual interface annotated with
+~Q_PLUGIN_METADATA~ / ~Q_INTERFACES~.
+
+/Pros/:
+- Host has *zero compile-time dependency* on domain plugins.  Adding a new
+  domain requires no changes to the host binary.
+- True runtime extensibility: plugins can be added, updated, or disabled by
+  placing or removing files in the plugins directory.
+- Qt's machinery handles ABI version checking: ~QPluginLoader~ reads plugin
+  metadata before loading and refuses plugins built against an incompatible Qt
+  version or with a mismatched IID string.
+- Each plugin is an independent build target; incremental builds only rebuild
+  the plugin that changed.
+- The pattern is used by Qt itself (platform plugins, image format plugins,
+  etc.) and by large Qt applications such as Qt Creator.
+
+/Cons/:
+- Shared libraries require export macros on public symbols (~Q_DECL_EXPORT~ /
+  ~Q_DECL_IMPORT~).  This is a one-time boilerplate cost, not ongoing friction.
+- On Windows, debug and release builds of plugins cannot be mixed (Qt enforces
+  this automatically via plugin metadata).  This is a development workflow
+  concern, not a production concern.
+- The framework library (=ores.qt.api=) must itself be a shared library (see
+  Section [[*Why ores.qt.api Must Be a Shared Library]]).
+
+** 2. Qt Static Plugins (~Q_IMPORT_PLUGIN~)
+
+The same interface/metadata machinery as option 1, but the plugin is a static
+library.  ~Q_IMPORT_PLUGIN(PluginClassName)~ in =main.cpp= forces the linker to
+include the plugin's registration TU.
+
+/Pros/: single binary; no need to distribute .so/.dll files; same interface
+shape as dynamic plugins.
+
+/Cons/: adding a new plugin still requires touching =main.cpp= and relinking
+the host.  The host retains a transitive compile-time dependency on all domain
+APIs.  Does not achieve the isolation goal.
+
+** 3. Explicit Factory / Registry (no Qt plugin machinery)
+
+Each domain module is a static library exporting a plain
+~register_xxx_plugin()~ C++ function called from =main.cpp= before
+~QApplication~ is constructed.
+
+/Pros/: zero magic; deterministic initialisation order.
+
+/Cons/: same as option 2 — the host must be relinked for every plugin change,
+and compile-time isolation is not achieved.
+
+** Recommendation
+
+Use *~QPluginLoader~* (option 1).  It is the architecturally correct solution for
+a large Qt application that will continue to grow.  The host becomes a true
+stable platform; domains evolve independently.
+
+The one-time cost is writing export macros and plugin metadata JSON files.
+Every Qt shop does this for any non-trivial application.
+
+* Why ores.qt.api Must Be a Shared Library
+
+This is the most important constraint the plugin approach imposes.
+
+~PluginRegistry~ is a singleton.  If =ores.qt.api= were a static library, it
+would be linked into /each/ consuming target independently — the host executable
+would get one copy, and each plugin .so would get its own separate copy.
+~PluginRegistry::instance()~ in the host and in a plugin would return *different
+objects*.  Plugins would register into their own isolated registry, invisible to
+the host.
+
+Making =ores.qt.api= a shared library (.so / .dll) solves this: all targets
+link the same shared object, so all calls to ~PluginRegistry::instance()~
+resolve to the same address.  This is standard shared-library semantics.
+
+The same argument applies to any other state that must be shared between the
+host and plugins: ~ClientManager~, caches, the event bus adapter.
+
+#+begin_src
+         Host exe              refdata.so            party.so
+              │                     │                    │
+              └──────────┬──────────┘                    │
+                         │                               │
+                         ▼                               │
+                  ores.qt.api.so  ◄──────────────────────┘
+                  (one instance)
+                  PluginRegistry,
+                  ClientManager,
+                  caches, IPlugin
+#+end_src
+
+* Proposed Architecture
+
+** Layer diagram
+
+#+begin_src
+ ┌─────────────────────────────────────────────────────────────────┐
+ │  ores.qt  (thin entry point: scans plugins/, calls initialize)  │
+ └────────────────────────────┬────────────────────────────────────┘
+                              │ links
+ ┌────────────────────────────▼────────────────────────────────────┐
+ │  ores.qt.app.lib  (static: MainWindow, login, connections,      │
+ │                    telemetry, shell — no domain knowledge)       │
+ └────────────────────────────┬────────────────────────────────────┘
+                              │ links
+ ┌────────────────────────────▼────────────────────────────────────┐
+ │  ores.qt.api.so  (SHARED: IPlugin, PluginRegistry,              │
+ │                   ClientManager, EntityController, shared        │
+ │                   widgets, utilities, caches, export macros)     │
+ └────────────────────────────▲────────────────────────────────────┘
+                              │ loaded at runtime via QPluginLoader
+     ┌──────────┬─────────────┼──────────────┬───────────┐
+     │          │             │              │           │
+  admin.so  refdata.so   party.so       trading.so  mktdata.so
+                              │
+                          compute.so
+#+end_src
+
+** Projects overview
+
+| Project           | Type        | Install path      | Role                                        |
+|-------------------+-------------+-------------------+---------------------------------------------|
+| =ores.qt.api=     | shared lib  | =lib/=            | Framework: IPlugin interface, shared        |
+|                   |             |                   | types, ClientManager, caches, utilities     |
+| =ores.qt.app=     | static lib  | n/a               | Host logic: MainWindow, login, telemetry    |
+| =ores.qt=         | executable  | =bin/=            | Entry point: loads plugins, starts app      |
+| =ores.qt.admin=   | shared lib  | =plugins/=        | Accounts, roles, tenants, badges            |
+| =ores.qt.refdata= | shared lib  | =plugins/=        | Currencies, countries, ref types, datasets  |
+| =ores.qt.party=   | shared lib  | =plugins/=        | Parties, counterparties, business units     |
+| =ores.qt.trading= | shared lib  | =plugins/=        | Portfolios, books, trades, ORE import       |
+| =ores.qt.mktdata= | shared lib  | =plugins/=        | Market data, pricing models, data librarian |
+| =ores.qt.compute= | shared lib  | =plugins/=        | Compute, reporting, queues, jobs            |
+
+* Proposed Interface
+
+** Export macro
+
+Every public symbol in =ores.qt.api.so= must carry an export annotation so the
+Windows linker can find it when plugin .dlls link back to the framework.
+
+The project already depends on Boost, which provides cross-platform visibility
+macros in =boost/config.hpp=:
+
+| Macro                  | MSVC                      | GCC / Clang                          |
+|------------------------+---------------------------+--------------------------------------|
+| ~BOOST_SYMBOL_EXPORT~  | ~__declspec(dllexport)~   | ~__attribute__((visibility("default")))~ |
+| ~BOOST_SYMBOL_IMPORT~  | ~__declspec(dllimport)~   | ~__attribute__((visibility("default")))~ |
+
+Usage pattern — identical to how Boost's own libraries define their export
+macros (e.g. ~BOOST_FILESYSTEM_DECL~):
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt.api/export.hpp
+#pragma once
+#include <boost/config.hpp>
+
+#ifdef ORES_QT_API_LIBRARY
+#  define ORES_QT_API BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_QT_API BOOST_SYMBOL_IMPORT
+#endif
+#+end_src
+
+Apply to every public class and free function that crosses the .so/.dll
+boundary:
+
+#+begin_src cpp
+class ORES_QT_API ClientManager : public QObject { ... };
+class ORES_QT_API EntityController : public QObject { ... };
+class ORES_QT_API PluginRegistry : public QObject { ... };
+struct ORES_QT_API plugin_context { ... };
+#+end_src
+
+Inline functions, templates, and private implementation classes do not need the
+annotation.
+
+The =ores.qt.api= CMakeLists.txt defines =ORES_QT_API_LIBRARY= privately when
+building the shared library and does not define it for consumers:
+
+#+begin_src cmake
+add_library(ores.qt.api SHARED ...)
+target_compile_definitions(ores.qt.api PRIVATE ORES_QT_API_LIBRARY)
+#+end_src
+
+On Linux / macOS, add =-fvisibility=hidden= to the compile options for all
+shared library targets so that unexported symbols are hidden by default — this
+matches Windows linker behaviour and keeps the exported surface minimal:
+
+#+begin_src cmake
+target_compile_options(ores.qt.api PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -fvisibility=hidden -fvisibility-inlines-hidden>)
+#+end_src
+
+Each plugin defines its own export macro in the same way
+(=ORES_QT_REFDATA_LIBRARY=, etc.).  Plugin classes themselves only need to
+export the class that implements ~IPlugin~ — the Qt plugin factory entry point
+is handled automatically by ~Q_PLUGIN_METADATA~.
+
+** ~plugin_context~
+
+Passed to each plugin on login.  Carries everything a plugin needs to interact
+with the application.  Defined in =ores.qt.api= and annotated with
+~ORES_QT_API~.
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt.api/plugin_context.hpp
+#pragma once
+#include "ores.qt.api/export.hpp"
+// ... Qt includes, ores includes ...
+
+namespace ores::qt::api {
+
+struct ORES_QT_API plugin_context {
+    QMainWindow*   main_window    = nullptr;
+    QMdiArea*      mdi_area       = nullptr;
+    ClientManager* client_manager = nullptr;
+    eventing::service::event_bus* event_bus = nullptr;
+
+    // Shared caches (owned by ores.qt.app, passed to every plugin on login)
+    ImageCache*        image_cache         = nullptr;
+    BadgeCache*        badge_cache         = nullptr;
+    ChangeReasonCache* change_reason_cache = nullptr;
+
+    QString username;
+};
+
+} // namespace ores::qt::api
+#+end_src
+
+** ~IPlugin~
+
+The interface that all domain plugins implement.  ~Q_DECLARE_INTERFACE~ gives it
+a unique IID string used by ~QPluginLoader~ for ABI version checking.
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt.api/i_plugin.hpp
+#pragma once
+#include <QObject>
+#include <QList>
+#include "ores.qt.api/export.hpp"
+#include "ores.qt.api/plugin_context.hpp"
+
+class QMainWindow;
+class QMdiArea;
+class QMenu;
+class QAction;
+
+namespace ores::qt::api {
+
+class ORES_QT_API IPlugin {
+public:
+    virtual ~IPlugin() = default;
+
+    // Human-readable name for diagnostics and menu bar ordering
+    virtual QString name() const = 0;
+
+    // Lower value = loaded/initialised first.  Default 100.
+    virtual int load_order() const { return 100; }
+
+    // Called once at startup, before login, to allow pre-login UI setup
+    virtual void initialize(QMainWindow* main_window, QMdiArea* mdi_area) = 0;
+
+    // Called after successful login; plugin creates controllers and menus here
+    virtual void on_login(const plugin_context& ctx) = 0;
+
+    // Called on logout/disconnect; plugin closes its windows and releases state
+    virtual void on_logout() = 0;
+
+    // Menus to insert into the host menu bar (before Help)
+    virtual QList<QMenu*> create_menus() = 0;
+
+    // Optional additional toolbar actions
+    virtual QList<QAction*> toolbar_actions() { return {}; }
+};
+
+} // namespace ores::qt::api
+
+Q_DECLARE_INTERFACE(ores::qt::api::IPlugin, "ores.qt.IPlugin/1.0")
+#+end_src
+
+Bumping the IID string (e.g., to ~"ores.qt.IPlugin/2.0"~) on any
+backwards-incompatible interface change causes ~QPluginLoader~ to refuse stale
+plugins cleanly rather than crashing.
+
+** Plugin implementation boilerplate
+
+Each domain plugin provides a concrete class:
+
+#+begin_src cpp
+// ores.qt.refdata/src/refdata_plugin.hpp
+#pragma once
+#include <QObject>
+#include "ores.qt.api/i_plugin.hpp"
+
+namespace ores::qt::refdata {
+
+class RefdataPlugin final : public QObject, public ores::qt::api::IPlugin {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0" FILE "refdata_plugin.json")
+    Q_INTERFACES(ores::qt::api::IPlugin)
+
+public:
+    QString name() const override { return "ores.qt.refdata"; }
+    int load_order() const override { return 20; }
+
+    void initialize(QMainWindow*, QMdiArea*) override {}
+    void on_login(const ores::qt::api::plugin_context& ctx) override;
+    void on_logout() override;
+    QList<QMenu*> create_menus() override;
+
+private:
+    // All refdata controllers owned here, created in on_login, destroyed in on_logout
+    std::unique_ptr<CurrencyController> currency_controller_;
+    // ... other refdata controllers ...
+};
+
+} // namespace ores::qt::refdata
+#+end_src
+
+The metadata JSON is minimal:
+
+#+begin_src json
+{
+    "Name": "ores.qt.refdata",
+    "Version": "1.0",
+    "Description": "Reference data domain plugin for ORE Studio"
+}
+#+end_src
+
+** ~PluginRegistry~ and plugin loading
+
+~PluginRegistry~ lives in =ores.qt.api.so= and holds the ~QPluginLoader~
+instances that keep plugins alive:
+
+#+begin_src cpp
+// ores.qt.api/include/ores.qt.api/plugin_registry.hpp
+#pragma once
+#include <QVector>
+#include "ores.qt.api/export.hpp"
+#include "ores.qt.api/i_plugin.hpp"
+
+class QPluginLoader;
+
+namespace ores::qt::api {
+
+class ORES_QT_API PluginRegistry : public QObject {
+    Q_OBJECT
+public:
+    static PluginRegistry& instance();
+
+    // Load all plugin .so/.dll files found in the given directory.
+    // Plugins are sorted by IPlugin::load_order() before initialisation.
+    void load_from_directory(const QString& plugin_dir);
+
+    const QVector<IPlugin*>& plugins() const { return plugins_; }
+
+private:
+    PluginRegistry() = default;
+
+    // Loaders must outlive plugin instances
+    QVector<QPluginLoader*> loaders_;
+    QVector<IPlugin*>       plugins_;
+};
+
+} // namespace ores::qt::api
+#+end_src
+
+The loading implementation:
+
+#+begin_src cpp
+void PluginRegistry::load_from_directory(const QString& plugin_dir) {
+    QDir dir(plugin_dir);
+    QVector<QPair<int, IPlugin*>> ordered;
+
+    for (const auto& filename : dir.entryList(QDir::Files)) {
+        if (!QLibrary::isLibrary(filename)) continue;
+
+        auto* loader = new QPluginLoader(
+            dir.absoluteFilePath(filename), this);
+
+        QObject* obj = loader->instance();
+        if (!obj) {
+            qWarning() << "Failed to load plugin:" << filename
+                       << "-" << loader->errorString();
+            delete loader;
+            continue;
+        }
+
+        auto* plugin = qobject_cast<IPlugin*>(obj);
+        if (!plugin) {
+            qWarning() << "Not an IPlugin:" << filename;
+            loader->unload();
+            delete loader;
+            continue;
+        }
+
+        loaders_.push_back(loader);
+        ordered.push_back({plugin->load_order(), plugin});
+    }
+
+    std::stable_sort(ordered.begin(), ordered.end(),
+        [](const auto& a, const auto& b) { return a.first < b.first; });
+
+    for (auto& [_, plugin] : ordered)
+        plugins_.push_back(plugin);
+}
+#+end_src
+
+** Simplified ~MainWindow~
+
+The host has no controller members and no domain includes:
+
+#+begin_src cpp
+void MainWindow::on_login_success(const QString& username) {
+    auto ctx = build_plugin_context(username);
+    auto& reg = ores::qt::api::PluginRegistry::instance();
+
+    for (auto* plugin : reg.plugins()) {
+        plugin->on_login(ctx);
+        for (auto* menu : plugin->create_menus())
+            menuBar()->insertMenu(helpMenu_->menuAction(), menu);
+    }
+    updateMenuState();
+}
+
+void MainWindow::on_disconnect() {
+    for (auto* plugin : ores::qt::api::PluginRegistry::instance().plugins())
+        plugin->on_logout();
+    // clear shared state, update title/status bar
+}
+#+end_src
+
+** Plugin discovery at startup
+
+#+begin_src cpp
+// ores.qt/src/main.cpp
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    // Plugins live next to the executable in a plugins/ subdirectory
+    const QString plugin_dir =
+        QCoreApplication::applicationDirPath() + "/plugins";
+
+    ores::qt::api::PluginRegistry::instance()
+        .load_from_directory(plugin_dir);
+
+    MainWindow mw;
+    mw.show();
+    return app.exec();
+}
+#+end_src
+
+No domain headers are included in =main.cpp=.  The host knows nothing about
+refdata, trading, or any other domain at compile time.
+
+* Domain Groupings
+
+** =ores.qt.api= — Framework (shared lib)
+
+Depends on: =Qt6=, =ores.nats.lib=, =ores.eventing.lib=, =ores.iam.api.lib=,
+=ores.logging.lib=, =ores.utility.lib=
+
+| Category         | Files                                                         |
+|------------------+---------------------------------------------------------------|
+| Plugin system    | =IPlugin=, =plugin_context=, =PluginRegistry=, =export.hpp=  |
+| Client           | =ClientManager=                                               |
+| Controller base  | =EntityController=, =EntityListMdiWindow=, =DetailDialogBase= |
+| MDI              | =DetachableMdiSubWindow=, =MdiAreaWithBackground=, =MdiUtils= |
+| Models           | =AbstractClientModel=, =ColumnMetadata=                       |
+| Caches           | =ImageCache=, =BadgeCache=, =ChangeReasonCache=               |
+| Cross-domain UI  | =ChangeReasonDialog=, =PartyPickerDialog= (†)                 |
+| Widgets          | =PaginationWidget=, =ProvenanceWidget=, =TagSelectorWidget=,  |
+|                  | =FlagIconHelper=, =FlagSelectorDialog=, =AddItemDialog=,      |
+|                  | =LookupFetcher=                                               |
+| Utilities        | =ColorConstants=, =DelegatePaintUtils=, =FontUtils=,          |
+|                  | =IconUtils=, =TextUtils=, =WidgetUtils=, =DialogStyles=,      |
+|                  | =MessageBoxHelper=, =TimestampFormat=, =RelativeTimeHelper=,  |
+|                  | =UiPersistence=, =RecencyPulseManager=, =RecencyTracker=      |
+
+(†) ~ChangeReasonDialog~ and ~PartyPickerDialog~ belong here because they are
+consumed by multiple domain plugins.  They only depend on ~ClientManager~ and
+domain API libs (=ores.refdata.api=, =ores.trading.api=), both of which are
+already in scope for =ores.qt.api=.  Moving them here avoids circular
+dependencies between plugins (e.g., =ores.qt.trading= depending on
+=ores.qt.party=).
+
+** =ores.qt.app= — Host Application (static lib linked into exe)
+
+Depends on: =ores.qt.api.so=, =ores.connections.lib=, =ores.shell.lib=,
+=ores.telemetry.lib=, =ores.security.lib=
+
+Does *not* depend on any domain plugin lib.
+
+| Category      | Files                                                          |
+|---------------+----------------------------------------------------------------|
+| Main window   | =MainWindow=                                                   |
+| Login / Auth  | =LoginDialog=, =SignUpDialog=, =ChangePasswordDialog=,         |
+|               | =MasterPasswordDialog=, =MyAccountDialog=, =SessionHistoryDialog= |
+| Wizards       | =SystemProvisionerWizard=, =TenantOnboardingWizard=,           |
+|               | =TenantProvisioningWizard=, =PartyProvisioningWizard=          |
+| Connectivity  | =ConnectionBrowserMdiWindow=, =ConnectionDetailPanel=,         |
+|               | =ConnectionItemDelegate=, =ConnectionTreeModel=                |
+| Infra/tools   | =ShellMdiWindow=, =OreLogViewerWidget=, =EventViewerDialog=,   |
+|               | =TelemetryMdiWindow=, =TelemetryLogDelegate=,                  |
+|               | =TelemetrySettingsDialog=                                      |
+| Branding      | =AboutDialog=, =SplashScreen=, =LogoLabel=                     |
+| Service dash  | =ServiceDashboardController=, =ServiceDashboardMdiWindow=      |
+| CLI           | =CommandLineParser=                                            |
+
+** =ores.qt.admin= (plugin, load order 10)
+
+Depends on: =ores.qt.api.so=, =ores.iam.api.lib=, =ores.controller.api.lib=
+
+Accounts, roles, tenants, tenant types, system settings, apps, app versions,
+badges (definition + severity).  ~AdminPlugin~ exposes an "Admin" menu.
+
+** =ores.qt.refdata= (plugin, load order 20)
+
+Depends on: =ores.qt.api.so=, =ores.refdata.core.lib=
+
+Currencies, countries, change reasons, dimensions (origin/nature/treatment),
+coding schemes, data domains, subject areas, catalogs, methodologies, datasets,
+dataset bundles, day count fraction types, business day convention types,
+floating index types, payment frequency types, leg types, monetary natures,
+rounding types, purpose types, concurrency policies.  Also currency import.
+
+~RefdataPlugin~ exposes a "Reference Data" menu.
+
+** =ores.qt.party= (plugin, load order 30)
+
+Depends on: =ores.qt.api.so=, =ores.refdata.core.lib=
+
+Parties, counterparties, business centres, business units, business unit types,
+party types, party statuses, party ID schemes, contact types, LEI entity picker.
+
+~PartyPlugin~ exposes a "Party" menu.
+
+Note: ~PartyPickerDialog~ has been moved to =ores.qt.api= so that
+=ores.qt.trading= has no compile-time dependency on this plugin.
+
+** =ores.qt.trading= (plugin, load order 40)
+
+Depends on: =ores.qt.api.so=, =ores.trading.api.lib=, =ores.ore.lib=,
+=ores.ore.api.lib=, =ores.storage.lib=
+
+Portfolios, books, book statuses, trades, org explorer, portfolio explorer,
+ORE import (=OreImporter=, =OreImportWizard=, =OreImportController=,
+=ImportTradeDialog=).
+
+~TradingPlugin~ exposes a "Trading" menu.
+
+** =ores.qt.mktdata= (plugin, load order 50)
+
+Depends on: =ores.qt.api.so=, =ores.marketdata.api.lib=,
+=ores.analytics.api.lib=, =ores.variability.api.lib=, =ores.assets.api.lib=,
+=ores.dq.api.lib=, =ores.synthetic.api.lib=, =ores.http.api.lib=
+
+Market data (fixing, observation, series), pricing engine types, pricing model
+configs/products/parameters, currency market tiers, data librarian, publish
+bundle/datasets wizard, dataset view dialogs.
+
+~MarketDataPlugin~ exposes a "Market Data" menu.
+
+** =ores.qt.compute= (plugin, load order 60)
+
+Depends on: =ores.qt.api.so=, =ores.compute.api.lib=, =ores.scheduler.api.lib=,
+=ores.reporting.api.lib=, =ores.workflow.lib=, =ores.workflow.api.lib=
+
+Compute dashboard and console, job definitions, queue monitor, app provisioner
+wizard, workunit detail, batch detail, report types/definitions/instances, cron
+editor.
+
+~ComputePlugin~ exposes "Compute" and "Reporting" menus.
+
+* Cross-Cutting Concerns
+
+** Inter-plugin navigation
+
+Some controllers currently signal navigation to another domain.  For example,
+~CurrencyController::showRoundingTypesRequested()~ asks the app to open the
+rounding-types list.  With separate plugins, this must not be a direct function
+call — both domains need to remain decoupled.
+
+Route through the shared event bus already present in ~plugin_context~:
+
+#+begin_src cpp
+// Inside CurrencyController (in ores.qt.refdata):
+ctx_.event_bus->publish("ui.open.rounding_types", {});
+
+// RefdataPlugin::on_login() subscribes:
+ctx.event_bus->subscribe("ui.open.rounding_types",
+    [this](auto&) { rounding_type_controller_->showListWindow(); });
+#+end_src
+
+This is consistent with the rest of ORE Studio's NATS/event-driven design.
+Define a header of well-known UI event names in =ores.qt.api= to avoid string
+drift.
+
+** Shared caches
+
+~ImageCache~, ~BadgeCache~, and ~ChangeReasonCache~ are owned by the host
+(=ores.qt.app=), populated after login, and passed into every plugin via
+~plugin_context~.  They live in =ores.qt.api.so= so every plugin can use them
+without introducing inter-plugin dependencies.
+
+** ~ChangeReasonDialog~ and ~PartyPickerDialog~
+
+These are consumed by multiple domain plugins.  Moving them to =ores.qt.api=
+keeps the dependency graph clean: no plugin needs to import another plugin's
+shared library.  Each dialog only calls ~ClientManager~ NATS requests — it does
+not depend on any controller or domain-specific business logic.
+
+* CMake Structure
+
+** =ores.qt.api= (shared lib)
+
+#+begin_src cmake
+add_library(ores.qt.api SHARED ${sources} ${headers})
+set_target_properties(ores.qt.api PROPERTIES
+    VERSION   ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_compile_definitions(ores.qt.api PRIVATE ORES_QT_API_LIBRARY)
+
+target_include_directories(ores.qt.api PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    "${CMAKE_CURRENT_BINARY_DIR}/ores.qt.api_autogen/include")
+
+target_link_libraries(ores.qt.api PUBLIC
+    Qt6::Core Qt6::Gui Qt6::Widgets
+    ores.nats.lib ores.eventing.lib ores.iam.api.lib
+    ores.refdata.api.lib  # for ChangeReasonDialog, PartyPickerDialog
+    ores.logging.lib ores.utility.lib ores.platform.lib)
+
+install(TARGETS ores.qt.api LIBRARY DESTINATION lib)
+#+end_src
+
+** Domain plugin example (=ores.qt.refdata=)
+
+#+begin_src cmake
+add_library(ores.qt.refdata SHARED ${sources} ${headers})
+
+# Qt plugins must not have a lib prefix on any platform
+set_target_properties(ores.qt.refdata PROPERTIES PREFIX "")
+
+target_compile_definitions(ores.qt.refdata PRIVATE ORES_QT_REFDATA_LIBRARY)
+
+target_link_libraries(ores.qt.refdata PRIVATE
+    ores.qt.api          # shared — provides IPlugin, ClientManager, etc.
+    ores.refdata.core.lib
+    Qt6::Core Qt6::Gui Qt6::Widgets)
+
+install(TARGETS ores.qt.refdata LIBRARY DESTINATION plugins)
+#+end_src
+
+** Executable
+
+#+begin_src cmake
+qt_add_executable(ores.qt ${main_cpp} ${resources})
+
+target_link_libraries(ores.qt PRIVATE
+    ores.qt.app.lib      # static: MainWindow, login dialogs, etc.
+    ores.qt.api          # shared: must be explicit for RPATH
+    ores.openssl_cleanup
+    ${CMAKE_THREAD_LIBS_INIT})
+
+# On Linux: find ores.qt.api.so next to the binary, and plugins/ subdirectory
+set_target_properties(ores.qt PROPERTIES
+    INSTALL_RPATH "$ORIGIN:$ORIGIN/../lib"
+    BUILD_WITH_INSTALL_RPATH FALSE
+    BUILD_RPATH   "$<TARGET_FILE_DIR:ores.qt.api>")
+
+install(TARGETS ores.qt RUNTIME DESTINATION bin)
+#+end_src
+
+** Dependency graph
+
+#+begin_src
+ores.qt.api.so  → Qt6, ores.nats.lib, ores.eventing.lib, ores.iam.api.lib,
+                  ores.refdata.api.lib, ores.logging.lib, ores.utility.lib
+
+ores.qt.admin.so   → ores.qt.api.so, ores.iam.api.lib, ores.controller.api.lib
+ores.qt.refdata.so → ores.qt.api.so, ores.refdata.core.lib
+ores.qt.party.so   → ores.qt.api.so, ores.refdata.core.lib
+ores.qt.trading.so → ores.qt.api.so, ores.trading.api.lib, ores.ore.lib,
+                      ores.ore.api.lib, ores.storage.lib
+ores.qt.mktdata.so → ores.qt.api.so, ores.marketdata.api.lib,
+                      ores.analytics.api.lib, ores.dq.api.lib,
+                      ores.variability.api.lib, ores.assets.api.lib,
+                      ores.synthetic.api.lib, ores.http.api.lib
+ores.qt.compute.so → ores.qt.api.so, ores.compute.api.lib,
+                      ores.scheduler.api.lib, ores.reporting.api.lib,
+                      ores.workflow.lib
+
+ores.qt.app.lib (static) → ores.qt.api.so, ores.connections.lib, ores.shell.lib,
+                            ores.telemetry.lib, ores.security.lib, Qt6
+
+ores.qt (exe) → ores.qt.app.lib, ores.qt.api.so
+                # plugins loaded at runtime, not linked
+#+end_src
+
+* Deployment Layout
+
+#+begin_src
+bin/
+  ores.qt                   # executable (Linux) / ores.qt.exe (Windows)
+lib/
+  libores.qt.api.so         # shared framework (Linux)
+  ores.qt.api.dll           # (Windows)
+plugins/
+  ores.qt.admin.so
+  ores.qt.refdata.so
+  ores.qt.party.so
+  ores.qt.trading.so
+  ores.qt.mktdata.so
+  ores.qt.compute.so
+#+end_src
+
+On Windows, because DLLs must be findable at load time, both =ores.qt.api.dll=
+and all plugin DLLs go into the same =bin/= directory as the executable (or
+=bin/plugins/= for plugins, with ~QCoreApplication::addLibraryPath("plugins")~
+called in =main.cpp= before plugin loading).
+
+* Migration Path
+
+A full cut-over at once is impractical given the size.  The recommended sequence
+keeps CI green at every step.
+
+** Phase 0 — Introduce =ores.qt.api= as a shared lib
+
+Extract the framework types (=ClientManager=, =EntityController=, widgets,
+utilities, caches, =IPlugin=, =PluginRegistry=) into a new project
+=ores.qt.api= built as a =SHARED= library.  =ores.qt= links against it.  All
+existing code remains in =ores.qt=; only the framework is moved.
+
+Goal: prove the shared-lib boundary compiles and links cleanly.
+
+** Phase 1 — Introduce the plugin interface (no functional change)
+
+Add =IPlugin=, =plugin_context=, =PluginRegistry=, and plugin loading to
+=ores.qt.api=.  Create a single =LegacyPlugin= class in =ores.qt= that wraps
+all existing controllers and implements =IPlugin=.  =MainWindow= iterates the
+registry instead of its controller members.
+
+At this point the application is functionally identical but =MainWindow= has
+shed all its controller pointer members.
+
+** Phase 2 — Extract domain plugins one at a time
+
+Move one domain at a time into its own =SHARED= library.  Build the plugin,
+place it in the =plugins/= directory, verify the application loads and runs it.
+The =LegacyPlugin= shrinks with each extraction.
+
+Suggested order (fewest dependencies extracted first):
+1. =ores.qt.admin= (admin entities, no cross-domain pickers)
+2. =ores.qt.compute= (compute API only, no shared widgets)
+3. =ores.qt.refdata= (large but internally self-contained)
+4. =ores.qt.party= (depends on refdata API types for flag picker, but =PartyPickerDialog= is already in =ores.qt.api=)
+5. =ores.qt.mktdata= (depends on refdata types)
+6. =ores.qt.trading= (depends on party types, but picker is in =ores.qt.api=)
+
+** Phase 3 — Rename and clean up
+
+Once =LegacyPlugin= is empty, rename =ores.qt= logic to =ores.qt.app= (a
+static lib linked into the thin =ores.qt= exe entry point).  Update CMakeLists,
+CI, and documentation.
+
+* Trade-offs
+
+** Windows DLL concerns
+
+Qt's =QPluginLoader= automatically rejects plugins that were compiled with a
+different Qt build configuration (debug vs release, or different Qt version).
+This check is built into the plugin metadata that ~Q_PLUGIN_METADATA~ generates.
+For production builds (always Release), this is not a concern.  For development:
+build all targets in the same configuration.
+
+** ABI stability
+
+The =IPlugin= IID string (="ores.qt.IPlugin/1.0"=) is the ABI contract.  Any
+change to =IPlugin= that is not backwards compatible requires bumping the minor
+version.  =QPluginLoader= will then refuse old plugins with a clear error
+message rather than crashing.  Changes to =plugin_context= members (adding
+fields) are backwards compatible as long as the struct is not passed by value
+across the boundary — passing by const reference is safe.
+
+** Plugin ordering
+
+~IPlugin::load_order()~ gives explicit control.  Menu items appear in the order
+plugins were loaded.  Alphabetical scanning of the directory provides a stable
+secondary sort for plugins that share a load order value.
+
+** Testing
+
+Each domain plugin is a shared library with no dependency on =MainWindow=.
+A test executable can load just =ores.qt.refdata.so= (or link it directly as a
+=SHARED= target) plus a mock =ClientManager= stub, entirely without the Qt
+application object or MDI infrastructure.  Unit testing individual controllers
+becomes straightforward.
+
+** Hot-reload (future)
+
+Because plugins are shared libraries loaded at runtime, a development-mode
+"reload" feature becomes possible: unload a plugin via
+~QPluginLoader::unload()~, recompile it, and reload.  This is how Qt Creator's
+own plugin system supports live-reload of its non-core plugins.  Not required
+now, but the architecture does not preclude it.
+
+* Summary
+
+| Aspect                | Today                          | Proposed                                |
+|-----------------------+--------------------------------+-----------------------------------------|
+| Projects              | 1                              | 9 (api + app + exe + 6 domain plugins)  |
+| Files per project     | 800 in one flat dir            | ~50–150 per project                     |
+| Library type          | Static                         | api: shared; plugins: shared; app: static |
+| MainWindow coupling   | Owns 50+ controller ptrs       | Iterates over ~IPlugin~ registry        |
+| Host knows domains?   | Yes (includes every header)    | No (zero domain headers in host)        |
+| Adding new domain     | Edit MainWindow.hpp + .cpp     | Drop new .so into plugins/, no rebuild  |
+| Cross-domain signals  | Hardwired in MainWindow        | Routed through event bus                |
+| Unit testing          | Must link whole application    | Link one plugin .so + mock              |
+| Incremental build     | Whole 800-file lib rebuilds    | Only the changed plugin rebuilds        |
+| Windows 2 GB limit    | Workaround in CMake            | Gone (static monolith eliminated)       |
+| ABI version checking  | None                           | ~QPluginLoader~ enforces IID match      |

@@ -27,6 +27,7 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/tag.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::connections::service {
 class connection_manager;
@@ -40,7 +41,7 @@ namespace ores::qt {
  * Displays selected tags as colored pill badges with remove buttons.
  * Provides an add button to select from available tags or create new ones.
  */
-class TagSelectorWidget : public QWidget {
+class ORES_QT_API TagSelectorWidget : public QWidget {
     Q_OBJECT
 
 public:

@@ -73,6 +73,20 @@
             </property>
            </widget>
 {{/is_text_edit}}
+{{#is_static_combo}}
+           <widget class="QComboBox" name="{{widget}}">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+           <widget class="QComboBox" name="{{widget}}">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+{{/is_dynamic_combo}}
           </item>
 {{/domain_entity.qt.detail_fields}}
          </layout>

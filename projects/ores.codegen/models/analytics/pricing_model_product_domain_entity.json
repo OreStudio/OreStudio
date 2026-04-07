@@ -77,6 +77,79 @@
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
       "iterator_var": "pmp"
+    },
+
+    "qt": {
+      "domain_include": "ores.analytics.api/domain/pricing_model_product.hpp",
+      "domain_class": "analytics::domain::pricing_model_product",
+      "protocol_include": "ores.analytics.api/messaging/pricing_model_product_protocol.hpp",
+      "collection_name": "products",
+      "item_var": "product",
+      "key_field": "pricing_engine_type_code",
+      "key_widget": "pricingEngineTypeCodeCombo",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "analytics::messaging::get_pricing_model_products_request",
+      "get_response_class": "analytics::messaging::get_pricing_model_products_response",
+      "get_message_type": "get_pricing_model_products_request",
+      "save_request_class": "analytics::messaging::save_pricing_model_product_request",
+      "save_response_class": "analytics::messaging::save_pricing_model_product_response",
+      "save_message_type": "save_pricing_model_product_request",
+      "delete_request_class": "analytics::messaging::delete_pricing_model_product_request",
+      "delete_response_class": "analytics::messaging::delete_pricing_model_product_response",
+      "delete_message_type": "delete_pricing_model_product_request",
+      "history_request_class": "analytics::messaging::get_pricing_model_product_history_request",
+      "history_response_class": "analytics::messaging::get_pricing_model_product_history_response",
+      "history_message_type": "get_pricing_model_product_history_request",
+
+      "detail_fields": [
+        {
+          "field": "pricing_engine_type_code",
+          "label": "Pricing Engine Type",
+          "widget": "pricingEngineTypeCodeCombo",
+          "type": "dynamic_combo",
+          "is_key": true,
+          "is_required": true,
+          "combo_type": "analytics::domain::pricing_engine_type",
+          "combo_include": "ores.analytics.api/domain/pricing_engine_type.hpp",
+          "combo_display": "code",
+          "combo_value": "code",
+          "combo_is_uuid": false,
+          "combo_is_optional": false,
+          "combo_setter": "setPricingEngineTypes",
+          "combo_setter_pascal": "PricingEngineTypes",
+          "combo_items_member": "pricingEngineTypes"
+        },
+        {
+          "field": "model",
+          "label": "Model",
+          "widget": "modelEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Pricing model (e.g. DiscountedCashflows, LGM, BlackBachelier)"
+        },
+        {
+          "field": "engine",
+          "label": "Engine",
+          "widget": "engineEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Numerical engine (e.g. DiscountingSwapEngine, Grid, AMC)"
+        }
+      ],
+
+      "columns": [
+        {"enum_name": "PricingEngineTypeCode", "field": "pricing_engine_type_code", "header": "Engine Type", "is_string": true, "width": 200},
+        {"enum_name": "Model", "field": "model", "header": "Model", "is_string": true, "width": 200},
+        {"enum_name": "Engine", "field": "engine", "header": "Engine", "is_string": true, "width": 200},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 70},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "PricingModelProductListWindow",
+      "window_title": "Pricing Model Products",
+      "icon": "Table"
     }
   }
 }

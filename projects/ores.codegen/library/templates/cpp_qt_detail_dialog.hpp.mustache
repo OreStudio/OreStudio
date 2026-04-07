@@ -3,10 +3,14 @@
 #ifndef ORES_QT_{{domain_entity.entity_upper}}_DETAIL_DIALOG_HPP
 #define ORES_QT_{{domain_entity.entity_upper}}_DETAIL_DIALOG_HPP
 
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "{{domain_entity.qt.domain_include}}"
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+#include "{{combo_include}}"
+{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 
 namespace Ui {
 class {{domain_entity.entity_pascal}}DetailDialog;
@@ -43,6 +47,9 @@ public:
     void set{{domain_entity.entity_pascal_short}}(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+    void {{combo_setter}}(const std::vector<{{combo_type}}>& items);
+{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 
 signals:
     void {{domain_entity.qt.item_var}}Saved(const QString& code);
@@ -63,10 +70,16 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+{{#domain_entity.qt.has_combo_fields}}
+    void setupCombos();
+{{/domain_entity.qt.has_combo_fields}}
     void updateUiFrom{{domain_entity.entity_pascal_short}}();
     void update{{domain_entity.entity_pascal_short}}FromUi();
     void updateSaveButtonState();
     bool validateInput();
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+    void populate{{combo_setter_pascal}}();
+{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 
     Ui::{{domain_entity.entity_pascal}}DetailDialog* ui_;
     ClientManager* clientManager_;
@@ -75,6 +88,9 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+{{#domain_entity.qt.detail_fields}}{{#is_dynamic_combo}}
+    std::vector<{{combo_type}}> {{combo_items_member}}_;
+{{/is_dynamic_combo}}{{/domain_entity.qt.detail_fields}}
 };
 
 }

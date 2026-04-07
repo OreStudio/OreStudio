@@ -14,7 +14,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -42,7 +41,7 @@ using namespace ores::logging;
     setupConnections();
 
     // Initial load
-    reload();
+    doReload();
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupUi() {
@@ -69,7 +68,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &{{domain_entity.entity_pascal}}MdiWindow::reload);
+            &{{domain_entity.entity_pascal}}MdiWindow::doReload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -168,7 +167,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupConnections() {
     });
 }
 
-void {{domain_entity.entity_pascal}}MdiWindow::reload() {
+void {{domain_entity.entity_pascal}}MdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading {{domain_entity.entity_plural_words}}";
     clearStaleIndicator();
     emit statusChanged(tr("Loading {{domain_entity.entity_plural_words}}..."));

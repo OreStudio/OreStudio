@@ -1323,9 +1323,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Compute per-field flags for template iteration
             detail_fields = qt['detail_fields']
             required_fields = []
+            required_dynamic_combo_fields = []
             for i, f in enumerate(detail_fields):
                 f['is_line_edit'] = f.get('type') == 'line_edit'
                 f['is_text_edit'] = f.get('type') == 'text_edit'
+                f['is_static_combo'] = f.get('type') == 'static_combo'
+                f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
                 f['_is_first'] = (i == 0)
                 f['_is_last'] = (i == len(detail_fields) - 1)
                 f['_row_index'] = i
@@ -1333,20 +1336,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     f['is_key'] = False
                 if not f.get('is_required'):
                     f['is_required'] = False
-                # Derive value_widget for history dialog (e.g. codeEdit -> codeValue)
+                # Derive value_widget for history dialog (e.g. codeEdit->codeValue, nameCombo->nameValue)
                 widget = f.get('widget', f['field'] + 'Edit')
-                f['value_widget'] = widget.replace('Edit', 'Value')
+                f['value_widget'] = widget.replace('Edit', 'Value').replace('Combo', 'Value')
                 # Derive label_widget for detail dialog form labels (e.g. code -> labelCode)
                 f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
-                if f.get('is_required'):
+                if f.get('is_required') and f.get('is_line_edit'):
                     required_fields.append({
+                        'field': f['field'],
+                        'widget': f['widget'],
+                        '_is_last': False,
+                    })
+                if f.get('is_required') and f.get('is_dynamic_combo'):
+                    required_dynamic_combo_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],
                         '_is_last': False,
                     })
             if required_fields:
                 required_fields[-1]['_is_last'] = True
+            if required_dynamic_combo_fields:
+                required_dynamic_combo_fields[-1]['_is_last'] = True
             qt['required_fields'] = required_fields
+            qt['required_dynamic_combo_fields'] = required_dynamic_combo_fields
             # Expose the key field's widget name for setCreateMode
             key_field_data = next((f for f in detail_fields if f.get('is_key')), None)
             qt['key_widget'] = key_field_data['widget'] if key_field_data else 'codeEdit'
@@ -1354,6 +1366,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_pagination'] = qt.get('has_pagination', False)
             qt['has_text_edit_fields'] = any(
                 f.get('type') == 'text_edit' for f in detail_fields
+            )
+            qt['has_combo_fields'] = any(
+                f.get('type') in ('static_combo', 'dynamic_combo') for f in detail_fields
+            )
+            qt['has_dynamic_combo_fields'] = any(
+                f.get('type') == 'dynamic_combo' for f in detail_fields
+            )
+            qt['has_static_combo_fields'] = any(
+                f.get('type') == 'static_combo' for f in detail_fields
             )
             qt['metadata_start_row'] = len(detail_fields)
             qt['metadata_start_row_plus_1'] = len(detail_fields) + 1

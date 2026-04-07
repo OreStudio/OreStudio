@@ -68,6 +68,69 @@
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
       "iterator_var": "pmc"
+    },
+
+    "qt": {
+      "domain_include": "ores.analytics.api/domain/pricing_model_config.hpp",
+      "domain_class": "analytics::domain::pricing_model_config",
+      "protocol_include": "ores.analytics.api/messaging/pricing_model_config_protocol.hpp",
+      "collection_name": "configs",
+      "item_var": "config",
+      "key_field": "name",
+      "key_widget": "nameEdit",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "analytics::messaging::get_pricing_model_configs_request",
+      "get_response_class": "analytics::messaging::get_pricing_model_configs_response",
+      "get_message_type": "get_pricing_model_configs_request",
+      "save_request_class": "analytics::messaging::save_pricing_model_config_request",
+      "save_response_class": "analytics::messaging::save_pricing_model_config_response",
+      "save_message_type": "save_pricing_model_config_request",
+      "delete_request_class": "analytics::messaging::delete_pricing_model_config_request",
+      "delete_response_class": "analytics::messaging::delete_pricing_model_config_response",
+      "delete_message_type": "delete_pricing_model_config_request",
+      "history_request_class": "analytics::messaging::get_pricing_model_config_history_request",
+      "history_response_class": "analytics::messaging::get_pricing_model_config_history_response",
+      "history_message_type": "get_pricing_model_config_history_request",
+
+      "detail_fields": [
+        {
+          "field": "name",
+          "label": "Name",
+          "widget": "nameEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Enter configuration name (e.g. Standard, AMC, DeltaGamma)"
+        },
+        {
+          "field": "config_variant",
+          "label": "Variant",
+          "widget": "configVariantEdit",
+          "type": "line_edit",
+          "placeholder": "Optional variant tag (e.g. standard, amc, dg)"
+        },
+        {
+          "field": "description",
+          "label": "Description",
+          "widget": "descriptionEdit",
+          "type": "text_edit",
+          "placeholder": "Enter a description of this pricing model configuration"
+        }
+      ],
+
+      "columns": [
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 180},
+        {"enum_name": "ConfigVariant", "field": "config_variant", "header": "Variant", "is_string": true, "width": 100},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 70},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "PricingModelConfigListWindow",
+      "window_title": "Pricing Model Configurations",
+      "icon": "Chart"
     }
   }
 }

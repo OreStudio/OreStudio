@@ -41,6 +41,7 @@ pricing_model_config_mapper::map(const pricing_model_config_entity& v) {
     r.description = v.description.value_or("");
     r.config_variant = v.config_variant;
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     if (!v.valid_from)

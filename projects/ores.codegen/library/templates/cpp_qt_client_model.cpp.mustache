@@ -9,7 +9,6 @@
 #include "{{domain_entity.qt.protocol_include}}"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -184,12 +183,10 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                     process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch {{domain_entity.entity_plural_words}}: "
-                                               << comms::net::to_string(result.error());
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                     return {.success = false, .{{domain_entity.qt.collection_name}} = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch {{domain_entity.entity_plural_words}}: " + comms::net::to_string(result.error())),
+                            .error_message = "Failed to send request",
                             .error_details = {}};
                 }
 

@@ -315,15 +315,7 @@ void PricingModelProductParameterMdiWindow::deleteSelected() {
 
         analytics::messaging::delete_pricing_model_product_parameter_request request;
         request.ids = ids;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_pricing_model_product_parameter_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -333,31 +325,8 @@ void PricingModelProductParameterMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (std::size_t i = 0; i < ids.size(); ++i) {
-                results.push_back({ids[i], codes[i], false, "Failed to decompress server response"});
-            }
-            return results;
-        }
-
-        auto response = analytics::messaging::delete_pricing_model_product_parameter_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            for (std::size_t i = 0; i < ids.size(); ++i) {
-                results.push_back({ids[i], codes[i], false, "Invalid server response"});
-            }
-            return results;
-        }
-
-        // Match results with codes for display purposes
-        for (std::size_t i = 0; i < response->results.size(); ++i) {
-            const auto& result = response->results[i];
-            std::string code = (i < codes.size()) ? codes[i] : "";
-            results.push_back({result.id, code, result.success, result.message});
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            results.push_back({ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;

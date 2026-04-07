@@ -105,7 +105,7 @@ void PricingModelProductDetailDialog::setProduct(
 
 void PricingModelProductDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->pricingEngineTypeCodeCombo->setReadOnly(!createMode);
+    ui_->pricingEngineTypeCodeCombo->setEnabled(createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -117,7 +117,7 @@ void PricingModelProductDetailDialog::setCreateMode(bool createMode) {
 
 void PricingModelProductDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->pricingEngineTypeCodeCombo->setReadOnly(true);
+    ui_->pricingEngineTypeCodeCombo->setEnabled(false);
     ui_->modelEdit->setReadOnly(readOnly);
     ui_->engineEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);

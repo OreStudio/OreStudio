@@ -21,6 +21,7 @@
 #define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_HANDLER_HPP
 
 #include <optional>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -134,7 +135,7 @@ public:
         service::pricing_model_product_parameter_service svc(req_ctx);
         if (auto req = decode<get_pricing_model_product_parameter_history_request>(msg)) {
             try {
-                auto hist = svc.get_parameter_history(req->id);
+                auto hist = svc.get_parameter_history(boost::uuids::to_string(req->id));
                 BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_pricing_model_product_parameter_history_response{
@@ -170,7 +171,7 @@ public:
         if (auto req = decode<delete_pricing_model_product_parameter_request>(msg)) {
             try {
                 for (const auto& id : req->ids)
-                    svc.remove_parameter(id);
+                    svc.remove_parameter(boost::uuids::to_string(id));
                 BOOST_LOG_SEV(pricing_model_product_parameter_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,

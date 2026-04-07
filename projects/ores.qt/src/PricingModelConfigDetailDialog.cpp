@@ -144,7 +144,8 @@ void PricingModelConfigDetailDialog::updateConfigFromUi() {
     if (createMode_) {
         config_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
-    config_.config_variant = ui_->configVariantEdit->text().trimmed().toStdString();
+    auto variant = ui_->configVariantEdit->text().trimmed().toStdString();
+    config_.config_variant = variant.empty() ? std::nullopt : std::optional<std::string>(variant);
     config_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     config_.modified_by = username_;
 }

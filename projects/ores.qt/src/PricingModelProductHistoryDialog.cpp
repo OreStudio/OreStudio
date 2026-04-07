@@ -125,48 +125,19 @@ void PricingModelProductHistoryDialog::loadHistory() {
 
     QPointer<PricingModelProductHistoryDialog> self = this;
 
-    struct HistoryResult {
-        bool success;
-        std::string message;
-        std::vector<analytics::domain::pricing_model_product> versions;
-    };
+    using HistoryResult = std::expected<
+        analytics::messaging::get_pricing_model_product_history_response, std::string>;
 
-    auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
-        }
-
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, id = id_]() -> HistoryResult {
+        if (!self || !self->clientManager_)
+            return std::unexpected("Dialog closed");
         analytics::messaging::get_pricing_model_product_history_request request;
         request.id = id;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_pricing_model_product_history_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response", {}};
-        }
-
-        auto response = analytics::messaging::get_pricing_model_product_history_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response", {}};
-        }
-
-        return {response->success, response->message,
-                std::move(response->versions)};
-    };
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) return std::unexpected(result.error());
+        return std::move(*result);
+    });
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
     connect(watcher, &QFutureWatcher<HistoryResult>::finished,
@@ -174,18 +145,20 @@ void PricingModelProductHistoryDialog::loadHistory() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (result.success) {
-            self->versions_ = std::move(result.versions);
-            self->updateVersionList();
-            emit self->statusChanged(
-                QString("Loaded %1 versions").arg(self->versions_.size()));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
-            emit self->errorOccurred(QString::fromStdString(result.message));
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
+            emit self->errorOccurred(QString::fromStdString(result.error()));
+            return;
         }
+        if (!result->success) {
+            emit self->errorOccurred(QString::fromStdString(result->message));
+            return;
+        }
+        self->versions_ = std::move(result->products);
+        self->updateVersionList();
+        emit self->statusChanged(
+            QString("Loaded %1 versions").arg(self->versions_.size()));
     });
-
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

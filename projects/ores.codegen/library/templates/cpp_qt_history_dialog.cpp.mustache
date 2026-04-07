@@ -129,60 +129,32 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
 
     QPointer<{{domain_entity.entity_pascal}}HistoryDialog> self = this;
 
-    struct HistoryResult {
-        bool success;
-        std::string message;
-        std::vector<{{domain_entity.qt.domain_class}}> versions;
-    };
+    using HistoryResult = std::expected<{{domain_entity.qt.history_response_class}}, std::string>;
 
 {{#domain_entity.qt.has_uuid_primary_key}}
-    auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
-        }
-
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, id = id_]() -> HistoryResult {
+        if (!self || !self->clientManager_)
+            return std::unexpected("Dialog closed");
         {{domain_entity.qt.history_request_class}} request;
         request.id = id;
-        auto payload = request.serialize();
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) return std::unexpected(result.error());
+        return std::move(*result);
+    });
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
-    auto task = [self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed", {}};
-        }
-
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
+        if (!self || !self->clientManager_)
+            return std::unexpected("Dialog closed");
         {{domain_entity.qt.history_request_class}} request;
         request.{{domain_entity.primary_key.column}} = code;
-        auto payload = request.serialize();
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) return std::unexpected(result.error());
+        return std::move(*result);
+    });
 {{/domain_entity.qt.has_uuid_primary_key}}
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::{{domain_entity.qt.history_message_type}},
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response", {}};
-        }
-
-        auto response = {{domain_entity.qt.history_response_class}}::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response", {}};
-        }
-
-        return {response->success, response->message,
-                std::move(response->versions)};
-    };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
     connect(watcher, &QFutureWatcher<HistoryResult>::finished,
@@ -190,18 +162,20 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (result.success) {
-            self->versions_ = std::move(result.versions);
-            self->updateVersionList();
-            emit self->statusChanged(
-                QString("Loaded %1 versions").arg(self->versions_.size()));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
-            emit self->errorOccurred(QString::fromStdString(result.message));
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.error();
+            emit self->errorOccurred(QString::fromStdString(result.error()));
+            return;
         }
+        if (!result->success) {
+            emit self->errorOccurred(QString::fromStdString(result->message));
+            return;
+        }
+        self->versions_ = std::move(result->{{domain_entity.qt.collection_name}});
+        self->updateVersionList();
+        emit self->statusChanged(
+            QString("Loaded %1 versions").arg(self->versions_.size()));
     });
-
-    QFuture<HistoryResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

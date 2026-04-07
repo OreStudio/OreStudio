@@ -67,14 +67,12 @@ update the templates first so the pattern is captured for future use.
 1. Create a JSON model in =projects/ores.codegen/models/{component}/=:
    - For UUID primary key tables: use =*_domain_entity.json= naming
    - For junction/association tables: use =*_junction.json= naming
-2. Generate SQL:
+2. Generate SQL (files are written directly to =projects/ores.sql/=):
    #+begin_src sh
    cd projects/ores.codegen
-   ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile sql
+   ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql
    #+end_src
-3. Review the generated output in =output/=
-4. Copy to =projects/ores.sql/create/{component}/=
-5. Continue with steps 5-7 below (orchestration, testing, validation)
+3. Continue with steps 5-7 below (orchestration, testing, validation)
 
 ** Manual workflow (last resort)
 

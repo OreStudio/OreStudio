@@ -60,7 +60,6 @@
       <addaction name="separator"/>
       <addaction name="ActionSetRecordingDirectory"/>
      </widget>
-     <addaction name="ActionServiceDashboard"/>
      <addaction name="ActionTelemetryViewer"/>
      <addaction name="ActionEventViewer"/>
      <addaction name="ActionShell"/>
@@ -69,13 +68,6 @@
      <addaction name="separator"/>
      <addaction name="ActionTelemetrySettings"/>
     </widget>
-    <widget class="QMenu" name="menuMessageQueue">
-     <property name="title">
-      <string>&amp;Message Queue</string>
-     </property>
-     <addaction name="ActionQueueMonitor"/>
-    </widget>
-    <addaction name="menuMessageQueue"/>
     <addaction name="menuTelemetry"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -201,14 +193,6 @@
     <string>View domain events in real-time</string>
    </property>
   </action>
-  <action name="ActionServiceDashboard">
-   <property name="text">
-    <string>&amp;Service Dashboard...</string>
-   </property>
-   <property name="toolTip">
-    <string>View live status of all running services</string>
-   </property>
-  </action>
   <action name="ActionTelemetryViewer">
    <property name="text">
     <string>&amp;Log Viewer...</string>
@@ -231,14 +215,6 @@
    </property>
    <property name="toolTip">
     <string>Manage saved server connections</string>
-   </property>
-  </action>
-  <action name="ActionQueueMonitor">
-   <property name="text">
-    <string>&amp;Queue Monitor</string>
-   </property>
-   <property name="toolTip">
-    <string>Monitor message queue state and metrics</string>
    </property>
   </action>
  </widget>

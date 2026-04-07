@@ -49,6 +49,7 @@
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/AdminPlugin.hpp"
+#include "ores.qt/ComputePlugin.hpp"
 #include "ores.qt/LegacyPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -164,7 +165,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
     ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
-    ui_->ActionQueueMonitor->setIcon(IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
@@ -178,7 +178,6 @@ MainWindow::MainWindow(QWidget* parent) :
     recordOnIcon_ = IconUtils::createRecoloredIcon(Icon::RecordFilled, IconUtils::RecordingOnColor);
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
     ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
-    ui_->ActionServiceDashboard->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionShell->setIcon(IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
 
@@ -416,6 +415,15 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(adminPlugin_.get(), &AdminPlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    // Create compute plugin — controllers are instantiated in on_login()
+    computePlugin_ = std::make_unique<ComputePlugin>(this);
+    connect(computePlugin_.get(), &ComputePlugin::status_message,
+            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
+    connect(computePlugin_.get(), &ComputePlugin::window_created,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(computePlugin_.get(), &ComputePlugin::window_destroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
     // Create legacy plugin — controllers are instantiated in on_login()
     legacyPlugin_ = std::make_unique<LegacyPlugin>(this);
     connect(legacyPlugin_.get(), &LegacyPlugin::status_message,
@@ -645,14 +653,11 @@ void MainWindow::updateMenuState() {
 
     // System menu enabled when logged in
     ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
-    ui_->ActionQueueMonitor->setEnabled(isLoggedIn);
-
     // File menu items requiring authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
     ui_->ActionMySessions->setEnabled(isLoggedIn);
 
     // Telemetry items requiring authentication
-    ui_->ActionServiceDashboard->setEnabled(isLoggedIn);
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
     ui_->ActionShell->setEnabled(isLoggedIn);
 
@@ -682,6 +687,8 @@ void MainWindow::onDisconnectTriggered() {
 void MainWindow::performDisconnectCleanup() {
     if (legacyPlugin_)
         legacyPlugin_->on_logout();
+    if (computePlugin_)
+        computePlugin_->on_logout();
     if (adminPlugin_)
         adminPlugin_->on_logout();
 
@@ -1478,24 +1485,19 @@ void MainWindow::onLoginSuccess(const QString& username) {
 
     // Drive plugin lifecycle in load_order sequence
     adminPlugin_->on_login(ctx);
+    computePlugin_->on_login(ctx);
     legacyPlugin_->on_login(ctx);
 
     // Insert domain menus from all plugins before Help
     auto* helpAction = ui_->menuHelp->menuAction();
     for (auto* plugin : {static_cast<IPlugin*>(adminPlugin_.get()),
+                         static_cast<IPlugin*>(computePlugin_.get()),
                          static_cast<IPlugin*>(legacyPlugin_.get())}) {
         for (auto* menu : plugin->create_menus()) {
             menuBar()->insertMenu(helpAction, menu);
             plugin_menus_.append(menu);
         }
     }
-
-    // Wire remaining System menu actions (QueueMonitor and ServiceDashboard
-    // are still in LegacyPlugin pending their extraction in later steps)
-    connect(ui_->ActionQueueMonitor, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_queue_monitor(); });
-    connect(ui_->ActionServiceDashboard, &QAction::triggered, this,
-        [this]() { legacyPlugin_->show_service_dashboard(); });
 
     updateWindowTitle();
     updateMenuState();

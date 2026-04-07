@@ -52,18 +52,9 @@ class CounterpartyController;
 class BusinessCentreController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
-class JobDefinitionController;
-class ComputeDashboardController;
-class ComputeConsoleController;
-class ServiceDashboardController;
-class ReportTypeController;
-class ConcurrencyPolicyController;
-class ReportDefinitionController;
-class ReportInstanceController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
-class QueueMonitorController;
 class PurposeTypeController;
 class RoundingTypeController;
 class MonetaryNatureController;
@@ -74,7 +65,6 @@ class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
 class PaymentFrequencyTypeController;
 class LegTypeController;
-class OreImportController;
 class PricingEngineTypeController;
 class PricingModelConfigController;
 class PricingModelProductController;
@@ -85,13 +75,13 @@ class OrgExplorerMdiWindow;
 class DataLibrarianWindow;
 
 /**
- * @brief Transitional plugin wrapping non-admin legacy ores.qt controllers.
+ * @brief Transitional plugin wrapping non-admin, non-compute legacy controllers.
  *
  * Holds domain entity controllers not yet extracted into domain-specific plugins.
  * On login the controllers are created; on logout they are destroyed.  Domain
  * menus are built in code by create_menus() and inserted into the host menu bar.
  *
- * This class will be split into domain-specific plugins in Steps 4–8.
+ * This class will be split into domain-specific plugins in Steps 5–8.
  */
 class LegacyPlugin : public QObject, public IPlugin {
     Q_OBJECT
@@ -106,12 +96,6 @@ public:
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
     void on_logout() override;
-
-    /**
-     * @brief Show methods for System menu items owned by the host menu bar.
-     */
-    void show_queue_monitor();
-    void show_service_dashboard();
 
 signals:
     /** @brief Forwarded status/error messages from entity controllers. */
@@ -164,7 +148,6 @@ private:
     std::unique_ptr<PortfolioController>                   portfolioController_;
     std::unique_ptr<BookController>                        bookController_;
     std::unique_ptr<BookStatusController>                  bookStatusController_;
-    std::unique_ptr<QueueMonitorController>                queueMonitorController_;
     std::unique_ptr<PurposeTypeController>                 purposeTypeController_;
     std::unique_ptr<RoundingTypeController>                roundingTypeController_;
     std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
@@ -179,15 +162,6 @@ private:
     std::unique_ptr<PricingModelConfigController>          pricingModelConfigController_;
     std::unique_ptr<PricingModelProductController>         pricingModelProductController_;
     std::unique_ptr<PricingModelProductParameterController> pricingModelProductParameterController_;
-    std::unique_ptr<JobDefinitionController>               jobDefinitionController_;
-    std::unique_ptr<ComputeDashboardController>            computeDashboardController_;
-    std::unique_ptr<ComputeConsoleController>              computeConsoleController_;
-    std::unique_ptr<ServiceDashboardController>            serviceDashboardController_;
-    std::unique_ptr<ReportTypeController>                  reportTypeController_;
-    std::unique_ptr<ConcurrencyPolicyController>           concurrencyPolicyController_;
-    std::unique_ptr<ReportDefinitionController>            reportDefinitionController_;
-    std::unique_ptr<ReportInstanceController>              reportInstanceController_;
-    std::unique_ptr<OreImportController>                   oreImportController_;
     std::unique_ptr<MarketDataController>                  marketDataController_;
 };
 

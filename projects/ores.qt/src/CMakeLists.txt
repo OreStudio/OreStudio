@@ -55,6 +55,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib          # shared framework: ClientManager, EntityController,
                                  # IPlugin, utilities, caches — also pulls Qt6 core modules
         ores.qt.admin.lib        # admin plugin: accounts, roles, tenants, settings, apps
+        ores.qt.compute.lib      # compute plugin: jobs, queues, reports, dashboards
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib

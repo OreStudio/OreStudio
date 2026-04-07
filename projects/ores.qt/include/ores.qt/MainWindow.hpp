@@ -57,6 +57,7 @@ class ChangeReasonCache;
 class BadgeCache;
 class LegacyPlugin;
 class AdminPlugin;
+class ComputePlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
@@ -185,6 +186,9 @@ private:
 
     /** @brief Admin plugin: accounts, roles, tenants, settings, badges, apps. */
     std::unique_ptr<AdminPlugin> adminPlugin_;
+
+    /** @brief Compute plugin: jobs, queues, reports, dashboards, ORE import. */
+    std::unique_ptr<ComputePlugin> computePlugin_;
 
     /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
     std::unique_ptr<LegacyPlugin> legacyPlugin_;

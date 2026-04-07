@@ -56,7 +56,6 @@
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
-#include "ores.qt/QueueMonitorController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
@@ -71,17 +70,7 @@
 #include "ores.qt/PricingModelConfigController.hpp"
 #include "ores.qt/PricingModelProductController.hpp"
 #include "ores.qt/PricingModelProductParameterController.hpp"
-#include "ores.qt/JobDefinitionController.hpp"
-#include "ores.qt/ComputeDashboardController.hpp"
-#include "ores.qt/ComputeConsoleController.hpp"
-#include "ores.qt/ServiceDashboardController.hpp"
-#include "ores.qt/ReportTypeController.hpp"
-#include "ores.qt/ConcurrencyPolicyController.hpp"
-#include "ores.qt/ReportDefinitionController.hpp"
-#include "ores.qt/ReportInstanceController.hpp"
-#include "ores.qt/OreImportController.hpp"
 #include "ores.qt/MarketDataController.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
@@ -245,10 +234,6 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(bookStatusController_.get());
 
-    queueMonitorController_ = std::make_unique<QueueMonitorController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(queueMonitorController_.get());
-
     purposeTypeController_ = std::make_unique<PurposeTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
@@ -325,51 +310,6 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
     pricingModelProductParameterController_ = std::make_unique<PricingModelProductParameterController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connect_controller_signals(pricingModelProductParameterController_.get());
-
-    jobDefinitionController_ = std::make_unique<JobDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, this);
-    connect_controller_signals(jobDefinitionController_.get());
-
-    computeDashboardController_ = std::make_unique<ComputeDashboardController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect_controller_signals(computeDashboardController_.get());
-
-    computeConsoleController_ = std::make_unique<ComputeConsoleController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.badge_cache, this);
-    if (!ctx_.http_base_url.empty())
-        computeConsoleController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect_controller_signals(computeConsoleController_.get());
-
-    serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect_controller_signals(serviceDashboardController_.get());
-
-    reportTypeController_ = std::make_unique<ReportTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(reportTypeController_.get());
-
-    concurrencyPolicyController_ = std::make_unique<ConcurrencyPolicyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(concurrencyPolicyController_.get());
-
-    reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(reportDefinitionController_.get());
-
-    reportInstanceController_ = std::make_unique<ReportInstanceController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(reportInstanceController_.get());
-
-    oreImportController_ = std::make_unique<OreImportController>(
-        ctx_.client_manager, this);
-    connect(oreImportController_.get(), &OreImportController::statusMessage,
-            this, &LegacyPlugin::status_message);
 
     marketDataController_ = std::make_unique<MarketDataController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
@@ -626,18 +566,12 @@ QList<QMenu*> LegacyPlugin::create_menus() {
             bookController_.get(),
             portfolioController_.get(),
             tradeController_.get(),
-            oreImportController_.get(),
+            nullptr,
             ctx_.username,
             ctx_.main_window);
 
         connect(window, &PortfolioExplorerMdiWindow::statusChanged,
                 this, [this](const QString& msg) { emit status_message(msg); });
-
-        if (oreImportController_) {
-            connect(oreImportController_.get(),
-                    &OreImportController::importCompleted,
-                    window, &EntityListMdiWindow::markAsStale);
-        }
 
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);
@@ -720,12 +654,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     connect(actLegTypes, &QAction::triggered, this, [this]() {
         if (legTypeController_) legTypeController_->showListWindow();
     });
-    menuTrading->addSeparator();
-    auto* actImportOre = menuTrading->addAction(ico(Icon::ImportOre), tr("ORE &Import"));
-    connect(actImportOre, &QAction::triggered, this, [this]() {
-        if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
-    });
-
     // ---- Analytics --------------------------------------------------
     auto* menuAnalytics = new QMenu(tr("&Analytics"));
 
@@ -764,48 +692,7 @@ QList<QMenu*> LegacyPlugin::create_menus() {
         if (marketDataController_) marketDataController_->showFixingsWindow();
     });
 
-    // ---- Compute ----------------------------------------------------
-    auto* menuCompute = new QMenu(tr("&Compute"));
-
-    auto* actComputeDashboard = menuCompute->addAction(ico(Icon::Chart), tr("&Dashboard"));
-    connect(actComputeDashboard, &QAction::triggered, this, [this]() {
-        if (computeDashboardController_) computeDashboardController_->showDashboard();
-    });
-    auto* actComputeConsole = menuCompute->addAction(ico(Icon::ServerLink), tr("&Console"));
-    connect(actComputeConsole, &QAction::triggered, this, [this]() {
-        if (computeConsoleController_) computeConsoleController_->showConsole();
-    });
-    menuCompute->addSeparator();
-
-    // ---- Reporting --------------------------------------------------
-    auto* menuReporting = new QMenu(tr("&Reporting"));
-
-    auto* actReportTypes = menuReporting->addAction(ico(Icon::Chart), tr("Report &Types"));
-    connect(actReportTypes, &QAction::triggered, this, [this]() {
-        if (reportTypeController_) reportTypeController_->showListWindow();
-    });
-    auto* actConcurrencyPolicies = menuReporting->addAction(
-        ico(Icon::Settings), tr("&Concurrency Policies"));
-    connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
-        if (concurrencyPolicyController_) concurrencyPolicyController_->showListWindow();
-    });
-    menuReporting->addSeparator();
-    auto* actReportDefinitions = menuReporting->addAction(
-        ico(Icon::ChartMultiple), tr("Report &Definitions"));
-    connect(actReportDefinitions, &QAction::triggered, this, [this]() {
-        if (reportDefinitionController_) reportDefinitionController_->showListWindow();
-    });
-    auto* actReportInstances = menuReporting->addAction(ico(Icon::Record), tr("Report &Instances"));
-    connect(actReportInstances, &QAction::triggered, this, [this]() {
-        if (reportInstanceController_) reportInstanceController_->showListWindow();
-    });
-    menuReporting->addSeparator();
-    auto* actJobDefinitions = menuReporting->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
-    connect(actJobDefinitions, &QAction::triggered, this, [this]() {
-        if (jobDefinitionController_) jobDefinitionController_->showListWindow();
-    });
-
-    return {menuData, menuTrading, menuAnalytics, menuMarketData, menuCompute, menuReporting};
+    return {menuData, menuTrading, menuAnalytics, menuMarketData};
 }
 
 // ---------------------------------------------------------------------------
@@ -826,15 +713,6 @@ void LegacyPlugin::on_logout() {
     }
 
     marketDataController_.reset();
-    oreImportController_.reset();
-    reportInstanceController_.reset();
-    reportDefinitionController_.reset();
-    concurrencyPolicyController_.reset();
-    reportTypeController_.reset();
-    serviceDashboardController_.reset();
-    computeConsoleController_.reset();
-    computeDashboardController_.reset();
-    jobDefinitionController_.reset();
     pricingModelProductParameterController_.reset();
     pricingModelProductController_.reset();
     pricingModelConfigController_.reset();
@@ -849,7 +727,6 @@ void LegacyPlugin::on_logout() {
     monetaryNatureController_.reset();
     roundingTypeController_.reset();
     purposeTypeController_.reset();
-    queueMonitorController_.reset();
     bookStatusController_.reset();
     bookController_.reset();
     portfolioController_.reset();
@@ -879,17 +756,6 @@ void LegacyPlugin::on_logout() {
     currencyController_.reset();
 
     ctx_ = {};
-}
-
-// ---------------------------------------------------------------------------
-// Public show methods — called by the host to drive System menu items
-// ---------------------------------------------------------------------------
-void LegacyPlugin::show_queue_monitor() {
-    if (queueMonitorController_) queueMonitorController_->showListWindow();
-}
-
-void LegacyPlugin::show_service_dashboard() {
-    if (serviceDashboardController_) serviceDashboardController_->showDashboard();
 }
 
 } // namespace ores::qt

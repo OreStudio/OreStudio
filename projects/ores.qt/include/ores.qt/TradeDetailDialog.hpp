@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include <QTabWidget>
+#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
@@ -109,6 +110,7 @@ private:
     void updateSaveButtonState();
     bool validateInput();
     void activateForm(IInstrumentForm* form, const std::string& tradeTypeCode);
+    void applyCreateTradeType();
 
     void saveTrade(const trading::domain::trade& trade);
 
@@ -130,6 +132,9 @@ private:
 
     // Trade-type reference data cached on connect for flag lookups.
     std::map<std::string, trading::domain::trade_type> tradeTypeCache_;
+    // Zero-interval timer that coalesces rapid tradeTypeEdit keystrokes into
+    // a single applyCreateTradeType() call per event-loop cycle.
+    QTimer* createTypeTimer_ = nullptr;
 
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};

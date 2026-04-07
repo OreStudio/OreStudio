@@ -64,6 +64,15 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     setupUi();
     setupConnections();
 
+    // Zero-interval timer coalesces rapid tradeTypeEdit keystrokes so the
+    // form selection logic runs at most once per event-loop cycle.
+    createTypeTimer_ = new QTimer(this);
+    createTypeTimer_->setSingleShot(true);
+    createTypeTimer_->setInterval(0);
+    connect(createTypeTimer_, &QTimer::timeout, this, [this]() {
+        applyCreateTradeType();
+    });
+
     // Build a stack page per registered IInstrumentForm. formMap_ is
     // populated here so setTrade() can reach any form in O(1).
     register_default_forms(instrumentFormRegistry_);
@@ -291,24 +300,32 @@ void TradeDetailDialog::loadTradeTypes() {
         std::vector<trading::domain::trade_type> types;
     };
 
+    static constexpr int kTradeTypeFetchLimit = 1000;
+
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<Result>(self);
     connect(watcher, &QFutureWatcher<Result>::finished,
             self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self || !result.success) return;
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to load trade types";
+            return;
+        }
 
         self->tradeTypeCache_.clear();
         for (auto& tt : result.types)
             self->tradeTypeCache_.emplace(tt.code, std::move(tt));
     });
 
-    watcher->setFuture(QtConcurrent::run([self]() -> Result {
-        if (!self || !self->clientManager_) return {false, {}};
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() -> Result {
+        if (!cm) return {false, {}};
         trading::messaging::get_trade_types_request req;
-        req.limit = 1000;
-        auto r = self->clientManager_->process_authenticated_request(std::move(req));
+        req.limit = kTradeTypeFetchLimit;
+        auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, {}};
         return {true, std::move(r->types)};
     }));
@@ -382,7 +399,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     instrumentLoaded_ = false;
 
     if (createMode)
-        onCreateTradeTypeChanged(ui_->tradeTypeEdit->text());
+        applyCreateTradeType();
 
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -492,13 +509,16 @@ void TradeDetailDialog::onInstrumentFieldChanged() {
     updateSaveButtonState();
 }
 
-void TradeDetailDialog::onCreateTradeTypeChanged(const QString& text) {
+void TradeDetailDialog::onCreateTradeTypeChanged(const QString&) {
     if (!createMode_) return;
+    // Coalesce rapid keystrokes; applyCreateTradeType() fires once per cycle.
+    createTypeTimer_->start();
+}
 
-    const auto code = text.trimmed().toStdString();
+void TradeDetailDialog::applyCreateTradeType() {
+    const auto code = ui_->tradeTypeEdit->text().trimmed().toStdString();
     auto ttIt = tradeTypeCache_.find(code);
     if (ttIt == tradeTypeCache_.end()) {
-        // Unknown trade type — hide the instrument tab.
         ui_->tabWidget->setTabVisible(
             ui_->tabWidget->indexOf(ui_->instrumentTab), false);
         activeForm_ = nullptr;
@@ -513,7 +533,7 @@ void TradeDetailDialog::onCreateTradeTypeChanged(const QString& text) {
         return;
     }
 
-    // Only reset the form if the product family actually changed.
+    // Only reset the form when the product family changes.
     if (activeForm_ != formIt->second) {
         activateForm(formIt->second, code);
         activeForm_->clear();

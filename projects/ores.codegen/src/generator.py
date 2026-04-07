@@ -1143,12 +1143,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         component['namespace'] = full_name.replace('.', '::')
         # Derive split-component names (e.g. name="refdata.core" -> base="refdata")
         name_parts = name.split('.')
-        base_name = name_parts[0]
+        base_name = '.'.join(name_parts[:-1]) if len(name_parts) > 1 else name_parts[0]
         component['base_name'] = base_name
         component['segment'] = name_parts[-1] if len(name_parts) > 1 else ''
-        component['api_full_name'] = f'ores.{base_name}.api'
-        component['core_full_name'] = f'ores.{base_name}.core'
-        component['service_full_name'] = f'ores.{base_name}.service'
+
+        full_parts = full_name.split('.')
+        if len(full_parts) > 1 and len(name_parts) > 1:
+            base_full = '.'.join(full_parts[:-1])
+            component['api_full_name'] = f'{base_full}.api'
+            component['core_full_name'] = f'{base_full}.core'
+            component['service_full_name'] = f'{base_full}.service'
+        else:
+            component['api_full_name'] = f'ores.{base_name}.api'
+            component['core_full_name'] = f'ores.{base_name}.core'
+            component['service_full_name'] = f'ores.{base_name}.service'
         data['component'] = component
 
     # Special processing for service registry models

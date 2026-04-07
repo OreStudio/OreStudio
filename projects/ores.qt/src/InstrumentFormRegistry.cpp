@@ -21,6 +21,7 @@
 
 #include "ores.qt/IInstrumentForm.hpp"
 #include "ores.qt/BondInstrumentForm.hpp"
+#include "ores.qt/CreditInstrumentForm.hpp"
 #include "ores.qt/FxInstrumentForm.hpp"
 #include "ores.qt/SwapInstrumentForm.hpp"
 
@@ -65,6 +66,10 @@ void register_default_forms(InstrumentFormRegistry& registry) {
     registry.registerForm(PT::bond, QStringLiteral("Bond"),
         [](QWidget* parent) -> IInstrumentForm* {
             return new BondInstrumentForm(parent);
+        });
+    registry.registerForm(PT::credit, QStringLiteral("Credit"),
+        [](QWidget* parent) -> IInstrumentForm* {
+            return new CreditInstrumentForm(parent);
         });
     registry.registerForm(PT::swap, QStringLiteral("Swap"),
         [](QWidget* parent) -> IInstrumentForm* {

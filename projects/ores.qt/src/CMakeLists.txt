@@ -56,6 +56,7 @@ target_link_libraries(${lib_target_name}
                                  # IPlugin, utilities, caches — also pulls Qt6 core modules
         ores.qt.admin.lib        # admin plugin: accounts, roles, tenants, settings, apps
         ores.qt.compute.lib      # compute plugin: jobs, queues, reports, dashboards
+        ores.qt.refdata.lib      # refdata plugin: currencies, countries, datasets, conventions
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib

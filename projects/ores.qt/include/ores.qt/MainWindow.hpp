@@ -58,6 +58,7 @@ class BadgeCache;
 class LegacyPlugin;
 class AdminPlugin;
 class ComputePlugin;
+class RefdataPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
@@ -189,6 +190,9 @@ private:
 
     /** @brief Compute plugin: jobs, queues, reports, dashboards, ORE import. */
     std::unique_ptr<ComputePlugin> computePlugin_;
+
+    /** @brief Reference data plugin: currencies, countries, datasets, conventions. */
+    std::unique_ptr<RefdataPlugin> refdataPlugin_;
 
     /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
     std::unique_ptr<LegacyPlugin> legacyPlugin_;

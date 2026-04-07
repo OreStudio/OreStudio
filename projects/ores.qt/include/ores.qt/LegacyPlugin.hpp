@@ -28,21 +28,6 @@
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
-class CurrencyController;
-class CountryController;
-class ChangeReasonCategoryController;
-class ChangeReasonController;
-class OriginDimensionController;
-class NatureDimensionController;
-class TreatmentDimensionController;
-class CodingSchemeAuthorityTypeController;
-class DataDomainController;
-class SubjectAreaController;
-class CatalogController;
-class CodingSchemeController;
-class MethodologyController;
-class DatasetController;
-class DatasetBundleController;
 class PartyTypeController;
 class PartyStatusController;
 class PartyIdSchemeController;
@@ -55,16 +40,8 @@ class BusinessUnitTypeController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
-class PurposeTypeController;
-class RoundingTypeController;
-class MonetaryNatureController;
 class CurrencyMarketTierController;
 class TradeController;
-class DayCountFractionTypeController;
-class BusinessDayConventionTypeController;
-class FloatingIndexTypeController;
-class PaymentFrequencyTypeController;
-class LegTypeController;
 class PricingEngineTypeController;
 class PricingModelConfigController;
 class PricingModelProductController;
@@ -121,21 +98,6 @@ private:
     DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<CurrencyController>                    currencyController_;
-    std::unique_ptr<CountryController>                     countryController_;
-    std::unique_ptr<ChangeReasonCategoryController>        changeReasonCategoryController_;
-    std::unique_ptr<ChangeReasonController>                changeReasonController_;
-    std::unique_ptr<OriginDimensionController>             originDimensionController_;
-    std::unique_ptr<NatureDimensionController>             natureDimensionController_;
-    std::unique_ptr<TreatmentDimensionController>          treatmentDimensionController_;
-    std::unique_ptr<CodingSchemeAuthorityTypeController>   codingSchemeAuthorityTypeController_;
-    std::unique_ptr<DataDomainController>                  dataDomainController_;
-    std::unique_ptr<SubjectAreaController>                 subjectAreaController_;
-    std::unique_ptr<CatalogController>                     catalogController_;
-    std::unique_ptr<CodingSchemeController>                codingSchemeController_;
-    std::unique_ptr<MethodologyController>                 methodologyController_;
-    std::unique_ptr<DatasetController>                     datasetController_;
-    std::unique_ptr<DatasetBundleController>               datasetBundleController_;
     std::unique_ptr<PartyTypeController>                   partyTypeController_;
     std::unique_ptr<PartyStatusController>                 partyStatusController_;
     std::unique_ptr<PartyIdSchemeController>               partyIdSchemeController_;
@@ -148,16 +110,8 @@ private:
     std::unique_ptr<PortfolioController>                   portfolioController_;
     std::unique_ptr<BookController>                        bookController_;
     std::unique_ptr<BookStatusController>                  bookStatusController_;
-    std::unique_ptr<PurposeTypeController>                 purposeTypeController_;
-    std::unique_ptr<RoundingTypeController>                roundingTypeController_;
-    std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
     std::unique_ptr<CurrencyMarketTierController>          currencyMarketTierController_;
     std::unique_ptr<TradeController>                       tradeController_;
-    std::unique_ptr<DayCountFractionTypeController>        dayCountFractionTypeController_;
-    std::unique_ptr<BusinessDayConventionTypeController>   businessDayConventionTypeController_;
-    std::unique_ptr<FloatingIndexTypeController>           floatingIndexTypeController_;
-    std::unique_ptr<PaymentFrequencyTypeController>        paymentFrequencyTypeController_;
-    std::unique_ptr<LegTypeController>                     legTypeController_;
     std::unique_ptr<PricingEngineTypeController>           pricingEngineTypeController_;
     std::unique_ptr<PricingModelConfigController>          pricingModelConfigController_;
     std::unique_ptr<PricingModelProductController>         pricingModelProductController_;

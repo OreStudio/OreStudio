@@ -50,6 +50,7 @@
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/AdminPlugin.hpp"
 #include "ores.qt/ComputePlugin.hpp"
+#include "ores.qt/RefdataPlugin.hpp"
 #include "ores.qt/LegacyPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -424,6 +425,15 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(computePlugin_.get(), &ComputePlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    // Create refdata plugin — controllers are instantiated in on_login()
+    refdataPlugin_ = std::make_unique<RefdataPlugin>(this);
+    connect(refdataPlugin_.get(), &RefdataPlugin::status_message,
+            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
+    connect(refdataPlugin_.get(), &RefdataPlugin::window_created,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(refdataPlugin_.get(), &RefdataPlugin::window_destroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
     // Create legacy plugin — controllers are instantiated in on_login()
     legacyPlugin_ = std::make_unique<LegacyPlugin>(this);
     connect(legacyPlugin_.get(), &LegacyPlugin::status_message,
@@ -687,6 +697,8 @@ void MainWindow::onDisconnectTriggered() {
 void MainWindow::performDisconnectCleanup() {
     if (legacyPlugin_)
         legacyPlugin_->on_logout();
+    if (refdataPlugin_)
+        refdataPlugin_->on_logout();
     if (computePlugin_)
         computePlugin_->on_logout();
     if (adminPlugin_)
@@ -1486,12 +1498,14 @@ void MainWindow::onLoginSuccess(const QString& username) {
     // Drive plugin lifecycle in load_order sequence
     adminPlugin_->on_login(ctx);
     computePlugin_->on_login(ctx);
+    refdataPlugin_->on_login(ctx);
     legacyPlugin_->on_login(ctx);
 
     // Insert domain menus from all plugins before Help
     auto* helpAction = ui_->menuHelp->menuAction();
     for (auto* plugin : {static_cast<IPlugin*>(adminPlugin_.get()),
                          static_cast<IPlugin*>(computePlugin_.get()),
+                         static_cast<IPlugin*>(refdataPlugin_.get()),
                          static_cast<IPlugin*>(legacyPlugin_.get())}) {
         for (auto* menu : plugin->create_menus()) {
             menuBar()->insertMenu(helpAction, menu);

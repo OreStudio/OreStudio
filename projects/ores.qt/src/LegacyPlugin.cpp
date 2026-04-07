@@ -29,21 +29,6 @@
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/DataLibrarianWindow.hpp"
-#include "ores.qt/CurrencyController.hpp"
-#include "ores.qt/CountryController.hpp"
-#include "ores.qt/ChangeReasonCategoryController.hpp"
-#include "ores.qt/ChangeReasonController.hpp"
-#include "ores.qt/OriginDimensionController.hpp"
-#include "ores.qt/NatureDimensionController.hpp"
-#include "ores.qt/TreatmentDimensionController.hpp"
-#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
-#include "ores.qt/DataDomainController.hpp"
-#include "ores.qt/SubjectAreaController.hpp"
-#include "ores.qt/CatalogController.hpp"
-#include "ores.qt/CodingSchemeController.hpp"
-#include "ores.qt/MethodologyController.hpp"
-#include "ores.qt/DatasetController.hpp"
-#include "ores.qt/DatasetBundleController.hpp"
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PartyStatusController.hpp"
 #include "ores.qt/PartyIdSchemeController.hpp"
@@ -56,16 +41,8 @@
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
-#include "ores.qt/PurposeTypeController.hpp"
-#include "ores.qt/RoundingTypeController.hpp"
-#include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
-#include "ores.qt/DayCountFractionTypeController.hpp"
-#include "ores.qt/BusinessDayConventionTypeController.hpp"
-#include "ores.qt/FloatingIndexTypeController.hpp"
-#include "ores.qt/PaymentFrequencyTypeController.hpp"
-#include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/PricingEngineTypeController.hpp"
 #include "ores.qt/PricingModelConfigController.hpp"
 #include "ores.qt/PricingModelProductController.hpp"
@@ -98,81 +75,6 @@ void LegacyPlugin::connect_controller_signals(QObject* ctrl) {
 // ---------------------------------------------------------------------------
 void LegacyPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
-
-    currencyController_ = std::make_unique<CurrencyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(currencyController_.get());
-
-    countryController_ = std::make_unique<CountryController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(countryController_.get());
-
-    changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(changeReasonCategoryController_.get());
-
-    changeReasonController_ = std::make_unique<ChangeReasonController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, this);
-    connect_controller_signals(changeReasonController_.get());
-
-    originDimensionController_ = std::make_unique<OriginDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(originDimensionController_.get());
-
-    natureDimensionController_ = std::make_unique<NatureDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(natureDimensionController_.get());
-
-    treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(treatmentDimensionController_.get());
-
-    codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(codingSchemeAuthorityTypeController_.get());
-
-    dataDomainController_ = std::make_unique<DataDomainController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(dataDomainController_.get());
-
-    subjectAreaController_ = std::make_unique<SubjectAreaController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(subjectAreaController_.get());
-
-    catalogController_ = std::make_unique<CatalogController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(catalogController_.get());
-
-    codingSchemeController_ = std::make_unique<CodingSchemeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(codingSchemeController_.get());
-
-    methodologyController_ = std::make_unique<MethodologyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(methodologyController_.get());
-
-    datasetController_ = std::make_unique<DatasetController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(datasetController_.get());
-
-    datasetBundleController_ = std::make_unique<DatasetBundleController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(datasetBundleController_.get());
 
     partyTypeController_ = std::make_unique<PartyTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
@@ -234,66 +136,15 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(bookStatusController_.get());
 
-    purposeTypeController_ = std::make_unique<PurposeTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(purposeTypeController_.get());
-
-    roundingTypeController_ = std::make_unique<RoundingTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(roundingTypeController_.get());
-
-    // CurrencyController cross-domain relays
-    connect(currencyController_.get(), &CurrencyController::showRoundingTypesRequested,
-            this, [this]() {
-        if (roundingTypeController_) roundingTypeController_->showListWindow();
-    });
-
-    monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(monetaryNatureController_.get());
-
-    connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
-            this, [this]() {
-        if (monetaryNatureController_) monetaryNatureController_->showListWindow();
-    });
-
     currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(currencyMarketTierController_.get());
 
-    connect(currencyController_.get(), &CurrencyController::showMarketTiersRequested,
-            this, [this]() {
-        if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
-    });
-
     tradeController_ = std::make_unique<TradeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(tradeController_.get());
-
-    dayCountFractionTypeController_ = std::make_unique<DayCountFractionTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(dayCountFractionTypeController_.get());
-
-    businessDayConventionTypeController_ = std::make_unique<BusinessDayConventionTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(businessDayConventionTypeController_.get());
-
-    floatingIndexTypeController_ = std::make_unique<FloatingIndexTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(floatingIndexTypeController_.get());
-
-    paymentFrequencyTypeController_ = std::make_unique<PaymentFrequencyTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(paymentFrequencyTypeController_.get());
-
-    legTypeController_ = std::make_unique<LegTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(legTypeController_.get());
 
     pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
@@ -334,14 +185,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     // ---- Data -------------------------------------------------------
     auto* menuData = new QMenu(tr("&Data"));
 
-    auto* actCurrencies = menuData->addAction(ico(Icon::Currency), tr("&Currencies"));
-    connect(actCurrencies, &QAction::triggered, this, [this]() {
-        if (currencyController_) currencyController_->showListWindow();
-    });
-    auto* actCountries = menuData->addAction(ico(Icon::Globe), tr("C&ountries"));
-    connect(actCountries, &QAction::triggered, this, [this]() {
-        if (countryController_) countryController_->showListWindow();
-    });
     auto* actBusinessCentres = menuData->addAction(
         ico(Icon::BuildingBank), tr("&Business Centres"));
     connect(actBusinessCentres, &QAction::triggered, this, [this]() {
@@ -377,14 +220,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
 
     // Auxiliary Data submenu
     auto* menuAux = menuData->addMenu(tr("A&uxiliary Data"));
-    auto* actRoundingTypes = menuAux->addAction(ico(Icon::Tag), tr("&Rounding Types"));
-    connect(actRoundingTypes, &QAction::triggered, this, [this]() {
-        if (roundingTypeController_) roundingTypeController_->showListWindow();
-    });
-    auto* actMonetaryNatures = menuAux->addAction(ico(Icon::Classification), tr("&Monetary Natures"));
-    connect(actMonetaryNatures, &QAction::triggered, this, [this]() {
-        if (monetaryNatureController_) monetaryNatureController_->showListWindow();
-    });
     auto* actCurrencyMarketTiers = menuAux->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
     connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
         if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
@@ -411,12 +246,8 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     connect(actBookStatuses, &QAction::triggered, this, [this]() {
         if (bookStatusController_) bookStatusController_->showListWindow();
     });
-    auto* actPurposeTypes = menuAux->addAction(ico(Icon::Flag), tr("&Purpose Types"));
-    connect(actPurposeTypes, &QAction::triggered, this, [this]() {
-        if (purposeTypeController_) purposeTypeController_->showListWindow();
-    });
 
-    // Assets submenu
+    // Assets submenu (DataLibrarianWindow moves to mktdata in Step 7)
     auto* menuAssets = menuData->addMenu(tr("&Assets"));
     auto* actDataLibrarian = menuAssets->addAction(ico(Icon::Library), tr("Data &Librarian"));
     connect(actDataLibrarian, &QAction::triggered, this, [this]() {
@@ -441,37 +272,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
         connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
                 this, [this](const QString& msg) { emit status_message(msg); });
 
-        connect(librarianWindow, &DataLibrarianWindow::openOriginDimensionsRequested,
-                this, [this]() {
-                    if (originDimensionController_)
-                        originDimensionController_->showListWindow();
-                });
-        connect(librarianWindow, &DataLibrarianWindow::openNatureDimensionsRequested,
-                this, [this]() {
-                    if (natureDimensionController_)
-                        natureDimensionController_->showListWindow();
-                });
-        connect(librarianWindow, &DataLibrarianWindow::openTreatmentDimensionsRequested,
-                this, [this]() {
-                    if (treatmentDimensionController_)
-                        treatmentDimensionController_->showListWindow();
-                });
-        connect(librarianWindow, &DataLibrarianWindow::openCodingSchemesRequested,
-                this, [this]() {
-                    if (codingSchemeController_)
-                        codingSchemeController_->showListWindow();
-                });
-        connect(librarianWindow, &DataLibrarianWindow::openMethodologiesRequested,
-                this, [this]() {
-                    if (methodologyController_)
-                        methodologyController_->showListWindow();
-                });
-        connect(librarianWindow, &DataLibrarianWindow::openBundlesRequested,
-                this, [this]() {
-                    if (datasetBundleController_)
-                        datasetBundleController_->showListWindow();
-                });
-
         data_librarian_window_ = subWindow;
         connect(subWindow, &QObject::destroyed, this, [this]() {
             data_librarian_window_ = nullptr;
@@ -480,74 +280,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
         ctx_.mdi_area->addSubWindow(subWindow);
         subWindow->resize(librarianWindow->sizeHint());
         subWindow->show();
-    });
-
-    // Data Governance submenu
-    auto* menuQuality = menuData->addMenu(tr("Data &Governance"));
-
-    auto* menuClassifications = menuQuality->addMenu(tr("&Classifications"));
-    auto* actCodingSchemes = menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
-    connect(actCodingSchemes, &QAction::triggered, this, [this]() {
-        if (codingSchemeController_) codingSchemeController_->showListWindow();
-    });
-    auto* actCodingSchemeAuthorityTypes = menuClassifications->addAction(
-        ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
-    connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
-        if (codingSchemeAuthorityTypeController_)
-            codingSchemeAuthorityTypeController_->showListWindow();
-    });
-
-    auto* menuOrganization = menuQuality->addMenu(tr("&Organization"));
-    auto* actDataDomains = menuOrganization->addAction(ico(Icon::Folder), tr("&Data Domains"));
-    connect(actDataDomains, &QAction::triggered, this, [this]() {
-        if (dataDomainController_) dataDomainController_->showListWindow();
-    });
-    auto* actSubjectAreas = menuOrganization->addAction(ico(Icon::Table), tr("&Subject Areas"));
-    connect(actSubjectAreas, &QAction::triggered, this, [this]() {
-        if (subjectAreaController_) subjectAreaController_->showListWindow();
-    });
-    auto* actCatalogs = menuOrganization->addAction(ico(Icon::Library), tr("&Catalogs"));
-    connect(actCatalogs, &QAction::triggered, this, [this]() {
-        if (catalogController_) catalogController_->showListWindow();
-    });
-
-    auto* menuDimensions = menuQuality->addMenu(tr("&Dimensions"));
-    auto* actOriginDimensions = menuDimensions->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
-    connect(actOriginDimensions, &QAction::triggered, this, [this]() {
-        if (originDimensionController_) originDimensionController_->showListWindow();
-    });
-    auto* actNatureDimensions = menuDimensions->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
-    connect(actNatureDimensions, &QAction::triggered, this, [this]() {
-        if (natureDimensionController_) natureDimensionController_->showListWindow();
-    });
-    auto* actTreatmentDimensions = menuDimensions->addAction(
-        ico(Icon::Database), tr("&Treatment Dimensions"));
-    connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
-        if (treatmentDimensionController_) treatmentDimensionController_->showListWindow();
-    });
-
-    menuQuality->addMenu(menuDimensions);
-    auto* actMethodologies = menuQuality->addAction(ico(Icon::Book), tr("&Methodologies"));
-    connect(actMethodologies, &QAction::triggered, this, [this]() {
-        if (methodologyController_) methodologyController_->showListWindow();
-    });
-    auto* actDatasetBundles = menuQuality->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
-    connect(actDatasetBundles, &QAction::triggered, this, [this]() {
-        if (datasetBundleController_) datasetBundleController_->showListWindow();
-    });
-    menuQuality->addSeparator();
-    menuQuality->addMenu(menuClassifications);
-    menuQuality->addMenu(menuOrganization);
-    menuQuality->addSeparator();
-    auto* actChangeReasonCategories = menuQuality->addAction(
-        ico(Icon::Tag), tr("Change Reason &Categories"));
-    connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
-        if (changeReasonCategoryController_)
-            changeReasonCategoryController_->showListWindow();
-    });
-    auto* actChangeReasons = menuQuality->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
-    connect(actChangeReasons, &QAction::triggered, this, [this]() {
-        if (changeReasonController_) changeReasonController_->showListWindow();
     });
 
     // ---- Trading ----------------------------------------------------
@@ -630,30 +362,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     connect(actTrades, &QAction::triggered, this, [this]() {
         if (tradeController_) tradeController_->showListWindow();
     });
-    menuTrading->addSeparator();
-    auto* actDayCountFractionTypes = menuTrading->addAction(ico(Icon::Tag), tr("&Day Count Fraction Types"));
-    connect(actDayCountFractionTypes, &QAction::triggered, this, [this]() {
-        if (dayCountFractionTypeController_) dayCountFractionTypeController_->showListWindow();
-    });
-    auto* actBusinessDayConventionTypes = menuTrading->addAction(
-        ico(Icon::Tag), tr("&Business Day Convention Types"));
-    connect(actBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
-        if (businessDayConventionTypeController_)
-            businessDayConventionTypeController_->showListWindow();
-    });
-    auto* actFloatingIndexTypes = menuTrading->addAction(ico(Icon::Tag), tr("&Floating Index Types"));
-    connect(actFloatingIndexTypes, &QAction::triggered, this, [this]() {
-        if (floatingIndexTypeController_) floatingIndexTypeController_->showListWindow();
-    });
-    auto* actPaymentFrequencyTypes = menuTrading->addAction(
-        ico(Icon::Tag), tr("&Payment Frequency Types"));
-    connect(actPaymentFrequencyTypes, &QAction::triggered, this, [this]() {
-        if (paymentFrequencyTypeController_) paymentFrequencyTypeController_->showListWindow();
-    });
-    auto* actLegTypes = menuTrading->addAction(ico(Icon::Tag), tr("&Leg Types"));
-    connect(actLegTypes, &QAction::triggered, this, [this]() {
-        if (legTypeController_) legTypeController_->showListWindow();
-    });
     // ---- Analytics --------------------------------------------------
     auto* menuAnalytics = new QMenu(tr("&Analytics"));
 
@@ -717,16 +425,8 @@ void LegacyPlugin::on_logout() {
     pricingModelProductController_.reset();
     pricingModelConfigController_.reset();
     pricingEngineTypeController_.reset();
-    legTypeController_.reset();
-    paymentFrequencyTypeController_.reset();
-    floatingIndexTypeController_.reset();
-    businessDayConventionTypeController_.reset();
-    dayCountFractionTypeController_.reset();
     tradeController_.reset();
     currencyMarketTierController_.reset();
-    monetaryNatureController_.reset();
-    roundingTypeController_.reset();
-    purposeTypeController_.reset();
     bookStatusController_.reset();
     bookController_.reset();
     portfolioController_.reset();
@@ -739,21 +439,6 @@ void LegacyPlugin::on_logout() {
     partyIdSchemeController_.reset();
     partyStatusController_.reset();
     partyTypeController_.reset();
-    datasetBundleController_.reset();
-    datasetController_.reset();
-    methodologyController_.reset();
-    codingSchemeController_.reset();
-    catalogController_.reset();
-    subjectAreaController_.reset();
-    dataDomainController_.reset();
-    codingSchemeAuthorityTypeController_.reset();
-    treatmentDimensionController_.reset();
-    natureDimensionController_.reset();
-    originDimensionController_.reset();
-    changeReasonController_.reset();
-    changeReasonCategoryController_.reset();
-    countryController_.reset();
-    currencyController_.reset();
 
     ctx_ = {};
 }

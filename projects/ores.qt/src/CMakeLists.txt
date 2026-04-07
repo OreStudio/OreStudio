@@ -66,7 +66,6 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.shell.lib
         ores.dq.api.lib
-        ores.dq.lib
         ores.synthetic.api.lib
         ores.assets.api.lib
         ores.iam.api.lib

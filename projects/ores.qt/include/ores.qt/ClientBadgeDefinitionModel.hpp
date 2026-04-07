@@ -27,7 +27,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
 
 namespace ores::qt {
 

@@ -19,9 +19,9 @@
  */
 #include "ores.dq.core/service/badge_service.hpp"
 
-#include "ores.dq/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::dq::service {
 

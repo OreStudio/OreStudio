@@ -41,7 +41,7 @@ list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 add_library(${lib_target_name} STATIC ${lib_files} ${HEADERS} ${FORMS})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
-    AUTOUIC_SEARCH_PATHS ${ORES_QT_DIR}/ui)
+    AUTOUIC_SEARCH_PATHS "${ORES_QT_DIR}/ui;${CMAKE_SOURCE_DIR}/projects/ores.qt.api/ui")
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
@@ -52,6 +52,8 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.qt.api.lib          # shared framework: ClientManager, EntityController,
+                                 # IPlugin, utilities, caches — also pulls Qt6 core modules
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib
@@ -60,31 +62,21 @@ target_link_libraries(${lib_target_name}
         ores.refdata.core.lib
         ores.analytics.api.lib
         ores.trading.api.lib
-        ores.compute.api.lib
         ores.scheduler.api.lib
         ores.reporting.api.lib
-        ores.nats.lib
         ores.shell.lib
         ores.dq.api.lib
         ores.synthetic.api.lib
         ores.assets.api.lib
-        ores.iam.api.lib
         ores.workflow.lib
         ores.connections.lib
-        ores.eventing.lib
         ores.variability.api.lib
         ores.telemetry.lib
         ores.controller.api.lib
         ores.security.lib
-        ores.utility.lib
-        ores.platform.lib
-        Qt6::Core
-        Qt6::Gui
-        Qt6::Widgets
-        Qt6::Concurrent
-        Qt6::Network
-        Qt6::Svg
         Qt6::Charts)
+# Note: ores.nats, ores.eventing, ores.iam.api, ores.compute.api, ores.utility,
+# ores.platform, and Qt6 core modules come transitively from ores.qt.api.lib (PUBLIC)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
 
 # ores.qt is an application-internal static library. It is linked statically

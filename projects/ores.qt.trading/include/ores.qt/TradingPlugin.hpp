@@ -16,13 +16,12 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_LEGACY_PLUGIN_HPP
-#define ORES_QT_LEGACY_PLUGIN_HPP
+#ifndef ORES_QT_TRADING_PLUGIN_HPP
+#define ORES_QT_TRADING_PLUGIN_HPP
 
 #include <memory>
 #include <QObject>
 #include <QList>
-#include <QPointer>
 #include "ores.qt/IPlugin.hpp"
 
 namespace ores::qt {
@@ -32,27 +31,23 @@ class PortfolioController;
 class BookController;
 class BookStatusController;
 class TradeController;
-class PortfolioExplorerMdiWindow;
-class OrgExplorerMdiWindow;
 
 /**
- * @brief Transitional plugin wrapping non-admin, non-compute legacy controllers.
+ * @brief Trading plugin: portfolios, books, trades, and the portfolio/org
+ *        explorers.
  *
- * Holds domain entity controllers not yet extracted into domain-specific plugins.
- * On login the controllers are created; on logout they are destroyed.  Domain
- * menus are built in code by create_menus() and inserted into the host menu bar.
- *
- * This class will be split into domain-specific plugins in Steps 5–8.
+ * Extracted from LegacyPlugin in Step 8 of the Qt plugin refactor.
+ * Owns the Data (portfolios/books) and Trading menus.
  */
-class LegacyPlugin : public QObject, public IPlugin {
+class TradingPlugin : public QObject, public IPlugin {
     Q_OBJECT
 
 public:
-    explicit LegacyPlugin(QObject* parent = nullptr);
-    ~LegacyPlugin() override;
+    explicit TradingPlugin(QObject* parent = nullptr);
+    ~TradingPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.legacy"); }
-    int load_order() const override { return 999; }
+    QString name() const override { return QStringLiteral("ores.qt.trading"); }
+    int load_order() const override { return 600; }
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
@@ -81,10 +76,10 @@ private:
     DetachableMdiSubWindow* org_explorer_sub_window_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<PortfolioController>                   portfolioController_;
-    std::unique_ptr<BookController>                        bookController_;
-    std::unique_ptr<BookStatusController>                  bookStatusController_;
-    std::unique_ptr<TradeController>                       tradeController_;
+    std::unique_ptr<PortfolioController>   portfolioController_;
+    std::unique_ptr<BookController>        bookController_;
+    std::unique_ptr<BookStatusController>  bookStatusController_;
+    std::unique_ptr<TradeController>       tradeController_;
 };
 
 }

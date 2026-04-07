@@ -55,19 +55,19 @@ class DetachableMdiSubWindow;
 class ImageCache;
 class ChangeReasonCache;
 class BadgeCache;
-class LegacyPlugin;
 class AdminPlugin;
 class ComputePlugin;
 class RefdataPlugin;
 class PartyPlugin;
 class MktdataPlugin;
+class TradingPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
  *
  * Owns shared infrastructure (ClientManager, caches, event bus) and drives the
  * plugin lifecycle.  Domain entity management is delegated to AdminPlugin,
- * LegacyPlugin, and future domain-specific plugins via the IPlugin interface.
+ * domain-specific plugins via the IPlugin interface.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -202,8 +202,8 @@ private:
     /** @brief Market data plugin: market series, fixings, analytics, currency tiers, data librarian. */
     std::unique_ptr<MktdataPlugin> mktdataPlugin_;
 
-    /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
-    std::unique_ptr<LegacyPlugin> legacyPlugin_;
+    /** @brief Trading plugin: portfolios, books, trades, portfolio/org explorers. */
+    std::unique_ptr<TradingPlugin> tradingPlugin_;
 
     /** @brief Menus inserted into the menu bar by plugins; removed on logout. */
     QList<QMenu*> plugin_menus_;

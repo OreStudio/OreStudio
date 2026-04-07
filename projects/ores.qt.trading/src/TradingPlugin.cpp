@@ -16,7 +16,7 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/LegacyPlugin.hpp"
+#include "ores.qt/TradingPlugin.hpp"
 
 #include <QMenu>
 #include <QAction>
@@ -35,15 +35,14 @@
 
 namespace ores::qt {
 
-LegacyPlugin::LegacyPlugin(QObject* parent) : QObject(parent) {}
+TradingPlugin::TradingPlugin(QObject* parent) : QObject(parent) {}
 
-LegacyPlugin::~LegacyPlugin() = default;
+TradingPlugin::~TradingPlugin() = default;
 
 // ---------------------------------------------------------------------------
-// Helper: wire standard controller signals to LegacyPlugin forwarding slots.
-// Controllers that lack detachableWindow* signals are connected individually.
+// Helper: wire standard controller signals to TradingPlugin forwarding slots.
 // ---------------------------------------------------------------------------
-void LegacyPlugin::connect_controller_signals(QObject* ctrl) {
+void TradingPlugin::connect_controller_signals(QObject* ctrl) {
     connect(ctrl, SIGNAL(statusMessage(const QString&)),
             this, SLOT(on_status_message(const QString&)));
     connect(ctrl, SIGNAL(errorMessage(const QString&)),
@@ -55,9 +54,9 @@ void LegacyPlugin::connect_controller_signals(QObject* ctrl) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::on_login — create all controllers and wire inter-controller relays
+// IPlugin::on_login — create all controllers
 // ---------------------------------------------------------------------------
-void LegacyPlugin::on_login(const plugin_context& ctx) {
+void TradingPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
 
     portfolioController_ = std::make_unique<PortfolioController>(
@@ -79,14 +78,12 @@ void LegacyPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connect_controller_signals(tradeController_.get());
-
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::create_menus — build domain menus from code and return them.
-// The host inserts these into the menu bar after on_login().
+// IPlugin::create_menus — return Data and Trading menus.
 // ---------------------------------------------------------------------------
-QList<QMenu*> LegacyPlugin::create_menus() {
+QList<QMenu*> TradingPlugin::create_menus() {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -190,13 +187,14 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     connect(actTrades, &QAction::triggered, this, [this]() {
         if (tradeController_) tradeController_->showListWindow();
     });
+
     return {menuData, menuTrading};
 }
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_logout — close open singleton windows, destroy all controllers
 // ---------------------------------------------------------------------------
-void LegacyPlugin::on_logout() {
+void TradingPlugin::on_logout() {
     if (portfolio_explorer_sub_window_) {
         portfolio_explorer_sub_window_->close();
         portfolio_explorer_sub_window_ = nullptr;
@@ -205,6 +203,7 @@ void LegacyPlugin::on_logout() {
         org_explorer_sub_window_->close();
         org_explorer_sub_window_ = nullptr;
     }
+
     tradeController_.reset();
     bookStatusController_.reset();
     bookController_.reset();

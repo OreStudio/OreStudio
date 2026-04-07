@@ -59,6 +59,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.refdata.lib      # refdata plugin: currencies, countries, datasets, conventions
         ores.qt.party.lib        # party plugin: parties, counterparties, business units, org types
         ores.qt.mktdata.lib      # mktdata plugin: market data, analytics, currency tiers, data librarian
+        ores.qt.trading.lib      # trading plugin: portfolios, books, trades, portfolio/org explorers
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib

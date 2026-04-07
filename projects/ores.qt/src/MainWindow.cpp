@@ -53,7 +53,7 @@
 #include "ores.qt/RefdataPlugin.hpp"
 #include "ores.qt/PartyPlugin.hpp"
 #include "ores.qt/MktdataPlugin.hpp"
-#include "ores.qt/LegacyPlugin.hpp"
+#include "ores.qt/TradingPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/BadgeCache.hpp"
@@ -454,13 +454,13 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(mktdataPlugin_.get(), &MktdataPlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    // Create legacy plugin — controllers are instantiated in on_login()
-    legacyPlugin_ = std::make_unique<LegacyPlugin>(this);
-    connect(legacyPlugin_.get(), &LegacyPlugin::status_message,
+    // Create trading plugin — controllers are instantiated in on_login()
+    tradingPlugin_ = std::make_unique<TradingPlugin>(this);
+    connect(tradingPlugin_.get(), &TradingPlugin::status_message,
             this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(legacyPlugin_.get(), &LegacyPlugin::window_created,
+    connect(tradingPlugin_.get(), &TradingPlugin::window_created,
             this, &MainWindow::onDetachableWindowCreated);
-    connect(legacyPlugin_.get(), &LegacyPlugin::window_destroyed,
+    connect(tradingPlugin_.get(), &TradingPlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // (Domain action connections wired by plugin create_menus() after login)
@@ -715,8 +715,8 @@ void MainWindow::onDisconnectTriggered() {
 }
 
 void MainWindow::performDisconnectCleanup() {
-    if (legacyPlugin_)
-        legacyPlugin_->on_logout();
+    if (tradingPlugin_)
+        tradingPlugin_->on_logout();
     if (mktdataPlugin_)
         mktdataPlugin_->on_logout();
     if (partyPlugin_)
@@ -1525,7 +1525,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
     refdataPlugin_->on_login(ctx);
     partyPlugin_->on_login(ctx);
     mktdataPlugin_->on_login(ctx);
-    legacyPlugin_->on_login(ctx);
+    tradingPlugin_->on_login(ctx);
 
     // Insert domain menus from all plugins before Help
     auto* helpAction = ui_->menuHelp->menuAction();
@@ -1534,7 +1534,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
                          static_cast<IPlugin*>(refdataPlugin_.get()),
                          static_cast<IPlugin*>(partyPlugin_.get()),
                          static_cast<IPlugin*>(mktdataPlugin_.get()),
-                         static_cast<IPlugin*>(legacyPlugin_.get())}) {
+                         static_cast<IPlugin*>(tradingPlugin_.get())}) {
         for (auto* menu : plugin->create_menus()) {
             menuBar()->insertMenu(helpAction, menu);
             plugin_menus_.append(menu);

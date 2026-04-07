@@ -233,6 +233,35 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.history_leg_type(std::move(msg));
         }));
 
+    // Instrument reference data — trade types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_trade_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_trade_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_trade_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_trade_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_trade_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_trade_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_trade_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_trade_type(std::move(msg));
+        }));
+
     // Instruments
     subs.push_back(nats.queue_subscribe(
         std::string(get_instruments_request::nats_subject), queue,

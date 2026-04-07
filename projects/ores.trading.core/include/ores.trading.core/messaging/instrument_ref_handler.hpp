@@ -33,11 +33,13 @@
 #include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.trading.api/messaging/leg_type_protocol.hpp"
+#include "ores.trading.api/messaging/trade_type_protocol.hpp"
 #include "ores.trading.core/service/day_count_fraction_type_service.hpp"
 #include "ores.trading.core/service/business_day_convention_type_service.hpp"
 #include "ores.trading.core/service/floating_index_type_service.hpp"
 #include "ores.trading.core/service/payment_frequency_type_service.hpp"
 #include "ores.trading.core/service/leg_type_service.hpp"
+#include "ores.trading.core/service/trade_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::messaging {
@@ -289,6 +291,28 @@ public:
         history_impl<service::leg_type_service,
                      get_leg_type_history_request,
                      get_leg_type_history_response>(std::move(msg));
+    }
+
+    // Trade type
+    void list_trade_types(ores::nats::message msg) {
+        list_impl<service::trade_type_service,
+                  get_trade_types_request,
+                  get_trade_types_response>(std::move(msg));
+    }
+    void save_trade_type(ores::nats::message msg) {
+        save_impl<service::trade_type_service,
+                  save_trade_type_request,
+                  save_trade_type_response>(std::move(msg));
+    }
+    void delete_trade_type(ores::nats::message msg) {
+        delete_impl<service::trade_type_service,
+                    delete_trade_type_request,
+                    delete_trade_type_response>(std::move(msg));
+    }
+    void history_trade_type(ores::nats::message msg) {
+        history_impl<service::trade_type_service,
+                     get_trade_type_history_request,
+                     get_trade_type_history_response>(std::move(msg));
     }
 
 private:

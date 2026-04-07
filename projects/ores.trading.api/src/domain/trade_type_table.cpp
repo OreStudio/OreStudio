@@ -33,7 +33,7 @@ std::string convert_to_table(const std::vector<trade_type>& v) {
           << fort::endr;
 
     for (const auto& tt : v) {
-        table << tt.code << tt.product_type
+        table << tt.code << std::string(to_string(tt.product_type))
               << (tt.has_options ? "Y" : "")
               << (tt.has_extension ? "Y" : "")
               << tt.description << tt.modified_by << tt.version

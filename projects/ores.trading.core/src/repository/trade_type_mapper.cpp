@@ -36,7 +36,12 @@ trade_type_mapper::map(const trade_type_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description.value_or("");
-    r.product_type = v.product_type;
+    auto pt = domain::product_type_from_string(v.product_type);
+    if (!pt) {
+        throw std::logic_error(
+            "Invalid product_type in trade_type entity: '" + v.product_type + "'");
+    }
+    r.product_type = *pt;
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;
@@ -60,7 +65,7 @@ trade_type_mapper::map(const domain::trade_type& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.product_type = v.product_type;
+    r.product_type = std::string(domain::to_string(v.product_type));
     r.has_options = v.has_options;
     r.has_extension = v.has_extension;
     r.modified_by = v.modified_by;

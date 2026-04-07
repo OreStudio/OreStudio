@@ -23,6 +23,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include "ores.trading.api/domain/product_type.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/fx_instrument.hpp"
@@ -544,7 +545,8 @@ struct get_instrument_for_trade_request {
     using response_type = struct get_instrument_for_trade_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.trades.instrument.get";
-    std::string product_type;
+    ores::trading::domain::product_type product_type =
+        ores::trading::domain::product_type::swap;
     std::string instrument_id;
 };
 

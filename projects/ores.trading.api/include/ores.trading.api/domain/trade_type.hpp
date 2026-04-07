@@ -23,6 +23,7 @@
 #include <chrono>
 #include <string>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
 
 namespace ores::trading::domain {
 
@@ -58,11 +59,10 @@ struct trade_type final {
     /**
      * @brief Product type family this trade type belongs to.
      *
-     * One of: swap, fx, bond, credit, equity, commodity, composite, scripted.
      * Drives instrument tab routing in the UI and the structural extension
      * table that the instrument is stored in.
      */
-    std::string product_type;
+    domain::product_type product_type = domain::product_type::swap;
 
     /**
      * @brief True when this trade type requires the family's options sub-form.

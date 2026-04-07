@@ -20,8 +20,10 @@
 #ifndef ORES_QT_TRADE_DETAIL_DIALOG_HPP
 #define ORES_QT_TRADE_DETAIL_DIALOG_HPP
 
+#include <map>
 #include <vector>
 #include <QTabWidget>
+#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
@@ -29,6 +31,7 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -92,6 +95,7 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
+    void onCreateTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -100,10 +104,13 @@ private:
     void selectCurrentBook();
     void loadCounterparties();
     void selectCurrentCounterparty();
+    void loadTradeTypes();
     void updateUiFromTrade();
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void activateForm(IInstrumentForm* form, const std::string& tradeTypeCode);
+    void applyCreateTradeType();
 
     void saveTrade(const trading::domain::trade& trade);
 
@@ -117,10 +124,17 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // Instrument forms migrated to the IInstrumentForm registry. Forms are
-    // owned by the instrumentStack QStackedWidget under the Instrument tab.
+    // All IInstrumentForm pages live in instrumentStack; formMap_ gives O(1)
+    // access by product_type without walking the stack at runtime.
     InstrumentFormRegistry instrumentFormRegistry_;
+    std::map<trading::domain::product_type, IInstrumentForm*> formMap_;
     IInstrumentForm* activeForm_ = nullptr;
+
+    // Trade-type reference data cached on connect for flag lookups.
+    std::map<std::string, trading::domain::trade_type> tradeTypeCache_;
+    // Zero-interval timer that coalesces rapid tradeTypeEdit keystrokes into
+    // a single applyCreateTradeType() call per event-loop cycle.
+    QTimer* createTypeTimer_ = nullptr;
 
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};

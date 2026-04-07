@@ -33,6 +33,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_type_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -63,14 +64,23 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     setupUi();
     setupConnections();
 
-    // Build a stack page per registered IInstrumentForm. Each form's
-    // signals are wired to the dialog's shared instrument provenance
-    // widget and dirty-tracking flag.
+    // Zero-interval timer coalesces rapid tradeTypeEdit keystrokes so the
+    // form selection logic runs at most once per event-loop cycle.
+    createTypeTimer_ = new QTimer(this);
+    createTypeTimer_->setSingleShot(true);
+    createTypeTimer_->setInterval(0);
+    connect(createTypeTimer_, &QTimer::timeout, this, [this]() {
+        applyCreateTradeType();
+    });
+
+    // Build a stack page per registered IInstrumentForm. formMap_ is
+    // populated here so setTrade() can reach any form in O(1).
     register_default_forms(instrumentFormRegistry_);
     for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
         IInstrumentForm* form =
             instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
         ui_->instrumentStack->addWidget(form);
+        formMap_[pt] = form;
 
         connect(form, &IInstrumentForm::changed, this,
                 &TradeDetailDialog::onInstrumentFieldChanged);
@@ -139,6 +149,8 @@ void TradeDetailDialog::setupConnections() {
             &TradeDetailDialog::onCodeChanged);
     connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFieldChanged);
+    connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onCreateTradeTypeChanged);
     connect(ui_->lifecycleEventEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFieldChanged);
     connect(ui_->nettingSetIdEdit, &QLineEdit::textChanged, this,
@@ -165,6 +177,7 @@ void TradeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     loadBooks();
     loadCounterparties();
+    loadTradeTypes();
 }
 
 void TradeDetailDialog::loadBooks() {
@@ -279,6 +292,45 @@ void TradeDetailDialog::selectCurrentCounterparty() {
     }
 }
 
+void TradeDetailDialog::loadTradeTypes() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    struct Result {
+        bool success;
+        std::vector<trading::domain::trade_type> types;
+    };
+
+    static constexpr int kTradeTypeFetchLimit = 1000;
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<Result>(self);
+    connect(watcher, &QFutureWatcher<Result>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to load trade types";
+            return;
+        }
+
+        self->tradeTypeCache_.clear();
+        for (auto& tt : result.types)
+            self->tradeTypeCache_.emplace(tt.code, std::move(tt));
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() -> Result {
+        if (!cm) return {false, {}};
+        trading::messaging::get_trade_types_request req;
+        req.limit = kTradeTypeFetchLimit;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, {}};
+        return {true, std::move(r->types)};
+    }));
+}
+
 // ---------------------------------------------------------------------------
 // Public setters
 // ---------------------------------------------------------------------------
@@ -287,51 +339,45 @@ void TradeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+// Selects @p form on the stack, sets client manager, username, and trade
+// type flags from the cache.  Does not trigger load or clear — caller does
+// that immediately after.
+void TradeDetailDialog::activateForm(IInstrumentForm* form,
+                                     const std::string& tradeTypeCode) {
+    activeForm_ = form;
+    ui_->instrumentStack->setCurrentWidget(form);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->instrumentTab), true);
+
+    form->setClientManager(clientManager_);
+    form->setUsername(username_);
+
+    bool has_options = false, has_extension = false;
+    auto it = tradeTypeCache_.find(tradeTypeCode);
+    if (it != tradeTypeCache_.end()) {
+        has_options   = it->second.has_options;
+        has_extension = it->second.has_extension;
+    }
+    form->setTradeType(QString::fromStdString(tradeTypeCode),
+                       has_options, has_extension);
+}
+
 void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
     trade_ = trade;
     updateUiFromTrade();
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    // If this product family has been migrated to an IInstrumentForm, route
-    // to the new instrumentTab + stack widget; otherwise fall through to the
-    // legacy per-family load functions still defined in this file.
-    if (instrumentFormRegistry_.contains(trade_.product_type)) {
-        activeForm_ = nullptr;
-        for (int i = 0; i < ui_->instrumentStack->count(); ++i) {
-            auto* form = qobject_cast<IInstrumentForm*>(
-                ui_->instrumentStack->widget(i));
-            if (!form) continue;
-            // The stack pages are added in registry order; pick the page
-            // whose registered family matches the current trade.
-            const auto types = instrumentFormRegistry_.registeredTypes();
-            if (i < static_cast<int>(types.size()) &&
-                types[static_cast<std::size_t>(i)] == trade_.product_type) {
-                activeForm_ = form;
-                ui_->instrumentStack->setCurrentWidget(form);
-                break;
-            }
+    auto it = formMap_.find(trade_.product_type);
+    if (it != formMap_.end()) {
+        activateForm(it->second, trade_.trade_type);
+        if (trade_.instrument_id.has_value()) {
+            activeForm_->loadInstrument(
+                boost::uuids::to_string(*trade_.instrument_id));
+        } else {
+            activeForm_->clear();
         }
-        ui_->tabWidget->setTabVisible(
-            ui_->tabWidget->indexOf(ui_->instrumentTab), true);
-        if (activeForm_) {
-            activeForm_->setClientManager(clientManager_);
-            activeForm_->setUsername(username_);
-            // TODO Phase 5: pass real has_options/has_extension flags from
-            // the trade type lookup. For now keep the legacy default behaviour.
-            activeForm_->setTradeType(
-                QString::fromStdString(trade_.trade_type), true, false);
-            if (trade_.instrument_id.has_value()) {
-                activeForm_->loadInstrument(
-                    boost::uuids::to_string(*trade_.instrument_id));
-            } else {
-                activeForm_->clear();
-            }
-        }
-        return;
     }
-
-
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
@@ -344,11 +390,16 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     if (createMode)
         trade_.id = boost::uuids::random_generator()();
 
-    // Instrument tabs never shown in create mode (create-mode instrument
-    // creation is enabled in Phase 6 once the registry covers all families).
+    // Instrument tab starts hidden; onCreateTradeTypeChanged reveals it
+    // once the user enters a known trade type code.
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
+    activeForm_ = nullptr;
+    instrumentLoaded_ = false;
+
+    if (createMode)
+        applyCreateTradeType();
 
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -417,6 +468,11 @@ void TradeDetailDialog::updateTradeFromUi() {
         trade_.external_id = ui_->externalIdEdit->text().trimmed().toStdString();
     trade_.trade_type =
         ui_->tradeTypeEdit->text().trimmed().toStdString();
+    if (createMode_) {
+        auto it = tradeTypeCache_.find(trade_.trade_type);
+        if (it != tradeTypeCache_.end())
+            trade_.product_type = it->second.product_type;
+    }
     trade_.activity_type_code =
         ui_->lifecycleEventEdit->text().trimmed().toStdString();
     trade_.netting_set_id =
@@ -453,6 +509,37 @@ void TradeDetailDialog::onInstrumentFieldChanged() {
     updateSaveButtonState();
 }
 
+void TradeDetailDialog::onCreateTradeTypeChanged(const QString&) {
+    if (!createMode_) return;
+    // Coalesce rapid keystrokes; applyCreateTradeType() fires once per cycle.
+    createTypeTimer_->start();
+}
+
+void TradeDetailDialog::applyCreateTradeType() {
+    const auto code = ui_->tradeTypeEdit->text().trimmed().toStdString();
+    auto ttIt = tradeTypeCache_.find(code);
+    if (ttIt == tradeTypeCache_.end()) {
+        ui_->tabWidget->setTabVisible(
+            ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+        activeForm_ = nullptr;
+        return;
+    }
+
+    auto formIt = formMap_.find(ttIt->second.product_type);
+    if (formIt == formMap_.end()) {
+        ui_->tabWidget->setTabVisible(
+            ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+        activeForm_ = nullptr;
+        return;
+    }
+
+    // Only reset the form when the product family changes.
+    if (activeForm_ != formIt->second) {
+        activateForm(formIt->second, code);
+        activeForm_->clear();
+    }
+}
+
 void TradeDetailDialog::updateSaveButtonState() {
     const bool canSave =
         (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
@@ -485,12 +572,8 @@ void TradeDetailDialog::onSaveClicked() {
     }
 
     updateTradeFromUi();
-    if (instrumentLoaded_) {
-        if (activeForm_ &&
-            instrumentFormRegistry_.contains(trade_.product_type)) {
-            activeForm_->writeUiToInstrument();
-        }
-    }
+    if (activeForm_ && (createMode_ || instrumentLoaded_))
+        activeForm_->writeUiToInstrument();
 
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create
@@ -503,41 +586,32 @@ void TradeDetailDialog::onSaveClicked() {
     trade_.change_reason_code = crSel->reason_code;
     trade_.change_commentary  = crSel->commentary;
 
-    if (instrumentLoaded_) {
-        // Instrument change reason matches the trade change reason.
-        if (activeForm_ &&
-            instrumentFormRegistry_.contains(trade_.product_type)) {
-            activeForm_->setChangeReason(
-                crSel->reason_code, crSel->commentary);
-        }
-    }
+    if (activeForm_)
+        activeForm_->setChangeReason(crSel->reason_code, crSel->commentary);
 
-    if (instrumentHasChanges_ && instrumentLoaded_) {
-        if (activeForm_ &&
-            instrumentFormRegistry_.contains(trade_.product_type)) {
-            BOOST_LOG_SEV(lg(), info)
-                << "Saving instrument then trade via form: "
-                << trade_.external_id;
-            const auto saved_trade = trade_;
-            activeForm_->saveInstrument(
-                [this, saved_trade](const std::string& id) {
-                    instrumentHasChanges_ = false;
-                    auto t = saved_trade;
-                    if (!id.empty())
-                        t.instrument_id =
-                            boost::uuids::string_generator()(id);
-                    saveTrade(t);
-                },
-                [this](const QString& err) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Instrument save failed: " << err.toStdString();
-                    emit errorMessage(err);
-                    MessageBoxHelper::critical(this, "Save Failed",
-                        tr("Failed to save instrument:\n%1").arg(err));
-                });
-            return;
-        }
+    // Save the instrument first when it is new (create mode) or dirty.
+    const bool needsInstrumentSave = activeForm_ &&
+        (createMode_ || (instrumentHasChanges_ && instrumentLoaded_));
 
+    if (needsInstrumentSave) {
+        BOOST_LOG_SEV(lg(), info)
+            << "Saving instrument then trade: " << trade_.external_id;
+        const auto saved_trade = trade_;
+        activeForm_->saveInstrument(
+            [this, saved_trade](const std::string& id) {
+                instrumentHasChanges_ = false;
+                auto t = saved_trade;
+                if (!id.empty())
+                    t.instrument_id = boost::uuids::string_generator()(id);
+                saveTrade(t);
+            },
+            [this](const QString& err) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Instrument save failed: " << err.toStdString();
+                emit errorMessage(err);
+                MessageBoxHelper::critical(this, "Save Failed",
+                    tr("Failed to save instrument:\n%1").arg(err));
+            });
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
         saveTrade(trade_);

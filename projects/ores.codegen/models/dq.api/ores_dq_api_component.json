@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "dq.api",
+    "full_name": "ores.dq.api",
+    "brief": "Public API types for the data quality component.",
+    "description": "Defines the NATS messaging protocol and public domain types for the data\nquality component: request/response structs for change reasons, change\nreason categories, origin/nature/treatment dimensions, catalogs, datasets,\nmethodologies, coding schemes, data domains, and subject areas.\nHas minimal dependencies and is safe to link from any other component."
+  }
+}

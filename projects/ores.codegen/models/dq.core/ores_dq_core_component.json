@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "dq.core",
+    "full_name": "ores.dq.core",
+    "brief": "Internal implementation of the data quality component.",
+    "description": "Contains NATS message handlers, repositories, service layer, and domain\nlogic for the data quality component. Depends on ores.dq.api for protocol\ntypes. Implements handlers for change reasons, change reason categories,\norigin/nature/treatment dimensions, catalogs, datasets, methodologies,\ncoding schemes, data domains, and subject areas."
+  }
+}

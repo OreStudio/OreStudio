@@ -328,8 +328,8 @@
         }
       ]
     },
-    "service": {
-      "description": "Service executable scaffold (app, config, parser, main + lib/exe CMake)",
+    "component-api": {
+      "description": "API sub-project scaffold: minimal lib with protocol/event types (ores.COMPONENT.api)",
       "model_types": ["component"],
       "templates": [
         {
@@ -337,7 +337,91 @@
           "output": "projects/{component_full}/CMakeLists.txt"
         },
         {
-          "template": "cmake_service_src.mustache",
+          "template": "cmake_component_api_src.mustache",
+          "output": "projects/{component_full}/src/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_tests.mustache",
+          "output": "projects/{component_full}/tests/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_modeling.mustache",
+          "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_component_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
+        },
+        {
+          "template": "cpp_component_stub_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/domain/stub.hpp"
+        },
+        {
+          "template": "cpp_component_stub_impl.cpp.mustache",
+          "output": "projects/{component_full}/src/domain/stub.cpp"
+        },
+        {
+          "template": "cpp_component_test_main.cpp.mustache",
+          "output": "projects/{component_full}/tests/main.cpp"
+        },
+        {
+          "template": "cpp_component_stub_test.cpp.mustache",
+          "output": "projects/{component_full}/tests/stub_tests.cpp"
+        }
+      ]
+    },
+    "component-core": {
+      "description": "Core sub-project scaffold: internal implementation lib (ores.COMPONENT.core)",
+      "model_types": ["component"],
+      "templates": [
+        {
+          "template": "cmake_component_root.mustache",
+          "output": "projects/{component_full}/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_core_src.mustache",
+          "output": "projects/{component_full}/src/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_tests.mustache",
+          "output": "projects/{component_full}/tests/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_modeling.mustache",
+          "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_component_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
+        },
+        {
+          "template": "cpp_component_stub_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/domain/stub.hpp"
+        },
+        {
+          "template": "cpp_component_stub_impl.cpp.mustache",
+          "output": "projects/{component_full}/src/domain/stub.cpp"
+        },
+        {
+          "template": "cpp_component_test_main.cpp.mustache",
+          "output": "projects/{component_full}/tests/main.cpp"
+        },
+        {
+          "template": "cpp_component_stub_test.cpp.mustache",
+          "output": "projects/{component_full}/tests/stub_tests.cpp"
+        }
+      ]
+    },
+    "component-service": {
+      "description": "Service sub-project scaffold: executable entry point (ores.COMPONENT.service)",
+      "model_types": ["component"],
+      "templates": [
+        {
+          "template": "cmake_component_root.mustache",
+          "output": "projects/{component_full}/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_service_src.mustache",
           "output": "projects/{component_full}/src/CMakeLists.txt"
         },
         {

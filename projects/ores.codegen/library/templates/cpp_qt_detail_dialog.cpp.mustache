@@ -145,7 +145,18 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
+{{#is_line_edit}}
     ui_->{{widget}}->setReadOnly(true);
+{{/is_line_edit}}
+{{#is_text_edit}}
+    ui_->{{widget}}->setReadOnly(true);
+{{/is_text_edit}}
+{{#is_static_combo}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_dynamic_combo}}
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}
@@ -235,6 +246,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{#is_line_edit}}
         {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->text().trimmed().toStdString();
 {{/is_line_edit}}
+{{#is_static_combo}}
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+{{/is_dynamic_combo}}
     }
 {{/is_key}}
 {{^is_key}}

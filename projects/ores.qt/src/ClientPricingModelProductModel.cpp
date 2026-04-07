@@ -199,10 +199,10 @@ void ClientPricingModelProductModel::fetch_products(
                     process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false, .products = {},
                             .total_available_count = 0,
-                            .error_message = "Failed to send request",
+                            .error_message = result.error(),
                             .error_details = {}};
                 }
 

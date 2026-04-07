@@ -1341,7 +1341,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['value_widget'] = widget.replace('Edit', 'Value').replace('Combo', 'Value')
                 # Derive label_widget for detail dialog form labels (e.g. code -> labelCode)
                 f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
-                if f.get('is_required') and f.get('is_line_edit'):
+                if f.get('is_required') and (f.get('is_line_edit') or f.get('is_static_combo')):
                     required_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],

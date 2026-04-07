@@ -166,6 +166,8 @@ void PricingModelProductDetailDialog::updateUiFromProduct() {
 
 void PricingModelProductDetailDialog::updateProductFromUi() {
     if (createMode_) {
+        product_.pricing_engine_type_code =
+            ui_->pricingEngineTypeCodeCombo->currentData().toString().trimmed().toStdString();
     }
     product_.model = ui_->modelEdit->text().trimmed().toStdString();
     product_.engine = ui_->engineEdit->text().trimmed().toStdString();

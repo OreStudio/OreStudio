@@ -144,8 +144,8 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", tags) {
     auto read = repo.read_latest_for_product(h.context(), product_id_str);
     BOOST_LOG_SEV(lg, debug) << "Read parameters for product: " << read;
 
-    // product-scoped parameters (model + engine scope) should be returned
-    CHECK(!read.empty());
+    // 5 product-scoped parameters (3 model + 2 engine); globals are excluded
+    CHECK(read.size() == 5);
 }
 
 TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {

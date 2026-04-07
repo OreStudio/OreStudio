@@ -29,7 +29,6 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
@@ -99,7 +98,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onBondTradeTypeChanged(const QString& text);
     void onCreditTradeTypeChanged(const QString& text);
     void onEquityTradeTypeChanged(const QString& text);
     void onCommodityTradeTypeChanged(const QString& text);
@@ -117,15 +115,6 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
-
-    // Bond instrument support
-    void loadBondInstrument();
-    void populateBondInstrument();
-    void updateBondInstrumentFromUi();
-    void updateBondTabVisibility();
-    void setBondReadOnly(bool readOnly);
-    void saveBondThenTrade(const trading::domain::trade& trade,
-                           const trading::domain::bond_instrument& instrument);
 
     // Credit instrument support
     void loadCreditInstrument();
@@ -190,9 +179,8 @@ private:
     InstrumentFormRegistry instrumentFormRegistry_;
     IInstrumentForm* activeForm_ = nullptr;
 
-    // Legacy per-family state for the six instrument families that have
+    // Legacy per-family state for the five instrument families that have
     // not yet been migrated to IInstrumentForm subclasses.
-    trading::domain::bond_instrument bondInstrument_;
     trading::domain::credit_instrument creditInstrument_;
     trading::domain::equity_instrument equityInstrument_;
     trading::domain::commodity_instrument commodityInstrument_;

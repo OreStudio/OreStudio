@@ -25,18 +25,10 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
+#include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/fx_instrument.hpp"
-#include "ores.trading.api/domain/instrument.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
-#include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
-#include "ores.trading.api/domain/commodity_instrument.hpp"
-#include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -100,14 +92,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onFxTradeTypeChanged(const QString& text);
-    void onSwapTradeTypeChanged(const QString& text);
-    void onBondTradeTypeChanged(const QString& text);
-    void onCreditTradeTypeChanged(const QString& text);
-    void onEquityTradeTypeChanged(const QString& text);
-    void onCommodityTradeTypeChanged(const QString& text);
-    void onCompositeTradeTypeChanged(const QString& text);
-    void onScriptTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -121,80 +105,6 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
-    // FX instrument support
-    void loadFxInstrument();
-    void populateFxInstrument();
-    void updateFxInstrumentFromUi();
-    void updateFxTabVisibility();
-    void setFxReadOnly(bool readOnly);
-    void saveFxThenTrade(const trading::domain::trade& trade,
-                         const trading::domain::fx_instrument& instrument);
-
-    // Swap / Rates instrument support
-    void loadSwapInstrument();
-    void populateSwapInstrument();
-    void updateSwapInstrumentFromUi();
-    void updateSwapTabVisibility();
-    void setSwapReadOnly(bool readOnly);
-    void saveSwapThenTrade(const trading::domain::trade& trade,
-                           const trading::domain::instrument& instrument,
-                           const std::vector<trading::domain::swap_leg>& legs);
-
-    // Bond instrument support
-    void loadBondInstrument();
-    void populateBondInstrument();
-    void updateBondInstrumentFromUi();
-    void updateBondTabVisibility();
-    void setBondReadOnly(bool readOnly);
-    void saveBondThenTrade(const trading::domain::trade& trade,
-                           const trading::domain::bond_instrument& instrument);
-
-    // Credit instrument support
-    void loadCreditInstrument();
-    void populateCreditInstrument();
-    void updateCreditInstrumentFromUi();
-    void updateCreditTabVisibility();
-    void setCreditReadOnly(bool readOnly);
-    void saveCreditThenTrade(const trading::domain::trade& trade,
-                             const trading::domain::credit_instrument& instrument);
-
-    // Equity instrument support
-    void loadEquityInstrument();
-    void populateEquityInstrument();
-    void updateEquityInstrumentFromUi();
-    void updateEquityTabVisibility();
-    void setEquityReadOnly(bool readOnly);
-    void saveEquityThenTrade(const trading::domain::trade& trade,
-                             const trading::domain::equity_instrument& instrument);
-
-    // Commodity instrument support
-    void loadCommodityInstrument();
-    void populateCommodityInstrument();
-    void updateCommodityInstrumentFromUi();
-    void updateCommodityTabVisibility();
-    void setCommodityReadOnly(bool readOnly);
-    void saveCommodityThenTrade(const trading::domain::trade& trade,
-                                const trading::domain::commodity_instrument& instrument);
-
-    // Composite instrument support
-    void loadCompositeInstrument();
-    void populateCompositeInstrument();
-    void updateCompositeInstrumentFromUi();
-    void updateCompositeTabVisibility();
-    void setCompositeReadOnly(bool readOnly);
-    void saveCompositeThenTrade(const trading::domain::trade& trade,
-                                const trading::domain::composite_instrument& instrument,
-                                const std::vector<trading::domain::composite_leg>& legs);
-
-    // Scripted instrument support
-    void loadScriptedInstrument();
-    void populateScriptedInstrument();
-    void updateScriptedInstrumentFromUi();
-    void updateScriptedTabVisibility();
-    void setScriptedReadOnly(bool readOnly);
-    void saveScriptedThenTrade(const trading::domain::trade& trade,
-                               const trading::domain::scripted_instrument& instrument);
-
     void saveTrade(const trading::domain::trade& trade);
 
     Ui::TradeDetailDialog* ui_;
@@ -207,17 +117,11 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // Instrument state (at most one family is loaded at a time)
-    trading::domain::fx_instrument fxInstrument_;
-    trading::domain::instrument swapInstrument_;
-    std::vector<trading::domain::swap_leg> swapLegs_;
-    trading::domain::bond_instrument bondInstrument_;
-    trading::domain::credit_instrument creditInstrument_;
-    trading::domain::equity_instrument equityInstrument_;
-    trading::domain::commodity_instrument commodityInstrument_;
-    trading::domain::composite_instrument compositeInstrument_;
-    std::vector<trading::domain::composite_leg> compositeLegs_;
-    trading::domain::scripted_instrument scriptedInstrument_;
+    // Instrument forms migrated to the IInstrumentForm registry. Forms are
+    // owned by the instrumentStack QStackedWidget under the Instrument tab.
+    InstrumentFormRegistry instrumentFormRegistry_;
+    IInstrumentForm* activeForm_ = nullptr;
+
     bool instrumentLoaded_{false};
     bool instrumentHasChanges_{false};
 };

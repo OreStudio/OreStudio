@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScriptedInstrumentForm</class>
+ <widget class="QWidget" name="ScriptedInstrumentForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <item>
+    <widget class="QTabWidget" name="subTabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="definitionTab">
+      <attribute name="title">
+       <string>Definition</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="definitionLayout">
+       <item>
+        <widget class="QGroupBox" name="definitionGroup">
+         <property name="title">
+          <string>Basic Information</string>
+         </property>
+         <layout class="QFormLayout" name="definitionFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="placeholderText"><string>Trade type code</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel"><property name="text"><string>Script Name:</string></property></widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="scriptNameEdit">
+            <property name="placeholderText"><string>Script name</string></property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>Optional description</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="definitionSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>20</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="bodyTab">
+      <attribute name="title">
+       <string>Script Body</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="bodyLayout">
+       <item>
+        <widget class="QGroupBox" name="scriptGroup">
+         <property name="title">
+          <string>Script</string>
+         </property>
+         <layout class="QVBoxLayout" name="scriptGroupLayout">
+          <item>
+           <widget class="QPlainTextEdit" name="scriptBodyEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>80</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>ORE AMC script body</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="parametersGroup">
+         <property name="title">
+          <string>Parameters</string>
+         </property>
+         <layout class="QFormLayout" name="parametersFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel"><property name="text"><string>Events (JSON):</string></property></widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPlainTextEdit" name="eventsJsonEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>[]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel"><property name="text"><string>Underlyings (JSON):</string></property></widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPlainTextEdit" name="underlyingsJsonEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>[]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel"><property name="text"><string>Parameters (JSON):</string></property></widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPlainTextEdit" name="parametersJsonEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>{}</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

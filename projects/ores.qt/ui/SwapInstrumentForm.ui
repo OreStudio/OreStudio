@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SwapInstrumentForm</class>
+ <widget class="QWidget" name="SwapInstrumentForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <item>
+    <widget class="QTabWidget" name="subTabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="coreTab">
+      <attribute name="title"><string>Core</string></attribute>
+      <layout class="QVBoxLayout" name="coreLayout">
+       <item>
+        <widget class="QGroupBox" name="coreGroup">
+         <property name="title"><string>Swap Core</string></property>
+         <layout class="QFormLayout" name="coreFormLayout">
+          <item row="0" column="0"><widget class="QLabel" name="labelTradeTypeCode"><property name="text"><string>Trade Type:</string></property></widget></item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="placeholderText"><string>e.g. Swap, ForwardRateAgreement</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0"><widget class="QLabel" name="labelNotional"><property name="text"><string>Notional:</string></property></widget></item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="notionalSpinBox">
+            <property name="decimals"><number>2</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999999999.000000000000000</double></property>
+            <property name="singleStep"><double>1000.000000000000000</double></property>
+           </widget>
+          </item>
+          <item row="2" column="0"><widget class="QLabel" name="labelCurrency"><property name="text"><string>Currency:</string></property></widget></item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="currencyEdit">
+            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0"><widget class="QLabel" name="labelStartDate"><property name="text"><string>Start Date:</string></property></widget></item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="startDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date (e.g. 2026-01-01)</string></property>
+           </widget>
+          </item>
+          <item row="4" column="0"><widget class="QLabel" name="labelMaturityDate"><property name="text"><string>Maturity Date:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="maturityDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date (e.g. 2031-01-01)</string></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel" name="labelDescription"><property name="text"><string>Description:</string></property></widget></item>
+          <item row="5" column="1">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
+            <property name="minimumSize"><size><width>0</width><height>60</height></size></property>
+            <property name="maximumSize"><size><width>16777215</width><height>120</height></size></property>
+            <property name="placeholderText"><string>Enter a description (optional)</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item><spacer name="coreSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property></spacer></item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="ratesTab">
+      <attribute name="title"><string>Rates Extensions</string></attribute>
+      <layout class="QVBoxLayout" name="ratesLayout">
+       <item>
+        <widget class="QGroupBox" name="ratesGroup">
+         <property name="title"><string>Rates Extensions</string></property>
+         <layout class="QFormLayout" name="ratesFormLayout">
+          <item row="0" column="0"><widget class="QLabel" name="labelFraFixingDate"><property name="text"><string>FRA Fixing Date:</string></property></widget></item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="fraFixingDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date (ForwardRateAgreement)</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0"><widget class="QLabel" name="labelFraSettlementDate"><property name="text"><string>FRA Settlement Date:</string></property></widget></item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="fraSettlementDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date (ForwardRateAgreement)</string></property>
+           </widget>
+          </item>
+          <item row="2" column="0"><widget class="QLabel" name="labelLockoutDays"><property name="text"><string>Lockout Days:</string></property></widget></item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="lockoutDaysSpinBox">
+            <property name="minimum"><number>0</number></property>
+            <property name="maximum"><number>365</number></property>
+            <property name="toolTip"><string>Lockout days for BalanceGuaranteedSwap / KnockOutSwap (0 = not set)</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0"><widget class="QLabel" name="labelCallableDatesJson"><property name="text"><string>Callable Dates (JSON):</string></property></widget></item>
+          <item row="3" column="1">
+           <widget class="QPlainTextEdit" name="callableDatesJsonEdit">
+            <property name="minimumSize"><size><width>0</width><height>60</height></size></property>
+            <property name="maximumSize"><size><width>16777215</width><height>120</height></size></property>
+            <property name="placeholderText"><string>JSON array of call dates (CallableSwap)</string></property>
+           </widget>
+          </item>
+          <item row="4" column="0"><widget class="QLabel" name="labelRpaCounterparty"><property name="text"><string>RPA Counterparty:</string></property></widget></item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="rpaCounterpartyEdit">
+            <property name="placeholderText"><string>Reference counterparty (RiskParticipationAgreement)</string></property>
+           </widget>
+          </item>
+          <item row="5" column="0"><widget class="QLabel" name="labelInflationIndexCode"><property name="text"><string>Inflation Index:</string></property></widget></item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="inflationIndexCodeEdit">
+            <property name="placeholderText"><string>Index code (InflationSwap, e.g. HICP, RPI)</string></property>
+           </widget>
+          </item>
+          <item row="6" column="0"><widget class="QLabel" name="labelBaseCpi"><property name="text"><string>Base CPI:</string></property></widget></item>
+          <item row="6" column="1">
+           <widget class="QDoubleSpinBox" name="baseCpiSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>9999.000000000000000</double></property>
+            <property name="singleStep"><double>0.100000000000000</double></property>
+            <property name="toolTip"><string>Base CPI level for InflationSwap (0 = not applicable)</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item><spacer name="ratesSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property></spacer></item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

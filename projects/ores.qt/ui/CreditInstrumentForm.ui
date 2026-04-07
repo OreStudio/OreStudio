@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CreditInstrumentForm</class>
+ <widget class="QWidget" name="CreditInstrumentForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <item>
+    <widget class="QTabWidget" name="subTabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="economicsTab">
+      <attribute name="title">
+       <string>Economics</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="economicsLayout">
+       <item>
+        <widget class="QGroupBox" name="economicsGroup">
+         <property name="title">
+          <string>CDS Economics</string>
+         </property>
+         <layout class="QFormLayout" name="economicsFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="tradeTypeCodeEdit"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel"><property name="text"><string>Reference Entity:</string></property></widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="referenceEntityEdit"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel"><property name="text"><string>Currency:</string></property></widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="currencyEdit">
+            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel"><property name="text"><string>Notional:</string></property></widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="notionalSpinBox">
+            <property name="decimals"><number>2</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999999999.000000000000000</double></property>
+            <property name="singleStep"><double>1000.000000000000000</double></property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel"><property name="text"><string>Spread (bps):</string></property></widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spreadSpinBox">
+            <property name="decimals"><number>4</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>10000.000000000000000</double></property>
+            <property name="singleStep"><double>1.000000000000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel"><property name="text"><string>Recovery Rate:</string></property></widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="recoveryRateSpinBox">
+            <property name="decimals"><number>4</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>1.000000000000000</double></property>
+            <property name="singleStep"><double>0.010000000000000</double></property>
+            <property name="toolTip"><string>Decimal (e.g. 0.4 for 40%)</string></property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel"><property name="text"><string>Tenor:</string></property></widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="tenorEdit">
+            <property name="placeholderText"><string>e.g. 5Y, 3Y</string></property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel"><property name="text"><string>Start Date:</string></property></widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="startDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date</string></property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="maturityDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date</string></property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QLineEdit" name="dayCountCodeEdit">
+            <property name="placeholderText"><string>e.g. Actual365Fixed</string></property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QLineEdit" name="paymentFrequencyCodeEdit">
+            <property name="placeholderText"><string>e.g. Quarterly, SemiAnnual</string></property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel"><property name="text"><string>Index Name:</string></property></widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QLineEdit" name="indexNameEdit">
+            <property name="placeholderText"><string>e.g. CDX.NA.IG (CDSIndex)</string></property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel"><property name="text"><string>Index Series:</string></property></widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QSpinBox" name="indexSeriesSpinBox">
+            <property name="minimum"><number>0</number></property>
+            <property name="maximum"><number>999</number></property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QLabel"><property name="text"><string>Seniority:</string></property></widget>
+          </item>
+          <item row="13" column="1">
+           <widget class="QLineEdit" name="seniorityEdit">
+            <property name="placeholderText"><string>e.g. Senior, Subordinated</string></property>
+           </widget>
+          </item>
+          <item row="14" column="0">
+           <widget class="QLabel"><property name="text"><string>Restructuring:</string></property></widget>
+          </item>
+          <item row="14" column="1">
+           <widget class="QLineEdit" name="restructuringEdit">
+            <property name="placeholderText"><string>e.g. MM, MR, CR, XR</string></property>
+           </widget>
+          </item>
+          <item row="15" column="0">
+           <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
+          </item>
+          <item row="15" column="1">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>Enter a description (optional)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="economicsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>20</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="extensionsTab">
+      <attribute name="title">
+       <string>Extensions</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="extensionsLayout">
+       <item>
+        <widget class="QGroupBox" name="extensionsGroup">
+         <property name="title">
+          <string>Credit Extensions</string>
+         </property>
+         <layout class="QFormLayout" name="extensionsFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="optionTypeEdit">
+            <property name="placeholderText"><string>Call or Put (CreditDefaultSwapOption)</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel"><property name="text"><string>Option Expiry Date:</string></property></widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="optionExpiryDateEdit">
+            <property name="placeholderText"><string>ISO 8601 date</string></property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel"><property name="text"><string>Option Strike (bps):</string></property></widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="optionStrikeSpinBox">
+            <property name="decimals"><number>4</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>10000.000000000000000</double></property>
+            <property name="toolTip"><string>Strike spread in bps (0 = not set)</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel"><property name="text"><string>Linked Asset Code:</string></property></widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="linkedAssetCodeEdit">
+            <property name="placeholderText"><string>Reference asset (CreditLinkedSwap)</string></property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel"><property name="text"><string>Tranche Attachment:</string></property></widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="trancheAttachmentSpinBox">
+            <property name="decimals"><number>4</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>1.000000000000000</double></property>
+            <property name="toolTip"><string>CBO tranche attachment as decimal (0 = not set)</string></property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel"><property name="text"><string>Tranche Detachment:</string></property></widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QDoubleSpinBox" name="trancheDetachmentSpinBox">
+            <property name="decimals"><number>4</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>1.000000000000000</double></property>
+            <property name="toolTip"><string>CBO tranche detachment as decimal (0 = not set)</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="extensionsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>20</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

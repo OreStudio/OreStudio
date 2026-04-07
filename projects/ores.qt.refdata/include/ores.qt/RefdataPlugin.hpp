@@ -20,13 +20,11 @@
 #define ORES_QT_REFDATA_PLUGIN_HPP
 
 #include <memory>
-#include <QObject>
 #include <QList>
-#include "ores.qt/IPlugin.hpp"
+#include "ores.qt/PluginBase.hpp"
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class CurrencyController;
 class CountryController;
 class ChangeReasonCategoryController;
@@ -59,8 +57,17 @@ class PurposeTypeController;
  * Extracted from LegacyPlugin in Step 5 of the Qt plugin refactor.
  * Owns the Data, Auxiliary Data, Data Governance, and related menus.
  */
-class RefdataPlugin : public QObject, public IPlugin {
+/**
+ * @brief Reference data plugin: currencies, countries, dimensions, coding
+ *        schemes, datasets, trading conventions, and related types.
+ *
+ * Loaded as a shared library by QPluginLoader at application startup.
+ * Owns the Data, Auxiliary Data, Data Governance, and related menus.
+ */
+class RefdataPlugin : public PluginBase {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
+    Q_INTERFACES(ores::qt::IPlugin)
 
 public:
     explicit RefdataPlugin(QObject* parent = nullptr);
@@ -73,21 +80,7 @@ public:
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
-signals:
-    /** @brief Forwarded status/error messages from entity controllers. */
-    void status_message(const QString& msg);
-
-    /** @brief Forwarded window lifecycle signals from entity controllers. */
-    void window_created(DetachableMdiSubWindow* window);
-    void window_destroyed(DetachableMdiSubWindow* window);
-
-private slots:
-    void on_status_message(const QString& msg) { emit status_message(msg); }
-    void on_window_created(DetachableMdiSubWindow* w) { emit window_created(w); }
-    void on_window_destroyed(DetachableMdiSubWindow* w) { emit window_destroyed(w); }
-
 private:
-    void connect_controller_signals(QObject* ctrl);
 
     plugin_context ctx_;
 

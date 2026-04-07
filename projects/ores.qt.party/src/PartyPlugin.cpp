@@ -35,23 +35,9 @@
 
 namespace ores::qt {
 
-PartyPlugin::PartyPlugin(QObject* parent) : QObject(parent) {}
+PartyPlugin::PartyPlugin(QObject* parent) : PluginBase(parent) {}
 
 PartyPlugin::~PartyPlugin() = default;
-
-// ---------------------------------------------------------------------------
-// Helper: wire standard controller signals to PartyPlugin forwarding slots.
-// ---------------------------------------------------------------------------
-void PartyPlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
@@ -62,47 +48,47 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
     partyTypeController_ = std::make_unique<PartyTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyTypeController_.get());
+    connectControllerSignals(partyTypeController_.get());
 
     partyStatusController_ = std::make_unique<PartyStatusController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyStatusController_.get());
+    connectControllerSignals(partyStatusController_.get());
 
     partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyIdSchemeController_.get());
+    connectControllerSignals(partyIdSchemeController_.get());
 
     contactTypeController_ = std::make_unique<ContactTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(contactTypeController_.get());
+    connectControllerSignals(contactTypeController_.get());
 
     partyController_ = std::make_unique<PartyController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(partyController_.get());
+    connectControllerSignals(partyController_.get());
 
     counterpartyController_ = std::make_unique<CounterpartyController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(counterpartyController_.get());
+    connectControllerSignals(counterpartyController_.get());
 
     businessCentreController_ = std::make_unique<BusinessCentreController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(businessCentreController_.get());
+    connectControllerSignals(businessCentreController_.get());
 
     businessUnitController_ = std::make_unique<BusinessUnitController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(businessUnitController_.get());
+    connectControllerSignals(businessUnitController_.get());
 
     businessUnitTypeController_ = std::make_unique<BusinessUnitTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(businessUnitTypeController_.get());
+    connectControllerSignals(businessUnitTypeController_.get());
 }
 
 // ---------------------------------------------------------------------------

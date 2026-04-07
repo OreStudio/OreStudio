@@ -20,13 +20,11 @@
 #define ORES_QT_ADMIN_PLUGIN_HPP
 
 #include <memory>
-#include <QObject>
 #include <QList>
-#include "ores.qt/IPlugin.hpp"
+#include "ores.qt/PluginBase.hpp"
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class AccountController;
 class RoleController;
 class TenantController;
@@ -40,11 +38,13 @@ class AppVersionController;
 /**
  * @brief Plugin owning all admin-domain entity controllers.
  *
- * Extracted from LegacyPlugin in Step 3 of the Qt plugin refactor.
  * Manages accounts, roles, tenants, system settings, badges, and apps.
+ * Loaded as a shared library by QPluginLoader at application startup.
  */
-class AdminPlugin : public QObject, public IPlugin {
+class AdminPlugin : public PluginBase {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
+    Q_INTERFACES(ores::qt::IPlugin)
 
 public:
     explicit AdminPlugin(QObject* parent = nullptr);
@@ -57,18 +57,7 @@ public:
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
-signals:
-    void status_message(const QString& msg);
-    void window_created(DetachableMdiSubWindow* window);
-    void window_destroyed(DetachableMdiSubWindow* window);
-
-private slots:
-    void on_status_message(const QString& msg) { emit status_message(msg); }
-    void on_window_created(DetachableMdiSubWindow* w) { emit window_created(w); }
-    void on_window_destroyed(DetachableMdiSubWindow* w) { emit window_destroyed(w); }
-
 private:
-    void connect_controller_signals(QObject* ctrl);
     void show_onboarding_wizard();
 
     plugin_context ctx_;

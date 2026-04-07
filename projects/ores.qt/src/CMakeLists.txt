@@ -53,13 +53,9 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib          # shared framework: ClientManager, EntityController,
-                                 # IPlugin, utilities, caches — also pulls Qt6 core modules
-        ores.qt.admin.lib        # admin plugin: accounts, roles, tenants, settings, apps
-        ores.qt.compute.lib      # compute plugin: jobs, queues, reports, dashboards
-        ores.qt.refdata.lib      # refdata plugin: currencies, countries, datasets, conventions
-        ores.qt.party.lib        # party plugin: parties, counterparties, business units, org types
-        ores.qt.mktdata.lib      # mktdata plugin: market data, analytics, currency tiers, data librarian
-        ores.qt.trading.lib      # trading plugin: portfolios, books, trades, portfolio/org explorers
+                                 # IPlugin, PluginRegistry, utilities, caches — pulls Qt6 core modules
+        # Domain plugins (ores.qt.admin, .compute, .refdata, .party, .mktdata, .trading)
+        # are loaded at runtime via QPluginLoader — no compile-time link needed.
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib

@@ -36,23 +36,9 @@
 
 namespace ores::qt {
 
-MktdataPlugin::MktdataPlugin(QObject* parent) : QObject(parent) {}
+MktdataPlugin::MktdataPlugin(QObject* parent) : PluginBase(parent) {}
 
 MktdataPlugin::~MktdataPlugin() = default;
-
-// ---------------------------------------------------------------------------
-// Helper: wire standard controller signals to MktdataPlugin forwarding slots.
-// ---------------------------------------------------------------------------
-void MktdataPlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
@@ -63,34 +49,34 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
     currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(currencyMarketTierController_.get());
+    connectControllerSignals(currencyMarketTierController_.get());
 
     marketDataController_ = std::make_unique<MarketDataController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
     connect(marketDataController_.get(), &MarketDataController::statusMessage,
-            this, &MktdataPlugin::status_message);
+            this, &PluginBase::statusMessage);
     connect(marketDataController_.get(), &MarketDataController::errorMessage,
-            this, &MktdataPlugin::status_message);
+            this, &PluginBase::statusMessage);
     connect(marketDataController_.get(), &MarketDataController::detachableWindowCreated,
-            this, &MktdataPlugin::window_created);
+            this, &PluginBase::windowCreated);
     connect(marketDataController_.get(), &MarketDataController::detachableWindowDestroyed,
-            this, &MktdataPlugin::window_destroyed);
+            this, &PluginBase::windowDestroyed);
 
     pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingEngineTypeController_.get());
+    connectControllerSignals(pricingEngineTypeController_.get());
 
     pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelConfigController_.get());
+    connectControllerSignals(pricingModelConfigController_.get());
 
     pricingModelProductController_ = std::make_unique<PricingModelProductController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelProductController_.get());
+    connectControllerSignals(pricingModelProductController_.get());
 
     pricingModelProductParameterController_ = std::make_unique<PricingModelProductParameterController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(pricingModelProductParameterController_.get());
+    connectControllerSignals(pricingModelProductParameterController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -166,9 +152,9 @@ QList<QMenu*> MktdataPlugin::create_menus() {
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(librarianWindow, &DataLibrarianWindow::statusChanged,
-                this, [this](const QString& msg) { emit status_message(msg); });
+                this, [this](const QString& msg) { emit statusMessage(msg); });
         connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
-                this, [this](const QString& msg) { emit status_message(msg); });
+                this, [this](const QString& msg) { emit statusMessage(msg); });
 
         data_librarian_window_ = subWindow;
         connect(subWindow, &QObject::destroyed, this, [this]() {

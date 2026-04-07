@@ -33,13 +33,16 @@ file(GLOB_RECURSE HEADERS "${ORES_QT_ADMIN_DIR}/include/*.hpp")
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_ADMIN_DIR}/ui/*.ui")
 
-add_library(${lib_target_name} STATIC ${files} ${HEADERS} ${FORMS})
+add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
 
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
     AUTOUIC_SEARCH_PATHS "${ORES_QT_ADMIN_DIR}/ui;${ORES_QT_API_UI_DIR}"
     VERSION   ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR})
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins"
+    INSTALL_RPATH "$ORIGIN/.."
+    BUILD_RPATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 target_include_directories(${lib_target_name} PUBLIC
     ${ORES_QT_ADMIN_DIR}/include)
@@ -59,6 +62,6 @@ target_link_libraries(${lib_target_name}
         ores.controller.api.lib
         ores.variability.api.lib)
 
-if(NOT WIN32)
-    install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
-endif()
+install(TARGETS ${lib_target_name}
+    LIBRARY DESTINATION lib/plugins
+    RUNTIME DESTINATION bin/plugins)

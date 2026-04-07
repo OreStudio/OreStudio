@@ -20,13 +20,11 @@
 #define ORES_QT_COMPUTE_PLUGIN_HPP
 
 #include <memory>
-#include <QObject>
 #include <QList>
-#include "ores.qt/IPlugin.hpp"
+#include "ores.qt/PluginBase.hpp"
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class ComputeDashboardController;
 class ComputeConsoleController;
 class ServiceDashboardController;
@@ -41,13 +39,15 @@ class OreImportController;
 /**
  * @brief Plugin owning all compute, reporting and job controllers.
  *
- * Extracted from LegacyPlugin in Step 4 of the Qt plugin refactor.
  * Manages compute dashboard, console, service dashboard, job definitions,
  * queue monitor, report types/definitions/instances, concurrency policies,
  * and ORE import.
+ * Loaded as a shared library by QPluginLoader at application startup.
  */
-class ComputePlugin : public QObject, public IPlugin {
+class ComputePlugin : public PluginBase {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
+    Q_INTERFACES(ores::qt::IPlugin)
 
 public:
     explicit ComputePlugin(QObject* parent = nullptr);
@@ -60,18 +60,7 @@ public:
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
-signals:
-    void status_message(const QString& msg);
-    void window_created(DetachableMdiSubWindow* window);
-    void window_destroyed(DetachableMdiSubWindow* window);
-
-private slots:
-    void on_status_message(const QString& msg) { emit status_message(msg); }
-    void on_window_created(DetachableMdiSubWindow* w) { emit window_created(w); }
-    void on_window_destroyed(DetachableMdiSubWindow* w) { emit window_destroyed(w); }
-
 private:
-    void connect_controller_signals(QObject* ctrl);
 
     plugin_context ctx_;
 

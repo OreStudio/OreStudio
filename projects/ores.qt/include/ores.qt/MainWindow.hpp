@@ -55,12 +55,6 @@ class DetachableMdiSubWindow;
 class ImageCache;
 class ChangeReasonCache;
 class BadgeCache;
-class AdminPlugin;
-class ComputePlugin;
-class RefdataPlugin;
-class PartyPlugin;
-class MktdataPlugin;
-class TradingPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
@@ -186,24 +180,6 @@ private:
     QIcon reconnectingIcon_;
     QIcon recordOffIcon_;
     QIcon recordOnIcon_;
-
-    /** @brief Admin plugin: accounts, roles, tenants, settings, badges, apps. */
-    std::unique_ptr<AdminPlugin> adminPlugin_;
-
-    /** @brief Compute plugin: jobs, queues, reports, dashboards, ORE import. */
-    std::unique_ptr<ComputePlugin> computePlugin_;
-
-    /** @brief Reference data plugin: currencies, countries, datasets, conventions. */
-    std::unique_ptr<RefdataPlugin> refdataPlugin_;
-
-    /** @brief Party plugin: parties, counterparties, business units, and org types. */
-    std::unique_ptr<PartyPlugin> partyPlugin_;
-
-    /** @brief Market data plugin: market series, fixings, analytics, currency tiers, data librarian. */
-    std::unique_ptr<MktdataPlugin> mktdataPlugin_;
-
-    /** @brief Trading plugin: portfolios, books, trades, portfolio/org explorers. */
-    std::unique_ptr<TradingPlugin> tradingPlugin_;
 
     /** @brief Menus inserted into the menu bar by plugins; removed on logout. */
     QList<QMenu*> plugin_menus_;

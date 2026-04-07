@@ -50,23 +50,9 @@
 
 namespace ores::qt {
 
-RefdataPlugin::RefdataPlugin(QObject* parent) : QObject(parent) {}
+RefdataPlugin::RefdataPlugin(QObject* parent) : PluginBase(parent) {}
 
 RefdataPlugin::~RefdataPlugin() = default;
-
-// ---------------------------------------------------------------------------
-// Helper: wire standard controller signals to RefdataPlugin forwarding slots.
-// ---------------------------------------------------------------------------
-void RefdataPlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers and wire cross-controller relays
@@ -77,107 +63,107 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     currencyController_ = std::make_unique<CurrencyController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(currencyController_.get());
+    connectControllerSignals(currencyController_.get());
 
     countryController_ = std::make_unique<CountryController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(countryController_.get());
+    connectControllerSignals(countryController_.get());
 
     changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(changeReasonCategoryController_.get());
+    connectControllerSignals(changeReasonCategoryController_.get());
 
     changeReasonController_ = std::make_unique<ChangeReasonController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
         ctx_.change_reason_cache, this);
-    connect_controller_signals(changeReasonController_.get());
+    connectControllerSignals(changeReasonController_.get());
 
     originDimensionController_ = std::make_unique<OriginDimensionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(originDimensionController_.get());
+    connectControllerSignals(originDimensionController_.get());
 
     natureDimensionController_ = std::make_unique<NatureDimensionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(natureDimensionController_.get());
+    connectControllerSignals(natureDimensionController_.get());
 
     treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(treatmentDimensionController_.get());
+    connectControllerSignals(treatmentDimensionController_.get());
 
     codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(codingSchemeAuthorityTypeController_.get());
+    connectControllerSignals(codingSchemeAuthorityTypeController_.get());
 
     codeDomainController_ = std::make_unique<CodeDomainController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.username, this);
-    connect_controller_signals(codeDomainController_.get());
+    connectControllerSignals(codeDomainController_.get());
 
     dataDomainController_ = std::make_unique<DataDomainController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(dataDomainController_.get());
+    connectControllerSignals(dataDomainController_.get());
 
     subjectAreaController_ = std::make_unique<SubjectAreaController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(subjectAreaController_.get());
+    connectControllerSignals(subjectAreaController_.get());
 
     catalogController_ = std::make_unique<CatalogController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(catalogController_.get());
+    connectControllerSignals(catalogController_.get());
 
     codingSchemeController_ = std::make_unique<CodingSchemeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(codingSchemeController_.get());
+    connectControllerSignals(codingSchemeController_.get());
 
     methodologyController_ = std::make_unique<MethodologyController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(methodologyController_.get());
+    connectControllerSignals(methodologyController_.get());
 
     datasetController_ = std::make_unique<DatasetController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(datasetController_.get());
+    connectControllerSignals(datasetController_.get());
 
     datasetBundleController_ = std::make_unique<DatasetBundleController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(datasetBundleController_.get());
+    connectControllerSignals(datasetBundleController_.get());
 
     dayCountFractionTypeController_ = std::make_unique<DayCountFractionTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(dayCountFractionTypeController_.get());
+    connectControllerSignals(dayCountFractionTypeController_.get());
 
     businessDayConventionTypeController_ = std::make_unique<BusinessDayConventionTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(businessDayConventionTypeController_.get());
+    connectControllerSignals(businessDayConventionTypeController_.get());
 
     floatingIndexTypeController_ = std::make_unique<FloatingIndexTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(floatingIndexTypeController_.get());
+    connectControllerSignals(floatingIndexTypeController_.get());
 
     paymentFrequencyTypeController_ = std::make_unique<PaymentFrequencyTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(paymentFrequencyTypeController_.get());
+    connectControllerSignals(paymentFrequencyTypeController_.get());
 
     legTypeController_ = std::make_unique<LegTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(legTypeController_.get());
+    connectControllerSignals(legTypeController_.get());
 
     roundingTypeController_ = std::make_unique<RoundingTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(roundingTypeController_.get());
+    connectControllerSignals(roundingTypeController_.get());
 
     // CurrencyController cross-domain relays (within refdata)
     connect(currencyController_.get(), &CurrencyController::showRoundingTypesRequested,
@@ -188,7 +174,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(monetaryNatureController_.get());
+    connectControllerSignals(monetaryNatureController_.get());
 
     connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
             this, [this]() {
@@ -198,7 +184,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     purposeTypeController_ = std::make_unique<PurposeTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(purposeTypeController_.get());
+    connectControllerSignals(purposeTypeController_.get());
 }
 
 // ---------------------------------------------------------------------------

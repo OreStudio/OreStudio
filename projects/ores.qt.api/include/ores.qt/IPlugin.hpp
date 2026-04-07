@@ -21,6 +21,7 @@
 
 #include <QList>
 #include <QString>
+#include <QtPlugin>
 #include "ores.qt/export.hpp"
 #include "ores.qt/plugin_context.hpp"
 
@@ -84,5 +85,7 @@ public:
 };
 
 }
+
+Q_DECLARE_INTERFACE(ores::qt::IPlugin, "ores.qt.IPlugin/1.0")
 
 #endif

@@ -48,13 +48,9 @@
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
-#include "ores.qt/AdminPlugin.hpp"
-#include "ores.qt/ComputePlugin.hpp"
-#include "ores.qt/RefdataPlugin.hpp"
-#include "ores.qt/PartyPlugin.hpp"
-#include "ores.qt/MktdataPlugin.hpp"
-#include "ores.qt/TradingPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
+#include "ores.qt/PluginBase.hpp"
+#include "ores.qt/PluginRegistry.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -409,59 +405,16 @@ MainWindow::MainWindow(QWidget* parent) :
         QMessageBox::warning(this, tr("Image Loading Error"), message);
     });
 
-    // Create admin plugin — controllers are instantiated in on_login()
-    adminPlugin_ = std::make_unique<AdminPlugin>(this);
-    connect(adminPlugin_.get(), &AdminPlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(adminPlugin_.get(), &AdminPlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(adminPlugin_.get(), &AdminPlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Create compute plugin — controllers are instantiated in on_login()
-    computePlugin_ = std::make_unique<ComputePlugin>(this);
-    connect(computePlugin_.get(), &ComputePlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(computePlugin_.get(), &ComputePlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(computePlugin_.get(), &ComputePlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Create refdata plugin — controllers are instantiated in on_login()
-    refdataPlugin_ = std::make_unique<RefdataPlugin>(this);
-    connect(refdataPlugin_.get(), &RefdataPlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(refdataPlugin_.get(), &RefdataPlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(refdataPlugin_.get(), &RefdataPlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Create party plugin — controllers are instantiated in on_login()
-    partyPlugin_ = std::make_unique<PartyPlugin>(this);
-    connect(partyPlugin_.get(), &PartyPlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(partyPlugin_.get(), &PartyPlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(partyPlugin_.get(), &PartyPlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Create mktdata plugin — controllers are instantiated in on_login()
-    mktdataPlugin_ = std::make_unique<MktdataPlugin>(this);
-    connect(mktdataPlugin_.get(), &MktdataPlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(mktdataPlugin_.get(), &MktdataPlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(mktdataPlugin_.get(), &MktdataPlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    // Create trading plugin — controllers are instantiated in on_login()
-    tradingPlugin_ = std::make_unique<TradingPlugin>(this);
-    connect(tradingPlugin_.get(), &TradingPlugin::status_message,
-            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-    connect(tradingPlugin_.get(), &TradingPlugin::window_created,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(tradingPlugin_.get(), &TradingPlugin::window_destroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
+    // Wire plugin signals — controllers are instantiated later in on_login()
+    for (auto* plugin : PluginRegistry::instance().plugins()) {
+        auto* pb = static_cast<PluginBase*>(plugin);
+        connect(pb, &PluginBase::statusMessage,
+                this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
+        connect(pb, &PluginBase::windowCreated,
+                this, &MainWindow::onDetachableWindowCreated);
+        connect(pb, &PluginBase::windowDestroyed,
+                this, &MainWindow::onDetachableWindowDestroyed);
+    }
 
     // (Domain action connections wired by plugin create_menus() after login)
 
@@ -715,18 +668,9 @@ void MainWindow::onDisconnectTriggered() {
 }
 
 void MainWindow::performDisconnectCleanup() {
-    if (tradingPlugin_)
-        tradingPlugin_->on_logout();
-    if (mktdataPlugin_)
-        mktdataPlugin_->on_logout();
-    if (partyPlugin_)
-        partyPlugin_->on_logout();
-    if (refdataPlugin_)
-        refdataPlugin_->on_logout();
-    if (computePlugin_)
-        computePlugin_->on_logout();
-    if (adminPlugin_)
-        adminPlugin_->on_logout();
+    const auto& plugins = PluginRegistry::instance().plugins();
+    for (auto it = plugins.rbegin(); it != plugins.rend(); ++it)
+        (*it)->on_logout();
 
     for (auto* menu : plugin_menus_) {
         menuBar()->removeAction(menu->menuAction());
@@ -1519,22 +1463,10 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.username            = username;
     ctx.http_base_url       = httpBaseUrl_;
 
-    // Drive plugin lifecycle in load_order sequence
-    adminPlugin_->on_login(ctx);
-    computePlugin_->on_login(ctx);
-    refdataPlugin_->on_login(ctx);
-    partyPlugin_->on_login(ctx);
-    mktdataPlugin_->on_login(ctx);
-    tradingPlugin_->on_login(ctx);
-
-    // Insert domain menus from all plugins before Help
+    // Drive plugin lifecycle in load_order sequence, then insert domain menus
     auto* helpAction = ui_->menuHelp->menuAction();
-    for (auto* plugin : {static_cast<IPlugin*>(adminPlugin_.get()),
-                         static_cast<IPlugin*>(computePlugin_.get()),
-                         static_cast<IPlugin*>(refdataPlugin_.get()),
-                         static_cast<IPlugin*>(partyPlugin_.get()),
-                         static_cast<IPlugin*>(mktdataPlugin_.get()),
-                         static_cast<IPlugin*>(tradingPlugin_.get())}) {
+    for (auto* plugin : PluginRegistry::instance().plugins()) {
+        plugin->on_login(ctx);
         for (auto* menu : plugin->create_menus()) {
             menuBar()->insertMenu(helpAction, menu);
             plugin_menus_.append(menu);

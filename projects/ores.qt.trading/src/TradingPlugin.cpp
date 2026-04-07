@@ -35,23 +35,9 @@
 
 namespace ores::qt {
 
-TradingPlugin::TradingPlugin(QObject* parent) : QObject(parent) {}
+TradingPlugin::TradingPlugin(QObject* parent) : PluginBase(parent) {}
 
 TradingPlugin::~TradingPlugin() = default;
-
-// ---------------------------------------------------------------------------
-// Helper: wire standard controller signals to TradingPlugin forwarding slots.
-// ---------------------------------------------------------------------------
-void TradingPlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
@@ -62,22 +48,22 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
     portfolioController_ = std::make_unique<PortfolioController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(portfolioController_.get());
+    connectControllerSignals(portfolioController_.get());
 
     bookController_ = std::make_unique<BookController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(bookController_.get());
+    connectControllerSignals(bookController_.get());
 
     bookStatusController_ = std::make_unique<BookStatusController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(bookStatusController_.get());
+    connectControllerSignals(bookStatusController_.get());
 
     tradeController_ = std::make_unique<TradeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(tradeController_.get());
+    connectControllerSignals(tradeController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -128,7 +114,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
             ctx_.main_window);
 
         connect(window, &PortfolioExplorerMdiWindow::statusChanged,
-                this, [this](const QString& msg) { emit status_message(msg); });
+                this, [this](const QString& msg) { emit statusMessage(msg); });
 
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);
@@ -163,7 +149,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
             ctx_.main_window);
 
         connect(window, &OrgExplorerMdiWindow::statusChanged,
-                this, [this](const QString& msg) { emit status_message(msg); });
+                this, [this](const QString& msg) { emit statusMessage(msg); });
 
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);

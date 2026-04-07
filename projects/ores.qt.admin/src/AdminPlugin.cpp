@@ -38,20 +38,9 @@
 
 namespace ores::qt {
 
-AdminPlugin::AdminPlugin(QObject* parent) : QObject(parent) {}
+AdminPlugin::AdminPlugin(QObject* parent) : PluginBase(parent) {}
 
 AdminPlugin::~AdminPlugin() = default;
-
-void AdminPlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 void AdminPlugin::show_onboarding_wizard() {
     auto* wizard = new TenantOnboardingWizard(ctx_.client_manager, ctx_.main_window);
@@ -74,48 +63,48 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     accountController_ = std::make_unique<AccountController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
         ctx_.change_reason_cache, ctx_.badge_cache, this);
-    connect_controller_signals(accountController_.get());
+    connectControllerSignals(accountController_.get());
 
     roleController_ = std::make_unique<RoleController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(roleController_.get());
+    connectControllerSignals(roleController_.get());
 
     tenantController_ = std::make_unique<TenantController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(tenantController_.get());
+    connectControllerSignals(tenantController_.get());
     connect(tenantController_.get(), &TenantController::onboardRequested,
             this, &AdminPlugin::show_onboarding_wizard);
 
     tenantTypeController_ = std::make_unique<TenantTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(tenantTypeController_.get());
+    connectControllerSignals(tenantTypeController_.get());
 
     systemSettingController_ = std::make_unique<SystemSettingController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(systemSettingController_.get());
+    connectControllerSignals(systemSettingController_.get());
 
     badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(badgeDefinitionController_.get());
+    connectControllerSignals(badgeDefinitionController_.get());
 
     badgeSeverityController_ = std::make_unique<BadgeSeverityController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(badgeSeverityController_.get());
+    connectControllerSignals(badgeSeverityController_.get());
 
     appController_ = std::make_unique<AppController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(appController_.get());
+    connectControllerSignals(appController_.get());
 
     appVersionController_ = std::make_unique<AppVersionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     if (!ctx_.http_base_url.empty())
         appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect_controller_signals(appVersionController_.get());
+    connectControllerSignals(appVersionController_.get());
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {

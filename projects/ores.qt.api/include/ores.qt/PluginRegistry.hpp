@@ -19,41 +19,54 @@
 #ifndef ORES_QT_PLUGIN_REGISTRY_HPP
 #define ORES_QT_PLUGIN_REGISTRY_HPP
 
-#include <memory>
-#include <vector>
+#include <QString>
+#include <QVector>
 #include "ores.qt/export.hpp"
 #include "ores.qt/IPlugin.hpp"
+
+class QPluginLoader;
 
 namespace ores::qt {
 
 /**
- * @brief Singleton registry that owns all loaded plugins.
+ * @brief Singleton registry that discovers and owns all loaded domain plugins.
  *
- * Plugins are registered at application startup (before MainWindow is shown)
- * via register_plugin().  MainWindow iterates plugins() on login/logout.
+ * Call load_from_directory() once at application startup (before constructing
+ * MainWindow) to scan a directory for plugin shared libraries.  Each .so/.dll
+ * that implements IPlugin is loaded, sorted by IPlugin::load_order(), and made
+ * available via plugins().
+ *
+ * The registry retains QPluginLoader instances for the lifetime of the process
+ * so that plugin .so files are never unmapped while controllers are live.
  */
 class ORES_QT_API PluginRegistry {
 public:
     static PluginRegistry& instance();
 
     /**
-     * @brief Register a plugin.  Plugins are stored in registration order.
+     * @brief Scan @p plugin_dir for shared libraries, load each IPlugin found,
+     *        and sort the results by load_order() ascending.
      *
-     * Ownership is transferred to the registry.
+     * Unloadable files and files that do not implement IPlugin are skipped with
+     * a warning logged via qWarning().  Safe to call only once.
      */
-    void register_plugin(std::unique_ptr<IPlugin> plugin);
+    void load_from_directory(const QString& plugin_dir);
 
     /**
-     * @brief Access the ordered list of registered plugins.
+     * @brief Return the ordered list of successfully loaded plugins.
+     *
+     * Plugins are ordered by load_order() ascending (admin first, trading last).
      */
-    const std::vector<std::unique_ptr<IPlugin>>& plugins() const { return plugins_; }
+    const QVector<IPlugin*>& plugins() const { return plugins_; }
 
 private:
     PluginRegistry() = default;
+    ~PluginRegistry();
     PluginRegistry(const PluginRegistry&) = delete;
     PluginRegistry& operator=(const PluginRegistry&) = delete;
 
-    std::vector<std::unique_ptr<IPlugin>> plugins_;
+    QVector<QPluginLoader*> loaders_;  ///< Must outlive plugin instances.
+    QVector<IPlugin*>       plugins_;
 };
 
 }

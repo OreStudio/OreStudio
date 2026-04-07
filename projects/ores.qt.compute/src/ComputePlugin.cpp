@@ -45,72 +45,61 @@ auto ico(Icon icon) {
 }
 }
 
-ComputePlugin::ComputePlugin(QObject* parent) : QObject(parent) {}
+ComputePlugin::ComputePlugin(QObject* parent) : PluginBase(parent) {}
 
 ComputePlugin::~ComputePlugin() = default;
-
-void ComputePlugin::connect_controller_signals(QObject* ctrl) {
-    connect(ctrl, SIGNAL(statusMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(errorMessage(const QString&)),
-            this, SLOT(on_status_message(const QString&)));
-    connect(ctrl, SIGNAL(detachableWindowCreated(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_created(DetachableMdiSubWindow*)));
-    connect(ctrl, SIGNAL(detachableWindowDestroyed(DetachableMdiSubWindow*)),
-            this, SLOT(on_window_destroyed(DetachableMdiSubWindow*)));
-}
 
 void ComputePlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect_controller_signals(computeDashboardController_.get());
+    connectControllerSignals(computeDashboardController_.get());
 
     computeConsoleController_ = std::make_unique<ComputeConsoleController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.badge_cache, this);
     if (!ctx_.http_base_url.empty())
         computeConsoleController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect_controller_signals(computeConsoleController_.get());
+    connectControllerSignals(computeConsoleController_.get());
 
     serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect_controller_signals(serviceDashboardController_.get());
+    connectControllerSignals(serviceDashboardController_.get());
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
         ctx_.change_reason_cache, this);
-    connect_controller_signals(jobDefinitionController_.get());
+    connectControllerSignals(jobDefinitionController_.get());
 
     queueMonitorController_ = std::make_unique<QueueMonitorController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
-    connect_controller_signals(queueMonitorController_.get());
+    connectControllerSignals(queueMonitorController_.get());
 
     reportTypeController_ = std::make_unique<ReportTypeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(reportTypeController_.get());
+    connectControllerSignals(reportTypeController_.get());
 
     concurrencyPolicyController_ = std::make_unique<ConcurrencyPolicyController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(concurrencyPolicyController_.get());
+    connectControllerSignals(concurrencyPolicyController_.get());
 
     reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(reportDefinitionController_.get());
+    connectControllerSignals(reportDefinitionController_.get());
 
     reportInstanceController_ = std::make_unique<ReportInstanceController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(reportInstanceController_.get());
+    connectControllerSignals(reportInstanceController_.get());
 
     oreImportController_ = std::make_unique<OreImportController>(
         ctx_.client_manager, this);
     connect(oreImportController_.get(), &OreImportController::statusMessage,
-            this, &ComputePlugin::status_message);
+            this, &PluginBase::statusMessage);
 }
 
 QList<QMenu*> ComputePlugin::create_menus() {

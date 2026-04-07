@@ -20,13 +20,11 @@
 #define ORES_QT_PARTY_PLUGIN_HPP
 
 #include <memory>
-#include <QObject>
 #include <QList>
-#include "ores.qt/IPlugin.hpp"
+#include "ores.qt/PluginBase.hpp"
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class PartyTypeController;
 class PartyStatusController;
 class PartyIdSchemeController;
@@ -44,8 +42,17 @@ class BusinessUnitTypeController;
  * Extracted from LegacyPlugin in Step 6 of the Qt plugin refactor.
  * Owns the Organization menu.
  */
-class PartyPlugin : public QObject, public IPlugin {
+/**
+ * @brief Party/organisation plugin: parties, counterparties, business
+ *        centres, business units, and related type tables.
+ *
+ * Loaded as a shared library by QPluginLoader at application startup.
+ * Owns the Organization menu.
+ */
+class PartyPlugin : public PluginBase {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
+    Q_INTERFACES(ores::qt::IPlugin)
 
 public:
     explicit PartyPlugin(QObject* parent = nullptr);
@@ -58,21 +65,7 @@ public:
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
-signals:
-    /** @brief Forwarded status/error messages from entity controllers. */
-    void status_message(const QString& msg);
-
-    /** @brief Forwarded window lifecycle signals from entity controllers. */
-    void window_created(DetachableMdiSubWindow* window);
-    void window_destroyed(DetachableMdiSubWindow* window);
-
-private slots:
-    void on_status_message(const QString& msg) { emit status_message(msg); }
-    void on_window_created(DetachableMdiSubWindow* w) { emit window_created(w); }
-    void on_window_destroyed(DetachableMdiSubWindow* w) { emit window_destroyed(w); }
-
 private:
-    void connect_controller_signals(QObject* ctrl);
 
     plugin_context ctx_;
 

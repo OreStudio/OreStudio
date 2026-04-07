@@ -17,6 +17,10 @@
  *
  */
 #include "ores.qt/PluginRegistry.hpp"
+#include <algorithm>
+#include <QDir>
+#include <QLibrary>
+#include <QPluginLoader>
 
 namespace ores::qt {
 
@@ -25,8 +29,58 @@ PluginRegistry& PluginRegistry::instance() {
     return registry;
 }
 
-void PluginRegistry::register_plugin(std::unique_ptr<IPlugin> plugin) {
-    plugins_.push_back(std::move(plugin));
+PluginRegistry::~PluginRegistry() {
+    plugins_.clear();
+    for (auto* loader : loaders_) {
+        loader->unload();
+        delete loader;
+    }
+}
+
+void PluginRegistry::load_from_directory(const QString& plugin_dir) {
+    QDir dir(plugin_dir);
+    if (!dir.exists()) {
+        qWarning() << "PluginRegistry: plugin directory does not exist:"
+                   << plugin_dir;
+        return;
+    }
+
+    QVector<QPair<int, IPlugin*>> ordered;
+
+    for (const QString& filename : dir.entryList(QDir::Files)) {
+        const QString filepath = dir.absoluteFilePath(filename);
+        if (!QLibrary::isLibrary(filepath))
+            continue;
+
+        auto* loader = new QPluginLoader(filepath);
+        QObject* obj = loader->instance();
+        if (!obj) {
+            qWarning() << "PluginRegistry: failed to load" << filename
+                       << "-" << loader->errorString();
+            delete loader;
+            continue;
+        }
+
+        auto* plugin = qobject_cast<IPlugin*>(obj);
+        if (!plugin) {
+            qWarning() << "PluginRegistry:" << filename
+                       << "does not implement IPlugin";
+            loader->unload();
+            delete loader;
+            continue;
+        }
+
+        loaders_.push_back(loader);
+        ordered.push_back({plugin->load_order(), plugin});
+    }
+
+    std::stable_sort(ordered.begin(), ordered.end(),
+        [](const QPair<int, IPlugin*>& a, const QPair<int, IPlugin*>& b) {
+            return a.first < b.first;
+        });
+
+    for (const auto& pair : ordered)
+        plugins_.push_back(pair.second);
 }
 
 }

@@ -17,12 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.core/domain/stub.hpp"
+#ifndef ORES_ANALYTICS_GENERATORS_PRICING_MODEL_CONFIG_GENERATOR_HPP
+#define ORES_ANALYTICS_GENERATORS_PRICING_MODEL_CONFIG_GENERATOR_HPP
 
-namespace ores::analytics::core::domain {
+#include <vector>
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
-std::string stub_function() {
-    return "STUB code to be removed";
+namespace ores::analytics::generators {
+
+/**
+ * @brief Generates a set of fictional pricing model configurations.
+ *
+ * These are intentionally fake configurations that do not correspond to real
+ * ORE pricingengine.xml content. Useful for testing and demo purposes.
+ *
+ * @param n Number of configs to generate. If n is 0 or greater than the
+ *          available set, returns all available fictional configs.
+ */
+std::vector<domain::pricing_model_config> generate_fictional_pricing_model_configs(
+    std::size_t n, utility::generation::generation_context& ctx);
+
 }
 
-}
+#endif

@@ -62,7 +62,7 @@ void AdminPlugin::show_onboarding_wizard() {
             this, [this](const QString& tenantName) {
         if (ctx_.status_bar)
             ctx_.status_bar->showMessage(
-                QStringLiteral("Tenant '%1' onboarded successfully.").arg(tenantName));
+                tr("Tenant '%1' onboarded successfully.").arg(tenantName));
     });
 
     wizard->show();
@@ -122,50 +122,50 @@ QList<QMenu*> AdminPlugin::create_menus() {
     QList<QMenu*> menus;
 
     // Admin menu — identity and settings management
-    auto* adminMenu = new QMenu(QStringLiteral("&Admin"));
+    auto* adminMenu = new QMenu(tr("&Admin"));
 
-    auto* actAccounts = adminMenu->addAction(QStringLiteral("&Accounts"));
+    auto* actAccounts = adminMenu->addAction(tr("&Accounts"));
     connect(actAccounts, &QAction::triggered, this,
         [this]() { if (accountController_) accountController_->showListWindow(); });
 
-    auto* actRoles = adminMenu->addAction(QStringLiteral("&Roles"));
+    auto* actRoles = adminMenu->addAction(tr("&Roles"));
     connect(actRoles, &QAction::triggered, this,
         [this]() { if (roleController_) roleController_->showListWindow(); });
 
-    auto* actTenants = adminMenu->addAction(QStringLiteral("&Tenants"));
+    auto* actTenants = adminMenu->addAction(tr("&Tenants"));
     connect(actTenants, &QAction::triggered, this,
         [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
-    auto* actTenantTypes = adminMenu->addAction(QStringLiteral("Tenant &Types"));
+    auto* actTenantTypes = adminMenu->addAction(tr("Tenant &Types"));
     connect(actTenantTypes, &QAction::triggered, this,
         [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
 
     adminMenu->addSeparator();
 
-    auto* actSettings = adminMenu->addAction(QStringLiteral("&System Settings"));
+    auto* actSettings = adminMenu->addAction(tr("&System Settings"));
     connect(actSettings, &QAction::triggered, this,
         [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
     menus.append(adminMenu);
 
     // Configuration menu — badges and applications
-    auto* configMenu = new QMenu(QStringLiteral("&Configuration"));
+    auto* configMenu = new QMenu(tr("&Configuration"));
 
-    auto* actBadgeDefs = configMenu->addAction(QStringLiteral("Badge &Definitions"));
+    auto* actBadgeDefs = configMenu->addAction(tr("Badge &Definitions"));
     connect(actBadgeDefs, &QAction::triggered, this,
         [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
 
-    auto* actBadgeSevs = configMenu->addAction(QStringLiteral("Badge &Severities"));
+    auto* actBadgeSevs = configMenu->addAction(tr("Badge &Severities"));
     connect(actBadgeSevs, &QAction::triggered, this,
         [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
 
     configMenu->addSeparator();
 
-    auto* actApps = configMenu->addAction(QStringLiteral("&Apps"));
+    auto* actApps = configMenu->addAction(tr("&Apps"));
     connect(actApps, &QAction::triggered, this,
         [this]() { if (appController_) appController_->showListWindow(); });
 
-    auto* actAppVersions = configMenu->addAction(QStringLiteral("App &Versions"));
+    auto* actAppVersions = configMenu->addAction(tr("App &Versions"));
     connect(actAppVersions, &QAction::triggered, this,
         [this]() { if (appVersionController_) appVersionController_->showListWindow(); });
 

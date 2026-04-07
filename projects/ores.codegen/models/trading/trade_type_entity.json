@@ -15,7 +15,10 @@
       "is_text": true
     },
     "columns": [
-      {"name": "description", "type": "text", "nullable": true}
+      {"name": "description", "type": "text", "nullable": true},
+      {"name": "product_type", "type": "product_type_t", "nullable": false},
+      {"name": "has_options", "type": "boolean", "nullable": false, "default": "false"},
+      {"name": "has_extension", "type": "boolean", "nullable": false, "default": "false"}
     ],
     "validations": [
       {

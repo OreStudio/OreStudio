@@ -26,6 +26,9 @@
 -- - ores.iam (for tenant validation)
 -- - ores.dq (for change reason validation)
 
+-- Product type discriminator enum (must precede trade_types and instrument tables)
+\ir ./trading_product_type_create.sql
+
 -- Trade reference data (no inter-dependencies within reference data)
 \ir ./trading_trade_types_create.sql
 \ir ./trading_trade_types_notify_trigger_create.sql
@@ -57,9 +60,6 @@
 
 \ir ./trading_leg_types_create.sql
 \ir ./trading_leg_types_notify_trigger_create.sql
-
--- Product type discriminator enum (must precede all instrument tables)
-\ir ./trading_product_type_create.sql
 
 -- Rates instruments (depends on reference data above)
 \ir ./trading_instruments_create.sql

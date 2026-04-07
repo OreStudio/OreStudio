@@ -809,7 +809,7 @@ void TradeDetailDialog::updateTradeFromUi() {
 void TradeDetailDialog::loadFxInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::fx;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct FxResult {
@@ -973,7 +973,7 @@ void TradeDetailDialog::setFxReadOnly(bool readOnly) {
 void TradeDetailDialog::loadSwapInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::swap;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct SwapResult {
@@ -1207,7 +1207,7 @@ void TradeDetailDialog::saveSwapThenTrade(
 void TradeDetailDialog::loadBondInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::bond;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct BondResult {
@@ -1469,7 +1469,7 @@ void TradeDetailDialog::saveBondThenTrade(
 void TradeDetailDialog::loadCreditInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::credit;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CreditResult {
@@ -1954,7 +1954,7 @@ void TradeDetailDialog::onSaveClicked() {
 void TradeDetailDialog::loadEquityInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::equity;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct EquityResult {
@@ -2233,7 +2233,7 @@ void TradeDetailDialog::saveEquityThenTrade(
 void TradeDetailDialog::loadCommodityInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::commodity;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CommodityResult {
@@ -2569,7 +2569,7 @@ void TradeDetailDialog::saveCommodityThenTrade(
 void TradeDetailDialog::loadCompositeInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::composite;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CompositeResult {
@@ -2728,7 +2728,7 @@ void TradeDetailDialog::saveCompositeThenTrade(
 void TradeDetailDialog::loadScriptedInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const auto family = trade_.product_type.value_or(PT::swap);
+    const auto family = PT::scripted;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct ScriptedResult {

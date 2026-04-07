@@ -545,8 +545,11 @@ struct get_instrument_for_trade_request {
     using response_type = struct get_instrument_for_trade_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.trades.instrument.get";
+    /// Caller MUST set this to one of the eight real product families. The
+    /// default is @c unknown so that an unset value is rejected explicitly
+    /// by the server instead of silently mis-routing to an arbitrary table.
     ores::trading::domain::product_type product_type =
-        ores::trading::domain::product_type::swap;
+        ores::trading::domain::product_type::unknown;
     std::string instrument_id;
 };
 

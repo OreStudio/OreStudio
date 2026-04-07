@@ -236,7 +236,18 @@ public:
                 const auto& id = req->instrument_id;
 
                 using ores::trading::domain::product_type;
+                if (family == product_type::unknown) {
+                    resp.success = false;
+                    resp.message =
+                        "get_instrument_for_trade: product_type is required";
+                    BOOST_LOG_SEV(instrument_handler_lg(), warn)
+                        << msg.subject << ": " << resp.message;
+                    reply(nats_, msg, resp);
+                    return;
+                }
                 switch (family) {
+                case product_type::unknown:
+                    break; // unreachable, handled above
                 case product_type::swap: {
                     service::instrument_service svc(ctx);
                     if (auto r = svc.find_instrument(id)) {

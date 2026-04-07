@@ -107,11 +107,12 @@ struct trade final {
     /**
      * @brief Product type: structural routing discriminator.
      *
-     * Identifies the kind of financial product (FpML: productType).
-     * Used to route the trade to its product-specific extension table.
-     * Absent when no instrument record has been linked yet.
+     * Identifies the kind of financial product (FpML: productType) and
+     * routes the trade to its product-specific extension table. Defaults to
+     * @c product_type::unknown when no instrument record has been linked
+     * yet; round-trips to/from a SQL @c NULL via @c trade_mapper.
      */
-    std::optional<domain::product_type> product_type;
+    domain::product_type product_type = domain::product_type::unknown;
 
     /**
      * @brief UUID of the associated instrument record.

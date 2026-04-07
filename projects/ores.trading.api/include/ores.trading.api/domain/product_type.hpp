@@ -36,9 +36,19 @@ namespace ores::trading::domain {
  * into one of eight families. The family selects which extension table the
  * instrument record lives in and which @c IInstrumentForm the Qt UI shows.
  *
- * String form (used on the wire and in SQL) is the lowercase enumerator name.
+ * The @c unknown sentinel is the default-constructed value and represents
+ * "no family selected yet" — it is the only enumerator that has no
+ * counterpart in the @c product_type_t Postgres enum. The Qt UI uses it for
+ * trades in create mode that have not yet been assigned a trade type, and
+ * dispatch sites must reject it explicitly. It serialises to the empty
+ * string on the wire and round-trips to/from a SQL @c NULL via the
+ * appropriate mapper.
+ *
+ * String form for the eight real values matches the SQL enum and is used
+ * unchanged on the JSON wire format.
  */
 enum class product_type : std::uint8_t {
+    unknown = 0,
     swap,
     fx,
     bond,
@@ -52,11 +62,13 @@ enum class product_type : std::uint8_t {
 /**
  * @brief Convert a product_type to its lowercase string representation.
  *
- * The result matches the SQL @c product_type_t enum values and the JSON
- * wire format. Throws @c std::invalid_argument on an unknown value.
+ * The eight real values match the SQL @c product_type_t enum values and the
+ * JSON wire format. The @c unknown sentinel maps to the empty string.
+ * Throws @c std::invalid_argument on an out-of-range value.
  */
 [[nodiscard]] inline std::string_view to_string(product_type pt) {
     switch (pt) {
+    case product_type::unknown:   return "";
     case product_type::swap:      return "swap";
     case product_type::fx:        return "fx";
     case product_type::bond:      return "bond";
@@ -66,17 +78,19 @@ enum class product_type : std::uint8_t {
     case product_type::composite: return "composite";
     case product_type::scripted:  return "scripted";
     }
-    throw std::invalid_argument("Unknown product_type");
+    throw std::invalid_argument("Out-of-range product_type");
 }
 
 /**
  * @brief Parse a product_type from its lowercase string representation.
  *
- * Returns @c std::nullopt for unrecognised values (callers can decide whether
- * that is an error or simply "no family selected").
+ * The empty string parses to @c product_type::unknown. Returns
+ * @c std::nullopt for any other unrecognised value so the caller has to
+ * decide whether the input is genuinely a parsing error or just absent.
  */
 [[nodiscard]] inline std::optional<product_type>
 product_type_from_string(std::string_view sv) {
+    if (sv.empty())        return product_type::unknown;
     if (sv == "swap")      return product_type::swap;
     if (sv == "fx")        return product_type::fx;
     if (sv == "bond")      return product_type::bond;

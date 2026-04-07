@@ -81,10 +81,12 @@ private:
         const Ctx& ctx,
         const ores::trading::domain::trade& t,
         trade_export_item& item) {
-        if (!t.instrument_id || !t.product_type) return;
-        const auto id = boost::uuids::to_string(*t.instrument_id);
         using ores::trading::domain::product_type;
-        switch (*t.product_type) {
+        if (!t.instrument_id || t.product_type == product_type::unknown) return;
+        const auto id = boost::uuids::to_string(*t.instrument_id);
+        switch (t.product_type) {
+        case product_type::unknown:
+            return; // unreachable, handled above
         case product_type::swap: {
             service::instrument_service isvc(ctx);
             if (auto r = isvc.find_instrument(id)) {

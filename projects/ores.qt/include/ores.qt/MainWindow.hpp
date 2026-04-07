@@ -20,13 +20,14 @@
 #ifndef ORES_QT_MAIN_WINDOW_HPP
 #define ORES_QT_MAIN_WINDOW_HPP
 
-#include <QMainWindow>
-#include <QLabel>
-#include <QPointer>
-#include <QTimer>
-#include <QSystemTrayIcon>
+#include <QList>
 #include <QMenu>
 #include <QColor>
+#include <QLabel>
+#include <QTimer>
+#include <QPointer>
+#include <QMainWindow>
+#include <QSystemTrayIcon>
 #include <memory>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
@@ -51,92 +52,17 @@ class connection_manager;
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
-class CurrencyController;
-class CountryController;
-class AccountController;
-class RoleController;
-class TenantController;
-class SystemSettingController;
-class ChangeReasonCategoryController;
-class ChangeReasonController;
-class OriginDimensionController;
-class NatureDimensionController;
-class TreatmentDimensionController;
-class CodingSchemeAuthorityTypeController;
-class DataDomainController;
-class SubjectAreaController;
-class CatalogController;
-class CodingSchemeController;
-class MethodologyController;
-class DatasetController;
-class DatasetBundleController;
-class PartyTypeController;
-class PartyStatusController;
-class PartyIdSchemeController;
-class ContactTypeController;
-class PartyController;
-class CounterpartyController;
-class BusinessCentreController;
-class BusinessUnitController;
-class BusinessUnitTypeController;
-class JobDefinitionController;
-class AppController;
-class AppVersionController;
-class ComputeDashboardController;
-class ComputeConsoleController;
-class ServiceDashboardController;
-class ReportTypeController;
-class ConcurrencyPolicyController;
-class ReportDefinitionController;
-class ReportInstanceController;
-class PortfolioController;
-class BookController;
-class BookStatusController;
-class QueueMonitorController;
-class PurposeTypeController;
-class RoundingTypeController;
-class MonetaryNatureController;
-class CurrencyMarketTierController;
-class TradeController;
-class DayCountFractionTypeController;
-class BusinessDayConventionTypeController;
-class FloatingIndexTypeController;
-class PaymentFrequencyTypeController;
-class LegTypeController;
-class OreImportController;
-class PricingEngineTypeController;
-class PricingModelConfigController;
-class PricingModelProductController;
-class PricingModelProductParameterController;
-class MarketDataController;
-class PortfolioExplorerMdiWindow;
-class OrgExplorerMdiWindow;
 class ImageCache;
 class ChangeReasonCache;
 class BadgeCache;
-class DataLibrarianWindow;
+class LegacyPlugin;
 
 /**
- * @brief Main application window providing the MDI interface and entity
- * management.
+ * @brief Main application window providing the MDI interface.
  *
- * The MainWindow serves as the primary application window, providing:
- *
- * - MDI (Multiple Document Interface) workspace for entity windows
- * - Menu bar with File, Ref Data, Export, Window, and Help menus
- * - Toolbar with quick access to common operations
- * - Status bar showing connection state and operation messages
- * - Entity controller management for different data types (currencies,
- *   accounts, etc.)
- *
- * The window uses an entity controller pattern where each data type (currency,
- * account, trade, etc.) has its own controller that manages windows and
- * operations specific to that entity. This keeps the MainWindow clean and makes
- * it easy to add new entities.
- *
- * @note MainWindow creates entity controllers after successful login and
- * destroys them on disconnect to ensure they always have a valid client
- * connection.
+ * Owns shared infrastructure (ClientManager, caches, event bus) and drives the
+ * plugin lifecycle.  Domain entity management is delegated to LegacyPlugin
+ * (and future domain-specific plugins) via the IPlugin interface.
  */
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -154,10 +80,6 @@ public:
     /**
      * @brief Constructs the main window.
      * @param parent Parent widget (typically nullptr for main window)
-     *
-     * Initializes the UI, sets up the MDI area, configures icons, and connects
-     * menu/toolbar actions. Entity controllers are created after successful
-     * login.
      */
     explicit MainWindow(QWidget* parent = nullptr);
 
@@ -173,9 +95,6 @@ public:
 
     /**
      * @brief Set instance identification info for multi-instance testing.
-     *
-     * @param name Instance name (e.g., "Instance 1", "Primary")
-     * @param color Optional color for the instance banner
      */
     void setInstanceInfo(const QString& name, const QColor& color = QColor());
 
@@ -186,585 +105,122 @@ public:
 
     /**
      * @brief Update the window title to reflect current state.
-     *
-     * Title format: "ORE Studio v{version} - {username}@{server} [Instance Name]"
-     * When not connected: "ORE Studio v{version} [Instance Name]"
      */
     void updateWindowTitle();
 
 protected:
-    /**
-     * @brief Handles the close event for the main window.
-     *
-     * Ensures all detachable windows (MDI and detached) are closed before
-     * the main window closes, so the application can terminate cleanly.
-     */
     void closeEvent(QCloseEvent* event) override;
 
-    /**
-     * @brief Event filter to intercept tooltip events on the connection icon.
-     *
-     * Dynamically builds the tooltip text just before Qt displays it, so the
-     * bytes/RTT/status values are always current.
-     */
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
-    /**
-     * @brief Handles login action from menu/toolbar.
-     *
-     * Displays the login dialog and, on successful authentication, creates the
-     * client connection and entity controllers.
-     */
     void onLoginTriggered();
-
-    /**
-     * @brief Handles disconnect action from menu/toolbar.
-     */
     void onDisconnectTriggered();
-
-    /**
-     * @brief Displays the About dialog.
-     */
     void onAboutTriggered();
-
-    /**
-     * @brief Displays the My Account dialog for user self-service.
-     */
     void onMyAccountTriggered();
-
-    /**
-     * @brief Displays the session history for the current user.
-     */
     void onMySessionsTriggered();
-
-    /**
-     * @brief Detaches all MDI windows to separate floating windows.
-     */
     void onDetachAllTriggered();
-
-    /**
-     * @brief Handles creation of a detachable window from an entity controller.
-     *
-     * Adds the window to the allDetachableWindows_ list for tracking.
-     * Connected to EntityController::detachableWindowCreated signal.
-     *
-     * @param window The newly created detachable window.
-     */
     void onDetachableWindowCreated(DetachableMdiSubWindow* window);
-
-    /**
-     * @brief Handles destruction of a detachable window from an entity controller.
-     *
-     * Removes the window from the allDetachableWindows_ list.
-     * Connected to EntityController::detachableWindowDestroyed signal.
-     *
-     * @param window The window being destroyed.
-     */
     void onDetachableWindowDestroyed(DetachableMdiSubWindow* window);
-
-    /**
-     * @brief Updates the Window menu with the list of currently open windows.
-     *
-     * Called just before the Window menu is displayed. Removes old window list
-     * items and adds current windows, indicating which are detached.
-     */
     void onWindowMenuAboutToShow();
-
-    // Protocol recording slots
-    /**
-     * @brief Toggles protocol message recording on/off.
-     *
-     * When enabled, records all sent/received protocol messages to a file.
-     * If no recording directory is configured, prompts user to select one.
-     */
     void onRecordSessionToggled(bool checked);
-
-    /**
-     * @brief Opens a file dialog to select and view a recorded session.
-     */
     void onOpenRecordingTriggered();
-
-    /**
-     * @brief Opens a directory picker to set the recording output directory.
-     */
     void onSetRecordingDirectoryTriggered();
-
-    /**
-     * @brief Opens the Connection Browser MDI window.
-     *
-     * The Connection Browser allows managing saved server connections locally
-     * without requiring a server connection. This action is always enabled.
-     */
     void onConnectionBrowserTriggered();
-
-    /**
-     * @brief Handles a connect request from the Connection Browser.
-     *
-     * Opens the Login Dialog pre-filled with the selected connection's details.
-     */
     void onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
                                        const QString& connectionName);
-
-    /**
-     * @brief Handles a connect request from the Connection Browser for a pure environment.
-     *
-     * Opens the Login Dialog pre-filled with the environment's host and port.
-     */
     void onEnvironmentConnectRequested(const boost::uuids::uuid& environmentId,
                                        const QString& environmentName);
-
     void onModernLoginTriggered();
-
-    /**
-     * @brief Handles successful login by updating application state.
-     *
-     * Sets username on all controllers and updates window title.
-     * Called by login dialogs after successful authentication.
-     */
     void onLoginSuccess(const QString& username);
 
 private:
-    /**
-     * @brief Shows the sign up dialog with pre-filled server info.
-     *
-     * Creates and displays a modeless SignUpDialog in an MDI subwindow.
-     */
     void showSignUpDialog(const QString& host, int port);
-
-    /**
-     * @brief Shows the system provisioner wizard when in bootstrap mode.
-     *
-     * Displays the SystemProvisionerWizard to create the initial admin account.
-     * If username and password are provided, they are used to pre-fill the
-     * admin account form fields.
-     */
     void showSystemProvisionerWizard(
         const QString& username = {}, const QString& password = {});
-
-    /**
-     * @brief Shows the tenant onboarding wizard.
-     *
-     * Displays the TenantOnboardingWizard for creating and
-     * provisioning a new tenant, optionally seeded with GLEIF
-     * LEI data.
-     */
     void showTenantOnboardingWizard();
-
-    /**
-     * @brief Shows the tenant provisioning wizard for first-time tenant setup.
-     *
-     * Displays a guided wizard that helps set up a newly provisioned tenant
-     * with reference data bundles and optional party configuration. Clears
-     * the tenant bootstrap flag on completion.
-     */
     void showTenantProvisioningWizard();
-
-    /**
-     * @brief Shows the party provisioning wizard for first-time party setup.
-     *
-     * Displays a guided wizard that helps set up a newly provisioned tenant's
-     * first operational party. Clears the party setup flag on completion.
-     */
     void showPartyProvisioningWizard();
 
-    /**
-     * @brief Options for configuring the login dialog.
-     */
     struct LoginDialogOptions {
         QString host;
         int port = 4222;
         QString username;
         QString password;
-        QString connectionName;       ///< If set, shown in status message on success
-        bool showSavedConnections = true;  ///< Whether to populate saved connections list
-        bool showSignUpButton = true;      ///< Whether to enable sign up flow
+        QString connectionName;
+        bool showSavedConnections = true;
+        bool showSignUpButton = true;
     };
 
-    /**
-     * @brief Shows the login dialog with default options.
-     *
-     * Creates and displays a LoginDialog in an MDI subwindow, handling all
-     * signal connections for login success, bootstrap mode, etc.
-     */
     void showLoginDialog();
-
-    /**
-     * @brief Shows the login dialog with the specified options.
-     *
-     * Creates and displays a LoginDialog in an MDI subwindow, handling all
-     * signal connections for login success, bootstrap mode, etc.
-     *
-     * @param options Configuration options for the dialog
-     */
     void showLoginDialog(const LoginDialogOptions& options);
-
-    /**
-     * @brief Updates menu and toolbar action states based on connection status.
-     *
-     * Enables/disables actions like Currencies, Connect/Disconnect based on
-     * whether a client connection is active. Also updates the connection status
-     * icon.
-     */
     void updateMenuState();
-
-    /**
-     * @brief Updates the tenant and party chip labels in the status bar.
-     *
-     * Shows tenant chip when a named connection is active; shows party chip
-     * when a party context is selected.
-     */
     void updateStatusBarFields();
-
-    /**
-     * @brief Builds a tooltip string for the connection status icon.
-     *
-     * Returns an empty string if never connected, a connected summary when
-     * online (server, bytes, latency), or a "Disconnected since" message
-     * when the connection has been lost.
-     */
     QString buildConnectionTooltip() const;
-
-    /**
-     * @brief Creates all entity controllers after successful login.
-     *
-     * Instantiates controllers for each entity type (currency, etc.) and
-     * connects their signals to the status bar for message display.
-     */
-    void createControllers();
-
-    /**
-     * @brief Performs common cleanup when disconnecting from server.
-     */
     void performDisconnectCleanup();
-
-    /**
-     * @brief Initializes the connection manager if not already done.
-     *
-     * Prompts for master password if required. Returns true if the connection
-     * manager was successfully initialized, false if the user cancelled or
-     * an error occurred.
-     */
     bool initializeConnectionManager();
 
 private:
-    /** @brief Auto-generated UI elements from MainWindow.ui */
     Ui::MainWindow* ui_;
 
-    /** @brief MDI area with custom background for displaying entity windows */
     MdiAreaWithBackground* mdiArea_;
-
-    /** @brief Status bar label showing connection state icon */
     QLabel* connectionStatusIconLabel_;
 
-    /** @brief Status bar chip showing the logged-in username */
     QWidget* userStatusWidget_;
     QLabel*  userStatusNameLabel_;
-
-    /** @brief Status bar chip showing the server host or named environment */
     QWidget* serverStatusWidget_;
     QLabel*  serverStatusNameLabel_;
-
-    /** @brief Status bar chip showing the active tenant (connection) name */
     QWidget* tenantStatusWidget_;
     QLabel*  tenantStatusNameLabel_;
-
-    /** @brief Status bar chip showing the active party name */
     QWidget* partyStatusWidget_;
     QLabel*  partyStatusNameLabel_;
 
-    /**
-     * @brief List of all detachable MDI windows for detach/reattach operations.
-     *
-     * Shared across all entity controllers so they can track their windows for
-     * the Window menu and detach/reattach operations.
-     */
     QList<QPointer<DetachableMdiSubWindow>> allDetachableWindows_;
 
-    /** @brief Icon displayed in status bar when connected to server */
     QIcon connectedIcon_;
-
-    /** @brief Icon displayed in status bar when disconnected from server */
     QIcon disconnectedIcon_;
-
-    /** @brief Icon displayed in status bar when reconnecting to server */
     QIcon reconnectingIcon_;
-
-    /** @brief Icon for recording off state (gray regular icon) */
     QIcon recordOffIcon_;
-
-    /** @brief Icon for recording on state (red filled icon) */
     QIcon recordOnIcon_;
 
-    // Entity controllers
-    /**
-     * @brief Controller managing all currency-related windows and operations.
-     *
-     * Created after successful login, destroyed on disconnect. Handles currency
-     * list, detail, and history windows.
-     */
-    std::unique_ptr<CurrencyController> currencyController_;
+    /** @brief The transitional legacy plugin owning all domain entity controllers. */
+    std::unique_ptr<LegacyPlugin> legacyPlugin_;
 
-    /**
-     * @brief Controller managing all country-related windows and operations.
-     *
-     * Created after successful login, destroyed on disconnect. Handles country
-     * list, detail, and history windows.
-     */
-    std::unique_ptr<CountryController> countryController_;
+    /** @brief Menus inserted into the menu bar by plugins; removed on logout. */
+    QList<QMenu*> plugin_menus_;
 
-    /**
-     * @brief Controller managing all account-related windows and operations.
-     *
-     * Created after successful login, handles account list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<AccountController> accountController_;
-
-    /**
-     * @brief Controller managing all role-related windows and operations.
-     *
-     * Created after successful login, handles role list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<RoleController> roleController_;
-
-    /**
-     * @brief Controller managing all tenant-related windows and operations.
-     *
-     * Created after successful login, handles tenant list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<TenantController> tenantController_;
-
-    /**
-     * @brief Controller managing all system setting windows and operations.
-     *
-     * Created after successful login, handles system setting list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<SystemSettingController> systemSettingController_;
-
-    /**
-     * @brief Controller managing change reason category windows.
-     *
-     * Created after successful login, handles category list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
-
-    /**
-     * @brief Controller managing change reason windows.
-     *
-     * Created after successful login, handles reason list and detail windows.
-     * Only accessible to admin users.
-     */
-    std::unique_ptr<ChangeReasonController> changeReasonController_;
-
-    /**
-     * @brief Controller managing origin dimension windows.
-     *
-     * Created after successful login, handles origin dimension list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<OriginDimensionController> originDimensionController_;
-
-    /**
-     * @brief Controller managing nature dimension windows.
-     *
-     * Created after successful login, handles nature dimension list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<NatureDimensionController> natureDimensionController_;
-
-    /**
-     * @brief Controller managing treatment dimension windows.
-     *
-     * Created after successful login, handles treatment dimension list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
-
-    /**
-     * @brief Controller managing coding scheme authority type windows.
-     *
-     * Created after successful login, handles authority type list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
-
-    /**
-     * @brief Controller managing data domain windows.
-     *
-     * Created after successful login, handles data domain list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<DataDomainController> dataDomainController_;
-
-    /**
-     * @brief Controller managing subject area windows.
-     *
-     * Created after successful login, handles subject area list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<SubjectAreaController> subjectAreaController_;
-
-    /**
-     * @brief Controller managing catalog windows.
-     *
-     * Created after successful login, handles catalog list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<CatalogController> catalogController_;
-
-    /**
-     * @brief Controller managing coding scheme windows.
-     *
-     * Created after successful login, handles coding scheme list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<CodingSchemeController> codingSchemeController_;
-
-    /**
-     * @brief Controller managing methodology windows.
-     *
-     * Created after successful login, handles methodology list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<MethodologyController> methodologyController_;
-
-    /**
-     * @brief Controller managing dataset windows.
-     *
-     * Created after successful login, handles dataset list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<DatasetController> datasetController_;
-
-    /**
-     * @brief Controller managing dataset bundle windows.
-     *
-     * Created after successful login, handles dataset bundle list, detail,
-     * and history windows.
-     */
-    std::unique_ptr<DatasetBundleController> datasetBundleController_;
-
-    std::unique_ptr<PartyTypeController> partyTypeController_;
-    std::unique_ptr<PartyStatusController> partyStatusController_;
-    std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
-    std::unique_ptr<ContactTypeController> contactTypeController_;
-    std::unique_ptr<PartyController> partyController_;
-    std::unique_ptr<CounterpartyController> counterpartyController_;
-    std::unique_ptr<BusinessCentreController> businessCentreController_;
-    std::unique_ptr<BusinessUnitController> businessUnitController_;
-    std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
-    std::unique_ptr<PortfolioController> portfolioController_;
-    std::unique_ptr<BookController> bookController_;
-    std::unique_ptr<BookStatusController> bookStatusController_;
-    std::unique_ptr<QueueMonitorController> queueMonitorController_;
-    std::unique_ptr<PurposeTypeController> purposeTypeController_;
-    std::unique_ptr<RoundingTypeController> roundingTypeController_;
-    std::unique_ptr<MonetaryNatureController> monetaryNatureController_;
-    std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
-    std::unique_ptr<TradeController> tradeController_;
-    std::unique_ptr<DayCountFractionTypeController> dayCountFractionTypeController_;
-    std::unique_ptr<BusinessDayConventionTypeController> businessDayConventionTypeController_;
-    std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
-    std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
-    std::unique_ptr<LegTypeController> legTypeController_;
-    std::unique_ptr<PricingEngineTypeController> pricingEngineTypeController_;
-    std::unique_ptr<PricingModelConfigController> pricingModelConfigController_;
-    std::unique_ptr<PricingModelProductController> pricingModelProductController_;
-    std::unique_ptr<PricingModelProductParameterController> pricingModelProductParameterController_;
-    std::unique_ptr<JobDefinitionController> jobDefinitionController_;
-    std::unique_ptr<AppController> appController_;
-    std::unique_ptr<AppVersionController> appVersionController_;
-    std::unique_ptr<ComputeDashboardController> computeDashboardController_;
-    std::unique_ptr<ComputeConsoleController> computeConsoleController_;
-    std::unique_ptr<ServiceDashboardController> serviceDashboardController_;
-    std::unique_ptr<ReportTypeController> reportTypeController_;
-    std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;
-    std::unique_ptr<ReportDefinitionController> reportDefinitionController_;
-    std::unique_ptr<ReportInstanceController> reportInstanceController_;
-    std::unique_ptr<OreImportController> oreImportController_;
-    std::unique_ptr<MarketDataController> marketDataController_;
-
-    /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;
-
-    /** @brief Client manager handling network connection and IO context */
     ClientManager* clientManager_;
-
-    /** @brief Cache for currency flag icons */
     ImageCache* imageCache_;
-
-    /** @brief Cache for change reasons used by entity dialogs */
     ChangeReasonCache* changeReasonCache_;
-
-    /** @brief Cache for badge definitions and mappings */
     BadgeCache* badgeCache_;
 
-    /** @brief Username of currently logged-in user */
     std::string username_;
-
-    /** @brief HTTP base URL for compute service file uploads */
     std::string httpBaseUrl_;
-
-    /** @brief Name of currently selected party (empty if no party) */
     QString party_name_;
 
-    /** @brief System tray icon for notifications */
     QSystemTrayIcon* systemTrayIcon_;
-
-    /** @brief Context menu for the system tray icon */
     QMenu* trayContextMenu_;
 
-    /** @brief Subscriptions to keep alive for event handling */
     std::vector<eventing::service::subscription> eventSubscriptions_;
 
-    /** @brief Instance name for multi-instance identification */
     QString instanceName_;
-
-    /** @brief Instance color for the status bar indicator (invalid color means no indicator) */
     QColor instanceColor_;
-
-    /** @brief Colored indicator in status bar showing instance color */
     QLabel* instanceColorIndicator_;
 
-    /** @brief Event viewer MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* eventViewerWindow_;
-
-    /** @brief Telemetry log viewer MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* telemetryViewerWindow_;
 
-    /** @brief Connection manager for saved connections (client-side SQLite) */
     std::unique_ptr<connections::service::connection_manager> connectionManager_;
 
-    /** @brief Connection Browser MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* connectionBrowserWindow_{nullptr};
-
-    /** @brief Data Librarian MDI sub-window (nullptr if not open) */
-    DetachableMdiSubWindow* dataLibrarianWindow_{nullptr};
-    DetachableMdiSubWindow* portfolioExplorerSubWindow_{nullptr};
-    DetachableMdiSubWindow* orgExplorerSubWindow_{nullptr};
-
-    /** @brief Shell MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* shellWindow_{nullptr};
-
-    /** @brief My Sessions MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* mySessionsWindow_{nullptr};
-
-    /** @brief My Account MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* myAccountWindow_{nullptr};
-
-    /** @brief Name of the connection used for current login (empty if manual) */
-    QString activeConnectionName_;
-
-    /** @brief Master password for encrypting/decrypting saved passwords (session-only) */
-    QString masterPassword_;
-
-    /** @brief About dialog MDI subwindow singleton (nullptr when not open) */
     DetachableMdiSubWindow* aboutSubWindow_{nullptr};
+
+    QString activeConnectionName_;
+    QString masterPassword_;
 };
 
 }

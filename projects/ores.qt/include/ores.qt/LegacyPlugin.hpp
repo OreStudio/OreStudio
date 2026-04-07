@@ -123,6 +123,7 @@ public:
     void show_tenants();
     void show_feature_flags();
     void show_queue_monitor();
+    void show_service_dashboard();
 
 signals:
     /** @brief Forwarded status/error messages from entity controllers. */

@@ -957,4 +957,8 @@ void LegacyPlugin::show_queue_monitor() {
     if (queueMonitorController_) queueMonitorController_->showListWindow();
 }
 
+void LegacyPlugin::show_service_dashboard() {
+    if (serviceDashboardController_) serviceDashboardController_->showDashboard();
+}
+
 } // namespace ores::qt

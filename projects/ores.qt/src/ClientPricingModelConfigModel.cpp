@@ -204,7 +204,7 @@ void ClientPricingModelConfigModel::fetch_configs(
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false, .configs = {},
                             .total_available_count = 0,
-                            .error_message = result.error(),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 

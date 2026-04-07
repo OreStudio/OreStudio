@@ -25,9 +25,10 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
+#include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/fx_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
@@ -100,7 +101,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onFxTradeTypeChanged(const QString& text);
     void onSwapTradeTypeChanged(const QString& text);
     void onBondTradeTypeChanged(const QString& text);
     void onCreditTradeTypeChanged(const QString& text);
@@ -120,15 +120,6 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
-
-    // FX instrument support
-    void loadFxInstrument();
-    void populateFxInstrument();
-    void updateFxInstrumentFromUi();
-    void updateFxTabVisibility();
-    void setFxReadOnly(bool readOnly);
-    void saveFxThenTrade(const trading::domain::trade& trade,
-                         const trading::domain::fx_instrument& instrument);
 
     // Swap / Rates instrument support
     void loadSwapInstrument();
@@ -207,8 +198,13 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // Instrument state (at most one family is loaded at a time)
-    trading::domain::fx_instrument fxInstrument_;
+    // Instrument forms migrated to the IInstrumentForm registry. Forms are
+    // owned by the instrumentStack QStackedWidget under the Instrument tab.
+    InstrumentFormRegistry instrumentFormRegistry_;
+    IInstrumentForm* activeForm_ = nullptr;
+
+    // Legacy per-family state for the seven instrument families that have
+    // not yet been migrated to IInstrumentForm subclasses.
     trading::domain::instrument swapInstrument_;
     std::vector<trading::domain::swap_leg> swapLegs_;
     trading::domain::bond_instrument bondInstrument_;

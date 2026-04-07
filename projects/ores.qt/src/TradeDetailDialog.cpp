@@ -50,13 +50,6 @@ using PT = ores::trading::domain::product_type;
 // Trade type detection helpers
 // ---------------------------------------------------------------------------
 
-static bool isFxOptionType(const QString& tradeTypeCode) {
-    return tradeTypeCode.contains("Option", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Collar", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Barrier", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Digital", Qt::CaseInsensitive);
-}
-
 static bool isSwapRatesExtensionType(const QString& tradeTypeCode) {
     return tradeTypeCode == "ForwardRateAgreement" ||
            tradeTypeCode == "BalanceGuaranteedSwap" ||
@@ -115,6 +108,36 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
+
+    // Build a stack page per registered IInstrumentForm. Each form's
+    // signals are wired to the dialog's shared instrument provenance
+    // widget and dirty-tracking flag.
+    register_default_forms(instrumentFormRegistry_);
+    for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
+        IInstrumentForm* form =
+            instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
+        ui_->instrumentStack->addWidget(form);
+
+        connect(form, &IInstrumentForm::changed, this,
+                &TradeDetailDialog::onInstrumentFieldChanged);
+        connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
+            instrumentLoaded_ = true;
+            ui_->instrumentProvenanceGroup->setVisible(true);
+            updateSaveButtonState();
+        });
+        connect(form, &IInstrumentForm::loadFailed, this,
+                [](const QString& err) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Instrument load failed: " << err.toStdString();
+        });
+        connect(form, &IInstrumentForm::provenanceChanged, this,
+                [this](const InstrumentProvenance& p) {
+            ui_->instrumentProvenanceWidget->populate(
+                p.version, p.modified_by, p.performed_by,
+                p.recorded_at, p.change_reason_code, p.change_commentary);
+            ui_->instrumentProvenanceGroup->setVisible(true);
+        });
+    }
 }
 
 TradeDetailDialog::~TradeDetailDialog() {
@@ -141,9 +164,7 @@ void TradeDetailDialog::setupUi() {
     // Hide all instrument tabs and instrument provenance section until an
     // instrument loads.
     ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxEconomicsTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxOptionsTab), false);
+        ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
     ui_->tabWidget->setTabVisible(
@@ -481,32 +502,8 @@ void TradeDetailDialog::setupConnections() {
     connect(ui_->scriptParametersJsonEdit, &QPlainTextEdit::textChanged, this,
             &TradeDetailDialog::onInstrumentFieldChanged);
 
-    // FX instrument fields
-    connect(ui_->fxTradeTypeCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onFxTradeTypeChanged);
-    connect(ui_->fxBoughtCurrencyEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxSoldCurrencyEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxValueDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxSettlementEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxOptionTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxExpiryDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxDescriptionEdit, &QPlainTextEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxBoughtAmountSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxSoldAmountSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->fxStrikePriceSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    // FX instrument fields are owned by FxInstrumentForm; signal wiring
+    // happens in the dialog constructor when the form is added to the stack.
 }
 
 // ---------------------------------------------------------------------------
@@ -645,9 +642,45 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    if (trade_.product_type == PT::fx && trade_.instrument_id.has_value())
-        loadFxInstrument();
-    else if (trade_.product_type == PT::swap && trade_.instrument_id.has_value())
+    // If this product family has been migrated to an IInstrumentForm, route
+    // to the new instrumentTab + stack widget; otherwise fall through to the
+    // legacy per-family load functions still defined in this file.
+    if (instrumentFormRegistry_.contains(trade_.product_type)) {
+        activeForm_ = nullptr;
+        for (int i = 0; i < ui_->instrumentStack->count(); ++i) {
+            auto* form = qobject_cast<IInstrumentForm*>(
+                ui_->instrumentStack->widget(i));
+            if (!form) continue;
+            // The stack pages are added in registry order; pick the page
+            // whose registered family matches the current trade.
+            const auto types = instrumentFormRegistry_.registeredTypes();
+            if (i < static_cast<int>(types.size()) &&
+                types[static_cast<std::size_t>(i)] == trade_.product_type) {
+                activeForm_ = form;
+                ui_->instrumentStack->setCurrentWidget(form);
+                break;
+            }
+        }
+        ui_->tabWidget->setTabVisible(
+            ui_->tabWidget->indexOf(ui_->instrumentTab), true);
+        if (activeForm_) {
+            activeForm_->setClientManager(clientManager_);
+            activeForm_->setUsername(username_);
+            // TODO Phase 5: pass real has_options/has_extension flags from
+            // the trade type lookup. For now keep the legacy default behaviour.
+            activeForm_->setTradeType(
+                QString::fromStdString(trade_.trade_type), true, false);
+            if (trade_.instrument_id.has_value()) {
+                activeForm_->loadInstrument(
+                    boost::uuids::to_string(*trade_.instrument_id));
+            } else {
+                activeForm_->clear();
+            }
+        }
+        return;
+    }
+
+    if (trade_.product_type == PT::swap && trade_.instrument_id.has_value())
         loadSwapInstrument();
     else if (trade_.product_type == PT::bond && trade_.instrument_id.has_value())
         loadBondInstrument();
@@ -673,11 +706,10 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     if (createMode)
         trade_.id = boost::uuids::random_generator()();
 
-    // Instrument tabs never shown in create mode
+    // Instrument tabs never shown in create mode (create-mode instrument
+    // creation is enabled in Phase 6 once the registry covers all families).
     ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxEconomicsTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxOptionsTab), false);
+        ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
     ui_->tabWidget->setTabVisible(
@@ -732,7 +764,7 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     ui_->executionTimestampEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
-    setFxReadOnly(readOnly);
+    if (activeForm_) activeForm_->setReadOnly(readOnly);
     setSwapReadOnly(readOnly);
     setBondReadOnly(readOnly);
     setCreditReadOnly(readOnly);
@@ -800,170 +832,6 @@ void TradeDetailDialog::updateTradeFromUi() {
         ui_->executionTimestampEdit->text().trimmed().toStdString();
     trade_.modified_by = username_;
     trade_.performed_by = username_;
-}
-
-// ---------------------------------------------------------------------------
-// FX instrument support
-// ---------------------------------------------------------------------------
-
-void TradeDetailDialog::loadFxInstrument() {
-    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
-
-    const auto family = PT::fx;
-    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
-
-    struct FxResult {
-        bool success;
-        std::string message;
-        trading::domain::fx_instrument instrument;
-    };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<FxResult>(self);
-    connect(watcher, &QFutureWatcher<FxResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load FX instrument: " << result.message;
-            return;
-        }
-
-        self->fxInstrument_ = std::move(result.instrument);
-        self->instrumentLoaded_ = true;
-        self->populateFxInstrument();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> FxResult {
-        if (!cm)
-            return {false, "Dialog closed", {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = family;
-        req.instrument_id = id;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}};
-        if (!r->success)
-            return {false, r->message, {}};
-
-        const auto* fx =
-            std::get_if<trading::domain::fx_instrument>(&r->instrument);
-        if (!fx)
-            return {false, "Unexpected instrument type in response", {}};
-
-        return {true, {}, *fx};
-    }));
-}
-
-void TradeDetailDialog::populateFxInstrument() {
-    // Block signals while setting values so instrumentHasChanges_ stays false.
-    const auto block = [this](bool b) {
-        ui_->fxTradeTypeCodeEdit->blockSignals(b);
-        ui_->fxBoughtCurrencyEdit->blockSignals(b);
-        ui_->fxBoughtAmountSpinBox->blockSignals(b);
-        ui_->fxSoldCurrencyEdit->blockSignals(b);
-        ui_->fxSoldAmountSpinBox->blockSignals(b);
-        ui_->fxValueDateEdit->blockSignals(b);
-        ui_->fxSettlementEdit->blockSignals(b);
-        ui_->fxOptionTypeEdit->blockSignals(b);
-        ui_->fxStrikePriceSpinBox->blockSignals(b);
-        ui_->fxExpiryDateEdit->blockSignals(b);
-        ui_->fxDescriptionEdit->blockSignals(b);
-    };
-
-    block(true);
-    ui_->fxTradeTypeCodeEdit->setText(
-        QString::fromStdString(fxInstrument_.trade_type_code));
-    ui_->fxBoughtCurrencyEdit->setText(
-        QString::fromStdString(fxInstrument_.bought_currency));
-    ui_->fxBoughtAmountSpinBox->setValue(fxInstrument_.bought_amount);
-    ui_->fxSoldCurrencyEdit->setText(
-        QString::fromStdString(fxInstrument_.sold_currency));
-    ui_->fxSoldAmountSpinBox->setValue(fxInstrument_.sold_amount);
-    ui_->fxValueDateEdit->setText(
-        QString::fromStdString(fxInstrument_.value_date.value_or("")));
-    ui_->fxSettlementEdit->setText(
-        QString::fromStdString(fxInstrument_.settlement));
-    ui_->fxOptionTypeEdit->setText(
-        QString::fromStdString(fxInstrument_.option_type));
-    ui_->fxStrikePriceSpinBox->setValue(fxInstrument_.strike_price);
-    ui_->fxExpiryDateEdit->setText(
-        QString::fromStdString(fxInstrument_.expiry_date));
-    ui_->fxDescriptionEdit->setPlainText(
-        QString::fromStdString(fxInstrument_.description));
-    block(false);
-
-    // Populate instrument provenance section
-    ui_->instrumentProvenanceWidget->populate(
-        fxInstrument_.version,
-        fxInstrument_.modified_by,
-        fxInstrument_.performed_by,
-        fxInstrument_.recorded_at,
-        fxInstrument_.change_reason_code,
-        fxInstrument_.change_commentary);
-    ui_->instrumentProvenanceGroup->setVisible(true);
-
-    instrumentHasChanges_ = false;
-    updateFxTabVisibility();
-    updateSaveButtonState();
-}
-
-void TradeDetailDialog::updateFxInstrumentFromUi() {
-    fxInstrument_.trade_type_code =
-        ui_->fxTradeTypeCodeEdit->text().trimmed().toStdString();
-    fxInstrument_.bought_currency =
-        ui_->fxBoughtCurrencyEdit->text().trimmed().toStdString();
-    fxInstrument_.bought_amount = ui_->fxBoughtAmountSpinBox->value();
-    fxInstrument_.sold_currency =
-        ui_->fxSoldCurrencyEdit->text().trimmed().toStdString();
-    fxInstrument_.sold_amount = ui_->fxSoldAmountSpinBox->value();
-    {
-        const auto vd = ui_->fxValueDateEdit->text().trimmed().toStdString();
-        fxInstrument_.value_date = vd.empty() ? std::nullopt : std::optional(vd);
-    }
-    fxInstrument_.settlement =
-        ui_->fxSettlementEdit->text().trimmed().toStdString();
-    fxInstrument_.option_type =
-        ui_->fxOptionTypeEdit->text().trimmed().toStdString();
-    fxInstrument_.strike_price = ui_->fxStrikePriceSpinBox->value();
-    fxInstrument_.expiry_date =
-        ui_->fxExpiryDateEdit->text().trimmed().toStdString();
-    fxInstrument_.description =
-        ui_->fxDescriptionEdit->toPlainText().trimmed().toStdString();
-    fxInstrument_.modified_by = username_;
-    fxInstrument_.performed_by = username_;
-}
-
-void TradeDetailDialog::updateFxTabVisibility() {
-    const QString tradeType = ui_->fxTradeTypeCodeEdit->text().trimmed();
-    const bool showEconomics =
-        instrumentLoaded_ && !tradeType.isEmpty();
-    const bool showOptions =
-        instrumentLoaded_ && isFxOptionType(tradeType);
-
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxEconomicsTab), showEconomics);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->fxOptionsTab), showOptions);
-}
-
-void TradeDetailDialog::setFxReadOnly(bool readOnly) {
-    ui_->fxTradeTypeCodeEdit->setReadOnly(readOnly);
-    ui_->fxBoughtCurrencyEdit->setReadOnly(readOnly);
-    ui_->fxBoughtAmountSpinBox->setReadOnly(readOnly);
-    ui_->fxSoldCurrencyEdit->setReadOnly(readOnly);
-    ui_->fxSoldAmountSpinBox->setReadOnly(readOnly);
-    ui_->fxValueDateEdit->setReadOnly(readOnly);
-    ui_->fxSettlementEdit->setReadOnly(readOnly);
-    ui_->fxOptionTypeEdit->setReadOnly(readOnly);
-    ui_->fxStrikePriceSpinBox->setReadOnly(readOnly);
-    ui_->fxExpiryDateEdit->setReadOnly(readOnly);
-    ui_->fxDescriptionEdit->setReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -1754,14 +1622,6 @@ void TradeDetailDialog::onInstrumentFieldChanged() {
     updateSaveButtonState();
 }
 
-void TradeDetailDialog::onFxTradeTypeChanged(const QString&) {
-    if (instrumentLoaded_) {
-        instrumentHasChanges_ = true;
-        updateFxTabVisibility();
-        updateSaveButtonState();
-    }
-}
-
 void TradeDetailDialog::onSwapTradeTypeChanged(const QString&) {
     if (instrumentLoaded_) {
         instrumentHasChanges_ = true;
@@ -1849,22 +1709,24 @@ void TradeDetailDialog::onSaveClicked() {
 
     updateTradeFromUi();
     if (instrumentLoaded_) {
-        if (trade_.product_type == PT::fx)
-            updateFxInstrumentFromUi();
-        else if (trade_.product_type == PT::swap)
+        if (activeForm_ &&
+            instrumentFormRegistry_.contains(trade_.product_type)) {
+            activeForm_->writeUiToInstrument();
+        } else if (trade_.product_type == PT::swap) {
             updateSwapInstrumentFromUi();
-        else if (trade_.product_type == PT::bond)
+        } else if (trade_.product_type == PT::bond) {
             updateBondInstrumentFromUi();
-        else if (trade_.product_type == PT::credit)
+        } else if (trade_.product_type == PT::credit) {
             updateCreditInstrumentFromUi();
-        else if (trade_.product_type == PT::equity)
+        } else if (trade_.product_type == PT::equity) {
             updateEquityInstrumentFromUi();
-        else if (trade_.product_type == PT::commodity)
+        } else if (trade_.product_type == PT::commodity) {
             updateCommodityInstrumentFromUi();
-        else if (trade_.product_type == PT::composite)
+        } else if (trade_.product_type == PT::composite) {
             updateCompositeInstrumentFromUi();
-        else if (trade_.product_type == PT::scripted)
+        } else if (trade_.product_type == PT::scripted) {
             updateScriptedInstrumentFromUi();
+        }
     }
 
     const auto crOpType = createMode_
@@ -1880,9 +1742,10 @@ void TradeDetailDialog::onSaveClicked() {
 
     if (instrumentLoaded_) {
         // Instrument change reason matches the trade change reason.
-        if (trade_.product_type == PT::fx) {
-            fxInstrument_.change_reason_code = crSel->reason_code;
-            fxInstrument_.change_commentary  = crSel->commentary;
+        if (activeForm_ &&
+            instrumentFormRegistry_.contains(trade_.product_type)) {
+            activeForm_->setChangeReason(
+                crSel->reason_code, crSel->commentary);
         } else if (trade_.product_type == PT::swap) {
             swapInstrument_.change_reason_code = crSel->reason_code;
             swapInstrument_.change_commentary  = crSel->commentary;
@@ -1908,11 +1771,31 @@ void TradeDetailDialog::onSaveClicked() {
     }
 
     if (instrumentHasChanges_ && instrumentLoaded_) {
-        if (trade_.product_type == PT::fx) {
-            BOOST_LOG_SEV(lg(), info) << "Saving FX instrument then trade: "
-                                      << trade_.external_id;
-            saveFxThenTrade(trade_, fxInstrument_);
-        } else if (trade_.product_type == PT::swap) {
+        if (activeForm_ &&
+            instrumentFormRegistry_.contains(trade_.product_type)) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Saving instrument then trade via form: "
+                << trade_.external_id;
+            const auto saved_trade = trade_;
+            activeForm_->saveInstrument(
+                [this, saved_trade](const std::string& id) {
+                    instrumentHasChanges_ = false;
+                    auto t = saved_trade;
+                    if (!id.empty())
+                        t.instrument_id =
+                            boost::uuids::string_generator()(id);
+                    saveTrade(t);
+                },
+                [this](const QString& err) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Instrument save failed: " << err.toStdString();
+                    emit errorMessage(err);
+                    MessageBoxHelper::critical(this, "Save Failed",
+                        tr("Failed to save instrument:\n%1").arg(err));
+                });
+            return;
+        }
+        if (trade_.product_type == PT::swap) {
             BOOST_LOG_SEV(lg(), info) << "Saving swap instrument then trade: "
                                       << trade_.external_id;
             saveSwapThenTrade(trade_, swapInstrument_, swapLegs_);
@@ -2898,48 +2781,6 @@ void TradeDetailDialog::saveScriptedThenTrade(
         if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_scripted_instrument_request req;
-        req.data = instrument;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
-        return {r->success, r->message};
-    }));
-}
-
-void TradeDetailDialog::saveFxThenTrade(
-    const trading::domain::trade& trade,
-    const trading::domain::fx_instrument& instrument) {
-
-    struct FxSaveResult { bool success; std::string message; };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<FxSaveResult>(self);
-    connect(watcher, &QFutureWatcher<FxSaveResult>::finished,
-            self, [self, watcher, trade]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "FX instrument save failed: "
-                                       << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed",
-                tr("Failed to save FX instrument:\n%1").arg(errorMsg));
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "FX instrument saved; saving trade";
-        self->instrumentHasChanges_ = false;
-        self->saveTrade(trade);
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument]() -> FxSaveResult {
-        if (!cm)
-            return {false, "Dialog closed"};
-        trading::messaging::save_fx_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};

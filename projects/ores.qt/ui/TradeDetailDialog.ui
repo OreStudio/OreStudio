@@ -218,186 +218,22 @@
        </item>
       </layout>
      </widget>
-     <!-- FX Economics tab: shown only when instrument_family == "fx" -->
-     <widget class="QWidget" name="fxEconomicsTab">
+     <!-- Instrument tab: hosts a QStackedWidget. One page per registered
+          IInstrumentForm; the active page is selected from the trade's
+          product_type. Hidden when no form is registered for the family. -->
+     <widget class="QWidget" name="instrumentTab">
       <attribute name="title">
-       <string>FX Economics</string>
+       <string>Instrument</string>
       </attribute>
-      <layout class="QVBoxLayout" name="fxEconomicsLayout">
+      <layout class="QVBoxLayout" name="instrumentTabLayout">
+       <property name="leftMargin"><number>0</number></property>
+       <property name="topMargin"><number>0</number></property>
+       <property name="rightMargin"><number>0</number></property>
+       <property name="bottomMargin"><number>0</number></property>
        <item>
-        <widget class="QGroupBox" name="fxEconomicsGroup">
-         <property name="title">
-          <string>FX Economics</string>
-         </property>
-         <layout class="QFormLayout" name="fxEconomicsFormLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelFxTradeTypeCode">
-            <property name="text"><string>Trade Type:</string></property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="fxTradeTypeCodeEdit">
-            <property name="placeholderText">
-             <string>e.g. FxForward, FxSwap, FxOption</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelFxBoughtCurrency">
-            <property name="text"><string>Bought Currency:</string></property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="fxBoughtCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. EUR)</string></property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="labelFxBoughtAmount">
-            <property name="text"><string>Bought Amount:</string></property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="fxBoughtAmountSpinBox">
-            <property name="decimals"><number>2</number></property>
-            <property name="minimum"><double>0.000000000000000</double></property>
-            <property name="maximum"><double>999999999999.000000000000000</double></property>
-            <property name="singleStep"><double>1000.000000000000000</double></property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="labelFxSoldCurrency">
-            <property name="text"><string>Sold Currency:</string></property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="fxSoldCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="labelFxSoldAmount">
-            <property name="text"><string>Sold Amount:</string></property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="fxSoldAmountSpinBox">
-            <property name="decimals"><number>2</number></property>
-            <property name="minimum"><double>0.000000000000000</double></property>
-            <property name="maximum"><double>999999999999.000000000000000</double></property>
-            <property name="singleStep"><double>1000.000000000000000</double></property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="labelFxValueDate">
-            <property name="text"><string>Value Date:</string></property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QLineEdit" name="fxValueDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (e.g. 2026-06-30)</string></property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="labelFxSettlement">
-            <property name="text"><string>Settlement:</string></property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLineEdit" name="fxSettlementEdit">
-            <property name="placeholderText"><string>e.g. Cash, Physical (optional)</string></property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="labelFxDescription">
-            <property name="text"><string>Description:</string></property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QPlainTextEdit" name="fxDescriptionEdit">
-            <property name="minimumSize">
-             <size><width>0</width><height>60</height></size>
-            </property>
-            <property name="maximumSize">
-             <size><width>16777215</width><height>120</height></size>
-            </property>
-            <property name="placeholderText">
-             <string>Enter a description (optional)</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <widget class="QStackedWidget" name="instrumentStack">
+         <property name="currentIndex"><number>-1</number></property>
         </widget>
-       </item>
-       <item>
-        <spacer name="fxEconomicsSpacer">
-         <property name="orientation"><enum>Qt::Vertical</enum></property>
-         <property name="sizeHint" stdset="0">
-          <size><width>20</width><height>20</height></size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <!-- FX Options tab: shown only for option trade types (FxOption, FxBarrierOption, etc.) -->
-     <widget class="QWidget" name="fxOptionsTab">
-      <attribute name="title">
-       <string>FX Options</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="fxOptionsLayout">
-       <item>
-        <widget class="QGroupBox" name="fxOptionsGroup">
-         <property name="title">
-          <string>Option Fields</string>
-         </property>
-         <layout class="QFormLayout" name="fxOptionsFormLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="labelFxOptionType">
-            <property name="text"><string>Option Type:</string></property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="fxOptionTypeEdit">
-            <property name="placeholderText">
-             <string>Call or Put</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="labelFxStrikePrice">
-            <property name="text"><string>Strike Price:</string></property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="fxStrikePriceSpinBox">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>0.000000000000000</double></property>
-            <property name="maximum"><double>999999.000000000000000</double></property>
-            <property name="singleStep"><double>0.000100000000000</double></property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="labelFxExpiryDate">
-            <property name="text"><string>Expiry Date:</string></property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="fxExpiryDateEdit">
-            <property name="placeholderText">
-             <string>ISO 8601 date</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="fxOptionsSpacer">
-         <property name="orientation"><enum>Qt::Vertical</enum></property>
-         <property name="sizeHint" stdset="0">
-          <size><width>20</width><height>20</height></size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>

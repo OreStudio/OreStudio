@@ -20,6 +20,7 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 
 #include "ores.qt/IInstrumentForm.hpp"
+#include "ores.qt/FxInstrumentForm.hpp"
 
 namespace ores::qt {
 
@@ -57,7 +58,12 @@ void register_default_forms(InstrumentFormRegistry& registry) {
     // Each instrument family is registered here as it gets migrated from the
     // hardcoded TradeDetailDialog tabs into its own IInstrumentForm subclass.
     // Adding a ninth family is one new subclass plus one new line below.
-    (void)registry;
+    using PT = ores::trading::domain::product_type;
+
+    registry.registerForm(PT::fx, QStringLiteral("FX"),
+        [](QWidget* parent) -> IInstrumentForm* {
+            return new FxInstrumentForm(parent);
+        });
 }
 
 }

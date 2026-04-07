@@ -28,11 +28,9 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/domain/pricing_model_product_parameter_json_io.hpp" // IWYU pragma: keep.
-#include "ores.analytics.api/generators/pricing_engine_type_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_product_parameter_generator.hpp"
-#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 
@@ -48,7 +46,6 @@ using ores::analytics::domain::pricing_model_product_parameter;
 using ores::analytics::repository::pricing_model_product_parameter_repository;
 using ores::analytics::repository::pricing_model_config_repository;
 using ores::analytics::repository::pricing_model_product_repository;
-using ores::analytics::repository::pricing_engine_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -61,10 +58,6 @@ namespace {
 std::pair<boost::uuids::uuid, boost::uuids::uuid> write_prerequisites(
     scoped_database_helper& h,
     ores::utility::generation::generation_context& ctx) {
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
-
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     pricing_model_config_repository cfg_repo;
     cfg_repo.write(h.context(), configs[0]);

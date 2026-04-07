@@ -31,8 +31,6 @@
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
-#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
-#include "ores.analytics.api/generators/pricing_engine_type_generator.hpp"
 
 namespace {
 
@@ -45,7 +43,6 @@ using namespace ores::analytics::generators;
 using ores::analytics::domain::pricing_model_product;
 using ores::analytics::repository::pricing_model_product_repository;
 using ores::analytics::repository::pricing_model_config_repository;
-using ores::analytics::repository::pricing_engine_type_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -54,11 +51,6 @@ TEST_CASE("write_single_pricing_model_product", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-
-    // prerequisites: engine types and config must exist (soft FKs)
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
 
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
@@ -79,10 +71,6 @@ TEST_CASE("write_multiple_pricing_model_products", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
-
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     pricing_model_config_repository cfg_repo;
@@ -100,10 +88,6 @@ TEST_CASE("read_latest_pricing_model_products_for_config", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
 
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
@@ -126,10 +110,6 @@ TEST_CASE("read_latest_pricing_model_product_by_id", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
 
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
@@ -157,10 +137,6 @@ TEST_CASE("read_all_pricing_model_product_history", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
 
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
@@ -191,10 +167,6 @@ TEST_CASE("remove_pricing_model_product", tags) {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
-
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     pricing_model_config_repository cfg_repo;
@@ -219,10 +191,6 @@ TEST_CASE("remove_pricing_model_products_for_config", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-
-    auto engine_types = generate_fictional_pricing_engine_types(5, ctx);
-    pricing_engine_type_repository et_repo;
-    et_repo.write(h.context(), engine_types);
 
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());

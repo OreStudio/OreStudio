@@ -20,6 +20,7 @@
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
 
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::analytics::generators {
@@ -36,56 +37,38 @@ std::vector<domain::pricing_model_config> generate_fictional_pricing_model_confi
     std::vector<domain::pricing_model_config> all;
     all.reserve(10);
 
-    all.push_back({
-        .id = gen(),
-        .name = "test.base.vanilla",
-        .description = "Fictional base vanilla pricing configuration",
-        .config_variant = std::nullopt,
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .name = "test.amc.monte.carlo",
-        .description = "Fictional AMC Monte Carlo pricing configuration",
-        .config_variant = std::optional<std::string>("amc"),
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .name = "test.dynamic.grid",
-        .description = "Fictional dynamic grid pricing configuration",
-        .config_variant = std::optional<std::string>("dg"),
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .name = "test.standard.rates",
-        .description = "Fictional standard rates pricing configuration",
-        .config_variant = std::optional<std::string>("standard"),
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .name = "test.equity.vol",
-        .description = "Fictional equity volatility pricing configuration",
-        .config_variant = std::nullopt,
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
+    // Names embed part of the UUID to ensure uniqueness across parallel test runs,
+    // since scoped_database_helper does not roll back data between test cases.
+    auto make_config = [&](const std::string& base_name,
+                           const std::string& description,
+                           std::optional<std::string> variant) {
+        const auto id = gen();
+        const auto suffix = boost::uuids::to_string(id).substr(0, 8);
+        return domain::pricing_model_config{
+            .id = id,
+            .name = base_name + "." + suffix,
+            .description = description,
+            .config_variant = variant,
+            .modified_by = modified_by,
+            .change_reason_code = "system.test",
+            .change_commentary = "Synthetic test data",
+            .recorded_at = now
+        };
+    };
+
+    all.push_back(make_config("test.base.vanilla",
+        "Fictional base vanilla pricing configuration", std::nullopt));
+    all.push_back(make_config("test.amc.monte.carlo",
+        "Fictional AMC Monte Carlo pricing configuration",
+        std::optional<std::string>("amc")));
+    all.push_back(make_config("test.dynamic.grid",
+        "Fictional dynamic grid pricing configuration",
+        std::optional<std::string>("dg")));
+    all.push_back(make_config("test.standard.rates",
+        "Fictional standard rates pricing configuration",
+        std::optional<std::string>("standard")));
+    all.push_back(make_config("test.equity.vol",
+        "Fictional equity volatility pricing configuration", std::nullopt));
 
     if (n == 0 || n >= all.size())
         return all;

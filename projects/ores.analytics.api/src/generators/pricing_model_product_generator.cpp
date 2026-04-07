@@ -38,12 +38,14 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
     std::vector<domain::pricing_model_product> all;
     all.reserve(10);
 
+    // Use real ORE engine type codes — the pricing_model_products trigger validates
+    // against the seeded ores_analytics_pricing_engine_types_tbl contents.
     all.push_back({
         .id = gen(),
         .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "TestEuropeanVanilla",
-        .model = "TestBlackScholes",
-        .engine = "TestAnalyticEuropeanEngine",
+        .pricing_engine_type_code = "EuropeanSwaption",
+        .model = "LGM",
+        .engine = "Grid",
         .modified_by = modified_by,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
@@ -52,9 +54,9 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
     all.push_back({
         .id = gen(),
         .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "TestBermudanSlab",
-        .model = "TestLGM",
-        .engine = "TestGrid",
+        .pricing_engine_type_code = "BermudanSwaption",
+        .model = "LGM",
+        .engine = "Grid",
         .modified_by = modified_by,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
@@ -63,9 +65,9 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
     all.push_back({
         .id = gen(),
         .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "TestVanillaSwaplet",
-        .model = "TestDiscountedCashflows",
-        .engine = "TestDiscountingSwapEngine",
+        .pricing_engine_type_code = "Swap",
+        .model = "DiscountedCashflows",
+        .engine = "DiscountingSwapEngine",
         .modified_by = modified_by,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
@@ -74,9 +76,9 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
     all.push_back({
         .id = gen(),
         .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "TestCreditDefault",
-        .model = "TestMidPointCds",
-        .engine = "TestMidPointCdsEngine",
+        .pricing_engine_type_code = "CreditDefaultSwap",
+        .model = "MidPointCds",
+        .engine = "MidPointCdsEngine",
         .modified_by = modified_by,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",
@@ -85,9 +87,9 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
     all.push_back({
         .id = gen(),
         .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "TestFxDigital",
-        .model = "TestGarmanKohlhagen",
-        .engine = "TestAnalyticFxEngine",
+        .pricing_engine_type_code = "FxOption",
+        .model = "GarmanKohlhagen",
+        .engine = "AnalyticEuropeanEngine",
         .modified_by = modified_by,
         .change_reason_code = "system.test",
         .change_commentary = "Synthetic test data",

@@ -51,6 +51,7 @@
 #include "ores.qt/AdminPlugin.hpp"
 #include "ores.qt/ComputePlugin.hpp"
 #include "ores.qt/RefdataPlugin.hpp"
+#include "ores.qt/PartyPlugin.hpp"
 #include "ores.qt/LegacyPlugin.hpp"
 #include "ores.qt/plugin_context.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -434,6 +435,15 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(refdataPlugin_.get(), &RefdataPlugin::window_destroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    // Create party plugin — controllers are instantiated in on_login()
+    partyPlugin_ = std::make_unique<PartyPlugin>(this);
+    connect(partyPlugin_.get(), &PartyPlugin::status_message,
+            this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
+    connect(partyPlugin_.get(), &PartyPlugin::window_created,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(partyPlugin_.get(), &PartyPlugin::window_destroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
     // Create legacy plugin — controllers are instantiated in on_login()
     legacyPlugin_ = std::make_unique<LegacyPlugin>(this);
     connect(legacyPlugin_.get(), &LegacyPlugin::status_message,
@@ -697,6 +707,8 @@ void MainWindow::onDisconnectTriggered() {
 void MainWindow::performDisconnectCleanup() {
     if (legacyPlugin_)
         legacyPlugin_->on_logout();
+    if (partyPlugin_)
+        partyPlugin_->on_logout();
     if (refdataPlugin_)
         refdataPlugin_->on_logout();
     if (computePlugin_)
@@ -1499,6 +1511,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
     adminPlugin_->on_login(ctx);
     computePlugin_->on_login(ctx);
     refdataPlugin_->on_login(ctx);
+    partyPlugin_->on_login(ctx);
     legacyPlugin_->on_login(ctx);
 
     // Insert domain menus from all plugins before Help
@@ -1506,6 +1519,7 @@ void MainWindow::onLoginSuccess(const QString& username) {
     for (auto* plugin : {static_cast<IPlugin*>(adminPlugin_.get()),
                          static_cast<IPlugin*>(computePlugin_.get()),
                          static_cast<IPlugin*>(refdataPlugin_.get()),
+                         static_cast<IPlugin*>(partyPlugin_.get()),
                          static_cast<IPlugin*>(legacyPlugin_.get())}) {
         for (auto* menu : plugin->create_menus()) {
             menuBar()->insertMenu(helpAction, menu);

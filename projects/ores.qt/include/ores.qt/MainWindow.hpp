@@ -59,6 +59,7 @@ class LegacyPlugin;
 class AdminPlugin;
 class ComputePlugin;
 class RefdataPlugin;
+class PartyPlugin;
 
 /**
  * @brief Main application window providing the MDI interface.
@@ -193,6 +194,9 @@ private:
 
     /** @brief Reference data plugin: currencies, countries, datasets, conventions. */
     std::unique_ptr<RefdataPlugin> refdataPlugin_;
+
+    /** @brief Party plugin: parties, counterparties, business units, and org types. */
+    std::unique_ptr<PartyPlugin> partyPlugin_;
 
     /** @brief Transitional legacy plugin owning remaining domain entity controllers. */
     std::unique_ptr<LegacyPlugin> legacyPlugin_;

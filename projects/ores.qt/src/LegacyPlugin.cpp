@@ -29,15 +29,6 @@
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/DataLibrarianWindow.hpp"
-#include "ores.qt/PartyTypeController.hpp"
-#include "ores.qt/PartyStatusController.hpp"
-#include "ores.qt/PartyIdSchemeController.hpp"
-#include "ores.qt/ContactTypeController.hpp"
-#include "ores.qt/PartyController.hpp"
-#include "ores.qt/CounterpartyController.hpp"
-#include "ores.qt/BusinessCentreController.hpp"
-#include "ores.qt/BusinessUnitController.hpp"
-#include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
@@ -75,51 +66,6 @@ void LegacyPlugin::connect_controller_signals(QObject* ctrl) {
 // ---------------------------------------------------------------------------
 void LegacyPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
-
-    partyTypeController_ = std::make_unique<PartyTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyTypeController_.get());
-
-    partyStatusController_ = std::make_unique<PartyStatusController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyStatusController_.get());
-
-    partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(partyIdSchemeController_.get());
-
-    contactTypeController_ = std::make_unique<ContactTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(contactTypeController_.get());
-
-    partyController_ = std::make_unique<PartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(partyController_.get());
-
-    counterpartyController_ = std::make_unique<CounterpartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(counterpartyController_.get());
-
-    businessCentreController_ = std::make_unique<BusinessCentreController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(businessCentreController_.get());
-
-    businessUnitController_ = std::make_unique<BusinessUnitController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
-    connect_controller_signals(businessUnitController_.get());
-
-    businessUnitTypeController_ = std::make_unique<BusinessUnitTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connect_controller_signals(businessUnitTypeController_.get());
 
     portfolioController_ = std::make_unique<PortfolioController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
@@ -185,29 +131,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     // ---- Data -------------------------------------------------------
     auto* menuData = new QMenu(tr("&Data"));
 
-    auto* actBusinessCentres = menuData->addAction(
-        ico(Icon::BuildingBank), tr("&Business Centres"));
-    connect(actBusinessCentres, &QAction::triggered, this, [this]() {
-        if (businessCentreController_) businessCentreController_->showListWindow();
-    });
-    menuData->addSeparator();
-    auto* actParties = menuData->addAction(ico(Icon::Organization), tr("&Parties"));
-    connect(actParties, &QAction::triggered, this, [this]() {
-        if (partyController_) partyController_->showListWindow();
-    });
-    auto* actCounterparties = menuData->addAction(ico(Icon::Handshake), tr("&Counterparties"));
-    connect(actCounterparties, &QAction::triggered, this, [this]() {
-        if (counterpartyController_) counterpartyController_->showListWindow();
-    });
-    menuData->addSeparator();
-    auto* actBizUnits = menuData->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
-    connect(actBizUnits, &QAction::triggered, this, [this]() {
-        if (businessUnitController_) businessUnitController_->showListWindow();
-    });
-    auto* actBizUnitTypes = menuData->addAction(ico(Icon::PeopleTeam), tr("Business Unit &Types"));
-    connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
-        if (businessUnitTypeController_) businessUnitTypeController_->showListWindow();
-    });
     auto* actPortfolios = menuData->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
     connect(actPortfolios, &QAction::triggered, this, [this]() {
         if (portfolioController_) portfolioController_->showListWindow();
@@ -223,23 +146,6 @@ QList<QMenu*> LegacyPlugin::create_menus() {
     auto* actCurrencyMarketTiers = menuAux->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
     connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
         if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
-    });
-    menuAux->addSeparator();
-    auto* actPartyTypes = menuAux->addAction(ico(Icon::Tag), tr("Party &Types"));
-    connect(actPartyTypes, &QAction::triggered, this, [this]() {
-        if (partyTypeController_) partyTypeController_->showListWindow();
-    });
-    auto* actPartyStatuses = menuAux->addAction(ico(Icon::Flag), tr("Party &Statuses"));
-    connect(actPartyStatuses, &QAction::triggered, this, [this]() {
-        if (partyStatusController_) partyStatusController_->showListWindow();
-    });
-    auto* actPartyIdSchemes = menuAux->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
-    connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
-        if (partyIdSchemeController_) partyIdSchemeController_->showListWindow();
-    });
-    auto* actContactTypes = menuAux->addAction(ico(Icon::PersonAccounts), tr("&Contact Types"));
-    connect(actContactTypes, &QAction::triggered, this, [this]() {
-        if (contactTypeController_) contactTypeController_->showListWindow();
     });
     menuAux->addSeparator();
     auto* actBookStatuses = menuAux->addAction(ico(Icon::Flag), tr("Book &Statuses"));
@@ -331,7 +237,7 @@ QList<QMenu*> LegacyPlugin::create_menus() {
 
         auto* window = new OrgExplorerMdiWindow(
             ctx_.client_manager,
-            businessUnitController_.get(),
+            nullptr,
             bookController_.get(),
             tradeController_.get(),
             ctx_.username,
@@ -430,15 +336,6 @@ void LegacyPlugin::on_logout() {
     bookStatusController_.reset();
     bookController_.reset();
     portfolioController_.reset();
-    businessUnitTypeController_.reset();
-    businessUnitController_.reset();
-    businessCentreController_.reset();
-    counterpartyController_.reset();
-    partyController_.reset();
-    contactTypeController_.reset();
-    partyIdSchemeController_.reset();
-    partyStatusController_.reset();
-    partyTypeController_.reset();
 
     ctx_ = {};
 }

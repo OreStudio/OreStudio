@@ -28,15 +28,6 @@
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
-class PartyTypeController;
-class PartyStatusController;
-class PartyIdSchemeController;
-class ContactTypeController;
-class PartyController;
-class CounterpartyController;
-class BusinessCentreController;
-class BusinessUnitController;
-class BusinessUnitTypeController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
@@ -98,15 +89,6 @@ private:
     DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<PartyTypeController>                   partyTypeController_;
-    std::unique_ptr<PartyStatusController>                 partyStatusController_;
-    std::unique_ptr<PartyIdSchemeController>               partyIdSchemeController_;
-    std::unique_ptr<ContactTypeController>                 contactTypeController_;
-    std::unique_ptr<PartyController>                       partyController_;
-    std::unique_ptr<CounterpartyController>                counterpartyController_;
-    std::unique_ptr<BusinessCentreController>              businessCentreController_;
-    std::unique_ptr<BusinessUnitController>                businessUnitController_;
-    std::unique_ptr<BusinessUnitTypeController>            businessUnitTypeController_;
     std::unique_ptr<PortfolioController>                   portfolioController_;
     std::unique_ptr<BookController>                        bookController_;
     std::unique_ptr<BookStatusController>                  bookStatusController_;

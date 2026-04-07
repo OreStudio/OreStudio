@@ -50,20 +50,6 @@ using PT = ores::trading::domain::product_type;
 // Trade type detection helpers
 // ---------------------------------------------------------------------------
 
-static bool isEquityOptionType(const QString& tradeTypeCode) {
-    return tradeTypeCode.contains("Option", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Barrier", Qt::CaseInsensitive);
-}
-
-static bool isEquityExtensionType(const QString& tradeTypeCode) {
-    return tradeTypeCode == "EquityTRS" ||
-           tradeTypeCode == "EquityVarianceSwap" ||
-           tradeTypeCode == "EquityVolatilitySwap" ||
-           tradeTypeCode.contains("Cliquet", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Accumulator", Qt::CaseInsensitive) ||
-           tradeTypeCode.contains("Asian", Qt::CaseInsensitive);
-}
-
 static bool isCommodityExtensionType(const QString& tradeTypeCode) {
     return tradeTypeCode.contains("Option", Qt::CaseInsensitive) ||
            tradeTypeCode.contains("Spread", Qt::CaseInsensitive) ||
@@ -145,12 +131,6 @@ void TradeDetailDialog::setupUi() {
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityCoreTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityOptionsTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), false);
-    ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->commodityCoreTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->commodityExtensionsTab), false);
@@ -187,64 +167,6 @@ void TradeDetailDialog::setupConnections() {
     connect(ui_->executionTimestampEdit, &QLineEdit::textChanged, this,
             &TradeDetailDialog::onFieldChanged);
 
-
-    // Equity instrument fields
-    connect(ui_->equityTradeTypeCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onEquityTradeTypeChanged);
-    connect(ui_->equityUnderlyingCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityCurrencyEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityStartDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityMaturityDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityDescriptionEdit, &QPlainTextEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityOptionTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityExerciseTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityBarrierTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityAverageTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityAveragingStartDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityCliquetFrequencyCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityDayCountCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityPaymentFrequencyCodeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityReturnTypeEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityBasketJsonEdit, &QPlainTextEdit::textChanged, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityNotionalSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityQuantitySpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityStrikePriceSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityLowerBarrierSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityUpperBarrierSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityVarianceStrikeSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityAccumulationAmountSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
-    connect(ui_->equityKnockOutBarrierSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TradeDetailDialog::onInstrumentFieldChanged);
 
     // Commodity instrument fields
     connect(ui_->commodityTradeTypeCodeEdit, &QLineEdit::textChanged, this,
@@ -515,9 +437,7 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         return;
     }
 
-    if (trade_.product_type == PT::equity && trade_.instrument_id.has_value())
-        loadEquityInstrument();
-    else if (trade_.product_type == PT::commodity && trade_.instrument_id.has_value())
+    if (trade_.product_type == PT::commodity && trade_.instrument_id.has_value())
         loadCommodityInstrument();
     else if (trade_.product_type == PT::composite && trade_.instrument_id.has_value())
         loadCompositeInstrument();
@@ -539,12 +459,6 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     // creation is enabled in Phase 6 once the registry covers all families).
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->instrumentTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityCoreTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityOptionsTab), false);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->commodityCoreTab), false);
     ui_->tabWidget->setTabVisible(
@@ -580,7 +494,6 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     if (activeForm_) activeForm_->setReadOnly(readOnly);
-    setEquityReadOnly(readOnly);
     setCommodityReadOnly(readOnly);
     setCompositeReadOnly(readOnly);
     setScriptedReadOnly(readOnly);
@@ -666,14 +579,6 @@ void TradeDetailDialog::onInstrumentFieldChanged() {
     updateSaveButtonState();
 }
 
-void TradeDetailDialog::onEquityTradeTypeChanged(const QString&) {
-    if (instrumentLoaded_) {
-        instrumentHasChanges_ = true;
-        updateEquityTabVisibility();
-        updateSaveButtonState();
-    }
-}
-
 void TradeDetailDialog::onCommodityTradeTypeChanged(const QString&) {
     if (instrumentLoaded_) {
         instrumentHasChanges_ = true;
@@ -732,8 +637,6 @@ void TradeDetailDialog::onSaveClicked() {
         if (activeForm_ &&
             instrumentFormRegistry_.contains(trade_.product_type)) {
             activeForm_->writeUiToInstrument();
-        } else if (trade_.product_type == PT::equity) {
-            updateEquityInstrumentFromUi();
         } else if (trade_.product_type == PT::commodity) {
             updateCommodityInstrumentFromUi();
         } else if (trade_.product_type == PT::composite) {
@@ -760,9 +663,6 @@ void TradeDetailDialog::onSaveClicked() {
             instrumentFormRegistry_.contains(trade_.product_type)) {
             activeForm_->setChangeReason(
                 crSel->reason_code, crSel->commentary);
-        } else if (trade_.product_type == PT::equity) {
-            equityInstrument_.change_reason_code = crSel->reason_code;
-            equityInstrument_.change_commentary  = crSel->commentary;
         } else if (trade_.product_type == PT::commodity) {
             commodityInstrument_.change_reason_code = crSel->reason_code;
             commodityInstrument_.change_commentary  = crSel->commentary;
@@ -800,11 +700,7 @@ void TradeDetailDialog::onSaveClicked() {
                 });
             return;
         }
-        if (trade_.product_type == PT::equity) {
-            BOOST_LOG_SEV(lg(), info) << "Saving equity instrument then trade: "
-                                      << trade_.external_id;
-            saveEquityThenTrade(trade_, equityInstrument_);
-        } else if (trade_.product_type == PT::commodity) {
+        if (trade_.product_type == PT::commodity) {
             BOOST_LOG_SEV(lg(), info) << "Saving commodity instrument then trade: "
                                       << trade_.external_id;
             saveCommodityThenTrade(trade_, commodityInstrument_);
@@ -821,285 +717,6 @@ void TradeDetailDialog::onSaveClicked() {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
         saveTrade(trade_);
     }
-}
-
-// ---------------------------------------------------------------------------
-// Equity instrument support
-// ---------------------------------------------------------------------------
-
-void TradeDetailDialog::loadEquityInstrument() {
-    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
-
-    const auto family = PT::equity;
-    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
-
-    struct EquityResult {
-        bool success;
-        std::string message;
-        trading::domain::equity_instrument instrument;
-    };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<EquityResult>(self);
-    connect(watcher, &QFutureWatcher<EquityResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load equity instrument: " << result.message;
-            return;
-        }
-
-        self->equityInstrument_ = std::move(result.instrument);
-        self->instrumentLoaded_ = true;
-        self->populateEquityInstrument();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> EquityResult {
-        if (!cm)
-            return {false, "Dialog closed", {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = family;
-        req.instrument_id = id;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}};
-        if (!r->success)
-            return {false, r->message, {}};
-
-        const auto* eq =
-            std::get_if<trading::domain::equity_instrument>(&r->instrument);
-        if (!eq)
-            return {false, "Unexpected instrument type in response", {}};
-
-        return {true, {}, *eq};
-    }));
-}
-
-void TradeDetailDialog::populateEquityInstrument() {
-    const auto block = [this](bool b) {
-        ui_->equityTradeTypeCodeEdit->blockSignals(b);
-        ui_->equityUnderlyingCodeEdit->blockSignals(b);
-        ui_->equityCurrencyEdit->blockSignals(b);
-        ui_->equityNotionalSpinBox->blockSignals(b);
-        ui_->equityQuantitySpinBox->blockSignals(b);
-        ui_->equityStartDateEdit->blockSignals(b);
-        ui_->equityMaturityDateEdit->blockSignals(b);
-        ui_->equityOptionTypeEdit->blockSignals(b);
-        ui_->equityStrikePriceSpinBox->blockSignals(b);
-        ui_->equityExerciseTypeEdit->blockSignals(b);
-        ui_->equityBarrierTypeEdit->blockSignals(b);
-        ui_->equityLowerBarrierSpinBox->blockSignals(b);
-        ui_->equityUpperBarrierSpinBox->blockSignals(b);
-        ui_->equityAverageTypeEdit->blockSignals(b);
-        ui_->equityAveragingStartDateEdit->blockSignals(b);
-        ui_->equityVarianceStrikeSpinBox->blockSignals(b);
-        ui_->equityCliquetFrequencyCodeEdit->blockSignals(b);
-        ui_->equityAccumulationAmountSpinBox->blockSignals(b);
-        ui_->equityKnockOutBarrierSpinBox->blockSignals(b);
-        ui_->equityBasketJsonEdit->blockSignals(b);
-        ui_->equityDayCountCodeEdit->blockSignals(b);
-        ui_->equityPaymentFrequencyCodeEdit->blockSignals(b);
-        ui_->equityReturnTypeEdit->blockSignals(b);
-        ui_->equityDescriptionEdit->blockSignals(b);
-    };
-
-    block(true);
-    ui_->equityTradeTypeCodeEdit->setText(
-        QString::fromStdString(equityInstrument_.trade_type_code));
-    ui_->equityUnderlyingCodeEdit->setText(
-        QString::fromStdString(equityInstrument_.underlying_code));
-    ui_->equityCurrencyEdit->setText(
-        QString::fromStdString(equityInstrument_.currency));
-    ui_->equityNotionalSpinBox->setValue(equityInstrument_.notional);
-    ui_->equityQuantitySpinBox->setValue(equityInstrument_.quantity);
-    ui_->equityStartDateEdit->setText(
-        QString::fromStdString(equityInstrument_.start_date));
-    ui_->equityMaturityDateEdit->setText(
-        QString::fromStdString(equityInstrument_.maturity_date));
-    ui_->equityOptionTypeEdit->setText(
-        QString::fromStdString(equityInstrument_.option_type));
-    ui_->equityStrikePriceSpinBox->setValue(equityInstrument_.strike_price);
-    ui_->equityExerciseTypeEdit->setText(
-        QString::fromStdString(equityInstrument_.exercise_type));
-    ui_->equityBarrierTypeEdit->setText(
-        QString::fromStdString(equityInstrument_.barrier_type));
-    ui_->equityLowerBarrierSpinBox->setValue(equityInstrument_.lower_barrier);
-    ui_->equityUpperBarrierSpinBox->setValue(equityInstrument_.upper_barrier);
-    ui_->equityAverageTypeEdit->setText(
-        QString::fromStdString(equityInstrument_.average_type));
-    ui_->equityAveragingStartDateEdit->setText(
-        QString::fromStdString(equityInstrument_.averaging_start_date));
-    ui_->equityVarianceStrikeSpinBox->setValue(equityInstrument_.variance_strike);
-    ui_->equityCliquetFrequencyCodeEdit->setText(
-        QString::fromStdString(equityInstrument_.cliquet_frequency_code));
-    ui_->equityAccumulationAmountSpinBox->setValue(
-        equityInstrument_.accumulation_amount);
-    ui_->equityKnockOutBarrierSpinBox->setValue(equityInstrument_.knock_out_barrier);
-    ui_->equityBasketJsonEdit->setPlainText(
-        QString::fromStdString(equityInstrument_.basket_json));
-    ui_->equityDayCountCodeEdit->setText(
-        QString::fromStdString(equityInstrument_.day_count_code));
-    ui_->equityPaymentFrequencyCodeEdit->setText(
-        QString::fromStdString(equityInstrument_.payment_frequency_code));
-    ui_->equityReturnTypeEdit->setText(
-        QString::fromStdString(equityInstrument_.return_type));
-    ui_->equityDescriptionEdit->setPlainText(
-        QString::fromStdString(equityInstrument_.description));
-    block(false);
-
-    ui_->instrumentProvenanceWidget->populate(
-        equityInstrument_.version,
-        equityInstrument_.modified_by,
-        equityInstrument_.performed_by,
-        equityInstrument_.recorded_at,
-        equityInstrument_.change_reason_code,
-        equityInstrument_.change_commentary);
-    ui_->instrumentProvenanceGroup->setVisible(true);
-
-    instrumentHasChanges_ = false;
-    updateEquityTabVisibility();
-    updateSaveButtonState();
-}
-
-void TradeDetailDialog::updateEquityInstrumentFromUi() {
-    equityInstrument_.trade_type_code =
-        ui_->equityTradeTypeCodeEdit->text().trimmed().toStdString();
-    equityInstrument_.underlying_code =
-        ui_->equityUnderlyingCodeEdit->text().trimmed().toStdString();
-    equityInstrument_.currency =
-        ui_->equityCurrencyEdit->text().trimmed().toStdString();
-    equityInstrument_.notional = ui_->equityNotionalSpinBox->value();
-    equityInstrument_.quantity = ui_->equityQuantitySpinBox->value();
-    equityInstrument_.start_date =
-        ui_->equityStartDateEdit->text().trimmed().toStdString();
-    equityInstrument_.maturity_date =
-        ui_->equityMaturityDateEdit->text().trimmed().toStdString();
-    equityInstrument_.option_type =
-        ui_->equityOptionTypeEdit->text().trimmed().toStdString();
-    equityInstrument_.strike_price = ui_->equityStrikePriceSpinBox->value();
-    equityInstrument_.exercise_type =
-        ui_->equityExerciseTypeEdit->text().trimmed().toStdString();
-    equityInstrument_.barrier_type =
-        ui_->equityBarrierTypeEdit->text().trimmed().toStdString();
-    equityInstrument_.lower_barrier = ui_->equityLowerBarrierSpinBox->value();
-    equityInstrument_.upper_barrier = ui_->equityUpperBarrierSpinBox->value();
-    equityInstrument_.average_type =
-        ui_->equityAverageTypeEdit->text().trimmed().toStdString();
-    equityInstrument_.averaging_start_date =
-        ui_->equityAveragingStartDateEdit->text().trimmed().toStdString();
-    equityInstrument_.variance_strike = ui_->equityVarianceStrikeSpinBox->value();
-    equityInstrument_.cliquet_frequency_code =
-        ui_->equityCliquetFrequencyCodeEdit->text().trimmed().toStdString();
-    equityInstrument_.accumulation_amount =
-        ui_->equityAccumulationAmountSpinBox->value();
-    equityInstrument_.knock_out_barrier =
-        ui_->equityKnockOutBarrierSpinBox->value();
-    equityInstrument_.basket_json =
-        ui_->equityBasketJsonEdit->toPlainText().trimmed().toStdString();
-    equityInstrument_.day_count_code =
-        ui_->equityDayCountCodeEdit->text().trimmed().toStdString();
-    equityInstrument_.payment_frequency_code =
-        ui_->equityPaymentFrequencyCodeEdit->text().trimmed().toStdString();
-    equityInstrument_.return_type =
-        ui_->equityReturnTypeEdit->text().trimmed().toStdString();
-    equityInstrument_.description =
-        ui_->equityDescriptionEdit->toPlainText().trimmed().toStdString();
-    equityInstrument_.modified_by = username_;
-    equityInstrument_.performed_by = username_;
-}
-
-void TradeDetailDialog::updateEquityTabVisibility() {
-    const QString tradeType = ui_->equityTradeTypeCodeEdit->text().trimmed();
-    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
-    const bool showOptions = instrumentLoaded_ && isEquityOptionType(tradeType);
-    const bool showExtensions = instrumentLoaded_ &&
-        (isEquityExtensionType(tradeType) ||
-         !qFuzzyIsNull(ui_->equityVarianceStrikeSpinBox->value()) ||
-         !qFuzzyIsNull(ui_->equityAccumulationAmountSpinBox->value()) ||
-         !ui_->equityBasketJsonEdit->toPlainText().trimmed().isEmpty() ||
-         !ui_->equityReturnTypeEdit->text().trimmed().isEmpty());
-
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityCoreTab), showCore);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityOptionsTab), showOptions);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->equityExtensionsTab), showExtensions);
-}
-
-void TradeDetailDialog::setEquityReadOnly(bool readOnly) {
-    ui_->equityTradeTypeCodeEdit->setReadOnly(readOnly);
-    ui_->equityUnderlyingCodeEdit->setReadOnly(readOnly);
-    ui_->equityCurrencyEdit->setReadOnly(readOnly);
-    ui_->equityNotionalSpinBox->setReadOnly(readOnly);
-    ui_->equityQuantitySpinBox->setReadOnly(readOnly);
-    ui_->equityStartDateEdit->setReadOnly(readOnly);
-    ui_->equityMaturityDateEdit->setReadOnly(readOnly);
-    ui_->equityOptionTypeEdit->setReadOnly(readOnly);
-    ui_->equityStrikePriceSpinBox->setReadOnly(readOnly);
-    ui_->equityExerciseTypeEdit->setReadOnly(readOnly);
-    ui_->equityBarrierTypeEdit->setReadOnly(readOnly);
-    ui_->equityLowerBarrierSpinBox->setReadOnly(readOnly);
-    ui_->equityUpperBarrierSpinBox->setReadOnly(readOnly);
-    ui_->equityAverageTypeEdit->setReadOnly(readOnly);
-    ui_->equityAveragingStartDateEdit->setReadOnly(readOnly);
-    ui_->equityVarianceStrikeSpinBox->setReadOnly(readOnly);
-    ui_->equityCliquetFrequencyCodeEdit->setReadOnly(readOnly);
-    ui_->equityAccumulationAmountSpinBox->setReadOnly(readOnly);
-    ui_->equityKnockOutBarrierSpinBox->setReadOnly(readOnly);
-    ui_->equityBasketJsonEdit->setReadOnly(readOnly);
-    ui_->equityDayCountCodeEdit->setReadOnly(readOnly);
-    ui_->equityPaymentFrequencyCodeEdit->setReadOnly(readOnly);
-    ui_->equityReturnTypeEdit->setReadOnly(readOnly);
-    ui_->equityDescriptionEdit->setReadOnly(readOnly);
-}
-
-void TradeDetailDialog::saveEquityThenTrade(
-    const trading::domain::trade& trade,
-    const trading::domain::equity_instrument& instrument) {
-
-    struct EquitySaveResult { bool success; std::string message; };
-
-    QPointer<TradeDetailDialog> self = this;
-    auto* watcher = new QFutureWatcher<EquitySaveResult>(self);
-    connect(watcher, &QFutureWatcher<EquitySaveResult>::finished,
-            self, [self, watcher, trade]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Equity instrument save failed: "
-                                       << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed",
-                tr("Failed to save equity instrument:\n%1").arg(errorMsg));
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Equity instrument saved; saving trade";
-        self->instrumentHasChanges_ = false;
-        self->saveTrade(trade);
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument]() -> EquitySaveResult {
-        if (!cm)
-            return {false, "Dialog closed"};
-        trading::messaging::save_equity_instrument_request req;
-        req.data = instrument;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
-        return {r->success, r->message};
-    }));
 }
 
 // ---------------------------------------------------------------------------

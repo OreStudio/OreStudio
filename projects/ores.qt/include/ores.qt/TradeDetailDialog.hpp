@@ -29,7 +29,6 @@
 #include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
@@ -97,7 +96,6 @@ private slots:
     void onCodeChanged(const QString& text);
     void onFieldChanged();
     void onInstrumentFieldChanged();
-    void onEquityTradeTypeChanged(const QString& text);
     void onCommodityTradeTypeChanged(const QString& text);
     void onCompositeTradeTypeChanged(const QString& text);
     void onScriptTradeTypeChanged(const QString& text);
@@ -113,15 +111,6 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
-
-    // Equity instrument support
-    void loadEquityInstrument();
-    void populateEquityInstrument();
-    void updateEquityInstrumentFromUi();
-    void updateEquityTabVisibility();
-    void setEquityReadOnly(bool readOnly);
-    void saveEquityThenTrade(const trading::domain::trade& trade,
-                             const trading::domain::equity_instrument& instrument);
 
     // Commodity instrument support
     void loadCommodityInstrument();
@@ -168,9 +157,8 @@ private:
     InstrumentFormRegistry instrumentFormRegistry_;
     IInstrumentForm* activeForm_ = nullptr;
 
-    // Legacy per-family state for the four instrument families that have
+    // Legacy per-family state for the three instrument families that have
     // not yet been migrated to IInstrumentForm subclasses.
-    trading::domain::equity_instrument equityInstrument_;
     trading::domain::commodity_instrument commodityInstrument_;
     trading::domain::composite_instrument compositeInstrument_;
     std::vector<trading::domain::composite_leg> compositeLegs_;

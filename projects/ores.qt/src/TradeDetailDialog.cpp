@@ -42,6 +42,10 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+// Local alias to keep dispatch sites concise without conflicting with the
+// trade.product_type member name.
+using PT = ores::trading::domain::product_type;
+
 // ---------------------------------------------------------------------------
 // Trade type detection helpers
 // ---------------------------------------------------------------------------
@@ -641,21 +645,21 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    if (trade_.product_type == "fx" && trade_.instrument_id.has_value())
+    if (trade_.product_type == PT::fx && trade_.instrument_id.has_value())
         loadFxInstrument();
-    else if (trade_.product_type == "swap" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::swap && trade_.instrument_id.has_value())
         loadSwapInstrument();
-    else if (trade_.product_type == "bond" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::bond && trade_.instrument_id.has_value())
         loadBondInstrument();
-    else if (trade_.product_type == "credit" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::credit && trade_.instrument_id.has_value())
         loadCreditInstrument();
-    else if (trade_.product_type == "equity" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::equity && trade_.instrument_id.has_value())
         loadEquityInstrument();
-    else if (trade_.product_type == "commodity" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::commodity && trade_.instrument_id.has_value())
         loadCommodityInstrument();
-    else if (trade_.product_type == "composite" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::composite && trade_.instrument_id.has_value())
         loadCompositeInstrument();
-    else if (trade_.product_type == "scripted" && trade_.instrument_id.has_value())
+    else if (trade_.product_type == PT::scripted && trade_.instrument_id.has_value())
         loadScriptedInstrument();
 }
 
@@ -805,7 +809,7 @@ void TradeDetailDialog::updateTradeFromUi() {
 void TradeDetailDialog::loadFxInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::fx;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct FxResult {
@@ -969,7 +973,7 @@ void TradeDetailDialog::setFxReadOnly(bool readOnly) {
 void TradeDetailDialog::loadSwapInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::swap;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct SwapResult {
@@ -1203,7 +1207,7 @@ void TradeDetailDialog::saveSwapThenTrade(
 void TradeDetailDialog::loadBondInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::bond;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct BondResult {
@@ -1465,7 +1469,7 @@ void TradeDetailDialog::saveBondThenTrade(
 void TradeDetailDialog::loadCreditInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::credit;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CreditResult {
@@ -1845,21 +1849,21 @@ void TradeDetailDialog::onSaveClicked() {
 
     updateTradeFromUi();
     if (instrumentLoaded_) {
-        if (trade_.product_type == "fx")
+        if (trade_.product_type == PT::fx)
             updateFxInstrumentFromUi();
-        else if (trade_.product_type == "swap")
+        else if (trade_.product_type == PT::swap)
             updateSwapInstrumentFromUi();
-        else if (trade_.product_type == "bond")
+        else if (trade_.product_type == PT::bond)
             updateBondInstrumentFromUi();
-        else if (trade_.product_type == "credit")
+        else if (trade_.product_type == PT::credit)
             updateCreditInstrumentFromUi();
-        else if (trade_.product_type == "equity")
+        else if (trade_.product_type == PT::equity)
             updateEquityInstrumentFromUi();
-        else if (trade_.product_type == "commodity")
+        else if (trade_.product_type == PT::commodity)
             updateCommodityInstrumentFromUi();
-        else if (trade_.product_type == "composite")
+        else if (trade_.product_type == PT::composite)
             updateCompositeInstrumentFromUi();
-        else if (trade_.product_type == "scripted")
+        else if (trade_.product_type == PT::scripted)
             updateScriptedInstrumentFromUi();
     }
 
@@ -1876,63 +1880,63 @@ void TradeDetailDialog::onSaveClicked() {
 
     if (instrumentLoaded_) {
         // Instrument change reason matches the trade change reason.
-        if (trade_.product_type == "fx") {
+        if (trade_.product_type == PT::fx) {
             fxInstrument_.change_reason_code = crSel->reason_code;
             fxInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "swap") {
+        } else if (trade_.product_type == PT::swap) {
             swapInstrument_.change_reason_code = crSel->reason_code;
             swapInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "bond") {
+        } else if (trade_.product_type == PT::bond) {
             bondInstrument_.change_reason_code = crSel->reason_code;
             bondInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "credit") {
+        } else if (trade_.product_type == PT::credit) {
             creditInstrument_.change_reason_code = crSel->reason_code;
             creditInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "equity") {
+        } else if (trade_.product_type == PT::equity) {
             equityInstrument_.change_reason_code = crSel->reason_code;
             equityInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "commodity") {
+        } else if (trade_.product_type == PT::commodity) {
             commodityInstrument_.change_reason_code = crSel->reason_code;
             commodityInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "composite") {
+        } else if (trade_.product_type == PT::composite) {
             compositeInstrument_.change_reason_code = crSel->reason_code;
             compositeInstrument_.change_commentary  = crSel->commentary;
-        } else if (trade_.product_type == "scripted") {
+        } else if (trade_.product_type == PT::scripted) {
             scriptedInstrument_.change_reason_code = crSel->reason_code;
             scriptedInstrument_.change_commentary  = crSel->commentary;
         }
     }
 
     if (instrumentHasChanges_ && instrumentLoaded_) {
-        if (trade_.product_type == "fx") {
+        if (trade_.product_type == PT::fx) {
             BOOST_LOG_SEV(lg(), info) << "Saving FX instrument then trade: "
                                       << trade_.external_id;
             saveFxThenTrade(trade_, fxInstrument_);
-        } else if (trade_.product_type == "swap") {
+        } else if (trade_.product_type == PT::swap) {
             BOOST_LOG_SEV(lg(), info) << "Saving swap instrument then trade: "
                                       << trade_.external_id;
             saveSwapThenTrade(trade_, swapInstrument_, swapLegs_);
-        } else if (trade_.product_type == "bond") {
+        } else if (trade_.product_type == PT::bond) {
             BOOST_LOG_SEV(lg(), info) << "Saving bond instrument then trade: "
                                       << trade_.external_id;
             saveBondThenTrade(trade_, bondInstrument_);
-        } else if (trade_.product_type == "credit") {
+        } else if (trade_.product_type == PT::credit) {
             BOOST_LOG_SEV(lg(), info) << "Saving credit instrument then trade: "
                                       << trade_.external_id;
             saveCreditThenTrade(trade_, creditInstrument_);
-        } else if (trade_.product_type == "equity") {
+        } else if (trade_.product_type == PT::equity) {
             BOOST_LOG_SEV(lg(), info) << "Saving equity instrument then trade: "
                                       << trade_.external_id;
             saveEquityThenTrade(trade_, equityInstrument_);
-        } else if (trade_.product_type == "commodity") {
+        } else if (trade_.product_type == PT::commodity) {
             BOOST_LOG_SEV(lg(), info) << "Saving commodity instrument then trade: "
                                       << trade_.external_id;
             saveCommodityThenTrade(trade_, commodityInstrument_);
-        } else if (trade_.product_type == "composite") {
+        } else if (trade_.product_type == PT::composite) {
             BOOST_LOG_SEV(lg(), info) << "Saving composite instrument then trade: "
                                       << trade_.external_id;
             saveCompositeThenTrade(trade_, compositeInstrument_, compositeLegs_);
-        } else if (trade_.product_type == "scripted") {
+        } else if (trade_.product_type == PT::scripted) {
             BOOST_LOG_SEV(lg(), info) << "Saving scripted instrument then trade: "
                                       << trade_.external_id;
             saveScriptedThenTrade(trade_, scriptedInstrument_);
@@ -1950,7 +1954,7 @@ void TradeDetailDialog::onSaveClicked() {
 void TradeDetailDialog::loadEquityInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::equity;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct EquityResult {
@@ -2229,7 +2233,7 @@ void TradeDetailDialog::saveEquityThenTrade(
 void TradeDetailDialog::loadCommodityInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::commodity;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CommodityResult {
@@ -2565,7 +2569,7 @@ void TradeDetailDialog::saveCommodityThenTrade(
 void TradeDetailDialog::loadCompositeInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::composite;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct CompositeResult {
@@ -2724,7 +2728,7 @@ void TradeDetailDialog::saveCompositeThenTrade(
 void TradeDetailDialog::loadScriptedInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.product_type;
+    const auto family = PT::scripted;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct ScriptedResult {

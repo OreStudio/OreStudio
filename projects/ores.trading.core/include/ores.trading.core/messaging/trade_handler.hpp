@@ -69,6 +69,85 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)),
           http_base_url_(std::move(http_base_url)) {}
 
+private:
+    /**
+     * @brief Populate @p item.instrument from the trade's product family.
+     *
+     * Single dispatch point for the eight instrument families. Adding a new
+     * family means adding one case here (and a new product_type enumerator).
+     */
+    template<typename Ctx>
+    static void populate_instrument_for_trade(
+        const Ctx& ctx,
+        const ores::trading::domain::trade& t,
+        trade_export_item& item) {
+        using ores::trading::domain::product_type;
+        if (!t.instrument_id || t.product_type == product_type::unknown) return;
+        const auto id = boost::uuids::to_string(*t.instrument_id);
+        switch (t.product_type) {
+        case product_type::unknown:
+            return; // unreachable, handled above
+        case product_type::swap: {
+            service::instrument_service isvc(ctx);
+            if (auto r = isvc.find_instrument(id)) {
+                swap_export_result ex;
+                ex.instrument = std::move(*r);
+                ex.legs = isvc.get_legs(id);
+                item.instrument = std::move(ex);
+            }
+            break;
+        }
+        case product_type::fx: {
+            service::fx_instrument_service isvc(ctx);
+            if (auto r = isvc.find_fx_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        case product_type::bond: {
+            service::bond_instrument_service isvc(ctx);
+            if (auto r = isvc.find_bond_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        case product_type::credit: {
+            service::credit_instrument_service isvc(ctx);
+            if (auto r = isvc.find_credit_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        case product_type::equity: {
+            service::equity_instrument_service isvc(ctx);
+            if (auto r = isvc.find_equity_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        case product_type::commodity: {
+            service::commodity_instrument_service isvc(ctx);
+            if (auto r = isvc.find_commodity_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        case product_type::composite: {
+            service::composite_instrument_service isvc(ctx);
+            if (auto r = isvc.find_composite_instrument(id)) {
+                composite_export_result ex;
+                ex.instrument = std::move(*r);
+                ex.legs = isvc.get_legs(id);
+                item.instrument = std::move(ex);
+            }
+            break;
+        }
+        case product_type::scripted: {
+            service::scripted_instrument_service isvc(ctx);
+            if (auto r = isvc.find_scripted_instrument(id))
+                item.instrument = std::move(*r);
+            break;
+        }
+        }
+    }
+
+public:
+
     void list_activity_types(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Handling " << msg.subject;
@@ -268,52 +347,7 @@ public:
                 for (auto& t : trades) {
                     trade_export_item item;
                     item.trade = t;
-
-                    if (t.instrument_id && !t.product_type.empty()) {
-                        const auto id = boost::uuids::to_string(*t.instrument_id);
-                        const auto& fam = t.product_type;
-                        if (fam == "swap") {
-                            service::instrument_service isvc(ctx);
-                            if (auto r = isvc.find_instrument(id)) {
-                                swap_export_result ex;
-                                ex.instrument = std::move(*r);
-                                ex.legs = isvc.get_legs(id);
-                                item.instrument = std::move(ex);
-                            }
-                        } else if (fam == "fx") {
-                            service::fx_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_fx_instrument(id))
-                                item.instrument = std::move(*r);
-                        } else if (fam == "bond") {
-                            service::bond_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_bond_instrument(id))
-                                item.instrument = std::move(*r);
-                        } else if (fam == "credit") {
-                            service::credit_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_credit_instrument(id))
-                                item.instrument = std::move(*r);
-                        } else if (fam == "equity") {
-                            service::equity_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_equity_instrument(id))
-                                item.instrument = std::move(*r);
-                        } else if (fam == "commodity") {
-                            service::commodity_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_commodity_instrument(id))
-                                item.instrument = std::move(*r);
-                        } else if (fam == "composite") {
-                            service::composite_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_composite_instrument(id)) {
-                                composite_export_result ex;
-                                ex.instrument = std::move(*r);
-                                ex.legs = isvc.get_legs(id);
-                                item.instrument = std::move(ex);
-                            }
-                        } else if (fam == "scripted") {
-                            service::scripted_instrument_service isvc(ctx);
-                            if (auto r = isvc.find_scripted_instrument(id))
-                                item.instrument = std::move(*r);
-                        }
-                    }
+                    populate_instrument_for_trade(ctx, t, item);
                     resp.items.push_back(std::move(item));
                 }
                 resp.success = true;
@@ -360,52 +394,7 @@ public:
                     for (auto& t : trades) {
                         trade_export_item item;
                         item.trade = t;
-                        if (t.instrument_id && !t.product_type.empty()) {
-                            const auto id =
-                                boost::uuids::to_string(*t.instrument_id);
-                            const auto& fam = t.product_type;
-                            if (fam == "swap") {
-                                service::instrument_service isvc(ctx);
-                                if (auto r = isvc.find_instrument(id)) {
-                                    swap_export_result ex;
-                                    ex.instrument = std::move(*r);
-                                    ex.legs = isvc.get_legs(id);
-                                    item.instrument = std::move(ex);
-                                }
-                            } else if (fam == "fx") {
-                                service::fx_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_fx_instrument(id))
-                                    item.instrument = std::move(*r);
-                            } else if (fam == "bond") {
-                                service::bond_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_bond_instrument(id))
-                                    item.instrument = std::move(*r);
-                            } else if (fam == "credit") {
-                                service::credit_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_credit_instrument(id))
-                                    item.instrument = std::move(*r);
-                            } else if (fam == "equity") {
-                                service::equity_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_equity_instrument(id))
-                                    item.instrument = std::move(*r);
-                            } else if (fam == "commodity") {
-                                service::commodity_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_commodity_instrument(id))
-                                    item.instrument = std::move(*r);
-                            } else if (fam == "composite") {
-                                service::composite_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_composite_instrument(id)) {
-                                    composite_export_result ex;
-                                    ex.instrument = std::move(*r);
-                                    ex.legs = isvc.get_legs(id);
-                                    item.instrument = std::move(ex);
-                                }
-                            } else if (fam == "scripted") {
-                                service::scripted_instrument_service isvc(ctx);
-                                if (auto r = isvc.find_scripted_instrument(id))
-                                    item.instrument = std::move(*r);
-                            }
-                        }
+                        populate_instrument_for_trade(ctx, t, item);
                         all_items.push_back(std::move(item));
                     }
                 } catch (const std::exception& e) {

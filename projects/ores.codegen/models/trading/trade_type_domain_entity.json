@@ -27,6 +27,33 @@
         "nullable": true,
         "description": "Detailed description of the trade type.",
         "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "product_type",
+        "type": "product_type_t",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Product type family this trade type belongs to (swap, fx, bond, credit, equity, commodity, composite, scripted).",
+        "detail": "Drives instrument tab routing in the UI and the structural extension table the instrument is stored in.",
+        "generator_expr": "std::string(\"swap\")"
+      },
+      {
+        "name": "has_options",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "description": "True when this trade type requires the family's options sub-form.",
+        "detail": "Used by FX and Equity families to reveal an additional options panel.",
+        "generator_expr": "false"
+      },
+      {
+        "name": "has_extension",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "description": "True when this trade type requires the family's extension sub-form.",
+        "detail": "Used by Swap, Bond, Credit, Equity, and Commodity families to reveal additional extension fields.",
+        "generator_expr": "false"
       }
     ],
 

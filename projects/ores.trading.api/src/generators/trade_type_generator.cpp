@@ -37,6 +37,9 @@ domain::trade_type generate_synthetic_trade_type(
     r.version = 1;
     r.code = std::string(faker::word::noun()) + "_trade_" + std::to_string(++counter);
     r.description = std::string(faker::lorem::sentence());
+    r.product_type = domain::product_type::swap;
+    r.has_options = false;
+    r.has_extension = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

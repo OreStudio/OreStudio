@@ -178,24 +178,25 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                     result.instrument.trade_id = item.trade.id;
                     item.trade.instrument_id = instr_id;
 
+                    using ores::trading::domain::product_type;
                     if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
-                        item.trade.product_type = "swap";
+                        item.trade.product_type = product_type::swap;
                         for (auto& leg : result.legs)
                             leg.instrument_id = instr_id;
                     } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
-                        item.trade.product_type = "fx";
+                        item.trade.product_type = product_type::fx;
                     } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
-                        item.trade.product_type = "bond";
+                        item.trade.product_type = product_type::bond;
                     } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
-                        item.trade.product_type = "credit";
+                        item.trade.product_type = product_type::credit;
                     } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
-                        item.trade.product_type = "equity";
+                        item.trade.product_type = product_type::equity;
                     } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
-                        item.trade.product_type = "commodity";
+                        item.trade.product_type = product_type::commodity;
                     } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
-                        item.trade.product_type = "composite";
+                        item.trade.product_type = product_type::composite;
                     } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
-                        item.trade.product_type = "scripted";
+                        item.trade.product_type = product_type::scripted;
                     }
                 }
             }, item.instrument);

@@ -28,11 +28,15 @@ std::string convert_to_table(const std::vector<trade_type>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header
-          << "Code" << "Description" << "Modified By" << "Version"
+          << "Code" << "Product" << "Opts" << "Ext" << "Description"
+          << "Modified By" << "Version"
           << fort::endr;
 
     for (const auto& tt : v) {
-        table << tt.code << tt.description << tt.modified_by << tt.version
+        table << tt.code << std::string(to_string(tt.product_type))
+              << (tt.has_options ? "Y" : "")
+              << (tt.has_extension ? "Y" : "")
+              << tt.description << tt.modified_by << tt.version
               << fort::endr;
     }
     return table.to_string();

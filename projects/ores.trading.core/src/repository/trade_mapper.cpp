@@ -44,7 +44,17 @@ trade_mapper::map(const trade_entity& v) {
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.successor_trade_id)) : std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
-    r.product_type = v.product_type.value_or("");
+    if (v.product_type) {
+        auto pt = domain::product_type_from_string(*v.product_type);
+        if (!pt) {
+            throw std::logic_error(
+                "Invalid product_type in trade entity: '" + *v.product_type + "'");
+        }
+        r.product_type = *pt;
+    } else {
+        // SQL NULL maps to the unknown sentinel.
+        r.product_type = domain::product_type::unknown;
+    }
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.instrument_id)) : std::nullopt;
     r.asset_class = v.asset_class;
     r.netting_set_id = v.netting_set_id;
@@ -81,7 +91,10 @@ trade_mapper::map(const domain::trade& v) {
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.successor_trade_id)) : std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::uuids::to_string(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
-    r.product_type = v.product_type.empty() ? std::nullopt : std::optional(v.product_type);
+    // unknown sentinel maps to SQL NULL; everything else maps to its lowercase string.
+    r.product_type = (v.product_type == domain::product_type::unknown)
+        ? std::nullopt
+        : std::optional(std::string(domain::to_string(v.product_type)));
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::uuids::to_string(*v.instrument_id)) : std::nullopt;
     r.asset_class = v.asset_class;
     r.netting_set_id = v.netting_set_id;

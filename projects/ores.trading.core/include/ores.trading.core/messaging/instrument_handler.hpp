@@ -235,7 +235,20 @@ public:
                 const auto& family = req->product_type;
                 const auto& id = req->instrument_id;
 
-                if (family == "swap") {
+                using ores::trading::domain::product_type;
+                if (family == product_type::unknown) {
+                    resp.success = false;
+                    resp.message =
+                        "get_instrument_for_trade: product_type is required";
+                    BOOST_LOG_SEV(instrument_handler_lg(), warn)
+                        << msg.subject << ": " << resp.message;
+                    reply(nats_, msg, resp);
+                    return;
+                }
+                switch (family) {
+                case product_type::unknown:
+                    break; // unreachable, handled above
+                case product_type::swap: {
                     service::instrument_service svc(ctx);
                     if (auto r = svc.find_instrument(id)) {
                         swap_export_result ex;
@@ -243,27 +256,39 @@ public:
                         ex.legs = svc.get_legs(id);
                         resp.instrument = std::move(ex);
                     }
-                } else if (family == "fx") {
+                    break;
+                }
+                case product_type::fx: {
                     service::fx_instrument_service svc(ctx);
                     if (auto r = svc.find_fx_instrument(id))
                         resp.instrument = std::move(*r);
-                } else if (family == "bond") {
+                    break;
+                }
+                case product_type::bond: {
                     service::bond_instrument_service svc(ctx);
                     if (auto r = svc.find_bond_instrument(id))
                         resp.instrument = std::move(*r);
-                } else if (family == "credit") {
+                    break;
+                }
+                case product_type::credit: {
                     service::credit_instrument_service svc(ctx);
                     if (auto r = svc.find_credit_instrument(id))
                         resp.instrument = std::move(*r);
-                } else if (family == "equity") {
+                    break;
+                }
+                case product_type::equity: {
                     service::equity_instrument_service svc(ctx);
                     if (auto r = svc.find_equity_instrument(id))
                         resp.instrument = std::move(*r);
-                } else if (family == "commodity") {
+                    break;
+                }
+                case product_type::commodity: {
                     service::commodity_instrument_service svc(ctx);
                     if (auto r = svc.find_commodity_instrument(id))
                         resp.instrument = std::move(*r);
-                } else if (family == "composite") {
+                    break;
+                }
+                case product_type::composite: {
                     service::composite_instrument_service svc(ctx);
                     if (auto r = svc.find_composite_instrument(id)) {
                         composite_export_result ex;
@@ -271,10 +296,14 @@ public:
                         ex.legs = svc.get_legs(id);
                         resp.instrument = std::move(ex);
                     }
-                } else if (family == "scripted") {
+                    break;
+                }
+                case product_type::scripted: {
                     service::scripted_instrument_service svc(ctx);
                     if (auto r = svc.find_scripted_instrument(id))
                         resp.instrument = std::move(*r);
+                    break;
+                }
                 }
                 resp.success = true;
             }

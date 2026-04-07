@@ -1,0 +1,446 @@
+#+title: Data-Driven TradeDetailDialog Refactor
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+=TradeDetailDialog= currently hardcodes 17 instrument tabs (across 8 families)
+into a single ~3000-line monolith driven by 8-way ~if/else~ chains and string
+matching against trade-type codes. The dialog also forbids instrument creation
+in create mode: instrument tabs are forcibly hidden because there is no path to
+create a new instrument inline.
+
+This plan refactors the dialog into a clean, data-driven, registry-based design
+where:
+
+- The set of instrument families and the metadata that drives tab visibility
+  lives in =ores_trading_trade_types_tbl=, not in C++ helpers.
+- Each instrument family is implemented as a self-contained =QWidget= form
+  conforming to a small =IInstrumentForm= interface.
+- =TradeDetailDialog= owns no family-specific knowledge: it looks up the
+  active family in a registry and delegates load/save/visibility entirely to
+  the form widget.
+- Adding a 9th instrument family requires one new form widget + one
+  registration call. No edits anywhere else.
+
+The original story (allow instrument creation in =TradeDetailDialog= in create
+mode) becomes the trivial final phase, applying uniformly to all eight
+families in a single PR.
+
+* Goals
+
+1. Make the trade-type → product-type mapping (and the sub-tab visibility
+   flags) data-driven from =ores_trading_trade_types_tbl=. No string matching
+   in the dialog.
+2. Replace =std::string product_type= comparisons with a typed C++
+   ~enum class product_type~. The compiler enforces exhaustiveness.
+3. Extract every instrument family into its own =IInstrumentForm= subclass with
+   its own ~.ui~ file, owning load, save, populate, dirty tracking, and sub-tab
+   visibility for that family.
+4. Reduce =TradeDetailDialog= from ~3000 LOC to a thin orchestrator with four
+   tabs: General, Dates, Instrument, Provenance.
+5. Enable instrument creation in create mode for *all eight families
+   simultaneously*, with no per-family code in the dialog.
+
+* Non-goals
+
+- No standalone per-family instrument dialogs are reintroduced.
+- No backwards compatibility shims, forwarding headers, or legacy code paths
+  preserved. The cut-over is total.
+- Tests for =TradeDetailDialog= are out of scope (none exist today).
+
+* Constraints and decisions
+
+- *Single branch, multiple commits*: One PR
+  =feature/qt-trade-dialog-instrument-creation=, one commit per phase, in
+  order. Each commit must build cleanly.
+- *No legacy code paths*: when phase N replaces something, phase N deletes the
+  old version.
+- *Data drives everything*: no separate "Product Type" combo. Selecting a
+  trade type sets =trade.product_type= via the lookup table.
+- *All flags added in Phase 1*: ~has_options~ and ~has_extension~ go into the
+  schema immediately. The string-matching helpers in =TradeDetailDialog= are
+  deleted in Phase 5 with no intermediate state.
+
+* Current state and pain points
+
+** Tab structure
+
+=TradeDetailDialog.ui= hardcodes 21 tabs:
+
+- 2 always-on: =generalTab=, =datesTab=
+- 17 instrument tabs (FX×2, Swap×2, Bond×3, Credit×2, Equity×3, Commodity×2,
+  Composite×2, Scripted×2)
+- 1 always-on: =provenanceTab=
+
+All instrument tabs are hidden by default and shown via 8-way ~if/else~
+chains based on string comparisons against =trade_.product_type= and against
+=trade_.trade_type= patterns.
+
+** Pain points
+
+| Concern              | Where                                                |
+|----------------------+------------------------------------------------------|
+| 8-way dispatch       | =setTrade()=, =onSaveClicked()= (×3 chains)          |
+| String matching      | =isFxOptionType()=, =isBondExtensionType()=, etc.    |
+| Per-family state     | 8 ~xxxInstrument_~ members + 2 leg vectors           |
+| Per-family methods   | ~load*()~, ~populate*()~, ~update*FromUi()~, etc.    |
+| Per-field connect()s | ~50 calls per family in =setupConnections()=         |
+| Hidden create flow   | Tabs are force-hidden in =setCreateMode(true)=       |
+
+The 9th family would require touching ~10+ locations.
+
+** What does *not* exist yet
+
+- =trade_types_tbl= has no ~product_type~ column. The mapping from
+  ="FxForward"= to =fx= lives only in C++ helpers.
+- =trade_types_tbl= has no NATS protocol. Service exists, wire layer does not.
+- There is no ~enum class product_type~ in C++. ~product_type~ is a free-form
+  ~std::string~ documented in a comment in =trade.hpp=.
+- There are no per-family form widgets. =CompositeLegsWidget= is the only
+  widget extracted from the dialog, and only because legs are a sub-table.
+
+* Phase plan
+
+Six phases. One commit per phase. Each phase leaves the system buildable and
+functional. No backwards compatibility shims at any phase boundary.
+
+** Phase 1 — Data model: codify the trade-type → product-type mapping
+
+Make =ores_trading_trade_types_tbl= the single source of truth for which
+family a trade type belongs to and which sub-sections it requires.
+
+*** Schema changes
+
+In =projects/ores.sql/create/trading/trading_trade_types_create.sql=:
+
+#+begin_src sql
+alter table ores_trading_trade_types_tbl
+    add column product_type product_type_t not null,
+    add column has_options boolean not null default false,
+    add column has_extension boolean not null default false;
+#+end_src
+
+Bitemporal table → one new version row per existing row when populated.
+
+*** Populate script
+
+In =projects/ores.sql/populate/trading/trading_trade_types_populate.sql=:
+update each of the ~150+ rows to set ~product_type~ and the two flag columns,
+preserving the semantics currently encoded in:
+
+- =isFxOptionType()= → ~has_options~ for FX rows
+- =isSwapRatesExtensionType()= → ~has_extension~ for swap rows
+- =isBondExtensionType()= → ~has_extension~ for bond rows
+- =isCreditExtensionType()= → ~has_extension~ for credit rows
+- =isEquityOptionType()= → ~has_options~ for equity rows
+- =isEquityExtensionType()= → ~has_extension~ for equity rows
+- =isCommodityExtensionType()= → ~has_extension~ for commodity rows
+
+*** Domain, mapper, repository, service
+
+- =projects/ores.trading.api/include/ores.trading.api/domain/trade_type.hpp=:
+  add ~product_type~, ~has_options~, ~has_extension~ fields.
+- =trade_type_mapper=, =trade_type_entity= (sqlgen): mirror the schema.
+- =trade_type_repository=: include the new columns in read/write paths.
+- =trade_type_service=: surface the new fields verbatim.
+
+*** Drop scripts
+
+Update =projects/ores.sql/drop/trading/trading_trade_types_drop.sql= if
+column rollback semantics demand it (likely just drops the table — no change
+needed).
+
+*** Acceptance
+
+- =cmake --build= passes.
+- =validate_schemas.sh= passes.
+- ~SELECT product_type, count(*) FROM ores_trading_trade_types_tbl WHERE
+  valid_to = 'infinity' GROUP BY product_type~ returns 8 rows summing to the
+  current trade type count.
+
+** Phase 2 — NATS protocol for trade types
+
+The trade type service exists internally but is not exposed over NATS. The Qt
+client cannot consume the new metadata until this lands.
+
+*** New protocol header
+
+=projects/ores.trading.api/include/ores.trading.api/messaging/trade_type_protocol.hpp=
+mirroring =leg_type_protocol.hpp=:
+
+- ~get_trade_types_request~ / ~get_trade_types_response~
+- ~save_trade_type_request~ / ~save_trade_type_response~
+- ~delete_trade_type_request~ / ~delete_trade_type_response~
+- ~get_trade_type_history_request~ / ~get_trade_type_history_response~
+
+Subjects under =trading.v1.trade-types.*=.
+
+*** Handlers and registration
+
+- Add ~list~, ~save~, ~remove~, ~history~ methods to =instrument_ref_handler=.
+- Register the new subjects in
+  =projects/ores.trading.core/src/messaging/registrar.cpp=.
+
+*** Acceptance
+
+- =trading.v1.trade-types.list= round-trips a domain object including the new
+  fields when invoked via the existing CLI tooling.
+
+** Phase 3 — Codify ~product_type~ as a C++ enum
+
+Replace the documentation-comment-and-string-literal approach with a typed
+enum so the compiler proves exhaustiveness.
+
+*** New type
+
+=projects/ores.trading.api/include/ores.trading.api/domain/product_type.hpp=:
+
+#+begin_src cpp
+enum class product_type {
+    swap, fx, bond, credit, equity, commodity, composite, scripted
+};
+
+std::string_view to_string(product_type pt);
+std::optional<product_type> from_string(std::string_view sv);
+#+end_src
+
+*** Replace string usages
+
+Find every site that compares ~trade.product_type~ to a string literal and
+either:
+
+- (preferred) make ~trade.product_type~ itself a ~product_type~, with
+  to/from_string only at the wire boundary, *or*
+- (fallback if too invasive in this PR) keep the string on the wire and
+  convert at consumer boundaries.
+
+Decision: go with the first option. The point of this refactor is to remove
+string-typing.
+
+*** Affected components
+
+Grep for the string literals ~"swap"~, ~"fx"~, etc. used as product type
+discriminators across:
+
+- =ores.trading.core= (instrument handlers, services, mappers)
+- =ores.qt= (=TradeDetailDialog=, anything else touching trades)
+- =ores.cli= (any trade-handling commands)
+
+*** Acceptance
+
+- ~git grep '"fx"' projects/~ (and the other 7 values) returns no remaining
+  uses *as product_type discriminators*. Other unrelated uses are fine.
+- All targets build clean.
+
+** Phase 4 — Per-family form widgets and InstrumentFormRegistry
+
+The structural core. After this phase the new infrastructure exists and is
+unit-tested via instantiation, but =TradeDetailDialog= still uses the old
+hardcoded tabs. Phase 5 cuts over.
+
+*** Common interface
+
+=projects/ores.qt/include/ores.qt/IInstrumentForm.hpp=:
+
+#+begin_src cpp
+class IInstrumentForm : public QWidget {
+    Q_OBJECT
+public:
+    using QWidget::QWidget;
+
+    // Edit mode: fetch instrument from server, populate fields.
+    virtual void loadInstrument(boost::uuids::uuid id) = 0;
+
+    // Create mode: start blank.
+    virtual void clear() = 0;
+
+    // Reflect the trade type code so sub-sections can show/hide
+    // (driven by has_options / has_extension from the trade type row).
+    virtual void setTradeType(const trade_type& tt) = 0;
+
+    virtual void setReadOnly(bool ro) = 0;
+    virtual bool isDirty() const = 0;
+
+    // Save flow — the form widget owns its NATS subject.
+    virtual void saveInstrument(
+        std::function<void(boost::uuids::uuid)> on_success,
+        std::function<void(std::string)>      on_failure) = 0;
+
+signals:
+    void changed();
+    void instrumentLoaded();
+};
+#+end_src
+
+*** Eight concrete forms
+
+Under =projects/ores.qt/=:
+
+- =FxInstrumentForm= (.hpp / .cpp / .ui) — owns =fxEconomicsTab= +
+  =fxOptionsTab= layout, FX NATS calls, current FX populate/update/readOnly
+  logic.
+- =SwapInstrumentForm= — swap core + rates extension + legs widget.
+- =BondInstrumentForm= — economics + optional + extensions.
+- =CreditInstrumentForm= — economics + extensions.
+- =EquityInstrumentForm= — core + options + extensions.
+- =CommodityInstrumentForm= — core + extensions.
+- =CompositeInstrumentForm= — core + legs widget.
+- =ScriptedInstrumentForm= — definition + body.
+
+Each form widget internally lays out its sub-sections however it likes (e.g.
+internal =QTabWidget=). The dialog only sees the form as a single =QWidget=.
+
+*** Registry
+
+=projects/ores.qt/include/ores.qt/InstrumentFormRegistry.hpp=:
+
+#+begin_src cpp
+class InstrumentFormRegistry {
+public:
+    using Factory = std::function<IInstrumentForm*(QWidget* parent)>;
+
+    void registerForm(product_type pt, QString displayName, Factory f);
+    IInstrumentForm* createForm(product_type pt, QWidget* parent) const;
+    QString displayName(product_type pt) const;
+    std::vector<product_type> registeredTypes() const;
+};
+
+void register_default_forms(InstrumentFormRegistry& registry);
+#+end_src
+
+One ~register_default_forms~ function does all eight registrations in one
+place. Adding family #9 = one new form widget + one line in this function.
+
+*** Acceptance
+
+- All eight form widgets compile and can be instantiated standalone (smoke
+  test in a scratch =main= or via the existing =ores.qt= test exe if any).
+- =TradeDetailDialog= still uses the old tabs and still works exactly as
+  before. The new code is dormant until Phase 5.
+
+** Phase 5 — Slim down TradeDetailDialog
+
+The cut-over. Old code is *deleted*, not commented out, not flagged off.
+
+*** UI surgery
+
+In =TradeDetailDialog.ui=:
+
+- Delete all 17 instrument tabs.
+- Add a single =instrumentTab= containing a =QStackedWidget= named
+  =instrumentStack=.
+- Final tab structure: General | Dates | Instrument | Provenance (4 tabs).
+
+*** Code surgery
+
+In =TradeDetailDialog.cpp= / =.hpp=:
+
+- Delete all eight ~xxxInstrument_~ members and ~xxxLegs_~ vectors.
+- Delete all eight ~load*()~, ~populate*()~, ~update*FromUi()~,
+  ~set*ReadOnly()~, ~update*TabVisibility()~, ~on*TradeTypeChanged()~ methods.
+- Delete the static helpers ~isFxOptionType()~, ~isSwapRatesExtensionType()~,
+  etc.
+- Delete the per-family signal connections in =setupConnections()=.
+- Replace the 8-way ~if/else~ chains in =setTrade()= and =onSaveClicked()=
+  with single calls to the active form widget.
+
+*** Wiring
+
+- On dialog construction: instantiate the registry, call
+  =register_default_forms(registry_)=, populate =instrumentStack= with one
+  page per registered family.
+- Trade type combo is populated from
+  =trading.v1.trade-types.list=. The combo's ~userData~ stores the entire
+  =trade_type= row.
+- On trade type selection:
+  1. Set ~trade_.trade_type~ and ~trade_.product_type~ from the row.
+  2. Switch =instrumentStack= to the page matching ~product_type~.
+  3. Call ~activeForm()->setTradeType(tt)~ so the form can show/hide its own
+     sub-sections based on ~has_options~/~has_extension~.
+
+*** ~setTrade()~ in edit mode
+
+#+begin_src cpp
+void TradeDetailDialog::setTrade(trade t) {
+    trade_ = std::move(t);
+    populateGeneralTab();
+    populateDatesTab();
+    auto* form = formFor(trade_.product_type);
+    instrumentStack_->setCurrentWidget(form);
+    if (trade_.instrument_id) {
+        form->loadInstrument(*trade_.instrument_id);
+    }
+}
+#+end_src
+
+*** ~onSaveClicked()~
+
+#+begin_src cpp
+void TradeDetailDialog::onSaveClicked() {
+    auto* form = activeForm();
+    updateTradeFromUi();
+    if (createMode_ && form && form->isDirty()) {
+        form->saveInstrument(
+            [this](auto id) { trade_.instrument_id = id; saveTrade(); },
+            [this](auto msg) { showError(msg); });
+        return;
+    }
+    if (form && form->isDirty()) {
+        form->saveInstrument(
+            [this](auto)    { saveTrade(); },
+            [this](auto msg) { showError(msg); });
+        return;
+    }
+    saveTrade();
+}
+#+end_src
+
+*** Acceptance
+
+- =TradeDetailDialog.cpp= drops from ~3000 LOC to under ~1000 LOC.
+- Manual smoke test: open an existing trade for each of the eight families;
+  verify the instrument data still loads and saves correctly.
+- =TradeDetailDialog.ui= contains exactly four tabs.
+
+** Phase 6 — Enable instrument creation in create mode
+
+With the architecture from Phases 1–5 in place this is a small final commit.
+
+*** Changes
+
+- Delete the per-family tab-hiding loop in =setCreateMode(true)=. There are no
+  per-family tabs left to hide — only the four top-level tabs.
+- In create mode, the trade type combo is enabled. Selecting a trade type
+  reveals the appropriate form widget on the Instrument tab.
+- The form widget starts empty (=clear()= called on stack switch in create
+  mode).
+- The save flow already added in Phase 5 covers create mode automatically:
+  if =createMode_= and the form is dirty, save the instrument first, then the
+  trade.
+
+*** Acceptance
+
+- Create-trade flow works for all eight families with no family-specific
+  branching anywhere in =TradeDetailDialog=.
+- Save failure on the new instrument surfaces the error and aborts the trade
+  save (covered by the existing ~on_failure~ branch from Phase 5).
+
+* Risks and mitigations
+
+| Risk                                                  | Mitigation                                                                                                  |
+|-------------------------------------------------------+-------------------------------------------------------------------------------------------------------------|
+| 150+ row populate script gets the mapping wrong       | Cross-check against the existing C++ helpers; spot-check categories before commit                          |
+| Phase 3 string-replacement misses a usage             | =git grep= each value across the whole tree post-replacement; rely on enum compile errors at consumer sites |
+| Phase 4 form widgets diverge from existing UI fields  | Lift fields one family at a time, compile-check each                                                       |
+| Phase 5 cut-over breaks edit-mode for some family     | Manual smoke test all eight families before commit; no tests exist to catch this automatically              |
+| Other PRs touch =TradeDetailDialog= during the work   | Single PR strategy: rebase early, communicate, keep phases small enough to land within a few days each     |
+
+* Out of scope
+
+- Reintroducing standalone per-family instrument dialogs.
+- Adding test coverage for =TradeDetailDialog=.
+- Refactoring other dialogs (e.g. =MarketDataDetailDialog=) to follow the same
+  pattern. They may eventually benefit from the same approach, but that is a
+  separate plan.
+- Making the =product_type_t= Postgres enum itself data-driven. Eight families
+  is a stable axis; the trade-type table is the volatile one.

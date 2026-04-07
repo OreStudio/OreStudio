@@ -25,6 +25,7 @@
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
 
 namespace ores::trading::domain {
 
@@ -106,12 +107,12 @@ struct trade final {
     /**
      * @brief Product type: structural routing discriminator.
      *
-     * Identifies the kind of financial product (FpML: productType).
-     * One of: swap, fx, bond, credit, equity, commodity, composite, scripted.
-     * Used to route the trade to its product-specific extension table.
-     * Empty when no instrument record has been linked yet.
+     * Identifies the kind of financial product (FpML: productType) and
+     * routes the trade to its product-specific extension table. Defaults to
+     * @c product_type::unknown when no instrument record has been linked
+     * yet; round-trips to/from a SQL @c NULL via @c trade_mapper.
      */
-    std::string product_type;
+    domain::product_type product_type = domain::product_type::unknown;
 
     /**
      * @brief UUID of the associated instrument record.

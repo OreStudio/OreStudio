@@ -38,18 +38,20 @@ reducing boilerplate errors.
 
 ** Code generation workflow
 
+Profile-based generation writes files directly to the project tree — no manual
+copy step is needed. Omit the =output/= argument when using a named profile.
+
 1. Create a JSON model in =projects/ores.codegen/models/{component}/=
 2. Generate all C++ artefacts:
    #+begin_src sh
    cd projects/ores.codegen
    # Generate all C++ facets (domain, repository, service, protocol, generator)
-   ./run_generator.sh models/{component}/{entity}_schema.json output/ --profile all-cpp
+   ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp
    #+end_src
-3. Review the generated output in =output/=
-4. Copy files to the appropriate =projects/ores.{component}/= directories
-5. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
-6. Build and verify
-7. Raise PRs at designated checkpoints
+   Files are written directly to =projects/ores.{component}/= under the repo root.
+3. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
+4. Build and verify
+5. Raise PRs at designated checkpoints
 
 ** Manual workflow (last resort)
 

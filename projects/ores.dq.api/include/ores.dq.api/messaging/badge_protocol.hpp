@@ -23,9 +23,9 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq/domain/badge_severity.hpp"
-#include "ores.dq/domain/badge_definition.hpp"
-#include "ores.dq/domain/code_domain.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
 
 namespace ores::dq::messaging {
 

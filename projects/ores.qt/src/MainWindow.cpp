@@ -92,6 +92,10 @@
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
+#include "ores.qt/PricingEngineTypeController.hpp"
+#include "ores.qt/PricingModelConfigController.hpp"
+#include "ores.qt/PricingModelProductController.hpp"
+#include "ores.qt/PricingModelProductParameterController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
@@ -254,6 +258,10 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionFloatingIndexTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionPaymentFrequencyTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionLegTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionPricingEngineTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionPricingModelConfigs->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    ui_->ActionPricingModelProducts->setIcon(IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
+    ui_->ActionPricingModelProductParameters->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
@@ -822,6 +830,23 @@ MainWindow::MainWindow(QWidget* parent) :
             legTypeController_->showListWindow();
     });
 
+    connect(ui_->ActionPricingEngineTypes, &QAction::triggered, this, [this]() {
+        if (pricingEngineTypeController_)
+            pricingEngineTypeController_->showListWindow();
+    });
+    connect(ui_->ActionPricingModelConfigs, &QAction::triggered, this, [this]() {
+        if (pricingModelConfigController_)
+            pricingModelConfigController_->showListWindow();
+    });
+    connect(ui_->ActionPricingModelProducts, &QAction::triggered, this, [this]() {
+        if (pricingModelProductController_)
+            pricingModelProductController_->showListWindow();
+    });
+    connect(ui_->ActionPricingModelProductParameters, &QAction::triggered, this, [this]() {
+        if (pricingModelProductParameterController_)
+            pricingModelProductParameterController_->showListWindow();
+    });
+
     // Connect Job Definitions action to controller
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
         if (jobDefinitionController_)
@@ -1264,6 +1289,10 @@ void MainWindow::updateMenuState() {
     ui_->ActionFloatingIndexTypes->setEnabled(isLoggedIn);
     ui_->ActionPaymentFrequencyTypes->setEnabled(isLoggedIn);
     ui_->ActionLegTypes->setEnabled(isLoggedIn);
+    ui_->ActionPricingEngineTypes->setEnabled(isLoggedIn);
+    ui_->ActionPricingModelConfigs->setEnabled(isLoggedIn);
+    ui_->ActionPricingModelProducts->setEnabled(isLoggedIn);
+    ui_->ActionPricingModelProductParameters->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
@@ -2096,6 +2125,73 @@ void MainWindow::createControllers() {
     connect(legTypeController_.get(), &LegTypeController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(pricingEngineTypeController_.get(), &PricingEngineTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingEngineTypeController_.get(), &PricingEngineTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingEngineTypeController_.get(), &PricingEngineTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(pricingEngineTypeController_.get(), &PricingEngineTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(pricingModelConfigController_.get(), &PricingModelConfigController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelConfigController_.get(), &PricingModelConfigController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelConfigController_.get(), &PricingModelConfigController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(pricingModelConfigController_.get(), &PricingModelConfigController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    pricingModelProductController_ = std::make_unique<PricingModelProductController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(pricingModelProductController_.get(), &PricingModelProductController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelProductController_.get(), &PricingModelProductController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelProductController_.get(), &PricingModelProductController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(pricingModelProductController_.get(), &PricingModelProductController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    pricingModelProductParameterController_ = std::make_unique<PricingModelProductParameterController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(pricingModelProductParameterController_.get(), &PricingModelProductParameterController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelProductParameterController_.get(), &PricingModelProductParameterController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(pricingModelProductParameterController_.get(), &PricingModelProductParameterController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(pricingModelProductParameterController_.get(), &PricingModelProductParameterController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),

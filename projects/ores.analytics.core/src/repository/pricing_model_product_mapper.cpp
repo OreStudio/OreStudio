@@ -43,6 +43,7 @@ pricing_model_product_mapper::map(const pricing_model_product_entity& v) {
     r.model = v.model;
     r.engine = v.engine;
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     if (!v.valid_from)

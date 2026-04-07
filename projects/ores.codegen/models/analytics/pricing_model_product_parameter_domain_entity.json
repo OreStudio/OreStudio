@@ -90,6 +90,75 @@
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
       "iterator_var": "pp"
+    },
+
+    "qt": {
+      "domain_include": "ores.analytics.api/domain/pricing_model_product_parameter.hpp",
+      "domain_class": "analytics::domain::pricing_model_product_parameter",
+      "protocol_include": "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp",
+      "collection_name": "parameters",
+      "item_var": "parameter",
+      "key_field": "parameter_name",
+      "key_widget": "parameterNameEdit",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "analytics::messaging::get_pricing_model_product_parameters_request",
+      "get_response_class": "analytics::messaging::get_pricing_model_product_parameters_response",
+      "get_message_type": "get_pricing_model_product_parameters_request",
+      "save_request_class": "analytics::messaging::save_pricing_model_product_parameter_request",
+      "save_response_class": "analytics::messaging::save_pricing_model_product_parameter_response",
+      "save_message_type": "save_pricing_model_product_parameter_request",
+      "delete_request_class": "analytics::messaging::delete_pricing_model_product_parameter_request",
+      "delete_response_class": "analytics::messaging::delete_pricing_model_product_parameter_response",
+      "delete_message_type": "delete_pricing_model_product_parameter_request",
+      "history_request_class": "analytics::messaging::get_pricing_model_product_parameter_history_request",
+      "history_response_class": "analytics::messaging::get_pricing_model_product_parameter_history_response",
+      "history_message_type": "get_pricing_model_product_parameter_history_request",
+
+      "detail_fields": [
+        {
+          "field": "parameter_scope",
+          "label": "Scope",
+          "widget": "parameterScopeCombo",
+          "type": "static_combo",
+          "is_required": true,
+          "combo_values": [
+            {"label": "Model", "value": "model"},
+            {"label": "Engine", "value": "engine"},
+            {"label": "Global", "value": "global"}
+          ]
+        },
+        {
+          "field": "parameter_name",
+          "label": "Name",
+          "widget": "parameterNameEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Parameter name (e.g. Calibration, Reversion, sy)"
+        },
+        {
+          "field": "parameter_value",
+          "label": "Value",
+          "widget": "parameterValueEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Parameter value (e.g. Bootstrap, 0.03, Y)"
+        }
+      ],
+
+      "columns": [
+        {"enum_name": "ParameterScope", "field": "parameter_scope", "header": "Scope", "is_string": true, "width": 80},
+        {"enum_name": "ParameterName", "field": "parameter_name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "ParameterValue", "field": "parameter_value", "header": "Value", "is_string": true, "width": 200},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 70},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "PricingModelProductParameterListWindow",
+      "window_title": "Pricing Model Product Parameters",
+      "icon": "Settings"
     }
   }
 }

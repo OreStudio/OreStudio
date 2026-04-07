@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 
 namespace ores::analytics::messaging {
@@ -56,7 +57,7 @@ struct delete_pricing_model_product_parameter_request {
     using response_type = struct delete_pricing_model_product_parameter_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.delete";
-    std::vector<std::string> ids;
+    std::vector<boost::uuids::uuid> ids;
 };
 
 struct delete_pricing_model_product_parameter_response {
@@ -68,7 +69,7 @@ struct get_pricing_model_product_parameter_history_request {
     using response_type = struct get_pricing_model_product_parameter_history_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.history";
-    std::string id;
+    boost::uuids::uuid id;
 };
 
 struct get_pricing_model_product_parameter_history_response {

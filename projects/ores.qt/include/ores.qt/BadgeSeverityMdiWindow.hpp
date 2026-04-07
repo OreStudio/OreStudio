@@ -28,7 +28,7 @@
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
 
 namespace ores::qt {
 

@@ -79,6 +79,11 @@ struct pricing_model_config final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action (set by DB trigger).
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
      */
     std::string change_reason_code;

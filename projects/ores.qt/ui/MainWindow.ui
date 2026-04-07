@@ -140,6 +140,16 @@
     <addaction name="separator"/>
     <addaction name="ActionImportOreData"/>
    </widget>
+   <widget class="QMenu" name="menuAnalytics">
+    <property name="title">
+     <string>&amp;Analytics</string>
+    </property>
+    <addaction name="ActionPricingEngineTypes"/>
+    <addaction name="separator"/>
+    <addaction name="ActionPricingModelConfigs"/>
+    <addaction name="ActionPricingModelProducts"/>
+    <addaction name="ActionPricingModelProductParameters"/>
+   </widget>
    <widget class="QMenu" name="menuReporting">
     <property name="title">
      <string>&amp;Reporting</string>
@@ -240,6 +250,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
    <addaction name="menuTrading"/>
+   <addaction name="menuAnalytics"/>
    <addaction name="menuMarketData"/>
    <addaction name="menuCompute"/>
    <addaction name="menuReporting"/>
@@ -852,6 +863,38 @@
    </property>
    <property name="toolTip">
     <string>Manage compute application versions</string>
+   </property>
+  </action>
+  <action name="ActionPricingEngineTypes">
+   <property name="text">
+    <string>Pricing &amp;Engine Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage pricing engine types</string>
+   </property>
+  </action>
+  <action name="ActionPricingModelConfigs">
+   <property name="text">
+    <string>Pricing Model &amp;Configurations</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage pricing model configurations</string>
+   </property>
+  </action>
+  <action name="ActionPricingModelProducts">
+   <property name="text">
+    <string>Pricing Model &amp;Products</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage pricing model product mappings</string>
+   </property>
+  </action>
+  <action name="ActionPricingModelProductParameters">
+   <property name="text">
+    <string>Pricing Model Product &amp;Parameters</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage pricing model product parameters</string>
    </property>
   </action>
  </widget>

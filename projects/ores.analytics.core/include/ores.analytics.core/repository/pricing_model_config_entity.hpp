@@ -42,6 +42,7 @@ struct pricing_model_config_entity {
     std::optional<std::string> description;
     std::optional<std::string> config_variant;
     std::string modified_by;
+    std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";

@@ -45,6 +45,7 @@ struct pricing_model_product_parameter_entity {
     std::string parameter_name;
     std::string parameter_value;
     std::string modified_by;
+    std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";

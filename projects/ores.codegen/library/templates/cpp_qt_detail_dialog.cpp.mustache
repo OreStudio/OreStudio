@@ -8,6 +8,9 @@
 {{#domain_entity.qt.has_text_edit_fields}}
 #include <QPlainTextEdit>
 {{/domain_entity.qt.has_text_edit_fields}}
+{{#domain_entity.qt.has_combo_fields}}
+#include <QComboBox>
+{{/domain_entity.qt.has_combo_fields}}
 {{#domain_entity.qt.has_uuid_primary_key}}
 #include <boost/uuid/random_generator.hpp>
 {{/domain_entity.qt.has_uuid_primary_key}}
@@ -15,7 +18,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "{{domain_entity.qt.protocol_include}}"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -28,6 +30,9 @@ using namespace ores::logging;
 
     ui_->setupUi(this);
     setupUi();
+{{#domain_entity.qt.has_combo_fields}}
+    setupCombos();
+{{/domain_entity.qt.has_combo_fields}}
     setupConnections();
 }
 
@@ -59,6 +64,19 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+{{#domain_entity.qt.has_combo_fields}}
+void {{domain_entity.entity_pascal}}DetailDialog::setupCombos() {
+{{#domain_entity.qt.detail_fields}}
+{{#is_static_combo}}
+    ui_->{{widget}}->clear();
+{{#combo_values}}
+    ui_->{{widget}}->addItem(tr("{{label}}"), QString("{{value}}"));
+{{/combo_values}}
+{{/is_static_combo}}
+{{/domain_entity.qt.detail_fields}}
+}
+
+{{/domain_entity.qt.has_combo_fields}}
 void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onSaveClicked);
@@ -83,6 +101,14 @@ void {{domain_entity.entity_pascal}}DetailDialog::setupConnections() {
     connect(ui_->{{widget}}, &QPlainTextEdit::textChanged, this,
             &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
 {{/is_text_edit}}
+{{#is_static_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    connect(ui_->{{widget}}, &QComboBox::currentIndexChanged, this,
+            &{{domain_entity.entity_pascal}}DetailDialog::onFieldChanged);
+{{/is_dynamic_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
 }
@@ -119,16 +145,65 @@ void {{domain_entity.entity_pascal}}DetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
 {{#domain_entity.qt.detail_fields}}
 {{#is_key}}
+{{#is_line_edit}}
     ui_->{{widget}}->setReadOnly(true);
+{{/is_line_edit}}
+{{#is_text_edit}}
+    ui_->{{widget}}->setReadOnly(true);
+{{/is_text_edit}}
+{{#is_static_combo}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    ui_->{{widget}}->setEnabled(false);
+{{/is_dynamic_combo}}
 {{/is_key}}
 {{^is_key}}
+{{#is_line_edit}}
     ui_->{{widget}}->setReadOnly(readOnly);
+{{/is_line_edit}}
+{{#is_text_edit}}
+    ui_->{{widget}}->setReadOnly(readOnly);
+{{/is_text_edit}}
+{{#is_static_combo}}
+    ui_->{{widget}}->setEnabled(!readOnly);
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    ui_->{{widget}}->setEnabled(!readOnly);
+{{/is_dynamic_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+{{#domain_entity.qt.detail_fields}}
+{{#is_dynamic_combo}}
+void {{domain_entity.entity_pascal}}DetailDialog::{{combo_setter}}(
+    const std::vector<{{combo_type}}>& items) {
+    {{combo_items_member}}_ = items;
+    populate{{combo_setter_pascal}}();
+}
+
+void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}}() {
+    const auto current = ui_->{{widget}}->currentData();
+    ui_->{{widget}}->clear();
+{{#combo_is_optional}}
+    ui_->{{widget}}->addItem(tr("(None)"), QVariant{});
+{{/combo_is_optional}}
+    for (const auto& item : {{combo_items_member}}_) {
+        ui_->{{widget}}->addItem(
+            QString::fromStdString(item.{{combo_display}}),
+            QString::fromStdString(item.{{combo_value}}));
+    }
+    if (current.isValid()) {
+        const int idx = ui_->{{widget}}->findData(current);
+        if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
+    }
+}
+
+{{/is_dynamic_combo}}
+{{/domain_entity.qt.detail_fields}}
 void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
 {{#domain_entity.qt.detail_fields}}
 {{#is_line_edit}}
@@ -137,6 +212,20 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
 {{#is_text_edit}}
     ui_->{{widget}}->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
 {{/is_text_edit}}
+{{#is_static_combo}}
+    {
+        const int idx = ui_->{{widget}}->findData(
+            QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
+        if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
+    }
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    {
+        const auto val = QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}});
+        const int idx = ui_->{{widget}}->findData(val);
+        if (idx >= 0) ui_->{{widget}}->setCurrentIndex(idx);
+    }
+{{/is_dynamic_combo}}
 {{/domain_entity.qt.detail_fields}}
 
     populateProvenance({{domain_entity.qt.item_var}}_.version,
@@ -157,6 +246,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{#is_line_edit}}
         {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->text().trimmed().toStdString();
 {{/is_line_edit}}
+{{#is_static_combo}}
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->currentData().toString().trimmed().toStdString();
+{{/is_dynamic_combo}}
     }
 {{/is_key}}
 {{^is_key}}
@@ -166,10 +261,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{#is_text_edit}}
     {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->toPlainText().trimmed().toStdString();
 {{/is_text_edit}}
+{{#is_static_combo}}
+    {{domain_entity.qt.item_var}}_.{{field}} =
+        ui_->{{widget}}->currentData().toString().toStdString();
+{{/is_static_combo}}
+{{#is_dynamic_combo}}
+    {{domain_entity.qt.item_var}}_.{{field}} =
+        ui_->{{widget}}->currentData().toString().toStdString();
+{{/is_dynamic_combo}}
 {{/is_key}}
 {{/domain_entity.qt.detail_fields}}
     {{domain_entity.qt.item_var}}_.modified_by = username_;
-    {{domain_entity.qt.item_var}}_.performed_by = username_;
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onCodeChanged(const QString& /* text */) {
@@ -191,8 +293,18 @@ bool {{domain_entity.entity_pascal}}DetailDialog::validateInput() {
 {{#domain_entity.qt.required_fields}}
     const QString {{field}}_val = ui_->{{widget}}->text().trimmed();
 {{/domain_entity.qt.required_fields}}
+{{#domain_entity.qt.required_dynamic_combo_fields}}
+    const bool {{field}}_selected = ui_->{{widget}}->currentIndex() >= 0;
+{{/domain_entity.qt.required_dynamic_combo_fields}}
 
-    return {{#domain_entity.qt.required_fields}}!{{field}}_val.isEmpty(){{^_is_last}} && {{/_is_last}}{{/domain_entity.qt.required_fields}};
+    return true
+{{#domain_entity.qt.required_fields}}
+        && !{{field}}_val.isEmpty()
+{{/domain_entity.qt.required_fields}}
+{{#domain_entity.qt.required_dynamic_combo_fields}}
+        && {{field}}_selected
+{{/domain_entity.qt.required_dynamic_combo_fields}}
+    ;
 }
 
 void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
@@ -210,7 +322,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
     update{{domain_entity.entity_pascal_short}}FromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
+    BOOST_LOG_SEV(lg(), info) << "Saving {{domain_entity.entity_singular_words}}: "
+        << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -225,34 +338,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
         }
 
         {{domain_entity.qt.save_request_class}} request;
-        request.{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::{{domain_entity.qt.save_message_type}},
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.data = {{domain_entity.qt.item_var}};
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = {{domain_entity.qt.save_response_class}}::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -263,7 +357,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onSaveClicked() {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} saved successfully";
-            QString code = QString::fromStdString(self->{{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
+            QString code = QString::fromStdString(
+                self->{{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->{{domain_entity.qt.item_var}}Saved(code);
@@ -287,7 +382,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString({{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
+    QString code = QString::fromStdString(
+        {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}});
     auto reply = MessageBoxHelper::question(this, "Delete {{domain_entity.entity_title}}",
         QString("Are you sure you want to delete {{domain_entity.entity_singular_words}} '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
@@ -296,7 +392,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: " << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
+    BOOST_LOG_SEV(lg(), info) << "Deleting {{domain_entity.entity_singular_words}}: "
+        << {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}};
 
     QPointer<{{domain_entity.entity_pascal}}DetailDialog> self = this;
 
@@ -313,7 +410,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
 
         {{domain_entity.qt.delete_request_class}} request;
         request.ids = {id};
-        auto payload = request.serialize();
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
 {{/domain_entity.qt.has_uuid_primary_key}}
 {{^domain_entity.qt.has_uuid_primary_key}}
     auto task = [self, code = {{domain_entity.qt.item_var}}_.{{domain_entity.qt.key_field}}]() -> DeleteResult {
@@ -323,35 +428,16 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
 
         {{domain_entity.qt.delete_request_class}} request;
         request.codes = {code};
-        auto payload = request.serialize();
-{{/domain_entity.qt.has_uuid_primary_key}}
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::{{domain_entity.qt.delete_message_type}},
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = {{domain_entity.qt.delete_response_class}}::
-            deserialize(*payload_result);
-
-        if (!response || response->results.empty()) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->results[0].success, response->results[0].message};
+        return {response_result->success, response_result->message};
     };
+{{/domain_entity.qt.has_uuid_primary_key}}
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
     connect(watcher, &QFutureWatcher<DeleteResult>::finished,
@@ -361,7 +447,8 @@ void {{domain_entity.entity_pascal}}DetailDialog::onDeleteClicked() {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "{{domain_entity.entity_title}} deleted successfully";
-            emit self->statusMessage(QString("{{domain_entity.entity_title}} '%1' deleted").arg(code));
+            emit self->statusMessage(
+                QString("{{domain_entity.entity_title}} '%1' deleted").arg(code));
             emit self->{{domain_entity.qt.item_var}}Deleted(code);
             self->requestClose();
         } else {

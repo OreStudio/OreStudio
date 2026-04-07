@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
 
 namespace Ui {
 class BadgeDefinitionHistoryDialog;

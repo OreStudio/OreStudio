@@ -1,0 +1,121 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "analytics",
+    "component_include": "analytics.api",
+    "component_core": "analytics.core",
+    "entity_singular": "pricing_engine_type",
+    "entity_plural": "pricing_engine_types",
+    "entity_title": "Pricing Engine Type",
+    "has_tenant_id": true,
+    "brief": "Pricing engine type code identifying the product granularity used by the pricing engine.",
+    "description": "Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique pricing engine type code.",
+      "detail": "Examples: 'Swap', 'EuropeanSwaption', 'BermudanSwaption', 'CMS', 'CapFloor'."
+    },
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable description of the pricing engine type."
+      },
+      {
+        "name": "instrument_type_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional reference to the corresponding trading instrument type.",
+        "detail": "Soft FK to ores_trading_trade_types_tbl. May be NULL for engine types with no direct instrument mapping."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_analytics_pricing_engine_types_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "type",
+      "entity_plural_short": "types",
+      "entity_singular_words": "pricing engine type",
+      "entity_plural_words": "pricing engine types"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>"]
+      },
+      "iterator_var": "pet"
+    },
+
+    "qt": {
+      "domain_include": "ores.analytics.api/domain/pricing_engine_type.hpp",
+      "domain_class": "analytics::domain::pricing_engine_type",
+      "protocol_include": "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp",
+      "collection_name": "types",
+      "item_var": "type",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "analytics::messaging::get_pricing_engine_types_request",
+      "get_response_class": "analytics::messaging::get_pricing_engine_types_response",
+      "get_message_type": "get_pricing_engine_types_request",
+      "save_request_class": "analytics::messaging::save_pricing_engine_type_request",
+      "save_response_class": "analytics::messaging::save_pricing_engine_type_response",
+      "save_message_type": "save_pricing_engine_type_request",
+      "delete_request_class": "analytics::messaging::delete_pricing_engine_type_request",
+      "delete_response_class": "analytics::messaging::delete_pricing_engine_type_response",
+      "delete_message_type": "delete_pricing_engine_type_request",
+      "history_request_class": "analytics::messaging::get_pricing_engine_type_history_request",
+      "history_response_class": "analytics::messaging::get_pricing_engine_type_history_response",
+      "history_message_type": "get_pricing_engine_type_history_request",
+
+      "detail_fields": [
+        {
+          "field": "code",
+          "label": "Code",
+          "widget": "codeEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Enter pricing engine type code (e.g. EuropeanSwaption)"
+        },
+        {
+          "field": "description",
+          "label": "Description",
+          "widget": "descriptionEdit",
+          "type": "text_edit",
+          "placeholder": "Enter a human-readable description"
+        },
+        {
+          "field": "instrument_type_code",
+          "label": "Instrument Type Code",
+          "widget": "instrumentTypeCodeEdit",
+          "type": "line_edit",
+          "placeholder": "Optional reference to trading instrument type"
+        }
+      ],
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 220},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 320},
+        {"enum_name": "InstrumentTypeCode", "field": "instrument_type_code", "header": "Instrument Type", "is_string": true, "width": 150},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 70},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "PricingEngineTypeListWindow",
+      "window_title": "Pricing Engine Types",
+      "icon": "Tag"
+    }
+  }
+}

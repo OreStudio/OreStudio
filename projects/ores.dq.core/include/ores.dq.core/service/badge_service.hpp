@@ -24,12 +24,12 @@
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.dq/domain/badge_severity.hpp"
-#include "ores.dq/domain/badge_definition.hpp"
-#include "ores.dq/domain/code_domain.hpp"
-#include "ores.dq/repository/badge_severity_repository.hpp"
-#include "ores.dq/repository/badge_definition_repository.hpp"
-#include "ores.dq/repository/code_domain_repository.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.core/repository/badge_severity_repository.hpp"
+#include "ores.dq.core/repository/badge_definition_repository.hpp"
+#include "ores.dq.core/repository/code_domain_repository.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
 

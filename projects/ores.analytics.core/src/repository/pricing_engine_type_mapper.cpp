@@ -40,6 +40,7 @@ pricing_engine_type_mapper::map(const pricing_engine_type_entity& v) {
     r.description = v.description.value_or("");
     r.instrument_type_code = v.instrument_type_code.value_or("");
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
     if (!v.valid_from)

@@ -36,12 +36,16 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.dq.lib
+        ores.database.lib
         ores.eventing.lib
         ores.platform.lib
     PRIVATE
+        ores.logging.lib
         ores.utility.lib
+        reflectcpp::reflectcpp
+        sqlgen::sqlgen
         faker-cxx::faker-cxx
-        libfort::fort)
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

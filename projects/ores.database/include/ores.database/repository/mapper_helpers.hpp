@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
+#include "ores.database/repository/db_types.hpp"
 
 namespace ores::database::repository {
 
@@ -94,45 +95,45 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
 }
 
 /**
- * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
+ * @brief Converts a db_timestamp to a std::chrono::system_clock::time_point.
  *
- * The sqlgen Timestamp holds the time in the DB session's timezone. Since all
+ * The db_timestamp holds the time in the DB session's timezone. Since all
  * DB sessions are forced to UTC, its internal std::tm fields are already UTC.
  * Convert directly via to_time_point_utc — no string round-trip needed.
  *
- * @param ts The sqlgen Timestamp to convert
+ * @param ts The db_timestamp to convert
  * @return A system_clock::time_point representing the UTC instant
  *
  * @example
  * auto tp = timestamp_to_timepoint(entity.last_login);
  */
 inline std::chrono::system_clock::time_point
-timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
+timestamp_to_timepoint(const db_timestamp& ts) {
     return platform::time::time_utils::to_time_point_utc(ts.tm());
 }
 
 /**
- * @brief Converts a std::chrono::system_clock::time_point to a sqlgen Timestamp.
+ * @brief Converts a std::chrono::system_clock::time_point to a db_timestamp.
  *
  * Formats the time_point as an ISO 8601 UTC string with Z suffix. PostgreSQL
  * TIMESTAMPTZ columns accept the Z suffix correctly and store the UTC instant.
  *
  * @param tp The time_point to convert
  * @param lg The logger to use for logging
- * @return A sqlgen Timestamp, or an empty Timestamp if conversion fails
+ * @return A db_timestamp, or an empty db_timestamp if conversion fails
  *
  * @example
  * entity.last_login = timepoint_to_timestamp(std::chrono::system_clock::now(), lg);
  */
-inline sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
+inline db_timestamp
 timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     logging::logger_t& lg) {
     using namespace ores::logging;
 
     const auto s = platform::time::datetime::to_iso8601_utc(tp);
-    // Strip the Z suffix — sqlgen::Timestamp expects format "%Y-%m-%d %H:%M:%S"
+    // Strip the Z suffix — db_timestamp expects format "%Y-%m-%d %H:%M:%S"
     const auto bare = s.substr(0, s.size() - 1);
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(bare);
+    const auto r = db_timestamp::from_string(bare);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
         return {};

@@ -143,20 +143,48 @@ After Phase 4 the DB session is UTC so PostgreSQL returns =+00= suffix — handl
 Change =format_time_point(...)= → =to_local_display_string(...)=. No behaviour change — purely
 makes intent explicit and allows the old name to be removed.
 
+** Phase 8 — Unit tests for =datetime= API
+
+*File*: =ores.platform/tests/time_datetime_tests.cpp= (new)
+
+Cover the full contract of the new API in table-driven style:
+
+*** =to_iso8601_utc= tests
+- Round-trip: known UTC epoch → format → parse → same epoch.
+- Output always ends with ='Z'=.
+- Known fixed point: =2026-01-15 14:30:00Z= ↔ correct epoch seconds.
+- DST edge: =2026-03-29 01:00:00Z= (clocks-change instant in Europe) round-trips correctly.
+
+*** =from_iso8601_utc= tests
+- Accepts =Z= suffix: ="2026-04-08 10:30:00Z"=.
+- Accepts =+00:00= suffix: ="2026-04-08 10:30:00+00:00"=.
+- Accepts =+00= suffix (PostgreSQL UTC session output): ="2026-04-08 10:30:00+00"=.
+- Accepts trailing space before designator (PostgreSQL may emit ="... +00"=).
+- Throws on missing designator: ="2026-04-08 10:30:00"=.
+- Throws on non-UTC offset: ="2026-04-08 11:30:00+01"=, ="2026-04-08 10:30:00-05:00"=.
+- Throws on empty string.
+- Throws on malformed string: ="not-a-date"=.
+
+*** =to_local_display_string= tests
+- Does not throw.
+- Output does NOT end with ='Z'= (no timezone designator).
+- On a machine set to UTC, output matches =to_iso8601_utc= minus the ='Z'=.
+
 * Execution Order
 
 #+begin_example
-Phase 1 (rename datetime API)
+Phase 1 (rename datetime API + all call sites)
   → Phase 2 (move time_point_parser.hpp)
   → Phase 3 (clean up reflectors.hpp)
   → Phase 4 (DB UTC sessions + mapper_helpers)
   → Phase 5 (DQ API wire protocol)
   → Phase 6 (scheduler read paths)
   → Phase 7 (rename display callers)
+  → Phase 8 (unit tests)
 #+end_example
 
 Phases 2–3 are independent of 4–7 and can be done in parallel. Phase 4 must precede Phase 6.
-Phase 5 is independent of 4 and 6.
+Phase 5 is independent of 4 and 6. Phase 8 is independent and can run in parallel with any phase.
 
 * Risk Notes
 

@@ -92,14 +92,6 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::setup_menus — nothing to inject into shared menus.
-// ---------------------------------------------------------------------------
-void PartyPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* /*reference_data_menu*/,
-                              QMenu* /*telemetry_menu*/) {
-    // Entities menu is created in create_menus(); nothing to inject here.
-}
-
-// ---------------------------------------------------------------------------
 // IPlugin::create_menus — return the standalone Entities menu.
 // ---------------------------------------------------------------------------
 QList<QMenu*> PartyPlugin::create_menus() {

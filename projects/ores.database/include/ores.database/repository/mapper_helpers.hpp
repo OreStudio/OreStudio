@@ -131,7 +131,7 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     using namespace ores::logging;
 
     const auto s = platform::time::datetime::to_iso8601_utc(tp);
-    // Strip the Z suffix — db_timestamp expects format "%Y-%m-%d %H:%M:%S"
+    // Strip the Z suffix — db_timestamp::from_string expects no timezone designator
     const auto bare = s.substr(0, s.size() - 1);
     const auto r = db_timestamp::from_string(bare);
     if (!r) {

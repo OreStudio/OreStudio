@@ -20,6 +20,7 @@
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
+#include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.reporting.core/repository/risk_report_config_entity.hpp"
@@ -44,9 +45,9 @@ struct book_scope_entity {
     std::string tenant_id;
     std::string risk_report_config_id;
     std::string book_id;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from =
+    std::optional<ores::database::repository::db_timestamp> valid_from =
         "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to =
+    std::optional<ores::database::repository::db_timestamp> valid_to =
         "9999-12-31 23:59:59";
 };
 
@@ -58,9 +59,9 @@ struct portfolio_scope_entity {
     std::string tenant_id;
     std::string risk_report_config_id;
     std::string portfolio_id;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from =
+    std::optional<ores::database::repository::db_timestamp> valid_from =
         "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to =
+    std::optional<ores::database::repository::db_timestamp> valid_to =
         "9999-12-31 23:59:59";
 };
 

@@ -21,10 +21,12 @@
 #define ORES_IAM_REPOSITORY_LOGIN_INFO_ENTITY_HPP
 
 #include <string>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::iam::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents login tracking information in the database.
@@ -39,7 +41,7 @@ struct login_info_entity {
     std::string last_attempt_ip;
     int failed_logins;
     int locked;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> last_login = "9999-12-31 23:59:59";
+    db_timestamp last_login = "9999-12-31 23:59:59";
     int online;
     int password_reset_required;
 };

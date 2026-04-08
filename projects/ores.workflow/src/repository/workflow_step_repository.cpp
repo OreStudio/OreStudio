@@ -123,7 +123,7 @@ void workflow_step_repository::update_state(
     const auto opt_error = error.empty()
         ? std::optional<std::string>{}
         : std::optional<std::string>(error);
-    using ts_t = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+    using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 
     const auto query = sqlgen::update<workflow_step_entity>(
@@ -148,7 +148,7 @@ void workflow_step_repository::mark_command_published(
     const auto id_str = boost::uuids::to_string(id);
     const auto now = timepoint_to_timestamp(
         std::chrono::system_clock::now(), lg());
-    using ts_t = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+    using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 
     const auto query = sqlgen::update<workflow_step_entity>(

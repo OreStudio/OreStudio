@@ -23,9 +23,11 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 
 namespace ores::dq::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Read-only projection of badge mapping rows from ores_dq_badge_mappings_tbl.
@@ -41,8 +43,8 @@ struct badge_mapping_entity {
     std::string tenant_id;
     std::string entity_code;
     std::string badge_code;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to;
+    std::optional<db_timestamp> valid_from;
+    std::optional<db_timestamp> valid_to;
 };
 
 std::ostream& operator<<(std::ostream& s, const badge_mapping_entity& v);

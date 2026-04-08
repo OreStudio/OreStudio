@@ -20,11 +20,14 @@
 #ifndef ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 #define ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include <string>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Async bridge record linking a compute batch to a workflow step.
@@ -41,7 +44,7 @@ struct workflow_batch_link_entity {
     std::string tenant_id;
     std::string workflow_step_id;
     std::string workflow_instance_id;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+    std::optional<db_timestamp> created_at;
 };
 
 }

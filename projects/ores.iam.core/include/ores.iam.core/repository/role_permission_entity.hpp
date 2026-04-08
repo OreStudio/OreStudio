@@ -21,9 +21,11 @@
 #define ORES_IAM_REPOSITORY_ROLE_PERMISSION_ENTITY_HPP
 
 #include <string>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 
 namespace ores::iam::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a role-permission assignment in the database.
@@ -43,8 +45,8 @@ struct role_permission_entity {
     std::string tenant_id;
     std::string role_id;
     std::string permission_id;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const role_permission_entity& v);

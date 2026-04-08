@@ -22,10 +22,12 @@
 
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::dq::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a dataset in the database.
@@ -52,15 +54,15 @@ struct dataset_entity {
     std::string business_context;
     std::optional<std::string> upstream_derivation_id;
     int lineage_depth = 0;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> as_of_date = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> ingestion_timestamp = "9999-12-31 23:59:59";
+    db_timestamp as_of_date = "9999-12-31 23:59:59";
+    db_timestamp ingestion_timestamp = "9999-12-31 23:59:59";
     std::optional<std::string> license_info;
     std::optional<std::string> artefact_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_entity& v);

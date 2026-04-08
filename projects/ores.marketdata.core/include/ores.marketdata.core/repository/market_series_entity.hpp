@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::marketdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Database entity for a market data series catalog entry.
@@ -52,9 +54,9 @@ struct market_series_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from =
+    std::optional<db_timestamp> valid_from =
         "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to =
+    std::optional<db_timestamp> valid_to =
         "9999-12-31 23:59:59";
 };
 

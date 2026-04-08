@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::database::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a database info in the database.
@@ -40,7 +42,7 @@ struct database_info_entity {
     std::string build_environment;
     std::string git_commit;
     std::string git_date;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+    std::optional<db_timestamp> created_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const database_info_entity& v);

@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::workflow::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a workflow instance in the database.
@@ -46,9 +48,9 @@ struct workflow_instance_entity {
     std::string created_by;
     int current_step_index = 0;
     int step_count = 0;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_event_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+    std::optional<db_timestamp> completed_at;
+    std::optional<db_timestamp> last_event_at;
+    std::optional<db_timestamp> created_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v);

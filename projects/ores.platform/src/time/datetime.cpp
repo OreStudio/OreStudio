@@ -76,6 +76,13 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(
     return time_utils::to_time_point_utc(tm);
 }
 
+std::string datetime::to_db_string(
+    const std::chrono::system_clock::time_point& tp) {
+
+    const auto s = to_iso8601_utc(tp);
+    return s.substr(0, s.size() - 1); // strip the Z suffix
+}
+
 std::string datetime::to_local_display_string(
     const std::chrono::system_clock::time_point& tp,
     const std::string& format) {

@@ -23,10 +23,12 @@
 #include <string>
 #include <cstdint>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::iam::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a session record in the database.
@@ -58,7 +60,7 @@ struct session_entity {
      *
      * Required in primary key for TimescaleDB hypertable partitioning.
      */
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> start_time;
+    sqlgen::PrimaryKey<db_timestamp> start_time;
 
     /**
      * @brief Session end timestamp. Empty string if session is active.
@@ -149,7 +151,7 @@ struct session_sample_entity {
     /**
      * @brief Sample timestamp — part of composite primary key and partition column.
      */
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sample_time;
+    sqlgen::PrimaryKey<db_timestamp> sample_time;
 
     /**
      * @brief Cumulative bytes sent at sample time.
@@ -187,7 +189,7 @@ struct auth_event_entity {
     /**
      * @brief Event timestamp — part of composite primary key and partition column.
      */
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> event_time;
+    sqlgen::PrimaryKey<db_timestamp> event_time;
 
     /**
      * @brief Tenant identifier. Empty string if unknown (e.g. failed login

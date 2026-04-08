@@ -26,6 +26,14 @@
 namespace ores::platform::time {
 
 /**
+ * @brief Canonical timestamp format string: "YYYY-MM-DD HH:MM:SS".
+ *
+ * Shared by all callers that need strftime/format format strings without a
+ * timezone suffix (database storage format and local-time display format).
+ */
+inline constexpr const char* k_timestamp_format = "%Y-%m-%d %H:%M:%S";
+
+/**
  * @brief Utilities for date and time operations.
  *
  * Policy: all timestamps are stored and transmitted in UTC. Local time is used
@@ -62,18 +70,32 @@ public:
         const std::string& str);
 
     /**
+     * @brief Formats a time point as a UTC database timestamp string.
+     *
+     * Output format: "YYYY-MM-DD HH:MM:SS" (no timezone suffix).
+     * Use this for embedding timestamps directly in raw SQL statements.
+     * Produces the same format as PostgreSQL returns for TIMESTAMPTZ columns
+     * when the session timezone is UTC.
+     *
+     * @param tp Time point to format (treated as UTC per C++20 definition).
+     * @return UTC timestamp string without timezone designator.
+     */
+    static std::string to_db_string(
+        const std::chrono::system_clock::time_point& tp);
+
+    /**
      * @brief Formats a time point as a human-readable local-time string.
      *
      * Intended for display only (UI, CLI output). Do NOT use for wire
      * protocol or database writes — use to_iso8601_utc() instead.
      *
      * @param tp Time point to format.
-     * @param format strftime format string (default: "%Y-%m-%d %H:%M:%S").
+     * @param format strftime format string (default: k_timestamp_format).
      * @return Local-time string without timezone designator.
      */
     static std::string to_local_display_string(
         const std::chrono::system_clock::time_point& tp,
-        const std::string& format = "%Y-%m-%d %H:%M:%S");
+        const std::string& format = k_timestamp_format);
 };
 
 }

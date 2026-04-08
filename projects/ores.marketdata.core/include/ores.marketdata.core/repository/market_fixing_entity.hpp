@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::marketdata::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Database entity for a single index fixing.
@@ -45,9 +47,9 @@ struct market_fixing_entity {
     std::string fixing_date;
     std::string value;
     std::optional<std::string> source;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from =
+    std::optional<db_timestamp> valid_from =
         "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to =
+    std::optional<db_timestamp> valid_to =
         "9999-12-31 23:59:59";
 };
 

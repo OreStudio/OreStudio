@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::workflow::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a workflow step in the database.
@@ -45,13 +47,13 @@ struct workflow_step_entity {
     std::optional<std::string> error;
     std::string command_subject;
     std::string command_json;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> command_published_at;
+    std::optional<db_timestamp> command_published_at;
     std::string idempotency_key;
     std::string compensation_subject;
     std::string compensation_json;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+    std::optional<db_timestamp> started_at;
+    std::optional<db_timestamp> completed_at;
+    std::optional<db_timestamp> created_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_step_entity& v);

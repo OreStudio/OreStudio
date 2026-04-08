@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::controller::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Database entity for a running service instance (Kubernetes Pod analogue).
@@ -43,10 +45,10 @@ struct service_instance_entity {
     int replica_index = 0;
     std::optional<int> pid;
     std::string phase{"pending"};
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> stopped_at;
+    std::optional<db_timestamp> started_at;
+    std::optional<db_timestamp> stopped_at;
     int restart_count = 0;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> created_at;
+    db_timestamp created_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const service_instance_entity& v);

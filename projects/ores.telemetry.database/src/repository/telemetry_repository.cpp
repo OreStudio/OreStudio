@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 #include <format>
@@ -183,8 +184,8 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
-    const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
-    const auto end_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.end_time);
+    const auto start_ts = ores::platform::time::datetime::to_db_string(q.start_time);
+    const auto end_ts = ores::platform::time::datetime::to_db_string(q.end_time);
     const auto where_clause = build_where_clause(q, start_ts, end_ts);
 
     constexpr std::uint32_t default_limit = 1000;
@@ -242,8 +243,8 @@ std::uint64_t telemetry_repository::count(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
-    const auto start_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
-    const auto end_ts = std::format("{:%Y-%m-%d %H:%M:%S}", q.end_time);
+    const auto start_ts = ores::platform::time::datetime::to_db_string(q.start_time);
+    const auto end_ts = ores::platform::time::datetime::to_db_string(q.end_time);
     const auto where_clause = build_where_clause(q, start_ts, end_ts);
 
     // Build count query with same filters as query() for accurate pagination
@@ -334,8 +335,8 @@ telemetry_repository::read_hourly_stats(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
-    const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
-    const auto end_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.end_time);
+    const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
+    const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
 
     // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.
@@ -374,8 +375,8 @@ telemetry_repository::read_daily_stats(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
-    const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.start_time);
-    const auto end_str = std::format("{:%Y-%m-%d %H:%M:%S}", q.end_time);
+    const auto start_str = ores::platform::time::datetime::to_db_string(q.start_time);
+    const auto end_str = ores::platform::time::datetime::to_db_string(q.end_time);
 
     // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.

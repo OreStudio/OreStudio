@@ -118,6 +118,36 @@ std::filesystem::path process_supervisor::log_path_for(
     return log_dir / filename;
 }
 
+std::filesystem::path process_supervisor::pid_path_for(
+    const std::string& service_name, int replica_index) const {
+    const auto run_dir = bin_dir_ / ".." / "run";
+    // Replica 0 uses the bare service name (matches status-services.sh convention).
+    // Higher replicas append the index so multiple replicas don't overwrite each other.
+    const auto filename = replica_index == 0
+        ? service_name + ".pid"
+        : service_name + "." + std::to_string(replica_index) + ".pid";
+    return run_dir / filename;
+}
+
+void process_supervisor::write_pid_file(const std::string& service_name,
+    int replica_index, bp2::pid_type pid) const {
+    const auto path = pid_path_for(service_name, replica_index);
+    std::error_code ec;
+    std::filesystem::create_directories(path.parent_path(), ec);
+    std::ofstream f(path, std::ios::trunc);
+    if (f)
+        f << pid << '\n';
+    else
+        BOOST_LOG_SEV(lg(), warn) << "Could not write PID file: " << path;
+}
+
+void process_supervisor::remove_pid_file(const std::string& service_name,
+    int replica_index) const {
+    const auto path = pid_path_for(service_name, replica_index);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+}
+
 std::vector<std::string> process_supervisor::build_args(
     const api::domain::service_definition& def, int replica_index) const {
 
@@ -351,6 +381,8 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         << "Launched " << service_name << "[" << replica_index
         << "] PID=" << pid;
 
+    write_pid_file(service_name, replica_index, pid);
+
     // Update/create DB instance record with PID and phase=running.
     try {
         const auto now = std::chrono::system_clock::now();
@@ -440,6 +472,7 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     }
 
     processes_.erase(key);
+    remove_pid_file(service_name, replica_index);
 
     BOOST_LOG_SEV(lg(), info)
         << service_name << "[" << replica_index << "]"

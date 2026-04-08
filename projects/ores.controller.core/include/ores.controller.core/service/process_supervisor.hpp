@@ -158,6 +158,12 @@ private:
         int replica_index) const;
     std::filesystem::path log_path_for(const std::string& service_name,
         int replica_index) const;
+    std::filesystem::path pid_path_for(const std::string& service_name,
+        int replica_index) const;
+    void write_pid_file(const std::string& service_name, int replica_index,
+        boost::process::v2::pid_type pid) const;
+    void remove_pid_file(const std::string& service_name,
+        int replica_index) const;
 
     boost::asio::io_context& ioc_;
     std::filesystem::path bin_dir_;

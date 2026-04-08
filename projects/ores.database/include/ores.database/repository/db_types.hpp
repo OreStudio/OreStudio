@@ -17,36 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_LOGIN_INFO_ENTITY_HPP
-#define ORES_IAM_REPOSITORY_LOGIN_INFO_ENTITY_HPP
+#ifndef ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
+#define ORES_DATABASE_REPOSITORY_DB_TYPES_HPP
 
-#include <string>
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include "sqlgen/Timestamp.hpp"
 
-namespace ores::iam::repository {
-
-using db_timestamp = ores::database::repository::db_timestamp;
+namespace ores::database::repository {
 
 /**
- * @brief Represents login tracking information in the database.
+ * @brief Canonical database timestamp type.
+ *
+ * All timestamptz columns map to this type. The format matches PostgreSQL's
+ * output when the session timezone is UTC: "YYYY-MM-DD HH:MM:SS".
+ * DB sessions are forced to UTC in tenant_aware_pool::acquire() so this
+ * format is always correct regardless of the host machine timezone.
  */
-struct login_info_entity {
-    constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_iam_login_info_tbl";
-
-    sqlgen::PrimaryKey<std::string> account_id;
-    std::string tenant_id;
-    std::string last_ip;
-    std::string last_attempt_ip;
-    int failed_logins;
-    int locked;
-    db_timestamp last_login = "9999-12-31 23:59:59";
-    int online;
-    int password_reset_required;
-};
-
-std::ostream& operator<<(std::ostream& s, const login_info_entity& v);
+using db_timestamp = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
 
 }
 

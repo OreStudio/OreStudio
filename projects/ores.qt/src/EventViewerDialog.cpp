@@ -20,6 +20,7 @@
  */
 #include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
@@ -67,7 +68,7 @@ QString formatTimestamp(std::chrono::system_clock::time_point tp) {
     localtime_r(&time_t, &tm);
 #endif
     char buffer[32];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
+    std::strftime(buffer, sizeof(buffer), ores::platform::time::k_timestamp_format, &tm);
     return QString("%1.%2").arg(buffer).arg(ms.count(), 3, 10, QChar('0'));
 }
 

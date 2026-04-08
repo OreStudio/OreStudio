@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
+#include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -84,8 +85,8 @@ std::vector<domain::job_definition> parse_rows(
         if (row[12]) entity.performed_by = *row[12];
         if (row[13]) entity.change_reason_code = *row[13];
         if (row[14]) entity.change_commentary = *row[14];
-        if (row[15]) entity.valid_from = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[15]);
-        if (row[16]) entity.valid_to = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[16]);
+        if (row[15]) entity.valid_from = ores::database::repository::db_timestamp(*row[15]);
+        if (row[16]) entity.valid_to = ores::database::repository::db_timestamp(*row[16]);
         result.push_back(job_definition_mapper::map(entity));
     }
     return result;

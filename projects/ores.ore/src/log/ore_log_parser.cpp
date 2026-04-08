@@ -23,10 +23,12 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include "ores.platform/time/datetime.hpp"
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::ore::log {
 
@@ -92,16 +94,19 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
             microseconds = std::strtol(us_buf.data(), nullptr, 10);
         }
 
-        // parse_time_point_utc uses std::get_time which operates in the
-        // classic (C) locale by default, so %b always matches English
-        // month abbreviations (Jan, Feb, …) regardless of system locale.
-        try {
-            timestamp = ores::platform::time::datetime::parse_time_point_utc(
-                std::string(dt_part), "%Y-%b-%d %H:%M:%S")
-                + std::chrono::microseconds(microseconds);
-        } catch (const std::invalid_argument&) {
+        // Log timestamps use Boost.Log format "YYYY-Mon-DD HH:MM:SS" with no
+        // timezone designator. Imbue with the C locale so that %b always
+        // matches English month abbreviations regardless of system locale.
+        // Treat as UTC (log system writes UTC timestamps).
+        std::tm tm = {};
+        const std::string dt_str(dt_part);
+        std::istringstream ss(dt_str);
+        ss.imbue(std::locale::classic());
+        ss >> std::get_time(&tm, ore_log_timestamp_format.data());
+        if (ss.fail())
             return std::nullopt;
-        }
+        timestamp = ores::platform::time::time_utils::to_time_point_utc(tm)
+            + std::chrono::microseconds(microseconds);
     }
 
     // 3. Source in (...)

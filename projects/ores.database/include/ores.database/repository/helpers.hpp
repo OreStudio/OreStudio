@@ -25,6 +25,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/repository_exception.hpp"
 
 namespace ores::database::repository {
@@ -68,7 +69,7 @@ void ensure_success(const T& result, logging::logger_t& lg) {
 /**
  * @brief Converts a string to a sqlgen Timestamp, throwing an exception if conversion fails.
  *
- * This helper parses a timestamp string in the format "%Y-%m-%d %H:%M:%S"
+ * This helper parses a timestamp string in the db_timestamp format
  * and returns a sqlgen::Timestamp object. If parsing fails, it logs the error
  * and throws a repository_exception.
  *
@@ -82,7 +83,7 @@ void ensure_success(const T& result, logging::logger_t& lg) {
 inline auto make_timestamp(const std::string& s, logging::logger_t& lg) {
     using namespace ores::logging;
 
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
+    const auto r = db_timestamp::from_string(s);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
                                  << "'. Error: " << r.error().what();

@@ -21,10 +21,12 @@
 #define ORES_DQ_CORE_REPOSITORY_DATA_DOMAIN_ENTITY_HPP
 
 #include <string>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::dq::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a data_domain in the database.
@@ -40,8 +42,8 @@ struct data_domain_entity {
     std::string modified_by;
     std::string performed_by;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const data_domain_entity& v);

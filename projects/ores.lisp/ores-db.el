@@ -128,10 +128,13 @@ falls back to the current project."
     (define-key map (kbd "k")   #'ores-db/kill-connections-at-point)
     (define-key map (kbd "x")   #'ores-db/drop-at-point)
     (define-key map (kbd "X")   #'ores-db/teardown-at-point)
+    ;; Recreate database (recreate_database.sh)
+    (define-key map (kbd "r")   #'ores-db/recreate-db-at-point)
+    (define-key map (kbd "R")   #'ores-db/recreate-all-dbs)
+    ;; Recreate environment (recreate_env.sh)
+    (define-key map (kbd "e")   #'ores-db/recreate-env-at-point)
+    (define-key map (kbd "E")   #'ores-db/recreate-env-choose)
     (define-key map (kbd "d")   #'ores-db/recreate-current-env)
-    (define-key map (kbd "r")   #'ores-db/recreate-at-point)
-    (define-key map (kbd "e")   #'ores-db/recreate-env-database)
-    (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "i")   #'ores-db/init-environment)
     (define-key map (kbd "N")   #'ores-db/init-nats)
@@ -458,18 +461,14 @@ BUFFER-NAME is the compilation buffer name."
        nil
        (lambda (_) buffer-name)))))
 
-(defun ores-db/recreate-env-database (environment &optional skip-validation)
-  "Recreate the database for ENVIRONMENT.
-If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
-  (interactive
-   (let* ((current-env (ores-db/current-environment))
-          (env (completing-read
-                (format "Environment to create/recreate%s: "
-                        (if current-env (format " (current: %s)" current-env) ""))
-                ores-db/environments nil t nil nil current-env)))
-     (list env current-prefix-arg)))
-  (unless (yes-or-no-p (format "This will DROP and recreate ores_dev_%s. Are you sure? " environment))
-    (user-error "Aborted"))
+;;; --------------------------------------------------------------------------
+;;; Recreate Environment (recreate_env.sh)
+;;; Recreates the schema, roles and data for an environment-specific database.
+;;; --------------------------------------------------------------------------
+
+(defun ores-db/--run-recreate-env (environment &optional skip-validation)
+  "Internal: run recreate_env.sh for ENVIRONMENT, always killing connections first.
+If SKIP-VALIDATION is non-nil, also pass --no-sql-validation."
   (let* ((target-dir (ores-db/sql-scripts-directory-for-env environment))
          (args (list "-e" environment "-y" "-k")))
     (unless (and target-dir (file-directory-p target-dir))
@@ -478,42 +477,84 @@ If SKIP-VALIDATION is non-nil, skip SQL input validation for faster execution."
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
     (ores-db/run-script "recreate_env.sh"
-                        (format "*ores-db-recreate-%s*" environment)
+                        (format "*ores-db-recreate-env-%s*" environment)
                         args
                         target-dir)))
 
 (defun ores-db/recreate-current-env (&optional skip-validation)
-  "Recreate the database for the current environment.
-If SKIP-VALIDATION is non-nil (prefix arg), skip SQL input validation."
+  "Recreate the environment database for the current checkout.
+Kills all active connections first.
+With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
   (interactive "P")
-  (if-let ((env (ores-db/current-environment)))
-      (ores-db/recreate-env-database env skip-validation)
-    (user-error "Not in an OreStudio project")))
+  (let ((env (ores-db/current-environment)))
+    (unless env (user-error "Not in an OreStudio project"))
+    (unless (yes-or-no-p (format "DROP and recreate env ores_dev_%s? " env))
+      (user-error "Aborted"))
+    (ores-db/--run-recreate-env env skip-validation)))
 
-(defun ores-db/recreate-at-point (&optional skip-validation)
-  "Recreate the database at point in the database list.
-If SKIP-VALIDATION is non-nil (prefix arg), skip SQL input validation."
+(defun ores-db/recreate-env-at-point (&optional skip-validation)
+  "Recreate the environment database for the ores_dev_* entry at point.
+Kills all active connections first.
+With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
   (interactive "P")
   (let* ((id (tabulated-list-get-id))
          (db-name (car id)))
-    (unless id
-      (user-error "No database at point"))
-    (unless (yes-or-no-p (format "This will DROP and recreate %s. Are you sure? " db-name))
-      (user-error "Aborted"))
-    (cond
-     ((string-prefix-p "ores_dev_" db-name)
-      (let ((env (substring db-name (length "ores_dev_"))))
-        (ores-db/recreate-env-database env skip-validation)))
-     (t
-      (user-error "Don't know how to recreate %s" db-name)))))
+    (unless id (user-error "No database at point"))
+    (unless (string-prefix-p "ores_dev_" db-name)
+      (user-error "Not an environment database: %s" db-name))
+    (let ((env (substring db-name (length "ores_dev_"))))
+      (unless (yes-or-no-p (format "DROP and recreate env %s? " db-name))
+        (user-error "Aborted"))
+      (ores-db/--run-recreate-env env skip-validation))))
 
-(defun ores-db/recreate-all ()
+(defun ores-db/recreate-env-choose (&optional skip-validation)
+  "Recreate the environment database for a chosen environment.
+Kills all active connections first.
+With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
+  (interactive "P")
+  (let* ((current-env (ores-db/current-environment))
+         (env (completing-read
+               (format "Environment to recreate%s: "
+                       (if current-env (format " (default: %s)" current-env) ""))
+               ores-db/environments nil t nil nil current-env)))
+    (unless (yes-or-no-p (format "DROP and recreate env ores_dev_%s? " env))
+      (user-error "Aborted"))
+    (ores-db/--run-recreate-env env skip-validation)))
+
+;;; --------------------------------------------------------------------------
+;;; Recreate Database (recreate_database.sh)
+;;; Recreates a named database (schema + data) without touching roles/users.
+;;; --------------------------------------------------------------------------
+
+(defun ores-db/--run-recreate-db (db-name &optional skip-validation)
+  "Internal: run recreate_database.sh for DB-NAME, always killing connections first.
+If SKIP-VALIDATION is non-nil, also pass --no-sql-validation."
+  (let ((args (list "-D" db-name "-y" "-k")))
+    (when skip-validation
+      (setq args (append args '("--no-sql-validation"))))
+    (ores-db/run-script "recreate_database.sh"
+                        (format "*ores-db-recreate-db-%s*" db-name)
+                        args)))
+
+(defun ores-db/recreate-db-at-point (&optional skip-validation)
+  "Recreate the database at point using recreate_database.sh.
+Kills all active connections first.
+With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
+  (interactive "P")
+  (let* ((id (tabulated-list-get-id))
+         (db-name (car id)))
+    (unless id (user-error "No database at point"))
+    (unless (yes-or-no-p (format "DROP and recreate database %s? " db-name))
+      (user-error "Aborted"))
+    (ores-db/--run-recreate-db db-name skip-validation)))
+
+(defun ores-db/recreate-all-dbs ()
   "Recreate ALL ORES databases (nuclear option).
-This runs recreate_database.sh which drops everything and recreates from scratch."
+Runs recreate_database.sh with no -D flag, killing all connections first."
   (interactive)
-  (unless (yes-or-no-p "This will DROP ALL ORES databases and recreate from scratch. Are you SURE? ")
+  (unless (yes-or-no-p "DROP ALL ORES databases and recreate from scratch. Are you SURE? ")
     (user-error "Aborted"))
-  (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y")))
+  (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y" "-k")))
 
 (defconst ores-db/presets
   '("linux-clang-debug-make"
@@ -631,12 +672,15 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("u" "Unmark" ores-db/unmark)
     ("U" "Unmark all" ores-db/unmark-all)
     ("t" "Toggle marks" ores-db/toggle-marks)]
-   ["Create/Recreate"
-    ("n" "New whimsical database" ores-db/create-whimsical)
-    ("d" "Recreate DB only (current env)" ores-db/recreate-current-env)
-    ("r" "Recreate DB only (at point)" ores-db/recreate-at-point)
-    ("e" "Recreate DB only (choose env)" ores-db/recreate-env-database)
-    ("R" "Full recreate: roles+users+DB+data" ores-db/recreate-all)]
+   ["Recreate Database (schema+data only)"
+    ("r" "Recreate DB at point" ores-db/recreate-db-at-point)
+    ("R" "Recreate ALL databases" ores-db/recreate-all-dbs)]
+   ["Recreate Environment (roles+schema+data)"
+    ("e" "Recreate env at point" ores-db/recreate-env-at-point)
+    ("d" "Recreate env (current checkout)" ores-db/recreate-current-env)
+    ("E" "Recreate env (choose)" ores-db/recreate-env-choose)]
+   ["Create"
+    ("n" "New whimsical database" ores-db/create-whimsical)]
    ["Utilities"
     ("i" "Init environment" ores-db/init-environment)
     ("N" "Regen NATS config (C-u = +provision)" ores-db/init-nats)

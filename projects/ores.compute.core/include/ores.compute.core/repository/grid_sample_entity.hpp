@@ -20,10 +20,13 @@
 #ifndef ORES_COMPUTE_REPOSITORY_GRID_SAMPLE_ENTITY_HPP
 #define ORES_COMPUTE_REPOSITORY_GRID_SAMPLE_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include <string>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief sqlgen entity for ores_compute_grid_samples_tbl.
@@ -32,7 +35,7 @@ struct grid_sample_entity {
     constexpr static const char* schema    = "public";
     constexpr static const char* tablename = "ores_compute_grid_samples_tbl";
 
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<db_timestamp> sampled_at;
     sqlgen::PrimaryKey<std::string> tenant_id;
 
     int total_hosts{0};

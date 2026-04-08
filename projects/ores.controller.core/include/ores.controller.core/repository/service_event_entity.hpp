@@ -23,10 +23,12 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::controller::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Database entity for a service lifecycle event (Kubernetes Event analogue).
@@ -39,7 +41,7 @@ struct service_event_entity {
     constexpr static const char* tablename =
         "ores_controller_service_events_tbl";
 
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> occurred_at;
+    sqlgen::PrimaryKey<db_timestamp> occurred_at;
     sqlgen::PrimaryKey<std::string> event_id;
     std::string service_name;
     std::optional<std::string> instance_id;

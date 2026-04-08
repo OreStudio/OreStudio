@@ -23,9 +23,11 @@
 #include <string>
 #include <cstdint>
 #include "sqlgen/PrimaryKey.hpp"
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 
 namespace ores::dq::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Database entity for the dq_dataset_publications_tbl table.
@@ -45,7 +47,7 @@ struct publication_entity final {
     std::int64_t records_skipped = 0;
     std::int64_t records_deleted = 0;
     std::string published_by;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> published_at;
+    db_timestamp published_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const publication_entity& v);

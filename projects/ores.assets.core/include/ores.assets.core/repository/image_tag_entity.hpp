@@ -22,10 +22,12 @@
 
 #include <string>
 #include <optional>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::assets::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents an image-tag association in the database.
@@ -40,9 +42,9 @@ struct image_tag_entity {
     sqlgen::PrimaryKey<std::string> image_id;
     sqlgen::PrimaryKey<std::string> tag_id;
     std::string assigned_by;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> assigned_at = "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> assigned_at = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const image_tag_entity& v);

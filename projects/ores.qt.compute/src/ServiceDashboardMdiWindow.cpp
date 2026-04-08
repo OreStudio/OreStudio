@@ -102,7 +102,7 @@ QString format_timepoint(
     std::optional<std::chrono::system_clock::time_point> tp) {
     if (!tp) return QStringLiteral("-");
     return QString::fromStdString(
-        ores::platform::time::datetime::format_time_point_utc(*tp));
+        ores::platform::time::datetime::to_iso8601_utc(*tp));
 }
 
 std::pair<QString, QColor> status_for_row(const ServiceRow& r) {

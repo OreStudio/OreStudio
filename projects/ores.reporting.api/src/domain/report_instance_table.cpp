@@ -30,7 +30,7 @@ namespace {
 std::string format_timepoint(
     const std::optional<std::chrono::system_clock::time_point>& tp) {
     if (!tp) return "N/A";
-    return ores::platform::time::datetime::format_time_point_utc(*tp);
+    return ores::platform::time::datetime::to_iso8601_utc(*tp);
 }
 
 }

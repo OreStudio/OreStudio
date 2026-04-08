@@ -188,7 +188,7 @@ image_repository::read_latest_since(context ctx,
 
     // Format timestamp for sqlgen query (thread-safe)
     const auto timestamp_str =
-        platform::time::datetime::format_time_point_utc(modified_since);
+        platform::time::datetime::to_iso8601_utc(modified_since);
 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
                                << timestamp_str;

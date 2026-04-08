@@ -103,7 +103,7 @@ QVariant ClientReportDefinitionModel::data(
                 return tr("—");
             const auto tp = expr->next_occurrence();
             return QString::fromStdString(
-                platform::time::datetime::format_time_point_utc(tp));
+                platform::time::datetime::to_iso8601_utc(tp));
         }
         case Version:
             return static_cast<qlonglong>(definition.version);

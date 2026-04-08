@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: C7E3B2A4-8F15-4D9A-B3E7-H4C95G1F2678
+:END:
+#+title: UTC-Everywhere Timestamp Enforcement
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+A service dashboard bug revealed that timestamps were being compared across different timezones,
+causing heartbeats to appear stale and services to appear offline. Root cause: two competing rfl
+serialisers (one using local time, one using UTC), and the NATS wire protocol using local time
+with no timezone designator.
+
+The policy: *all timestamps are stored and transmitted in UTC. Local time is used only for
+display.*
+
+** Current State (post-initial-fix)
+
+- =datetime.hpp= has four public functions: two UTC variants (=_utc=) and two local-time
+  variants. Both are public, creating caller ambiguity.
+- =time_point_parser.hpp= in =ores.platform= defines an rfl =Parser<>= specialisation.
+  This is wrong: =ores.platform= must not depend on rfl. However the Parser is now correct (UTC).
+- =ores.utility/rfl/reflectors.hpp= has a single =Reflector<time_point>= — already UTC-correct.
+- The three =ores.dq.api= binary protocol files use =format_time_point= (local) on both read and
+  write — timezone-ambiguous on the wire.
+- The DB layer (=mapper_helpers.hpp=) uses local time, relying on session timezone = process
+  timezone. This is fragile: fix by enforcing =SET TIME ZONE 'UTC'= in every DB session.
+- The scheduler repository writes UTC but reads local — asymmetric.
+
+* Goals
+
+1. One canonical UTC API in =ores.platform= — no ambiguous local-time functions in the public API.
+2. No rfl dependency in =ores.platform= — move the rfl Parser to =ores.utility=.
+3. Single rfl serialisation hook in =ores.utility= — no competing Parser vs Reflector.
+4. Every DB session forced to UTC — =mapper_helpers.hpp= can then use UTC functions safely.
+5. NATS wire protocol uses UTC with Z suffix — fix all three DQ API protocol files.
+6. Scheduler reads UTC from DB — consistent with writes.
+7. Display callers explicitly use =to_local_display_string()= — intent is clear in the name.
+
+* Phases
+
+** DONE Phase 1 — Redesign =datetime.hpp= / =datetime.cpp=
+
+*Files*:
+- =ores.platform/include/ores.platform/time/datetime.hpp=
+- =ores.platform/src/time/datetime.cpp=
+
+Rename and clarify the public API:
+
+| Old name                   | New name                  | Notes                                       |
+|----------------------------+---------------------------+---------------------------------------------|
+| =format_time_point_utc(tp)= | =to_iso8601_utc(tp)=      | Canonical UTC formatter; appends Z          |
+| =parse_time_point_utc(str)= | =from_iso8601_utc(str)=   | Throws if Z absent or offset non-zero       |
+| =format_time_point(tp)=     | =to_local_display_string(tp)= | Display only — name signals intent      |
+| =parse_time_point(str)=     | (remove from public API)  | No callers after DB fix in Phase 4          |
+
+The =from_iso8601_utc= parser must:
+- Require a =Z= suffix (or =+00:00= / =+00=). Throw =std::invalid_argument= if absent.
+- Accept =+00= and =+00:00= as valid UTC designators (PostgreSQL emits these when session is UTC).
+- Strip the designator before calling =std::get_time=, then call =to_time_point_utc=.
+
+** DONE Phase 2 — Move rfl Parser from =ores.platform= to =ores.utility=
+
+*Files*:
+- Delete: =ores.platform/include/ores.platform/time/time_point_parser.hpp=
+- Create: =ores.utility/include/ores.utility/rfl/time_point_parser.hpp=
+- Update: =ores.utility/include/ores.utility/streaming/std_vector.hpp= (change include path)
+
+The content of the Parser specialisation stays the same — it already calls the UTC functions.
+The only change is file location and dependency direction:
+=ores.utility= → =ores.platform= is fine; =ores.platform= → rfl is not.
+
+** DONE Phase 3 — Single rfl hook in =ores.utility=
+
+*File*: =ores.utility/include/ores.utility/rfl/reflectors.hpp=
+
+The =Reflector<system_clock::time_point>= and the =Parser<system_clock::time_point>= must not
+both exist in the same TU — the =Parser= specialisation takes priority over the generic =Parser=
+that uses =Reflector=, so having both is error-prone.
+
+Decision: *keep the =Parser<>= specialisation* (moved from =time_point_parser.hpp=) and
+*remove* the =Reflector<time_point>= from =reflectors.hpp=. A specialised =Parser= is the
+cleaner, more direct approach.
+
+** DONE Phase 4 — Force UTC in all DB sessions
+
+*Files*:
+- =ores.database/include/ores.database/domain/tenant_aware_pool.hpp= — add =SET TIME ZONE=
+- =ores.database/include/ores.database/repository/mapper_helpers.hpp= — switch to UTC functions
+
+*** Phase 4a — Force UTC in =tenant_aware_pool.hpp=
+
+In the =acquire()= method, alongside the existing =SET_CONFIG= calls for tenant/party context, add:
+
+#+begin_src sql
+SELECT set_config('TimeZone', 'UTC', false)
+#+end_src
+
+This makes every connection in the pool use UTC for =timestamptz= display regardless of the
+host system timezone.
+
+*** Phase 4b — Update =mapper_helpers.hpp=
+
+Once the session is guaranteed to be UTC, switch the helpers explicitly:
+
+- =timestamp_to_timepoint=: =parse_time_point= → =from_iso8601_utc=
+- =timepoint_to_timestamp=: =format_time_point= → =to_iso8601_utc=
+
+Note: PostgreSQL returns =timestamptz= values as ="YYYY-MM-DD HH:MM:SS+00"= (with =+00= offset)
+when the session is UTC. The =from_iso8601_utc= parser handles this (see Phase 1).
+
+** DONE Phase 5 — Fix NATS wire protocol in =ores.dq.api=
+
+*Files* (6 call sites total):
+- =ores.dq.api/src/messaging/badge_definition_protocol.cpp= — write (~line 58) and read (~line 120)
+- =ores.dq.api/src/messaging/badge_severity_protocol.cpp= — write (~line 54) and read (~line 100)
+- =ores.dq.api/src/messaging/code_domain_protocol.cpp= — write (~line 54) and read (~line 100)
+
+Change pattern:
+- write: =format_time_point(x.recorded_at)= → =to_iso8601_utc(x.recorded_at)=
+- read: =parse_time_point(*result)= → =from_iso8601_utc(*result)=
+
+** DONE Phase 6 — Fix scheduler repository read paths
+
+*File*: =ores.scheduler.core/src/repository/job_instance_repository.cpp=
+
+Write paths (~lines 62–101) already use =format_time_point_utc= → rename to =to_iso8601_utc=.
+
+Read paths (~lines 158, 164, 170) use =parse_time_point= → change to =from_iso8601_utc=.
+After Phase 4 the DB session is UTC so PostgreSQL returns =+00= suffix — handled by Phase 1.
+
+** DONE Phase 7 — Rename display callers
+
+*Files* (display/CLI callers that correctly use local time for human output):
+- =ores.qt/src/TimestampFormat.cpp=
+- =ores.cli/src/entity_change_event_table_io.cpp=
+- =ores.cli/src/login_info_table.cpp=
+- =ores.cli/src/accounts_commands.cpp=
+- =ores.cli/src/tenants_commands.cpp=
+
+Change =format_time_point(...)= → =to_local_display_string(...)=. No behaviour change — purely
+makes intent explicit and allows the old name to be removed.
+
+** DONE Phase 8 — Unit tests for =datetime= API
+
+*File*: =ores.platform/tests/time_datetime_tests.cpp= (new)
+
+Cover the full contract of the new API in table-driven style:
+
+*** =to_iso8601_utc= tests
+- Round-trip: known UTC epoch → format → parse → same epoch.
+- Output always ends with ='Z'=.
+- Known fixed point: =2026-01-15 14:30:00Z= ↔ correct epoch seconds.
+- DST edge: =2026-03-29 01:00:00Z= (clocks-change instant in Europe) round-trips correctly.
+
+*** =from_iso8601_utc= tests
+- Accepts =Z= suffix: ="2026-04-08 10:30:00Z"=.
+- Accepts =+00:00= suffix: ="2026-04-08 10:30:00+00:00"=.
+- Accepts =+00= suffix (PostgreSQL UTC session output): ="2026-04-08 10:30:00+00"=.
+- Accepts trailing space before designator (PostgreSQL may emit ="... +00"=).
+- Throws on missing designator: ="2026-04-08 10:30:00"=.
+- Throws on non-UTC offset: ="2026-04-08 11:30:00+01"=, ="2026-04-08 10:30:00-05:00"=.
+- Throws on empty string.
+- Throws on malformed string: ="not-a-date"=.
+
+*** =to_local_display_string= tests
+- Does not throw.
+- Output does NOT end with ='Z'= (no timezone designator).
+- On a machine set to UTC, output matches =to_iso8601_utc= minus the ='Z'=.
+
+* Execution Order
+
+#+begin_example
+Phase 1 (rename datetime API + all call sites)
+  → Phase 2 (move time_point_parser.hpp)
+  → Phase 3 (clean up reflectors.hpp)
+  → Phase 4 (DB UTC sessions + mapper_helpers)
+  → Phase 5 (DQ API wire protocol)
+  → Phase 6 (scheduler read paths)
+  → Phase 7 (rename display callers)
+  → Phase 8 (unit tests)
+#+end_example
+
+Phases 2–3 are independent of 4–7 and can be done in parallel. Phase 4 must precede Phase 6.
+Phase 5 is independent of 4 and 6. Phase 8 is independent and can run in parallel with any phase.
+
+* Risk Notes
+
+- *PostgreSQL =timestamptz::text= output format*: the exact format returned when the session is
+  UTC is ="YYYY-MM-DD HH:MM:SS+00"=, not ISO 8601 with Z. The =from_iso8601_utc= function must
+  accept both =Z= and =+00= / =+00:00= as valid UTC designators.
+- *Wire protocol change* (Phase 5): DQ server and Qt client must be deployed together.
+  No backwards compatibility required — DB will be recreated.

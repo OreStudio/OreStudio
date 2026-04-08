@@ -31,7 +31,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <rfl.hpp>
-#include "ores.platform/time/datetime.hpp"
+#include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 // Forward declarations for enum types that need custom reflectors
@@ -109,31 +109,6 @@ struct Reflector<std::optional<boost::uuids::uuid>> {
             return std::nullopt;
         }
         return boost::lexical_cast<std::string>(v.value());
-    }
-};
-
-/**
- * @brief Custom reflector for std::chrono::system_clock::time_point.
- *
- * @details Serializes to and from an ISO 8601 compliant UTC string using
- * the cross-platform ores.platform time utilities.
- *
- * Serialized format: "YYYY-MM-DD HH:MM:SS" (UTC)
- * Example: "2023-10-27 14:45:30"
- */
-template<>
-struct Reflector<std::chrono::system_clock::time_point> {
-    using ReflType = std::string;
-
-    static std::chrono::system_clock::time_point to(const ReflType& str) {
-        return ores::platform::time::datetime::parse_time_point_utc(str);
-    }
-
-    /**
-     * @brief Formats a time_point into a UTC string "YYYY-MM-DD HH:MM:SS".
-     */
-    static ReflType from(const std::chrono::system_clock::time_point& v) {
-        return ores::platform::time::datetime::format_time_point_utc(v);
     }
 };
 

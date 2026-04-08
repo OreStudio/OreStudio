@@ -23,10 +23,12 @@
 #include <string>
 #include <cstdint>
 #include <iosfwd>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::telemetry::database::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a telemetry log record in the database.
@@ -53,7 +55,7 @@ struct telemetry_entity {
      *
      * Required in primary key for TimescaleDB hypertable partitioning.
      */
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> timestamp;
+    sqlgen::PrimaryKey<db_timestamp> timestamp;
 
     /**
      * @brief Source type ('client' or 'server').
@@ -98,7 +100,7 @@ struct telemetry_entity {
     /**
      * @brief Server receipt timestamp.
      */
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> recorded_at;
+    db_timestamp recorded_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
@@ -149,7 +151,7 @@ struct nats_server_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_nats_server_samples_tbl";
 
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<db_timestamp> sampled_at;
     sqlgen::PrimaryKey<std::string> tenant_id;
     std::int64_t in_msgs{0};
     std::int64_t out_msgs{0};
@@ -169,7 +171,7 @@ struct service_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_service_samples_tbl";
 
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<db_timestamp> sampled_at;
     sqlgen::PrimaryKey<std::string> service_name;
     sqlgen::PrimaryKey<std::string> instance_id;
     std::string version;
@@ -184,7 +186,7 @@ struct nats_stream_sample_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_telemetry_nats_stream_samples_tbl";
 
-    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<db_timestamp> sampled_at;
     sqlgen::PrimaryKey<std::string> tenant_id;
     sqlgen::PrimaryKey<std::string> stream_name;
     std::int64_t messages{0};

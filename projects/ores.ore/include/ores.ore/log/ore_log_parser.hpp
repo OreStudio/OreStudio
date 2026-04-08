@@ -28,6 +28,15 @@
 namespace ores::ore::log {
 
 /**
+ * @brief strftime/strptime format for ORE engine log timestamps.
+ *
+ * ORE (via Boost.Log) writes timestamps as "YYYY-Mon-DD HH:MM:SS", where
+ * %b is the English abbreviated month name. No timezone designator is
+ * present; timestamps are treated as UTC.
+ */
+inline constexpr std::string_view ore_log_timestamp_format = "%Y-%b-%d %H:%M:%S";
+
+/**
  * @brief A single parsed ORE engine log line.
  *
  * ORE log format:

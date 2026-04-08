@@ -22,6 +22,7 @@
 #include <chrono>
 #include <format>
 #include <random>
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::utility::faker {
 
@@ -42,7 +43,7 @@ std::chrono::system_clock::time_point datetime::past_timepoint() {
 
 std::string datetime::past_string() {
     auto tp = past_timepoint();
-    return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+    return ores::platform::time::datetime::to_db_string(tp);
 }
 
 std::chrono::system_clock::time_point datetime::make_timepoint(

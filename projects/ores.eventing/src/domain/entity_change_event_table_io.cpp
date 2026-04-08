@@ -33,8 +33,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>
 
     for (const auto& item : v) {
         using platform::time::datetime;
-        auto timestamp_str = datetime::format_time_point(item.timestamp,
-                "%Y-%m-%d %H:%M:%S");
+        auto timestamp_str = datetime::to_local_display_string(item.timestamp);
 
         table << item.entity << timestamp_str << item.tenant_id << fort::endr;
     }

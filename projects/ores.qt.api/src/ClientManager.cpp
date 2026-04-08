@@ -26,6 +26,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -74,13 +75,33 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         if (auto v = environment::get_value("ORES_NATS_TLS_CERT")) opts.tls_client_cert = *v;
         if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))  opts.tls_client_key  = *v;
 
+        // Phase 1: TCP + TLS connection to NATS.
+        // Throws nats_connect_error with server_unreachable, tls_error, or
+        // connection_timeout if the NATS server itself cannot be reached.
         session_.connect(std::move(opts));
+        BOOST_LOG_SEV(lg(), info) << "NATS connection established";
 
-        // Check bootstrap status
+        // Phase 2: Verify services are running via bootstrap check.
+        // Throws nats_connect_error with services_unavailable (NATS_NO_RESPONDERS)
+        // if NATS is up but no application service is subscribed.
+        // Returns std::unexpected on timeout or other soft errors.
         BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap status...";
         auto bootstrap_result = process_request(
             iam::messaging::bootstrap_status_request{});
-        if (bootstrap_result && bootstrap_result->is_in_bootstrap_mode) {
+
+        if (!bootstrap_result) {
+            // Bootstrap request failed: services are not responding.
+            BOOST_LOG_SEV(lg(), error) << "Bootstrap check failed: "
+                                       << bootstrap_result.error();
+            return {
+                .success = false,
+                .error_message =
+                    "NATS is running but application services are not responding.\n\n"
+                    "Please ensure all services have been started."
+            };
+        }
+
+        if (bootstrap_result->is_in_bootstrap_mode) {
             BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode";
             connected_host_ = host;
             connected_port_ = port;
@@ -97,6 +118,53 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
         return {.success = true, .error_message = {}};
 
+    } catch (const nats::service::nats_connect_error& e) {
+        using nats::service::nats_error_kind;
+        BOOST_LOG_SEV(lg(), error) << "Connection failed (" << static_cast<int>(e.kind())
+                                   << "): " << e.what();
+        switch (e.kind()) {
+            case nats_error_kind::server_unreachable:
+                return {
+                    .success = false,
+                    .error_message = QString(
+                        "Cannot connect to NATS server at %1:%2.\n\n"
+                        "The server may not be running, or the host/port is incorrect.")
+                        .arg(QString::fromStdString(host))
+                        .arg(port)
+                };
+            case nats_error_kind::tls_error:
+                return {
+                    .success = false,
+                    .error_message =
+                        "TLS/SSL error connecting to the server.\n\n"
+                        "Possible causes:\n"
+                        "  \u2022 Client certificates are missing or have expired\n"
+                        "  \u2022 The CA certificate does not match the server\n"
+                        "  \u2022 A stale TLS session — try restarting the application"
+                };
+            case nats_error_kind::connection_timeout:
+                return {
+                    .success = false,
+                    .error_message = QString(
+                        "Connection to %1:%2 timed out.\n\n"
+                        "The server may be unreachable or overloaded.")
+                        .arg(QString::fromStdString(host))
+                        .arg(port)
+                };
+            case nats_error_kind::services_unavailable:
+                return {
+                    .success = false,
+                    .error_message =
+                        "NATS is running but no application services are responding.\n\n"
+                        "Please ensure all services have been started."
+                };
+            default:
+                return {
+                    .success = false,
+                    .error_message = QString::fromStdString(
+                        "NATS error: " + std::string(e.what()))
+                };
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
         return {.success = false, .error_message = QString::fromStdString(e.what())};
@@ -271,10 +339,22 @@ LoginResult ClientManager::connectAndLogin(
     const std::string& username,
     const std::string& password) {
 
+    BOOST_LOG_SEV(lg(), debug) << "connectAndLogin: host=" << host
+                               << " port=" << port
+                               << " user=" << username;
+
     auto connect_result = connect(host, port);
-    if (connect_result.bootstrap_mode || !connect_result.success) {
+    if (connect_result.bootstrap_mode) {
+        BOOST_LOG_SEV(lg(), debug) << "connectAndLogin: bootstrap mode detected";
         return connect_result;
     }
+    if (!connect_result.success) {
+        BOOST_LOG_SEV(lg(), error) << "connectAndLogin: connect phase failed: "
+                                   << connect_result.error_message.toStdString();
+        return connect_result;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "connectAndLogin: connect succeeded, attempting login";
     return login(username, password);
 }
 

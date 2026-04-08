@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 
 #include <format>
@@ -111,7 +112,7 @@ void session_repository::end_session(const boost::uuids::uuid& session_id,
 
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto start_time_ts = timepoint_to_timestamp(start_time, lg());
-    const auto end_time_str = std::format("{:%Y-%m-%d %H:%M:%S}", end_time);
+    const auto end_time_str = ores::platform::time::datetime::to_db_string(end_time);
 
     const auto query = sqlgen::update<session_entity>(
         "end_time"_c.set(end_time_str),
@@ -317,8 +318,8 @@ session_repository::read_daily_statistics(
                                << boost::uuids::to_string(account_id);
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", start);
-    const auto end_str = std::format("{:%Y-%m-%d %H:%M:%S}", end);
+    const auto start_str = ores::platform::time::datetime::to_db_string(start);
+    const auto end_str = ores::platform::time::datetime::to_db_string(end);
 
     const auto query = sqlgen::read<std::vector<session_statistics_entity>> |
         where("account_id"_c == account_id_str &&
@@ -339,8 +340,8 @@ session_repository::read_aggregate_daily_statistics(
 
     BOOST_LOG_SEV(lg(), debug) << "Reading aggregate daily statistics";
 
-    const auto start_str = std::format("{:%Y-%m-%d %H:%M:%S}", start);
-    const auto end_str = std::format("{:%Y-%m-%d %H:%M:%S}", end);
+    const auto start_str = ores::platform::time::datetime::to_db_string(start);
+    const auto end_str = ores::platform::time::datetime::to_db_string(end);
 
     // For aggregate statistics, we would need a custom SQL query
     // that groups by day across all accounts. For now, return empty.

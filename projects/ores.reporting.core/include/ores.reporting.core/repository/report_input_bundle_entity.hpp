@@ -22,10 +22,12 @@
 
 #include <optional>
 #include <string>
-#include "sqlgen/Timestamp.hpp"
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::reporting::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Persists the object-storage references assembled during a report run.
@@ -46,7 +48,7 @@ struct report_input_bundle_entity {
     std::string market_data_storage_key;
     int trade_count = 0;
     int series_count = 0;
-    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+    std::optional<db_timestamp> created_at;
 };
 
 }

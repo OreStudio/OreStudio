@@ -41,7 +41,7 @@ struct Parser<ReaderType, WriterType,
         const auto str_result = Parser<ReaderType, WriterType,
             std::string, ProcessorsType>::read(_r, _var);
         if (!str_result) {
-            return rfl::Unexpected(Error(str_result.error()->what()));
+            return rfl::Unexpected(Error(str_result.error().what()));
         }
         try {
             return ores::platform::time::datetime::from_iso8601_utc(

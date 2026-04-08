@@ -95,12 +95,13 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         }
 
         // Log timestamps use Boost.Log format "YYYY-Mon-DD HH:MM:SS" with no
-        // timezone designator. std::get_time in the C locale always parses
-        // English month abbreviations (%b) regardless of system locale.
+        // timezone designator. Imbue with the C locale so that %b always
+        // matches English month abbreviations regardless of system locale.
         // Treat as UTC (log system writes UTC timestamps).
         std::tm tm = {};
         const std::string dt_str(dt_part);
         std::istringstream ss(dt_str);
+        ss.imbue(std::locale::classic());
         ss >> std::get_time(&tm, ore_log_timestamp_format.data());
         if (ss.fail())
             return std::nullopt;

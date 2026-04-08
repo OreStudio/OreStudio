@@ -25,6 +25,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::database::repository {
 
@@ -96,7 +97,8 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
  *
  * The sqlgen Timestamp holds the time in the DB session's timezone. Since all
- * DB sessions are forced to UTC, this is equivalent to UTC.
+ * DB sessions are forced to UTC, its internal std::tm fields are already UTC.
+ * Convert directly via to_time_point_utc — no string round-trip needed.
  *
  * @param ts The sqlgen Timestamp to convert
  * @return A system_clock::time_point representing the UTC instant
@@ -106,7 +108,7 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    return platform::time::datetime::from_iso8601_utc(ts.str() + "Z");
+    return platform::time::time_utils::to_time_point_utc(ts.tm());
 }
 
 /**

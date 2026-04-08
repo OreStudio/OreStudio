@@ -152,6 +152,16 @@ public:
             (*session_result)->execute("ROLLBACK"); // best-effort on fresh conn
         }
 
+        // Force UTC for all timestamp operations on this connection.
+        // PostgreSQL returns timestamptz values as "YYYY-MM-DD HH:MM:SS+00"
+        // when the session timezone is UTC, which from_iso8601_utc accepts.
+        auto tz_result = (*session_result)->execute(
+            "SELECT set_config('TimeZone', 'UTC', false)");
+        if (!tz_result) {
+            return sqlgen::error("Failed to set session timezone to UTC: " +
+                std::string(tz_result.error().what()));
+        }
+
         const auto tenant_id_str = tenant_id_.to_string();
         const std::string sql =
             "SELECT set_config('app.current_tenant_id', '" +

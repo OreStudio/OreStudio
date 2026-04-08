@@ -31,6 +31,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <rfl.hpp>
+#include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 // Forward declarations for enum types that need custom reflectors

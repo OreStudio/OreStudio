@@ -99,7 +99,8 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         // English month abbreviations (%b) regardless of system locale.
         // Treat as UTC (log system writes UTC timestamps).
         std::tm tm = {};
-        std::istringstream ss(std::string(dt_part));
+        const std::string dt_str(dt_part);
+        std::istringstream ss(dt_str);
         ss >> std::get_time(&tm, "%Y-%b-%d %H:%M:%S");
         if (ss.fail())
             return std::nullopt;

@@ -28,6 +28,10 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
+#include "ores.qt/PricingEngineTypeController.hpp"
+#include "ores.qt/PricingModelConfigController.hpp"
+#include "ores.qt/PricingModelProductController.hpp"
+#include "ores.qt/PricingModelProductParameterController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
@@ -64,6 +68,22 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
     if (!ctx_.http_base_url.empty())
         appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
     connectControllerSignals(appVersionController_.get());
+
+    pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(pricingEngineTypeController_.get());
+
+    pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(pricingModelConfigController_.get());
+
+    pricingModelProductController_ = std::make_unique<PricingModelProductController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(pricingModelProductController_.get());
+
+    pricingModelProductParameterController_ = std::make_unique<PricingModelProductParameterController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(pricingModelProductParameterController_.get());
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
@@ -182,6 +202,33 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuCompute->addSeparator();
 
+    // Pricing Models submenu (was the standalone Analytics menu)
+    auto* menuPricingModels = menuCompute->addMenu(tr("&Pricing Models"));
+    auto* actPricingEngineTypes = menuPricingModels->addAction(
+        ico(Icon::Tag), tr("&Pricing Engine Types"));
+    connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
+        if (pricingEngineTypeController_) pricingEngineTypeController_->showListWindow();
+    });
+    menuPricingModels->addSeparator();
+    auto* actModelConfigs = menuPricingModels->addAction(
+        ico(Icon::Chart), tr("Model &Configurations"));
+    connect(actModelConfigs, &QAction::triggered, this, [this]() {
+        if (pricingModelConfigController_) pricingModelConfigController_->showListWindow();
+    });
+    auto* actModelProducts = menuPricingModels->addAction(
+        ico(Icon::Table), tr("Model &Products"));
+    connect(actModelProducts, &QAction::triggered, this, [this]() {
+        if (pricingModelProductController_) pricingModelProductController_->showListWindow();
+    });
+    auto* actModelProductParameters = menuPricingModels->addAction(
+        ico(Icon::Settings), tr("Model Product &Parameters"));
+    connect(actModelProductParameters, &QAction::triggered, this, [this]() {
+        if (pricingModelProductParameterController_)
+            pricingModelProductParameterController_->showListWindow();
+    });
+
+    menuCompute->addSeparator();
+
     auto* actApps = menuCompute->addAction(ico(Icon::TasksApp), tr("&Apps"));
     connect(actApps, &QAction::triggered, this, [this]() {
         if (appController_) appController_->showListWindow();
@@ -226,8 +273,8 @@ QList<QMenu*> ComputePlugin::create_menus() {
         if (jobDefinitionController_) jobDefinitionController_->showListWindow();
     });
 
-    menus.append(menuReporting);
     menus.append(menuCompute);
+    menus.append(menuReporting);
 
     return menus;
 }
@@ -246,6 +293,10 @@ void ComputePlugin::on_logout() {
     serviceDashboardController_.reset();
     computeConsoleController_.reset();
     computeDashboardController_.reset();
+    pricingModelProductParameterController_.reset();
+    pricingModelProductController_.reset();
+    pricingModelConfigController_.reset();
+    pricingEngineTypeController_.reset();
     appVersionController_.reset();
     appController_.reset();
     ctx_ = {};

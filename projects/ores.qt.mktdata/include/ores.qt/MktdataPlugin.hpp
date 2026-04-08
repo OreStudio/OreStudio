@@ -30,25 +30,14 @@ namespace ores::qt {
 class DetachableMdiSubWindow;
 class CurrencyMarketTierController;
 class MarketDataController;
-class PricingEngineTypeController;
-class PricingModelConfigController;
-class PricingModelProductController;
-class PricingModelProductParameterController;
 class DataLibrarianWindow;
 
 /**
- * @brief Market data plugin: market series, fixings, pricing model config,
- *        currency market tiers, and the data librarian.
- *
- * Extracted from LegacyPlugin in Step 7 of the Qt plugin refactor.
- * Owns the Market Data and Analytics menus.
- */
-/**
- * @brief Market data plugin: market series, fixings, pricing model config,
+ * @brief Market data plugin: market series, fixings,
  *        currency market tiers, and the data librarian.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Market Data and Analytics menus.
+ * Owns the Market Data menu.
  */
 class MktdataPlugin : public PluginBase {
     Q_OBJECT
@@ -77,12 +66,8 @@ private:
     QAction* act_data_librarian_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<CurrencyMarketTierController>            currencyMarketTierController_;
-    std::unique_ptr<MarketDataController>                    marketDataController_;
-    std::unique_ptr<PricingEngineTypeController>             pricingEngineTypeController_;
-    std::unique_ptr<PricingModelConfigController>            pricingModelConfigController_;
-    std::unique_ptr<PricingModelProductController>           pricingModelProductController_;
-    std::unique_ptr<PricingModelProductParameterController>  pricingModelProductParameterController_;
+    std::unique_ptr<CurrencyMarketTierController>  currencyMarketTierController_;
+    std::unique_ptr<MarketDataController>          marketDataController_;
 };
 
 }

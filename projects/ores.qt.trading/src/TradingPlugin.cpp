@@ -95,9 +95,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (bookController_) bookController_->showListWindow();
     });
 
-    // Auxiliary Data submenu (book statuses)
-    auto* menuAux = menuTrading->addMenu(tr("A&uxiliary Data"));
-    auto* actBookStatuses = menuAux->addAction(ico(Icon::Flag), tr("Book &Statuses"));
+    auto* actBookStatuses = menuTrading->addAction(ico(Icon::Flag), tr("Book &Statuses"));
     connect(actBookStatuses, &QAction::triggered, this, [this]() {
         if (bookStatusController_) bookStatusController_->showListWindow();
     });

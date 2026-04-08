@@ -29,6 +29,10 @@ namespace ores::qt {
 
 class AppController;
 class AppVersionController;
+class PricingEngineTypeController;
+class PricingModelConfigController;
+class PricingModelProductController;
+class PricingModelProductParameterController;
 class ComputeDashboardController;
 class ComputeConsoleController;
 class ServiceDashboardController;
@@ -75,6 +79,10 @@ private:
 
     std::unique_ptr<AppController>               appController_;
     std::unique_ptr<AppVersionController>        appVersionController_;
+    std::unique_ptr<PricingEngineTypeController>             pricingEngineTypeController_;
+    std::unique_ptr<PricingModelConfigController>            pricingModelConfigController_;
+    std::unique_ptr<PricingModelProductController>           pricingModelProductController_;
+    std::unique_ptr<PricingModelProductParameterController>  pricingModelProductParameterController_;
     std::unique_ptr<ComputeDashboardController>  computeDashboardController_;
     std::unique_ptr<ComputeConsoleController>    computeConsoleController_;
     std::unique_ptr<ServiceDashboardController>  serviceDashboardController_;

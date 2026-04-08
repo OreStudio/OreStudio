@@ -41,15 +41,8 @@ class BusinessUnitTypeController;
  * @brief Party/organisation plugin: parties, counterparties, business
  *        centres, business units, and related type tables.
  *
- * Extracted from LegacyPlugin in Step 6 of the Qt plugin refactor.
- * Owns the Organization menu.
- */
-/**
- * @brief Party/organisation plugin: parties, counterparties, business
- *        centres, business units, and related type tables.
- *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Organization menu.
+ * Owns the Entities top-level menu.
  */
 class PartyPlugin : public PluginBase {
     Q_OBJECT
@@ -61,11 +54,9 @@ public:
     ~PartyPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.party"); }
-    int load_order() const override { return 150; }  // setup_menus only; no standalone menus
+    int load_order() const override { return 150; }  // owns the Entities top-level menu
 
     void on_login(const plugin_context& ctx) override;
-    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
-                     QMenu* telemetry_menu) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;

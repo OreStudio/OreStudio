@@ -51,12 +51,14 @@ target_include_directories(${lib_target_name} PRIVATE
     # Transient: compute controllers include headers still in ores.qt.
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.admin/include")
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.admin/include"
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.admin.lib
+        ores.qt.mktdata.lib
         ores.compute.api.lib
         ores.scheduler.api.lib
         ores.reporting.api.lib

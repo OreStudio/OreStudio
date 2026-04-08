@@ -208,25 +208,7 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
 
     ref->addSeparator();
 
-    // Auxiliary Data submenu
-    auto* menuAux = ref->addMenu(tr("A&uxiliary Data"));
-    auto* actRoundingTypes = menuAux->addAction(ico(Icon::Tag), tr("&Rounding Types"));
-    connect(actRoundingTypes, &QAction::triggered, this, [this]() {
-        if (roundingTypeController_) roundingTypeController_->showListWindow();
-    });
-    auto* actMonetaryNatures = menuAux->addAction(ico(Icon::Classification), tr("&Monetary Natures"));
-    connect(actMonetaryNatures, &QAction::triggered, this, [this]() {
-        if (monetaryNatureController_) monetaryNatureController_->showListWindow();
-    });
-    menuAux->addSeparator();
-    auto* actPurposeTypes = menuAux->addAction(ico(Icon::Flag), tr("&Purpose Types"));
-    connect(actPurposeTypes, &QAction::triggered, this, [this]() {
-        if (purposeTypeController_) purposeTypeController_->showListWindow();
-    });
-
-    ref->addSeparator();
-
-    // Trading Conventions submenu
+    // Trading Conventions submenu (unchanged)
     auto* menuConventions = ref->addMenu(tr("Trading &Conventions"));
     auto* actDayCountFractionTypes = menuConventions->addAction(
         ico(Icon::Tag), tr("&Day Count Fraction Types"));
@@ -256,13 +238,15 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
 
     ref->addSeparator();
 
-    // Data Governance submenu
-    auto* menuQuality = ref->addMenu(tr("Data &Governance"));
-
-    auto* menuClassifications = menuQuality->addMenu(tr("&Classifications"));
+    // Classifications submenu (was Data Governance > Classifications)
+    auto* menuClassifications = ref->addMenu(tr("C&lassifications"));
     auto* actCodingSchemes = menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
     connect(actCodingSchemes, &QAction::triggered, this, [this]() {
         if (codingSchemeController_) codingSchemeController_->showListWindow();
+    });
+    auto* actCodeDomains = menuClassifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
+    connect(actCodeDomains, &QAction::triggered, this, [this]() {
+        if (codeDomainController_) codeDomainController_->showListWindow();
     });
     auto* actCodingSchemeAuthorityTypes = menuClassifications->addAction(
         ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
@@ -270,26 +254,31 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
         if (codingSchemeAuthorityTypeController_)
             codingSchemeAuthorityTypeController_->showListWindow();
     });
-    auto* actCodeDomains = menuClassifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
-    connect(actCodeDomains, &QAction::triggered, this, [this]() {
-        if (codeDomainController_) codeDomainController_->showListWindow();
-    });
 
-    auto* menuDgOrg = menuQuality->addMenu(tr("&Organization"));
-    auto* actDataDomains = menuDgOrg->addAction(ico(Icon::Folder), tr("&Data Domains"));
+    // Data Catalogue submenu (was Data Governance > Organization + Methodologies + Dataset Bundles)
+    auto* menuCatalogue = ref->addMenu(tr("Data Ca&talogue"));
+    auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
     connect(actDataDomains, &QAction::triggered, this, [this]() {
         if (dataDomainController_) dataDomainController_->showListWindow();
     });
-    auto* actSubjectAreas = menuDgOrg->addAction(ico(Icon::Table), tr("&Subject Areas"));
+    auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
     connect(actSubjectAreas, &QAction::triggered, this, [this]() {
         if (subjectAreaController_) subjectAreaController_->showListWindow();
     });
-    auto* actCatalogs = menuDgOrg->addAction(ico(Icon::Library), tr("&Catalogs"));
+    auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogs"));
     connect(actCatalogs, &QAction::triggered, this, [this]() {
         if (catalogController_) catalogController_->showListWindow();
     });
-
-    auto* menuDimensions = menuQuality->addMenu(tr("&Dimensions"));
+    auto* actDatasetBundles = menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
+    connect(actDatasetBundles, &QAction::triggered, this, [this]() {
+        if (datasetBundleController_) datasetBundleController_->showListWindow();
+    });
+    auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
+    connect(actMethodologies, &QAction::triggered, this, [this]() {
+        if (methodologyController_) methodologyController_->showListWindow();
+    });
+    menuCatalogue->addSeparator();
+    auto* menuDimensions = menuCatalogue->addMenu(tr("&Dimensions"));
     auto* actOriginDimensions = menuDimensions->addAction(
         ico(Icon::Database), tr("&Origin Dimensions"));
     connect(actOriginDimensions, &QAction::triggered, this, [this]() {
@@ -306,31 +295,36 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
         if (treatmentDimensionController_) treatmentDimensionController_->showListWindow();
     });
 
-    menuQuality->addMenu(menuDimensions);
-    auto* actMethodologies = menuQuality->addAction(ico(Icon::Book), tr("&Methodologies"));
-    connect(actMethodologies, &QAction::triggered, this, [this]() {
-        if (methodologyController_) methodologyController_->showListWindow();
+    ref->addSeparator();
+
+    // Loose type tables (was Auxiliary Data submenu — now inline)
+    auto* actMonetaryNatures = ref->addAction(
+        ico(Icon::Classification), tr("&Monetary Natures"));
+    connect(actMonetaryNatures, &QAction::triggered, this, [this]() {
+        if (monetaryNatureController_) monetaryNatureController_->showListWindow();
     });
-    auto* actDatasetBundles = menuQuality->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
-    connect(actDatasetBundles, &QAction::triggered, this, [this]() {
-        if (datasetBundleController_) datasetBundleController_->showListWindow();
+    auto* actRoundingTypes = ref->addAction(ico(Icon::Tag), tr("&Rounding Types"));
+    connect(actRoundingTypes, &QAction::triggered, this, [this]() {
+        if (roundingTypeController_) roundingTypeController_->showListWindow();
     });
-    menuQuality->addSeparator();
-    menuQuality->addMenu(menuClassifications);
-    menuQuality->addMenu(menuDgOrg);
-    menuQuality->addSeparator();
-    auto* actChangeReasonCategories = menuQuality->addAction(
+    auto* actPurposeTypes = ref->addAction(ico(Icon::Flag), tr("&Purpose Types"));
+    connect(actPurposeTypes, &QAction::triggered, this, [this]() {
+        if (purposeTypeController_) purposeTypeController_->showListWindow();
+    });
+
+    ref->addSeparator();
+
+    // Audit trail configuration (was Data Governance)
+    auto* actChangeReasonCategories = ref->addAction(
         ico(Icon::Tag), tr("Change Reason &Categories"));
     connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
         if (changeReasonCategoryController_)
             changeReasonCategoryController_->showListWindow();
     });
-    auto* actChangeReasons = menuQuality->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
+    auto* actChangeReasons = ref->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
     connect(actChangeReasons, &QAction::triggered, this, [this]() {
         if (changeReasonController_) changeReasonController_->showListWindow();
     });
-    // NOTE: PartyPlugin adds its Organization submenu after this via its own
-    // setup_menus() call (load_order 400 > 300).
 }
 
 // ---------------------------------------------------------------------------

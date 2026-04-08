@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <rfl/json.hpp>
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/domain/exceptions.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database {
@@ -60,7 +61,7 @@ context context_factory::make_context(const configuration& cfg) {
         pool_config, credentials);
 
     if (!pool_result) {
-        throw std::runtime_error("Failed to create connection pool: " +
+        throw db_connection_exception("Failed to create connection pool: " +
             std::string(pool_result.error().what()));
     }
 

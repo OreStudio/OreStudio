@@ -26,6 +26,8 @@
 #include <Wt/WLogSink.h>
 #include "ores.wt.service/config/parser.hpp"
 #include "ores.wt.service/config/parser_exception.hpp"
+#include "ores.database/domain/exceptions.hpp"
+#include "ores.service/service/exit_codes.hpp"
 #include "ores.wt.service/service/application_context.hpp"
 #include "ores.wt.service/app/ore_application.hpp"
 #include "ores.wt.service/messaging/registrar.hpp"
@@ -210,6 +212,9 @@ int main(int argc, char* argv[]) {
         return run(argc, argv);
     } catch (const ores::wt::service::config::parser_exception&) {
         return EXIT_FAILURE;
+    } catch (const ores::database::db_connection_exception&) {
+        return static_cast<int>(
+            ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         return EXIT_FAILURE;

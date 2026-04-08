@@ -25,6 +25,8 @@
 #include <openssl/crypto.h>
 #include "ores.http.server/app/host.hpp"
 #include "ores.http.server/config/parser_exception.hpp"
+#include "ores.database/domain/exceptions.hpp"
+#include "ores.service/service/exit_codes.hpp"
 
 namespace {
 
@@ -42,6 +44,9 @@ async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
          * already been handled by the parser itself.
          */
         co_return EXIT_FAILURE;
+    } catch (const ores::database::db_connection_exception&) {
+        co_return static_cast<int>(
+            ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         std::cerr << "Failed to execute HTTP server." << std::endl;

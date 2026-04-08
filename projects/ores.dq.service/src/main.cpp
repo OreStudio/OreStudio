@@ -25,6 +25,8 @@
 #include <openssl/crypto.h>
 #include "ores.dq.service/app/host.hpp"
 #include "ores.dq.service/config/parser_exception.hpp"
+#include "ores.database/domain/exceptions.hpp"
+#include "ores.service/service/exit_codes.hpp"
 
 namespace {
 
@@ -38,6 +40,9 @@ async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
         co_return co_await host::execute(args, std::cout, std::cerr, io_ctx);
     } catch (const parser_exception& /*e*/) {
         co_return EXIT_FAILURE;
+    } catch (const ores::database::db_connection_exception&) {
+        co_return static_cast<int>(
+            ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         std::cerr << "Failed to execute command." << std::endl;

@@ -31,6 +31,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <rfl.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 // Forward declarations for enum types that need custom reflectors
@@ -114,49 +115,25 @@ struct Reflector<std::optional<boost::uuids::uuid>> {
 /**
  * @brief Custom reflector for std::chrono::system_clock::time_point.
  *
- * @details Serializes to and from an ISO 8601 compliant UTC string.
- * This is the idiomatic C++23 approach, using std::format and
- * std::chrono::parse for type-safe and portable operations.
+ * @details Serializes to and from an ISO 8601 compliant UTC string using
+ * the cross-platform ores.platform time utilities.
  *
- * Serialized format: "YYYY-MM-DD HH:MM:SS" (assumed to be UTC)
+ * Serialized format: "YYYY-MM-DD HH:MM:SS" (UTC)
  * Example: "2023-10-27 14:45:30"
  */
 template<>
 struct Reflector<std::chrono::system_clock::time_point> {
     using ReflType = std::string;
 
-    /**
-     * @brief Parses a string into a time_point.
-     * @details Uses std::chrono::from_stream (C++20) to safely parse the
-     * string format into a std::chrono::sys_timepoint.
-     * @param str The string to parse.
-     * @return A system_clock::time_point representing the parsed time.
-     * @throws std::runtime_error if the string cannot be parsed.
-     */
     static std::chrono::system_clock::time_point to(const ReflType& str) {
-        // Parse ISO 8601 format: "YYYY-MM-DD HH:MM:SS"
-        std::tm tm = {};
-        std::istringstream ss(str);
-        ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-
-        auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-        return tp;
+        return ores::platform::time::datetime::parse_time_point_utc(str);
     }
 
     /**
-     * @brief Formats a time_point into a string.
-     * @details Uses std::format (C++23) to create a clean, unambiguous
-     * UTC string representation. This avoids all C-style time functions.
-     * @param v The time_point to format.
-     * @return A string representation of the time_point.
+     * @brief Formats a time_point into a UTC string "YYYY-MM-DD HH:MM:SS".
      */
     static ReflType from(const std::chrono::system_clock::time_point& v) {
-        // The time_point is already in the "system clock" which is UTC.
-        // We format it directly. The format specifiers are:
-        // %F -> YYYY-MM-DD
-        // %T -> HH:MM:SS
-        // We add 'Z' to explicitly mark it as UTC, which is best practice.
-        return std::format("{:%F %T}Z", v);
+        return ores::platform::time::datetime::format_time_point_utc(v);
     }
 };
 

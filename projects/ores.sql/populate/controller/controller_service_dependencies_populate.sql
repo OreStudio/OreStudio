@@ -42,7 +42,8 @@ values
     ('ores.synthetic.service',  'ores.iam.service'),
     ('ores.workflow.service',   'ores.iam.service'),
     ('ores.ore.service',        'ores.iam.service'),
-    ('ores.marketdata.service', 'ores.iam.service')
+    ('ores.marketdata.service', 'ores.iam.service'),
+    ('ores.analytics.service', 'ores.iam.service')
 on conflict do nothing;
 
 -- Summary

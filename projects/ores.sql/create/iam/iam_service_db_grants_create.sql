@@ -92,7 +92,8 @@ grant usage, select on all sequences in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :controller_service_user;
+    :controller_service_user,
+    :analytics_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -111,7 +112,8 @@ alter default privileges in schema public
     :workflow_service_user,
     :ore_service_user,
     :marketdata_service_user,
-    :controller_service_user;
+    :controller_service_user,
+    :analytics_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
@@ -222,6 +224,12 @@ grant select on ores_iam_tenants_tbl to :marketdata_service_user;
 -- controller_service: Service Controller domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_controller_', :'controller_service_user');
+
+-- ---------------------------------------------------------------------------
+-- analytics_service: Analytics domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
+grant select on ores_iam_tenants_tbl to :analytics_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

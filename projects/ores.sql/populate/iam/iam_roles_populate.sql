@@ -212,6 +212,11 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Mark
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'Service lifecycle controller');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ControllerService', 'controller::*');
 
+-- Analytics service: full own-component access
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsService', 'Analytics pricing engine domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsService', 'analytics::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsService', 'iam::tenants:read');
+
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()

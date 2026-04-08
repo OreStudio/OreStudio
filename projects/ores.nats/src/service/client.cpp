@@ -22,6 +22,7 @@
 #include <atomic>
 #include "ores.nats/service/jetstream_admin.hpp"
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -237,6 +238,17 @@ void client::connect() {
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
 
     if (!impl_->opts.tls_ca_cert.empty()) {
+        // Validate TLS files exist before attempting connection so we can log
+        // a clear diagnostic instead of a cryptic SSL handshake error.
+        auto check_file = [](const std::string& path, const char* role) {
+            if (!std::filesystem::exists(path))
+                throw std::runtime_error(
+                    std::string("NATS TLS ") + role + " not found: " + path);
+        };
+        check_file(impl_->opts.tls_ca_cert,      "CA certificate");
+        check_file(impl_->opts.tls_client_cert,  "client certificate");
+        check_file(impl_->opts.tls_client_key,   "client key");
+
         natsOptions_SetSecure(opts, true);
         natsOptions_LoadCATrustedCertificates(
             opts, impl_->opts.tls_ca_cert.c_str());

@@ -29,6 +29,7 @@
 #include <unistd.h>
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
+#include <unistd.h>
 #elif defined(_WIN32)
 #include <windows.h>
 #endif
@@ -76,6 +77,20 @@ std::string executable_build_time() {
     std::array<char, 32> buf{};
     std::strftime(buf.data(), buf.size(), "%Y/%m/%d %H:%M:%S", &tm);
     return {buf.data()};
+}
+
+std::string get_hostname() {
+#if defined(_WIN32)
+    char buf[MAX_COMPUTERNAME_LENGTH + 1] = {};
+    DWORD size = sizeof(buf);
+    if (GetComputerNameA(buf, &size))
+        return {buf};
+#else
+    char buf[256] = {};
+    if (::gethostname(buf, sizeof(buf)) == 0)
+        return {buf};
+#endif
+    return "unknown";
 }
 
 }

@@ -241,6 +241,21 @@
         ],
         "select_tables": [],
         "select_prefixes": []
+      },
+      {
+        "name": "analytics",
+        "psql_var": "analytics_service",
+        "env_key": "ANALYTICS_SERVICE",
+        "iam_role": "AnalyticsService",
+        "description": "Analytics",
+        "email": "analytics_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_analytics_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
       }
     ]
   }

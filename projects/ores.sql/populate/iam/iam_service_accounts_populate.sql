@@ -56,6 +56,7 @@
 \set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
 \set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
 \set controller_service_pw    `echo "$ORES_CONTROLLER_SERVICE_DB_PASSWORD"`
+\set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -204,6 +205,13 @@ select ores_iam_service_accounts_upsert_fn(
     'controller_service@system.ores',
     'System service account for Service Controller NATS domain service',
     :'controller_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'analytics_service_user',
+    'analytics_service@system.ores',
+    'System service account for Analytics NATS domain service',
+    :'analytics_service_pw'
 );
 
 -- Summary

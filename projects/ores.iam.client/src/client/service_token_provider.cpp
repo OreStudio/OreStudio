@@ -24,6 +24,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -61,32 +62,55 @@ struct token_state {
     void authenticate() {
         BOOST_LOG_SEV(lg(), info) << "Authenticating service account: " << username;
 
-        const auto req_json = rfl::json::write(ores::iam::messaging::service_login_request{
-            .username = username, .password = password});
-        const auto reply = nats.request_sync(
-            service_login_subject, ores::nats::as_bytes(req_json));
+        // Retry with exponential backoff. This handles the startup race where
+        // IAM hasn't subscribed to its NATS subjects yet (e.g. the supervisor
+        // launched this service slightly too early). Auth failures (wrong
+        // credentials) are not retried — they propagate immediately.
+        auto delay = std::chrono::milliseconds(500);
+        constexpr auto max_delay = std::chrono::milliseconds(30000);
 
-        auto resp = rfl::json::read<ores::iam::messaging::service_login_response>(
-            ores::nats::as_string_view(reply.data));
-        if (!resp || !resp->success || resp->token.empty()) {
-            const auto msg = resp ? resp->message : "parse error";
-            BOOST_LOG_SEV(lg(), error)
-                << "Service authentication failed for " << username << ": " << msg;
-            throw std::runtime_error(
-                "Service authentication failed for " + username + ": " + msg);
+        for (int attempt = 1; ; ++attempt) {
+            try {
+                const auto req_json = rfl::json::write(
+                    ores::iam::messaging::service_login_request{
+                        .username = username, .password = password});
+                const auto reply = nats.request_sync(
+                    service_login_subject, ores::nats::as_bytes(req_json));
+
+                auto resp = rfl::json::read<ores::iam::messaging::service_login_response>(
+                    ores::nats::as_string_view(reply.data));
+                if (!resp || !resp->success || resp->token.empty()) {
+                    const auto msg = resp ? resp->message : "parse error";
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Service authentication failed for " << username << ": " << msg;
+                    throw std::runtime_error(
+                        "Service authentication failed for " + username + ": " + msg);
+                }
+
+                jwt = std::move(resp->token);
+                access_lifetime_s = resp->access_lifetime_s;
+                expires_at = std::chrono::system_clock::now() +
+                             std::chrono::seconds(access_lifetime_s);
+                // Tune proactive refresh margin to 20% of the actual TTL so
+                // the token is renewed at ~80% of its lifetime.
+                refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
+                BOOST_LOG_SEV(lg(), info)
+                    << "Service authentication successful for " << username
+                    << " (lifetime=" << access_lifetime_s << "s"
+                    << ", refresh_margin=" << refresh_margin.count() << "s)";
+                return;
+            } catch (const std::runtime_error& e) {
+                const std::string_view what = e.what();
+                // Credential errors are fatal — retrying won't help.
+                if (what.starts_with("Service authentication failed"))
+                    throw;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Authentication attempt " << attempt << " failed: " << e.what()
+                    << ". Retrying in " << delay.count() << " ms.";
+            }
+            std::this_thread::sleep_for(delay);
+            delay = std::min(delay * 2, max_delay);
         }
-
-        jwt = std::move(resp->token);
-        access_lifetime_s = resp->access_lifetime_s;
-        expires_at = std::chrono::system_clock::now() +
-                     std::chrono::seconds(access_lifetime_s);
-        // Tune proactive refresh margin to 20% of the actual TTL so the token
-        // is renewed at ~80% of its lifetime, regardless of the configured TTL.
-        refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
-        BOOST_LOG_SEV(lg(), info)
-            << "Service authentication successful for " << username
-            << " (lifetime=" << access_lifetime_s << "s"
-            << ", refresh_margin=" << refresh_margin.count() << "s)";
     }
 
     void refresh() {

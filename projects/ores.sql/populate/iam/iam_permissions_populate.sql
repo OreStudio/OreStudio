@@ -395,6 +395,23 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controlle
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'controller::*', 'Full access to all controller operations');
 
 -- =============================================================================
+-- Analytics Permissions
+-- =============================================================================
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_engine_types:read',   'View pricing engine types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_engine_types:write',  'Create and modify pricing engine types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_engine_types:delete', 'Delete pricing engine types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_configs:read',   'View pricing model configurations');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_configs:write',  'Create and modify pricing model configurations');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_configs:delete', 'Delete pricing model configurations');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_products:read',   'View pricing model products');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_products:write',  'Create and modify pricing model products');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_products:delete', 'Delete pricing model products');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_product_parameters:read',   'View pricing model product parameters');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_product_parameters:write',  'Create and modify pricing model product parameters');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::pricing_model_product_parameters:delete', 'Delete pricing model product parameters');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'analytics::*', 'Full access to all analytics operations');
+
+-- =============================================================================
 -- Global Wildcard Permission
 -- =============================================================================
 

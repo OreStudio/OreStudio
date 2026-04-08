@@ -24,7 +24,6 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
-#include <csignal>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -37,6 +36,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include "ores.platform/process/executable.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.controller.core/repository/service_definition_repository.hpp"
 #include "ores.controller.core/repository/service_dependency_repository.hpp"
@@ -118,9 +118,8 @@ std::vector<std::string> process_supervisor::build_args(
     replace_all(tmpl, "{nats_tls_args}", tls_args);
 
     // {host_id}: stable UUID for compute wrapper nodes (hostname:replica_index).
-    char hostname_buf[256] = {};
-    ::gethostname(hostname_buf, sizeof(hostname_buf));
-    const std::string host_key = std::string(hostname_buf) + ":" + std::to_string(replica_index);
+    const std::string host_key =
+        ores::platform::process::get_hostname() + ":" + std::to_string(replica_index);
     static const auto ns_uuid =
         boost::uuids::string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     boost::uuids::name_generator name_gen(ns_uuid);
@@ -547,22 +546,25 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
         co_await t.async_wait(boost::asio::use_awaitable);
     }
 
-    // Phase 3: SIGQUIT for any survivors — same handler as SIGTERM in services,
-    // provides a second opportunity for graceful shutdown.
+    // Phase 3: second graceful-shutdown request for any survivors.
+    // Uses Boost.Process v2 request_exit() which is cross-platform
+    // (SIGTERM on POSIX, WM_QUIT on Windows). Our services treat a
+    // repeated graceful signal the same way as the first one.
     if (!processes_.empty()) {
         BOOST_LOG_SEV(lg(), warn)
             << processes_.size()
-            << " process(es) still running after SIGTERM grace — sending SIGQUIT";
+            << " process(es) still running after first grace — sending second exit request";
         for (auto& [key, entry] : processes_) {
             if (entry->proc) {
-                ::kill(static_cast<pid_t>(entry->proc->id()), SIGQUIT);
+                boost::system::error_code ec;
+                entry->proc->request_exit(ec);
                 BOOST_LOG_SEV(lg(), warn)
-                    << "Sent SIGQUIT to " << key.first
+                    << "Sent second exit request to " << key.first
                     << "[" << key.second << "] PID=" << entry->proc->id();
             }
         }
 
-        // Phase 4: Wait up to 5 s for the SIGQUIT to take effect.
+        // Phase 4: Wait up to 5 s for the second request to take effect.
         constexpr auto sigquit_grace = std::chrono::seconds(5);
         const auto sigquit_deadline = std::chrono::steady_clock::now() + sigquit_grace;
         while (!processes_.empty() && std::chrono::steady_clock::now() < sigquit_deadline) {

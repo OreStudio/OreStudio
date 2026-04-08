@@ -37,6 +37,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -335,6 +336,8 @@ public:
                     result.error().what());
             }
             return std::move(*result);
+        } catch (const ores::nats::service::nats_connect_error&) {
+            throw;  // Propagate so connect() can map to a user-visible message
         } catch (const std::exception& e) {
             return std::unexpected(std::string(e.what()));
         }
@@ -377,6 +380,8 @@ public:
                     result.error().what());
             }
             return std::move(*result);
+        } catch (const ores::nats::service::nats_connect_error&) {
+            throw;  // Propagate so connect() can map to a user-visible message
         } catch (const ores::nats::service::session_expired_error& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();

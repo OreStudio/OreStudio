@@ -477,9 +477,10 @@ void LoginDialog::onQuickConnectChanged(int idx) {
 }
 
 void LoginDialog::onLoginClicked() {
-    BOOST_LOG_SEV(lg(), trace) << "Login button clicked";
+    BOOST_LOG_SEV(lg(), debug) << "Login attempt initiated";
 
     if (!clientManager_) {
+        BOOST_LOG_SEV(lg(), error) << "clientManager_ is null — cannot attempt login";
         MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
         return;
     }
@@ -509,6 +510,11 @@ void LoginDialog::onLoginClicked() {
         return;
     }
 
+    BOOST_LOG_SEV(lg(), debug) << "Connecting to " << host.toStdString()
+                              << ":" << port
+                              << " as '" << username.toStdString() << "'"
+                              << " (namespace: '" << prefix.toStdString() << "')";
+
     enableForm(false);
     statusLabel_->setText("Connecting to server...");
     statusLabel_->setStyleSheet(dialog_styles::status);
@@ -516,15 +522,47 @@ void LoginDialog::onLoginClicked() {
     auto* watcher = new QFutureWatcher<LoginResult>(this);
     connect(watcher, &QFutureWatcher<LoginResult>::finished,
             [this, watcher]() {
-        const auto result = watcher->result();
-        watcher->deleteLater();
-        onLoginResult(result);
+        try {
+            const auto result = watcher->result();
+            watcher->deleteLater();
+            onLoginResult(result);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Login future threw unexpected exception: " << e.what();
+            watcher->deleteLater();
+            LoginResult r;
+            r.error_message = QString::fromStdString(e.what());
+            onLoginResult(r);
+        } catch (...) {
+            BOOST_LOG_SEV(lg(), error) << "Login future threw unknown exception";
+            watcher->deleteLater();
+            LoginResult r;
+            r.error_message = "Unknown internal error during login";
+            onLoginResult(r);
+        }
     });
 
     QFuture<LoginResult> future = QtConcurrent::run(
         [this, host, port, username, password]() -> LoginResult {
-            return clientManager_->connectAndLogin(
-                host.toStdString(), port, username.toStdString(), password.toStdString());
+            BOOST_LOG_SEV(lg(), debug) << "Background login thread started for "
+                                      << host.toStdString() << ":" << port;
+            try {
+                return clientManager_->connectAndLogin(
+                    host.toStdString(), port,
+                    username.toStdString(), password.toStdString());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "connectAndLogin threw exception: " << e.what();
+                LoginResult r;
+                r.error_message = QString::fromStdString(e.what());
+                return r;
+            } catch (...) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "connectAndLogin threw unknown exception";
+                LoginResult r;
+                r.error_message = "Unknown internal error";
+                return r;
+            }
         }
     );
 
@@ -532,7 +570,11 @@ void LoginDialog::onLoginClicked() {
 }
 
 void LoginDialog::onLoginResult(const LoginResult& result) {
-    BOOST_LOG_SEV(lg(), debug) << "Login result received";
+    BOOST_LOG_SEV(lg(), debug) << "Login result received: "
+                              << (result.success ? "success" : "failure")
+                              << (result.error_message.isEmpty()
+                                  ? ""
+                                  : " — " + result.error_message.toStdString());
 
     if (result.bootstrap_mode) {
         BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode - provisioning required";
@@ -628,10 +670,10 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             emit closeRequested();
         }
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed: " << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Login failed: " << result.error_message.toStdString();
 
         enableForm(true);
-        statusLabel_->setText("");
+        statusLabel_->setText("Login failed.");
 
         emit loginFailed(result.error_message);
         MessageBoxHelper::critical(this, "Login Failed",

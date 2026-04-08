@@ -54,6 +54,7 @@ std::string datetime::format_time_point_utc(
 
     std::ostringstream oss;
     oss << std::put_time(&tm_buf, format.c_str());
+    oss << 'Z';  // Always append UTC designator to prevent local/UTC ambiguity
     return oss.str();
 }
 
@@ -76,12 +77,17 @@ std::chrono::system_clock::time_point datetime::parse_time_point_utc(
     const std::string& str,
     const std::string& format) {
 
+    // Strip trailing 'Z' UTC designator if present so strptime succeeds
+    // regardless of whether the caller included it.
+    const std::string& clean = (!str.empty() && str.back() == 'Z')
+        ? str.substr(0, str.size() - 1) : str;
+
     std::tm tm = {};
-    std::istringstream ss(str);
+    std::istringstream ss(clean);
     ss >> std::get_time(&tm, format.c_str());
 
     if (ss.fail()) {
-        throw std::invalid_argument("Failed to parse time string: " + str);
+        throw std::invalid_argument("Failed to parse UTC time string: " + str);
     }
 
     return time_utils::to_time_point_utc(tm);

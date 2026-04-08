@@ -33,6 +33,9 @@ struct Parser<ReaderType, WriterType,
     using InputVarType = typename ReaderType::InputVarType;
     using OutputVarType = typename WriterType::OutputVarType;
 
+    // std::chrono::system_clock::time_point is always UTC by definition (C++20).
+    // We serialise with a 'Z' suffix and parse with UTC interpretation so that
+    // server and client agree regardless of the host machine's local timezone.
     static Result<std::chrono::system_clock::time_point> read(
         const ReaderType& _r, const InputVarType& _var) noexcept {
         const auto str_result = Parser<ReaderType, WriterType,
@@ -41,7 +44,7 @@ struct Parser<ReaderType, WriterType,
             return rfl::Unexpected(Error(str_result.error()->what()));
         }
         try {
-            return ores::platform::time::datetime::parse_time_point(
+            return ores::platform::time::datetime::parse_time_point_utc(
                 str_result.value());
         } catch (const std::exception& e) {
             return rfl::Unexpected(Error(e.what()));
@@ -52,7 +55,7 @@ struct Parser<ReaderType, WriterType,
     static void write(const WriterType& _w,
                       const std::chrono::system_clock::time_point& _tp,
                       const P& _parent) noexcept {
-        const auto str = ores::platform::time::datetime::format_time_point(_tp);
+        const auto str = ores::platform::time::datetime::format_time_point_utc(_tp);
         Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
             _w, str, _parent);
     }

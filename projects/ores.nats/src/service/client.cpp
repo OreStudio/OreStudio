@@ -41,6 +41,7 @@
 #include <boost/system/error_code.hpp>
 
 #include "ores.nats/service/subscription.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
 
 namespace ores::nats::service {
 
@@ -263,9 +264,28 @@ void client::connect() {
 
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
     natsOptions_Destroy(opts);
-    if (s != NATS_OK)
-        throw std::runtime_error(
+    if (s != NATS_OK) {
+        nats_error_kind kind;
+        switch (s) {
+            case NATS_SSL_ERROR:
+            case NATS_SECURE_CONNECTION_WANTED:
+            case NATS_SECURE_CONNECTION_REQUIRED:
+                kind = nats_error_kind::tls_error;
+                break;
+            case NATS_NO_SERVER:
+            case NATS_IO_ERROR:
+                kind = nats_error_kind::server_unreachable;
+                break;
+            case NATS_TIMEOUT:
+                kind = nats_error_kind::connection_timeout;
+                break;
+            default:
+                kind = nats_error_kind::other;
+                break;
+        }
+        throw nats_connect_error(kind,
             std::string("NATS connect failed: ") + natsStatus_GetText(s));
+    }
 
     // Note: natsConnection_JetStream(jsCtx**, natsConnection*, jsOptions*)
     s = natsConnection_JetStream(&impl_->js, impl_->conn, nullptr);
@@ -333,6 +353,10 @@ message client::request_sync(std::string_view subject,
     if (s != NATS_OK) {
         if (s == NATS_TIMEOUT)
             throw std::runtime_error("NATS request timed out");
+        if (s == NATS_NO_RESPONDERS)
+            throw nats_connect_error(nats_error_kind::services_unavailable,
+                "NATS request failed: no service is handling subject '"
+                + std::string(make_subject(subject)) + "'");
         throw std::runtime_error(
             std::string("NATS request failed: ") + natsStatus_GetText(s));
     }

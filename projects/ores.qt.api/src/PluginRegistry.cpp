@@ -36,9 +36,18 @@ auto& lg() {
 
 }
 
+namespace {
+PluginRegistry* s_instance = nullptr;
+}
+
+void PluginRegistry::initialise(PluginRegistry& registry) {
+    s_instance = &registry;
+}
+
 PluginRegistry& PluginRegistry::instance() {
-    static PluginRegistry registry;
-    return registry;
+    Q_ASSERT(s_instance != nullptr &&
+        "PluginRegistry::initialise() must be called before instance()");
+    return *s_instance;
 }
 
 PluginRegistry::~PluginRegistry() {

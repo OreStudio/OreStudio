@@ -19,6 +19,8 @@
  */
 #include <iostream>
 #include <openssl/crypto.h>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/scope_exit.hpp>
 #include <Wt/WServer.h>
 #include <Wt/WLogSink.h>
@@ -26,10 +28,14 @@
 #include "ores.wt.service/config/parser_exception.hpp"
 #include "ores.wt.service/service/application_context.hpp"
 #include "ores.wt.service/app/ore_application.hpp"
+#include "ores.wt.service/messaging/registrar.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/wt_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace {
 
@@ -38,6 +44,9 @@ using ores::platform::environment::environment;
 
 const std::string default_address = "0.0.0.0";
 const std::string default_port = "8080";
+
+constexpr std::string_view service_name = "ores.wt.service";
+constexpr std::string_view service_version = ORES_VERSION;
 
 std::unique_ptr<Wt::WApplication>
 create_application(const Wt::WEnvironment& env) {
@@ -100,10 +109,12 @@ int run(int argc, char* argv[]) {
     BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
         "ORE Studio Web");
 
+    // Initialise the application context (internal DB context + eventing).
     auto& app_ctx = ores::wt::service::application_context::instance();
     app_ctx.initialize(opts.database);
     app_ctx.start_eventing();
 
+    // Build Wt argv.
     std::vector<std::string> wt_argv_strings;
     wt_argv_strings.push_back(argv[0]);
     for (const auto& arg : result.wt_args) {
@@ -121,7 +132,6 @@ int run(int argc, char* argv[]) {
         wt_argv_strings.push_back("--http-port");
         wt_argv_strings.push_back(default_port);
     } else {
-        // Extract address and port from user-provided args for logging
         for (size_t i = 0; i < result.wt_args.size(); ++i) {
             if (result.wt_args[i] == "--http-address" && i + 1 < result.wt_args.size()) {
                 http_address = result.wt_args[i + 1];
@@ -131,9 +141,6 @@ int run(int argc, char* argv[]) {
         }
     }
 
-    // Add resources directory if set via environment variable.
-    // Note: Uses WT_RESOURCES_DIR (not ORES_WT_) to avoid conflict with
-    // the ORES_WT_ prefix used by the option parser's environment mapper.
     auto resources_dir = environment::get_value("WT_RESOURCES_DIR");
     if (resources_dir.has_value()) {
         wt_argv_strings.push_back("--resources-dir");
@@ -149,21 +156,42 @@ int run(int argc, char* argv[]) {
         wt_argv.push_back(s.data());
     }
     wt_argv.push_back(nullptr);
-
     int wt_argc = static_cast<int>(wt_argv.size() - 1);
 
-    boost_log_sink wt_sink;
-    Wt::WServer server(argv[0]);
-    server.setServerConfiguration(wt_argc, wt_argv.data());
-    server.setCustomLogger(wt_sink);
-    server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
+    // Construct NATS client.
+    ores::nats::service::client nats(opts.nats);
+    nats.connect();
+    BOOST_LOG_SEV(lg, info) << "Connected to NATS: " << opts.nats.url
+                            << " (namespace: '"
+                            << (opts.nats.subject_prefix.empty() ? "(none)" : opts.nats.subject_prefix)
+                            << "')";
 
-    if (server.start()) {
-        BOOST_LOG_SEV(lg, info) << "Service ready.";
-        BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
-        Wt::WServer::waitForShutdown();
-        server.stop();
-    }
+    ores::service::service::run_wt(
+        nats, service_name,
+        [](auto& n, auto v) {
+            return ores::wt::service::messaging::registrar::register_handlers(
+                n, std::move(v));
+        },
+        [&]() {
+            boost_log_sink wt_sink;
+            Wt::WServer server(argv[0]);
+            server.setServerConfiguration(wt_argc, wt_argv.data());
+            server.setCustomLogger(wt_sink);
+            server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
+
+            if (server.start()) {
+                BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
+                Wt::WServer::waitForShutdown();
+                server.stop();
+            }
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
+        });
 
     app_ctx.stop_eventing();
     BOOST_LOG_SEV(lg, info) << "Service stopped.";

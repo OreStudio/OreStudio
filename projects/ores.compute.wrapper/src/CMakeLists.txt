@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.ore.lib
         ores.utility.lib
         ores.telemetry.lib
+        ores.service.lib
         Boost::boost
         LibArchive::LibArchive)
 

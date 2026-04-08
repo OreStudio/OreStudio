@@ -41,7 +41,9 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
         ores.iam.core.lib
+        ores.nats.lib
         ores.refdata.core.lib
+        ores.service.lib
         ores.variability.core.lib
         ores.telemetry.lib
         ores.utility.lib

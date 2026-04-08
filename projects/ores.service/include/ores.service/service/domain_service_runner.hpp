@@ -34,34 +34,27 @@ namespace ores::service::service {
  *
  * Encapsulates the boilerplate common to every NATS domain service:
  *
- *  1. Installs SIGINT/SIGTERM handler early so stop works at any startup phase.
+ *  1. Installs SIGINT/SIGTERM/SIGQUIT handler early so stop works at any
+ *     startup phase.
  *  2. Fetches the JWKS RS256 public key from IAM with exponential backoff.
  *  3. Creates an RS256 JWT verifier from the key.
  *  4. Calls @p register_fn(nats, ctx, verifier) to register subscriptions.
- *  5. Waits for a shutdown signal.
- *  6. Drains NATS and logs "Shutdown complete: <service_name>".
+ *  5. Calls @p on_started(io_ctx) if provided (e.g. to co_spawn heartbeat).
+ *  6. Waits for a shutdown signal.
+ *  7. Calls @p on_shutdown() if provided (e.g. to stop an embedded server).
+ *  8. Drains NATS and logs "Shutdown complete: <service_name>".
  *
  * If a signal arrives while fetching the JWKS key the retry loop is cancelled
  * immediately and the service exits cleanly (no drain needed — no subscriptions
  * are registered yet).
  *
- * @param io_ctx    The service's io_context.
- * @param nats      Connected NATS client (connect() already called).
- * @param ctx       Database context.
- * @param name      Service name used in log messages (e.g. "ores.assets.service").
- * @param register_fn Callable with signature
- *                  @code
- *                  auto register_fn(
- *                      ores::nats::service::client& nats,
- *                      ores::database::context ctx,
- *                      std::optional<ores::security::jwt::jwt_authenticator> verifier);
- *                  @endcode
- *                  The return value is ignored (subscriptions are kept alive via
- *                  the returned vector held inside this coroutine).
- * @param on_started Optional callback invoked after subscriptions are registered
- *                   and before the service starts waiting for shutdown. Called
- *                   with the io_context so the caller can co_spawn additional
- *                   coroutines (e.g. background pollers).
+ * @param io_ctx      The service's io_context.
+ * @param nats        Connected NATS client (connect() already called).
+ * @param ctx         Database context.
+ * @param name        Service name used in log messages.
+ * @param register_fn Callable: (client&, context, optional<jwt_authenticator>)
+ * @param on_started  Optional: called after registration, before signal wait.
+ * @param on_shutdown Optional: called after signal, before nats.drain().
  */
 template<typename RegisterFn>
 boost::asio::awaitable<void>
@@ -70,7 +63,31 @@ run(boost::asio::io_context& io_ctx,
     ores::database::context ctx,
     std::string_view name,
     RegisterFn&& register_fn,
-    std::function<void(boost::asio::io_context&)> on_started = {});
+    std::function<void(boost::asio::io_context&)> on_started  = {},
+    std::function<void()>                          on_shutdown = {});
+
+/**
+ * @brief Runs the standard domain service lifecycle without a database context.
+ *
+ * Identical to the database overload but for services that have no database
+ * (e.g. ores.compute.wrapper).  The register_fn signature is
+ * (client&, optional<jwt_authenticator>) — the ctx parameter is omitted.
+ *
+ * @param io_ctx      The service's io_context.
+ * @param nats        Connected NATS client (connect() already called).
+ * @param name        Service name used in log messages.
+ * @param register_fn Callable: (client&, optional<jwt_authenticator>)
+ * @param on_started  Optional: called after registration, before signal wait.
+ * @param on_shutdown Optional: called after signal, before nats.drain().
+ */
+template<typename RegisterFn>
+boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    std::string_view name,
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started  = {},
+    std::function<void()>                          on_shutdown = {});
 
 } // namespace ores::service::service
 

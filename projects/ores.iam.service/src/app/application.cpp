@@ -19,20 +19,25 @@
  */
 #include "ores.iam.service/app/application.hpp"
 
-#include <csignal>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.iam.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.iam.core/messaging/registrar.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/service/signing_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::iam::service::app {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view service_name = "ores.iam.service";
+constexpr std::string_view service_version = ORES_VERSION;
+}
 
 ores::database::context application::make_context(
     const ores::database::database_options& db_opts) {
@@ -65,21 +70,20 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
-    auto ctx = make_context(cfg.database);
-    auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
-        cfg.jwt_private_key);
-    auto subs = ores::iam::messaging::registrar::register_handlers(
-        nats, std::move(ctx), std::move(signer));
-    BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
-
-    BOOST_LOG_SEV(lg(), info) << "Service ready.";
-    BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    co_await signals.async_wait(boost::asio::use_awaitable);
-
-    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
-    nats.drain();
-    BOOST_LOG_SEV(lg(), info) << "Shutdown complete: ores.iam.service";
+    co_await ores::service::service::run_signing(
+        io_ctx, nats, make_context(cfg.database), service_name,
+        cfg.jwt_private_key,
+        [](auto& n, auto c, auto s) {
+            return ores::iam::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(s));
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
+        });
     co_return;
 }
 

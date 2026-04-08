@@ -64,7 +64,6 @@ struct ServiceRow {
     std::string description;
     int desired_replicas = 1;
     int online_replicas  = 0;   // samples with age < 120 s (telemetry heartbeat)
-    int running_replicas = 0;   // instances with phase == "running" (controller DB)
     std::string version;        // from most-recent sample
     long long   last_seen_secs = LLONG_MAX; // age in seconds, LLONG_MAX = never seen
 };
@@ -106,21 +105,11 @@ QString format_timepoint(
 }
 
 std::pair<QString, QColor> status_for_row(const ServiceRow& r) {
-    // Services with NATS telemetry heartbeats: use heartbeat-based status.
-    if (r.last_seen_secs != LLONG_MAX) {
-        if (r.online_replicas == 0)
-            return { QStringLiteral("Offline"), color_constants::level_trace };
-        if (r.online_replicas < r.desired_replicas || r.last_seen_secs >= 30)
-            return { QStringLiteral("Degraded"), color_constants::level_warn };
-        return { QStringLiteral("Online"), color_constants::level_info };
-    }
-    // No heartbeat telemetry (HTTP server, WT, compute wrappers): fall back to
-    // controller instance phase.
-    if (r.running_replicas == 0)
+    if (r.online_replicas == 0)
         return { QStringLiteral("Offline"), color_constants::level_trace };
-    if (r.running_replicas < r.desired_replicas)
+    if (r.online_replicas < r.desired_replicas || r.last_seen_secs >= 30)
         return { QStringLiteral("Degraded"), color_constants::level_warn };
-    return { QStringLiteral("Running"), color_constants::level_debug };
+    return { QStringLiteral("Online"), color_constants::level_info };
 }
 
 QColor phase_color(const QString& phase) {
@@ -410,20 +399,7 @@ void ServiceDashboardMdiWindow::loadSamples() {
                 BOOST_LOG_SEV(lg(), warn) << "Service samples unknown exception";
             }
 
-            // 3. Fetch service instances from controller — used to determine
-            // "running" status for services that don't publish NATS heartbeats
-            // (http.server, wt.service, compute.wrapper, etc.).
-            std::vector<controller_api::domain::service_instance> all_instances;
-            try {
-                controller_api::messaging::list_service_instances_request inst_req;
-                inst_req.service_name = ""; // empty = all services
-                auto ir = self->clientManager_->process_authenticated_request(
-                    inst_req);
-                if (ir && ir->success)
-                    all_instances = ir->service_instances;
-            } catch (...) {}
-
-            // 4. Aggregate: one ServiceRow per definition.
+            // 3. Aggregate: one ServiceRow per definition.
             const auto now = std::chrono::system_clock::now();
             SamplesResult r;
             r.success = true;
@@ -456,11 +432,6 @@ void ServiceDashboardMdiWindow::loadSamples() {
                         row.version        = s.version;
                     }
                     if (age < 120) ++row.online_replicas;
-                }
-
-                for (const auto& inst : all_instances) {
-                    if (inst.service_name != def.service_name) continue;
-                    if (inst.phase == "running") ++row.running_replicas;
                 }
 
                 r.rows.push_back(std::move(row));
@@ -503,12 +474,7 @@ void ServiceDashboardMdiWindow::loadSamples() {
             self->table_->setItem(row, static_cast<int>(Col::Description),
                 make_item(QString::fromStdString(sr.description)));
 
-            // Replicas: "running / desired"
-            // For telemetry services: use heartbeat-based online_replicas.
-            // For non-telemetry services: fall back to controller running_replicas.
-            const int display_replicas = (sr.last_seen_secs != LLONG_MAX)
-                ? sr.online_replicas
-                : sr.running_replicas;
+            const int display_replicas = sr.online_replicas;
             const QString replicas =
                 tr("%1 / %2").arg(display_replicas).arg(sr.desired_replicas);
             self->table_->setItem(row, static_cast<int>(Col::Replicas),

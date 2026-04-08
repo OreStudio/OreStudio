@@ -160,9 +160,7 @@ QList<QMenu*> ComputePlugin::create_menus() {
         if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
     });
 
-    menus.append(menuCompute);
-
-    // ---- Reporting ------------------------------------------------------
+    // ---- Reporting (inserted before Compute in the menu bar) ------------
     auto* menuReporting = new QMenu(tr("&Reporting"));
 
     auto* actReportTypes = menuReporting->addAction(ico(Icon::Chart), tr("Report &Types"));
@@ -197,6 +195,7 @@ QList<QMenu*> ComputePlugin::create_menus() {
     });
 
     menus.append(menuReporting);
+    menus.append(menuCompute);
 
     return menus;
 }

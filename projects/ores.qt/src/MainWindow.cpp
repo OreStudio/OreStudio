@@ -408,8 +408,26 @@ MainWindow::MainWindow(QWidget* parent) :
     // Wire plugin signals and build persistent menus (disabled until login).
     // Menus are created once here and live for the application lifetime.
     // on_login() / on_logout() enable/disable them without recreating them.
-    auto* helpAction = ui_->menuHelp->menuAction();
-    for (auto* plugin : PluginRegistry::instance().plugins()) {
+    //
+    // Insertion point: before &System so plugin menus sit between File and
+    // System, keeping System/Window/Help always last.
+    auto* systemAction = ui_->menuSystem->menuAction();
+
+    // Pre-create the shared &Reference Data menu so RefdataPlugin and
+    // PartyPlugin can both populate it during setup_menus().
+    auto* referenceDataMenu = new QMenu(tr("&Reference Data"), this);
+    menuBar()->insertMenu(systemAction, referenceDataMenu);
+    plugin_menus_.append(referenceDataMenu);
+
+    // Phase 1 — let plugins contribute to shared menus (System, Reference Data).
+    // Phase 2 — collect standalone menus returned by create_menus().
+    // Phase 3 — wire signals and collect toolbar actions.
+    const auto& plugins = PluginRegistry::instance().plugins();
+
+    for (auto* plugin : plugins)
+        plugin->setup_menus(ui_->menuSystem, referenceDataMenu);
+
+    for (auto* plugin : plugins) {
         auto* pb = static_cast<PluginBase*>(plugin);
         connect(pb, &PluginBase::statusMessage,
                 this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
@@ -419,7 +437,7 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, &MainWindow::onDetachableWindowDestroyed);
 
         for (auto* menu : plugin->create_menus()) {
-            menuBar()->insertMenu(helpAction, menu);
+            menuBar()->insertMenu(systemAction, menu);
             plugin_menus_.append(menu);
         }
 

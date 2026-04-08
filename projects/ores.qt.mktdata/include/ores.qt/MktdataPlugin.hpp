@@ -60,7 +60,7 @@ public:
     ~MktdataPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.mktdata"); }
-    int load_order() const override { return 500; }
+    int load_order() const override { return 300; }
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;

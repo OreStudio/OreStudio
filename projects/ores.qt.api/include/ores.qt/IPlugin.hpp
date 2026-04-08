@@ -66,13 +66,32 @@ public:
     virtual void on_login(const plugin_context& ctx) = 0;
 
     /**
-     * @brief Build and return the domain menus contributed by this plugin.
+     * @brief Contribute items to host-owned shared menus.
      *
-     * Called by the host after on_login().  The host inserts the returned menus
-     * into the menu bar before the System menu and deletes them on logout.
+     * Called once at startup, before create_menus().  The host passes two
+     * pre-created menus that plugins may freely add sub-menus or actions to:
      *
-     * The returned QMenu objects should be created with nullptr parent; the host
-     * will re-parent them to the menu bar on insertion.
+     *  @p system_menu        — the application &System top-level menu.
+     *  @p reference_data_menu — the &Reference Data top-level menu.
+     *
+     * Plugins that only need to add sub-menus to these shared containers
+     * should do all their work here and return {} from create_menus().
+     *
+     * The default implementation does nothing.
+     */
+    virtual void setup_menus(QMenu* system_menu, QMenu* reference_data_menu) {
+        Q_UNUSED(system_menu)
+        Q_UNUSED(reference_data_menu)
+    }
+
+    /**
+     * @brief Build and return standalone domain menus for this plugin.
+     *
+     * Called by the host after setup_menus().  The host inserts the returned
+     * menus into the menu bar before the &System menu, in plugin load_order.
+     *
+     * Plugins that contribute exclusively to shared menus via setup_menus()
+     * should return an empty list here.
      */
     virtual QList<QMenu*> create_menus() = 0;
 

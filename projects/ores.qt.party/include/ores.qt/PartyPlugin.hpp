@@ -61,9 +61,10 @@ public:
     ~PartyPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.party"); }
-    int load_order() const override { return 400; }
+    int load_order() const override { return 150; }  // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;

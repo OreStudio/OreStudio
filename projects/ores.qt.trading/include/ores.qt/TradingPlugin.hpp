@@ -57,7 +57,7 @@ public:
     ~TradingPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.trading"); }
-    int load_order() const override { return 600; }
+    int load_order() const override { return 200; }
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;

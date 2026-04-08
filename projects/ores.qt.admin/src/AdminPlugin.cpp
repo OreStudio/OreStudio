@@ -107,65 +107,61 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(appVersionController_.get());
 }
 
-QList<QMenu*> AdminPlugin::create_menus() {
-    QList<QMenu*> menus;
+void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/) {
+    // ---- System > Identity -----------------------------------------------
+    auto* identity = system_menu->addMenu(tr("&Identity"));
 
-    // Admin menu — identity and settings management
-    auto* adminMenu = new QMenu(tr("&Admin"));
-
-    act_accounts_ = adminMenu->addAction(tr("&Accounts"));
+    act_accounts_ = identity->addAction(tr("&Accounts"));
     connect(act_accounts_, &QAction::triggered, this,
         [this]() { if (accountController_) accountController_->showListWindow(); });
 
-    auto* actRoles = adminMenu->addAction(tr("&Roles"));
+    auto* actRoles = identity->addAction(tr("&Roles"));
     connect(actRoles, &QAction::triggered, this,
         [this]() { if (roleController_) roleController_->showListWindow(); });
 
-    act_tenants_ = adminMenu->addAction(tr("&Tenants"));
+    act_tenants_ = identity->addAction(tr("&Tenants"));
     connect(act_tenants_, &QAction::triggered, this,
         [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
-    auto* actTenantTypes = adminMenu->addAction(tr("Tenant &Types"));
+    auto* actTenantTypes = identity->addAction(tr("Tenant &Types"));
     connect(actTenantTypes, &QAction::triggered, this,
         [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
 
-    adminMenu->addSeparator();
+    identity->addSeparator();
 
-    auto* actOnboardTenant = adminMenu->addAction(tr("&Onboard Tenant..."));
+    auto* actOnboardTenant = identity->addAction(tr("&Onboard Tenant..."));
     connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
 
-    adminMenu->addSeparator();
+    // ---- System > Configuration ------------------------------------------
+    auto* config = system_menu->addMenu(tr("&Configuration"));
 
-    act_system_settings_ = adminMenu->addAction(tr("&System Settings"));
+    act_system_settings_ = config->addAction(tr("&System Settings"));
     connect(act_system_settings_, &QAction::triggered, this,
         [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
-    menus.append(adminMenu);
+    config->addSeparator();
 
-    // Configuration menu — badges and applications
-    auto* configMenu = new QMenu(tr("&Configuration"));
-
-    auto* actBadgeDefs = configMenu->addAction(tr("Badge &Definitions"));
+    auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
     connect(actBadgeDefs, &QAction::triggered, this,
         [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
 
-    auto* actBadgeSevs = configMenu->addAction(tr("Badge &Severities"));
+    auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
     connect(actBadgeSevs, &QAction::triggered, this,
         [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
 
-    configMenu->addSeparator();
+    config->addSeparator();
 
-    auto* actApps = configMenu->addAction(tr("&Apps"));
+    auto* actApps = config->addAction(tr("&Apps"));
     connect(actApps, &QAction::triggered, this,
         [this]() { if (appController_) appController_->showListWindow(); });
 
-    auto* actAppVersions = configMenu->addAction(tr("App &Versions"));
+    auto* actAppVersions = config->addAction(tr("App &Versions"));
     connect(actAppVersions, &QAction::triggered, this,
         [this]() { if (appVersionController_) appVersionController_->showListWindow(); });
+}
 
-    menus.append(configMenu);
-
-    return menus;
+QList<QMenu*> AdminPlugin::create_menus() {
+    return {};  // all items contributed via setup_menus()
 }
 
 QList<QAction*> AdminPlugin::toolbar_actions() {

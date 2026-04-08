@@ -67,34 +67,34 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::create_menus — return Data and Trading menus.
+// IPlugin::create_menus — return the Trading menu (portfolios, books, explorers,
+// trades).  The standalone Data menu was removed; portfolios and books now live
+// at the top of the Trading menu.
 // ---------------------------------------------------------------------------
 QList<QMenu*> TradingPlugin::create_menus() {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
-    // ---- Data -------------------------------------------------------
-    auto* menuData = new QMenu(tr("&Data"));
+    // ---- Trading ----------------------------------------------------
+    auto* menuTrading = new QMenu(tr("&Trading"));
 
-    act_portfolios_ = menuData->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
+    act_portfolios_ = menuTrading->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
     connect(act_portfolios_, &QAction::triggered, this, [this]() {
         if (portfolioController_) portfolioController_->showListWindow();
     });
-    act_books_ = menuData->addAction(ico(Icon::BookOpen), tr("&Books"));
+    act_books_ = menuTrading->addAction(ico(Icon::BookOpen), tr("&Books"));
     connect(act_books_, &QAction::triggered, this, [this]() {
         if (bookController_) bookController_->showListWindow();
     });
-    menuData->addSeparator();
 
-    // Auxiliary Data submenu
-    auto* menuAux = menuData->addMenu(tr("A&uxiliary Data"));
+    // Auxiliary Data submenu (book statuses)
+    auto* menuAux = menuTrading->addMenu(tr("A&uxiliary Data"));
     auto* actBookStatuses = menuAux->addAction(ico(Icon::Flag), tr("Book &Statuses"));
     connect(actBookStatuses, &QAction::triggered, this, [this]() {
         if (bookStatusController_) bookStatusController_->showListWindow();
     });
 
-    // ---- Trading ----------------------------------------------------
-    auto* menuTrading = new QMenu(tr("&Trading"));
+    menuTrading->addSeparator();
 
     act_portfolio_explorer_ = menuTrading->addAction(
         ico(Icon::BriefcaseFilled), tr("&Portfolio Explorer"));
@@ -174,7 +174,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (tradeController_) tradeController_->showListWindow();
     });
 
-    return {menuData, menuTrading};
+    return {menuTrading};
 }
 
 QList<QAction*> TradingPlugin::toolbar_actions() {

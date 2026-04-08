@@ -92,14 +92,14 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::create_menus — return party/organisation domain menus.
+// IPlugin::setup_menus — add Organization submenu to Reference Data.
 // ---------------------------------------------------------------------------
-QList<QMenu*> PartyPlugin::create_menus() {
+void PartyPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref) {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
-    // ---- Organization -----------------------------------------------
-    auto* menuOrg = new QMenu(tr("&Organization"));
+    ref->addSeparator();
+    auto* menuOrg = ref->addMenu(tr("&Organization"));
 
     act_business_centres_ = menuOrg->addAction(
         ico(Icon::BuildingBank), tr("&Business Centres"));
@@ -145,8 +145,13 @@ QList<QMenu*> PartyPlugin::create_menus() {
     connect(actContactTypes, &QAction::triggered, this, [this]() {
         if (contactTypeController_) contactTypeController_->showListWindow();
     });
+}
 
-    return {menuOrg};
+// ---------------------------------------------------------------------------
+// IPlugin::create_menus — no standalone menus; everything in Reference Data.
+// ---------------------------------------------------------------------------
+QList<QMenu*> PartyPlugin::create_menus() {
+    return {};
 }
 
 QList<QAction*> PartyPlugin::toolbar_actions() {

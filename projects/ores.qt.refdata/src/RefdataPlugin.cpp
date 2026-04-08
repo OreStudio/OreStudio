@@ -190,26 +190,25 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 // IPlugin::create_menus — return reference data domain menus.
 // ---------------------------------------------------------------------------
-QList<QMenu*> RefdataPlugin::create_menus() {
+// IPlugin::setup_menus — populate the shared Reference Data menu.
+// ---------------------------------------------------------------------------
+void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref) {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
-    // ---- Reference Data -----------------------------------------------
-    auto* menuRefdata = new QMenu(tr("&Reference Data"));
-
-    act_currencies_ = menuRefdata->addAction(ico(Icon::Currency), tr("&Currencies"));
+    act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
     connect(act_currencies_, &QAction::triggered, this, [this]() {
         if (currencyController_) currencyController_->showListWindow();
     });
-    act_countries_ = menuRefdata->addAction(ico(Icon::Globe), tr("C&ountries"));
+    act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
     connect(act_countries_, &QAction::triggered, this, [this]() {
         if (countryController_) countryController_->showListWindow();
     });
 
-    menuRefdata->addSeparator();
+    ref->addSeparator();
 
     // Auxiliary Data submenu
-    auto* menuAux = menuRefdata->addMenu(tr("A&uxiliary Data"));
+    auto* menuAux = ref->addMenu(tr("A&uxiliary Data"));
     auto* actRoundingTypes = menuAux->addAction(ico(Icon::Tag), tr("&Rounding Types"));
     connect(actRoundingTypes, &QAction::triggered, this, [this]() {
         if (roundingTypeController_) roundingTypeController_->showListWindow();
@@ -224,10 +223,10 @@ QList<QMenu*> RefdataPlugin::create_menus() {
         if (purposeTypeController_) purposeTypeController_->showListWindow();
     });
 
-    menuRefdata->addSeparator();
+    ref->addSeparator();
 
     // Trading Conventions submenu
-    auto* menuConventions = menuRefdata->addMenu(tr("Trading &Conventions"));
+    auto* menuConventions = ref->addMenu(tr("Trading &Conventions"));
     auto* actDayCountFractionTypes = menuConventions->addAction(
         ico(Icon::Tag), tr("&Day Count Fraction Types"));
     connect(actDayCountFractionTypes, &QAction::triggered, this, [this]() {
@@ -239,7 +238,8 @@ QList<QMenu*> RefdataPlugin::create_menus() {
         if (businessDayConventionTypeController_)
             businessDayConventionTypeController_->showListWindow();
     });
-    auto* actFloatingIndexTypes = menuConventions->addAction(ico(Icon::Tag), tr("&Floating Index Types"));
+    auto* actFloatingIndexTypes = menuConventions->addAction(
+        ico(Icon::Tag), tr("&Floating Index Types"));
     connect(actFloatingIndexTypes, &QAction::triggered, this, [this]() {
         if (floatingIndexTypeController_) floatingIndexTypeController_->showListWindow();
     });
@@ -253,10 +253,10 @@ QList<QMenu*> RefdataPlugin::create_menus() {
         if (legTypeController_) legTypeController_->showListWindow();
     });
 
-    menuRefdata->addSeparator();
+    ref->addSeparator();
 
     // Data Governance submenu
-    auto* menuQuality = menuRefdata->addMenu(tr("Data &Governance"));
+    auto* menuQuality = ref->addMenu(tr("Data &Governance"));
 
     auto* menuClassifications = menuQuality->addMenu(tr("&Classifications"));
     auto* actCodingSchemes = menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
@@ -274,26 +274,28 @@ QList<QMenu*> RefdataPlugin::create_menus() {
         if (codeDomainController_) codeDomainController_->showListWindow();
     });
 
-    auto* menuOrganization = menuQuality->addMenu(tr("&Organization"));
-    auto* actDataDomains = menuOrganization->addAction(ico(Icon::Folder), tr("&Data Domains"));
+    auto* menuDgOrg = menuQuality->addMenu(tr("&Organization"));
+    auto* actDataDomains = menuDgOrg->addAction(ico(Icon::Folder), tr("&Data Domains"));
     connect(actDataDomains, &QAction::triggered, this, [this]() {
         if (dataDomainController_) dataDomainController_->showListWindow();
     });
-    auto* actSubjectAreas = menuOrganization->addAction(ico(Icon::Table), tr("&Subject Areas"));
+    auto* actSubjectAreas = menuDgOrg->addAction(ico(Icon::Table), tr("&Subject Areas"));
     connect(actSubjectAreas, &QAction::triggered, this, [this]() {
         if (subjectAreaController_) subjectAreaController_->showListWindow();
     });
-    auto* actCatalogs = menuOrganization->addAction(ico(Icon::Library), tr("&Catalogs"));
+    auto* actCatalogs = menuDgOrg->addAction(ico(Icon::Library), tr("&Catalogs"));
     connect(actCatalogs, &QAction::triggered, this, [this]() {
         if (catalogController_) catalogController_->showListWindow();
     });
 
     auto* menuDimensions = menuQuality->addMenu(tr("&Dimensions"));
-    auto* actOriginDimensions = menuDimensions->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
+    auto* actOriginDimensions = menuDimensions->addAction(
+        ico(Icon::Database), tr("&Origin Dimensions"));
     connect(actOriginDimensions, &QAction::triggered, this, [this]() {
         if (originDimensionController_) originDimensionController_->showListWindow();
     });
-    auto* actNatureDimensions = menuDimensions->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
+    auto* actNatureDimensions = menuDimensions->addAction(
+        ico(Icon::Database), tr("&Nature Dimensions"));
     connect(actNatureDimensions, &QAction::triggered, this, [this]() {
         if (natureDimensionController_) natureDimensionController_->showListWindow();
     });
@@ -314,7 +316,7 @@ QList<QMenu*> RefdataPlugin::create_menus() {
     });
     menuQuality->addSeparator();
     menuQuality->addMenu(menuClassifications);
-    menuQuality->addMenu(menuOrganization);
+    menuQuality->addMenu(menuDgOrg);
     menuQuality->addSeparator();
     auto* actChangeReasonCategories = menuQuality->addAction(
         ico(Icon::Tag), tr("Change Reason &Categories"));
@@ -326,8 +328,13 @@ QList<QMenu*> RefdataPlugin::create_menus() {
     connect(actChangeReasons, &QAction::triggered, this, [this]() {
         if (changeReasonController_) changeReasonController_->showListWindow();
     });
+    // NOTE: PartyPlugin adds its Organization submenu after this via its own
+    // setup_menus() call (load_order 400 > 300).
+}
 
-    return {menuRefdata};
+// ---------------------------------------------------------------------------
+QList<QMenu*> RefdataPlugin::create_menus() {
+    return {};  // all items contributed to the shared Reference Data menu
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {

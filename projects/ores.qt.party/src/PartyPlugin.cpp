@@ -101,23 +101,23 @@ QList<QMenu*> PartyPlugin::create_menus() {
     // ---- Organization -----------------------------------------------
     auto* menuOrg = new QMenu(tr("&Organization"));
 
-    auto* actBusinessCentres = menuOrg->addAction(
+    act_business_centres_ = menuOrg->addAction(
         ico(Icon::BuildingBank), tr("&Business Centres"));
-    connect(actBusinessCentres, &QAction::triggered, this, [this]() {
+    connect(act_business_centres_, &QAction::triggered, this, [this]() {
         if (businessCentreController_) businessCentreController_->showListWindow();
     });
     menuOrg->addSeparator();
-    auto* actParties = menuOrg->addAction(ico(Icon::Organization), tr("&Parties"));
-    connect(actParties, &QAction::triggered, this, [this]() {
+    act_parties_ = menuOrg->addAction(ico(Icon::Organization), tr("&Parties"));
+    connect(act_parties_, &QAction::triggered, this, [this]() {
         if (partyController_) partyController_->showListWindow();
     });
-    auto* actCounterparties = menuOrg->addAction(ico(Icon::Handshake), tr("&Counterparties"));
-    connect(actCounterparties, &QAction::triggered, this, [this]() {
+    act_counterparties_ = menuOrg->addAction(ico(Icon::Handshake), tr("&Counterparties"));
+    connect(act_counterparties_, &QAction::triggered, this, [this]() {
         if (counterpartyController_) counterpartyController_->showListWindow();
     });
     menuOrg->addSeparator();
-    auto* actBizUnits = menuOrg->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
-    connect(actBizUnits, &QAction::triggered, this, [this]() {
+    act_business_units_ = menuOrg->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
+    connect(act_business_units_, &QAction::triggered, this, [this]() {
         if (businessUnitController_) businessUnitController_->showListWindow();
     });
     auto* actBizUnitTypes = menuOrg->addAction(ico(Icon::PeopleTeam), tr("Business Unit &Types"));
@@ -147,6 +147,10 @@ QList<QMenu*> PartyPlugin::create_menus() {
     });
 
     return {menuOrg};
+}
+
+QList<QAction*> PartyPlugin::toolbar_actions() {
+    return {act_business_centres_, act_parties_, act_counterparties_, act_business_units_};
 }
 
 // ---------------------------------------------------------------------------

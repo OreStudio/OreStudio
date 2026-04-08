@@ -23,6 +23,8 @@
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
+class QAction;
+
 namespace ores::qt {
 
 class PartyTypeController;
@@ -63,11 +65,17 @@ public:
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
+    QList<QAction*> toolbar_actions() override;
     void on_logout() override;
 
 private:
 
     plugin_context ctx_;
+
+    QAction* act_business_centres_{nullptr};
+    QAction* act_parties_{nullptr};
+    QAction* act_counterparties_{nullptr};
+    QAction* act_business_units_{nullptr};
 
     std::unique_ptr<PartyTypeController>         partyTypeController_;
     std::unique_ptr<PartyStatusController>       partyStatusController_;

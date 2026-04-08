@@ -23,6 +23,8 @@
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
+class QAction;
+
 namespace ores::qt {
 
 class CurrencyController;
@@ -78,11 +80,15 @@ public:
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
+    QList<QAction*> toolbar_actions() override;
     void on_logout() override;
 
 private:
 
     plugin_context ctx_;
+
+    QAction* act_currencies_{nullptr};
+    QAction* act_countries_{nullptr};
 
     std::unique_ptr<CurrencyController>                    currencyController_;
     std::unique_ptr<CountryController>                     countryController_;

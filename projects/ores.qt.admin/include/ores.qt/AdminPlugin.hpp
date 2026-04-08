@@ -23,6 +23,8 @@
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
+class QAction;
+
 namespace ores::qt {
 
 class AccountController;
@@ -55,12 +57,17 @@ public:
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
+    QList<QAction*> toolbar_actions() override;
     void on_logout() override;
 
 private:
     void show_onboarding_wizard();
 
     plugin_context ctx_;
+
+    QAction* act_accounts_{nullptr};
+    QAction* act_tenants_{nullptr};
+    QAction* act_system_settings_{nullptr};
 
     std::unique_ptr<AccountController>          accountController_;
     std::unique_ptr<RoleController>             roleController_;

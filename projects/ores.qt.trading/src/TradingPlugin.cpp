@@ -76,12 +76,12 @@ QList<QMenu*> TradingPlugin::create_menus() {
     // ---- Data -------------------------------------------------------
     auto* menuData = new QMenu(tr("&Data"));
 
-    auto* actPortfolios = menuData->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
-    connect(actPortfolios, &QAction::triggered, this, [this]() {
+    act_portfolios_ = menuData->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
+    connect(act_portfolios_, &QAction::triggered, this, [this]() {
         if (portfolioController_) portfolioController_->showListWindow();
     });
-    auto* actBooks = menuData->addAction(ico(Icon::BookOpen), tr("&Books"));
-    connect(actBooks, &QAction::triggered, this, [this]() {
+    act_books_ = menuData->addAction(ico(Icon::BookOpen), tr("&Books"));
+    connect(act_books_, &QAction::triggered, this, [this]() {
         if (bookController_) bookController_->showListWindow();
     });
     menuData->addSeparator();
@@ -96,9 +96,9 @@ QList<QMenu*> TradingPlugin::create_menus() {
     // ---- Trading ----------------------------------------------------
     auto* menuTrading = new QMenu(tr("&Trading"));
 
-    auto* actPortfolioExplorer = menuTrading->addAction(
+    act_portfolio_explorer_ = menuTrading->addAction(
         ico(Icon::BriefcaseFilled), tr("&Portfolio Explorer"));
-    connect(actPortfolioExplorer, &QAction::triggered, this, [this]() {
+    connect(act_portfolio_explorer_, &QAction::triggered, this, [this]() {
         if (portfolio_explorer_sub_window_) {
             ctx_.mdi_area->setActiveSubWindow(portfolio_explorer_sub_window_);
             return;
@@ -133,8 +133,8 @@ QList<QMenu*> TradingPlugin::create_menus() {
         subWindow->show();
     });
 
-    auto* actOrgExplorer = menuTrading->addAction(ico(Icon::Organization), tr("&Org Explorer"));
-    connect(actOrgExplorer, &QAction::triggered, this, [this]() {
+    act_org_explorer_ = menuTrading->addAction(ico(Icon::Organization), tr("&Org Explorer"));
+    connect(act_org_explorer_, &QAction::triggered, this, [this]() {
         if (org_explorer_sub_window_) {
             ctx_.mdi_area->setActiveSubWindow(org_explorer_sub_window_);
             return;
@@ -169,12 +169,17 @@ QList<QMenu*> TradingPlugin::create_menus() {
     });
 
     menuTrading->addSeparator();
-    auto* actTrades = menuTrading->addAction(ico(Icon::ArrowTrending), tr("&Trades"));
-    connect(actTrades, &QAction::triggered, this, [this]() {
+    act_trades_ = menuTrading->addAction(ico(Icon::ArrowTrending), tr("&Trades"));
+    connect(act_trades_, &QAction::triggered, this, [this]() {
         if (tradeController_) tradeController_->showListWindow();
     });
 
     return {menuData, menuTrading};
+}
+
+QList<QAction*> TradingPlugin::toolbar_actions() {
+    return {act_portfolios_, act_books_, act_portfolio_explorer_,
+            act_org_explorer_, act_trades_};
 }
 
 // ---------------------------------------------------------------------------

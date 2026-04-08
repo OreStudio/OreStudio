@@ -25,10 +25,11 @@
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
 
 auto& lg() {
-    using namespace ores::logging;
     static auto instance = make_logger("ores.qt.plugin_registry");
     return instance;
 }

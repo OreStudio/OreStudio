@@ -197,12 +197,12 @@ QList<QMenu*> RefdataPlugin::create_menus() {
     // ---- Reference Data -----------------------------------------------
     auto* menuRefdata = new QMenu(tr("&Reference Data"));
 
-    auto* actCurrencies = menuRefdata->addAction(ico(Icon::Currency), tr("&Currencies"));
-    connect(actCurrencies, &QAction::triggered, this, [this]() {
+    act_currencies_ = menuRefdata->addAction(ico(Icon::Currency), tr("&Currencies"));
+    connect(act_currencies_, &QAction::triggered, this, [this]() {
         if (currencyController_) currencyController_->showListWindow();
     });
-    auto* actCountries = menuRefdata->addAction(ico(Icon::Globe), tr("C&ountries"));
-    connect(actCountries, &QAction::triggered, this, [this]() {
+    act_countries_ = menuRefdata->addAction(ico(Icon::Globe), tr("C&ountries"));
+    connect(act_countries_, &QAction::triggered, this, [this]() {
         if (countryController_) countryController_->showListWindow();
     });
 
@@ -328,6 +328,10 @@ QList<QMenu*> RefdataPlugin::create_menus() {
     });
 
     return {menuRefdata};
+}
+
+QList<QAction*> RefdataPlugin::toolbar_actions() {
+    return {act_currencies_, act_countries_};
 }
 
 // ---------------------------------------------------------------------------

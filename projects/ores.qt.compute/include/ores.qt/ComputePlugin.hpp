@@ -23,6 +23,8 @@
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
+class QAction;
+
 namespace ores::qt {
 
 class ComputeDashboardController;
@@ -58,11 +60,15 @@ public:
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
+    QList<QAction*> toolbar_actions() override;
     void on_logout() override;
 
 private:
 
     plugin_context ctx_;
+
+    QAction* act_report_definitions_{nullptr};
+    QAction* act_report_instances_{nullptr};
 
     std::unique_ptr<ComputeDashboardController>  computeDashboardController_;
     std::unique_ptr<ComputeConsoleController>    computeConsoleController_;

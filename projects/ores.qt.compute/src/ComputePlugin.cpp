@@ -141,11 +141,6 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuCompute->addSeparator();
 
-    auto* actJobDefs = menuCompute->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
-    connect(actJobDefs, &QAction::triggered, this, [this]() {
-        if (jobDefinitionController_) jobDefinitionController_->showListWindow();
-    });
-
     auto* actQueues = menuCompute->addAction(ico(Icon::Server), tr("&Queues"));
     connect(actQueues, &QAction::triggered, this, [this]() {
         if (queueMonitorController_) queueMonitorController_->showListWindow();
@@ -160,7 +155,7 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuCompute->addSeparator();
 
-    auto* actOreImport = menuCompute->addAction(ico(Icon::ImportOre), tr("&ORE Import"));
+    auto* actOreImport = menuCompute->addAction(ico(Icon::ImportOre), tr("&Import ORE Data"));
     connect(actOreImport, &QAction::triggered, this, [this]() {
         if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
     });
@@ -183,20 +178,31 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuReporting->addSeparator();
 
-    auto* actReportDefs = menuReporting->addAction(
+    act_report_definitions_ = menuReporting->addAction(
         ico(Icon::ChartMultiple), tr("Report &Definitions"));
-    connect(actReportDefs, &QAction::triggered, this, [this]() {
+    connect(act_report_definitions_, &QAction::triggered, this, [this]() {
         if (reportDefinitionController_) reportDefinitionController_->showListWindow();
     });
 
-    auto* actReportInstances = menuReporting->addAction(ico(Icon::Record), tr("Report &Instances"));
-    connect(actReportInstances, &QAction::triggered, this, [this]() {
+    act_report_instances_ = menuReporting->addAction(ico(Icon::Record), tr("Report &Instances"));
+    connect(act_report_instances_, &QAction::triggered, this, [this]() {
         if (reportInstanceController_) reportInstanceController_->showListWindow();
+    });
+
+    menuReporting->addSeparator();
+
+    auto* actJobDefs = menuReporting->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
+    connect(actJobDefs, &QAction::triggered, this, [this]() {
+        if (jobDefinitionController_) jobDefinitionController_->showListWindow();
     });
 
     menus.append(menuReporting);
 
     return menus;
+}
+
+QList<QAction*> ComputePlugin::toolbar_actions() {
+    return {act_report_definitions_, act_report_instances_};
 }
 
 void ComputePlugin::on_logout() {

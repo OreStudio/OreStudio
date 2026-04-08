@@ -23,6 +23,8 @@
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
+class QAction;
+
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
@@ -62,6 +64,7 @@ public:
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
+    QList<QAction*> toolbar_actions() override;
     void on_logout() override;
 
 private:
@@ -70,6 +73,8 @@ private:
 
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)
     DetachableMdiSubWindow* data_librarian_window_{nullptr};
+
+    QAction* act_data_librarian_{nullptr};
 
     // Entity controllers
     std::unique_ptr<CurrencyMarketTierController>            currencyMarketTierController_;

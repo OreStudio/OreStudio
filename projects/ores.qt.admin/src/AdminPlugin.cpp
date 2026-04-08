@@ -113,16 +113,16 @@ QList<QMenu*> AdminPlugin::create_menus() {
     // Admin menu — identity and settings management
     auto* adminMenu = new QMenu(tr("&Admin"));
 
-    auto* actAccounts = adminMenu->addAction(tr("&Accounts"));
-    connect(actAccounts, &QAction::triggered, this,
+    act_accounts_ = adminMenu->addAction(tr("&Accounts"));
+    connect(act_accounts_, &QAction::triggered, this,
         [this]() { if (accountController_) accountController_->showListWindow(); });
 
     auto* actRoles = adminMenu->addAction(tr("&Roles"));
     connect(actRoles, &QAction::triggered, this,
         [this]() { if (roleController_) roleController_->showListWindow(); });
 
-    auto* actTenants = adminMenu->addAction(tr("&Tenants"));
-    connect(actTenants, &QAction::triggered, this,
+    act_tenants_ = adminMenu->addAction(tr("&Tenants"));
+    connect(act_tenants_, &QAction::triggered, this,
         [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
     auto* actTenantTypes = adminMenu->addAction(tr("Tenant &Types"));
@@ -131,8 +131,13 @@ QList<QMenu*> AdminPlugin::create_menus() {
 
     adminMenu->addSeparator();
 
-    auto* actSettings = adminMenu->addAction(tr("&System Settings"));
-    connect(actSettings, &QAction::triggered, this,
+    auto* actOnboardTenant = adminMenu->addAction(tr("&Onboard Tenant..."));
+    connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
+
+    adminMenu->addSeparator();
+
+    act_system_settings_ = adminMenu->addAction(tr("&System Settings"));
+    connect(act_system_settings_, &QAction::triggered, this,
         [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
     menus.append(adminMenu);
@@ -161,6 +166,10 @@ QList<QMenu*> AdminPlugin::create_menus() {
     menus.append(configMenu);
 
     return menus;
+}
+
+QList<QAction*> AdminPlugin::toolbar_actions() {
+    return {act_accounts_, act_tenants_, act_system_settings_};
 }
 
 void AdminPlugin::on_logout() {

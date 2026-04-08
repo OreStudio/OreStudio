@@ -133,8 +133,8 @@ QList<QMenu*> MktdataPlugin::create_menus() {
 
     // Assets submenu
     auto* menuAssets = menuMarketData->addMenu(tr("&Assets"));
-    auto* actDataLibrarian = menuAssets->addAction(ico(Icon::Library), tr("Data &Librarian"));
-    connect(actDataLibrarian, &QAction::triggered, this, [this]() {
+    act_data_librarian_ = menuAssets->addAction(ico(Icon::Library), tr("Data &Librarian"));
+    connect(act_data_librarian_, &QAction::triggered, this, [this]() {
         if (data_librarian_window_) {
             ctx_.mdi_area->setActiveSubWindow(
                 qobject_cast<QMdiSubWindow*>(data_librarian_window_->parent()));
@@ -167,6 +167,10 @@ QList<QMenu*> MktdataPlugin::create_menus() {
     });
 
     return {menuAnalytics, menuMarketData};
+}
+
+QList<QAction*> MktdataPlugin::toolbar_actions() {
+    return {act_data_librarian_};
 }
 
 // ---------------------------------------------------------------------------

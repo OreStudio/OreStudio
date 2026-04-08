@@ -422,6 +422,15 @@ MainWindow::MainWindow(QWidget* parent) :
             menuBar()->insertMenu(helpAction, menu);
             plugin_menus_.append(menu);
         }
+
+        auto acts = plugin->toolbar_actions();
+        if (!acts.isEmpty()) {
+            ui_->toolBar->addSeparator();
+            for (auto* a : acts) {
+                ui_->toolBar->addAction(a);
+                plugin_toolbar_actions_.append(a);
+            }
+        }
     }
 
     // Initially disable data-related actions until logged in
@@ -639,6 +648,10 @@ void MainWindow::updateMenuState() {
     // Plugin-contributed domain menus enabled when logged in
     for (auto* menu : plugin_menus_)
         menu->setEnabled(isLoggedIn);
+
+    // Plugin toolbar actions follow the same login gate as their menus
+    for (auto* action : plugin_toolbar_actions_)
+        action->setEnabled(isLoggedIn);
 
     // System menu enabled when logged in
     ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);

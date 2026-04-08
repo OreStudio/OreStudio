@@ -184,6 +184,9 @@ private:
     /** @brief Menus inserted into the menu bar by plugins; removed on logout. */
     QList<QMenu*> plugin_menus_;
 
+    /** @brief Toolbar actions contributed by plugins (used for enable/disable). */
+    QList<QAction*> plugin_toolbar_actions_;
+
     std::shared_ptr<eventing::service::event_bus> eventBus_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;

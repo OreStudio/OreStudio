@@ -82,6 +82,18 @@ public:
      * Called when the client disconnects, before the returned menus are removed.
      */
     virtual void on_logout() = 0;
+
+    /**
+     * @brief Return actions to be added to the main toolbar.
+     *
+     * Called once at startup (after create_menus()).  The returned QAction
+     * objects must be the same instances that appear in the plugin's menus so
+     * that enable/disable state is shared automatically.  The host inserts a
+     * separator between each plugin's toolbar group.
+     *
+     * The default implementation returns an empty list (no toolbar contribution).
+     */
+    virtual QList<QAction*> toolbar_actions() { return {}; }
 };
 
 }

@@ -20,7 +20,6 @@
 #ifndef ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_IMPL_HPP
 
-#include <csignal>
 #include <functional>
 #include <optional>
 #include <boost/asio/bind_cancellation_slot.hpp>
@@ -32,6 +31,7 @@
 #include <boost/system/error_code.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/jwks.hpp"
+#include "ores.platform/process/signals.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::service::service {
@@ -57,9 +57,9 @@ run(boost::asio::io_context& io_ctx,
     // before the io_context exits. Calling io_ctx.stop() here would cause
     // io_ctx.run() in main() to return before the catch block executes.
     boost::asio::cancellation_signal startup_cancel;
-    // SIGQUIT is treated identically to SIGTERM: graceful shutdown.
-    // This enables the stop-escalation sequence: SIGTERM → SIGQUIT → SIGKILL.
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM, SIGQUIT);
+    boost::asio::signal_set signals(io_ctx);
+    for (int sig : ores::platform::process::shutdown_signals)
+        signals.add(sig);
     signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
         if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
     });

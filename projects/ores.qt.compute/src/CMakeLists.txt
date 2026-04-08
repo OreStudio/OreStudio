@@ -66,7 +66,10 @@ target_link_libraries(${lib_target_name}
         ores.ore.lib
         ores.ore.api.lib
         ores.controller.api.lib
-        Qt6::Charts)
+        Qt6::Charts
+    PRIVATE
+        # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
+        ores.qt.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION lib/plugins

@@ -1972,3 +1972,51 @@
    fun:call_init
    ...
 }
+#
+#  GLib / Qt GLib event dispatcher – process-lifetime singletons
+#
+#  QCoreApplication initialises GLib's default main context via
+#  QEventDispatcherGlib.  GLib intentionally never frees process-lifetime
+#  context structures; all allocations here are still-reachable singletons,
+#  not real leaks.
+#
+{
+   GLib main context default singleton (Qt GLib event dispatcher)
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_main_context_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   ...
+   fun:_ZN16QCoreApplicationC1ERiPPci
+   fun:main
+}
+{
+   GLib push thread default singleton (Qt GLib event dispatcher)
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   ...
+   fun:_ZN16QCoreApplicationC1ERiPPci
+   fun:main
+}
+#
+#  GLib internal statics initialised by the dynamic linker
+#
+#  libglib-2.0 registers module-level singletons (type registries, thread
+#  pools, etc.) via _dl_init / call_init.  These are never freed and are
+#  correctly classified as still-reachable; suppress the entire category.
+#
+{
+   GLib internal singleton via dynamic linker init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:*/libglib-2.0.so*
+   fun:call_init
+   ...
+   fun:_dl_init
+   ...
+}

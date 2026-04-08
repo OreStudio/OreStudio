@@ -58,7 +58,11 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib
         ores.iam.api.lib
         ores.controller.api.lib
-        ores.variability.api.lib)
+        ores.variability.api.lib
+    PRIVATE
+        # Transient: SessionHistoryDialog and other shared dialogs still live in
+        # ores.qt until migration is complete. Remove when files move.
+        ores.qt.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION lib/plugins

@@ -62,7 +62,10 @@ target_link_libraries(${lib_target_name}
         ores.marketdata.api.lib
         ores.analytics.api.lib
         ores.dq.api.lib
-        ores.storage.lib)
+        ores.storage.lib
+    PRIVATE
+        # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
+        ores.qt.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION lib/plugins

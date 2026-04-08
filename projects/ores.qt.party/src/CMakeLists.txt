@@ -58,7 +58,10 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.refdata.core.lib
-        ores.storage.lib)
+        ores.storage.lib
+    PRIVATE
+        # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
+        ores.qt.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION lib/plugins

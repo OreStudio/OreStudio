@@ -146,6 +146,10 @@ void set_tenant_context(PGconn* conn,
  * and actor from the context object.
  */
 void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
+    // Force UTC so timestamp values are returned as "YYYY-MM-DD HH:MM:SS+00",
+    // which from_iso8601_utc accepts. Without this, connections inherit the
+    // server's local timezone (e.g. +01 in BST) and timestamp parsing fails.
+    set_pg_config(conn, "TimeZone", "UTC", lg);
     set_tenant_context(conn, ctx.tenant_id(), lg);
 
     if (ctx.party_id().has_value()) {

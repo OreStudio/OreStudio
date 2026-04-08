@@ -31,10 +31,11 @@
 #include <sstream>
 #include <span>
 #include <thread>
+#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect_pipe.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/readable_pipe.hpp>
-#include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
@@ -50,12 +51,17 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
 #include "ores.compute.wrapper/app/log_publisher.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::compute::wrapper::app {
 
 using namespace ores::logging;
 
 namespace {
+constexpr std::string_view service_name = "ores.compute.wrapper";
+constexpr std::string_view service_version = ORES_VERSION;
+
 
 /**
  * @brief Format a time_point as ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
@@ -673,83 +679,87 @@ application::run(boost::asio::io_context& io_ctx,
         << (cfg.telemetry_interval_seconds > 0
             ? std::to_string(cfg.telemetry_interval_seconds) + "s"
             : "disabled");
-    BOOST_LOG_SEV(lg(), info) << "HTTP Base : " << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
+    BOOST_LOG_SEV(lg(), info) << "HTTP Base : "
+        << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url;
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url
+                              << " (namespace: '"
+                              << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
+                              << "')";
 
-    // Idle heartbeat — keeps last_rpc_time current even when no job is running.
+    // Idle heartbeat — compute-domain signal; tells the compute service this
+    // worker is alive even when no job is running (subject: compute.v1.work.heartbeat).
     heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
-    idle_hb.start();
-    BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
-        << cfg.heartbeat_interval_seconds << "s interval).";
 
-    // Start telemetry reporter if enabled.
+    // Node telemetry reporter — publishes per-node metrics to
+    // compute.v1.telemetry.node_samples at the configured interval.
     std::unique_ptr<node_stats_reporter> reporter;
     if (cfg.telemetry_interval_seconds > 0) {
         reporter = std::make_unique<node_stats_reporter>(
             nats, cfg.host_id, cfg.tenant_id, cfg.telemetry_interval_seconds);
-        reporter->start();
-        BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
-            << cfg.telemetry_interval_seconds << "s interval).";
     }
+    node_stats_reporter* raw_reporter = reporter.get();
 
-    // Subscribe to all work assignments in this environment.
-    // The NATS subject prefix already scopes assignments per environment
-    // (checkout), so a wildcard here is safe. Dispatcher publishes to
-    // compute.v1.work.assignments.{tenant_uuid} and wrappers consume all.
-    const std::string work_subject = "compute.v1.work.assignments.>";
-
-    // Durable consumer name is based on the tenant (NATS prefix) to avoid
-    // collisions across checkouts. Dots replaced with hyphens for NATS.
+    // Durable consumer name scoped to this environment to avoid collisions.
     std::string sanitised_tenant = cfg.tenant_id;
     std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '-');
+    const std::string work_subject = "compute.v1.work.assignments.>";
     const std::string durable_name = "ores-compute-wrapper-" + sanitised_tenant;
     const std::string queue_group  = "ores-compute-wrapper";
 
-    BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
+    co_await ores::service::service::run(
+        io_ctx, nats, service_name,
+        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group,
+         this](auto& n, auto /*verifier*/) {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
+            auto sub = n.js_queue_subscribe(
+                work_subject, durable_name, queue_group,
+                [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
+                    const std::string_view data(
+                        reinterpret_cast<const char*>(msg.data.data()),
+                        msg.data.size());
+                    const auto evt = rfl::json::read<
+                        compute::messaging::work_assignment_event>(data);
+                    if (!evt) {
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Failed to decode work_assignment_event: "
+                            << evt.error().what();
+                        return;
+                    }
+                    process_assignment(nats, *evt, cfg, raw_reporter, lg());
+                });
+            std::vector<ores::nats::service::subscription> subs;
+            subs.push_back(std::move(sub));
+            return subs;
+        },
+        [&](boost::asio::io_context& ioc) {
+            // Service-health heartbeat — standard subject used by the service
+            // dashboard (telemetry.v1.services.heartbeat).
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
 
-    node_stats_reporter* raw_reporter = reporter.get();
-    auto sub = nats.js_queue_subscribe(
-        work_subject, durable_name, queue_group,
-        [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
-            const std::string_view data(
-                reinterpret_cast<const char*>(msg.data.data()),
-                msg.data.size());
-
-            const auto evt = rfl::json::read<
-                compute::messaging::work_assignment_event>(data);
-
-            if (!evt) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to decode work_assignment_event: "
-                    << evt.error().what();
-                return;
+            // Compute-domain idle heartbeat and node telemetry reporter.
+            idle_hb.start();
+            BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
+                << cfg.heartbeat_interval_seconds << "s interval).";
+            if (reporter) {
+                reporter->start();
+                BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
+                    << cfg.telemetry_interval_seconds << "s interval).";
             }
-
-            process_assignment(nats, *evt, cfg, raw_reporter, lg());
+        },
+        [&]() {
+            idle_hb.stop();
+            if (reporter) {
+                reporter->stop();
+                BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
+            }
         });
-
-    BOOST_LOG_SEV(lg(), info) << "Service ready.";
-    BOOST_LOG_SEV(lg(), info) << "Waiting for work assignments...";
-
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    co_await signals.async_wait(boost::asio::use_awaitable);
-
-    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
-
-    idle_hb.stop();
-
-    if (reporter) {
-        reporter->stop();
-        BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
-    }
-
-    nats.drain();
-
-    BOOST_LOG_SEV(lg(), info) << "Service stopped.";
-
     co_return;
 }
 

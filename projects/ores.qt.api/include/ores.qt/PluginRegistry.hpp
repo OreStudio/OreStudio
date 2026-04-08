@@ -75,11 +75,12 @@ public:
      */
     const QVector<IPlugin*>& plugins() const { return plugins_; }
 
-private:
     PluginRegistry() = default;
     ~PluginRegistry();
     PluginRegistry(const PluginRegistry&) = delete;
     PluginRegistry& operator=(const PluginRegistry&) = delete;
+
+private:
 
     QVector<QPluginLoader*> loaders_;  ///< Must outlive plugin instances.
     QVector<IPlugin*>       plugins_;

@@ -28,6 +28,8 @@
 
 namespace ores::telemetry::database::repository {
 
+using db_timestamp = ores::database::repository::db_timestamp;
+
 /**
  * @brief Represents a telemetry log record in the database.
  *

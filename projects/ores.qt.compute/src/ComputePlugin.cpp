@@ -54,18 +54,39 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connectControllerSignals(computeDashboardController_.get());
+    connect(computeDashboardController_.get(), &ComputeDashboardController::statusMessage,
+            this, &PluginBase::statusMessage);
+    connect(computeDashboardController_.get(), &ComputeDashboardController::errorMessage,
+            this, [this](const QString& msg) { emit statusMessage(msg); });
+    connect(computeDashboardController_.get(), &ComputeDashboardController::detachableWindowCreated,
+            this, &PluginBase::windowCreated);
+    connect(computeDashboardController_.get(), &ComputeDashboardController::detachableWindowDestroyed,
+            this, &PluginBase::windowDestroyed);
 
     computeConsoleController_ = std::make_unique<ComputeConsoleController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.badge_cache, this);
     if (!ctx_.http_base_url.empty())
         computeConsoleController_->setHttpBaseUrl(ctx_.http_base_url);
-    connectControllerSignals(computeConsoleController_.get());
+    connect(computeConsoleController_.get(), &ComputeConsoleController::statusMessage,
+            this, &PluginBase::statusMessage);
+    connect(computeConsoleController_.get(), &ComputeConsoleController::errorMessage,
+            this, [this](const QString& msg) { emit statusMessage(msg); });
+    connect(computeConsoleController_.get(), &ComputeConsoleController::detachableWindowCreated,
+            this, &PluginBase::windowCreated);
+    connect(computeConsoleController_.get(), &ComputeConsoleController::detachableWindowDestroyed,
+            this, &PluginBase::windowDestroyed);
 
     serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connectControllerSignals(serviceDashboardController_.get());
+    connect(serviceDashboardController_.get(), &ServiceDashboardController::statusMessage,
+            this, &PluginBase::statusMessage);
+    connect(serviceDashboardController_.get(), &ServiceDashboardController::errorMessage,
+            this, [this](const QString& msg) { emit statusMessage(msg); });
+    connect(serviceDashboardController_.get(), &ServiceDashboardController::detachableWindowCreated,
+            this, &PluginBase::windowCreated);
+    connect(serviceDashboardController_.get(), &ServiceDashboardController::detachableWindowDestroyed,
+            this, &PluginBase::windowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,

@@ -49,13 +49,6 @@ target_include_directories(${lib_target_name} PUBLIC
     ${ORES_QT_DIR}/include
     # Expose AUTOUIC-generated ui_*.h headers so consumers (exe) can find them.
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
-target_include_directories(${lib_target_name} PRIVATE
-    # Transient: ores.qt host files include headers from domain plugins that are
-    # now shared libs loaded at runtime.  Remove each entry as the include is
-    # moved to ores.qt.api or the dependency is eliminated.
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.refdata/include"    # ClientDatasetBundleModel (TenantProvisioningWizard)
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include")     # LeiEntityPicker (TenantProvisioningWizard, PartyProvisioningWizard)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib          # shared framework: ClientManager, EntityController,

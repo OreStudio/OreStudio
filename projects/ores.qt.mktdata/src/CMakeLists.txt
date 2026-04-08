@@ -52,7 +52,7 @@ target_include_directories(${lib_target_name} PRIVATE
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt.refdata/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include")
+    )
 
 target_link_libraries(${lib_target_name}
     PUBLIC

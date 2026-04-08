@@ -51,9 +51,7 @@ target_include_directories(${lib_target_name} PRIVATE
     # Transient: admin controllers include headers still in ores.qt (e.g.
     # SessionHistoryDialog).  Remove as files migrate.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
-    # Transient: LeiEntityPicker moved to ores.qt.party.  Remove when admin
-    # no longer depends on party types.
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include")
+    )
 
 target_link_libraries(${lib_target_name}
     PUBLIC

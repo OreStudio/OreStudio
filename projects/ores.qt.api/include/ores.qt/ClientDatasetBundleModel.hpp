@@ -29,6 +29,7 @@
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -38,7 +39,7 @@ namespace ores::qt {
  * This model extends QAbstractTableModel and fetches dataset bundle
  * data asynchronously using the ores.comms client.
  */
-class ClientDatasetBundleModel final : public AbstractClientModel {
+class ORES_QT_API ClientDatasetBundleModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:

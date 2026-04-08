@@ -29,6 +29,7 @@
 #include <QSortFilterProxyModel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -39,7 +40,7 @@ namespace ores::qt {
  * protocol and presents them in a filterable table. Users can search
  * by entity legal name and select an entity to use in other screens.
  */
-class LeiEntityPicker final : public QWidget {
+class ORES_QT_API LeiEntityPicker final : public QWidget {
     Q_OBJECT
 
 private:

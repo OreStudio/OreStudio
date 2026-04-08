@@ -43,7 +43,8 @@ run(boost::asio::io_context& io_ctx,
     ores::database::context ctx,
     std::string_view name,
     RegisterFn&& register_fn,
-    std::function<void(boost::asio::io_context&)> on_started) {
+    std::function<void(boost::asio::io_context&)> on_started,
+    std::function<void()> on_shutdown) {
 
     using namespace ores::logging;
     static const std::string_view logger_name = "ores.service.service.runner";
@@ -106,6 +107,71 @@ run(boost::asio::io_context& io_ctx,
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
+    if (on_shutdown) on_shutdown();
+    nats.drain();
+    BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
+    co_return;
+}
+
+template<typename RegisterFn>
+boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    std::string_view name,
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started,
+    std::function<void()> on_shutdown) {
+
+    using namespace ores::logging;
+    static const std::string_view logger_name = "ores.service.service.runner";
+    static auto& lg = []() -> auto& {
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }();
+
+    boost::asio::cancellation_signal startup_cancel;
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM, SIGQUIT);
+    signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
+        if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
+    });
+
+    std::string pub_key;
+    try {
+        pub_key = co_await boost::asio::co_spawn(
+            io_ctx,
+            ores::nats::service::fetch_jwks_public_key(nats),
+            boost::asio::bind_cancellation_slot(
+                startup_cancel.slot(), boost::asio::use_awaitable));
+    } catch (const boost::system::system_error& e) {
+        if (e.code() != boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
+            throw;
+        }
+        BOOST_LOG_SEV(lg, info) << "Shutdown signal received during startup.";
+        BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
+        co_return;
+    }
+    BOOST_LOG_SEV(lg, info) << "Fetched JWKS public key from IAM";
+
+    signals.cancel();
+
+    std::optional<ores::security::jwt::jwt_authenticator> verifier =
+        ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
+
+    auto subs = register_fn(nats, std::move(verifier));
+    BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
+    for (const auto& sub : subs)
+        BOOST_LOG_SEV(lg, info) << "NATS subscribe: " << sub.subject();
+
+    if (on_started)
+        on_started(io_ctx);
+
+    BOOST_LOG_SEV(lg, info) << "Service ready.";
+    BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
+    co_await signals.async_wait(boost::asio::use_awaitable);
+
+    BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
+    if (on_shutdown) on_shutdown();
     nats.drain();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;

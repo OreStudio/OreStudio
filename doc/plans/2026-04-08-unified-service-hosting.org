@@ -1,0 +1,388 @@
+#+TITLE: Unified Service Hosting: Normalise All Services to ores.service Infrastructure
+#+DATE: 2026-04-08
+#+AUTHOR: Marco Craveiro
+#+STATUS: IN PROGRESS
+
+* Overview
+
+All ORE Studio services must use the common hosting infrastructure provided by
+=ores.service=.  Today four services deviate from the standard pattern
+established by the fifteen domain services (trading, analytics, assets, etc.)
+and a fifth has a latent issue with its heartbeat subject.
+
+The goal of this plan is to close every gap so that the service dashboard shows
+a uniform NATS-telemetry-based health signal for every service and every service
+uses the same lifecycle primitives from =ores.service=.
+
+* Goals
+
+- Every service publishes heartbeats via =heartbeat_publisher= to the single
+  standard subject =telemetry.v1.services.heartbeat=.
+- Every service lifecycle (signal handling, JWKS fetch, JWT verifier, drain) is
+  managed by a runner from =ores.service=, not hand-rolled per service.
+- =ores.http.server= and =ores.wt.service= obtain a JWT verifier at startup
+  (ready for future NATS service-to-service calls).
+- The service dashboard removes its "Running" controller-phase fallback path
+  once all services emit heartbeats; "Online" becomes the single source of truth
+  for service health.
+
+* Non-goals
+
+- Rewriting HTTP routes or Wt UI pages to use NATS (separate future work).
+- Adding domain NATS subscriptions to HTTP server or Wt service (out of scope).
+- Changing the heartbeat interval or telemetry storage schema.
+
+* Current State
+
+| Service                   | Runner              | JWKS / verifier    | Heartbeat subject           | Dashboard status source  |
+|---------------------------+---------------------+--------------------+-----------------------------+--------------------------|
+| trading, analytics, +13   | domain_service_runner | fetched from IAM | telemetry.v1.services.heartbeat | NATS telemetry ("Online") |
+| =ores.iam.service=        | hand-rolled         | creates signer     | none                        | controller phase only    |
+| =ores.http.server=        | hand-rolled         | none               | none                        | controller phase only    |
+| =ores.wt.service=         | none (Wt blocks)    | none               | none                        | controller phase only    |
+| =ores.compute.wrapper=    | hand-rolled         | none               | compute.v1.heartbeat (wrong)| controller phase only    |
+
+* Target State
+
+| Service                   | Runner                    | JWKS / verifier    | Heartbeat subject              |
+|---------------------------+---------------------------+--------------------+--------------------------------|
+| trading, analytics, +13   | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
+| =ores.iam.service=        | signing_service_runner    | creates signer     | telemetry.v1.services.heartbeat |
+| =ores.http.server=        | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
+| =ores.wt.service=         | wt_service_runner         | fetched from IAM   | telemetry.v1.services.heartbeat |
+| =ores.compute.wrapper=    | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
+
+* Architecture
+
+** Changes to =ores.service=
+
+Three additions, zero modifications to existing interfaces.
+
+*** 1. =on_shutdown= callback (extend =domain_service_runner=)
+
+Add an optional =on_shutdown= callback to =domain_service_runner=.  Called
+immediately after the shutdown signal is received, before =nats.drain()=.
+Needed by =ores.http.server= (to call =server.stop()= and =event_source.stop()=)
+and =ores.compute.wrapper= (to stop its work loop).  The 15 existing callers
+pass nothing; the default is an empty std::function.
+
+#+begin_src cpp
+// domain_service_runner.hpp — updated signature (impl is additive)
+template<typename RegisterFn>
+boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::string_view name,
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started  = {},
+    std::function<void()>                          on_shutdown = {});
+#+end_src
+
+New step in =domain_service_runner_impl.hpp= between the signal wait and drain:
+
+#+begin_src cpp
+co_await signals.async_wait(boost::asio::use_awaitable);
+BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
+if (on_shutdown) on_shutdown();   // NEW
+nats.drain();
+#+end_src
+
+*** 2. =run()= overload without database context
+
+An overload of =run()= for services that have no database (=ores.compute.wrapper=).
+The register_fn signature drops the =ctx= parameter.
+
+#+begin_src cpp
+// domain_service_runner.hpp — new overload declaration
+template<typename RegisterFn>
+boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    std::string_view name,
+    RegisterFn&& register_fn,            // signature: (nats, verifier)
+    std::function<void(boost::asio::io_context&)> on_started  = {},
+    std::function<void()>                          on_shutdown = {});
+#+end_src
+
+Implementation in =domain_service_runner_impl.hpp= is identical to the
+existing overload, minus the =ctx= construction and pass-through.
+
+*** 3. =signing_service_runner= (new, IAM only)
+
+A parallel runner for the one service that creates a JWT signer rather than
+fetching a verifier.  The lifecycle is identical to =domain_service_runner=
+except step 2 (JWKS fetch) is replaced by constructing an RS256 signer from
+the service's private key.  The register_fn receives a =jwt_authenticator=
+signer rather than a verifier.
+
+#+begin_src cpp
+// signing_service_runner.hpp
+template<typename RegisterFn>
+boost::asio::awaitable<void>
+run_signing(boost::asio::io_context& io_ctx,
+            ores::nats::service::client& nats,
+            ores::database::context ctx,
+            std::string_view name,
+            const std::string& jwt_private_key,
+            RegisterFn&& register_fn,           // (nats, ctx, signer)
+            std::function<void(boost::asio::io_context&)> on_started  = {},
+            std::function<void()>                          on_shutdown = {});
+#+end_src
+
+=signing_service_runner_impl.hpp= replaces lines 70-85 of
+=domain_service_runner_impl.hpp= (JWKS fetch with backoff) with:
+
+#+begin_src cpp
+auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
+    jwt_private_key);
+#+end_src
+
+All other steps — signal setup, register_fn call, on_started, signal wait,
+on_shutdown, drain, shutdown log — are identical to the domain runner.
+
+*** 4. =wt_service_runner= (new, Wt only)
+
+Wt's =WServer::waitForShutdown()= is a blocking call that owns signal
+handling; it cannot be replaced by the ASIO signal wait inside
+=domain_service_runner=.  The =wt_service_runner= is therefore a regular
+(non-coroutine) function that wraps Wt's blocking lifecycle symmetrically
+around the NATS infrastructure.
+
+Lifecycle:
+
+#+begin_example
+1. Connect NATS (synchronous)
+2. Run NATS io_context on background thread
+3. Fetch JWKS via co_spawn on background io_context; block main thread until
+   available (or signal cancels)
+4. Create RS256 verifier
+5. Call register_fn(nats, ctx, verifier)
+6. Spawn heartbeat_publisher on background io_context
+7. --- hand off to Wt ---
+8. server.start()
+9. WServer::waitForShutdown()   ← Wt owns signals from here
+10. server.stop()
+11. --- return from Wt ---
+12. Stop background io_context thread
+13. nats.drain()
+#+end_example
+
+The background io_context thread runs throughout the Wt server lifetime,
+keeping the heartbeat coroutine alive.  NATS subscriptions registered in step
+5 are also serviced on this thread.
+
+#+begin_src cpp
+// wt_service_runner.hpp
+template<typename RegisterFn, typename WtSetupFn>
+void run_wt(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::string_view name,
+    RegisterFn&& register_fn,    // (nats, ctx, verifier)
+    WtSetupFn&&  wt_setup_fn);   // sets up and runs WServer; blocks until shutdown
+#+end_src
+
+The =wt_setup_fn= receives no arguments; it closes over the Wt server and
+argv constructed in =main.cpp= before the call.
+
+** Per-service changes
+
+*** =ores.iam.service=
+
+*File:* =projects/ores.iam.service/src/app/application.cpp= (lines 54–84)
+
+Replace the hand-rolled lifecycle with =run_signing()=.  The existing signer
+construction and handler registration become the register_fn lambda.  Add the
+=heartbeat_publisher= co-spawn in =on_started=.  Remove the manual
+=boost::asio::signal_set= and =nats.drain()=.
+
+#+begin_src cpp
+co_await ores::service::service::run_signing(
+    io_ctx, nats, make_context(cfg.database), service_name,
+    cfg.jwt_private_key,
+    [](auto& n, auto c, auto s) {
+        return ores::iam::messaging::registrar::register_handlers(
+            n, std::move(c), std::move(s));
+    },
+    [&nats](boost::asio::io_context& ioc) {
+        auto hb = std::make_shared<
+            ores::service::service::heartbeat_publisher>(
+            std::string(service_name), std::string(service_version), nats);
+        boost::asio::co_spawn(ioc,
+            [hb]() { return hb->run(); },
+            boost::asio::detached);
+    });
+#+end_src
+
+The registrar signature is unchanged (it already takes a signer).
+
+*** =ores.http.server=
+
+*File:* =projects/ores.http.server/src/app/application.cpp= (lines 53–206)
+
+Replace the hand-rolled lifecycle with =domain_service_runner::run()=.
+
+- The database context, NATS connect, and service-discovery handler
+  registration move into =application::run()= before calling the runner.
+- =register_fn= calls =http_server::messaging::registrar::register_handlers()=
+  (NATS discovery + any future NATS subjects); receives verifier for future use.
+- =on_started= spawns =heartbeat_publisher= and co_spawns the HTTP server
+  coroutine (=co_await server.run()= becomes a detached co_spawn).
+- =on_shutdown= calls =server.stop()= and =event_source.stop()=; these
+  are captured by reference in the lambda.
+- Remove the manual =boost::asio::signal_set= at lines 191–195.
+
+The HTTP routes, event bus, session and system-settings setup remain inside
+=application::run()= before the runner call, constructed on the stack and
+captured by reference in the lambdas.
+
+*** =ores.wt.service=
+
+*Files:* =projects/ores.wt.service/src/main.cpp=,
+=projects/ores.wt.service/include/ores.wt.service/config/options.hpp=
+
+1. Add =nats: nats_options= to =options.hpp= (no database change needed;
+   DB is already there).
+2. Add NATS config parsing to =config/parser.cpp=.
+3. In =main.cpp=, construct =nats::service::client= before setting up Wt.
+4. Replace the =server.start()= / =WServer::waitForShutdown()= block with a
+   =run_wt()= call:
+
+#+begin_src cpp
+ores::nats::service::client nats(opts.nats);
+nats.connect();
+ores::service::service::run_wt(
+    nats, make_context(opts.database), "ores.wt.service",
+    [](auto& n, auto c, auto v) {
+        return ores::wt::messaging::registrar::register_handlers(n, c, v);
+    },
+    [&]() {
+        boost_log_sink wt_sink;
+        Wt::WServer server(/* ... argv ... */);
+        server.setCustomLogger(wt_sink);
+        server.addEntryPoint(Wt::EntryPointType::Application,
+            &create_application);
+        if (server.start()) {
+            BOOST_LOG_SEV(lg, info) << "Service ready.";
+            Wt::WServer::waitForShutdown();
+            server.stop();
+        }
+    });
+#+end_src
+
+A new minimal =ores.wt.service/messaging/registrar= is introduced (initially
+empty subscriptions; populated as Wt transitions to NATS calls in future work).
+
+The existing =application_context= singleton and eventing setup remain
+unchanged for now.
+
+*** =ores.compute.wrapper=
+
+*Files:* =projects/ores.compute.wrapper/src/app/application.cpp=,
+=projects/ores.compute.wrapper/include/ores.compute.wrapper/config/options.hpp=
+
+Use the no-database overload of =domain_service_runner::run()=.
+
+- =register_fn= (signature: =nats=, =verifier=) registers the JetStream work
+  queue subscription and result reply handler.
+- =on_started= spawns:
+  1. =heartbeat_publisher= with subject =telemetry.v1.services.heartbeat=
+     (replaces the custom heartbeat on =compute.v1.heartbeat=).
+  2. =node_stats_reporter= on its existing =compute.v1.telemetry.node_samples=
+     subject (unaffected — this is compute-node metrics, not service health).
+- =on_shutdown= stops the work queue and stats reporter cleanly.
+- Remove the hand-rolled signal handling and the custom heartbeat loop.
+
+The =heartbeat_interval_seconds= config field is removed; the standard 15 s
+default from =heartbeat_publisher= is used.  =telemetry_interval_seconds=
+stays (it drives =node_stats_reporter=).
+
+** Service dashboard cleanup
+
+*File:* =projects/ores.qt/src/ServiceDashboardMdiWindow.cpp=
+
+Once all five services emit =telemetry.v1.services.heartbeat=:
+
+- Remove the fallback branch that uses controller instance =phase= to show
+  "Running" for services with no heartbeat samples.
+- "Online" / "Degraded" / "Offline" (NATS telemetry) becomes the sole
+  classification for every service row.
+- The per-instance detail table continues to show controller phase, PID,
+  restart count etc. — this remains useful regardless.
+
+* Phases
+
+Each phase is one commit.  All commits are squashed into a single PR at the
+end of the branch.  No backwards-compatibility shims, forwarding headers, or
+deprecated aliases are introduced at any point.
+
+** Phase 1 — Extend =ores.service= with new runners
+
+*Commit:* =[service] Add signing runner, no-DB overload, on_shutdown callback, and wt runner=
+
+All four =ores.service= additions in one commit.  No existing service is
+touched; existing callers continue to compile unchanged because all new
+parameters have defaults.
+
+| File | Action |
+|------+--------|
+| =ores.service/include/.../service/domain_service_runner.hpp= | Add =on_shutdown= param; add no-DB overload declaration |
+| =ores.service/include/.../service/domain_service_runner_impl.hpp= | Implement =on_shutdown= call; implement no-DB overload |
+| =ores.service/include/.../service/signing_service_runner.hpp= | NEW — declaration |
+| =ores.service/include/.../service/signing_service_runner_impl.hpp= | NEW — implementation |
+| =ores.service/include/.../service/wt_service_runner.hpp= | NEW — declaration + inline implementation |
+
+** Phase 2 — Migrate =ores.iam.service=
+
+*Commit:* =[iam] Migrate to signing_service_runner; add heartbeat=
+
+| File | Action |
+|------+--------|
+| =ores.iam.service/src/app/application.cpp= | Replace hand-rolled lifecycle with =run_signing()= |
+
+** Phase 3 — Migrate =ores.http.server=
+
+*Commit:* =[http] Migrate to domain_service_runner; add JWKS fetch and heartbeat=
+
+| File | Action |
+|------+--------|
+| =ores.http.server/src/app/application.cpp= | Replace hand-rolled lifecycle; add =on_started= (heartbeat + HTTP co_spawn), =on_shutdown= (server.stop + event_source.stop) |
+
+** Phase 4 — Migrate =ores.compute.wrapper=
+
+*Commit:* =[compute] Migrate wrapper to domain_service_runner; fix heartbeat subject=
+
+| File | Action |
+|------+--------|
+| =ores.compute.wrapper/src/app/application.cpp= | Replace hand-rolled lifecycle; move work-queue sub into register_fn; fix heartbeat subject |
+| =ores.compute.wrapper/include/.../config/options.hpp= | Remove =heartbeat_interval_seconds= |
+| =ores.compute.wrapper/src/config/parser.cpp= | Remove corresponding CLI flag |
+
+** Phase 5 — Migrate =ores.wt.service=
+
+*Commit:* =[wt] Add NATS client + wt_service_runner; add heartbeat=
+
+| File | Action |
+|------+--------|
+| =ores.wt.service/include/.../config/options.hpp= | Add =nats: nats_options= |
+| =ores.wt.service/src/config/parser.cpp= | Add NATS option parsing |
+| =ores.wt.service/src/main.cpp= | Construct NATS client; replace Wt lifecycle with =run_wt()= call |
+| =ores.wt.service/include/.../messaging/registrar.hpp= | NEW — empty registrar |
+| =ores.wt.service/src/messaging/registrar.cpp= | NEW — empty register_handlers |
+| =ores.wt.service/src/CMakeLists.txt= | Add =ores.nats.lib=, =ores.service.lib= |
+
+** Phase 6 — Service dashboard cleanup
+
+*Commit:* =[qt] Remove controller-phase fallback from service dashboard=
+
+| File | Action |
+|------+--------|
+| =ores.qt/src/ServiceDashboardMdiWindow.cpp= | Remove "Running" fallback branch; NATS telemetry is sole health signal |
+
+* Sprint
+
+This work covers and extends the existing sprint-16 story
+/NATS-based health for all services: HTTP, WT and compute wrapper/
+(=doc/agile/v0/sprint_backlog_16.org= line 925).  Phase 2 (IAM heartbeat) is
+new scope not covered by that story.

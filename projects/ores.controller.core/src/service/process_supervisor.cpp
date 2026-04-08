@@ -84,8 +84,8 @@ std::string tail_log(const std::filesystem::path& path, int n) {
     // Seek to a window near the end large enough to contain n lines.
     constexpr std::streamoff window = 8192;
     f.seekg(0, std::ios::end);
-    const auto file_size = f.tellg();
-    const auto seek_pos = (file_size > window) ? (file_size - window) : 0;
+    const std::streamoff file_size = f.tellg();
+    const std::streamoff seek_pos = (file_size > window) ? (file_size - window) : 0;
     f.seekg(seek_pos);
 
     std::deque<std::string> lines;

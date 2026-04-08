@@ -31,6 +31,7 @@
 #include <QDialogButtonBox>
 #include <QFontDatabase>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
 #include <QPointer>

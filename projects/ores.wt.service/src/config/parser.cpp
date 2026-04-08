@@ -27,6 +27,7 @@
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "ores.nats/config/nats_configuration.hpp"
 
 namespace {
 
@@ -56,9 +57,10 @@ options_description make_options_description() {
 
     const auto lod(logging_configuration::make_options_description("ores.wt.service.log"));
     const auto dod(database_configuration::make_options_description());
+    const auto nod(ores::nats::config::nats_configuration::make_options_description());
 
     options_description r;
-    r.add(god).add(lod).add(dod);
+    r.add(god).add(lod).add(dod).add(nod);
     return r;
 }
 
@@ -143,6 +145,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     options r;
     r.logging = logging_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    r.nats = ores::nats::config::nats_configuration::read_options(vm);
 
     return {r, wt_args};
 }

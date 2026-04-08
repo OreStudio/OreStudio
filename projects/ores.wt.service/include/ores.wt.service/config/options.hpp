@@ -24,6 +24,7 @@
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 
 namespace ores::wt::service::config {
 
@@ -39,6 +40,10 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief Configuration related to NATS transport.
+     */
+    ores::nats::config::nats_options nats;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

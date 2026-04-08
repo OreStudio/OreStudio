@@ -33,6 +33,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
+#include "ores.utility/concurrency/retry_strategy.hpp"
 
 namespace ores::controller::service {
 
@@ -87,8 +88,8 @@ private:
         std::optional<boost::process::v2::process> proc;
         api::domain::service_definition def;
         int replica_index = 0;
-        int restart_count = 0;
         bool stop_requested = false; // true when stop() was intentionally called
+        ores::utility::concurrency::retry_strategy retry;
     };
 
 public:

@@ -103,6 +103,12 @@ select ores_iam_service_accounts_upsert_fn(
 );
 
 select ores_iam_service_accounts_upsert_fn(
+    :'compute_wrapper_user',
+    'compute_wrapper@system.ores',
+    'System service account for Compute Wrapper worker service'
+);
+
+select ores_iam_service_accounts_upsert_fn(
     :'iam_service_user',
     'iam_service@system.ores',
     'System service account for IAM NATS domain service',

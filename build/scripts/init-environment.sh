@@ -254,7 +254,7 @@ get_or_gen_uuid() {
 # Discover NATS domain services from projects/ores.*.service directories
 # ---------------------------------------------------------------------------
 SERVICE_COMPONENTS=()
-NATS_ONLY_EXCLUDES=("wt")
+NATS_ONLY_EXCLUDES=("wt")  # wt uses rw_role / ORES_WT_DB_* naming, not the service-role / *_service naming
 for svc_dir in "${CHECKOUT_ROOT}"/projects/ores.*.service; do
     [[ -d "${svc_dir}" ]] || continue
     dir_name="$(basename "${svc_dir}")"
@@ -283,6 +283,7 @@ ORES_DB_CLI_USER="ores_${LABEL_LOWER}_cli_user"
 ORES_DB_WT_USER="ores_${LABEL_LOWER}_wt_user"
 ORES_DB_HTTP_USER="ores_${LABEL_LOWER}_http_user"
 ORES_DB_SHELL_USER="ores_${LABEL_LOWER}_shell_user"
+ORES_COMPUTE_WRAPPER_USER="ores_${LABEL_LOWER}_compute_wrapper_user"
 ORES_DB_READONLY_USER="ores_${LABEL_LOWER}_readonly_user"
 ORES_TEST_DB_DDL_USER="ores_${LABEL_LOWER}_test_ddl_user"
 ORES_TEST_DB_DML_USER="ores_${LABEL_LOWER}_test_dml_user"
@@ -461,6 +462,11 @@ EOF
     echo "ORES_WT_DB_USER=${ORES_DB_WT_USER}"
     echo "ORES_WT_DB_PASSWORD=${ORES_DB_WT_PASSWORD}"
     echo "ORES_WT_DB_DATABASE=${DB_NAME}"
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# Compute Wrapper IAM service account name (no DB connection — NATS/TLS only)"
+    echo "# ---------------------------------------------------------------------------"
+    echo "ORES_COMPUTE_WRAPPER_USER=${ORES_COMPUTE_WRAPPER_USER}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# IAM JWT signing key (PEM encoded as single line, \\n = newline)"

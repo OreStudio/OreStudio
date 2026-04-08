@@ -80,6 +80,15 @@ select ores_iam_account_role_assign_fn(
 select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'analytics_service_user', 'AnalyticsService');
 
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'http_user', 'HttpService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'wt_user', 'WtService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'compute_wrapper_user', 'ComputeWrapperService');
+
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count
 from ores_iam_account_roles_tbl ar

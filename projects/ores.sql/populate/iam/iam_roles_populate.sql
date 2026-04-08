@@ -217,6 +217,23 @@ select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsServic
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsService', 'analytics::*');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AnalyticsService', 'iam::tenants:read');
 
+-- HTTP server service: gateway that validates sessions and forwards to domain services
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'HttpService', 'HTTP REST API server — session validation and domain gateway');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'HttpService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'HttpService', 'iam::sessions:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'HttpService', 'iam::accounts:read');
+
+-- Wt web service: browser UI that validates sessions and calls domain services via NATS
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'WtService', 'Wt web application — session validation and domain gateway');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WtService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WtService', 'iam::sessions:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WtService', 'iam::accounts:read');
+
+-- Compute Wrapper service: worker that processes compute jobs from JetStream
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeWrapperService', 'compute::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeWrapperService', 'iam::tenants:read');
+
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()

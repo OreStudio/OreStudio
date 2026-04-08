@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_PLATFORM_TIME_TIME_POINT_PARSER_HPP
-#define ORES_PLATFORM_TIME_TIME_POINT_PARSER_HPP
+#ifndef ORES_UTILITY_RFL_TIME_POINT_PARSER_HPP
+#define ORES_UTILITY_RFL_TIME_POINT_PARSER_HPP
 
 #include <chrono>
 #include <string>

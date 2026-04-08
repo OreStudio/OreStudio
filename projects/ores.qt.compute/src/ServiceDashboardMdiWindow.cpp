@@ -56,15 +56,19 @@ namespace {
 // Main overview table columns
 enum class Col { Status = 0, Service, Description, Replicas, Version, LastSeen };
 // Instance detail table columns
-enum class DCol { Replica = 0, Phase, Pid, StartedAt, StoppedAt, Restarts, Uuid };
+enum class DCol { Replica = 0, Phase, Pid, StartedAt, StoppedAt, Restarts, LastError, Uuid };
 
 // Per-service aggregated data built from heartbeat samples + service definitions.
 struct ServiceRow {
     std::string service_name;
     std::string description;
     int desired_replicas = 1;
-    int online_replicas  = 0;   // samples with age < 120 s (telemetry heartbeat)
-    std::string version;        // from most-recent sample
+    int online_replicas    = 0;   // samples with age < 120 s (telemetry heartbeat)
+    int running_replicas   = 0;   // instances with phase == "running" (controller DB)
+    int pending_replicas   = 0;   // instances with phase == "pending" (not yet launched)
+    int failed_replicas    = 0;   // instances with phase == "failed" (exceeded max_restart_count)
+    int restarting_replicas = 0;  // instances with restart_count > 0 that are not failed
+    std::string version;          // from most-recent sample
     long long   last_seen_secs = LLONG_MAX; // age in seconds, LLONG_MAX = never seen
 };
 
@@ -105,7 +109,29 @@ QString format_timepoint(
 }
 
 std::pair<QString, QColor> status_for_row(const ServiceRow& r) {
-    if (r.online_replicas == 0)
+    // Failed: all replicas have hit max_restart_count — needs operator action.
+    if (r.failed_replicas > 0 && r.running_replicas == 0 && r.online_replicas == 0)
+        return { QStringLiteral("Failed"), color_constants::level_error };
+
+    // Starting: replicas exist but none are running yet (first launch or pending).
+    if (r.pending_replicas > 0 && r.running_replicas == 0 && r.online_replicas == 0)
+        return { QStringLiteral("Starting"), color_constants::level_debug };
+
+    // Restarting: replicas have crashed and are being retried, none currently up.
+    if (r.restarting_replicas > 0 && r.running_replicas == 0 && r.online_replicas == 0)
+        return { QStringLiteral("Restarting"), color_constants::level_warn };
+
+    // Services with NATS telemetry heartbeats: use heartbeat-based status.
+    if (r.last_seen_secs != LLONG_MAX) {
+        if (r.online_replicas == 0)
+            return { QStringLiteral("Offline"), color_constants::level_trace };
+        if (r.online_replicas < r.desired_replicas || r.last_seen_secs >= 30)
+            return { QStringLiteral("Degraded"), color_constants::level_warn };
+        return { QStringLiteral("Online"), color_constants::level_info };
+    }
+    // No heartbeat telemetry (HTTP server, WT, compute wrappers): fall back to
+    // controller instance phase.
+    if (r.running_replicas == 0)
         return { QStringLiteral("Offline"), color_constants::level_trace };
     if (r.online_replicas < r.desired_replicas || r.last_seen_secs >= 30)
         return { QStringLiteral("Degraded"), color_constants::level_warn };
@@ -291,10 +317,10 @@ void ServiceDashboardMdiWindow::setupUi() {
 
     // Instance table
     detailTable_ = new QTableWidget(detailGroup_);
-    detailTable_->setColumnCount(7);
+    detailTable_->setColumnCount(8);
     detailTable_->setHorizontalHeaderLabels({
         tr("Replica"), tr("Phase"), tr("PID"),
-        tr("Started At"), tr("Stopped At"), tr("Restarts"), tr("UUID")
+        tr("Started At"), tr("Stopped At"), tr("Restarts"), tr("Last Error"), tr("UUID")
     });
     detailTable_->setItemDelegate(new BadgeDelegate(detailTable_));
     detailTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -303,7 +329,7 @@ void ServiceDashboardMdiWindow::setupUi() {
     detailTable_->setAlternatingRowColors(true);
     detailTable_->horizontalHeader()->setStretchLastSection(false);
     detailTable_->horizontalHeader()->setSectionResizeMode(
-        static_cast<int>(DCol::Uuid), QHeaderView::Stretch);
+        static_cast<int>(DCol::LastError), QHeaderView::Stretch);
     detailTable_->verticalHeader()->setVisible(false);
     detailLayout->addWidget(detailTable_);
 
@@ -399,6 +425,16 @@ void ServiceDashboardMdiWindow::loadSamples() {
                 BOOST_LOG_SEV(lg(), warn) << "Service samples unknown exception";
             }
 
+            // 2b. Fetch all service instances (best-effort) for phase-based status.
+            std::vector<controller_api::domain::service_instance> all_instances;
+            try {
+                controller_api::messaging::list_service_instances_request inst_req;
+                // empty service_name returns all instances
+                auto ir = self->clientManager_->process_authenticated_request(inst_req);
+                if (ir && ir->success)
+                    all_instances = ir->service_instances;
+            } catch (...) {}
+
             // 3. Aggregate: one ServiceRow per definition.
             const auto now = std::chrono::system_clock::now();
             SamplesResult r;
@@ -432,6 +468,14 @@ void ServiceDashboardMdiWindow::loadSamples() {
                         row.version        = s.version;
                     }
                     if (age < 120) ++row.online_replicas;
+                }
+
+                for (const auto& inst : all_instances) {
+                    if (inst.service_name != def.service_name) continue;
+                    if (inst.phase == "running") ++row.running_replicas;
+                    else if (inst.phase == "pending") ++row.pending_replicas;
+                    else if (inst.phase == "failed") ++row.failed_replicas;
+                    else if (inst.restart_count > 0) ++row.restarting_replicas;
                 }
 
                 r.rows.push_back(std::move(row));
@@ -600,6 +644,10 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 make_item(format_timepoint(inst.stopped_at)));
             self->detailTable_->setItem(row, static_cast<int>(DCol::Restarts),
                 make_item(QString::number(inst.restart_count)));
+            self->detailTable_->setItem(row, static_cast<int>(DCol::LastError),
+                make_item(inst.last_error
+                    ? QString::fromStdString(*inst.last_error)
+                    : QStringLiteral("-")));
             self->detailTable_->setItem(row, static_cast<int>(DCol::Uuid),
                 make_item(QString::fromStdString(
                     boost::uuids::to_string(inst.id))));
@@ -609,7 +657,9 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
         self->detailTable_->setSortingEnabled(true);
         self->detailTable_->resizeColumnsToContents();
         self->detailTable_->horizontalHeader()->setSectionResizeMode(
-            static_cast<int>(DCol::Uuid), QHeaderView::Stretch);
+            static_cast<int>(DCol::LastError), QHeaderView::Stretch);
+        self->detailTable_->horizontalHeader()->setSectionResizeMode(
+            static_cast<int>(DCol::Uuid), QHeaderView::ResizeToContents);
     });
     watcher->setFuture(future);
 }

@@ -106,6 +106,12 @@ target_link_libraries(${exe_target_name}
         ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
 
+# Export all symbols from the exe so QPluginLoader-loaded plugins can resolve
+# symbols from ores.qt.lib (e.g. SessionHistoryDialog, host-only widgets).
+if(NOT WIN32)
+    target_link_options(${exe_target_name} PRIVATE -rdynamic)
+endif()
+
 # Copy main assets from assets/images directory
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")

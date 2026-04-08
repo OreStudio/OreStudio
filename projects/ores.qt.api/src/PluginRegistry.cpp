@@ -21,8 +21,19 @@
 #include <QDir>
 #include <QLibrary>
 #include <QPluginLoader>
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
+
+namespace {
+
+auto& lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.qt.plugin_registry");
+    return instance;
+}
+
+}
 
 PluginRegistry& PluginRegistry::instance() {
     static PluginRegistry registry;
@@ -40,8 +51,8 @@ PluginRegistry::~PluginRegistry() {
 void PluginRegistry::load_from_directory(const QString& plugin_dir) {
     QDir dir(plugin_dir);
     if (!dir.exists()) {
-        qWarning() << "PluginRegistry: plugin directory does not exist:"
-                   << plugin_dir;
+        BOOST_LOG_SEV(lg(), error)
+            << "Plugin directory does not exist: " << plugin_dir.toStdString();
         return;
     }
 
@@ -55,21 +66,25 @@ void PluginRegistry::load_from_directory(const QString& plugin_dir) {
         auto* loader = new QPluginLoader(filepath);
         QObject* obj = loader->instance();
         if (!obj) {
-            qWarning() << "PluginRegistry: failed to load" << filename
-                       << "-" << loader->errorString();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to load plugin: " << filename.toStdString()
+                << " - " << loader->errorString().toStdString();
             delete loader;
             continue;
         }
 
         auto* plugin = qobject_cast<IPlugin*>(obj);
         if (!plugin) {
-            qWarning() << "PluginRegistry:" << filename
-                       << "does not implement IPlugin";
+            BOOST_LOG_SEV(lg(), error)
+                << filename.toStdString() << " does not implement IPlugin";
             loader->unload();
             delete loader;
             continue;
         }
 
+        BOOST_LOG_SEV(lg(), info)
+            << "Loaded plugin: " << filename.toStdString()
+            << " (order=" << plugin->load_order() << ")";
         loaders_.push_back(loader);
         ordered.push_back({plugin->load_order(), plugin});
     }

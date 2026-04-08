@@ -23,6 +23,7 @@
 #include <QString>
 #include <QLineEdit>
 #include <QObject>
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -33,7 +34,7 @@ namespace ores::qt {
  * or red when they don't. Use @c connectFields to wire up the indicator
  * automatically, or call @c updateFieldBorder manually.
  */
-struct PasswordMatchIndicator {
+struct ORES_QT_API PasswordMatchIndicator {
     static inline const QString match_border_style =
         QStringLiteral("QLineEdit { border: 2px solid #4CAF50; }");
     static inline const QString mismatch_border_style =
@@ -63,16 +64,7 @@ struct PasswordMatchIndicator {
      */
     static void connectFields(QLineEdit* passwordField,
         QLineEdit* confirmField,
-        const QString& defaultStyle = {}) {
-        auto update = [=]() {
-            updateFieldBorder(confirmField, passwordField->text(),
-                confirmField->text(), defaultStyle);
-        };
-        QObject::connect(passwordField, &QLineEdit::textChanged,
-            confirmField, update);
-        QObject::connect(confirmField, &QLineEdit::textChanged,
-            confirmField, update);
-    }
+        const QString& defaultStyle = {});
 };
 
 }

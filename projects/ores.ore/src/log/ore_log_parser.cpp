@@ -101,7 +101,7 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         std::tm tm = {};
         const std::string dt_str(dt_part);
         std::istringstream ss(dt_str);
-        ss >> std::get_time(&tm, "%Y-%b-%d %H:%M:%S");
+        ss >> std::get_time(&tm, ore_log_timestamp_format.data());
         if (ss.fail())
             return std::nullopt;
         timestamp = ores::platform::time::time_utils::to_time_point_utc(tm)

@@ -425,7 +425,7 @@ MainWindow::MainWindow(QWidget* parent) :
     const auto& plugins = PluginRegistry::instance().plugins();
 
     for (auto* plugin : plugins)
-        plugin->setup_menus(ui_->menuSystem, referenceDataMenu);
+        plugin->setup_menus(ui_->menuSystem, referenceDataMenu, ui_->menuTelemetry);
 
     for (auto* plugin : plugins) {
         auto* pb = static_cast<PluginBase*>(plugin);

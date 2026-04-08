@@ -28,6 +28,7 @@ class QAction;
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
+class OreImportController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
@@ -77,8 +78,10 @@ private:
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};
+    QAction* act_import_ore_{nullptr};
 
     // Entity controllers
+    std::unique_ptr<OreImportController>   oreImportController_;
     std::unique_ptr<PortfolioController>   portfolioController_;
     std::unique_ptr<BookController>        bookController_;
     std::unique_ptr<BookStatusController>  bookStatusController_;

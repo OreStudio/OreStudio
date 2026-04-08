@@ -26,6 +26,8 @@
 
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/AppController.hpp"
+#include "ores.qt/AppVersionController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
@@ -35,7 +37,6 @@
 #include "ores.qt/ConcurrencyPolicyController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
 #include "ores.qt/ReportInstanceController.hpp"
-#include "ores.qt/OreImportController.hpp"
 
 namespace ores::qt {
 
@@ -51,6 +52,18 @@ ComputePlugin::~ComputePlugin() = default;
 
 void ComputePlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
+
+    appController_ = std::make_unique<AppController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(appController_.get());
+
+    appVersionController_ = std::make_unique<AppVersionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    if (!ctx_.http_base_url.empty())
+        appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
+    connectControllerSignals(appVersionController_.get());
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
@@ -117,10 +130,38 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
         ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(reportInstanceController_.get());
 
-    oreImportController_ = std::make_unique<OreImportController>(
-        ctx_.client_manager, this);
-    connect(oreImportController_.get(), &OreImportController::statusMessage,
-            this, &PluginBase::statusMessage);
+}
+
+void ComputePlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/,
+                                QMenu* telemetry_menu) {
+    auto* telemetryAction = telemetry_menu->menuAction();
+
+    // ---- System > Message Queue (before Telemetry) -----------------------
+    auto* msgQueue = new QMenu(tr("&Message Queue"), system_menu);
+    system_menu->insertMenu(telemetryAction, msgQueue);
+
+    auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
+    connect(actQueueMonitor, &QAction::triggered, this, [this]() {
+        if (queueMonitorController_) queueMonitorController_->showListWindow();
+    });
+
+    // ---- System > Telemetry > Service Dashboard (first item) ------------
+    auto* firstTelemetryAction = telemetry_menu->actions().isEmpty()
+        ? nullptr : telemetry_menu->actions().first();
+
+    auto* actServiceDashboard = new QAction(ico(Icon::Chart), tr("&Service Dashboard..."), this);
+    connect(actServiceDashboard, &QAction::triggered, this, [this]() {
+        if (serviceDashboardController_) serviceDashboardController_->showDashboard();
+    });
+
+    if (firstTelemetryAction) {
+        telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
+        auto* sep = new QAction(this);
+        sep->setSeparator(true);
+        telemetry_menu->insertAction(firstTelemetryAction, sep);
+    } else {
+        telemetry_menu->addAction(actServiceDashboard);
+    }
 }
 
 QList<QMenu*> ComputePlugin::create_menus() {
@@ -141,23 +182,14 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuCompute->addSeparator();
 
-    auto* actQueues = menuCompute->addAction(ico(Icon::Server), tr("&Queues"));
-    connect(actQueues, &QAction::triggered, this, [this]() {
-        if (queueMonitorController_) queueMonitorController_->showListWindow();
+    auto* actApps = menuCompute->addAction(ico(Icon::TasksApp), tr("&Apps"));
+    connect(actApps, &QAction::triggered, this, [this]() {
+        if (appController_) appController_->showListWindow();
     });
 
-    menuCompute->addSeparator();
-
-    auto* actServiceDashboard = menuCompute->addAction(ico(Icon::Server), tr("&Service Dashboard"));
-    connect(actServiceDashboard, &QAction::triggered, this, [this]() {
-        if (serviceDashboardController_) serviceDashboardController_->showDashboard();
-    });
-
-    menuCompute->addSeparator();
-
-    auto* actOreImport = menuCompute->addAction(ico(Icon::ImportOre), tr("&Import ORE Data"));
-    connect(actOreImport, &QAction::triggered, this, [this]() {
-        if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
+    auto* actAppVersions = menuCompute->addAction(ico(Icon::TasksApp), tr("App &Versions"));
+    connect(actAppVersions, &QAction::triggered, this, [this]() {
+        if (appVersionController_) appVersionController_->showListWindow();
     });
 
     // ---- Reporting (inserted before Compute in the menu bar) ------------
@@ -205,7 +237,6 @@ QList<QAction*> ComputePlugin::toolbar_actions() {
 }
 
 void ComputePlugin::on_logout() {
-    oreImportController_.reset();
     reportInstanceController_.reset();
     reportDefinitionController_.reset();
     concurrencyPolicyController_.reset();
@@ -215,6 +246,8 @@ void ComputePlugin::on_logout() {
     serviceDashboardController_.reset();
     computeConsoleController_.reset();
     computeDashboardController_.reset();
+    appVersionController_.reset();
+    appController_.reset();
     ctx_ = {};
 }
 

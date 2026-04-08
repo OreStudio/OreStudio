@@ -192,7 +192,8 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 // IPlugin::setup_menus — populate the shared Reference Data menu.
 // ---------------------------------------------------------------------------
-void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref) {
+void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
+                                QMenu* /*telemetry_menu*/) {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 

@@ -34,8 +34,6 @@ class TenantTypeController;
 class SystemSettingController;
 class BadgeDefinitionController;
 class BadgeSeverityController;
-class AppController;
-class AppVersionController;
 
 /**
  * @brief Plugin owning all admin-domain entity controllers.
@@ -56,7 +54,8 @@ public:
     int load_order() const override { return 50; }  // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
-    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu) override;
+    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
+                     QMenu* telemetry_menu) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -77,8 +76,6 @@ private:
     std::unique_ptr<SystemSettingController>    systemSettingController_;
     std::unique_ptr<BadgeDefinitionController>  badgeDefinitionController_;
     std::unique_ptr<BadgeSeverityController>    badgeSeverityController_;
-    std::unique_ptr<AppController>              appController_;
-    std::unique_ptr<AppVersionController>       appVersionController_;
 };
 
 }

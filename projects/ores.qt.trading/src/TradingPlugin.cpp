@@ -26,6 +26,7 @@
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/OreImportController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/PortfolioController.hpp"
@@ -44,6 +45,13 @@ TradingPlugin::~TradingPlugin() = default;
 // ---------------------------------------------------------------------------
 void TradingPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
+
+    oreImportController_ = std::make_unique<OreImportController>(
+        ctx_.client_manager, this);
+    if (!ctx_.http_base_url.empty())
+        oreImportController_->setHttpBaseUrl(ctx_.http_base_url);
+    connect(oreImportController_.get(), &OreImportController::statusMessage,
+            this, &PluginBase::statusMessage);
 
     portfolioController_ = std::make_unique<PortfolioController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
@@ -109,7 +117,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
             bookController_.get(),
             portfolioController_.get(),
             tradeController_.get(),
-            nullptr,
+            oreImportController_.get(),
             ctx_.username,
             ctx_.main_window);
 
@@ -174,6 +182,12 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (tradeController_) tradeController_->showListWindow();
     });
 
+    menuTrading->addSeparator();
+    act_import_ore_ = menuTrading->addAction(ico(Icon::ImportOre), tr("&Import ORE Data..."));
+    connect(act_import_ore_, &QAction::triggered, this, [this]() {
+        if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
+    });
+
     return {menuTrading};
 }
 
@@ -199,6 +213,7 @@ void TradingPlugin::on_logout() {
     bookStatusController_.reset();
     bookController_.reset();
     portfolioController_.reset();
+    oreImportController_.reset();
 
     ctx_ = {};
 }

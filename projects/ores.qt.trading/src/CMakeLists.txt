@@ -59,6 +59,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.party.lib
+        ores.qt.compute.lib
         ores.refdata.core.lib
         ores.trading.api.lib
         ores.ore.lib

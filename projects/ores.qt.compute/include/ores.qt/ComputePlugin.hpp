@@ -27,6 +27,8 @@ class QAction;
 
 namespace ores::qt {
 
+class AppController;
+class AppVersionController;
 class ComputeDashboardController;
 class ComputeConsoleController;
 class ServiceDashboardController;
@@ -36,7 +38,6 @@ class ReportTypeController;
 class ConcurrencyPolicyController;
 class ReportDefinitionController;
 class ReportInstanceController;
-class OreImportController;
 
 /**
  * @brief Plugin owning all compute, reporting and job controllers.
@@ -59,6 +60,8 @@ public:
     int load_order() const override { return 400; }
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
+                     QMenu* telemetry_menu) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -70,6 +73,8 @@ private:
     QAction* act_report_definitions_{nullptr};
     QAction* act_report_instances_{nullptr};
 
+    std::unique_ptr<AppController>               appController_;
+    std::unique_ptr<AppVersionController>        appVersionController_;
     std::unique_ptr<ComputeDashboardController>  computeDashboardController_;
     std::unique_ptr<ComputeConsoleController>    computeConsoleController_;
     std::unique_ptr<ServiceDashboardController>  serviceDashboardController_;
@@ -79,7 +84,6 @@ private:
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;
     std::unique_ptr<ReportDefinitionController>  reportDefinitionController_;
     std::unique_ptr<ReportInstanceController>    reportInstanceController_;
-    std::unique_ptr<OreImportController>         oreImportController_;
 };
 
 }

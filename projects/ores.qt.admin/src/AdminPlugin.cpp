@@ -25,6 +25,7 @@
 #include <QStatusBar>
 
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
 #include "ores.qt/TenantController.hpp"
@@ -33,10 +34,13 @@
 #include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/BadgeDefinitionController.hpp"
 #include "ores.qt/BadgeSeverityController.hpp"
-#include "ores.qt/AppController.hpp"
-#include "ores.qt/AppVersionController.hpp"
-
 namespace ores::qt {
+
+namespace {
+auto ico(Icon icon) {
+    return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
+}
+}
 
 AdminPlugin::AdminPlugin(QObject* parent) : PluginBase(parent) {}
 
@@ -94,24 +98,19 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(badgeSeverityController_.get());
 
-    appController_ = std::make_unique<AppController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connectControllerSignals(appController_.get());
-
-    appVersionController_ = std::make_unique<AppVersionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    if (!ctx_.http_base_url.empty())
-        appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
-    connectControllerSignals(appVersionController_.get());
 }
 
-void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/) {
-    // ---- System > Identity -----------------------------------------------
-    auto* identity = system_menu->addMenu(tr("&Identity"));
+void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/,
+                               QMenu* telemetry_menu) {
+    // Insert Identity and Configuration BEFORE Telemetry to preserve the
+    // pre-refactor order: Identity, Configuration, [Message Queue], Telemetry.
+    auto* telemetryAction = telemetry_menu->menuAction();
 
-    act_accounts_ = identity->addAction(tr("&Accounts"));
+    // ---- System > Identity -----------------------------------------------
+    auto* identity = new QMenu(tr("&Identity"), system_menu);
+    system_menu->insertMenu(telemetryAction, identity);
+
+    act_accounts_ = identity->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
     connect(act_accounts_, &QAction::triggered, this,
         [this]() { if (accountController_) accountController_->showListWindow(); });
 
@@ -119,7 +118,7 @@ void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/
     connect(actRoles, &QAction::triggered, this,
         [this]() { if (roleController_) roleController_->showListWindow(); });
 
-    act_tenants_ = identity->addAction(tr("&Tenants"));
+    act_tenants_ = identity->addAction(ico(Icon::BuildingSkyscraper), tr("&Tenants"));
     connect(act_tenants_, &QAction::triggered, this,
         [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
@@ -133,9 +132,10 @@ void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/
     connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
 
     // ---- System > Configuration ------------------------------------------
-    auto* config = system_menu->addMenu(tr("&Configuration"));
+    auto* config = new QMenu(tr("&Configuration"), system_menu);
+    system_menu->insertMenu(telemetryAction, config);
 
-    act_system_settings_ = config->addAction(tr("&System Settings"));
+    act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
     connect(act_system_settings_, &QAction::triggered, this,
         [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
@@ -148,16 +148,7 @@ void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/
     auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
     connect(actBadgeSevs, &QAction::triggered, this,
         [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
-
-    config->addSeparator();
-
-    auto* actApps = config->addAction(tr("&Apps"));
-    connect(actApps, &QAction::triggered, this,
-        [this]() { if (appController_) appController_->showListWindow(); });
-
-    auto* actAppVersions = config->addAction(tr("App &Versions"));
-    connect(actAppVersions, &QAction::triggered, this,
-        [this]() { if (appVersionController_) appVersionController_->showListWindow(); });
+    // Apps and App Versions live in the Compute menu (see ComputePlugin).
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {
@@ -169,8 +160,6 @@ QList<QAction*> AdminPlugin::toolbar_actions() {
 }
 
 void AdminPlugin::on_logout() {
-    appVersionController_.reset();
-    appController_.reset();
     badgeSeverityController_.reset();
     badgeDefinitionController_.reset();
     systemSettingController_.reset();

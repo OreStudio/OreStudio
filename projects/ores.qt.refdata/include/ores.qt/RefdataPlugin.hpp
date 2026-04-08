@@ -79,7 +79,8 @@ public:
     int load_order() const override { return 100; }  // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
-    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu) override;
+    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
+                     QMenu* telemetry_menu) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;

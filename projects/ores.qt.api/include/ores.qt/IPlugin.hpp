@@ -79,9 +79,11 @@ public:
      *
      * The default implementation does nothing.
      */
-    virtual void setup_menus(QMenu* system_menu, QMenu* reference_data_menu) {
+    virtual void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
+                             QMenu* telemetry_menu) {
         Q_UNUSED(system_menu)
         Q_UNUSED(reference_data_menu)
+        Q_UNUSED(telemetry_menu)
     }
 
     /**

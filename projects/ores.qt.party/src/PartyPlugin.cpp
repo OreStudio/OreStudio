@@ -94,7 +94,8 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 // IPlugin::setup_menus — add Organization submenu to Reference Data.
 // ---------------------------------------------------------------------------
-void PartyPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref) {
+void PartyPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
+                              QMenu* /*telemetry_menu*/) {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 

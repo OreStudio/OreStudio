@@ -27,7 +27,12 @@
 #include <QHBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QMessageBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFontDatabase>
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QVBoxLayout>
 #include <QPointer>
 #include <QHeaderView>
 #include <QApplication>
@@ -341,13 +346,28 @@ void ServiceDashboardMdiWindow::setupUi() {
         if (!item || item->text() == QStringLiteral("-"))
             return;
         const QString full = item->toolTip().isEmpty() ? item->text() : item->toolTip();
-        QMessageBox msg(this);
-        msg.setWindowTitle(tr("Last Error — %1")
+
+        auto* dlg = new QDialog(this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        dlg->setWindowTitle(tr("Error details — %1")
             .arg(QString::fromStdString(selectedServiceName_)));
-        msg.setText(item->text()); // summary as bold header
-        msg.setDetailedText(full);
-        msg.setStandardButtons(QMessageBox::Close);
-        msg.exec();
+        dlg->resize(700, 420);
+
+        auto* layout = new QVBoxLayout(dlg);
+        auto* summary = new QLabel(item->text(), dlg);
+        summary->setWordWrap(true);
+        layout->addWidget(summary);
+
+        auto* edit = new QPlainTextEdit(full, dlg);
+        edit->setReadOnly(true);
+        edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        layout->addWidget(edit);
+
+        auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
+        connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
+        layout->addWidget(buttons);
+
+        dlg->show();
     });
 
     // Splitter

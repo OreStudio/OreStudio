@@ -540,10 +540,10 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         const auto log_snippet = tail_log(log_path, log_tail_lines);
 
         const std::string error_summary =
-            std::string("exit_code=") + std::string(ec_name) +
-            " (raw=" + std::to_string(exit_code) + ")" +
-            "; max_restart_count=" + std::to_string(max_restarts) +
-            "\n--- last " + std::to_string(log_tail_lines) +
+            std::string(ec_name) +
+            " (failed after " + std::to_string(max_restarts) + " restart" +
+            (max_restarts == 1 ? "" : "s") + ")" +
+            "\n\n--- last " + std::to_string(log_tail_lines) +
             " log lines ---\n" + log_snippet;
 
         BOOST_LOG_SEV(lg(), error)

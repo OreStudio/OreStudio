@@ -333,6 +333,23 @@ void ServiceDashboardMdiWindow::setupUi() {
     detailTable_->verticalHeader()->setVisible(false);
     detailLayout->addWidget(detailTable_);
 
+    // Double-clicking a row with a last-error shows the full message in a dialog.
+    connect(detailTable_, &QTableWidget::cellDoubleClicked,
+            this, [this](int row, int /*col*/) {
+        const int errorCol = static_cast<int>(DCol::LastError);
+        auto* item = detailTable_->item(row, errorCol);
+        if (!item || item->text() == QStringLiteral("-"))
+            return;
+        const QString full = item->toolTip().isEmpty() ? item->text() : item->toolTip();
+        QMessageBox msg(this);
+        msg.setWindowTitle(tr("Last Error — %1")
+            .arg(QString::fromStdString(selectedServiceName_)));
+        msg.setText(item->text()); // summary as bold header
+        msg.setDetailedText(full);
+        msg.setStandardButtons(QMessageBox::Close);
+        msg.exec();
+    });
+
     // Splitter
     auto* splitter = new QSplitter(Qt::Vertical, this);
     splitter->addWidget(table_);
@@ -644,10 +661,18 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 make_item(format_timepoint(inst.stopped_at)));
             self->detailTable_->setItem(row, static_cast<int>(DCol::Restarts),
                 make_item(QString::number(inst.restart_count)));
-            self->detailTable_->setItem(row, static_cast<int>(DCol::LastError),
-                make_item(inst.last_error
+            {
+                const QString full_error = inst.last_error
                     ? QString::fromStdString(*inst.last_error)
-                    : QStringLiteral("-")));
+                    : QStringLiteral("-");
+                // Show only the first line in the cell; full text in tooltip.
+                const QString summary = full_error.section(u'\n', 0, 0);
+                auto* err_item = make_item(summary);
+                if (inst.last_error)
+                    err_item->setToolTip(full_error);
+                self->detailTable_->setItem(
+                    row, static_cast<int>(DCol::LastError), err_item);
+            }
             self->detailTable_->setItem(row, static_cast<int>(DCol::Uuid),
                 make_item(QString::fromStdString(
                     boost::uuids::to_string(inst.id))));

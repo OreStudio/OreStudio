@@ -346,7 +346,7 @@ void ServiceDashboardMdiWindow::setupUi() {
         auto* item = detailTable_->item(row, errorCol);
         if (!item || item->text() == QStringLiteral("-"))
             return;
-        const QString full = item->toolTip().isEmpty() ? item->text() : item->toolTip();
+        const QString full = item->data(Qt::UserRole).toString();
 
         auto* dlg = new QDialog(this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -686,11 +686,11 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 const QString full_error = inst.last_error
                     ? QString::fromStdString(*inst.last_error)
                     : QStringLiteral("-");
-                // Show only the first line in the cell; full text in tooltip.
+                // Show only the first line; store full text as UserRole for double-click.
                 const QString summary = full_error.section(u'\n', 0, 0);
                 auto* err_item = make_item(summary);
                 if (inst.last_error)
-                    err_item->setToolTip(full_error);
+                    err_item->setData(Qt::UserRole, full_error);
                 self->detailTable_->setItem(
                     row, static_cast<int>(DCol::LastError), err_item);
             }

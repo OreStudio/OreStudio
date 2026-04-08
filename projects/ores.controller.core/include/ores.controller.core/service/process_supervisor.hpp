@@ -33,6 +33,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
+#include "ores.utility/concurrency/retry_strategy.hpp"
 
 namespace ores::controller::service {
 
@@ -87,8 +88,8 @@ private:
         std::optional<boost::process::v2::process> proc;
         api::domain::service_definition def;
         int replica_index = 0;
-        int restart_count = 0;
         bool stop_requested = false; // true when stop() was intentionally called
+        ores::utility::concurrency::retry_strategy retry;
     };
 
 public:
@@ -157,6 +158,12 @@ private:
     std::vector<std::string> build_args(const api::domain::service_definition& def,
         int replica_index) const;
     std::filesystem::path log_path_for(const std::string& service_name,
+        int replica_index) const;
+    std::filesystem::path pid_path_for(const std::string& service_name,
+        int replica_index) const;
+    void write_pid_file(const std::string& service_name, int replica_index,
+        boost::process::v2::pid_type pid) const;
+    void remove_pid_file(const std::string& service_name,
         int replica_index) const;
 
     boost::asio::io_context& ioc_;

@@ -89,7 +89,11 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
         << " port=" << creds.port
         << " dbname=" << creds.dbname
         << " user=" << creds.user
-        << " password=" << creds.password;
+        << " password=" << creds.password
+        // Force UTC at connect time so timestamp values are returned as
+        // "YYYY-MM-DD HH:MM:SS+00", which from_iso8601_utc expects.
+        // Setting this in the connection string avoids a SET round-trip per call.
+        << " options=-c\\ timezone=UTC";
     return oss.str();
 }
 
@@ -146,6 +150,8 @@ void set_tenant_context(PGconn* conn,
  * and actor from the context object.
  */
 void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
+    // TimeZone=UTC is set in the connection string (options=-c timezone=UTC)
+    // so no per-call SET round-trip is needed here.
     set_tenant_context(conn, ctx.tenant_id(), lg);
 
     if (ctx.party_id().has_value()) {

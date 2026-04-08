@@ -40,6 +40,7 @@ find_package(wt CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
+        ores.service.lib
         ores.iam.core.lib
         ores.nats.lib
         ores.refdata.core.lib

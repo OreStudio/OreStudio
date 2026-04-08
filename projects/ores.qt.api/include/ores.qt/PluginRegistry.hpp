@@ -41,7 +41,23 @@ namespace ores::qt {
  */
 class ORES_QT_API PluginRegistry {
 public:
+    /**
+     * @brief Returns the application-wide registry instance.
+     *
+     * Must be called only after initialise() has been called from main().
+     * The registry lives on the stack in main() so it is destroyed before
+     * static atexit handlers (including Boost.Log teardown), which ensures
+     * that BOOST_LOG calls in plugin and controller destructors are safe.
+     */
     static PluginRegistry& instance();
+
+    /**
+     * @brief Registers the stack-owned registry instance.
+     *
+     * Call once from main() immediately after constructing the PluginRegistry
+     * object and before any other code that calls instance().
+     */
+    static void initialise(PluginRegistry& registry);
 
     /**
      * @brief Scan @p plugin_dir for shared libraries, load each IPlugin found,
@@ -59,11 +75,12 @@ public:
      */
     const QVector<IPlugin*>& plugins() const { return plugins_; }
 
-private:
     PluginRegistry() = default;
     ~PluginRegistry();
     PluginRegistry(const PluginRegistry&) = delete;
     PluginRegistry& operator=(const PluginRegistry&) = delete;
+
+private:
 
     QVector<QPluginLoader*> loaders_;  ///< Must outlive plugin instances.
     QVector<IPlugin*>       plugins_;

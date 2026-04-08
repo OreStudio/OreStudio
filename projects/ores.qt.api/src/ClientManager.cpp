@@ -52,7 +52,13 @@ ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event
 
 ClientManager::~ClientManager() {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager destroyed";
-    disconnect();
+    // Release resources directly — do NOT call disconnect() here.
+    // disconnect() posts Qt signals (QMetaObject::invokeMethod with QueuedConnection)
+    // that would reference this object after it is destroyed. The destructor only
+    // needs to release the NATS resources; signalling is the caller's responsibility.
+    nats_subscriptions_.clear();
+    if (session_.is_connected())
+        session_.disconnect();
 }
 
 LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) {
@@ -500,7 +506,11 @@ void ClientManager::subscribeToEvent(const std::string& subject) {
 
 void ClientManager::unsubscribeFromEvent(const std::string& subject) {
     if (nats_subscriptions_.erase(subject) > 0) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribed from event: " << subject;
+        try {
+            BOOST_LOG_SEV(lg(), debug) << "Unsubscribed from event: " << subject;
+        } catch (...) {
+            // Boost.Log may already be torn down during static destruction.
+        }
     }
 }
 

@@ -76,10 +76,16 @@ int main(int argc, char *argv[]) {
     // Set application icon
     app.setWindowIcon(QIcon(":/images/modern-icon.png"));
 
+    // PluginRegistry lives on the stack so it is destroyed during main()'s
+    // stack unwind — after MainWindow but before lm shuts down Boost.Log.
+    // This ensures BOOST_LOG calls in plugin/controller destructors are safe.
+    ores::qt::PluginRegistry plugin_registry;
+    ores::qt::PluginRegistry::initialise(plugin_registry);
+
     // Load domain plugins from plugins/ directory next to the library directory
     const QString plugin_dir =
         QCoreApplication::applicationDirPath() + "/../lib/plugins";
-    ores::qt::PluginRegistry::instance().load_from_directory(plugin_dir);
+    plugin_registry.load_from_directory(plugin_dir);
 
     ores::qt::SplashScreen splash(QPixmap(":/images/splash-screen.png"));
     splash.show();

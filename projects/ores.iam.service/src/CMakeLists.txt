@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.core.lib
         ores.nats.lib
         ores.database.lib
+        ores.service.lib
         ores.utility.lib
         ores.telemetry.lib
         ores.service.lib)

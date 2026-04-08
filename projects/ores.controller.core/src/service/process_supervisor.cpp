@@ -21,6 +21,7 @@
 
 #include <map>
 #include <set>
+#include <deque>
 #include <fstream>
 #include <sstream>
 #include <chrono>
@@ -38,6 +39,7 @@
 #include <boost/graph/topological_sort.hpp>
 #include "ores.platform/process/executable.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.service/service/exit_codes.hpp"
 #include "ores.controller.core/repository/service_definition_repository.hpp"
 #include "ores.controller.core/repository/service_dependency_repository.hpp"
 #include "ores.controller.core/repository/service_instance_repository.hpp"
@@ -70,7 +72,40 @@ void replace_all(std::string& s, const std::string& from, const std::string& to)
 }
 
 constexpr std::chrono::seconds service_ready_timeout{60};
-constexpr std::chrono::seconds restart_delay{5};
+constexpr int log_tail_lines = 20;
+
+// Returns the last `n` lines from `path`, joined by newlines.
+// Seeks to the last 8 KB of the file to avoid reading large logs in full.
+// Returns an empty string if the file does not exist or cannot be read.
+std::string tail_log(const std::filesystem::path& path, int n) {
+    std::ifstream f(path, std::ios::binary);
+    if (!f) return {};
+
+    // Seek to a window near the end large enough to contain n lines.
+    constexpr std::streamoff window = 8192;
+    f.seekg(0, std::ios::end);
+    const std::streamoff file_size = f.tellg();
+    const std::streamoff seek_pos = (file_size > window) ? (file_size - window) : 0;
+    f.seekg(seek_pos);
+
+    std::deque<std::string> lines;
+    std::string line;
+    while (std::getline(f, line)) {
+        // Strip any trailing \r from Windows-style line endings.
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+        lines.push_back(line);
+        if (static_cast<int>(lines.size()) > n)
+            lines.pop_front();
+    }
+
+    std::string result;
+    for (const auto& l : lines) {
+        if (!result.empty()) result += '\n';
+        result += l;
+    }
+    return result;
+}
 
 } // namespace
 
@@ -90,6 +125,36 @@ std::filesystem::path process_supervisor::log_path_for(
     const auto log_dir = bin_dir_ / ".." / "log";
     const auto filename = service_name + "." + std::to_string(replica_index) + ".log";
     return log_dir / filename;
+}
+
+std::filesystem::path process_supervisor::pid_path_for(
+    const std::string& service_name, int replica_index) const {
+    const auto run_dir = bin_dir_ / ".." / "run";
+    // Replica 0 uses the bare service name (matches status-services.sh convention).
+    // Higher replicas append the index so multiple replicas don't overwrite each other.
+    const auto filename = replica_index == 0
+        ? service_name + ".pid"
+        : service_name + "." + std::to_string(replica_index) + ".pid";
+    return run_dir / filename;
+}
+
+void process_supervisor::write_pid_file(const std::string& service_name,
+    int replica_index, bp2::pid_type pid) const {
+    const auto path = pid_path_for(service_name, replica_index);
+    std::error_code ec;
+    std::filesystem::create_directories(path.parent_path(), ec);
+    std::ofstream f(path, std::ios::trunc);
+    if (f)
+        f << pid << '\n';
+    else
+        BOOST_LOG_SEV(lg(), warn) << "Could not write PID file: " << path;
+}
+
+void process_supervisor::remove_pid_file(const std::string& service_name,
+    int replica_index) const {
+    const auto path = pid_path_for(service_name, replica_index);
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
 }
 
 std::vector<std::string> process_supervisor::build_args(
@@ -325,6 +390,8 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         << "Launched " << service_name << "[" << replica_index
         << "] PID=" << pid;
 
+    write_pid_file(service_name, replica_index, pid);
+
     // Update/create DB instance record with PID and phase=running.
     try {
         const auto now = std::chrono::system_clock::now();
@@ -363,6 +430,7 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
             << "[" << replica_index << "]: " << e.what();
     }
 
+    entry->retry.on_start();
     processes_[key] = entry;
 
     // Monitor the process in the background.
@@ -414,6 +482,7 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     }
 
     processes_.erase(key);
+    remove_pid_file(service_name, replica_index);
 
     BOOST_LOG_SEV(lg(), info)
         << service_name << "[" << replica_index << "]"
@@ -439,7 +508,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         ev.service_name = service_name;
         ev.replica_index = replica_index;
         ev.event_type = entry->stop_requested ? "stopped" : "exited";
-        ev.message = "Process exited, code=" + std::to_string(exit_code);
+        {
+            using ores::service::service::exit_code_name;
+            using ores::service::service::to_exit_code;
+            ev.message = "Process exited, code=" + std::to_string(exit_code)
+                + " (" + std::string(exit_code_name(to_exit_code(exit_code))) + ")"
+                + (entry->stop_requested ? " [stop requested]" : " [unexpected]");
+        }
         ev_repo.insert(db_ctx_, ev);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn)
@@ -464,47 +539,89 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         co_return;
     }
 
+    // Check if we have exceeded the configured restart limit before updating state.
+    // If so, mark as permanently failed in the DB, but keep retrying so the service
+    // recovers automatically once the underlying issue is resolved.
     const int max_restarts = entry->def.max_restart_count;
-    if (entry->restart_count >= max_restarts) {
+    if (entry->retry.exceeded(max_restarts)) {
+        using ores::service::service::to_exit_code;
+        using ores::service::service::exit_code_name;
+
+        const auto ec = to_exit_code(exit_code);
+        const auto ec_name = exit_code_name(ec);
+        const auto log_path = log_path_for(service_name, replica_index);
+        const auto log_snippet = tail_log(log_path, log_tail_lines);
+
+        const std::string error_summary =
+            std::string(ec_name) +
+            " (failed after " + std::to_string(max_restarts) + " restart" +
+            (max_restarts == 1 ? "" : "s") + ")" +
+            "\n\n--- last " + std::to_string(log_tail_lines) +
+            " log lines ---\n" + log_snippet;
+
         BOOST_LOG_SEV(lg(), error)
             << service_name << "[" << replica_index << "]"
             << " exceeded max_restart_count=" << max_restarts
-            << " — marking failed";
+            << " (" << ec_name << ") — marking failed, will keep retrying";
+
         try {
+            const auto now = std::chrono::system_clock::now();
             repository::service_instance_repository inst_repo;
             auto inst = inst_repo.read(db_ctx_, service_name, replica_index);
             if (inst) {
                 inst->phase = "failed";
+                inst->last_error = error_summary;
                 inst_repo.update_phase(db_ctx_, *inst);
             }
-        } catch (...) {}
-        co_return;
+
+            repository::service_event_repository ev_repo;
+            api::domain::service_event fail_ev;
+            fail_ev.event_id = boost::uuids::random_generator()();
+            fail_ev.occurred_at = now;
+            fail_ev.service_name = service_name;
+            fail_ev.replica_index = replica_index;
+            fail_ev.event_type = "failed";
+            fail_ev.message = error_summary;
+            ev_repo.insert(db_ctx_, fail_ev);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to record failure state for " << service_name
+                << "[" << replica_index << "]: " << e.what();
+        }
+        // Do NOT return — fall through and keep retrying at the capped interval.
     }
 
-    const int next_restart = entry->restart_count + 1;
+    // Delegate uptime check, counter management, and delay computation to the
+    // strategy.  on_failure() resets the counter if uptime exceeded the threshold,
+    // increments it, and returns the delay to wait before re-launching.
+    const auto delay = entry->retry.on_failure();
+    const int next_count = entry->retry.failure_count();
+
     BOOST_LOG_SEV(lg(), info)
         << "Restarting " << service_name << "[" << replica_index << "]"
-        << " (attempt " << next_restart << "/" << max_restarts << ")"
-        << " after " << restart_delay.count() << "s";
+        << " (attempt " << next_count << ")"
+        << " after " << delay.count() << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer t(executor);
-    t.expires_after(restart_delay);
+    t.expires_after(delay);
     co_await t.async_wait(boost::asio::use_awaitable);
 
     co_await do_launch(service_name, replica_index);
 
-    // Update restart count on the new in-memory entry.
+    // do_launch creates a new process_entry with a fresh retry_strategy (count=0).
+    // Restore the accumulated count so the next failure continues the backoff curve
+    // rather than starting over.
     auto new_it = processes_.find(key);
     if (new_it != processes_.end())
-        new_it->second->restart_count = next_restart;
+        new_it->second->retry.set_failure_count(next_count);
 
-    // Persist restart count to DB so the dashboard reflects it.
+    // Persist the updated failure count to the DB so the dashboard reflects it.
     try {
         repository::service_instance_repository inst_repo;
         auto inst = inst_repo.read(db_ctx_, service_name, replica_index);
         if (inst) {
-            inst->restart_count = next_restart;
+            inst->restart_count = next_count;
             inst_repo.update_phase(db_ctx_, *inst);
         }
     } catch (const std::exception& e) {

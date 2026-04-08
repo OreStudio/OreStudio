@@ -48,6 +48,7 @@ struct service_instance_entity {
     std::optional<db_timestamp> started_at;
     std::optional<db_timestamp> stopped_at;
     int restart_count = 0;
+    std::optional<std::string> last_error;
     db_timestamp created_at;
 };
 

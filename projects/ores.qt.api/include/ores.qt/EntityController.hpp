@@ -21,6 +21,7 @@
 #define ORES_QT_ENTITY_CONTROLLER_HPP
 
 #include <QObject>
+#include <QPointer>
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QString>
@@ -249,7 +250,7 @@ private:
 protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
-    ClientManager* clientManager_;
+    QPointer<ClientManager> clientManager_;
     QString username_;
 
     /** @brief Map of active windows indexed by unique key. */

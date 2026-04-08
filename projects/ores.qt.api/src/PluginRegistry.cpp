@@ -58,10 +58,12 @@ void PluginRegistry::load_from_directory(const QString& plugin_dir) {
 
     QVector<QPair<int, IPlugin*>> ordered;
 
-    for (const QString& filename : dir.entryList(QDir::Files)) {
+    // Only load "*.so" entries — not the versioned symlinks (*.so.0, *.so.0.0.16).
+    // Each versioned name resolves to the same library; loading all three would
+    // produce one plugin instance per symlink, causing duplicate menus at runtime.
+    const QStringList nameFilters{"*.so"};
+    for (const QString& filename : dir.entryList(nameFilters, QDir::Files)) {
         const QString filepath = dir.absoluteFilePath(filename);
-        if (!QLibrary::isLibrary(filepath))
-            continue;
 
         auto* loader = new QPluginLoader(filepath);
         QObject* obj = loader->instance();

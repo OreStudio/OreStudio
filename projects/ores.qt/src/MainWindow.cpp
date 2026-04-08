@@ -405,7 +405,10 @@ MainWindow::MainWindow(QWidget* parent) :
         QMessageBox::warning(this, tr("Image Loading Error"), message);
     });
 
-    // Wire plugin signals — controllers are instantiated later in on_login()
+    // Wire plugin signals and build persistent menus (disabled until login).
+    // Menus are created once here and live for the application lifetime.
+    // on_login() / on_logout() enable/disable them without recreating them.
+    auto* helpAction = ui_->menuHelp->menuAction();
     for (auto* plugin : PluginRegistry::instance().plugins()) {
         auto* pb = static_cast<PluginBase*>(plugin);
         connect(pb, &PluginBase::statusMessage,
@@ -414,9 +417,12 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, &MainWindow::onDetachableWindowCreated);
         connect(pb, &PluginBase::windowDestroyed,
                 this, &MainWindow::onDetachableWindowDestroyed);
-    }
 
-    // (Domain action connections wired by plugin create_menus() after login)
+        for (auto* menu : plugin->create_menus()) {
+            menuBar()->insertMenu(helpAction, menu);
+            plugin_menus_.append(menu);
+        }
+    }
 
     // Initially disable data-related actions until logged in
     updateMenuState();
@@ -672,11 +678,8 @@ void MainWindow::performDisconnectCleanup() {
     for (auto it = plugins.rbegin(); it != plugins.rend(); ++it)
         (*it)->on_logout();
 
-    for (auto* menu : plugin_menus_) {
-        menuBar()->removeAction(menu->menuAction());
-        delete menu;
-    }
-    plugin_menus_.clear();
+    // Menus remain in the menubar (disabled by updateMenuState).
+    // They are re-enabled on next login without being recreated.
 
     if (clientManager_)
         clientManager_->disconnect();
@@ -1463,15 +1466,10 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.username            = username;
     ctx.http_base_url       = httpBaseUrl_;
 
-    // Drive plugin lifecycle in load_order sequence, then insert domain menus
-    auto* helpAction = ui_->menuHelp->menuAction();
-    for (auto* plugin : PluginRegistry::instance().plugins()) {
+    // Drive plugin lifecycle in load_order sequence.
+    // Menus were already created in the constructor; on_login() wires up controllers.
+    for (auto* plugin : PluginRegistry::instance().plugins())
         plugin->on_login(ctx);
-        for (auto* menu : plugin->create_menus()) {
-            menuBar()->insertMenu(helpAction, menu);
-            plugin_menus_.append(menu);
-        }
-    }
 
     updateWindowTitle();
     updateMenuState();

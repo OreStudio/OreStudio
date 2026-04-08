@@ -137,3 +137,140 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- =============================================================================
+-- Instrument Subtables
+-- =============================================================================
+-- Each instrument subtype table carries tenant_id but no party_id.
+-- Tenant-level isolation is sufficient since the parent instruments table
+-- already enforces party isolation. These policies harden direct-query access.
+
+-- -----------------------------------------------------------------------------
+-- Instruments (parent)
+-- -----------------------------------------------------------------------------
+alter table ores_trading_instruments_tbl enable row level security;
+
+create policy ores_trading_instruments_tenant_isolation_policy on ores_trading_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Bond Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_bond_instruments_tbl enable row level security;
+
+create policy ores_trading_bond_instruments_tenant_isolation_policy on ores_trading_bond_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Commodity Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_commodity_instruments_tbl enable row level security;
+
+create policy ores_trading_commodity_instruments_tenant_isolation_policy on ores_trading_commodity_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_instruments_tenant_isolation_policy on ores_trading_equity_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_instruments_tenant_isolation_policy on ores_trading_fx_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Credit Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_credit_instruments_tbl enable row level security;
+
+create policy ores_trading_credit_instruments_tenant_isolation_policy on ores_trading_credit_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Scripted Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_scripted_instruments_tbl enable row level security;
+
+create policy ores_trading_scripted_instruments_tenant_isolation_policy on ores_trading_scripted_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Composite Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_composite_instruments_tbl enable row level security;
+
+create policy ores_trading_composite_instruments_tenant_isolation_policy on ores_trading_composite_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Composite Legs
+-- -----------------------------------------------------------------------------
+alter table ores_trading_composite_legs_tbl enable row level security;
+
+create policy ores_trading_composite_legs_tenant_isolation_policy on ores_trading_composite_legs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Swap Legs
+-- -----------------------------------------------------------------------------
+alter table ores_trading_swap_legs_tbl enable row level security;
+
+create policy ores_trading_swap_legs_tenant_isolation_policy on ores_trading_swap_legs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

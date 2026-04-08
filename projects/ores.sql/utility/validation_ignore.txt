@@ -297,21 +297,6 @@ RLS_001 ores_telemetry_nats_stream_samples_tbl
 RLS_001 ores_compute_grid_samples_tbl
 RLS_001 ores_compute_node_samples_tbl
 
-# Trading instrument subtables — polymorphic subtype tables accessed only
-# through the parent ores_trading_instruments_tbl which has RLS. Direct
-# access to subtables (without the parent JOIN) is not an application path.
-# TODO: add explicit RLS to subtables to harden against direct queries.
-RLS_001 ores_trading_instruments_tbl
-RLS_001 ores_trading_bond_instruments_tbl
-RLS_001 ores_trading_commodity_instruments_tbl
-RLS_001 ores_trading_equity_instruments_tbl
-RLS_001 ores_trading_fx_instruments_tbl
-RLS_001 ores_trading_credit_instruments_tbl
-RLS_001 ores_trading_scripted_instruments_tbl
-RLS_001 ores_trading_composite_instruments_tbl
-RLS_001 ores_trading_composite_legs_tbl
-RLS_001 ores_trading_swap_legs_tbl
-
 # Trading type/enum tables — lookup codes seeded at startup; system-wide.
 RLS_001 ores_trading_business_day_convention_types_tbl
 RLS_001 ores_trading_day_count_fraction_types_tbl
@@ -336,23 +321,3 @@ RLS_002 ores_mq_message_archive_tbl
 # MQ queue stats — aggregate metrics; no per-party row isolation needed.
 RLS_002 ores_mq_queue_stats_tbl
 
-# =============================================================================
-# RLS_002 TODOs — tables with party_id that are missing party isolation policies
-# These are genuine gaps. Remove from this list when policies are added.
-# =============================================================================
-
-# TODO: add AS RESTRICTIVE party isolation to iam_account_parties_tbl
-RLS_002 ores_iam_account_parties_tbl
-
-# TODO: add AS RESTRICTIVE party isolation to refdata party-scoped tables.
-# Also add RLS_001 ignores here since these tables have tenant_id but no RLS yet.
-RLS_001 ores_refdata_party_countries_tbl
-RLS_001 ores_refdata_party_currencies_tbl
-RLS_002 ores_refdata_business_units_tbl
-RLS_002 ores_refdata_party_contact_informations_tbl
-RLS_002 ores_refdata_party_countries_tbl
-RLS_002 ores_refdata_party_currencies_tbl
-RLS_002 ores_refdata_party_identifiers_tbl
-
-# TODO: add AS RESTRICTIVE party isolation to scheduler_job_instances_tbl
-RLS_002 ores_scheduler_job_instances_tbl

@@ -79,6 +79,15 @@ struct service_instance final {
     int restart_count = 0;
 
     /**
+     * @brief Human-readable reason for the most recent failure, if any.
+     *
+     * Set by the controller when phase transitions to "failed" (max_restart_count
+     * exceeded). Includes the interpreted exit code and a snippet from the log.
+     * Absent for instances that have never failed.
+     */
+    std::optional<std::string> last_error;
+
+    /**
      * @brief Timestamp when this row was first created.
      */
     std::chrono::system_clock::time_point created_at = {};

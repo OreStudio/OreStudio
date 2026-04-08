@@ -43,6 +43,7 @@ service_instance_mapper::map(const service_instance_entity& v) {
     if (v.stopped_at)
         r.stopped_at = timestamp_to_timepoint(*v.stopped_at);
     r.restart_count = v.restart_count;
+    r.last_error = v.last_error;
     r.created_at = timestamp_to_timepoint(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
@@ -64,6 +65,7 @@ service_instance_mapper::map(const api::domain::service_instance& v) {
     if (v.stopped_at)
         r.stopped_at = timepoint_to_timestamp(*v.stopped_at, lg());
     r.restart_count = v.restart_count;
+    r.last_error = v.last_error;
     r.created_at = timepoint_to_timestamp(v.created_at, lg());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity.";

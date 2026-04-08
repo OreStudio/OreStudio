@@ -21,6 +21,7 @@
 
 #include <map>
 #include <set>
+#include <deque>
 #include <fstream>
 #include <sstream>
 #include <chrono>
@@ -38,6 +39,7 @@
 #include <boost/graph/topological_sort.hpp>
 #include "ores.platform/process/executable.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.service/service/exit_codes.hpp"
 #include "ores.controller.core/repository/service_definition_repository.hpp"
 #include "ores.controller.core/repository/service_dependency_repository.hpp"
 #include "ores.controller.core/repository/service_instance_repository.hpp"
@@ -71,6 +73,30 @@ void replace_all(std::string& s, const std::string& from, const std::string& to)
 
 constexpr std::chrono::seconds service_ready_timeout{60};
 constexpr std::chrono::seconds restart_delay{5};
+constexpr int log_tail_lines = 20;
+
+// Returns the last `n` non-empty lines from `path`, joined by newlines.
+// Returns an empty string if the file does not exist or cannot be read.
+std::string tail_log(const std::filesystem::path& path, int n) {
+    std::ifstream f(path);
+    if (!f) return {};
+
+    std::deque<std::string> lines;
+    std::string line;
+    while (std::getline(f, line)) {
+        if (line.empty()) continue;
+        lines.push_back(line);
+        if (static_cast<int>(lines.size()) > n)
+            lines.pop_front();
+    }
+
+    std::string result;
+    for (const auto& l : lines) {
+        if (!result.empty()) result += '\n';
+        result += l;
+    }
+    return result;
+}
 
 } // namespace
 
@@ -439,7 +465,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         ev.service_name = service_name;
         ev.replica_index = replica_index;
         ev.event_type = entry->stop_requested ? "stopped" : "exited";
-        ev.message = "Process exited, code=" + std::to_string(exit_code);
+        {
+            using ores::service::service::exit_code_name;
+            using ores::service::service::to_exit_code;
+            ev.message = "Process exited, code=" + std::to_string(exit_code)
+                + " (" + std::string(exit_code_name(to_exit_code(exit_code))) + ")"
+                + (entry->stop_requested ? " [stop requested]" : " [unexpected]");
+        }
         ev_repo.insert(db_ctx_, ev);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn)
@@ -466,17 +498,45 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
     const int max_restarts = entry->def.max_restart_count;
     if (entry->restart_count >= max_restarts) {
+        using ores::service::service::to_exit_code;
+        using ores::service::service::exit_code_name;
+
+        const auto ec = to_exit_code(exit_code);
+        const auto ec_name = exit_code_name(ec);
+        const auto log_path = log_path_for(service_name, replica_index);
+        const auto log_snippet = tail_log(log_path, log_tail_lines);
+
+        const std::string error_summary =
+            std::string("exit_code=") + std::string(ec_name) +
+            " (raw=" + std::to_string(exit_code) + ")" +
+            "; max_restart_count=" + std::to_string(max_restarts) +
+            "\n--- last " + std::to_string(log_tail_lines) +
+            " log lines ---\n" + log_snippet;
+
         BOOST_LOG_SEV(lg(), error)
             << service_name << "[" << replica_index << "]"
             << " exceeded max_restart_count=" << max_restarts
-            << " — marking failed";
+            << " (" << ec_name << ") — marking failed";
+
         try {
+            const auto now = std::chrono::system_clock::now();
             repository::service_instance_repository inst_repo;
             auto inst = inst_repo.read(db_ctx_, service_name, replica_index);
             if (inst) {
                 inst->phase = "failed";
+                inst->last_error = error_summary;
                 inst_repo.update_phase(db_ctx_, *inst);
             }
+
+            repository::service_event_repository ev_repo;
+            api::domain::service_event fail_ev;
+            fail_ev.event_id = boost::uuids::random_generator()();
+            fail_ev.occurred_at = now;
+            fail_ev.service_name = service_name;
+            fail_ev.replica_index = replica_index;
+            fail_ev.event_type = "failed";
+            fail_ev.message = error_summary;
+            ev_repo.insert(db_ctx_, fail_ev);
         } catch (...) {}
         co_return;
     }

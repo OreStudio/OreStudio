@@ -24,7 +24,6 @@
 #include <vector>
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::wt::service::messaging {
@@ -37,10 +36,10 @@ public:
      * Currently empty — the Wt service has no NATS subjects of its own.
      * The verifier is available for future NATS service-to-service calls
      * once the Wt UI is implemented in terms of NATS messages.
+     * When handlers need DB access, use application_context::instance().
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 

@@ -33,7 +33,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.database/service/context_factory.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/wt_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -159,7 +158,7 @@ int run(int argc, char* argv[]) {
     wt_argv.push_back(nullptr);
     int wt_argc = static_cast<int>(wt_argv.size() - 1);
 
-    // Construct NATS client and runner context.
+    // Construct NATS client.
     ores::nats::service::client nats(opts.nats);
     nats.connect();
     BOOST_LOG_SEV(lg, info) << "Connected to NATS: " << opts.nats.url
@@ -167,20 +166,11 @@ int run(int argc, char* argv[]) {
                             << (opts.nats.subject_prefix.empty() ? "(none)" : opts.nats.subject_prefix)
                             << "')";
 
-    ores::database::context_factory::configuration db_cfg {
-        .database_options = opts.database,
-        .pool_size = 2,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1,
-        .service_account = opts.database.user
-    };
-    auto ctx = ores::database::context_factory::make_context(db_cfg);
-
     ores::service::service::run_wt(
-        nats, std::move(ctx), service_name,
-        [](auto& n, auto c, auto v) {
+        nats, service_name,
+        [](auto& n, auto v) {
             return ores::wt::service::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(v));
         },
         [&]() {
             boost_log_sink wt_sink;

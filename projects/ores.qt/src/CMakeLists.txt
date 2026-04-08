@@ -49,11 +49,12 @@ target_include_directories(${lib_target_name} PUBLIC
     ${ORES_QT_DIR}/include
     # Expose AUTOUIC-generated ui_*.h headers so consumers (exe) can find them.
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib          # shared framework: ClientManager, EntityController,
-                                 # IPlugin, utilities, caches — also pulls Qt6 core modules
+                                 # IPlugin, PluginRegistry, utilities, caches — pulls Qt6 core modules
+        # Domain plugins (ores.qt.admin, .compute, .refdata, .party, .mktdata, .trading)
+        # are loaded at runtime via QPluginLoader — no compile-time link needed.
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib
@@ -104,6 +105,12 @@ target_link_libraries(${exe_target_name}
         ${lib_target_name}
         ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
+
+# Export all symbols from the exe so QPluginLoader-loaded plugins can resolve
+# symbols from ores.qt.lib (e.g. SessionHistoryDialog, host-only widgets).
+if(NOT WIN32)
+    target_link_options(${exe_target_name} PRIVATE -rdynamic)
+endif()
 
 # Copy main assets from assets/images directory
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

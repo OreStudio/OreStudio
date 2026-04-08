@@ -22,6 +22,7 @@
 
 #include <QStyledItemDelegate>
 #include <QFont>
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -32,7 +33,7 @@ namespace ores::qt {
  * including badge-style rendering for the boolean columns (AppliesToAmend,
  * AppliesToDelete, RequiresCommentary).
  */
-class ChangeReasonItemDelegate : public QStyledItemDelegate {
+class ORES_QT_API ChangeReasonItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 
 public:

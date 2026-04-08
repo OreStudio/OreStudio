@@ -36,6 +36,7 @@
 #include "ores.connections/domain/tag.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ConnectionTypes.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 class TagSelectorWidget;
@@ -63,7 +64,7 @@ enum class ItemType {
  * This widget provides a unified form for all item types, with fields
  * dynamically enabled/disabled based on the selected type.
  */
-class AddItemDialog : public QWidget {
+class ORES_QT_API AddItemDialog : public QWidget {
     Q_OBJECT
 
 private:

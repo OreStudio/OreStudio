@@ -30,6 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
+#include "ores.qt/PluginRegistry.hpp"
 
 namespace {
 
@@ -74,6 +75,11 @@ int main(int argc, char *argv[]) {
 
     // Set application icon
     app.setWindowIcon(QIcon(":/images/modern-icon.png"));
+
+    // Load domain plugins from plugins/ directory next to the library directory
+    const QString plugin_dir =
+        QCoreApplication::applicationDirPath() + "/../lib/plugins";
+    ores::qt::PluginRegistry::instance().load_from_directory(plugin_dir);
 
     ores::qt::SplashScreen splash(QPixmap(":/images/splash-screen.png"));
     splash.show();

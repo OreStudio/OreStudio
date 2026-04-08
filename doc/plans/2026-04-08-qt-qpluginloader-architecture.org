@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: B5D2A1F3-7E94-4C8B-A2D6-G3B84F0E1567
+:END:
+#+title: Qt QPluginLoader Architecture Migration
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+The initial plugin extraction (Steps 3–8 of the Qt plugin refactor) produced
+six STATIC domain library plugins wired by direct =std::unique_ptr<XxxPlugin>=
+members in =MainWindow=.  This is Option 3 from the architecture analysis
+(explicit factory / registry) and does NOT achieve the isolation goal:
+
+- Host must be relinked for every plugin change.
+- =MainWindow= has compile-time dependencies on all domain headers.
+- Each plugin class duplicated identical signals and =connect_controller_signals=.
+
+* Solution
+
+Implement Option 1 (=QPluginLoader= + SHARED libraries) from the analysis
+document.
+
+* Implementation (completed 2026-04-08)
+
+** Phase 1 — =ores.qt.api= framework changes
+
+=ores.qt.api= was already a SHARED library (=add_library(SHARED ...)= with
+=ORES_QT_API_LIBRARY= compile definition and =BOOST_SYMBOL_EXPORT= macros).
+
+Changes made:
+
+1. *=IPlugin.hpp=* — added =Q_DECLARE_INTERFACE(ores::qt::IPlugin, "ores.qt.IPlugin/1.0")=
+   and =#include <QtPlugin>=.  This registers the interface IID used by
+   =QPluginLoader= for ABI version checking.
+
+2. *New =PluginBase= class* (=include/ores.qt/PluginBase.hpp= + =src/PluginBase.cpp=).
+   Inherits =public QObject, public IPlugin= with =Q_OBJECT=.  Provides:
+   - Signals: =statusMessage(const QString&)=, =windowCreated(DetachableMdiSubWindow*)=,
+     =windowDestroyed(DetachableMdiSubWindow*)=.
+   - Protected method: =connectControllerSignals(EntityController* ctrl)= — wires
+     the four =EntityController= signals using modern functor syntax, eliminating
+     the 6× per-plugin duplication.
+
+3. *=PluginRegistry= redesign* (=include/ores.qt/PluginRegistry.hpp= + =src/PluginRegistry.cpp=).
+   - Removed =register_plugin(std::unique_ptr<IPlugin>)=.
+   - Added =load_from_directory(const QString& plugin_dir)= — scans directory for
+     shared libraries, loads each =IPlugin= via =QPluginLoader=, sorts by
+     =load_order()=.
+   - Holds =QVector<QPluginLoader*> loaders_= to keep plugins alive for the process
+     lifetime.
+
+** Phase 2 — Six domain plugins: STATIC → SHARED
+
+For each of =ores.qt.admin=, =ores.qt.compute=, =ores.qt.refdata=,
+=ores.qt.party=, =ores.qt.mktdata=, =ores.qt.trading=:
+
+*** CMakeLists.txt
+- =add_library(STATIC ...)= → =add_library(SHARED ...)=
+- Added =LIBRARY_OUTPUT_DIRECTORY= pointing to =${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins=
+  so plugin =.so= files land in =publish/lib/plugins/= during development builds.
+- Added =INSTALL_RPATH "$ORIGIN/.."= (plugins/ → lib/ where =ores.qt.api.so= lives).
+- Changed install target to =LIBRARY DESTINATION lib/plugins=.
+
+*** Plugin header
+- Base changed from =public QObject, public IPlugin= → =public PluginBase=.
+- Added =Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")= and =Q_INTERFACES(ores::qt::IPlugin)=.
+- Removed per-plugin =signals:= block (=status_message=, =window_created=, =window_destroyed=).
+- Removed per-plugin private forwarding slots and =connect_controller_signals= declaration.
+
+*** Plugin source
+- Constructor changed from =: QObject(parent)= to =: PluginBase(parent)=.
+- Removed =void XxxPlugin::connect_controller_signals(QObject*)= implementation.
+- Replaced all =connect_controller_signals(ctrl)= calls with =connectControllerSignals(ctrl)=.
+- Replaced any remaining =emit status_message(msg)= / =&XxxPlugin::status_message=
+  with =emit statusMessage(msg)= / =&PluginBase::statusMessage=.
+
+** Phase 3 — =MainWindow= decoupled from domain plugins
+
+*=MainWindow.hpp=*: removed six typed plugin forward declarations and
+=std::unique_ptr<XxxPlugin>= member variables.
+
+*=MainWindow.cpp=*:
+- Removed six plugin =#include= directives; added =#include "ores.qt/PluginBase.hpp"=
+  and =#include "ores.qt/PluginRegistry.hpp"=.
+- Constructor: replaced 18 individual signal connects (3 per plugin × 6) with a
+  single loop over =PluginRegistry::instance().plugins()=.
+- =onLoginSuccess=: replaced six explicit =on_login()= + six =create_menus()= calls
+  with a single loop.
+- =performDisconnectCleanup=: replaced six explicit =on_logout()= calls with a
+  reverse loop (last-loaded plugin logs out first).
+
+** Phase 4 — Plugin discovery in =main.cpp=
+
+Added =PluginRegistry::instance().load_from_directory(plugin_dir)= before
+=MainWindow= construction, where =plugin_dir = applicationDirPath() + "/../lib/plugins"=.
+At runtime (development build): =publish/bin/../lib/plugins= = =publish/lib/plugins/=.
+
+** Phase 5 — =ores.qt= CMakeLists cleanup
+
+Removed =ores.qt.admin.lib=, =ores.qt.compute.lib=, =ores.qt.refdata.lib=,
+=ores.qt.party.lib=, =ores.qt.mktdata.lib=, =ores.qt.trading.lib= from
+=ores.qt.lib= link dependencies.  These are now loaded at runtime by
+=QPluginLoader= — no compile-time link required.
+
+* Known issues / future work
+
+- *Inter-plugin compile-time dependencies*: =ores.qt.compute= links =ores.qt.admin=
+  (SessionHistoryDialog), =ores.qt.mktdata= links =ores.qt.refdata=, and
+  =ores.qt.trading= links =ores.qt.party= for types not yet moved to
+  =ores.qt.api=.  These should be resolved by moving shared types to
+  =ores.qt.api= in a follow-up.
+
+- *OrgExplorer null BusinessUnitController*: =TradingPlugin= passes =nullptr= for
+  =businessUnitController= to =OrgExplorerMdiWindow= because this cross-plugin
+  reference requires a different approach (e.g., a service interface on IPlugin).
+
+- *ores.qt.app rename*: the architecture analysis proposes renaming the host
+  static library to =ores.qt.app=.  Not done yet.

@@ -59,6 +59,15 @@ struct Parser<ReaderType, WriterType,
         Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
             _w, str, _parent);
     }
+
+    // time_point serialises as an ISO 8601 UTC string — delegate schema
+    // generation to the string parser so rfl::json::to_schema works correctly.
+    template <class SchemaType>
+    static SchemaType to_schema(
+        std::map<std::string, SchemaType>* _definitions) {
+        return Parser<ReaderType, WriterType,
+            std::string, ProcessorsType>::to_schema(_definitions);
+    }
 };
 
 }

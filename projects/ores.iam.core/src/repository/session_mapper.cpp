@@ -40,14 +40,14 @@ std::optional<std::chrono::system_clock::time_point>
 parse_timestamp(const std::string& str) {
     if (str.empty())
         return std::nullopt;
-    return platform::time::datetime::parse_time_point(str);
+    return platform::time::datetime::from_iso8601_utc(str);
 }
 
 /**
  * @brief Formats a time_point as a timestamp string (thread-safe).
  */
 std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
-    return ores::platform::time::datetime::format_time_point(tp);
+    return ores::platform::time::datetime::to_iso8601_utc(tp);
 }
 
 }

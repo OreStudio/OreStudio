@@ -51,7 +51,7 @@ void write_badge_severity(std::vector<std::byte>& buffer,
     writer::write_string(buffer, bs.change_reason_code);
     writer::write_string(buffer, bs.change_commentary);
     writer::write_string(buffer,
-        ores::platform::time::datetime::format_time_point(bs.recorded_at));
+        ores::platform::time::datetime::to_iso8601_utc(bs.recorded_at));
 }
 
 std::expected<domain::badge_severity, error_code>
@@ -97,7 +97,7 @@ read_badge_severity(std::span<const std::byte>& data) {
     auto recorded_at_result = reader::read_string(data);
     if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
     try {
-        bs.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at_result);
+        bs.recorded_at = ores::platform::time::datetime::from_iso8601_utc(*recorded_at_result);
     } catch (const std::invalid_argument&) {
         return std::unexpected(error_code::invalid_request);
     }

@@ -59,9 +59,9 @@ std::int64_t job_instance_repository::write_started(
     const auto party_id = inst.party_id
         ? boost::uuids::to_string(*inst.party_id) : "";
     const auto triggered_at =
-        ores::platform::time::datetime::format_time_point_utc(inst.triggered_at);
+        ores::platform::time::datetime::to_iso8601_utc(inst.triggered_at);
     const auto started_at =
-        ores::platform::time::datetime::format_time_point_utc(inst.started_at);
+        ores::platform::time::datetime::to_iso8601_utc(inst.started_at);
     const auto status = job_status_to_string(inst.status);
 
     // NULLIF converts an empty string to NULL so nullable uuid columns
@@ -95,10 +95,10 @@ void job_instance_repository::write_completed(
     BOOST_LOG_SEV(lg(), debug) << "Writing completed status for job instance: " << id;
 
     const auto completed_at =
-        ores::platform::time::datetime::format_time_point_utc(
+        ores::platform::time::datetime::to_iso8601_utc(
             std::chrono::system_clock::now());
     const auto triggered_at_str =
-        ores::platform::time::datetime::format_time_point_utc(triggered_at);
+        ores::platform::time::datetime::to_iso8601_utc(triggered_at);
     const auto status_str = job_status_to_string(status);
     const auto id_str = std::to_string(id);
 
@@ -155,19 +155,19 @@ std::vector<domain::job_instance> job_instance_repository::read_latest(
         if (row[6]) {
             try {
                 inst.triggered_at =
-                    ores::platform::time::datetime::parse_time_point(*row[6]);
+                    ores::platform::time::datetime::from_iso8601_utc(*row[6]);
             } catch (...) {}
         }
         if (row[7]) {
             try {
                 inst.started_at =
-                    ores::platform::time::datetime::parse_time_point(*row[7]);
+                    ores::platform::time::datetime::from_iso8601_utc(*row[7]);
             } catch (...) {}
         }
         if (row[8]) {
             try {
                 inst.completed_at =
-                    ores::platform::time::datetime::parse_time_point(*row[8]);
+                    ores::platform::time::datetime::from_iso8601_utc(*row[8]);
             } catch (...) {}
         }
         if (row[9]) inst.duration_ms = std::stoll(*row[9]);
@@ -203,7 +203,7 @@ job_instance_repository::last_run_at(
         return std::nullopt;
 
     try {
-        return ores::platform::time::datetime::parse_time_point(*rows[0][0]);
+        return ores::platform::time::datetime::from_iso8601_utc(*rows[0][0]);
     } catch (...) {
         return std::nullopt;
     }

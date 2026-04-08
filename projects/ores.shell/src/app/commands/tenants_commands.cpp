@@ -39,7 +39,7 @@ using ores::nats::service::nats_client;
 namespace {
 
 std::string format_time(std::chrono::system_clock::time_point tp) {
-    return ores::platform::time::datetime::format_time_point(tp);
+    return ores::platform::time::datetime::to_local_display_string(tp);
 }
 
 template<typename Response>

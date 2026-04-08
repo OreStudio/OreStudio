@@ -40,7 +40,7 @@ QString timestamp_formatter::format(
         return relative_time_helper::format_relative(tp);
     }
     return QString::fromStdString(
-        platform::time::datetime::format_time_point(tp));
+        platform::time::datetime::to_local_display_string(tp));
 }
 
 QString timestamp_formatter::format(const std::string& recorded_at) {

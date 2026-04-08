@@ -27,56 +27,52 @@ namespace ores::platform::time {
 
 /**
  * @brief Utilities for date and time operations.
+ *
+ * Policy: all timestamps are stored and transmitted in UTC. Local time is used
+ * only for display. The canonical wire/storage format is ISO 8601 with a 'Z'
+ * suffix: "YYYY-MM-DD HH:MM:SSZ".
  */
 class datetime final {
 public:
     /**
-     * @brief Formats a time point as a string using local time.
+     * @brief Serialises a time point to ISO 8601 UTC string with 'Z' suffix.
      *
-     * @param tp Time point to format.
-     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
-     * @return Formatted string representation of the time point.
+     * Output format: "YYYY-MM-DD HH:MM:SSZ"
+     * Use this for all wire protocol and database writes.
+     *
+     * @param tp Time point to format (treated as UTC per C++20 definition).
+     * @return ISO 8601 UTC string, always ending with 'Z'.
      */
-    static std::string format_time_point(
-        const std::chrono::system_clock::time_point& tp,
-        const std::string& format = "%Y-%m-%d %H:%M:%S");
+    static std::string to_iso8601_utc(
+        const std::chrono::system_clock::time_point& tp);
 
     /**
-     * @brief Formats a time point as a string using UTC time.
+     * @brief Parses an ISO 8601 UTC string to a time point.
      *
-     * @param tp Time point to format.
-     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
-     * @return Formatted string representation of the time point in UTC.
-     */
-    static std::string format_time_point_utc(
-        const std::chrono::system_clock::time_point& tp,
-        const std::string& format = "%Y-%m-%d %H:%M:%S");
-
-    /**
-     * @brief Parses a string into a time point.
+     * Accepted UTC designators: 'Z', '+00', '+00:00'.
+     * Throws std::invalid_argument if the designator is absent or the offset
+     * is non-zero — callers must not pass ambiguous local-time strings.
      *
-     * @param str String to parse.
-     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
+     * @param str String to parse. Must include a UTC designator.
      * @return Parsed time point.
-     * @throws std::invalid_argument if the string cannot be parsed.
+     * @throws std::invalid_argument if the string cannot be parsed or has no
+     *         UTC designator.
      */
-    static std::chrono::system_clock::time_point parse_time_point(
-        const std::string& str,
-        const std::string& format = "%Y-%m-%d %H:%M:%S");
+    static std::chrono::system_clock::time_point from_iso8601_utc(
+        const std::string& str);
 
     /**
-     * @brief Parses a string into a time point, treating the input as UTC.
+     * @brief Formats a time point as a human-readable local-time string.
      *
-     * Unlike parse_time_point(), this interprets the input string as a UTC
-     * timestamp rather than local time.
+     * Intended for display only (UI, CLI output). Do NOT use for wire
+     * protocol or database writes — use to_iso8601_utc() instead.
      *
-     * @param str String to parse.
-     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
-     * @return Parsed time point (UTC).
-     * @throws std::invalid_argument if the string cannot be parsed.
+     * @param tp Time point to format.
+     * @param format strftime format string (default: "%Y-%m-%d %H:%M:%S").
+     * @return Local-time string without timezone designator.
      */
-    static std::chrono::system_clock::time_point parse_time_point_utc(
-        const std::string& str,
+    static std::string to_local_display_string(
+        const std::chrono::system_clock::time_point& tp,
         const std::string& format = "%Y-%m-%d %H:%M:%S");
 };
 

@@ -38,7 +38,7 @@ std::string convert_to_table(const std::vector<login_info>& v) {
 
         // Format the timestamp using cross-platform utility
         using platform::time::datetime;
-        auto timestamp_str = datetime::format_time_point(li.last_login,
+        auto timestamp_str = datetime::to_local_display_string(li.last_login,
             "%Y-%m-%d %H:%M:%S");
 
         table << boost::uuids::to_string(li.account_id)

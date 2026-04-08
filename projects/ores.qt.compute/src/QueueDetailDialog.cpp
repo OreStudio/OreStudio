@@ -294,7 +294,7 @@ void QueueDetailDialog::onGetMessages() {
                             MessageRow r;
                             r.sequence  = msg.sequence;
                             r.subject   = msg.subject;
-                            r.timestamp = platform::time::datetime::format_time_point_utc(msg.timestamp);
+                            r.timestamp = platform::time::datetime::to_iso8601_utc(msg.timestamp);
                             r.payload   = std::string(
                                 reinterpret_cast<const char*>(msg.data.data()),
                                 msg.data.size());

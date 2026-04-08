@@ -442,7 +442,7 @@ void ImageCache::loadIncrementalChanges() {
 
     // Format last load time for logging (thread-safe)
     const auto time_str =
-        platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
+        platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
     BOOST_LOG_SEV(lg(), info) << "Incremental reload: fetching images modified since "
                               << time_str;
 
@@ -533,7 +533,7 @@ void ImageCache::onImagesLoaded() {
         // Record successful load time for future incremental loads
         last_load_time_ = std::chrono::system_clock::now();
         const auto time_str =
-            platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
+            platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
         BOOST_LOG_SEV(lg(), debug) << "Recorded last load time: " << time_str;
 
         BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " images. "

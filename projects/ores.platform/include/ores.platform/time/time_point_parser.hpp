@@ -44,7 +44,7 @@ struct Parser<ReaderType, WriterType,
             return rfl::Unexpected(Error(str_result.error()->what()));
         }
         try {
-            return ores::platform::time::datetime::parse_time_point_utc(
+            return ores::platform::time::datetime::from_iso8601_utc(
                 str_result.value());
         } catch (const std::exception& e) {
             return rfl::Unexpected(Error(e.what()));
@@ -55,7 +55,7 @@ struct Parser<ReaderType, WriterType,
     static void write(const WriterType& _w,
                       const std::chrono::system_clock::time_point& _tp,
                       const P& _parent) noexcept {
-        const auto str = ores::platform::time::datetime::format_time_point_utc(_tp);
+        const auto str = ores::platform::time::datetime::to_iso8601_utc(_tp);
         Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
             _w, str, _parent);
     }

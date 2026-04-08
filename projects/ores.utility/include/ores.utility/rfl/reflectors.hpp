@@ -126,14 +126,14 @@ struct Reflector<std::chrono::system_clock::time_point> {
     using ReflType = std::string;
 
     static std::chrono::system_clock::time_point to(const ReflType& str) {
-        return ores::platform::time::datetime::parse_time_point_utc(str);
+        return ores::platform::time::datetime::from_iso8601_utc(str);
     }
 
     /**
-     * @brief Formats a time_point into a UTC string "YYYY-MM-DD HH:MM:SS".
+     * @brief Formats a time_point into a UTC string "YYYY-MM-DD HH:MM:SSZ".
      */
     static ReflType from(const std::chrono::system_clock::time_point& v) {
-        return ores::platform::time::datetime::format_time_point_utc(v);
+        return ores::platform::time::datetime::to_iso8601_utc(v);
     }
 };
 

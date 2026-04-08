@@ -25,7 +25,6 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::database::repository {
 
@@ -76,53 +75,45 @@ std::vector<Dest> map_vector(
 /**
  * @brief Converts a database timestamp string to a system_clock::time_point.
  *
- * The string is expected in the format "%Y-%m-%d %H:%M:%S" in the database
- * session's local timezone (i.e. what libpq returns from a timestamptz column
- * after stripping the timezone offset via rfl::Timestamp). Parsing with
- * parse_time_point (mktime) converts from session-local time to UTC, which is
- * correct for any session timezone — BST, JST, EST, etc.
+ * The string must include a UTC designator (Z, +00, or +00:00). All DB sessions
+ * are forced to UTC via SET TIME ZONE 'UTC', so PostgreSQL always returns
+ * timestamptz values as "YYYY-MM-DD HH:MM:SS+00".
  *
- * @param timestamp_str The timestamp string to convert
- * @return A system_clock::time_point representing the same instant in time
+ * @param timestamp_str The timestamp string to convert (must have UTC designator)
+ * @return A system_clock::time_point representing the UTC instant
+ * @throws std::invalid_argument if the string has no UTC designator
  *
  * @example
- * auto tp = timestamp_to_timepoint("2026-03-30 12:34:56"); // BST input → UTC tp
+ * auto tp = timestamp_to_timepoint("2026-03-30 12:34:56+00"); // UTC input → UTC tp
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(std::string_view timestamp_str) {
-    return platform::time::datetime::parse_time_point(
+    return platform::time::datetime::from_iso8601_utc(
         std::string{timestamp_str});
 }
 
 /**
  * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
  *
- * rfl::Timestamp already holds the parsed std::tm internally. This overload
- * converts directly via to_time_point_local, avoiding the wasteful round-trip
- * through str() → re-parse string that the string_view overload would do.
+ * The sqlgen Timestamp holds the time in the DB session's timezone. Since all
+ * DB sessions are forced to UTC, this is equivalent to UTC.
  *
- * @param ts The sqlgen Timestamp to convert (holds session-local time)
- * @return A system_clock::time_point representing the same instant in time
+ * @param ts The sqlgen Timestamp to convert
+ * @return A system_clock::time_point representing the UTC instant
  *
  * @example
  * auto tp = timestamp_to_timepoint(entity.last_login);
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    return platform::time::time_utils::to_time_point_local(ts.tm());
+    return platform::time::datetime::from_iso8601_utc(ts.str() + "Z");
 }
 
 /**
  * @brief Converts a std::chrono::system_clock::time_point to a sqlgen Timestamp.
  *
- * Formats a C++ chrono time_point as a session-local timestamp string in the
- * format "%Y-%m-%d %H:%M:%S" suitable for database storage.
- *
- * PostgreSQL TIMESTAMPTZ columns interpret unzoned strings using the session
- * timezone.  All service connections run with the database's session timezone
- * (e.g. Europe/London / BST in development).  We therefore format with local
- * time so PostgreSQL stores the correct UTC instant.  The round-trip partner
- * timestamp_to_timepoint() uses to_time_point_local() for the same reason.
+ * Formats the time_point as an ISO 8601 UTC string with Z suffix. PostgreSQL
+ * TIMESTAMPTZ columns accept the Z suffix correctly and store the UTC instant.
  *
  * @param tp The time_point to convert
  * @param lg The logger to use for logging
@@ -136,8 +127,10 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     logging::logger_t& lg) {
     using namespace ores::logging;
 
-    const auto s = platform::time::datetime::format_time_point(tp);
-    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
+    const auto s = platform::time::datetime::to_iso8601_utc(tp);
+    // Strip the Z suffix — sqlgen::Timestamp expects format "%Y-%m-%d %H:%M:%S"
+    const auto bare = s.substr(0, s.size() - 1);
+    const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(bare);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
         return {};

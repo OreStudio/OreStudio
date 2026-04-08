@@ -83,7 +83,7 @@ exporter::export_currency_config(const std::vector<currency>& v) {
             << escape_csv_field(curr.monetary_nature) << ","
             << escape_csv_field(curr.market_tier) << ","
             << escape_csv_field(curr.modified_by) << ","
-            << escape_csv_field(datetime::format_time_point_utc(curr.recorded_at)) << "\n";
+            << escape_csv_field(datetime::to_iso8601_utc(curr.recorded_at)) << "\n";
     }
 
     std::string result = oss.str();

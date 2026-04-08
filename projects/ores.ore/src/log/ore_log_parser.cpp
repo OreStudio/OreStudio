@@ -96,7 +96,7 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         // classic (C) locale by default, so %b always matches English
         // month abbreviations (Jan, Feb, …) regardless of system locale.
         try {
-            timestamp = ores::platform::time::datetime::parse_time_point_utc(
+            timestamp = ores::platform::time::datetime::from_iso8601_utc(
                 std::string(dt_part), "%Y-%b-%d %H:%M:%S")
                 + std::chrono::microseconds(microseconds);
         } catch (const std::invalid_argument&) {

@@ -40,4 +40,5 @@ SERVICE_NAMES=(
     ore
     marketdata
     controller
+    analytics
 )

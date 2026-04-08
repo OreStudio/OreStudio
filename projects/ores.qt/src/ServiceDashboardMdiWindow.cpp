@@ -392,9 +392,23 @@ void ServiceDashboardMdiWindow::loadSamples() {
             try {
                 auto sr = self->clientManager_->process_authenticated_request(
                     telemetry::messaging::get_service_samples_request{});
-                if (sr && sr->success)
+                if (sr && sr->success) {
                     samples = sr->samples;
-            } catch (...) {}
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Service samples fetched: " << samples.size();
+                } else if (!sr) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Service samples request failed: " << sr.error();
+                } else {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Service samples returned success=false: " << sr->message;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Service samples exception: " << e.what();
+            } catch (...) {
+                BOOST_LOG_SEV(lg(), warn) << "Service samples unknown exception";
+            }
 
             // 3. Fetch service instances from controller — used to determine
             // "running" status for services that don't publish NATS heartbeats
@@ -414,6 +428,17 @@ void ServiceDashboardMdiWindow::loadSamples() {
             SamplesResult r;
             r.success = true;
             r.service_definitions = defs;
+
+            if (!samples.empty()) {
+                // Log one sample's sampled_at and age for timezone diagnosis.
+                const auto& first = samples.front();
+                const long long first_age =
+                    std::chrono::duration_cast<std::chrono::seconds>(
+                        now - first.sampled_at).count();
+                BOOST_LOG_SEV(lg(), debug)
+                    << "First sample: name=" << first.service_name
+                    << " age_secs=" << first_age;
+            }
 
             for (const auto& def : defs) {
                 ServiceRow row;

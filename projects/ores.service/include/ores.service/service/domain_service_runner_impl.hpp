@@ -57,7 +57,9 @@ run(boost::asio::io_context& io_ctx,
     // before the io_context exits. Calling io_ctx.stop() here would cause
     // io_ctx.run() in main() to return before the catch block executes.
     boost::asio::cancellation_signal startup_cancel;
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    // SIGQUIT is treated identically to SIGTERM: graceful shutdown.
+    // This enables the stop-escalation sequence: SIGTERM → SIGQUIT → SIGKILL.
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM, SIGQUIT);
     signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
         if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
     });
@@ -73,8 +75,10 @@ run(boost::asio::io_context& io_ctx,
             boost::asio::bind_cancellation_slot(
                 startup_cancel.slot(), boost::asio::use_awaitable));
     } catch (const boost::system::system_error& e) {
-        if (e.code() != boost::asio::error::operation_aborted)
+        if (e.code() != boost::asio::error::operation_aborted) {
+            BOOST_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
             throw;
+        }
         BOOST_LOG_SEV(lg, info) << "Shutdown signal received during startup.";
         BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
         co_return;

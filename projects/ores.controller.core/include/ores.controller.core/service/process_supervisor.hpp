@@ -151,7 +151,8 @@ private:
     boost::asio::awaitable<void> monitor_process(
         std::shared_ptr<process_entry> entry);
     boost::asio::awaitable<bool> wait_for_log_ready(
-        std::filesystem::path log_path, std::chrono::seconds timeout);
+        std::filesystem::path log_path, std::chrono::seconds timeout,
+        std::uintmax_t start_offset = 0);
 
     std::vector<std::string> build_args(const api::domain::service_definition& def,
         int replica_index) const;

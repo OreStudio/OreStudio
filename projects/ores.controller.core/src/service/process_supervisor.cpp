@@ -24,12 +24,14 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <csignal>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/process/v2/start_dir.hpp>
+#include <boost/process/v2/stdio.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/name_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -131,15 +133,26 @@ std::vector<std::string> process_supervisor::build_args(
 }
 
 boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(
-    std::filesystem::path log_path, std::chrono::seconds timeout) {
+    std::filesystem::path log_path, std::chrono::seconds timeout,
+    std::uintmax_t start_offset) {
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     auto executor = co_await boost::asio::this_coro::executor;
 
     while (std::chrono::steady_clock::now() < deadline) {
-        // Check log file for "Service ready"
+        // Check log file for "Service ready" — only in content written AFTER
+        // start_offset so a "Service ready" from a previous run is ignored.
         if (std::filesystem::exists(log_path)) {
             std::ifstream f(log_path);
+            if (start_offset > 0) {
+                // If the log was truncated (new process overwrote it), fall
+                // back to reading from the beginning.
+                std::error_code ec;
+                const auto cur_size = std::filesystem::file_size(log_path, ec);
+                const auto seek_pos = (!ec && cur_size >= start_offset)
+                    ? static_cast<std::streamoff>(start_offset) : 0;
+                f.seekg(seek_pos);
+            }
             std::string line;
             while (std::getline(f, line)) {
                 if (line.find("Service ready") != std::string::npos)
@@ -211,6 +224,17 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
         }
         if (!def_ptr || !def_ptr->enabled) continue;
 
+        // Snapshot the log file size BEFORE launching so wait_for_log_ready
+        // only reads content written by the new process, ignoring any
+        // "Service ready" left over from a previous run.
+        std::uintmax_t log_start_offset = 0;
+        if (has_dependents.count(svc_name)) {
+            const auto log = log_path_for(svc_name, 0);
+            std::error_code ec;
+            const auto sz = std::filesystem::file_size(log, ec);
+            if (!ec) log_start_offset = sz;
+        }
+
         // Launch all replicas.
         for (int r = 0; r < def_ptr->desired_replicas; ++r) {
             const auto key = std::make_pair(svc_name, r);
@@ -228,7 +252,8 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
             BOOST_LOG_SEV(lg(), info)
                 << "Waiting for " << svc_name << " ready (log: " << log << ")";
             const bool ready =
-                co_await wait_for_log_ready(log, service_ready_timeout);
+                co_await wait_for_log_ready(log, service_ready_timeout,
+                    log_start_offset);
             if (ready)
                 BOOST_LOG_SEV(lg(), info) << svc_name << " is ready";
             else
@@ -281,10 +306,14 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         // cd into bin_dir then exec with a relative name (like the shell would
         // do with `cd "$BIN_DIR" && exec ./binary`), so that `ps` shows the
         // short name instead of the full absolute path.
+        // Redirect stdout/stderr to /dev/null: child processes log via
+        // Boost.Log to their own log files; any stray writes to std::cout or
+        // std::cerr must not bleed through to the controller's terminal.
         bp2::filesystem::path bp_exe("./" + def.binary_name);
         bp2::filesystem::path bp_dir(bin_dir_.string());
         entry->proc.emplace(executor, bp_exe, args,
-            bp2::process_start_dir(bp_dir));
+            bp2::process_start_dir(bp_dir),
+            bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Failed to launch " << service_name << "[" << replica_index
@@ -490,8 +519,9 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
     BOOST_LOG_SEV(lg(), info)
         << "Stopping all supervised services (" << processes_.size() << " processes)";
 
-    // 1. Mark every entry as stop_requested and send SIGTERM so each child's
-    //    signal_set fires its shutdown path (drain, log "Shutdown complete").
+    auto executor = co_await boost::asio::this_coro::executor;
+
+    // Phase 1: SIGTERM — services handle this via signal_set for graceful drain.
     for (auto& [key, entry] : processes_) {
         entry->stop_requested = true;
         if (entry->proc) {
@@ -499,7 +529,7 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
             entry->proc->request_exit(ec);
             if (ec)
                 BOOST_LOG_SEV(lg(), warn)
-                    << "request_exit failed for " << key.first
+                    << "request_exit (SIGTERM) failed for " << key.first
                     << "[" << key.second << "]: " << ec.message();
             else
                 BOOST_LOG_SEV(lg(), info)
@@ -508,20 +538,41 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
         }
     }
 
-    // 2. Poll until all processes exit or the 10-second grace period expires.
-    //    monitor_process() erases entries from processes_ on exit, so an empty
-    //    map means everyone has gone away.
-    auto executor = co_await boost::asio::this_coro::executor;
-    constexpr auto grace = std::chrono::seconds(10);
-    const auto deadline = std::chrono::steady_clock::now() + grace;
-
-    while (!processes_.empty() && std::chrono::steady_clock::now() < deadline) {
+    // Phase 2: Poll for up to 5 s; well-behaved services exit here.
+    constexpr auto sigterm_grace = std::chrono::seconds(5);
+    const auto sigterm_deadline = std::chrono::steady_clock::now() + sigterm_grace;
+    while (!processes_.empty() && std::chrono::steady_clock::now() < sigterm_deadline) {
         boost::asio::steady_timer t(executor);
         t.expires_after(std::chrono::milliseconds(200));
         co_await t.async_wait(boost::asio::use_awaitable);
     }
 
-    // 3. SIGKILL any stragglers that outlived the grace period.
+    // Phase 3: SIGQUIT for any survivors — same handler as SIGTERM in services,
+    // provides a second opportunity for graceful shutdown.
+    if (!processes_.empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << processes_.size()
+            << " process(es) still running after SIGTERM grace — sending SIGQUIT";
+        for (auto& [key, entry] : processes_) {
+            if (entry->proc) {
+                ::kill(static_cast<pid_t>(entry->proc->id()), SIGQUIT);
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Sent SIGQUIT to " << key.first
+                    << "[" << key.second << "] PID=" << entry->proc->id();
+            }
+        }
+
+        // Phase 4: Wait up to 5 s for the SIGQUIT to take effect.
+        constexpr auto sigquit_grace = std::chrono::seconds(5);
+        const auto sigquit_deadline = std::chrono::steady_clock::now() + sigquit_grace;
+        while (!processes_.empty() && std::chrono::steady_clock::now() < sigquit_deadline) {
+            boost::asio::steady_timer t(executor);
+            t.expires_after(std::chrono::milliseconds(200));
+            co_await t.async_wait(boost::asio::use_awaitable);
+        }
+    }
+
+    // Phase 5: SIGKILL any stragglers that outlived both grace periods.
     if (!processes_.empty()) {
         BOOST_LOG_SEV(lg(), warn)
             << processes_.size()

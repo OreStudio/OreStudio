@@ -71,6 +71,8 @@ total_gone=0
 # ---------------------------------------------------------------------------
 
 # Sets STOP_PID to the PID of the stopped process, or "" if nothing was done.
+# Signal escalation: SIGTERM (graceful) only; SIGKILL is applied by
+# wait_for_pids_kill if the process outlives the grace period.
 STOP_PID=""
 stop_service() {
     STOP_PID=""
@@ -93,6 +95,7 @@ stop_service() {
     fi
 }
 
+# Wait up to 10 s for pids to exit; send SIGKILL to any that survive.
 wait_for_pids() {
     local label="$1"; shift
     local pids=("$@")
@@ -112,6 +115,14 @@ wait_for_pids() {
         printf "."
     done
     echo " done"
+
+    # Escalate: SIGKILL any process that did not exit within the grace period.
+    for pid in "${pids[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -KILL "$pid" 2>/dev/null || true
+            printf "  killed  PID %d (did not exit within grace period)\n" "$pid"
+        fi
+    done
     echo ""
 }
 

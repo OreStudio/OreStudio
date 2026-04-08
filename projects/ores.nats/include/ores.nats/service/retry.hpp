@@ -65,8 +65,19 @@ retry_with_backoff(Fn&& fn,
         try {
             co_await fn();
             co_return;
-        } catch (const boost::system::system_error&) {
-            throw; // propagate cancellation and other system errors unmodified
+        } catch (const boost::system::system_error& e) {
+            // Propagate cancellation (SIGTERM/SIGQUIT) immediately.
+            // Treat all other system errors (e.g. "No responders available")
+            // as transient and subject to the normal retry/backoff logic.
+            if (e.code() == boost::asio::error::operation_aborted)
+                throw;
+            if (max_retries >= 0 && attempt >= max_retries)
+                throw;
+            BOOST_LOG_SEV(lg, warn)
+                << operation_name << " failed (attempt " << (attempt + 1)
+                << "): " << e.what()
+                << ". Retrying in " << delay.count() << " ms.";
+            failed = true;
         } catch (const std::exception& e) {
             if (max_retries >= 0 && attempt >= max_retries)
                 throw;

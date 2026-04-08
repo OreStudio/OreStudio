@@ -115,8 +115,14 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
 /**
  * @brief Converts a std::chrono::system_clock::time_point to a sqlgen Timestamp.
  *
- * Formats a C++ chrono time_point as a UTC timestamp string in the format
- * "%Y-%m-%d %H:%M:%S" suitable for database storage.
+ * Formats a C++ chrono time_point as a session-local timestamp string in the
+ * format "%Y-%m-%d %H:%M:%S" suitable for database storage.
+ *
+ * PostgreSQL TIMESTAMPTZ columns interpret unzoned strings using the session
+ * timezone.  All service connections run with the database's session timezone
+ * (e.g. Europe/London / BST in development).  We therefore format with local
+ * time so PostgreSQL stores the correct UTC instant.  The round-trip partner
+ * timestamp_to_timepoint() uses to_time_point_local() for the same reason.
  *
  * @param tp The time_point to convert
  * @param lg The logger to use for logging
@@ -130,7 +136,7 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     logging::logger_t& lg) {
     using namespace ores::logging;
 
-    const auto s = platform::time::datetime::format_time_point_utc(tp);
+    const auto s = platform::time::datetime::format_time_point(tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";

@@ -134,29 +134,26 @@ struct Reflector<std::chrono::system_clock::time_point> {
      * @throws std::runtime_error if the string cannot be parsed.
      */
     static std::chrono::system_clock::time_point to(const ReflType& str) {
-        // Parse ISO 8601 format: "YYYY-MM-DD HH:MM:SS"
+        // Parse UTC timestamp "YYYY-MM-DD HH:MM:SS[.sss][Z]".
+        // Trailing sub-seconds and 'Z' are ignored by get_time; the remainder
+        // is interpreted as UTC via timegm (not mktime which uses local time).
         std::tm tm = {};
         std::istringstream ss(str);
         ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-
-        auto tp = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-        return tp;
+        tm.tm_isdst = 0;
+        return std::chrono::system_clock::from_time_t(timegm(&tm));
     }
 
     /**
-     * @brief Formats a time_point into a string.
-     * @details Uses std::format (C++23) to create a clean, unambiguous
-     * UTC string representation. This avoids all C-style time functions.
-     * @param v The time_point to format.
-     * @return A string representation of the time_point.
+     * @brief Formats a time_point into a UTC string "YYYY-MM-DD HH:MM:SS".
+     *
+     * system_clock::time_point is UTC-based. We truncate to whole seconds
+     * before formatting so the string is always a fixed-width
+     * "YYYY-MM-DD HH:MM:SS" that the to() parser can round-trip losslessly.
      */
     static ReflType from(const std::chrono::system_clock::time_point& v) {
-        // The time_point is already in the "system clock" which is UTC.
-        // We format it directly. The format specifiers are:
-        // %F -> YYYY-MM-DD
-        // %T -> HH:MM:SS
-        // We add 'Z' to explicitly mark it as UTC, which is best practice.
-        return std::format("{:%F %T}Z", v);
+        const auto secs = std::chrono::floor<std::chrono::seconds>(v);
+        return std::format("{:%F %T}", secs);
     }
 };
 

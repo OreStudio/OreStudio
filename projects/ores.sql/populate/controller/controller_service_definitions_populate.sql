@@ -70,6 +70,7 @@ begin
             ('ores.workflow.service',   'ores.workflow.service',   1, null,       'Workflow execution engine'),
             ('ores.ore.service',        'ores.ore.service',        1, null,       'ORE pricing engine integration'),
             ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
+            ('ores.analytics.service', 'ores.analytics.service',  1, null,       'Analytics pricing engine integration'),
             -- HTTP server: needs --port and --storage-dir.
             -- Port 51000 = local1 debug default; update DB row to change it.
             ('ores.http.server', 'ores.http.server', 1,

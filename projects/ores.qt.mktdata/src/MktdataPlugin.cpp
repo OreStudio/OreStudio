@@ -20,13 +20,8 @@
 
 #include <QMenu>
 #include <QAction>
-#include <QMdiArea>
-#include <QMdiSubWindow>
-#include <QMainWindow>
 
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/MarketDataController.hpp"
 
@@ -84,57 +79,17 @@ QList<QMenu*> MktdataPlugin::create_menus() {
     connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
         if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
     });
-    menuMarketData->addSeparator();
-
-    act_data_librarian_ = menuMarketData->addAction(ico(Icon::Library), tr("Data &Librarian"));
-    connect(act_data_librarian_, &QAction::triggered, this, [this]() {
-        if (data_librarian_window_) {
-            ctx_.mdi_area->setActiveSubWindow(
-                qobject_cast<QMdiSubWindow*>(data_librarian_window_->parent()));
-            return;
-        }
-
-        auto* librarianWindow = new DataLibrarianWindow(
-            ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
-
-        auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
-        subWindow->setWidget(librarianWindow);
-        subWindow->setWindowTitle(tr("Data Librarian"));
-        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            Icon::Library, IconUtils::DefaultIconColor));
-        subWindow->setAttribute(Qt::WA_DeleteOnClose);
-
-        connect(librarianWindow, &DataLibrarianWindow::statusChanged,
-                this, [this](const QString& msg) { emit statusMessage(msg); });
-        connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
-                this, [this](const QString& msg) { emit statusMessage(msg); });
-
-        data_librarian_window_ = subWindow;
-        connect(subWindow, &QObject::destroyed, this, [this]() {
-            data_librarian_window_ = nullptr;
-        });
-
-        ctx_.mdi_area->addSubWindow(subWindow);
-        subWindow->resize(librarianWindow->sizeHint());
-        subWindow->show();
-    });
-
     return {menuMarketData};
 }
 
 QList<QAction*> MktdataPlugin::toolbar_actions() {
-    return {act_data_librarian_};
+    return {};
 }
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_logout — close open singleton windows, destroy all controllers
 // ---------------------------------------------------------------------------
 void MktdataPlugin::on_logout() {
-    if (data_librarian_window_) {
-        data_librarian_window_->close();
-        data_librarian_window_ = nullptr;
-    }
-
     marketDataController_.reset();
     currencyMarketTierController_.reset();
 

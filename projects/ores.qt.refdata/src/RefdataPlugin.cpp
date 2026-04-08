@@ -20,9 +20,11 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QMdiSubWindow>
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/CountryController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
@@ -278,6 +280,39 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
         if (methodologyController_) methodologyController_->showListWindow();
     });
     menuCatalogue->addSeparator();
+    act_data_librarian_ = menuCatalogue->addAction(ico(Icon::Library), tr("Data &Librarian"));
+    connect(act_data_librarian_, &QAction::triggered, this, [this]() {
+        if (data_librarian_window_) {
+            ctx_.mdi_area->setActiveSubWindow(
+                qobject_cast<QMdiSubWindow*>(data_librarian_window_->parent()));
+            return;
+        }
+
+        auto* librarianWindow = new DataLibrarianWindow(
+            ctx_.client_manager, ctx_.username, ctx_.badge_cache, ctx_.main_window);
+
+        auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+        subWindow->setWidget(librarianWindow);
+        subWindow->setWindowTitle(tr("Data Librarian"));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+            Icon::Library, IconUtils::DefaultIconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(librarianWindow, &DataLibrarianWindow::statusChanged,
+                this, [this](const QString& msg) { emit statusMessage(msg); });
+        connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
+                this, [this](const QString& msg) { emit statusMessage(msg); });
+
+        data_librarian_window_ = subWindow;
+        connect(subWindow, &QObject::destroyed, this, [this]() {
+            data_librarian_window_ = nullptr;
+        });
+
+        ctx_.mdi_area->addSubWindow(subWindow);
+        subWindow->resize(librarianWindow->sizeHint());
+        subWindow->show();
+    });
+    menuCatalogue->addSeparator();
     auto* menuDimensions = menuCatalogue->addMenu(tr("&Dimensions"));
     auto* actOriginDimensions = menuDimensions->addAction(
         ico(Icon::Database), tr("&Origin Dimensions"));
@@ -333,13 +368,18 @@ QList<QMenu*> RefdataPlugin::create_menus() {
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
-    return {act_currencies_, act_countries_};
+    return {act_currencies_, act_countries_, act_data_librarian_};
 }
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_logout — destroy all controllers in reverse dependency order
 // ---------------------------------------------------------------------------
 void RefdataPlugin::on_logout() {
+    if (data_librarian_window_) {
+        data_librarian_window_->close();
+        data_librarian_window_ = nullptr;
+    }
+
     purposeTypeController_.reset();
     monetaryNatureController_.reset();
     roundingTypeController_.reset();

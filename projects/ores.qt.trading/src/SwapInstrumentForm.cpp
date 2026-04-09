@@ -108,6 +108,7 @@ State from_balance_guaranteed_swap(
     copy_provenance(s, i);
     s.start_date = i.start_date;
     s.maturity_date = i.maturity_date;
+    s.lockout_days = i.lockout_days;
     s.description = i.description;
     return s;
 }
@@ -249,6 +250,7 @@ build_balance_guaranteed_swap(const State& s, const std::string& username) {
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
     r.maturity_date = s.maturity_date;
+    r.lockout_days = s.lockout_days;
     r.description = s.description;
     return r;
 }
@@ -521,7 +523,7 @@ void SwapInstrumentForm::populateFromState() {
     // (these UI widgets will be repurposed in a future UI redesign).
     ui_->fraFixingDateEdit->clear();
     ui_->fraSettlementDateEdit->clear();
-    ui_->lockoutDaysSpinBox->setValue(0);
+    ui_->lockoutDaysSpinBox->setValue(state_.lockout_days.value_or(0));
     ui_->callableDatesJsonEdit->setPlainText(
         QString::fromStdString(state_.call_dates_json));
     ui_->rpaCounterpartyEdit->setText(

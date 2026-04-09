@@ -521,6 +521,7 @@ struct save_vanilla_swap_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.vanilla_swap_instruments.save";
     ores::trading::domain::vanilla_swap_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_vanilla_swap_instrument_response {
@@ -576,6 +577,7 @@ struct save_cap_floor_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.cap_floor_instruments.save";
     ores::trading::domain::cap_floor_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_cap_floor_instrument_response {
@@ -631,6 +633,7 @@ struct save_swaption_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.swaption_instruments.save";
     ores::trading::domain::swaption_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_swaption_instrument_response {
@@ -686,6 +689,7 @@ struct save_balance_guaranteed_swap_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.balance_guaranteed_swap_instruments.save";
     ores::trading::domain::balance_guaranteed_swap_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_balance_guaranteed_swap_instrument_response {
@@ -741,6 +745,7 @@ struct save_callable_swap_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.callable_swap_instruments.save";
     ores::trading::domain::callable_swap_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_callable_swap_instrument_response {
@@ -796,6 +801,7 @@ struct save_knock_out_swap_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.knock_out_swap_instruments.save";
     ores::trading::domain::knock_out_swap_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_knock_out_swap_instrument_response {
@@ -851,6 +857,7 @@ struct save_inflation_swap_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.inflation_swap_instruments.save";
     ores::trading::domain::inflation_swap_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_inflation_swap_instrument_response {
@@ -906,6 +913,7 @@ struct save_rpa_instrument_request {
     static constexpr std::string_view nats_subject =
         "trading.v1.rpa_instruments.save";
     ores::trading::domain::rpa_instrument data;
+    std::vector<ores::trading::domain::swap_leg> legs;
 };
 
 struct save_rpa_instrument_response {

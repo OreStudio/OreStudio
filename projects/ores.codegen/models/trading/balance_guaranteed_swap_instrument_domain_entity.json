@@ -55,7 +55,7 @@
         "name": "lockout_days",
         "type": "integer",
         "cpp_type": "std::optional<int>",
-        "nullable": false,
+        "nullable": true,
         "description": "Optional lockout period in days.",
         "detail": "Number of days during which prepayments are restricted.",
         "default_value": "std::nullopt"

@@ -27,7 +27,7 @@
 -- =============================================================================
 
 create table if not exists "ores_trading_cap_floor_instruments_tbl" (
-    "id" uuid not null,
+    "instrument_id" uuid not null,
     "tenant_id" uuid not null,
     "party_id" uuid not null,
     "version" integer not null,
@@ -42,25 +42,25 @@ create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        instrument_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("maturity_date" > "start_date")
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists ores_trading_cap_floor_instruments_version_uniq_idx
-on "ores_trading_cap_floor_instruments_tbl" (tenant_id, id, version)
+on "ores_trading_cap_floor_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
 create unique index if not exists ores_trading_cap_floor_instruments_id_uniq_idx
-on "ores_trading_cap_floor_instruments_tbl" (tenant_id, id)
+on "ores_trading_cap_floor_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
@@ -100,7 +100,7 @@ begin
     select version into current_version
     from "ores_trading_cap_floor_instruments_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and instrument_id = NEW.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -115,7 +115,7 @@ begin
         update "ores_trading_cap_floor_instruments_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -140,5 +140,6 @@ on delete to "ores_trading_cap_floor_instruments_tbl" do instead
     update "ores_trading_cap_floor_instruments_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and instrument_id = OLD.instrument_id
+      and party_id = ANY(ores_iam_visible_party_ids_fn())
       and valid_to = ores_utility_infinity_timestamp_fn();

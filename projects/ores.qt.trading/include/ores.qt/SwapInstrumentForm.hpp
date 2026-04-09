@@ -85,6 +85,9 @@ public:
         double strike = 0.0;
         std::string long_short;
 
+        // BalanceGuaranteedSwap-specific
+        std::optional<int> lockout_days;
+
         // Callable swap-specific
         std::string call_dates_json;
         std::string call_type;

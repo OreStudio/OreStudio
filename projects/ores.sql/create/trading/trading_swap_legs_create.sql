@@ -21,7 +21,7 @@
 -- =============================================================================
 -- Swap Legs Table
 --
--- Child table of ores_trading_instruments_tbl. Each row is one leg of a
+-- Shared legs table for all rates instrument types. Each row is one leg of a
 -- rates instrument (Swap, CrossCurrencySwap, CapFloor, Swaption).
 -- A plain IRS has two rows (fixed + floating). A cross-currency swap also
 -- has two rows with different currencies.

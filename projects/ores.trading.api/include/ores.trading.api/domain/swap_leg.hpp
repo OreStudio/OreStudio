@@ -55,7 +55,7 @@ struct swap_leg final {
     /**
      * @brief UUID of the parent instrument.
      *
-     * Soft FK to ores_trading_instruments_tbl.
+     * Soft FK to the per-type rates instrument table (e.g. ores_trading_fra_instruments_tbl).
      */
     boost::uuids::uuid instrument_id;
 

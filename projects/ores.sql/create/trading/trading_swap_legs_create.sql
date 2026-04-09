@@ -92,17 +92,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate instrument_id (soft FK to ores_trading_instruments_tbl)
-    if not exists (
-        select 1 from ores_trading_instruments_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.instrument_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid instrument_id: %. Instrument must exist for tenant.', NEW.instrument_id
-            using errcode = '23503';
-    end if;
-
     -- Validate leg_type_code
     NEW.leg_type_code := ores_trading_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 

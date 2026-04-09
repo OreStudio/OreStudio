@@ -139,24 +139,11 @@ with check (
 );
 
 -- =============================================================================
--- Instrument Subtables
+-- Instrument Tables
 -- =============================================================================
--- Each instrument subtype table carries tenant_id but no party_id.
--- Tenant-level isolation is sufficient since the parent instruments table
--- already enforces party isolation. These policies harden direct-query access.
-
--- -----------------------------------------------------------------------------
--- Instruments (parent)
--- -----------------------------------------------------------------------------
-alter table ores_trading_instruments_tbl enable row level security;
-
-create policy ores_trading_instruments_tenant_isolation_policy on ores_trading_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
+-- Each standalone instrument table carries party_id directly.
+-- Party isolation is enforced via a restrictive policy on each table.
+-- Policies are added here as each instrument family table is implemented.
 
 -- -----------------------------------------------------------------------------
 -- Bond Instruments

@@ -27,6 +27,8 @@ class QAction;
 
 namespace ores::qt {
 
+class DataLibrarianWindow;
+class DetachableMdiSubWindow;
 class CurrencyController;
 class CountryController;
 class ChangeReasonCategoryController;
@@ -91,6 +93,10 @@ private:
 
     QAction* act_currencies_{nullptr};
     QAction* act_countries_{nullptr};
+    QAction* act_data_librarian_{nullptr};
+
+    // Singleton MDI sub-window for Data Librarian (nullptr when not open)
+    DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
     std::unique_ptr<CurrencyController>                    currencyController_;
     std::unique_ptr<CountryController>                     countryController_;

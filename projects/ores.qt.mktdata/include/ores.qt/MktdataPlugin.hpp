@@ -27,14 +27,11 @@ class QAction;
 
 namespace ores::qt {
 
-class DetachableMdiSubWindow;
 class CurrencyMarketTierController;
 class MarketDataController;
-class DataLibrarianWindow;
 
 /**
- * @brief Market data plugin: market series, fixings,
- *        currency market tiers, and the data librarian.
+ * @brief Market data plugin: market series, fixings, and currency market tiers.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
  * Owns the Market Data menu.
@@ -59,11 +56,6 @@ public:
 private:
 
     plugin_context ctx_;
-
-    // Singleton MDI sub-window for Data Librarian (nullptr when not open)
-    DetachableMdiSubWindow* data_librarian_window_{nullptr};
-
-    QAction* act_data_librarian_{nullptr};
 
     // Entity controllers
     std::unique_ptr<CurrencyMarketTierController>  currencyMarketTierController_;

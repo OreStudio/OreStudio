@@ -1904,9 +1904,10 @@ std::string to_string(oreTradeType);
 
 struct trade
 {
-    xsd::string id;
+    xsd::string id{};
+    xsd::vector<xsd::any_attribute> other_attributes;
     xsd::vector<xsd::any_element> other_elements;
-    domain::oreTradeType TradeType;
+    domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::tradeActions> TradeActions;
     xsd::optional<domain::swapData> CrossCurrencySwapData;
@@ -2352,19 +2353,19 @@ struct crossAssetModel_InterestRateModels_t
 
 struct crossAssetModel
 {
-    domain::currencyCode DomesticCcy;
-    domain::crossAssetModel_Currencies_t Currencies;
+    domain::currencyCode DomesticCcy{};
+    domain::crossAssetModel_Currencies_t Currencies{};
     xsd::optional<domain::crossAssetModel_Equities_t> Equities;
     xsd::optional<domain::crossAssetModel_InflationIndices_t> InflationIndices;
     xsd::optional<domain::crossAssetModel_CreditNames_t> CreditNames;
     xsd::optional<domain::crossAssetModel_Commodities_t> Commodities;
-    float BootstrapTolerance;
+    float BootstrapTolerance{};
     xsd::optional<domain::measureType> Measure;
     xsd::optional<domain::discretizationType> Discretization;
     xsd::optional<domain::salvagingAlgoType> SalvagingAlgorithm;
     xsd::optional<domain::crossAssetModel_IntegrationPolicy_t> IntegrationPolicy;
     xsd::optional<domain::bool_> PiecewiseIntegration;
-    domain::crossAssetModel_InterestRateModels_t InterestRateModels;
+    domain::crossAssetModel_InterestRateModels_t InterestRateModels{};
     xsd::optional<domain::crossAssetModel_ForeignExchangeModels_t> ForeignExchangeModels;
     xsd::optional<domain::crossAssetModel_EquityModels_t> EquityModels;
     xsd::optional<domain::crossAssetModel_InflationIndexModels_t> InflationIndexModels;
@@ -2402,23 +2403,23 @@ struct risk_LoanExposureMode_t : xsd::string
 
 struct risk
 {
-    domain::bool_ Market;
-    domain::bool_ Credit;
-    domain::bool_ ZeroMarketPnl;
-    domain::risk_Evaluation_t Evaluation;
-    domain::bool_ DoubleDefault;
-    int64_t Seed;
-    int64_t Paths;
-    domain::risk_CreditMode_t CreditMode;
-    domain::risk_LoanExposureMode_t LoanExposureMode;
+    domain::bool_ Market{};
+    domain::bool_ Credit{};
+    domain::bool_ ZeroMarketPnl{};
+    domain::risk_Evaluation_t Evaluation{};
+    domain::bool_ DoubleDefault{};
+    int64_t Seed{};
+    int64_t Paths{};
+    domain::risk_CreditMode_t CreditMode{};
+    domain::risk_LoanExposureMode_t LoanExposureMode{};
 };
 
 struct creditsimulation
 {
-    domain::transitionmatrices TransitionMatrices;
-    domain::entities Entities;
-    domain::creditsimulation_NettingSetIds_t NettingSetIds;
-    domain::risk Risk;
+    domain::transitionmatrices TransitionMatrices{};
+    domain::entities Entities{};
+    domain::creditsimulation_NettingSetIds_t NettingSetIds{};
+    domain::risk Risk{};
 };
 
 struct curveconfiguration
@@ -2535,7 +2536,7 @@ struct sensitivityanalysis
     xsd::optional<domain::sensitivityanalysis_ParSensiRemoveFixing_t> ParSensiRemoveFixing;
     xsd::optional<domain::parConversionMatrixRegularisation> ParConversionMatrixRegularisation;
     xsd::optional<bool> ParConversion;
-    domain::discountcurves DiscountCurves;
+    domain::discountcurves DiscountCurves{};
     xsd::optional<domain::indexcurves> IndexCurves;
     xsd::optional<domain::yieldcurves> YieldCurves;
     xsd::optional<domain::fxspots> FxSpots;
@@ -2581,10 +2582,10 @@ struct analyticsType
 
 struct ore
 {
-    domain::parameterListType Setup;
+    domain::parameterListType Setup{};
     xsd::optional<domain::parameterListType> Logging;
     xsd::optional<domain::parameterListType> Markets;
-    domain::analyticsType Analytics;
+    domain::analyticsType Analytics{};
 };
 
 struct calendaradjustment
@@ -2626,15 +2627,15 @@ std::string to_string(roundingType);
 
 struct currencyDefinition
 {
-    domain::currencyDefinition_Name_t Name;
-    domain::currencyDefinition_ISOCode_t ISOCode;
+    domain::currencyDefinition_Name_t Name{};
+    domain::currencyDefinition_ISOCode_t ISOCode{};
     xsd::optional<domain::currencyDefinition_MinorUnitCodes_t> MinorUnitCodes;
     xsd::optional<int64_t> NumericCode;
-    domain::currencyDefinition_Symbol_t Symbol;
-    domain::currencyDefinition_FractionSymbol_t FractionSymbol;
-    int64_t FractionsPerUnit;
-    domain::roundingType RoundingType;
-    int64_t RoundingPrecision;
+    domain::currencyDefinition_Symbol_t Symbol{};
+    domain::currencyDefinition_FractionSymbol_t FractionSymbol{};
+    int64_t FractionsPerUnit{};
+    domain::roundingType RoundingType{};
+    int64_t RoundingPrecision{};
     xsd::optional<domain::currencyDefinition_CurrencyType_t> CurrencyType;
 };
 
@@ -2734,17 +2735,17 @@ struct stFreeStyleCurrency : xsd::base<domain::currencyCode>
 
 struct arcOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleNumber StrikeFactor;
-    domain::stFreeStyleNumber BarrierFactor;
-    domain::stFreeStyleNumber CapRate;
-    domain::stFreeStyleNumber Offset;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleNumber StrikeFactor{};
+    domain::stFreeStyleNumber BarrierFactor{};
+    domain::stFreeStyleNumber CapRate{};
+    domain::stFreeStyleNumber Offset{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEvent SettlementDate{};
 };
 
 struct swaptionData
@@ -2776,14 +2777,14 @@ std::string to_string(momentType);
 
 struct varianceSwapData
 {
-    domain::date StartDate;
-    domain::date EndDate;
-    domain::currencyCode Currency;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::varianceSwapData_LongShort_t LongShort;
-    float Strike;
-    float Notional;
-    domain::calendar Calendar;
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::currencyCode Currency{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::varianceSwapData_LongShort_t LongShort{};
+    float Strike{};
+    float Notional{};
+    domain::calendar Calendar{};
     xsd::optional<domain::momentType> MomentType;
     xsd::optional<bool> AddPastDividends;
 };
@@ -2802,22 +2803,22 @@ std::string to_string(longShort);
 
 struct forwardRateAgreementData
 {
-    domain::date StartDate;
-    domain::date EndDate;
-    domain::currencyCode Currency;
-    domain::forwardRateAgreementData_Index_t Index;
-    domain::longShort LongShort;
-    float Strike;
-    float Notional;
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::currencyCode Currency{};
+    domain::forwardRateAgreementData_Index_t Index{};
+    domain::longShort LongShort{};
+    float Strike{};
+    float Notional{};
 };
 
 struct fxForwardData
 {
-    domain::date ValueDate;
-    domain::currencyCode BoughtCurrency;
-    float BoughtAmount;
-    domain::currencyCode SoldCurrency;
-    float SoldAmount;
+    domain::date ValueDate{};
+    domain::currencyCode BoughtCurrency{};
+    float BoughtAmount{};
+    domain::currencyCode SoldCurrency{};
+    float SoldAmount{};
     xsd::optional<domain::settlementType> Settlement;
     xsd::optional<domain::fxForwardSettlementData> SettlementData;
 };
@@ -2835,15 +2836,15 @@ struct fxAverageForwardData_FXIndex_t : xsd::string
 
 struct fxAverageForwardData
 {
-    domain::date PaymentDate;
-    domain::scheduleData ObservationDates;
-    domain::bool_ FixedPayer;
-    float ReferenceNotional;
-    domain::currencyCode ReferenceCurrency;
-    float SettlementNotional;
-    domain::currencyCode SettlementCurrency;
+    domain::date PaymentDate{};
+    domain::scheduleData ObservationDates{};
+    domain::bool_ FixedPayer{};
+    float ReferenceNotional{};
+    domain::currencyCode ReferenceCurrency{};
+    float SettlementNotional{};
+    domain::currencyCode SettlementCurrency{};
     xsd::optional<domain::settlementType> Settlement;
-    domain::fxAverageForwardData_FXIndex_t FXIndex;
+    domain::fxAverageForwardData_FXIndex_t FXIndex{};
 };
 
 struct optionData_LongShort_t : xsd::string
@@ -2864,7 +2865,7 @@ typedef xsd::string premiumCurrencyCode;
 
 struct optionData
 {
-    domain::optionData_LongShort_t LongShort;
+    domain::optionData_LongShort_t LongShort{};
     xsd::optional<domain::optionData_OptionType_t> OptionType;
     xsd::optional<domain::optionData_PayoffType_t> PayoffType;
     xsd::optional<domain::optionData_PayoffType2_t> PayoffType2;
@@ -2894,10 +2895,10 @@ struct optionData
 
 struct fxOptionData
 {
-    domain::optionData OptionData;
-    domain::currencyCode BoughtCurrency;
-    float BoughtAmount;
-    domain::currencyCode SoldCurrency;
+    domain::optionData OptionData{};
+    domain::currencyCode BoughtCurrency{};
+    float BoughtAmount{};
+    domain::currencyCode SoldCurrency{};
     xsd::optional<float> SoldAmount;
     xsd::optional<float> Delta;
     xsd::optional<domain::fxOptionData_FXIndex_t> FXIndex;
@@ -2912,20 +2913,20 @@ struct fxBarrierOptionData
     xsd::optional<domain::fxBarrierOptionData_FXIndex_t> FXIndex;
     xsd::optional<domain::fxBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
     xsd::optional<domain::fxBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
-    domain::currencyCode BoughtCurrency;
-    float BoughtAmount;
-    domain::currencyCode SoldCurrency;
-    float SoldAmount;
+    domain::currencyCode BoughtCurrency{};
+    float BoughtAmount{};
+    domain::currencyCode SoldCurrency{};
+    float SoldAmount{};
 };
 
 struct fxDigitalOptionData
 {
     xsd::vector<domain::optionData> OptionData;
-    float Strike;
+    float Strike{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
-    float PayoffAmount;
-    domain::currencyCode ForeignCurrency;
-    domain::currencyCode DomesticCurrency;
+    float PayoffAmount{};
+    domain::currencyCode ForeignCurrency{};
+    domain::currencyCode DomesticCurrency{};
 };
 
 struct fxKIKOBarrierOptionData_Barriers_t
@@ -2935,15 +2936,15 @@ struct fxKIKOBarrierOptionData_Barriers_t
 
 struct fxKIKOBarrierOptionData
 {
-    domain::optionData OptionData;
-    domain::fxKIKOBarrierOptionData_Barriers_t Barriers;
+    domain::optionData OptionData{};
+    domain::fxKIKOBarrierOptionData_Barriers_t Barriers{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::fxKIKOBarrierOptionData_FXIndex_t> FXIndex;
-    domain::currencyCode BoughtCurrency;
-    float BoughtAmount;
-    domain::currencyCode SoldCurrency;
-    float SoldAmount;
+    domain::currencyCode BoughtCurrency{};
+    float BoughtAmount{};
+    domain::currencyCode SoldCurrency{};
+    float SoldAmount{};
 };
 
 struct fxDigitalBarrierOptionData
@@ -2955,21 +2956,21 @@ struct fxDigitalBarrierOptionData
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndex_t> FXIndex;
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
-    float Strike;
-    float PayoffAmount;
+    float Strike{};
+    float PayoffAmount{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
-    domain::currencyCode ForeignCurrency;
-    domain::currencyCode DomesticCurrency;
+    domain::currencyCode ForeignCurrency{};
+    domain::currencyCode DomesticCurrency{};
 };
 
 struct fxTouchOptionData
 {
     xsd::vector<domain::optionData> OptionData;
     xsd::vector<domain::barrierData> BarrierData;
-    domain::currencyCode ForeignCurrency;
-    domain::currencyCode DomesticCurrency;
-    domain::currencyCode PayoffCurrency;
-    float PayoffAmount;
+    domain::currencyCode ForeignCurrency{};
+    domain::currencyCode DomesticCurrency{};
+    domain::currencyCode PayoffCurrency{};
+    float PayoffAmount{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::fxTouchOptionData_FXIndex_t> FXIndex;
     xsd::optional<domain::fxTouchOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
@@ -2979,14 +2980,14 @@ struct fxTouchOptionData
 
 struct fxSwapData
 {
-    domain::date NearDate;
-    domain::currencyCode NearBoughtCurrency;
-    float NearBoughtAmount;
-    domain::currencyCode NearSoldCurrency;
-    float NearSoldAmount;
-    domain::date FarDate;
-    float FarBoughtAmount;
-    float FarSoldAmount;
+    domain::date NearDate{};
+    domain::currencyCode NearBoughtCurrency{};
+    float NearBoughtAmount{};
+    domain::currencyCode NearSoldCurrency{};
+    float NearSoldAmount{};
+    domain::date FarDate{};
+    float FarBoughtAmount{};
+    float FarSoldAmount{};
     xsd::optional<domain::settlementType> Settlement;
 };
 
@@ -3156,22 +3157,22 @@ struct legDataType_group_t
 struct legData_capfloor
 {
     xsd::optional<bool> Payer;
-    domain::legType LegType;
-    domain::currencyCode Currency;
-    domain::dayCounter DayCounter;
+    domain::legType LegType{};
+    domain::currencyCode Currency{};
+    domain::dayCounter DayCounter{};
     xsd::optional<domain::businessDayConvention> PaymentConvention;
     xsd::optional<domain::paymentLag> PaymentLag;
     xsd::optional<domain::legData_capfloor_PaymentCalendar_t> PaymentCalendar;
-    domain::legData_capfloor_Notionals_t Notionals;
-    domain::scheduleData ScheduleData;
+    domain::legData_capfloor_Notionals_t Notionals{};
+    domain::scheduleData ScheduleData{};
     xsd::optional<domain::legData_capfloor_PaymentDates_t> PaymentDates;
-    domain::legDataType_group_t legDataType;
+    domain::legDataType_group_t legDataType{};
 };
 
 struct capFloorData
 {
-    domain::longShort LongShort;
-    domain::legData_capfloor LegData;
+    domain::longShort LongShort{};
+    domain::legData_capfloor LegData{};
     xsd::optional<domain::capFloorData_Caps_t> Caps;
     xsd::optional<domain::capFloorData_Floors_t> Floors;
     xsd::optional<domain::capFloorData_PremiumAmount_t> PremiumAmount;
@@ -3182,11 +3183,11 @@ struct capFloorData
 
 struct equityFutureOptionData
 {
-    domain::optionData OptionData;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::currencyCode Currency;
-    float Strike;
-    float Quantity;
+    domain::optionData OptionData{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float Quantity{};
     xsd::optional<domain::date> FutureExpiryDate;
 };
 
@@ -3200,12 +3201,12 @@ struct strikeGroup_group_t
 
 struct equityOptionData
 {
-    domain::optionData OptionData;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::extendedCurrencyCode Currency;
+    domain::optionData OptionData{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::extendedCurrencyCode Currency{};
     xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
-    float Quantity;
-    domain::strikeGroup_group_t strikeGroup;
+    float Quantity{};
+    domain::strikeGroup_group_t strikeGroup{};
 };
 
 enum class barrierType
@@ -3256,10 +3257,10 @@ std::string to_string(barrierData_RebatePayTime_t);
 
 struct barrierData
 {
-    domain::barrierType Type;
+    domain::barrierType Type{};
     xsd::optional<domain::barrierCompare> StrictComparison;
     xsd::optional<domain::barrierStyle> Style;
-    domain::barrierData_Levels_t Levels;
+    domain::barrierData_Levels_t Levels{};
     xsd::optional<float> Rebate;
     xsd::optional<domain::currencyCode> RebateCurrency;
     xsd::optional<domain::barrierData_RebatePayTime_t> RebatePayTime;
@@ -3268,46 +3269,46 @@ struct barrierData
 
 struct eqBarrierOptionData
 {
-    domain::optionData OptionData;
-    domain::barrierData BarrierData;
+    domain::optionData OptionData{};
+    domain::barrierData BarrierData{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::eqBarrierOptionData_EQIndex_t> EQIndex;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::currencyCode Currency;
-    domain::strikeGroup_group_t strikeGroup;
-    float Quantity;
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::currencyCode Currency{};
+    domain::strikeGroup_group_t strikeGroup{};
+    float Quantity{};
 };
 
 struct equityForwardData
 {
-    domain::longShort LongShort;
-    domain::date Maturity;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::extendedCurrencyCode Currency;
-    float Strike;
+    domain::longShort LongShort{};
+    domain::date Maturity{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::extendedCurrencyCode Currency{};
+    float Strike{};
     xsd::optional<domain::extendedCurrencyCode> StrikeCurrency;
-    float Quantity;
+    float Quantity{};
     xsd::optional<domain::eqForwardSettlementData> SettlementData;
 };
 
 struct eqDigitalOptionData
 {
-    domain::optionData OptionData;
-    float Strike;
+    domain::optionData OptionData{};
+    float Strike{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
-    float PayoffAmount;
-    domain::underlyingTypes_group_t underlyingTypes;
-    float Quantity;
+    float PayoffAmount{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    float Quantity{};
 };
 
 struct eqTouchOptionData
 {
-    domain::optionData OptionData;
-    domain::barrierData BarrierData;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::currencyCode PayoffCurrency;
-    float PayoffAmount;
+    domain::optionData OptionData{};
+    domain::barrierData BarrierData{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::currencyCode PayoffCurrency{};
+    float PayoffAmount{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::eqTouchOptionData_EQIndex_t> EQIndex;
@@ -3323,17 +3324,17 @@ std::string to_string(optionType);
 
 struct cliquetOptionData
 {
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::currencyCode Currency;
-    float Notional;
-    domain::longShort LongShort;
-    domain::optionType OptionType;
-    float Moneyness;
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::currencyCode Currency{};
+    float Notional{};
+    domain::longShort LongShort{};
+    domain::optionType OptionType{};
+    float Moneyness{};
     xsd::optional<float> LocalCap;
     xsd::optional<float> LocalFloor;
     xsd::optional<float> GlobalCap;
     xsd::optional<float> GlobalFloor;
-    domain::scheduleData ScheduleData;
+    domain::scheduleData ScheduleData{};
     xsd::optional<int64_t> SettlementDays;
     xsd::optional<float> Premium;
     xsd::optional<domain::date> PremiumPaymentDate;
@@ -3357,7 +3358,7 @@ struct bondData
     xsd::optional<domain::bondData_IssuerId_t> IssuerId;
     xsd::optional<domain::bondData_CreditCurveId_t> CreditCurveId;
     xsd::optional<domain::bondData_CreditGroup_t> CreditGroup;
-    domain::bondData_SecurityId_t SecurityId;
+    domain::bondData_SecurityId_t SecurityId{};
     xsd::optional<domain::bondData_ReferenceCurveId_t> ReferenceCurveId;
     xsd::optional<domain::bondData_IncomeCurveId_t> IncomeCurveId;
     xsd::optional<domain::bondData_VolatilityCurveId_t> VolatilityCurveId;
@@ -3380,7 +3381,7 @@ struct settlementData_ForwardMaturityDate_t : xsd::string
 
 struct settlementData
 {
-    domain::settlementData_ForwardMaturityDate_t ForwardMaturityDate;
+    domain::settlementData_ForwardMaturityDate_t ForwardMaturityDate{};
     xsd::optional<domain::settlementData_ForwardSettlementDate_t> ForwardSettlementDate;
     xsd::optional<domain::settlementData_Settlement_t> Settlement;
     xsd::optional<float> Amount;
@@ -3396,10 +3397,10 @@ struct forwardBondData_LongInForward_t : xsd::string
 
 struct forwardBondData
 {
-    domain::bondData BondData;
-    domain::settlementData SettlementData;
+    domain::bondData BondData{};
+    domain::settlementData SettlementData{};
     xsd::optional<domain::forwardBondData_PremiumData_t> PremiumData;
-    domain::forwardBondData_LongInForward_t LongInForward;
+    domain::forwardBondData_LongInForward_t LongInForward{};
     xsd::optional<bool> KnockOut;
 };
 
@@ -3417,9 +3418,9 @@ struct bondFutureData_LongShort_t : xsd::string
 
 struct bondFutureData
 {
-    domain::bondFutureData_ContractName_t ContractName;
-    domain::bondFutureData_ContractNotional_t ContractNotional;
-    domain::bondFutureData_LongShort_t LongShort;
+    domain::bondFutureData_ContractName_t ContractName{};
+    domain::bondFutureData_ContractNotional_t ContractNotional{};
+    domain::bondFutureData_LongShort_t LongShort{};
     xsd::optional<domain::currencyCode> Currency;
     xsd::optional<domain::bondFutureData_ContractMonth_t> ContractMonth;
     xsd::optional<domain::bondFutureData_DeliverableGrade_t> DeliverableGrade;
@@ -3444,8 +3445,8 @@ struct creditCurveIdType_group_t
 
 struct legData
 {
-    bool Payer;
-    domain::legType LegType;
+    bool Payer{};
+    domain::legType LegType{};
     xsd::optional<domain::extendedCurrencyCode> Currency;
     xsd::optional<domain::businessDayConvention> PaymentConvention;
     xsd::optional<domain::paymentLag> PaymentLag;
@@ -3467,7 +3468,7 @@ struct legData
 struct creditDefaultSwapData
 {
     xsd::optional<domain::creditDefaultSwapData_IssuerId_t> IssuerId;
-    domain::creditCurveIdType_group_t creditCurveIdType;
+    domain::creditCurveIdType_group_t creditCurveIdType{};
     xsd::optional<domain::creditDefaultSwapData_ReferenceObligation_t> ReferenceObligation;
     xsd::optional<domain::bool_> SettlesAccrual;
     xsd::optional<domain::bool_> RebatesAccrual;
@@ -3477,7 +3478,7 @@ struct creditDefaultSwapData
     xsd::optional<domain::date> UpfrontDate;
     xsd::optional<float> UpfrontFee;
     xsd::optional<float> FixedRecoveryRate;
-    domain::legData LegData;
+    domain::legData LegData{};
     xsd::optional<domain::date> TradeDate;
     xsd::optional<uint64_t> CashSettlementDays;
 };
@@ -3491,8 +3492,8 @@ std::string to_string(creditDefaultSwapOptionData_StrikeType_t);
 
 struct creditDefaultSwapOptionData
 {
-    domain::optionData OptionData;
-    domain::creditDefaultSwapData CreditDefaultSwapData;
+    domain::optionData OptionData{};
+    domain::creditDefaultSwapData CreditDefaultSwapData{};
     xsd::optional<float> Strike;
     xsd::optional<domain::creditDefaultSwapOptionData_StrikeType_t> StrikeType;
     xsd::optional<domain::bool_> KnockOut;
@@ -3506,12 +3507,12 @@ struct commodityForwardData_Name_t : xsd::string
 
 struct commodityForwardData
 {
-    domain::longShort Position;
-    domain::date Maturity;
-    domain::commodityForwardData_Name_t Name;
-    domain::currencyCode Currency;
-    float Strike;
-    float Quantity;
+    domain::longShort Position{};
+    domain::date Maturity{};
+    domain::commodityForwardData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float Quantity{};
     xsd::optional<domain::bool_> IsFuturePrice;
     xsd::optional<domain::date> FutureExpiryDate;
     xsd::optional<domain::commodityForwardData_FutureExpiryOffset_t> FutureExpiryOffset;
@@ -3527,11 +3528,11 @@ struct commodityOptionData_Name_t : xsd::string
 
 struct commodityOptionData
 {
-    domain::optionData OptionData;
-    domain::commodityOptionData_Name_t Name;
-    domain::currencyCode Currency;
-    float Strike;
-    float Quantity;
+    domain::optionData OptionData{};
+    domain::commodityOptionData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float Quantity{};
     xsd::optional<domain::bool_> IsFuturePrice;
     xsd::optional<domain::date> FutureExpiryDate;
 };
@@ -3573,19 +3574,19 @@ std::string to_string(commodityPayRelativeToType);
 
 struct commodityDigitalAveragePriceOptionData
 {
-    domain::optionData OptionData;
+    domain::optionData OptionData{};
     xsd::optional<domain::barrierData> BarrierData;
-    domain::commodityDigitalAveragePriceOptionData_Name_t Name;
-    domain::currencyCode Currency;
-    float DigitalCashPayoff;
-    float Strike;
-    domain::priceType PriceType;
-    domain::date StartDate;
-    domain::date EndDate;
-    domain::calendar PaymentCalendar;
-    domain::paymentLag PaymentLag;
-    domain::businessDayConvention PaymentConvention;
-    domain::calendar PricingCalendar;
+    domain::commodityDigitalAveragePriceOptionData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float DigitalCashPayoff{};
+    float Strike{};
+    domain::priceType PriceType{};
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::calendar PaymentCalendar{};
+    domain::paymentLag PaymentLag{};
+    domain::businessDayConvention PaymentConvention{};
+    domain::calendar PricingCalendar{};
     xsd::optional<domain::date> PaymentDate;
     xsd::optional<domain::positiveDecimal> Gearing;
     xsd::optional<float> Spread;
@@ -3603,11 +3604,11 @@ struct commodityDigitalOptionData_Name_t : xsd::string
 
 struct commodityDigitalOptionData
 {
-    domain::optionData OptionData;
-    domain::commodityDigitalOptionData_Name_t Name;
-    domain::currencyCode Currency;
-    float Strike;
-    float Payoff;
+    domain::optionData OptionData{};
+    domain::commodityDigitalOptionData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float Payoff{};
     xsd::optional<domain::bool_> IsFuturePrice;
     xsd::optional<domain::date> FutureExpiryDate;
 };
@@ -3615,8 +3616,8 @@ struct commodityDigitalOptionData
 struct commoditySpreadOptionData
 {
     xsd::vector<domain::legData> LegData;
-    domain::optionData OptionData;
-    double SpreadStrike;
+    domain::optionData OptionData{};
+    double SpreadStrike{};
     xsd::optional<domain::commoditySpreadOptionStripPaymentData> OptionStripPaymentDates;
 };
 
@@ -3629,7 +3630,7 @@ struct commoditySwapData
 
 struct commoditySwaptionData
 {
-    domain::optionData OptionData;
+    domain::optionData OptionData{};
     xsd::vector<domain::legData> LegData;
 };
 
@@ -3639,19 +3640,19 @@ struct commodityAveragePriceOptionData_Name_t : xsd::string
 
 struct commodityAveragePriceOptionData
 {
-    domain::optionData OptionData;
+    domain::optionData OptionData{};
     xsd::optional<domain::barrierData> BarrierData;
-    domain::commodityAveragePriceOptionData_Name_t Name;
-    domain::currencyCode Currency;
-    float Quantity;
-    float Strike;
-    domain::priceType PriceType;
-    domain::date StartDate;
-    domain::date EndDate;
-    domain::calendar PaymentCalendar;
-    domain::paymentLag PaymentLag;
-    domain::businessDayConvention PaymentConvention;
-    domain::calendar PricingCalendar;
+    domain::commodityAveragePriceOptionData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float Quantity{};
+    float Strike{};
+    domain::priceType PriceType{};
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::calendar PaymentCalendar{};
+    domain::paymentLag PaymentLag{};
+    domain::businessDayConvention PaymentConvention{};
+    domain::calendar PricingCalendar{};
     xsd::optional<domain::date> PaymentDate;
     xsd::optional<domain::positiveDecimal> Gearing;
     xsd::optional<float> Spread;
@@ -3665,7 +3666,7 @@ struct commodityAveragePriceOptionData
 
 struct commodityOptionStripData
 {
-    domain::legData LegData;
+    domain::legData LegData{};
     xsd::optional<domain::callsPutsType> Calls;
     xsd::optional<domain::callsPutsType> Puts;
     xsd::optional<domain::commodityOptionStripData_PremiumAmount_t> PremiumAmount;
@@ -3680,40 +3681,40 @@ struct commodityOptionStripData
 
 struct commodityPositionData
 {
-    float Quantity;
+    float Quantity{};
     xsd::vector<domain::underlying> Underlying;
 };
 
 struct singleUnderlyingAsianOptionData
 {
-    domain::currencyCode Currency;
-    float Quantity;
-    domain::strikeGroup_group_t strikeGroup;
+    domain::currencyCode Currency{};
+    float Quantity{};
+    domain::strikeGroup_group_t strikeGroup{};
     xsd::optional<domain::underlying> Underlying;
-    domain::optionData OptionData;
+    domain::optionData OptionData{};
     xsd::optional<domain::singleUnderlyingAsianOptionData_Settlement_t> Settlement;
     xsd::optional<domain::scheduleData> ObservationDates;
 };
 
 struct bondOptionData
 {
-    domain::optionData OptionData;
-    domain::strikeGroup_group_t strikeGroup;
+    domain::optionData OptionData{};
+    domain::strikeGroup_group_t strikeGroup{};
     xsd::optional<domain::bondOptionData_Redemption_t> Redemption;
     xsd::optional<domain::bondOptionData_PriceType_t> PriceType;
     xsd::optional<domain::bool_> KnocksOut;
-    domain::bondData BondData;
+    domain::bondData BondData{};
 };
 
 struct bondRepoData_RepoData_t
 {
-    domain::legData LegData;
+    domain::legData LegData{};
 };
 
 struct bondRepoData
 {
-    domain::bondData BondData;
-    domain::bondRepoData_RepoData_t RepoData;
+    domain::bondData BondData{};
+    domain::bondRepoData_RepoData_t RepoData{};
 };
 
 struct totalReturnData_Payer_t : xsd::string
@@ -3734,9 +3735,9 @@ std::string to_string(trsFxConversion);
 
 struct totalReturnData
 {
-    domain::totalReturnData_Payer_t Payer;
+    domain::totalReturnData_Payer_t Payer{};
     xsd::optional<float> InitialPrice;
-    domain::totalReturnData_PriceType_t PriceType;
+    domain::totalReturnData_PriceType_t PriceType{};
     xsd::optional<domain::totalReturnData_ObservationLag_t> ObservationLag;
     xsd::optional<domain::businessDayConvention> ObservationConvention;
     xsd::optional<domain::calendar> ObservationCalendar;
@@ -3746,20 +3747,20 @@ struct totalReturnData
     xsd::optional<domain::totalReturnData_PaymentDates_t> PaymentDates;
     xsd::optional<domain::trsFxConversion> FXConversion;
     xsd::optional<domain::fxTermsData> FXTerms;
-    domain::scheduleData ScheduleData;
+    domain::scheduleData ScheduleData{};
     xsd::optional<bool> PayBondCashFlowsImmediately;
 };
 
 struct fundingData
 {
-    domain::legData LegData;
+    domain::legData LegData{};
 };
 
 struct bondTRSData
 {
-    domain::bondData BondData;
-    domain::totalReturnData TotalReturnData;
-    domain::fundingData FundingData;
+    domain::bondData BondData{};
+    domain::totalReturnData TotalReturnData{};
+    domain::fundingData FundingData{};
 };
 
 struct cdoData_Qualifier_t : xsd::string
@@ -3770,8 +3771,8 @@ typedef xsd::string emptyFloat;
 
 struct cdoData
 {
-    domain::cdoData_Qualifier_t Qualifier;
-    domain::date ProtectionStart;
+    domain::cdoData_Qualifier_t Qualifier{};
+    domain::date ProtectionStart{};
     xsd::optional<domain::date> UpfrontDate;
     xsd::optional<domain::emptyFloat> UpfrontFee;
     xsd::optional<domain::bool_> SettlesAccrual;
@@ -3779,9 +3780,9 @@ struct cdoData
     xsd::optional<domain::bool_> PaysAtDefaultTime;
     xsd::optional<domain::cdoData_ProtectionPaymentTime_t> ProtectionPaymentTime;
     xsd::optional<float> FixedRecoveryRate;
-    float AttachmentPoint;
-    float DetachmentPoint;
-    domain::legData LegData;
+    float AttachmentPoint{};
+    float DetachmentPoint{};
+    domain::legData LegData{};
     xsd::optional<domain::basketData> BasketData;
 };
 
@@ -3791,7 +3792,7 @@ struct creditLinkedSwapData_CreditCurveId_t : xsd::string
 
 struct creditLinkedSwapData
 {
-    domain::creditLinkedSwapData_CreditCurveId_t CreditCurveId;
+    domain::creditLinkedSwapData_CreditCurveId_t CreditCurveId{};
     xsd::optional<domain::bool_> SettlesAccrual;
     xsd::optional<float> FixedRecoveryRate;
     xsd::optional<domain::creditLinkedSwapData_DefaultPaymentTime_t> DefaultPaymentTime;
@@ -3808,7 +3809,7 @@ struct indexCreditDefaultSwapData_CreditCurveId_t : xsd::string
 struct indexCreditDefaultSwapData
 {
     xsd::optional<domain::indexCreditDefaultSwapData_IssuerId_t> IssuerId;
-    domain::indexCreditDefaultSwapData_CreditCurveId_t CreditCurveId;
+    domain::indexCreditDefaultSwapData_CreditCurveId_t CreditCurveId{};
     xsd::optional<domain::bool_> SettlesAccrual;
     xsd::optional<domain::bool_> RebatesAccrual;
     xsd::optional<domain::bool_> PaysAtDefaultTime;
@@ -3816,7 +3817,7 @@ struct indexCreditDefaultSwapData
     xsd::optional<domain::date> ProtectionStart;
     xsd::optional<domain::date> UpfrontDate;
     xsd::optional<float> UpfrontFee;
-    domain::legData LegData;
+    domain::legData LegData{};
     xsd::optional<domain::date> TradeDate;
     xsd::optional<uint64_t> CashSettlementDays;
     xsd::optional<domain::basketData> BasketData;
@@ -3838,8 +3839,8 @@ struct indexCreditDefaultSwapOptionData
     xsd::optional<domain::cdsOptionstrikeType> StrikeType;
     xsd::optional<domain::date> TradeDate;
     xsd::optional<domain::date> FrontEndProtectionStartDate;
-    domain::optionData OptionData;
-    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData;
+    domain::optionData OptionData{};
+    domain::indexCreditDefaultSwapData IndexCreditDefaultSwapData{};
 };
 
 struct multiLegOptionData
@@ -3850,7 +3851,7 @@ struct multiLegOptionData
 
 struct convertibleBondData
 {
-    domain::bondData BondData;
+    domain::bondData BondData{};
     xsd::optional<domain::cbCallData> CallData;
     xsd::optional<domain::cbCallData> PutData;
     xsd::optional<domain::cbConversionData> ConversionData;
@@ -3860,27 +3861,27 @@ struct convertibleBondData
 
 struct ascotData
 {
-    domain::convertibleBondData ConvertibleBondData;
-    domain::optionData OptionData;
-    domain::fundingData ReferenceSwapData;
+    domain::convertibleBondData ConvertibleBondData{};
+    domain::optionData OptionData{};
+    domain::fundingData ReferenceSwapData{};
 };
 
 struct callableBondData
 {
-    domain::bondData BondData;
+    domain::bondData BondData{};
     xsd::optional<domain::callableBondCallData> CallData;
     xsd::optional<domain::callableBondCallData> PutData;
 };
 
 struct tlockData
 {
-    domain::bool_ Payer;
-    domain::bondData BondData;
-    float ReferenceRate;
+    domain::bool_ Payer{};
+    domain::bondData BondData{};
+    float ReferenceRate{};
     xsd::optional<domain::dayCounter> DayCounter;
-    domain::date TerminationDate;
+    domain::date TerminationDate{};
     xsd::optional<int64_t> PaymentGap;
-    domain::calendar PaymentCalendar;
+    domain::calendar PaymentCalendar{};
 };
 
 struct rpaData_CreditCurveId_t : xsd::string
@@ -3902,15 +3903,15 @@ struct rpaData_Underlying_t
 
 struct rpaData
 {
-    float ParticipationRate;
-    domain::date ProtectionStart;
-    domain::date ProtectionEnd;
-    domain::rpaData_CreditCurveId_t CreditCurveId;
+    float ParticipationRate{};
+    domain::date ProtectionStart{};
+    domain::date ProtectionEnd{};
+    domain::rpaData_CreditCurveId_t CreditCurveId{};
     xsd::optional<domain::rpaData_IssuerId_t> IssuerId;
     xsd::optional<bool> SettlesAccrual;
     xsd::optional<float> FixedRecoveryRate;
-    domain::rpaData_ProtectionFee_t ProtectionFee;
-    domain::rpaData_Underlying_t Underlying;
+    domain::rpaData_ProtectionFee_t ProtectionFee{};
+    domain::rpaData_Underlying_t Underlying{};
 };
 
 struct cboInvestment_TrancheName_t : xsd::string
@@ -3923,14 +3924,14 @@ struct cboInvestment_StructureId_t : xsd::string
 
 struct cboInvestment
 {
-    domain::cboInvestment_TrancheName_t TrancheName;
-    float Notional;
-    domain::cboInvestment_StructureId_t StructureId;
+    domain::cboInvestment_TrancheName_t TrancheName{};
+    float Notional{};
+    domain::cboInvestment_StructureId_t StructureId{};
 };
 
 struct cbodata
 {
-    domain::cboInvestment CBOInvestment;
+    domain::cboInvestment CBOInvestment{};
     xsd::optional<domain::cboStructure> CBOStructure;
 };
 
@@ -3943,13 +3944,13 @@ struct bondBasketData
 
 struct equityPositionData
 {
-    float Quantity;
+    float Quantity{};
     xsd::vector<domain::underlying> Underlying;
 };
 
 struct equityOptionPositionData
 {
-    float Quantity;
+    float Quantity{};
     xsd::vector<domain::equityOptionUnderlyingData> Underlying;
 };
 
@@ -3962,9 +3963,9 @@ struct trsUnderlyingData
 
 struct trsReturnData
 {
-    bool Payer;
-    domain::currencyCode Currency;
-    domain::scheduleData ScheduleData;
+    bool Payer{};
+    domain::currencyCode Currency{};
+    domain::scheduleData ScheduleData{};
     xsd::optional<domain::trsReturnData_ObservationLag_t> ObservationLag;
     xsd::optional<domain::businessDayConvention> ObservationConvention;
     xsd::optional<domain::calendar> ObservationCalendar;
@@ -3980,8 +3981,8 @@ struct trsReturnData
 
 struct totalReturnSwapData
 {
-    domain::trsUnderlyingData UnderlyingData;
-    domain::trsReturnData ReturnData;
+    domain::trsUnderlyingData UnderlyingData{};
+    domain::trsReturnData ReturnData{};
     xsd::optional<domain::trsFundingData> FundingData;
     xsd::optional<domain::trsAdditionalCashflowData> AdditionalCashflowData;
 };
@@ -4003,7 +4004,7 @@ std::string to_string(notionalCalculation);
 
 struct compositeTradeData
 {
-    domain::currencyCode Currency;
+    domain::currencyCode Currency{};
     xsd::optional<domain::notionalCalculation> NotionalCalculation;
     xsd::optional<float> NotionalOverride;
     xsd::optional<bool> PortfolioBasket;
@@ -4034,38 +4035,38 @@ struct stFreeStyleNumberVector : domain::stFreeStyleNumberVectorBase
 
 struct pairwiseVarianceSwapData1
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector UnderlyingStrikes;
-    domain::stFreeStyleNumberVector UnderlyingNotionals;
-    domain::stFreeStyleNumber BasketNotional;
-    domain::stFreeStyleNumber BasketStrike;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector UnderlyingStrikes{};
+    domain::stFreeStyleNumberVector UnderlyingNotionals{};
+    domain::stFreeStyleNumber BasketNotional{};
+    domain::stFreeStyleNumber BasketStrike{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
     xsd::optional<domain::stFreeStyleEventSchedule> LaggedValuationSchedule;
     xsd::optional<domain::stFreeStyleNumber> AccrualLag;
     xsd::optional<domain::stFreeStyleNumber> PayoffLimit;
     xsd::optional<domain::stFreeStyleNumber> Cap;
     xsd::optional<domain::stFreeStyleNumber> Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct pairwiseVarianceSwapData2
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector UnderlyingStrikes;
-    domain::stFreeStyleNumberVector UnderlyingNotionals;
-    domain::stFreeStyleNumber BasketNotional;
-    domain::stFreeStyleNumber BasketStrike;
-    domain::scheduleData ValuationSchedule;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector UnderlyingStrikes{};
+    domain::stFreeStyleNumberVector UnderlyingNotionals{};
+    domain::stFreeStyleNumber BasketNotional{};
+    domain::stFreeStyleNumber BasketStrike{};
+    domain::scheduleData ValuationSchedule{};
     xsd::optional<domain::scheduleData> LaggedValuationSchedule;
     xsd::optional<domain::stFreeStyleNumber> AccrualLag;
     xsd::optional<domain::stFreeStyleNumber> PayoffLimit;
     xsd::optional<domain::stFreeStyleNumber> Cap;
     xsd::optional<domain::stFreeStyleNumber> Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct underlying_Type_t : xsd::string
@@ -4078,8 +4079,8 @@ struct underlying_Name_t : xsd::string
 
 struct underlying
 {
-    domain::underlying_Type_t Type;
-    domain::underlying_Name_t Name;
+    domain::underlying_Type_t Type{};
+    domain::underlying_Name_t Name{};
     xsd::optional<domain::underlying_IdentifierType_t> IdentifierType;
     xsd::optional<domain::currencyCode> Currency;
     xsd::optional<domain::underlying_Exchange_t> Exchange;
@@ -4096,14 +4097,14 @@ struct underlying
 
 struct eqOutperformanceOptionData
 {
-    domain::optionData OptionData;
-    domain::currencyCode Currency;
-    float Notional;
-    domain::underlying Underlying1;
-    domain::underlying Underlying2;
-    float InitialPrice1;
-    float InitialPrice2;
-    float StrikeReturn;
+    domain::optionData OptionData{};
+    domain::currencyCode Currency{};
+    float Notional{};
+    domain::underlying Underlying1{};
+    domain::underlying Underlying2{};
+    float InitialPrice1{};
+    float InitialPrice2{};
+    float StrikeReturn{};
     xsd::optional<float> KnockInPrice;
     xsd::optional<float> KnockOutPrice;
     xsd::optional<domain::currencyCode> InitialPriceCurrency1;
@@ -4116,7 +4117,7 @@ struct flexiSwapData
 {
     xsd::optional<domain::flexiSwapData_LowerNotionalBounds_t> LowerNotionalBounds;
     xsd::optional<domain::flexiSwapData_Prepayment_t> Prepayment;
-    domain::longShort OptionLongShort;
+    domain::longShort OptionLongShort{};
     xsd::vector<domain::legData> LegData;
 };
 
@@ -4127,13 +4128,13 @@ struct bgSwapData_ReferenceSecurity_t : xsd::string
 struct tranches
 {
     xsd::vector<domain::tranche> Tranche;
-    domain::scheduleData ScheduleData;
+    domain::scheduleData ScheduleData{};
 };
 
 struct bgSwapData
 {
-    domain::bgSwapData_ReferenceSecurity_t ReferenceSecurity;
-    domain::tranches Tranches;
+    domain::bgSwapData_ReferenceSecurity_t ReferenceSecurity{};
+    domain::tranches Tranches{};
     xsd::vector<domain::legData> LegData;
 };
 
@@ -4144,22 +4145,22 @@ struct stFreeStyleOptionType : xsd::string
 
 struct commodityRevenueOptionData
 {
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleEventSchedule ValuationDates;
-    domain::stFreeStyleEventSchedule SettlementSchedule;
-    domain::stFreeStyleNumber TrueUp;
-    domain::stFreeStyleEventSchedule MonthlySchedule;
-    domain::stFreeStyleNumberVector MonthlyBaseloadCapacity;
-    domain::stFreeStyleNumberVector MonthlyDuctFiredCapacity;
-    domain::stFreeStyleNumberVector MonthlyBaseloadHeatRate;
-    domain::stFreeStyleNumberVector MonthlyDuctFiredHeatRate;
-    domain::stFreeStyleNumberVector VOM;
-    domain::stFreeStyleNumber HoursPerDay;
-    domain::stFreeStyleIndex GasIndex;
-    domain::stFreeStyleIndex EnergyIndex;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleEventSchedule ValuationDates{};
+    domain::stFreeStyleEventSchedule SettlementSchedule{};
+    domain::stFreeStyleNumber TrueUp{};
+    domain::stFreeStyleEventSchedule MonthlySchedule{};
+    domain::stFreeStyleNumberVector MonthlyBaseloadCapacity{};
+    domain::stFreeStyleNumberVector MonthlyDuctFiredCapacity{};
+    domain::stFreeStyleNumberVector MonthlyBaseloadHeatRate{};
+    domain::stFreeStyleNumberVector MonthlyDuctFiredHeatRate{};
+    domain::stFreeStyleNumberVector VOM{};
+    domain::stFreeStyleNumber HoursPerDay{};
+    domain::stFreeStyleIndex GasIndex{};
+    domain::stFreeStyleIndex EnergyIndex{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct stFreeStyleBool : xsd::base<bool>
@@ -4169,17 +4170,17 @@ struct stFreeStyleBool : xsd::base<bool>
 
 struct basketVarianceSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct underlyings
@@ -4189,70 +4190,70 @@ struct underlyings
 
 struct basketVarianceSwapData2
 {
-    domain::longShort LongShort;
-    float Strike;
-    float Notional;
-    domain::underlyings Underlyings;
-    domain::scheduleData ValuationSchedule;
-    bool SquaredPayoff;
+    domain::longShort LongShort{};
+    float Strike{};
+    float Notional{};
+    domain::underlyings Underlyings{};
+    domain::scheduleData ValuationSchedule{};
+    bool SquaredPayoff{};
     xsd::optional<float> Cap;
     xsd::optional<float> Floor;
-    domain::date SettlementDate;
-    domain::currencyCode Currency;
+    domain::date SettlementDate{};
+    domain::currencyCode Currency{};
 };
 
 struct extendedAccumulatorData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber FixingAmount;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber ExtensionTrigger;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleEventSchedule ObservationSettlementDates;
-    domain::stFreeStyleEventSchedule ConditionalObservationDates;
-    domain::stFreeStyleEventSchedule ConditionalSettlementDates;
-    domain::stFreeStyleEvent ExtensionDecisionDate;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber FixingAmount{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber ExtensionTrigger{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleEventSchedule ObservationSettlementDates{};
+    domain::stFreeStyleEventSchedule ConditionalObservationDates{};
+    domain::stFreeStyleEventSchedule ConditionalSettlementDates{};
+    domain::stFreeStyleEvent ExtensionDecisionDate{};
 };
 
 struct varianceOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber VarianceReference;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber VarianceReference{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct varianceDispersionSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings1;
-    domain::stFreeStyleNumberVector Weights1;
-    domain::stFreeStyleNumberVector Strikes1;
-    domain::stFreeStyleNumberVector Spreads1;
-    domain::stFreeStyleNumberVector Notionals1;
-    domain::stFreeStyleNumberVector Caps1;
-    domain::stFreeStyleNumberVector Floors1;
-    domain::stFreeStyleIndexVector Underlyings2;
-    domain::stFreeStyleNumberVector Weights2;
-    domain::stFreeStyleNumberVector Strikes2;
-    domain::stFreeStyleNumberVector Spreads2;
-    domain::stFreeStyleNumberVector Notionals2;
-    domain::stFreeStyleNumberVector Caps2;
-    domain::stFreeStyleNumberVector Floors2;
-    domain::stFreeStyleBool DividendAdjustment;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings1{};
+    domain::stFreeStyleNumberVector Weights1{};
+    domain::stFreeStyleNumberVector Strikes1{};
+    domain::stFreeStyleNumberVector Spreads1{};
+    domain::stFreeStyleNumberVector Notionals1{};
+    domain::stFreeStyleNumberVector Caps1{};
+    domain::stFreeStyleNumberVector Floors1{};
+    domain::stFreeStyleIndexVector Underlyings2{};
+    domain::stFreeStyleNumberVector Weights2{};
+    domain::stFreeStyleNumberVector Strikes2{};
+    domain::stFreeStyleNumberVector Spreads2{};
+    domain::stFreeStyleNumberVector Notionals2{};
+    domain::stFreeStyleNumberVector Caps2{};
+    domain::stFreeStyleNumberVector Floors2{};
+    domain::stFreeStyleBool DividendAdjustment{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct stFreeStyleBarrierType : xsd::string
@@ -4262,269 +4263,269 @@ struct stFreeStyleBarrierType : xsd::string
 
 struct kikoVarianceSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct corridorVarianceSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleNumber UpperBarrierLevel;
-    domain::stFreeStyleNumber LowerBarrierLevel;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleNumber UpperBarrierLevel{};
+    domain::stFreeStyleNumber LowerBarrierLevel{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct indexedCorridorVarianceSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleIndex CorridorIndex;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleNumber UpperBarrierLevel;
-    domain::stFreeStyleNumber LowerBarrierLevel;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleIndex CorridorIndex{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleNumber UpperBarrierLevel{};
+    domain::stFreeStyleNumber LowerBarrierLevel{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct kikoCorridorVarianceSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleNumber CorridorUpperBarrierLevel;
-    domain::stFreeStyleNumber CorridorLowerBarrierLevel;
-    domain::stFreeStyleBarrierType KIKOBarrierType;
-    domain::stFreeStyleNumber KIKOBarrierLevel;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEventSchedule SettlementSchedule;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleNumber CorridorUpperBarrierLevel{};
+    domain::stFreeStyleNumber CorridorLowerBarrierLevel{};
+    domain::stFreeStyleBarrierType KIKOBarrierType{};
+    domain::stFreeStyleNumber KIKOBarrierLevel{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEventSchedule SettlementSchedule{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct corridorVarianceDispersionSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleIndexVector Underlyings1;
-    domain::stFreeStyleNumberVector Strikes1;
-    domain::stFreeStyleNumberVector Spreads1;
-    domain::stFreeStyleNumberVector Notionals1;
-    domain::stFreeStyleNumberVector Caps1;
-    domain::stFreeStyleNumberVector Floors1;
-    domain::stFreeStyleIndexVector Underlyings2;
-    domain::stFreeStyleNumberVector Strikes2;
-    domain::stFreeStyleNumberVector Spreads2;
-    domain::stFreeStyleNumberVector Notionals2;
-    domain::stFreeStyleNumberVector Caps2;
-    domain::stFreeStyleNumberVector Floors2;
-    domain::stFreeStyleNumberVector UpperBarrierLevels;
-    domain::stFreeStyleNumberVector LowerBarrierLevels;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleBool DividendAdjustment;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleIndexVector Underlyings1{};
+    domain::stFreeStyleNumberVector Strikes1{};
+    domain::stFreeStyleNumberVector Spreads1{};
+    domain::stFreeStyleNumberVector Notionals1{};
+    domain::stFreeStyleNumberVector Caps1{};
+    domain::stFreeStyleNumberVector Floors1{};
+    domain::stFreeStyleIndexVector Underlyings2{};
+    domain::stFreeStyleNumberVector Strikes2{};
+    domain::stFreeStyleNumberVector Spreads2{};
+    domain::stFreeStyleNumberVector Notionals2{};
+    domain::stFreeStyleNumberVector Caps2{};
+    domain::stFreeStyleNumberVector Floors2{};
+    domain::stFreeStyleNumberVector UpperBarrierLevels{};
+    domain::stFreeStyleNumberVector LowerBarrierLevels{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleBool DividendAdjustment{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct koCorridorVarianceDispersionSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleIndexVector Underlyings1;
-    domain::stFreeStyleNumberVector Strikes1;
-    domain::stFreeStyleNumberVector Spreads1;
-    domain::stFreeStyleNumberVector Notionals1;
-    domain::stFreeStyleNumberVector Caps1;
-    domain::stFreeStyleNumberVector Floors1;
-    domain::stFreeStyleIndexVector Underlyings2;
-    domain::stFreeStyleNumberVector Strikes2;
-    domain::stFreeStyleNumberVector Spreads2;
-    domain::stFreeStyleNumberVector Notionals2;
-    domain::stFreeStyleNumberVector Caps2;
-    domain::stFreeStyleNumberVector Floors2;
-    domain::stFreeStyleNumberVector CorridorUpperBarrierLevels;
-    domain::stFreeStyleNumberVector CorridorLowerBarrierLevels;
-    domain::stFreeStyleNumberVector KOUpperBarrierLevels;
-    domain::stFreeStyleNumberVector KOLowerBarrierLevels;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleBool DividendAdjustment;
-    domain::stFreeStyleEventSchedule KnockOutSchedule;
-    domain::stFreeStyleEvent VarianceAccrualStartDate;
-    domain::stFreeStyleEventSchedule SettlementSchedule;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleIndexVector Underlyings1{};
+    domain::stFreeStyleNumberVector Strikes1{};
+    domain::stFreeStyleNumberVector Spreads1{};
+    domain::stFreeStyleNumberVector Notionals1{};
+    domain::stFreeStyleNumberVector Caps1{};
+    domain::stFreeStyleNumberVector Floors1{};
+    domain::stFreeStyleIndexVector Underlyings2{};
+    domain::stFreeStyleNumberVector Strikes2{};
+    domain::stFreeStyleNumberVector Spreads2{};
+    domain::stFreeStyleNumberVector Notionals2{};
+    domain::stFreeStyleNumberVector Caps2{};
+    domain::stFreeStyleNumberVector Floors2{};
+    domain::stFreeStyleNumberVector CorridorUpperBarrierLevels{};
+    domain::stFreeStyleNumberVector CorridorLowerBarrierLevels{};
+    domain::stFreeStyleNumberVector KOUpperBarrierLevels{};
+    domain::stFreeStyleNumberVector KOLowerBarrierLevels{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleBool DividendAdjustment{};
+    domain::stFreeStyleEventSchedule KnockOutSchedule{};
+    domain::stFreeStyleEvent VarianceAccrualStartDate{};
+    domain::stFreeStyleEventSchedule SettlementSchedule{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct pairwiseGeometricVarianceDispersionSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber PairCount;
-    domain::stFreeStyleNumber BasketCount;
-    domain::stFreeStyleNumberVector Notionals;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector StrikesVS;
-    domain::stFreeStyleNumberVector StrikesBVS;
-    domain::stFreeStyleNumberVector BasketWeights;
-    domain::stFreeStyleNumberVector VarianceWeights;
-    domain::stFreeStyleNumber Lag;
-    domain::stFreeStyleNumber CapAmountMultiplier;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleBool DividendAdjustment;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber PairCount{};
+    domain::stFreeStyleNumber BasketCount{};
+    domain::stFreeStyleNumberVector Notionals{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector StrikesVS{};
+    domain::stFreeStyleNumberVector StrikesBVS{};
+    domain::stFreeStyleNumberVector BasketWeights{};
+    domain::stFreeStyleNumberVector VarianceWeights{};
+    domain::stFreeStyleNumber Lag{};
+    domain::stFreeStyleNumber CapAmountMultiplier{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleBool DividendAdjustment{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct conditionalVarianceSwap01Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct conditionalVarianceSwap02Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber VarianceReference;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleBool SquaredPayoff;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleBool CountBothObservations;
-    domain::stFreeStyleBool AccrualAdjustment;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber VarianceReference{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleBool SquaredPayoff{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleBool CountBothObservations{};
+    domain::stFreeStyleBool AccrualAdjustment{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct gammaSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
     xsd::optional<domain::stFreeStyleEventSchedule> SettlementSchedule;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct bestEntryOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Multiplier;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber TriggerLevel;
-    domain::stFreeStyleNumber ResetMinimum;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleEvent ExpiryDate;
-    domain::stFreeStyleEvent StrikeDate;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule StrikeObservationDates;
-    domain::stFreeStyleCurrency Currency;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Multiplier{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber TriggerLevel{};
+    domain::stFreeStyleNumber ResetMinimum{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleEvent ExpiryDate{};
+    domain::stFreeStyleEvent StrikeDate{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule StrikeObservationDates{};
+    domain::stFreeStyleCurrency Currency{};
 };
 
 struct dualEuroBinaryOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule VolSchedule;
-    domain::stFreeStyleNumber VolBarrierLevel;
-    domain::stFreeStyleBarrierType VolBarrierType;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleEvent BarrierDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleNumber SettlementAmount;
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule VolSchedule{};
+    domain::stFreeStyleNumber VolBarrierLevel{};
+    domain::stFreeStyleBarrierType VolBarrierType{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleEvent BarrierDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleNumber SettlementAmount{};
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct dualEuroBinaryOptionDoubleKOData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleNumber VolBarrierLevel;
-    domain::stFreeStyleEvent VolBarrierDate;
-    domain::stFreeStyleNumber SpotBarrierLevel;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleNumber SettlementAmount;
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleNumber VolBarrierLevel{};
+    domain::stFreeStyleEvent VolBarrierDate{};
+    domain::stFreeStyleNumber SpotBarrierLevel{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleNumber SettlementAmount{};
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct volBarrierOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber CallNotional;
-    domain::stFreeStyleNumber PutNotional;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule ValuationSchedule;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleCurrency CallCcy;
-    domain::stFreeStyleCurrency PutCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber CallNotional{};
+    domain::stFreeStyleNumber PutNotional{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule ValuationSchedule{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleCurrency CallCcy{};
+    domain::stFreeStyleCurrency PutCcy{};
 };
 
 struct tarfData2_Barriers_t
@@ -4534,21 +4535,21 @@ struct tarfData2_Barriers_t
 
 struct tarfData2
 {
-    domain::currencyCode Currency;
-    float FixingAmount;
+    domain::currencyCode Currency{};
+    float FixingAmount{};
     xsd::optional<float> TargetAmount;
     xsd::optional<float> TargetPoints;
     xsd::optional<float> Strike;
     xsd::optional<domain::tarfData2_Strikes_t> Strikes;
-    domain::underlying Underlying;
-    domain::scheduleData ScheduleData;
+    domain::underlying Underlying{};
+    domain::scheduleData ScheduleData{};
     xsd::optional<domain::tarfData2_SettlementLag_t> SettlementLag;
     xsd::optional<domain::calendar> SettlementCalendar;
     xsd::optional<domain::businessDayConvention> SettlementConvention;
-    domain::optionData OptionData;
+    domain::optionData OptionData{};
     xsd::optional<domain::tarfData2_RangeBounds_t> RangeBounds;
     xsd::optional<domain::tarfData2_RangeBoundSet_t> RangeBoundSet;
-    domain::tarfData2_Barriers_t Barriers;
+    domain::tarfData2_Barriers_t Barriers{};
 };
 
 struct accumulatorData_RangeBounds_t
@@ -4558,14 +4559,14 @@ struct accumulatorData_RangeBounds_t
 
 struct accumulatorData
 {
-    domain::currencyCode Currency;
-    float FixingAmount;
+    domain::currencyCode Currency{};
+    float FixingAmount{};
     xsd::optional<bool> DailyFixingAmount;
     xsd::optional<float> Strike;
-    domain::underlying Underlying;
-    domain::optionData OptionData;
+    domain::underlying Underlying{};
+    domain::optionData OptionData{};
     xsd::optional<domain::date> StartDate;
-    domain::scheduleData ObservationDates;
+    domain::scheduleData ObservationDates{};
     xsd::optional<domain::scheduleData> PricingDates;
     xsd::optional<domain::scheduleData> SettlementDates;
     xsd::optional<domain::accumulatorData_SettlementLag_t> SettlementLag;
@@ -4575,29 +4576,29 @@ struct accumulatorData
     xsd::optional<bool> KnockOutSettlementAtPeriodEnd;
     xsd::optional<bool> KnockOutFixingAtKOSettlement;
     xsd::optional<domain::underlying> FxIndex;
-    domain::accumulatorData_RangeBounds_t RangeBounds;
+    domain::accumulatorData_RangeBounds_t RangeBounds{};
     xsd::optional<domain::accumulatorData_Barriers_t> Barriers;
 };
 
 struct windowBarrierOptionData2
 {
-    domain::currencyCode Currency;
-    float FixingAmount;
-    domain::strikeGroup_group_t strikeGroup;
-    domain::underlying Underlying;
-    domain::optionData OptionData;
-    domain::date StartDate;
-    domain::date EndDate;
-    domain::barrierData BarrierData;
+    domain::currencyCode Currency{};
+    float FixingAmount{};
+    domain::strikeGroup_group_t strikeGroup{};
+    domain::underlying Underlying{};
+    domain::optionData OptionData{};
+    domain::date StartDate{};
+    domain::date EndDate{};
+    domain::barrierData BarrierData{};
 };
 
 struct basketOptionData
 {
-    domain::currencyCode Currency;
-    float Notional;
+    domain::currencyCode Currency{};
+    float Notional{};
     xsd::optional<float> Strike;
-    domain::underlyings Underlyings;
-    domain::optionData OptionData;
+    domain::underlyings Underlyings{};
+    domain::optionData OptionData{};
     xsd::optional<domain::basketOptionData_Settlement_t> Settlement;
     xsd::optional<domain::scheduleData> ObservationDates;
 };
@@ -4622,9 +4623,9 @@ struct genericBarrierOptionData_Barriers_t
 
 struct genericBarrierOptionData
 {
-    domain::currencyCode PayCurrency;
-    domain::underlyingTypes_group_t underlyingTypes;
-    domain::optionData OptionData;
+    domain::currencyCode PayCurrency{};
+    domain::underlyingTypes_group_t underlyingTypes{};
+    domain::optionData OptionData{};
     xsd::optional<domain::date> SettlementDate;
     xsd::optional<domain::genericBarrierOptionData_SettlementLag_t> SettlementLag;
     xsd::optional<domain::calendar> SettlementCalendar;
@@ -4632,28 +4633,28 @@ struct genericBarrierOptionData
     xsd::optional<float> Quantity;
     xsd::optional<float> Strike;
     xsd::optional<float> Amount;
-    domain::genericBarrierOptionData_Barriers_t Barriers;
+    domain::genericBarrierOptionData_Barriers_t Barriers{};
     xsd::optional<domain::genericBarrierOptionData_TransatlanticBarrier_t> TransatlanticBarrier;
 };
 
 struct rainbowOptionData
 {
-    domain::currencyCode Currency;
-    float Notional;
-    float Strike;
-    domain::underlyings Underlyings;
-    domain::optionData OptionData;
+    domain::currencyCode Currency{};
+    float Notional{};
+    float Strike{};
+    domain::underlyings Underlyings{};
+    domain::optionData OptionData{};
     xsd::optional<domain::rainbowOptionData_Settlement_t> Settlement;
 };
 
 struct autocallable01Data_FixingDates_t
 {
-    domain::scheduleData ScheduleData;
+    domain::scheduleData ScheduleData{};
 };
 
 struct autocallable01Data_SettlementDates_t
 {
-    domain::scheduleData ScheduleData;
+    domain::scheduleData ScheduleData{};
 };
 
 struct autocallable01Data_AccumulationFactors_t
@@ -4663,16 +4664,16 @@ struct autocallable01Data_AccumulationFactors_t
 
 struct autocallable01Data
 {
-    float NotionalAmount;
-    float DeterminationLevel;
-    float TriggerLevel;
-    domain::underlying Underlying;
-    domain::longShort Position;
-    domain::currencyCode PayCcy;
-    domain::autocallable01Data_FixingDates_t FixingDates;
-    domain::autocallable01Data_SettlementDates_t SettlementDates;
-    domain::autocallable01Data_AccumulationFactors_t AccumulationFactors;
-    float Cap;
+    float NotionalAmount{};
+    float DeterminationLevel{};
+    float TriggerLevel{};
+    domain::underlying Underlying{};
+    domain::longShort Position{};
+    domain::currencyCode PayCcy{};
+    domain::autocallable01Data_FixingDates_t FixingDates{};
+    domain::autocallable01Data_SettlementDates_t SettlementDates{};
+    domain::autocallable01Data_AccumulationFactors_t AccumulationFactors{};
+    float Cap{};
 };
 
 struct doubleDigitalOptionData_Type1_t : xsd::string
@@ -4685,23 +4686,23 @@ struct doubleDigitalOptionData_Type2_t : xsd::string
 
 struct doubleDigitalOptionData
 {
-    domain::date Expiry;
-    domain::date Settlement;
-    float BinaryPayout;
-    float BinaryLevel1;
-    float BinaryLevel2;
+    domain::date Expiry{};
+    domain::date Settlement{};
+    float BinaryPayout{};
+    float BinaryLevel1{};
+    float BinaryLevel2{};
     xsd::optional<float> BinaryLevelUpper1;
     xsd::optional<float> BinaryLevelUpper2;
-    domain::doubleDigitalOptionData_Type1_t Type1;
-    domain::doubleDigitalOptionData_Type2_t Type2;
-    domain::longShort Position;
+    domain::doubleDigitalOptionData_Type1_t Type1{};
+    domain::doubleDigitalOptionData_Type2_t Type2{};
+    domain::longShort Position{};
     xsd::optional<domain::underlying> Underlying1;
     xsd::optional<domain::underlying> Underlying2;
     xsd::optional<domain::underlying> Underlying3;
     xsd::optional<domain::underlying> Underlying4;
     xsd::optional<domain::doubleDigitalOptionData_Name1_t> Name1;
     xsd::optional<domain::doubleDigitalOptionData_Name2_t> Name2;
-    domain::currencyCode PayCcy;
+    domain::currencyCode PayCcy{};
 };
 
 struct performanceOption01Data_StrikePrices_t
@@ -4711,16 +4712,16 @@ struct performanceOption01Data_StrikePrices_t
 
 struct performanceOption01Data
 {
-    float NotionalAmount;
-    float ParticipationRate;
-    domain::date ValuationDate;
-    domain::date SettlementDate;
-    domain::underlyings Underlyings;
-    domain::performanceOption01Data_StrikePrices_t StrikePrices;
-    float Strike;
+    float NotionalAmount{};
+    float ParticipationRate{};
+    domain::date ValuationDate{};
+    domain::date SettlementDate{};
+    domain::underlyings Underlyings{};
+    domain::performanceOption01Data_StrikePrices_t StrikePrices{};
+    float Strike{};
     xsd::optional<domain::bool_> StrikeIncluded;
-    domain::longShort Position;
-    domain::currencyCode PayCcy;
+    domain::longShort Position{};
+    domain::currencyCode PayCcy{};
 };
 
 struct scriptedTradeData_Data_t
@@ -4737,87 +4738,87 @@ struct scriptedTradeData
     xsd::optional<domain::scriptedTradeData_ScriptName_t> ScriptName;
     xsd::optional<domain::scriptedTradeData_ProductTag_t> ProductTag;
     xsd::optional<domain::ore_script> Script;
-    domain::scriptedTradeData_Data_t Data;
+    domain::scriptedTradeData_Data_t Data{};
 };
 
 struct vanillaBasketOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct asianBasketOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct averageStrikeBasketOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct lookbackCallBasketOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct lookbackPutBasketOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct bestOfAirbagData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumberVector StrikePrices;
-    domain::stFreeStyleNumber BonusCoupon;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleEventSchedule ObservationSchedule;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumberVector StrikePrices{};
+    domain::stFreeStyleNumber BonusCoupon{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleEventSchedule ObservationSchedule{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct stFreeStyleDayCounter : xsd::string
@@ -4827,24 +4828,24 @@ struct stFreeStyleDayCounter : xsd::string
 
 struct worstOfBasketSwapData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber InitialFixedRate;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleEventSchedule DeterminationDates;
-    domain::stFreeStyleEventSchedule SettlementDates;
-    domain::stFreeStyleNumberVector KnockOutLevels;
-    domain::stFreeStyleNumberVector CouponTriggerLevels;
-    domain::stFreeStyleNumber KnockInLevel;
-    domain::stFreeStyleNumber CouponRate;
-    domain::stFreeStyleBool AccumulatingCoupons;
-    domain::stFreeStyleIndex FloatingIndex;
-    domain::stFreeStyleNumber FloatingSpread;
-    domain::stFreeStyleDayCounter FloatingDayCountFraction;
-    domain::stFreeStyleEventSchedule FixingSchedule;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber InitialFixedRate{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleEventSchedule DeterminationDates{};
+    domain::stFreeStyleEventSchedule SettlementDates{};
+    domain::stFreeStyleNumberVector KnockOutLevels{};
+    domain::stFreeStyleNumberVector CouponTriggerLevels{};
+    domain::stFreeStyleNumber KnockInLevel{};
+    domain::stFreeStyleNumber CouponRate{};
+    domain::stFreeStyleBool AccumulatingCoupons{};
+    domain::stFreeStyleIndex FloatingIndex{};
+    domain::stFreeStyleNumber FloatingSpread{};
+    domain::stFreeStyleDayCounter FloatingDayCountFraction{};
+    domain::stFreeStyleEventSchedule FixingSchedule{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstOfBasketSwapData2_InitialPrices_t
@@ -4868,34 +4869,34 @@ struct worstOfBasketSwapData2_FloatingIndex_t : xsd::string
 
 struct worstOfBasketSwapData2
 {
-    domain::longShort LongShort;
-    domain::currencyCode Currency;
-    float Quantity;
+    domain::longShort LongShort{};
+    domain::currencyCode Currency{};
+    float Quantity{};
     xsd::optional<float> InitialFixedRate;
     xsd::optional<domain::date> InitialFixedPayDate;
-    domain::underlyings Underlyings;
-    domain::worstOfBasketSwapData2_InitialPrices_t InitialPrices;
+    domain::underlyings Underlyings{};
+    domain::worstOfBasketSwapData2_InitialPrices_t InitialPrices{};
     xsd::optional<domain::date> KnockInPayDate;
-    domain::scheduleData FloatingPeriodSchedule;
+    domain::scheduleData FloatingPeriodSchedule{};
     xsd::optional<domain::scheduleData> FloatingFixingSchedule;
     xsd::optional<domain::scheduleData> FixedDeterminationSchedule;
-    domain::scheduleData FloatingPayDates;
+    domain::scheduleData FloatingPayDates{};
     xsd::optional<domain::scheduleData> FixedPayDates;
     xsd::optional<domain::scheduleData> KnockOutDeterminationSchedule;
     xsd::optional<domain::scheduleData> FixedAccrualSchedule;
-    domain::worstOfBasketSwapData2_KnockOutLevels_t KnockOutLevels;
+    domain::worstOfBasketSwapData2_KnockOutLevels_t KnockOutLevels{};
     xsd::optional<bool> BermudanKnockIn;
-    domain::worstOfBasketSwapData2_FixedTriggerLevels_t FixedTriggerLevels;
+    domain::worstOfBasketSwapData2_FixedTriggerLevels_t FixedTriggerLevels{};
     xsd::optional<float> KnockInLevel;
     xsd::optional<domain::scheduleData> KnockInDeterminationSchedule;
-    float FixedRate;
+    float FixedRate{};
     xsd::optional<bool> AccumulatingFixedCoupons;
     xsd::optional<bool> AccruingFixedCoupons;
-    domain::worstOfBasketSwapData2_FloatingIndex_t FloatingIndex;
+    domain::worstOfBasketSwapData2_FloatingIndex_t FloatingIndex{};
     xsd::optional<float> FloatingSpread;
     xsd::optional<domain::worstOfBasketSwapData2_FloatingLookback_t> FloatingLookback;
     xsd::optional<domain::worstOfBasketSwapData2_FloatingRateCutoff_t> FloatingRateCutoff;
-    domain::dayCounter FloatingDayCountFraction;
+    domain::dayCounter FloatingDayCountFraction{};
     xsd::optional<bool> IsAveraged;
     xsd::optional<bool> IncludeSpread;
     xsd::optional<float> Strike;
@@ -4903,479 +4904,479 @@ struct worstOfBasketSwapData2
 
 struct worstPerformanceRainbowOption01Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber PayoffMultiplier;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber PayoffMultiplier{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption02Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber PayoffMultiplier;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber PayoffMultiplier{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption03Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber PayoffMultiplier;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleBool BermudanBarrier;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleEventSchedule BarrierSchedule;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber PayoffMultiplier{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleBool BermudanBarrier{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleEventSchedule BarrierSchedule{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption04Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber PayoffMultiplier;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleBool BermudanBarrier;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleEventSchedule BarrierSchedule;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber PayoffMultiplier{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleBool BermudanBarrier{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleEventSchedule BarrierSchedule{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption05Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption06Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumberVector StrikePrices;
-    domain::stFreeStyleNumberVector BarrierLevels;
-    domain::stFreeStyleNumberVector KnockInPrices;
-    domain::stFreeStyleNumber BonusCoupon;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleEventSchedule ObservationSchedule;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumberVector StrikePrices{};
+    domain::stFreeStyleNumberVector BarrierLevels{};
+    domain::stFreeStyleNumberVector KnockInPrices{};
+    domain::stFreeStyleNumber BonusCoupon{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleEventSchedule ObservationSchedule{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstPerformanceRainbowOption07Data
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumber FixedRateI;
-    domain::stFreeStyleNumber FixedRateII;
-    domain::stFreeStyleDayCounter DayCountFraction;
-    domain::stFreeStyleNumberVector StrikePrices;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumberVector TriggerLevels;
-    domain::stFreeStyleEventSchedule DeterminationDates;
-    domain::stFreeStyleEventSchedule ObservationSchedule;
-    domain::stFreeStyleEvent ObservationDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumber FixedRateI{};
+    domain::stFreeStyleNumber FixedRateII{};
+    domain::stFreeStyleDayCounter DayCountFraction{};
+    domain::stFreeStyleNumberVector StrikePrices{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumberVector TriggerLevels{};
+    domain::stFreeStyleEventSchedule DeterminationDates{};
+    domain::stFreeStyleEventSchedule ObservationSchedule{};
+    domain::stFreeStyleEvent ObservationDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct bestOfAssetOrCashRainbowOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct worstOfAssetOrCashRainbowOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct minRainbowOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct maxRainbowOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct windowBarrierOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEvent StartDate;
-    domain::stFreeStyleEvent EndDate;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEvent PremiumPayDate;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleCurrency PremiumCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEvent StartDate{};
+    domain::stFreeStyleEvent EndDate{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEvent PremiumPayDate{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleCurrency PremiumCcy{};
 };
 
 struct accumulator01Data
 {
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber FixingAmount;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEvent StartDate;
-    domain::stFreeStyleEventSchedule FixingDates;
-    domain::stFreeStyleEventSchedule SettlementDates;
-    domain::stFreeStyleNumberVector RangeUpperBounds;
-    domain::stFreeStyleNumberVector RangeLowerBounds;
-    domain::stFreeStyleNumberVector RangeLeverages;
-    domain::stFreeStyleNumber KnockOutLevel;
-    domain::stFreeStyleBarrierType KnockOutType;
-    domain::stFreeStyleBool AmericanKO;
-    domain::stFreeStyleNumber GuaranteedFixings;
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber FixingAmount{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEvent StartDate{};
+    domain::stFreeStyleEventSchedule FixingDates{};
+    domain::stFreeStyleEventSchedule SettlementDates{};
+    domain::stFreeStyleNumberVector RangeUpperBounds{};
+    domain::stFreeStyleNumberVector RangeLowerBounds{};
+    domain::stFreeStyleNumberVector RangeLeverages{};
+    domain::stFreeStyleNumber KnockOutLevel{};
+    domain::stFreeStyleBarrierType KnockOutType{};
+    domain::stFreeStyleBool AmericanKO{};
+    domain::stFreeStyleNumber GuaranteedFixings{};
 };
 
 struct accumulator02Data
 {
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber FixingAmount;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleEventSchedule KnockOutSettlementDates;
-    domain::stFreeStyleEventSchedule ObservationPeriodEndDates;
-    domain::stFreeStyleEventSchedule SettlementDates;
-    domain::stFreeStyleNumberVector RangeUpperBounds;
-    domain::stFreeStyleNumberVector RangeLowerBounds;
-    domain::stFreeStyleNumberVector RangeLeverages;
-    domain::stFreeStyleNumber DefaultRange;
-    domain::stFreeStyleNumber KnockOutLevel;
-    domain::stFreeStyleBarrierType KnockOutType;
-    domain::stFreeStyleEvent GuaranteedPeriodEndDate;
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber FixingAmount{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleEventSchedule KnockOutSettlementDates{};
+    domain::stFreeStyleEventSchedule ObservationPeriodEndDates{};
+    domain::stFreeStyleEventSchedule SettlementDates{};
+    domain::stFreeStyleNumberVector RangeUpperBounds{};
+    domain::stFreeStyleNumberVector RangeLowerBounds{};
+    domain::stFreeStyleNumberVector RangeLeverages{};
+    domain::stFreeStyleNumber DefaultRange{};
+    domain::stFreeStyleNumber KnockOutLevel{};
+    domain::stFreeStyleBarrierType KnockOutType{};
+    domain::stFreeStyleEvent GuaranteedPeriodEndDate{};
 };
 
 struct bestEntryOptionData2
 {
-    domain::longShort LongShort;
-    domain::currencyCode Currency;
-    float Notional;
-    float Multiplier;
-    float Cap;
-    float Strike;
-    float TriggerLevel;
-    float ResetMinimum;
-    float Premium;
-    domain::date ExpiryDate;
-    domain::date StrikeDate;
-    domain::date PremiumDate;
-    domain::date SettlementDate;
-    domain::scheduleData StrikeObservationDates;
-    domain::underlying Underlying;
+    domain::longShort LongShort{};
+    domain::currencyCode Currency{};
+    float Notional{};
+    float Multiplier{};
+    float Cap{};
+    float Strike{};
+    float TriggerLevel{};
+    float ResetMinimum{};
+    float Premium{};
+    domain::date ExpiryDate{};
+    domain::date StrikeDate{};
+    domain::date PremiumDate{};
+    domain::date SettlementDate{};
+    domain::scheduleData StrikeObservationDates{};
+    domain::underlying Underlying{};
 };
 
 struct tarfData
 {
-    domain::stFreeStyleNumber FixingAmount;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEventSchedule FixingDates;
-    domain::stFreeStyleEventSchedule SettlementDates;
-    domain::stFreeStyleNumberVector RangeUpperBounds;
-    domain::stFreeStyleNumberVector RangeLowerBounds;
-    domain::stFreeStyleNumberVector RangeLeverages;
-    domain::stFreeStyleNumberVector RangeStrikes;
-    domain::stFreeStyleNumber KnockOutProfitAmount;
-    domain::stFreeStyleNumber KnockOutProfitEvents;
-    domain::stFreeStyleNumber TargetAmount;
-    domain::stFreeStyleNumber TargetType;
+    domain::stFreeStyleNumber FixingAmount{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEventSchedule FixingDates{};
+    domain::stFreeStyleEventSchedule SettlementDates{};
+    domain::stFreeStyleNumberVector RangeUpperBounds{};
+    domain::stFreeStyleNumberVector RangeLowerBounds{};
+    domain::stFreeStyleNumberVector RangeLeverages{};
+    domain::stFreeStyleNumberVector RangeStrikes{};
+    domain::stFreeStyleNumber KnockOutProfitAmount{};
+    domain::stFreeStyleNumber KnockOutProfitEvents{};
+    domain::stFreeStyleNumber TargetAmount{};
+    domain::stFreeStyleNumber TargetType{};
 };
 
 struct europeanRainbowCallSpreadOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialStrikes;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialStrikes{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct rainbowCallSpreadBarrierOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialPrices;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleNumber Gearing;
-    domain::stFreeStyleBool BermudanBarrier;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleEventSchedule BarrierSchedule;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialPrices{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleNumber Gearing{};
+    domain::stFreeStyleBool BermudanBarrier{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleEventSchedule BarrierSchedule{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct asianRainbowCallSpreadOptionData
 {
-    domain::stFreeStyleEvent Expiry;
-    domain::stFreeStyleEventSchedule AveragingDates;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleNumberVector InitialStrikes;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleEvent Expiry{};
+    domain::stFreeStyleEventSchedule AveragingDates{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleNumberVector InitialStrikes{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct asianIrCapFloorData
 {
-    domain::stFreeStyleNumber NotionalAmount;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleDayCounter FixingLagDc;
-    domain::stFreeStyleNumber MinFixingLag;
-    domain::stFreeStyleNumber MaxFixingLag;
-    domain::stFreeStyleOptionType OptionType;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Gearing;
-    domain::stFreeStyleNumber Spread;
-    domain::stFreeStyleDayCounter DayCountFraction;
-    domain::stFreeStyleNumber FixedAmount;
-    domain::stFreeStyleEvent FixedAmountPayDate;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEventSchedule AccrualSchedule;
-    domain::stFreeStyleEventSchedule FixingSchedule;
+    domain::stFreeStyleNumber NotionalAmount{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleDayCounter FixingLagDc{};
+    domain::stFreeStyleNumber MinFixingLag{};
+    domain::stFreeStyleNumber MaxFixingLag{};
+    domain::stFreeStyleOptionType OptionType{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Gearing{};
+    domain::stFreeStyleNumber Spread{};
+    domain::stFreeStyleDayCounter DayCountFraction{};
+    domain::stFreeStyleNumber FixedAmount{};
+    domain::stFreeStyleEvent FixedAmountPayDate{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEventSchedule AccrualSchedule{};
+    domain::stFreeStyleEventSchedule FixingSchedule{};
 };
 
 struct forwardVolatilityAgreementData
 {
-    domain::stFreeStyleEvent FvaDate;
-    domain::stFreeStyleEvent OptionExpiry;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber ImpliedVolStrike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEvent SettlementDate;
+    domain::stFreeStyleEvent FvaDate{};
+    domain::stFreeStyleEvent OptionExpiry{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber ImpliedVolStrike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEvent SettlementDate{};
 };
 
 struct correlationSwapData
 {
-    domain::stFreeStyleNumber Amount;
-    domain::stFreeStyleNumber FixedRate;
-    domain::stFreeStyleBool FixedRatePayer;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleEventSchedule DeterminationDates;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleNumber Amount{};
+    domain::stFreeStyleNumber FixedRate{};
+    domain::stFreeStyleBool FixedRatePayer{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleEventSchedule DeterminationDates{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct assetLinkedCliquetOptionData
 {
-    domain::stFreeStyleNumber Nominal;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleEventSchedule ValuationDates;
-    domain::stFreeStyleEventSchedule PaymentDates;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleIndexVector FXConversions;
-    domain::stFreeStyleNumberVector Weights;
-    domain::stFreeStyleIndex LinkedUnderlying;
-    domain::stFreeStyleNumber PayStrike;
-    domain::stFreeStyleNumber RecStrike;
+    domain::stFreeStyleNumber Nominal{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleEventSchedule ValuationDates{};
+    domain::stFreeStyleEventSchedule PaymentDates{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleIndexVector FXConversions{};
+    domain::stFreeStyleNumberVector Weights{};
+    domain::stFreeStyleIndex LinkedUnderlying{};
+    domain::stFreeStyleNumber PayStrike{};
+    domain::stFreeStyleNumber RecStrike{};
 };
 
 struct constantMaturityVolatilitySwapData
 {
-    domain::stFreeStyleNumber NotionalAmount;
-    domain::stFreeStyleIndexVector Underlyings;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleDayCounter DayCountFraction;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleEvent Settlement;
-    domain::stFreeStyleEventSchedule ResetSchedule;
+    domain::stFreeStyleNumber NotionalAmount{};
+    domain::stFreeStyleIndexVector Underlyings{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleDayCounter DayCountFraction{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleEvent Settlement{};
+    domain::stFreeStyleEventSchedule ResetSchedule{};
 };
 
 struct cmsCapFloorBarrierData
 {
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleCurrency PremiumCurrency;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleEvent OptionExpiry;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleOptionType OptionType;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleIndexVector CMSUnderlyings;
-    domain::stFreeStyleNumber Gearing;
-    domain::stFreeStyleNumber Spread;
-    domain::stFreeStyleIndex BarrierUnderlying;
-    domain::stFreeStyleNumber BarrierLevel;
-    domain::stFreeStyleBarrierType BarrierType;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency SettlementCurrency;
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleCurrency PremiumCurrency{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleEvent OptionExpiry{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleOptionType OptionType{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleIndexVector CMSUnderlyings{};
+    domain::stFreeStyleNumber Gearing{};
+    domain::stFreeStyleNumber Spread{};
+    domain::stFreeStyleIndex BarrierUnderlying{};
+    domain::stFreeStyleNumber BarrierLevel{};
+    domain::stFreeStyleBarrierType BarrierType{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency SettlementCurrency{};
 };
 
 struct fixedStrikeForwardStartingOptionData
 {
-    domain::stFreeStyleEvent ForwardDate;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleEvent OptionExpiry;
-    domain::stFreeStyleDayCounter DayCountFraction;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleNumber UnderlyingDrift;
-    domain::stFreeStyleNumber DiscountRate;
-    domain::stFreeStyleNumber ImpliedVolatility;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency SettlementCurrency;
+    domain::stFreeStyleEvent ForwardDate{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleEvent OptionExpiry{};
+    domain::stFreeStyleDayCounter DayCountFraction{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleNumber UnderlyingDrift{};
+    domain::stFreeStyleNumber DiscountRate{};
+    domain::stFreeStyleNumber ImpliedVolatility{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency SettlementCurrency{};
 };
 
 struct floatingStrikeForwardStartingOptionData
 {
-    domain::stFreeStyleEvent ForwardDate;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleEvent OptionExpiry;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleCurrency PremiumCurrency;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency SettlementCurrency;
+    domain::stFreeStyleEvent ForwardDate{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleEvent OptionExpiry{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleCurrency PremiumCurrency{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency SettlementCurrency{};
 };
 
 struct forwardStartingSwaptionData
 {
-    domain::stFreeStyleEvent DeterminationDate;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber SwaptionType;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleCurrency PremiumCurrency;
-    domain::stFreeStyleEvent OptionExpiry;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleCurrency PayCcy;
-    domain::stFreeStyleDayCounter FixedDayCountFraction;
-    domain::stFreeStyleEventSchedule FixedSchedule;
-    domain::stFreeStyleDayCounter FloatingDayCountFraction;
-    domain::stFreeStyleEventSchedule FloatingSchedule;
-    domain::stFreeStyleEventSchedule FixingSchedule;
+    domain::stFreeStyleEvent DeterminationDate{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber SwaptionType{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleCurrency PremiumCurrency{};
+    domain::stFreeStyleEvent OptionExpiry{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleCurrency PayCcy{};
+    domain::stFreeStyleDayCounter FixedDayCountFraction{};
+    domain::stFreeStyleEventSchedule FixedSchedule{};
+    domain::stFreeStyleDayCounter FloatingDayCountFraction{};
+    domain::stFreeStyleEventSchedule FloatingSchedule{};
+    domain::stFreeStyleEventSchedule FixingSchedule{};
 };
 
 struct flooredAverageCPIZCIISData
 {
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleDayCounter FixedDayCounter;
-    domain::stFreeStyleNumber FixedRate;
-    domain::stFreeStyleEventSchedule FixedLegSchedule;
-    domain::stFreeStyleBool PayFixLeg;
-    domain::stFreeStyleDayCounter FloatDayCounter;
-    domain::stFreeStyleIndex CPIIndex;
-    domain::stFreeStyleEventSchedule FloatLegSchedule;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleNumber BaseCPI;
-    domain::stFreeStyleEventSchedule ObservationSchedule;
-    domain::stFreeStyleEventSchedule FixingSchedule;
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleDayCounter FixedDayCounter{};
+    domain::stFreeStyleNumber FixedRate{};
+    domain::stFreeStyleEventSchedule FixedLegSchedule{};
+    domain::stFreeStyleBool PayFixLeg{};
+    domain::stFreeStyleDayCounter FloatDayCounter{};
+    domain::stFreeStyleIndex CPIIndex{};
+    domain::stFreeStyleEventSchedule FloatLegSchedule{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleNumber BaseCPI{};
+    domain::stFreeStyleEventSchedule ObservationSchedule{};
+    domain::stFreeStyleEventSchedule FixingSchedule{};
 };
 
 struct stFreeStyleOptionTypeVectorBase
@@ -5400,85 +5401,85 @@ struct stFreeStyleCurrencyVector : domain::stFreeStyleCurrencyVectorBase
 
 struct genericBarrierOptionDataRaw
 {
-    domain::stFreeStyleNumber PayoffType;
-    domain::stFreeStyleBarrierType TransatlanticBarrierType;
-    domain::stFreeStyleNumber TransatlanticBarrierLevel;
-    domain::stFreeStyleNumber TransatlanticBarrierRebate;
-    domain::stFreeStyleCurrency TransatlanticBarrierRebateCurrency;
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber Amount;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleEvent ExpiryDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEventSchedule BarrierMonitoringDates;
-    domain::stFreeStyleBarrierTypeVector BarrierTypes;
-    domain::stFreeStyleNumberVector BarrierLevels;
-    domain::stFreeStyleNumberVector BarrierRebates;
-    domain::stFreeStyleCurrencyVector BarrierRebateCurrencies;
-    domain::stFreeStyleNumberVector BarrierRebatePayTimes;
-    domain::stFreeStyleNumber BarrierRebate;
-    domain::stFreeStyleCurrency BarrierRebateCurrency;
-    domain::stFreeStyleNumber KikoType;
+    domain::stFreeStyleNumber PayoffType{};
+    domain::stFreeStyleBarrierType TransatlanticBarrierType{};
+    domain::stFreeStyleNumber TransatlanticBarrierLevel{};
+    domain::stFreeStyleNumber TransatlanticBarrierRebate{};
+    domain::stFreeStyleCurrency TransatlanticBarrierRebateCurrency{};
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber Amount{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleEvent ExpiryDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEventSchedule BarrierMonitoringDates{};
+    domain::stFreeStyleBarrierTypeVector BarrierTypes{};
+    domain::stFreeStyleNumberVector BarrierLevels{};
+    domain::stFreeStyleNumberVector BarrierRebates{};
+    domain::stFreeStyleCurrencyVector BarrierRebateCurrencies{};
+    domain::stFreeStyleNumberVector BarrierRebatePayTimes{};
+    domain::stFreeStyleNumber BarrierRebate{};
+    domain::stFreeStyleCurrency BarrierRebateCurrency{};
+    domain::stFreeStyleNumber KikoType{};
 };
 
 struct movingMaxYYIISData
 {
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleDayCounter IborLegDayCounter;
-    domain::stFreeStyleNumber IborSpread;
-    domain::stFreeStyleIndex IborIndex;
-    domain::stFreeStyleBool PayIborLeg;
-    domain::stFreeStyleEventSchedule IborLegSchedule;
-    domain::stFreeStyleEventSchedule IborLegFixingSchedule;
-    domain::stFreeStyleDayCounter InflationLeg1_DayCounter;
-    domain::stFreeStyleIndex InflationLeg1_CPI;
-    domain::stFreeStyleEventSchedule InflationLeg1_Schedule;
-    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule;
-    domain::stFreeStyleNumber InflationLeg1_Gearing;
-    domain::stFreeStyleNumber InflationLeg1_Floor;
-    domain::stFreeStyleNumber InflationLeg1_InitialCPI;
-    domain::stFreeStyleBool InflationLeg1_SubtractNotional;
-    domain::stFreeStyleDayCounter InflationLeg2_DayCounter;
-    domain::stFreeStyleIndex InflationLeg2_CPI;
-    domain::stFreeStyleEventSchedule InflationLeg2_Schedule;
-    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule;
-    domain::stFreeStyleNumber InflationLeg2_Gearing;
-    domain::stFreeStyleNumber InflationLeg2_Floor;
-    domain::stFreeStyleNumber InflationLeg2_InitialCPI;
-    domain::stFreeStyleBool InflationLeg2_SubtractNotional;
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleDayCounter IborLegDayCounter{};
+    domain::stFreeStyleNumber IborSpread{};
+    domain::stFreeStyleIndex IborIndex{};
+    domain::stFreeStyleBool PayIborLeg{};
+    domain::stFreeStyleEventSchedule IborLegSchedule{};
+    domain::stFreeStyleEventSchedule IborLegFixingSchedule{};
+    domain::stFreeStyleDayCounter InflationLeg1_DayCounter{};
+    domain::stFreeStyleIndex InflationLeg1_CPI{};
+    domain::stFreeStyleEventSchedule InflationLeg1_Schedule{};
+    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule{};
+    domain::stFreeStyleNumber InflationLeg1_Gearing{};
+    domain::stFreeStyleNumber InflationLeg1_Floor{};
+    domain::stFreeStyleNumber InflationLeg1_InitialCPI{};
+    domain::stFreeStyleBool InflationLeg1_SubtractNotional{};
+    domain::stFreeStyleDayCounter InflationLeg2_DayCounter{};
+    domain::stFreeStyleIndex InflationLeg2_CPI{};
+    domain::stFreeStyleEventSchedule InflationLeg2_Schedule{};
+    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule{};
+    domain::stFreeStyleNumber InflationLeg2_Gearing{};
+    domain::stFreeStyleNumber InflationLeg2_Floor{};
+    domain::stFreeStyleNumber InflationLeg2_InitialCPI{};
+    domain::stFreeStyleBool InflationLeg2_SubtractNotional{};
 };
 
 struct irregularYYIISData
 {
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleDayCounter IborLegDayCounter;
-    domain::stFreeStyleNumber IborSpread;
-    domain::stFreeStyleIndex IborIndex;
-    domain::stFreeStyleBool PayIborLeg;
-    domain::stFreeStyleEventSchedule IborLegSchedule;
-    domain::stFreeStyleEventSchedule IborLegFixingSchedule;
-    domain::stFreeStyleDayCounter InflationLeg1_DayCounter;
-    domain::stFreeStyleIndex InflationLeg1_CPI;
-    domain::stFreeStyleEventSchedule InflationLeg1_Schedule;
-    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule;
-    domain::stFreeStyleNumber InflationLeg1_Gearing;
-    domain::stFreeStyleNumber InflationLeg1_Floor;
-    domain::stFreeStyleNumber InflationLeg1_InitialCPI;
-    domain::stFreeStyleBool InflationLeg1_SubtractNotional;
-    domain::stFreeStyleDayCounter InflationLeg2_DayCounter;
-    domain::stFreeStyleIndex InflationLeg2_CPI;
-    domain::stFreeStyleEventSchedule InflationLeg2_Schedule;
-    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule;
-    domain::stFreeStyleNumber InflationLeg2_Gearing;
-    domain::stFreeStyleNumber InflationLeg2_Floor;
-    domain::stFreeStyleNumber InflationLeg2_InitialCPI;
-    domain::stFreeStyleBool InflationLeg2_SubtractNotional;
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleDayCounter IborLegDayCounter{};
+    domain::stFreeStyleNumber IborSpread{};
+    domain::stFreeStyleIndex IborIndex{};
+    domain::stFreeStyleBool PayIborLeg{};
+    domain::stFreeStyleEventSchedule IborLegSchedule{};
+    domain::stFreeStyleEventSchedule IborLegFixingSchedule{};
+    domain::stFreeStyleDayCounter InflationLeg1_DayCounter{};
+    domain::stFreeStyleIndex InflationLeg1_CPI{};
+    domain::stFreeStyleEventSchedule InflationLeg1_Schedule{};
+    domain::stFreeStyleEventSchedule InflationLeg1_FixingSchedule{};
+    domain::stFreeStyleNumber InflationLeg1_Gearing{};
+    domain::stFreeStyleNumber InflationLeg1_Floor{};
+    domain::stFreeStyleNumber InflationLeg1_InitialCPI{};
+    domain::stFreeStyleBool InflationLeg1_SubtractNotional{};
+    domain::stFreeStyleDayCounter InflationLeg2_DayCounter{};
+    domain::stFreeStyleIndex InflationLeg2_CPI{};
+    domain::stFreeStyleEventSchedule InflationLeg2_Schedule{};
+    domain::stFreeStyleEventSchedule InflationLeg2_FixingSchedule{};
+    domain::stFreeStyleNumber InflationLeg2_Gearing{};
+    domain::stFreeStyleNumber InflationLeg2_Floor{};
+    domain::stFreeStyleNumber InflationLeg2_InitialCPI{};
+    domain::stFreeStyleBool InflationLeg2_SubtractNotional{};
 };
 
 struct europeanOptionBarrierData_PutCall_t : xsd::string
@@ -5495,110 +5496,110 @@ struct europeanOptionBarrierData_BarrierStyle_t : xsd::string
 
 struct europeanOptionBarrierData
 {
-    float Quantity;
-    domain::europeanOptionBarrierData_PutCall_t PutCall;
-    domain::longShort LongShort;
-    float Strike;
-    float PremiumAmount;
-    domain::currencyCode PremiumCurrency;
-    domain::date PremiumDate;
+    float Quantity{};
+    domain::europeanOptionBarrierData_PutCall_t PutCall{};
+    domain::longShort LongShort{};
+    float Strike{};
+    float PremiumAmount{};
+    domain::currencyCode PremiumCurrency{};
+    domain::date PremiumDate{};
     xsd::optional<domain::premiumData> Premiums;
-    domain::date OptionExpiry;
-    domain::underlying OptionUnderlying;
-    domain::underlying BarrierUnderlying;
-    float BarrierLevel;
-    domain::europeanOptionBarrierData_BarrierType_t BarrierType;
-    domain::europeanOptionBarrierData_BarrierStyle_t BarrierStyle;
+    domain::date OptionExpiry{};
+    domain::underlying OptionUnderlying{};
+    domain::underlying BarrierUnderlying{};
+    float BarrierLevel{};
+    domain::europeanOptionBarrierData_BarrierType_t BarrierType{};
+    domain::europeanOptionBarrierData_BarrierStyle_t BarrierStyle{};
     xsd::optional<domain::scheduleData> BarrierSchedule;
-    domain::date SettlementDate;
-    domain::currencyCode PayCcy;
+    domain::date SettlementDate{};
+    domain::currencyCode PayCcy{};
 };
 
 struct ladderLockInOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleOptionType PutCall;
-    domain::stFreeStyleNumber PremiumAmount;
-    domain::stFreeStyleEvent PremiumDate;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleNumberVector LockInLevels;
-    domain::stFreeStyleEventSchedule ObservationSchedule;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleCurrency PayCcy;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleOptionType PutCall{};
+    domain::stFreeStyleNumber PremiumAmount{};
+    domain::stFreeStyleEvent PremiumDate{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleNumberVector LockInLevels{};
+    domain::stFreeStyleEventSchedule ObservationSchedule{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleCurrency PayCcy{};
 };
 
 struct lapseHedgeSwapData
 {
-    domain::stFreeStyleBool Payer;
-    domain::stFreeStyleNumber Notional;
-    domain::stFreeStyleNumber LapseHedgePercentage;
-    domain::stFreeStyleNumberVector deltaN;
-    domain::stFreeStyleCurrency SettlementCurrency;
-    domain::stFreeStyleDayCounter Paydaycounter;
-    domain::stFreeStyleNumber IRS;
-    domain::stFreeStyleNumber IRSSpread;
-    domain::stFreeStyleNumber Tau;
-    domain::stFreeStyleNumber Fee;
-    domain::stFreeStyleNumberVector IMS;
-    domain::stFreeStyleNumberVector PHFV;
-    domain::stFreeStyleNumberVector Penalty;
-    domain::stFreeStyleNumberVector ExitPrice;
-    domain::stFreeStyleNumberVector ExitFee;
-    domain::stFreeStyleNumber InitialExchangeFee;
-    domain::stFreeStyleEventSchedule InitialExchangeDate;
-    domain::stFreeStyleEventSchedule ValuationDates;
-    domain::stFreeStyleEventSchedule PaymentDates;
-    domain::stFreeStyleEventSchedule ExerciseDates;
+    domain::stFreeStyleBool Payer{};
+    domain::stFreeStyleNumber Notional{};
+    domain::stFreeStyleNumber LapseHedgePercentage{};
+    domain::stFreeStyleNumberVector deltaN{};
+    domain::stFreeStyleCurrency SettlementCurrency{};
+    domain::stFreeStyleDayCounter Paydaycounter{};
+    domain::stFreeStyleNumber IRS{};
+    domain::stFreeStyleNumber IRSSpread{};
+    domain::stFreeStyleNumber Tau{};
+    domain::stFreeStyleNumber Fee{};
+    domain::stFreeStyleNumberVector IMS{};
+    domain::stFreeStyleNumberVector PHFV{};
+    domain::stFreeStyleNumberVector Penalty{};
+    domain::stFreeStyleNumberVector ExitPrice{};
+    domain::stFreeStyleNumberVector ExitFee{};
+    domain::stFreeStyleNumber InitialExchangeFee{};
+    domain::stFreeStyleEventSchedule InitialExchangeDate{};
+    domain::stFreeStyleEventSchedule ValuationDates{};
+    domain::stFreeStyleEventSchedule PaymentDates{};
+    domain::stFreeStyleEventSchedule ExerciseDates{};
 };
 
 struct knockOutSwapData
 {
-    domain::barrierData BarrierData;
-    domain::date BarrierStartDate;
+    domain::barrierData BarrierData{};
+    domain::date BarrierStartDate{};
     xsd::vector<domain::legData> LegData;
 };
 
 struct LPISwapData
 {
-    domain::stFreeStyleCurrency PayCurrency;
-    domain::stFreeStyleBool PayFixLeg;
-    domain::stFreeStyleDayCounter FixedDayCounter;
-    domain::stFreeStyleNumber ZeroCouponRate;
-    domain::stFreeStyleEventSchedule FixedLegSchedule;
-    domain::stFreeStyleNumberVector FixedLegNotionals;
-    domain::stFreeStyleIndex CPIIndex;
-    domain::stFreeStyleEventSchedule FloatLegSchedule;
-    domain::stFreeStyleEvent FloatLegFirstPaymentDate;
-    domain::stFreeStyleNumberVector FloatLegNotional;
-    domain::stFreeStyleNumber Floor;
-    domain::stFreeStyleNumber Cap;
-    domain::stFreeStyleEventSchedule FixingSchedule;
+    domain::stFreeStyleCurrency PayCurrency{};
+    domain::stFreeStyleBool PayFixLeg{};
+    domain::stFreeStyleDayCounter FixedDayCounter{};
+    domain::stFreeStyleNumber ZeroCouponRate{};
+    domain::stFreeStyleEventSchedule FixedLegSchedule{};
+    domain::stFreeStyleNumberVector FixedLegNotionals{};
+    domain::stFreeStyleIndex CPIIndex{};
+    domain::stFreeStyleEventSchedule FloatLegSchedule{};
+    domain::stFreeStyleEvent FloatLegFirstPaymentDate{};
+    domain::stFreeStyleNumberVector FloatLegNotional{};
+    domain::stFreeStyleNumber Floor{};
+    domain::stFreeStyleNumber Cap{};
+    domain::stFreeStyleEventSchedule FixingSchedule{};
 };
 
 struct cashPositionData
 {
-    domain::extendedCurrencyCode Currency;
-    float Amount;
+    domain::extendedCurrencyCode Currency{};
+    float Amount{};
 };
 
 struct strikeResettableOptionData
 {
-    domain::stFreeStyleLongShort LongShort;
-    domain::stFreeStyleOptionType OptionType;
-    domain::stFreeStyleCurrency Currency;
-    domain::stFreeStyleNumber Strike;
-    domain::stFreeStyleNumber ResetStrike;
-    domain::stFreeStyleNumber Quantity;
-    domain::stFreeStyleNumber TriggerType;
-    domain::stFreeStyleNumber TriggerPrice;
-    domain::stFreeStyleIndex Underlying;
-    domain::stFreeStyleEvent ExpiryDate;
-    domain::stFreeStyleEvent SettlementDate;
-    domain::stFreeStyleEventSchedule ObservationDates;
-    domain::stFreeStyleNumber Premium;
-    domain::stFreeStyleEvent PremiumDate;
+    domain::stFreeStyleLongShort LongShort{};
+    domain::stFreeStyleOptionType OptionType{};
+    domain::stFreeStyleCurrency Currency{};
+    domain::stFreeStyleNumber Strike{};
+    domain::stFreeStyleNumber ResetStrike{};
+    domain::stFreeStyleNumber Quantity{};
+    domain::stFreeStyleNumber TriggerType{};
+    domain::stFreeStyleNumber TriggerPrice{};
+    domain::stFreeStyleIndex Underlying{};
+    domain::stFreeStyleEvent ExpiryDate{};
+    domain::stFreeStyleEvent SettlementDate{};
+    domain::stFreeStyleEventSchedule ObservationDates{};
+    domain::stFreeStyleNumber Premium{};
+    domain::stFreeStyleEvent PremiumDate{};
 };
 
 enum class strikeResettableOptionData2_TriggerType_t
@@ -5611,20 +5612,20 @@ std::string to_string(strikeResettableOptionData2_TriggerType_t);
 
 struct strikeResettableOptionData2
 {
-    domain::longShort LongShort;
-    domain::optionType OptionType;
-    domain::currencyCode Currency;
-    float Strike;
-    float ResetStrike;
-    float Quantity;
-    domain::strikeResettableOptionData2_TriggerType_t TriggerType;
-    float TriggerPrice;
-    domain::underlying Underlying;
-    domain::date ExpiryDate;
-    domain::date SettlementDate;
-    float Premium;
-    domain::date PremiumDate;
-    domain::scheduleData ObservationDates;
+    domain::longShort LongShort{};
+    domain::optionType OptionType{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float ResetStrike{};
+    float Quantity{};
+    domain::strikeResettableOptionData2_TriggerType_t TriggerType{};
+    float TriggerPrice{};
+    domain::underlying Underlying{};
+    domain::date ExpiryDate{};
+    domain::date SettlementDate{};
+    float Premium{};
+    domain::date PremiumDate{};
+    domain::scheduleData ObservationDates{};
 };
 
 struct parameters_Grid_t : xsd::string
@@ -5681,14 +5682,14 @@ std::string to_string(mporMode);
 
 struct parameters
 {
-    domain::parameters_Grid_t Grid;
-    domain::parameters_Calendar_t Calendar;
+    domain::parameters_Grid_t Grid{};
+    domain::parameters_Calendar_t Calendar{};
     xsd::optional<domain::dayCounter> DayCounter;
-    domain::sequenceType Sequence;
+    domain::sequenceType Sequence{};
     xsd::optional<domain::parameters_Scenario_t> Scenario;
     xsd::optional<domain::discretizationType> Discretization;
-    int64_t Seed;
-    uint64_t Samples;
+    int64_t Seed{};
+    uint64_t Samples{};
     xsd::optional<domain::SobolBrownianGeneratorOrdering> Ordering;
     xsd::optional<domain::SobolRsgDirectionIntegers> DirectionIntegers;
     xsd::optional<domain::parameters_CloseOutLag_t> CloseOutLag;
@@ -5708,9 +5709,9 @@ struct market_YieldCurves_t
 
 struct market
 {
-    domain::currencyCode BaseCurrency;
-    domain::market_Currencies_t Currencies;
-    domain::market_YieldCurves_t YieldCurves;
+    domain::currencyCode BaseCurrency{};
+    domain::market_Currencies_t Currencies{};
+    domain::market_YieldCurves_t YieldCurves{};
     xsd::optional<domain::market_FxRates_t> FxRates;
     xsd::optional<domain::market_Indices_t> Indices;
     xsd::optional<domain::market_SwapIndices_t> SwapIndices;
@@ -5804,11 +5805,11 @@ struct lgm_Volatility_t_InitialValue_t : xsd::string
 
 struct lgm_Volatility_t
 {
-    domain::bool_ Calibrate;
-    domain::volatilityTypeType VolatilityType;
-    domain::paramTypeType ParamType;
-    domain::lgm_Volatility_t_TimeGrid_t TimeGrid;
-    domain::lgm_Volatility_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::volatilityTypeType VolatilityType{};
+    domain::paramTypeType ParamType{};
+    domain::lgm_Volatility_t_TimeGrid_t TimeGrid{};
+    domain::lgm_Volatility_t_InitialValue_t InitialValue{};
 };
 
 enum class reversionTypeType
@@ -5829,17 +5830,17 @@ struct lgm_Reversion_t_InitialValue_t : xsd::string
 
 struct lgm_Reversion_t
 {
-    domain::bool_ Calibrate;
-    domain::reversionTypeType ReversionType;
-    domain::paramTypeType ParamType;
-    domain::lgm_Reversion_t_TimeGrid_t TimeGrid;
-    domain::lgm_Reversion_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::reversionTypeType ReversionType{};
+    domain::paramTypeType ParamType{};
+    domain::lgm_Reversion_t_TimeGrid_t TimeGrid{};
+    domain::lgm_Reversion_t_InitialValue_t InitialValue{};
 };
 
 struct lgm_ParameterTransformation_t
 {
-    float ShiftHorizon;
-    float Scaling;
+    float ShiftHorizon{};
+    float Scaling{};
 };
 
 enum class floatSpreadMappingType
@@ -5857,13 +5858,13 @@ struct lgm
     xsd::optional<xsd::string> index;
     xsd::optional<xsd::string> key;
     xsd::optional<domain::currencyCode> Currency;
-    domain::calibrationTypeType CalibrationType;
-    domain::lgm_Volatility_t Volatility;
-    domain::lgm_Reversion_t Reversion;
+    domain::calibrationTypeType CalibrationType{};
+    domain::lgm_Volatility_t Volatility{};
+    domain::lgm_Reversion_t Reversion{};
     xsd::optional<domain::lgm_CalibrationSwaptions_t> CalibrationSwaptions;
     xsd::optional<domain::lgm_CalibrationCapFloors_t> CalibrationCapFloors;
     xsd::optional<domain::lgm_CalibrationBaskets_t> CalibrationBaskets;
-    domain::lgm_ParameterTransformation_t ParameterTransformation;
+    domain::lgm_ParameterTransformation_t ParameterTransformation{};
     xsd::optional<domain::floatSpreadMappingType> FloatSpreadMapping;
 };
 
@@ -5878,11 +5879,11 @@ struct hw_Reversion_t_InitialValue_t
 
 struct hw_Reversion_t
 {
-    domain::bool_ Calibrate;
+    domain::bool_ Calibrate{};
     xsd::optional<domain::reversionTypeType> ReversionType;
-    domain::paramTypeType ParamType;
-    domain::hw_Reversion_t_TimeGrid_t TimeGrid;
-    domain::hw_Reversion_t_InitialValue_t InitialValue;
+    domain::paramTypeType ParamType{};
+    domain::hw_Reversion_t_TimeGrid_t TimeGrid{};
+    domain::hw_Reversion_t_InitialValue_t InitialValue{};
 };
 
 struct hw
@@ -5891,9 +5892,9 @@ struct hw
     xsd::optional<xsd::string> index;
     xsd::optional<xsd::string> key;
     xsd::optional<domain::currencyCode> Currency;
-    domain::calibrationTypeType CalibrationType;
+    domain::calibrationTypeType CalibrationType{};
     xsd::optional<domain::hw_Volatility_t> Volatility;
-    domain::hw_Reversion_t Reversion;
+    domain::hw_Reversion_t Reversion{};
     xsd::optional<domain::hw_PCALoadings_t> PCALoadings;
     xsd::optional<domain::volatilityParameter> PCASigma0;
     xsd::optional<domain::hw_PCASigmaRatios_t> PCASigmaRatios;
@@ -5930,7 +5931,7 @@ struct crossAssetModel_CommodityModels_t
 
 struct crossAssetModel_CreditStates_t
 {
-    int64_t NumberOfFactors;
+    int64_t NumberOfFactors{};
 };
 
 struct crossAssetModel_InstantaneousCorrelations_t
@@ -5950,8 +5951,8 @@ struct transitionmatrix_Data_t : xsd::string
 
 struct transitionmatrix
 {
-    domain::transitionmatrix_Name_t Name;
-    domain::transitionmatrix_Data_t Data;
+    domain::transitionmatrix_Name_t Name{};
+    domain::transitionmatrix_Data_t Data{};
 };
 
 struct entity_Name_t : xsd::string
@@ -5968,10 +5969,10 @@ struct entity_TransitionMatrix_t : xsd::string
 
 struct entity
 {
-    domain::entity_Name_t Name;
-    domain::entity_FactorLoadings_t FactorLoadings;
-    domain::entity_TransitionMatrix_t TransitionMatrix;
-    int64_t InitialState;
+    domain::entity_Name_t Name{};
+    domain::entity_FactorLoadings_t FactorLoadings{};
+    domain::entity_TransitionMatrix_t TransitionMatrix{};
+    int64_t InitialState{};
 };
 
 struct globalReportConfiguration
@@ -6111,9 +6112,9 @@ std::string to_string(frequencyType);
 
 struct zeroType
 {
-    domain::zeroType_Id_t Id;
-    domain::bool_ TenorBased;
-    domain::dayCounter DayCounter;
+    domain::zeroType_Id_t Id{};
+    domain::bool_ TenorBased{};
+    domain::dayCounter DayCounter{};
     xsd::optional<domain::compounding> Compounding;
     xsd::optional<domain::frequencyType> CompoundingFrequency;
     xsd::optional<domain::zeroType_TenorCalendar_t> TenorCalendar;
@@ -6155,16 +6156,16 @@ std::string to_string(dateRule);
 
 struct cdsConventionsType
 {
-    domain::cdsConventionsType_Id_t Id;
-    int64_t SettlementDays;
-    domain::cdsConventionsType_Calendar_t Calendar;
-    domain::frequencyType Frequency;
-    domain::businessDayConvention PaymentConvention;
-    domain::dateRule Rule;
-    domain::dayCounter DayCounter;
+    domain::cdsConventionsType_Id_t Id{};
+    int64_t SettlementDays{};
+    domain::cdsConventionsType_Calendar_t Calendar{};
+    domain::frequencyType Frequency{};
+    domain::businessDayConvention PaymentConvention{};
+    domain::dateRule Rule{};
+    domain::dayCounter DayCounter{};
     xsd::optional<uint64_t> UpfrontSettlementDays;
-    domain::bool_ SettlesAccrual;
-    domain::bool_ PaysAtDefaultTime;
+    domain::bool_ SettlesAccrual{};
+    domain::bool_ PaysAtDefaultTime{};
     xsd::optional<domain::dayCounter> LastPeriodDayCounter;
 };
 
@@ -6174,8 +6175,8 @@ struct depositType_Id_t : xsd::string
 
 struct depositType
 {
-    domain::depositType_Id_t Id;
-    domain::bool_ IndexBased;
+    domain::depositType_Id_t Id{};
+    domain::bool_ IndexBased{};
     xsd::optional<domain::depositType_Index_t> Index;
     xsd::optional<domain::depositType_Calendar_t> Calendar;
     xsd::optional<domain::businessDayConvention> Convention;
@@ -6211,8 +6212,8 @@ std::string to_string(overnightIndexFutureNettingType);
 
 struct futureType
 {
-    domain::futureType_Id_t Id;
-    domain::futureType_Index_t Index;
+    domain::futureType_Id_t Id{};
+    domain::futureType_Index_t Index{};
     xsd::optional<domain::futureDateGenerationRule> DateGenerationRule;
     xsd::optional<domain::overnightIndexFutureNettingType> OvernightIndexFutureNettingType;
     xsd::optional<domain::futureType_Calendar_t> Calendar;
@@ -6228,8 +6229,8 @@ struct fraType_Index_t : xsd::string
 
 struct fraType
 {
-    domain::fraType_Id_t Id;
-    domain::fraType_Index_t Index;
+    domain::fraType_Id_t Id{};
+    domain::fraType_Index_t Index{};
 };
 
 struct oisType_Id_t : xsd::string
@@ -6242,10 +6243,10 @@ struct oisType_Index_t : xsd::string
 
 struct oisType
 {
-    domain::oisType_Id_t Id;
-    int64_t SpotLag;
-    domain::oisType_Index_t Index;
-    domain::dayCounter FixedDayCounter;
+    domain::oisType_Id_t Id{};
+    int64_t SpotLag{};
+    domain::oisType_Index_t Index{};
+    domain::dayCounter FixedDayCounter{};
     xsd::optional<domain::oisType_FixedCalendar_t> FixedCalendar;
     xsd::optional<int64_t> PaymentLag;
     xsd::optional<domain::bool_> EOM;
@@ -6275,12 +6276,12 @@ std::string to_string(subPeriodsCouponType);
 
 struct swapType
 {
-    domain::swapType_Id_t Id;
+    domain::swapType_Id_t Id{};
     xsd::optional<domain::swapType_FixedCalendar_t> FixedCalendar;
-    domain::frequencyType FixedFrequency;
+    domain::frequencyType FixedFrequency{};
     xsd::optional<domain::businessDayConvention> FixedConvention;
-    domain::dayCounter FixedDayCounter;
-    domain::swapType_Index_t Index;
+    domain::dayCounter FixedDayCounter{};
+    domain::swapType_Index_t Index{};
     xsd::optional<domain::frequencyType> FloatFrequency;
     xsd::optional<domain::subPeriodsCouponType> SubPeriodsCouponType;
 };
@@ -6311,17 +6312,17 @@ struct averageOISType_RateCutoff_t : xsd::string
 
 struct averageOISType
 {
-    domain::averageOISType_Id_t Id;
-    int64_t SpotLag;
-    domain::averageOISType_FixedTenor_t FixedTenor;
-    domain::dayCounter FixedDayCounter;
-    domain::averageOISType_FixedCalendar_t FixedCalendar;
-    domain::businessDayConvention FixedConvention;
-    domain::businessDayConvention FixedPaymentConvention;
+    domain::averageOISType_Id_t Id{};
+    int64_t SpotLag{};
+    domain::averageOISType_FixedTenor_t FixedTenor{};
+    domain::dayCounter FixedDayCounter{};
+    domain::averageOISType_FixedCalendar_t FixedCalendar{};
+    domain::businessDayConvention FixedConvention{};
+    domain::businessDayConvention FixedPaymentConvention{};
     xsd::optional<domain::frequencyType> FixedFrequency;
-    domain::averageOISType_Index_t Index;
-    domain::averageOISType_OnTenor_t OnTenor;
-    domain::averageOISType_RateCutoff_t RateCutoff;
+    domain::averageOISType_Index_t Index{};
+    domain::averageOISType_OnTenor_t OnTenor{};
+    domain::averageOISType_RateCutoff_t RateCutoff{};
 };
 
 struct tenorBasisSwapType_Id_t : xsd::string
@@ -6332,7 +6333,7 @@ typedef xsd::string period;
 
 struct tenorBasisSwapType
 {
-    domain::tenorBasisSwapType_Id_t Id;
+    domain::tenorBasisSwapType_Id_t Id{};
     xsd::optional<domain::tenorBasisSwapType_PayIndex_t> PayIndex;
     xsd::optional<domain::period> PayFrequency;
     xsd::optional<domain::tenorBasisSwapType_ReceiveIndex_t> ReceiveIndex;
@@ -6365,16 +6366,16 @@ struct tenorBasisTwoSwapType_ShortIndex_t : xsd::string
 
 struct tenorBasisTwoSwapType
 {
-    domain::tenorBasisTwoSwapType_Id_t Id;
-    domain::tenorBasisTwoSwapType_Calendar_t Calendar;
-    domain::frequencyType LongFixedFrequency;
-    domain::businessDayConvention LongFixedConvention;
-    domain::dayCounter LongFixedDayCounter;
-    domain::tenorBasisTwoSwapType_LongIndex_t LongIndex;
-    domain::frequencyType ShortFixedFrequency;
-    domain::businessDayConvention ShortFixedConvention;
-    domain::dayCounter ShortFixedDayCounter;
-    domain::tenorBasisTwoSwapType_ShortIndex_t ShortIndex;
+    domain::tenorBasisTwoSwapType_Id_t Id{};
+    domain::tenorBasisTwoSwapType_Calendar_t Calendar{};
+    domain::frequencyType LongFixedFrequency{};
+    domain::businessDayConvention LongFixedConvention{};
+    domain::dayCounter LongFixedDayCounter{};
+    domain::tenorBasisTwoSwapType_LongIndex_t LongIndex{};
+    domain::frequencyType ShortFixedFrequency{};
+    domain::businessDayConvention ShortFixedConvention{};
+    domain::dayCounter ShortFixedDayCounter{};
+    domain::tenorBasisTwoSwapType_ShortIndex_t ShortIndex{};
     xsd::optional<domain::bool_> LongMinusShort;
 };
 
@@ -6392,9 +6393,9 @@ struct bmaBasisSwapType_BMAIndex_t : xsd::string
 
 struct bmaBasisSwapType
 {
-    domain::bmaBasisSwapType_Id_t Id;
-    domain::bmaBasisSwapType_Index_t Index;
-    domain::bmaBasisSwapType_BMAIndex_t BMAIndex;
+    domain::bmaBasisSwapType_Id_t Id{};
+    domain::bmaBasisSwapType_Index_t Index{};
+    domain::bmaBasisSwapType_BMAIndex_t BMAIndex{};
     xsd::optional<domain::bmaBasisSwapType_BMAPaymentCalendar_t> BMAPaymentCalendar;
     xsd::optional<domain::businessDayConvention> BMAPaymentConvention;
     xsd::optional<int64_t> BMAPaymentLag;
@@ -6412,11 +6413,11 @@ struct fxType_Id_t : xsd::string
 
 struct fxType
 {
-    domain::fxType_Id_t Id;
-    int64_t SpotDays;
-    domain::currencyCode SourceCurrency;
-    domain::currencyCode TargetCurrency;
-    double PointsFactor;
+    domain::fxType_Id_t Id{};
+    int64_t SpotDays{};
+    domain::currencyCode SourceCurrency{};
+    domain::currencyCode TargetCurrency{};
+    double PointsFactor{};
     xsd::optional<domain::fxType_AdvanceCalendar_t> AdvanceCalendar;
     xsd::optional<domain::bool_> SpotRelative;
     xsd::optional<domain::bool_> EOM;
@@ -6437,12 +6438,12 @@ struct crossCurrencyBasisType_SpreadIndex_t : xsd::string
 
 struct crossCurrencyBasisType
 {
-    domain::crossCurrencyBasisType_Id_t Id;
-    int64_t SettlementDays;
+    domain::crossCurrencyBasisType_Id_t Id{};
+    int64_t SettlementDays{};
     xsd::optional<domain::crossCurrencyBasisType_SettlementCalendar_t> SettlementCalendar;
-    domain::businessDayConvention RollConvention;
-    domain::crossCurrencyBasisType_FlatIndex_t FlatIndex;
-    domain::crossCurrencyBasisType_SpreadIndex_t SpreadIndex;
+    domain::businessDayConvention RollConvention{};
+    domain::crossCurrencyBasisType_FlatIndex_t FlatIndex{};
+    domain::crossCurrencyBasisType_SpreadIndex_t SpreadIndex{};
     xsd::optional<domain::bool_> EOM;
     xsd::optional<domain::bool_> IsResettable;
     xsd::optional<domain::bool_> FlatIndexIsResettable;
@@ -6476,15 +6477,15 @@ struct crossCurrencyFixFloatType_Index_t : xsd::string
 
 struct crossCurrencyFixFloatType
 {
-    domain::crossCurrencyFixFloatType_Id_t Id;
-    int64_t SettlementDays;
-    domain::crossCurrencyFixFloatType_SettlementCalendar_t SettlementCalendar;
-    domain::businessDayConvention SettlementConvention;
-    domain::currencyCode FixedCurrency;
-    domain::frequencyType FixedFrequency;
-    domain::businessDayConvention FixedConvention;
-    domain::dayCounter FixedDayCounter;
-    domain::crossCurrencyFixFloatType_Index_t Index;
+    domain::crossCurrencyFixFloatType_Id_t Id{};
+    int64_t SettlementDays{};
+    domain::crossCurrencyFixFloatType_SettlementCalendar_t SettlementCalendar{};
+    domain::businessDayConvention SettlementConvention{};
+    domain::currencyCode FixedCurrency{};
+    domain::frequencyType FixedFrequency{};
+    domain::businessDayConvention FixedConvention{};
+    domain::dayCounter FixedDayCounter{};
+    domain::crossCurrencyFixFloatType_Index_t Index{};
     xsd::optional<domain::bool_> EOM;
     xsd::optional<domain::bool_> IsResettable;
     xsd::optional<domain::bool_> FloatIndexIsResettable;
@@ -6500,12 +6501,12 @@ struct iborIndexType_FixingCalendar_t : xsd::string
 
 struct iborIndexType
 {
-    domain::iborIndexType_Id_t Id;
-    domain::iborIndexType_FixingCalendar_t FixingCalendar;
-    domain::dayCounter DayCounter;
-    int64_t SettlementDays;
-    domain::businessDayConvention BusinessDayConvention;
-    domain::bool_ EndOfMonth;
+    domain::iborIndexType_Id_t Id{};
+    domain::iborIndexType_FixingCalendar_t FixingCalendar{};
+    domain::dayCounter DayCounter{};
+    int64_t SettlementDays{};
+    domain::businessDayConvention BusinessDayConvention{};
+    domain::bool_ EndOfMonth{};
 };
 
 struct overnightIndexType_Id_t : xsd::string
@@ -6518,10 +6519,10 @@ struct overnightIndexType_FixingCalendar_t : xsd::string
 
 struct overnightIndexType
 {
-    domain::overnightIndexType_Id_t Id;
-    domain::overnightIndexType_FixingCalendar_t FixingCalendar;
-    domain::dayCounter DayCounter;
-    int64_t SettlementDays;
+    domain::overnightIndexType_Id_t Id{};
+    domain::overnightIndexType_FixingCalendar_t FixingCalendar{};
+    domain::dayCounter DayCounter{};
+    int64_t SettlementDays{};
 };
 
 struct swapIndexType_Id_t : xsd::string
@@ -6534,8 +6535,8 @@ struct swapIndexType_Conventions_t : xsd::string
 
 struct swapIndexType
 {
-    domain::swapIndexType_Id_t Id;
-    domain::swapIndexType_Conventions_t Conventions;
+    domain::swapIndexType_Id_t Id{};
+    domain::swapIndexType_Conventions_t Conventions{};
     xsd::optional<domain::swapIndexType_FixingCalendar_t> FixingCalendar;
 };
 
@@ -6570,16 +6571,16 @@ std::string to_string(publicationRoll);
 
 struct inflationswapType
 {
-    domain::inflationswapType_Id_t Id;
-    domain::inflationswapType_FixCalendar_t FixCalendar;
-    domain::businessDayConvention FixConvention;
-    domain::dayCounter DayCounter;
-    domain::inflationswapType_Index_t Index;
-    domain::bool_ Interpolated;
-    domain::inflationswapType_ObservationLag_t ObservationLag;
-    domain::bool_ AdjustInflationObservationDates;
-    domain::inflationswapType_InflationCalendar_t InflationCalendar;
-    domain::businessDayConvention InflationConvention;
+    domain::inflationswapType_Id_t Id{};
+    domain::inflationswapType_FixCalendar_t FixCalendar{};
+    domain::businessDayConvention FixConvention{};
+    domain::dayCounter DayCounter{};
+    domain::inflationswapType_Index_t Index{};
+    domain::bool_ Interpolated{};
+    domain::inflationswapType_ObservationLag_t ObservationLag{};
+    domain::bool_ AdjustInflationObservationDates{};
+    domain::inflationswapType_InflationCalendar_t InflationCalendar{};
+    domain::businessDayConvention InflationConvention{};
     xsd::optional<domain::publicationRoll> PublicationRoll;
     xsd::optional<domain::scheduleData> PublicationSchedule;
     xsd::optional<domain::inflationswapType_StartDelay_t> StartDelay;
@@ -6608,14 +6609,14 @@ struct cmsSpreadOptionType_Calendar_t : xsd::string
 
 struct cmsSpreadOptionType
 {
-    domain::cmsSpreadOptionType_Id_t Id;
-    domain::cmsSpreadOptionType_ForwardStart_t ForwardStart;
-    domain::cmsSpreadOptionType_SpotDays_t SpotDays;
-    domain::cmsSpreadOptionType_SwapTenor_t SwapTenor;
-    int64_t FixingDays;
-    domain::cmsSpreadOptionType_Calendar_t Calendar;
-    domain::dayCounter DayCounter;
-    domain::businessDayConvention RollConvention;
+    domain::cmsSpreadOptionType_Id_t Id{};
+    domain::cmsSpreadOptionType_ForwardStart_t ForwardStart{};
+    domain::cmsSpreadOptionType_SpotDays_t SpotDays{};
+    domain::cmsSpreadOptionType_SwapTenor_t SwapTenor{};
+    int64_t FixingDays{};
+    domain::cmsSpreadOptionType_Calendar_t Calendar{};
+    domain::dayCounter DayCounter{};
+    domain::businessDayConvention RollConvention{};
 };
 
 struct commodityForwardType_Id_t : xsd::string
@@ -6624,7 +6625,7 @@ struct commodityForwardType_Id_t : xsd::string
 
 struct commodityForwardType
 {
-    domain::commodityForwardType_Id_t Id;
+    domain::commodityForwardType_Id_t Id{};
     xsd::optional<int64_t> SpotDays;
     xsd::optional<double> PointsFactor;
     xsd::optional<domain::commodityForwardType_AdvanceCalendar_t> AdvanceCalendar;
@@ -6676,10 +6677,10 @@ std::string to_string(weekdayType);
 
 struct commodityFutureType
 {
-    domain::commodityFutureType_Id_t Id;
+    domain::commodityFutureType_Id_t Id{};
     xsd::optional<domain::commodityFutureType_AnchorDay_t> AnchorDay;
-    domain::frequencyType ContractFrequency;
-    domain::commodityFutureType_Calendar_t Calendar;
+    domain::frequencyType ContractFrequency{};
+    domain::commodityFutureType_Calendar_t Calendar{};
     xsd::optional<domain::commodityFutureType_ExpiryCalendar_t> ExpiryCalendar;
     xsd::optional<int64_t> ExpiryMonthLag;
     xsd::optional<domain::monthType> OneContractMonth;
@@ -6725,10 +6726,10 @@ struct fxOption_DeltaType_t : xsd::string
 
 struct fxOption
 {
-    domain::fxOption_Id_t Id;
+    domain::fxOption_Id_t Id{};
     xsd::optional<domain::fxOption_FXConventionID_t> FXConventionID;
-    domain::fxOption_AtmType_t AtmType;
-    domain::fxOption_DeltaType_t DeltaType;
+    domain::fxOption_AtmType_t AtmType{};
+    domain::fxOption_DeltaType_t DeltaType{};
     xsd::optional<domain::fxOption_SwitchTenor_t> SwitchTenor;
     xsd::optional<domain::fxOption_LongTermAtmType_t> LongTermAtmType;
     xsd::optional<domain::fxOption_LongTermDeltaType_t> LongTermDeltaType;
@@ -6742,19 +6743,19 @@ struct fxOptionTimeWeighting_Id_t : xsd::string
 
 struct fxOptionTimeWeighting_WeekdayWeights_t
 {
-    float Monday;
-    float Tuesday;
-    float Wednesday;
-    float Thursday;
-    float Friday;
-    float Saturday;
-    float Sunday;
+    float Monday{};
+    float Tuesday{};
+    float Wednesday{};
+    float Thursday{};
+    float Friday{};
+    float Saturday{};
+    float Sunday{};
 };
 
 struct fxOptionTimeWeighting
 {
-    domain::fxOptionTimeWeighting_Id_t Id;
-    domain::fxOptionTimeWeighting_WeekdayWeights_t WeekdayWeights;
+    domain::fxOptionTimeWeighting_Id_t Id{};
+    domain::fxOptionTimeWeighting_WeekdayWeights_t WeekdayWeights{};
     xsd::optional<domain::fxOptionTimeWeighting_TradingCenters_t> TradingCenters;
     xsd::optional<domain::fxOptionTimeWeighting_Events_t> Events;
 };
@@ -6777,13 +6778,13 @@ struct zeroInflationIndexType_AvailabilityLag_t : xsd::string
 
 struct zeroInflationIndexType
 {
-    domain::zeroInflationIndexType_Id_t Id;
-    domain::zeroInflationIndexType_RegionName_t RegionName;
-    domain::zeroInflationIndexType_RegionCode_t RegionCode;
-    domain::bool_ Revised;
-    domain::frequencyType Frequency;
-    domain::zeroInflationIndexType_AvailabilityLag_t AvailabilityLag;
-    domain::currencyCode Currency;
+    domain::zeroInflationIndexType_Id_t Id{};
+    domain::zeroInflationIndexType_RegionName_t RegionName{};
+    domain::zeroInflationIndexType_RegionCode_t RegionCode{};
+    domain::bool_ Revised{};
+    domain::frequencyType Frequency{};
+    domain::zeroInflationIndexType_AvailabilityLag_t AvailabilityLag{};
+    domain::currencyCode Currency{};
 };
 
 struct bondYield_Id_t : xsd::string
@@ -6796,8 +6797,8 @@ struct bondYield_Compounding_t : xsd::string
 
 struct bondYield
 {
-    domain::bondYield_Id_t Id;
-    domain::bondYield_Compounding_t Compounding;
+    domain::bondYield_Id_t Id{};
+    domain::bondYield_Compounding_t Compounding{};
     xsd::optional<domain::frequencyType> Frequency;
     xsd::optional<domain::bondYield_PriceType_t> PriceType;
     xsd::optional<float> Accuracy;
@@ -6813,7 +6814,7 @@ struct nettingSetGroup_group_t
 
 struct collateralBalances_CollateralBalance_t
 {
-    domain::nettingSetGroup_group_t nettingSetGroup;
+    domain::nettingSetGroup_group_t nettingSetGroup{};
     xsd::optional<domain::currencyCode> Currency;
     xsd::optional<double> InitialMargin;
     xsd::optional<double> VariationMargin;
@@ -6821,7 +6822,7 @@ struct collateralBalances_CollateralBalance_t
 
 struct nettingsetdefinitions_NettingSet_t
 {
-    domain::nettingSetGroup_group_t nettingSetGroup;
+    domain::nettingSetGroup_group_t nettingSetGroup{};
     xsd::optional<bool> ActiveCSAFlag;
     xsd::optional<domain::nettingsetdefinitions_NettingSet_t_CSADetails_t> CSADetails;
     xsd::optional<double> RiskWeight;
@@ -6847,11 +6848,11 @@ struct product_EngineParameters_t
 
 struct product
 {
-    xsd::string type;
-    domain::product_Model_t Model;
-    domain::product_ModelParameters_t ModelParameters;
-    domain::product_Engine_t Engine;
-    domain::product_EngineParameters_t EngineParameters;
+    xsd::string type{};
+    domain::product_Model_t Model{};
+    domain::product_ModelParameters_t ModelParameters{};
+    domain::product_Engine_t Engine{};
+    domain::product_EngineParameters_t EngineParameters{};
 };
 
 struct globalParameters
@@ -6861,7 +6862,7 @@ struct globalParameters
 
 struct configurationType
 {
-    xsd::string id;
+    xsd::string id{};
     xsd::optional<domain::configurationType_YieldCurvesId_t> YieldCurvesId;
     xsd::optional<domain::configurationType_DiscountingCurvesId_t> DiscountingCurvesId;
     xsd::optional<domain::configurationType_IndexForwardingCurvesId_t> IndexForwardingCurvesId;
@@ -7033,12 +7034,12 @@ struct discountcurve_ShiftTenors_t : xsd::string
 
 struct discountcurve
 {
-    domain::currencyCode ccy;
+    domain::currencyCode ccy{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::discountcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::discountcurve_ShiftTenors_t ShiftTenors;
+    domain::discountcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -7185,12 +7186,12 @@ std::string to_string(riskFactorKeyType);
 
 struct setRiskFactorKeyTypes
 {
-    domain::riskFactorKeyType RiskFactorKeyType;
+    domain::riskFactorKeyType RiskFactorKeyType{};
 };
 
 struct stresstest
 {
-    xsd::string id;
+    xsd::string id{};
     xsd::optional<domain::stresstestparshifts> ParShifts;
     xsd::optional<domain::discountcurves> DiscountCurves;
     xsd::optional<domain::indexcurves> IndexCurves;
@@ -7210,7 +7211,7 @@ struct stresstest
 
 struct parameterListType_Parameter_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct analyticsType_Analytic_t : domain::parameterListType
@@ -7220,7 +7221,7 @@ struct analyticsType_Analytic_t : domain::parameterListType
 
 struct newcalendar
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::optional<domain::calendar> BaseCalendar;
     xsd::optional<domain::Dates> AdditionalHolidays;
     xsd::optional<domain::Dates> AdditionalBusinessDays;
@@ -7268,7 +7269,7 @@ struct nettingSetDetails_NettingSetId_t : xsd::string
 
 struct nettingSetDetails
 {
-    domain::nettingSetDetails_NettingSetId_t NettingSetId;
+    domain::nettingSetDetails_NettingSetId_t NettingSetId{};
     xsd::optional<domain::nettingSetDetails_AgreementType_t> AgreementType;
     xsd::optional<domain::nettingSetDetails_CallType_t> CallType;
     xsd::optional<domain::nettingSetDetails_InitialMarginType_t> InitialMarginType;
@@ -7295,9 +7296,9 @@ std::string to_string(tradeActionOwner);
 
 struct tradeAction
 {
-    domain::tradeActionType Type;
-    domain::tradeActionOwner Owner;
-    domain::scheduleData Schedule;
+    domain::tradeActionType Type{};
+    domain::tradeActionOwner Owner{};
+    domain::scheduleData Schedule{};
 };
 
 struct stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t : xsd::string
@@ -7318,10 +7319,10 @@ struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t : xsd::string
 
 struct stFreeStyleEventScheduleBase_DerivedSchedule_t
 {
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t BaseSchedule;
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t Shift;
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t Calendar;
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t Convention;
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t BaseSchedule{};
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t Shift{};
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t Calendar{};
+    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t Convention{};
 };
 
 struct _Name_t : xsd::string
@@ -7342,12 +7343,12 @@ struct scheduleData_Rules_t_Tenor_t : xsd::string
 
 struct scheduleData_Rules_t
 {
-    domain::date StartDate;
+    domain::date StartDate{};
     xsd::optional<domain::date> EndDate;
     xsd::optional<domain::bool_> AdjustEndDateToPreviousMonthEnd;
-    domain::scheduleData_Rules_t_Tenor_t Tenor;
+    domain::scheduleData_Rules_t_Tenor_t Tenor{};
     xsd::optional<domain::calendar> Calendar;
-    domain::businessDayConvention Convention;
+    domain::businessDayConvention Convention{};
     xsd::optional<domain::businessDayConvention> TermConvention;
     xsd::optional<domain::dateRule> Rule;
     xsd::optional<domain::bool_> EndOfMonth;
@@ -7370,7 +7371,7 @@ struct scheduleData_Dates_t
     xsd::optional<domain::scheduleData_Dates_t_Tenor_t> Tenor;
     xsd::optional<domain::bool_> EndOfMonth;
     xsd::optional<domain::bool_> IncludeDuplicateDates;
-    domain::scheduleData_Dates_t_Dates_t Dates;
+    domain::scheduleData_Dates_t_Dates_t Dates{};
 };
 
 struct DerivedScheduleGroup_group_t
@@ -7385,7 +7386,7 @@ struct DerivedScheduleType_BaseSchedule_t : xsd::string
 
 struct DerivedScheduleType
 {
-    domain::DerivedScheduleType_BaseSchedule_t BaseSchedule;
+    domain::DerivedScheduleType_BaseSchedule_t BaseSchedule{};
     xsd::optional<domain::DerivedScheduleType_Shift_t> Shift;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::businessDayConvention> Convention;
@@ -7471,7 +7472,7 @@ struct exerciseDatesGroup_group_t
 
 struct optionExerciseData
 {
-    domain::date Date;
+    domain::date Date{};
     xsd::optional<double> Price;
 };
 
@@ -7487,8 +7488,8 @@ struct optionData_SettlementData_t_FXIndex_t : xsd::string
 
 struct optionData_SettlementData_t
 {
-    domain::currencyCode PayCurrency;
-    domain::optionData_SettlementData_t_FXIndex_t FXIndex;
+    domain::currencyCode PayCurrency{};
+    domain::optionData_SettlementData_t_FXIndex_t FXIndex{};
     xsd::optional<domain::optionData_SettlementData_t_FixingDate_t> FixingDate;
 };
 
@@ -7560,10 +7561,10 @@ struct fxreset_FXIndex_t : xsd::string
 
 struct fxreset
 {
-    domain::currencyCode ForeignCurrency;
+    domain::currencyCode ForeignCurrency{};
     xsd::optional<domain::fxreset_StartDate_t> StartDate;
     xsd::optional<double> ForeignAmount;
-    domain::fxreset_FXIndex_t FXIndex;
+    domain::fxreset_FXIndex_t FXIndex{};
     xsd::optional<int64_t> FixingDays;
     xsd::optional<domain::fxreset_FixingCalendar_t> FixingCalendar;
 };
@@ -7587,7 +7588,7 @@ struct _CashflowData_t_Cashflow_t
 
 struct _CashflowData_t
 {
-    domain::_CashflowData_t_Cashflow_t Cashflow;
+    domain::_CashflowData_t_Cashflow_t Cashflow{};
 };
 
 struct _FixedLegData_t_Rates_t
@@ -7597,14 +7598,14 @@ struct _FixedLegData_t_Rates_t
 
 struct _FixedLegData_t
 {
-    domain::_FixedLegData_t_Rates_t Rates;
+    domain::_FixedLegData_t_Rates_t Rates{};
 };
 
 typedef xsd::string indexNameType;
 
 struct _FloatingLegData_t
 {
-    domain::indexNameType Index;
+    domain::indexNameType Index{};
     xsd::optional<bool> IsInArrears;
     xsd::optional<domain::_FloatingLegData_t_LastRecentPeriod_t> LastRecentPeriod;
     xsd::optional<domain::calendar> LastRecentPeriodCalendar;
@@ -7657,9 +7658,9 @@ struct _YYLegData_t_ObservationLag_t : xsd::string
 
 struct _YYLegData_t
 {
-    domain::_YYLegData_t_Index_t Index;
-    int64_t FixingDays;
-    domain::_YYLegData_t_ObservationLag_t ObservationLag;
+    domain::_YYLegData_t_Index_t Index{};
+    int64_t FixingDays{};
+    domain::_YYLegData_t_ObservationLag_t ObservationLag{};
     xsd::optional<domain::gearings> Gearings;
     xsd::optional<domain::spreads> Spreads;
     xsd::optional<domain::caps> Caps;
@@ -7671,7 +7672,7 @@ struct _YYLegData_t
 
 struct _CMSLegData_t
 {
-    domain::indexNameType Index;
+    domain::indexNameType Index{};
     xsd::optional<bool> IsInArrears;
     xsd::optional<int64_t> FixingDays;
     xsd::optional<domain::spreads> Spreads;
@@ -7687,9 +7688,9 @@ struct _CMBLegData_t_Index_t : xsd::string
 
 struct _CMBLegData_t
 {
-    domain::_CMBLegData_t_Index_t Index;
+    domain::_CMBLegData_t_Index_t Index{};
     xsd::optional<bool> IsInArrears;
-    int64_t FixingDays;
+    int64_t FixingDays{};
     xsd::optional<domain::spreads> Spreads;
     xsd::optional<domain::caps> Caps;
     xsd::optional<domain::floors> Floors;
@@ -7713,7 +7714,7 @@ struct _DigitalCMSLegData_t
 
 struct _DurationAdjustedCMSLegData_t
 {
-    domain::indexNameType Index;
+    domain::indexNameType Index{};
     xsd::optional<int64_t> Duration;
     xsd::optional<bool> IsInArrears;
     xsd::optional<int64_t> FixingDays;
@@ -7726,8 +7727,8 @@ struct _DurationAdjustedCMSLegData_t
 
 struct _CMSSpreadLegData_t
 {
-    domain::indexNameType Index1;
-    domain::indexNameType Index2;
+    domain::indexNameType Index1{};
+    domain::indexNameType Index2{};
     xsd::optional<bool> IsInArrears;
     xsd::optional<int64_t> FixingDays;
     xsd::optional<domain::spreads> Spreads;
@@ -7757,8 +7758,8 @@ struct _EquityLegData_t_ReturnType_t : xsd::string
 struct _EquityLegData_t
 {
     xsd::optional<float> Quantity;
-    domain::_EquityLegData_t_ReturnType_t ReturnType;
-    domain::underlyingTypes_group_t underlyingTypes;
+    domain::_EquityLegData_t_ReturnType_t ReturnType{};
+    domain::underlyingTypes_group_t underlyingTypes{};
     xsd::optional<float> InitialPrice;
     xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
     xsd::optional<float> DividendFactor;
@@ -7787,8 +7788,8 @@ struct _EquityMarginLegData_t_EquityLegData_t_ReturnType_t : xsd::string
 struct _EquityMarginLegData_t_EquityLegData_t
 {
     xsd::optional<float> Quantity;
-    domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t ReturnType;
-    domain::underlyingTypes_group_t underlyingTypes;
+    domain::_EquityMarginLegData_t_EquityLegData_t_ReturnType_t ReturnType{};
+    domain::underlyingTypes_group_t underlyingTypes{};
     xsd::optional<float> InitialPrice;
     xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
     xsd::optional<float> DividendFactor;
@@ -7800,10 +7801,10 @@ struct _EquityMarginLegData_t_EquityLegData_t
 
 struct _EquityMarginLegData_t
 {
-    float InitialMarginFactor;
-    float Multiplier;
-    domain::_EquityMarginLegData_t_Rates_t Rates;
-    domain::_EquityMarginLegData_t_EquityLegData_t EquityLegData;
+    float InitialMarginFactor{};
+    float Multiplier{};
+    domain::_EquityMarginLegData_t_Rates_t Rates{};
+    domain::_EquityMarginLegData_t_EquityLegData_t EquityLegData{};
 };
 
 struct pricesType
@@ -7814,7 +7815,7 @@ struct pricesType
 struct _CommodityFixedLegData_t
 {
     xsd::optional<domain::quantitiesType> Quantities;
-    domain::pricesType Prices;
+    domain::pricesType Prices{};
     xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
     xsd::optional<domain::_CommodityFixedLegData_t_Tag_t> Tag;
 };
@@ -7838,9 +7839,9 @@ std::string to_string(pricingDateRuleType);
 
 struct _CommodityFloatingLegData_t
 {
-    domain::_CommodityFloatingLegData_t_Name_t Name;
-    domain::priceType PriceType;
-    domain::quantitiesType Quantities;
+    domain::_CommodityFloatingLegData_t_Name_t Name{};
+    domain::priceType PriceType{};
+    domain::quantitiesType Quantities{};
     xsd::optional<domain::commodityQuantityFrequencyType> CommodityQuantityFrequency;
     xsd::optional<domain::commodityPayRelativeToType> CommodityPayRelativeTo;
     xsd::optional<domain::spreads> Spreads;
@@ -7871,9 +7872,9 @@ struct _FormulaBasedLegData_t_Index_t : xsd::string
 
 struct _FormulaBasedLegData_t
 {
-    domain::_FormulaBasedLegData_t_Index_t Index;
+    domain::_FormulaBasedLegData_t_Index_t Index{};
     xsd::optional<bool> IsInArrears;
-    int64_t FixingDays;
+    int64_t FixingDays{};
     xsd::optional<domain::calendar> FixingCalendar;
 };
 
@@ -8004,8 +8005,8 @@ struct forwardBondData_PremiumData_t_Date_t : xsd::string
 
 struct forwardBondData_PremiumData_t
 {
-    domain::forwardBondData_PremiumData_t_Amount_t Amount;
-    domain::forwardBondData_PremiumData_t_Date_t Date;
+    domain::forwardBondData_PremiumData_t_Amount_t Amount{};
+    domain::forwardBondData_PremiumData_t_Date_t Date{};
 };
 
 struct bondFutureData_ContractMonth_t : xsd::string
@@ -8101,9 +8102,9 @@ std::string to_string(cdsDocClauseType);
 
 struct _ReferenceInformation_t
 {
-    domain::_ReferenceInformation_t_ReferenceEntityId_t ReferenceEntityId;
-    domain::cdsTierType Tier;
-    domain::currencyCode Currency;
+    domain::_ReferenceInformation_t_ReferenceEntityId_t ReferenceEntityId{};
+    domain::cdsTierType Tier{};
+    domain::currencyCode Currency{};
     xsd::optional<domain::cdsDocClauseType> DocClause;
 };
 
@@ -8148,7 +8149,7 @@ struct legData_SettlementData_t_FXIndex_t : xsd::string
 
 struct legData_SettlementData_t
 {
-    domain::legData_SettlementData_t_FXIndex_t FXIndex;
+    domain::legData_SettlementData_t_FXIndex_t FXIndex{};
     xsd::optional<domain::legData_SettlementData_t_FixingDate_t> FixingDate;
 };
 
@@ -8158,8 +8159,8 @@ struct creditDefaultSwapOptionData_Term_t : xsd::string
 
 struct auctionSettlementInformation
 {
-    domain::date AuctionSettlementDate;
-    float AuctionFinalPrice;
+    domain::date AuctionSettlementDate{};
+    float AuctionFinalPrice{};
 };
 
 struct commodityForwardData_FutureExpiryOffset_t : xsd::string
@@ -8176,9 +8177,9 @@ struct commForwardSettlementData_FXIndex_t : xsd::string
 
 struct commForwardSettlementData
 {
-    domain::currencyCode PayCurrency;
-    domain::commForwardSettlementData_FXIndex_t FXIndex;
-    domain::date FixingDate;
+    domain::currencyCode PayCurrency{};
+    domain::commForwardSettlementData_FXIndex_t FXIndex{};
+    domain::date FixingDate{};
 };
 
 struct commodityDigitalAveragePriceOptionData_FXIndex_t : xsd::string
@@ -8187,10 +8188,10 @@ struct commodityDigitalAveragePriceOptionData_FXIndex_t : xsd::string
 
 struct commoditySpreadOptionStripPaymentData
 {
-    domain::scheduleData OptionStripDefinition;
-    int64_t PaymentLag;
-    domain::businessDayConvention PaymentConvention;
-    domain::calendar PaymentCalendar;
+    domain::scheduleData OptionStripDefinition{};
+    int64_t PaymentLag{};
+    domain::businessDayConvention PaymentConvention{};
+    domain::calendar PaymentCalendar{};
 };
 
 struct commodityAveragePriceOptionData_FXIndex_t : xsd::string
@@ -8312,11 +8313,11 @@ struct cbCallData_IncludeAccruals_t
 
 struct cbCallData
 {
-    domain::scheduleData ScheduleData;
-    domain::cbCallData_Styles_t Styles;
-    domain::cbCallData_Prices_t Prices;
-    domain::cbCallData_PriceTypes_t PriceTypes;
-    domain::cbCallData_IncludeAccruals_t IncludeAccruals;
+    domain::scheduleData ScheduleData{};
+    domain::cbCallData_Styles_t Styles{};
+    domain::cbCallData_Prices_t Prices{};
+    domain::cbCallData_PriceTypes_t PriceTypes{};
+    domain::cbCallData_IncludeAccruals_t IncludeAccruals{};
     xsd::optional<domain::cbCallData_Soft_t> Soft;
     xsd::optional<domain::cbCallData_TriggerRatios_t> TriggerRatios;
     xsd::optional<domain::cbCallData_NOfMTriggers_t> NOfMTriggers;
@@ -8356,10 +8357,10 @@ struct cbDividendProtectionData_Thresholds_t
 
 struct cbDividendProtectionData
 {
-    domain::scheduleData ScheduleData;
-    domain::cbDividendProtectionData_AdjustmentStyles_t AdjustmentStyles;
-    domain::cbDividendProtectionData_DividendTypes_t DividendTypes;
-    domain::cbDividendProtectionData_Thresholds_t Thresholds;
+    domain::scheduleData ScheduleData{};
+    domain::cbDividendProtectionData_AdjustmentStyles_t AdjustmentStyles{};
+    domain::cbDividendProtectionData_DividendTypes_t DividendTypes{};
+    domain::cbDividendProtectionData_Thresholds_t Thresholds{};
 };
 
 struct callableBondCallData_Styles_t
@@ -8384,11 +8385,11 @@ struct callableBondCallData_IncludeAccruals_t
 
 struct callableBondCallData
 {
-    domain::scheduleData ScheduleData;
-    domain::callableBondCallData_Styles_t Styles;
-    domain::callableBondCallData_Prices_t Prices;
-    domain::callableBondCallData_PriceTypes_t PriceTypes;
-    domain::callableBondCallData_IncludeAccruals_t IncludeAccruals;
+    domain::scheduleData ScheduleData{};
+    domain::callableBondCallData_Styles_t Styles{};
+    domain::callableBondCallData_Prices_t Prices{};
+    domain::callableBondCallData_PriceTypes_t PriceTypes{};
+    domain::callableBondCallData_IncludeAccruals_t IncludeAccruals{};
 };
 
 struct rpaData_IssuerId_t : xsd::string
@@ -8419,17 +8420,17 @@ struct cbotranches
 
 struct cboStructure
 {
-    domain::cboStructure_DayCounter_t DayCounter;
-    domain::cboStructure_PaymentConvention_t PaymentConvention;
-    domain::currencyCode Currency;
+    domain::cboStructure_DayCounter_t DayCounter{};
+    domain::cboStructure_PaymentConvention_t PaymentConvention{};
+    domain::currencyCode Currency{};
     xsd::optional<domain::cboStructure_ReinvestmentEndDate_t> ReinvestmentEndDate;
-    float SeniorFee;
-    domain::cboStructure_FeeDayCounter_t FeeDayCounter;
-    float SubordinatedFee;
-    float EquityKicker;
-    domain::cboBondBasketData BondBasketData;
-    domain::cbotranches CBOTranches;
-    domain::scheduleData ScheduleData;
+    float SeniorFee{};
+    domain::cboStructure_FeeDayCounter_t FeeDayCounter{};
+    float SubordinatedFee{};
+    float EquityKicker{};
+    domain::cboBondBasketData BondBasketData{};
+    domain::cbotranches CBOTranches{};
+    domain::scheduleData ScheduleData{};
 };
 
 struct bondBasketData_Identifier_t : xsd::string
@@ -8438,9 +8439,9 @@ struct bondBasketData_Identifier_t : xsd::string
 
 struct equityOptionUnderlyingData
 {
-    domain::underlying Underlying;
-    domain::optionData OptionData;
-    float Strike;
+    domain::underlying Underlying{};
+    domain::optionData OptionData{};
+    float Strike{};
 };
 
 struct trsUnderlyingData_Derivative_t_Id_t : xsd::string
@@ -8450,7 +8451,7 @@ struct trsUnderlyingData_Derivative_t_Id_t : xsd::string
 struct trsUnderlyingData_Derivative_t_Trade_t
 {
     xsd::optional<xsd::string> id;
-    domain::oreTradeType TradeType;
+    domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::swapData> CrossCurrencySwapData;
     xsd::optional<domain::swapData> InflationSwapData;
@@ -8633,14 +8634,14 @@ struct trsUnderlyingData_Derivative_t_Trade_t
 
 struct trsUnderlyingData_Derivative_t
 {
-    domain::trsUnderlyingData_Derivative_t_Id_t Id;
-    domain::trsUnderlyingData_Derivative_t_Trade_t Trade;
+    domain::trsUnderlyingData_Derivative_t_Id_t Id{};
+    domain::trsUnderlyingData_Derivative_t_Trade_t Trade{};
 };
 
 struct trsUnderlyingData_Trade_t
 {
     xsd::optional<xsd::string> id;
-    domain::oreTradeType TradeType;
+    domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::swapData> CrossCurrencySwapData;
     xsd::optional<domain::swapData> InflationSwapData;
@@ -8827,7 +8828,7 @@ struct trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t : xsd::string
 
 struct trsUnderlyingData_PortfolioIndexTradeData_t
 {
-    domain::trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t BasketName;
+    domain::trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t BasketName{};
     xsd::optional<domain::trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t> IndexQuantity;
 };
 
@@ -8858,7 +8859,7 @@ struct trsFundingData
 
 struct trsAdditionalCashflowData
 {
-    domain::legData LegData;
+    domain::legData LegData{};
 };
 
 struct compositeTradeData_BasketName_t : xsd::string
@@ -8927,9 +8928,9 @@ struct tranche_Notionals_t
 struct tranche
 {
     xsd::optional<domain::tranche_Description_t> Description;
-    domain::tranche_SecurityId_t SecurityId;
-    int64_t Seniority;
-    domain::tranche_Notionals_t Notionals;
+    domain::tranche_SecurityId_t SecurityId{};
+    int64_t Seniority{};
+    domain::tranche_Notionals_t Notionals{};
 };
 
 struct tarfData2_Strikes_t
@@ -9014,8 +9015,8 @@ struct ore_script_NPV_t : xsd::string
 struct ore_script
 {
     xsd::optional<xsd::string> purpose;
-    domain::ore_script_Code_t Code;
-    domain::ore_script_NPV_t NPV;
+    domain::ore_script_Code_t Code{};
+    domain::ore_script_NPV_t NPV{};
     xsd::optional<domain::ore_script_Results_t> Results;
     xsd::optional<domain::ore_script_PricingEngineConfigOverwrite_t> PricingEngineConfigOverwrite;
     xsd::optional<domain::ore_script_CalibrationSpec_t> CalibrationSpec;
@@ -9032,7 +9033,7 @@ struct scriptedTradeData_Data_t_Number_t_Name_t : xsd::string
 
 struct scriptedTradeData_Data_t_Number_t
 {
-    domain::scriptedTradeData_Data_t_Number_t_Name_t Name;
+    domain::scriptedTradeData_Data_t_Number_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Number_t_Value_t> Value;
     xsd::optional<domain::scriptedTradeData_Data_t_Number_t_Values_t> Values;
 };
@@ -9043,7 +9044,7 @@ struct scriptedTradeData_Data_t_Currency_t_Name_t : xsd::string
 
 struct scriptedTradeData_Data_t_Currency_t
 {
-    domain::scriptedTradeData_Data_t_Currency_t_Name_t Name;
+    domain::scriptedTradeData_Data_t_Currency_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Currency_t_Value_t> Value;
     xsd::optional<domain::scriptedTradeData_Data_t_Currency_t_Values_t> Values;
 };
@@ -9054,7 +9055,7 @@ struct scriptedTradeData_Data_t_Index_t_Name_t : xsd::string
 
 struct scriptedTradeData_Data_t_Index_t
 {
-    domain::scriptedTradeData_Data_t_Index_t_Name_t Name;
+    domain::scriptedTradeData_Data_t_Index_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Index_t_Value_t> Value;
     xsd::optional<domain::scriptedTradeData_Data_t_Index_t_Values_t> Values;
 };
@@ -9065,7 +9066,7 @@ struct scriptedTradeData_Data_t_Event_t_Name_t : xsd::string
 
 struct scriptedTradeData_Data_t_Event_t
 {
-    domain::scriptedTradeData_Data_t_Event_t_Name_t Name;
+    domain::scriptedTradeData_Data_t_Event_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Event_t_Value_t> Value;
     xsd::optional<domain::scheduleData> ScheduleData;
     xsd::optional<domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t> DerivedSchedule;
@@ -9078,7 +9079,7 @@ struct scriptedTradeData_Data_t_Daycounter_t_Name_t : xsd::string
 
 struct scriptedTradeData_Data_t_Daycounter_t
 {
-    domain::scriptedTradeData_Data_t_Daycounter_t_Name_t Name;
+    domain::scriptedTradeData_Data_t_Daycounter_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Daycounter_t_Value_t> Value;
     xsd::optional<domain::scriptedTradeData_Data_t_Daycounter_t_Values_t> Values;
 };
@@ -9139,7 +9140,7 @@ std::string to_string(ycExtrapolation);
 struct market_YieldCurves_t_Configuration_t
 {
     xsd::optional<xsd::string> curve;
-    domain::market_YieldCurves_t_Configuration_t_Tenors_t Tenors;
+    domain::market_YieldCurves_t_Configuration_t_Tenors_t Tenors{};
     xsd::optional<domain::ycInterpolation> Interpolation;
     xsd::optional<domain::ycExtrapolation> Extrapolation;
     xsd::optional<domain::dayCounter> DayCounter;
@@ -9180,8 +9181,8 @@ std::string to_string(defaultCurveExtrapolation);
 
 struct market_DefaultCurves_t
 {
-    domain::market_DefaultCurves_t_Names_t Names;
-    domain::market_DefaultCurves_t_Tenors_t Tenors;
+    domain::market_DefaultCurves_t_Names_t Names{};
+    domain::market_DefaultCurves_t_Tenors_t Tenors{};
     xsd::optional<bool> SimulateSurvivalProbabilities;
     xsd::optional<bool> SimulateRecoveryRates;
     xsd::optional<domain::market_DefaultCurves_t_DayCounters_t> DayCounters;
@@ -9202,8 +9203,8 @@ struct market_Equities_t
 {
     xsd::optional<domain::bool_> SimulateEquityForecastCurve;
     xsd::optional<domain::bool_> SimulateDividendYield;
-    domain::market_Equities_t_Names_t Names;
-    domain::market_Equities_t_DividendTenors_t DividendTenors;
+    domain::market_Equities_t_Names_t Names{};
+    domain::market_Equities_t_DividendTenors_t DividendTenors{};
 };
 
 enum class timeDecayType
@@ -9229,11 +9230,11 @@ struct market_SwaptionVolatilities_t_Terms_t : xsd::string
 struct market_SwaptionVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
+    domain::timeDecayType ReactionToTimeDecay{};
     xsd::optional<domain::market_SwaptionVolatilities_t_Keys_t> Keys;
     xsd::optional<domain::market_SwaptionVolatilities_t_Currencies_t> Currencies;
-    domain::market_SwaptionVolatilities_t_Expiries_t Expiries;
-    domain::market_SwaptionVolatilities_t_Terms_t Terms;
+    domain::market_SwaptionVolatilities_t_Expiries_t Expiries{};
+    domain::market_SwaptionVolatilities_t_Terms_t Terms{};
     xsd::optional<bool> SimulateATMOnly;
     xsd::vector<domain::market_SwaptionVolatilities_t_StrikeSpreads_t> StrikeSpreads;
     xsd::optional<domain::market_SwaptionVolatilities_t_DayCounters_t> DayCounters;
@@ -9256,10 +9257,10 @@ struct market_YieldVolatilities_t_Terms_t : xsd::string
 struct market_YieldVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_YieldVolatilities_t_Names_t Names;
-    domain::market_YieldVolatilities_t_Expiries_t Expiries;
-    domain::market_YieldVolatilities_t_Terms_t Terms;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_YieldVolatilities_t_Names_t Names{};
+    domain::market_YieldVolatilities_t_Expiries_t Expiries{};
+    domain::market_YieldVolatilities_t_Terms_t Terms{};
     xsd::optional<bool> SimulateATMOnly;
     xsd::optional<domain::market_YieldVolatilities_t_Cube_t> Cube;
     xsd::optional<domain::market_YieldVolatilities_t_DayCounters_t> DayCounters;
@@ -9269,7 +9270,7 @@ struct market_YieldVolatilities_t
 struct market_CapFloorVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
+    domain::timeDecayType ReactionToTimeDecay{};
     xsd::optional<domain::market_CapFloorVolatilities_t_Keys_t> Keys;
     xsd::optional<domain::market_CapFloorVolatilities_t_Currencies_t> Currencies;
     xsd::vector<domain::market_CapFloorVolatilities_t_Expiries_t> Expiries;
@@ -9292,9 +9293,9 @@ struct market_CDSVolatilities_t_Expiries_t : xsd::string
 struct market_CDSVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_CDSVolatilities_t_Names_t Names;
-    domain::market_CDSVolatilities_t_Expiries_t Expiries;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_CDSVolatilities_t_Names_t Names{};
+    domain::market_CDSVolatilities_t_Expiries_t Expiries{};
     xsd::vector<domain::market_CDSVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
 
@@ -9318,8 +9319,8 @@ struct market_EquityVolatilities_t_Names_t
 struct market_EquityVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_EquityVolatilities_t_Names_t Names;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_EquityVolatilities_t_Names_t Names{};
     xsd::vector<domain::market_EquityVolatilities_t_Expiries_t> Expiries;
     xsd::optional<bool> SimulateATMOnly;
     xsd::optional<domain::market_EquityVolatilities_t_Surface_t> Surface;
@@ -9360,8 +9361,8 @@ struct market_ZeroInflationIndexCurves_t_Tenors_t : xsd::string
 
 struct market_ZeroInflationIndexCurves_t
 {
-    domain::market_ZeroInflationIndexCurves_t_Names_t Names;
-    domain::market_ZeroInflationIndexCurves_t_Tenors_t Tenors;
+    domain::market_ZeroInflationIndexCurves_t_Names_t Names{};
+    domain::market_ZeroInflationIndexCurves_t_Tenors_t Tenors{};
     xsd::optional<domain::market_ZeroInflationIndexCurves_t_DayCounters_t> DayCounters;
 };
 
@@ -9376,8 +9377,8 @@ struct market_YYInflationIndexCurves_t_Tenors_t : xsd::string
 
 struct market_YYInflationIndexCurves_t
 {
-    domain::market_YYInflationIndexCurves_t_Names_t Names;
-    domain::market_YYInflationIndexCurves_t_Tenors_t Tenors;
+    domain::market_YYInflationIndexCurves_t_Names_t Names{};
+    domain::market_YYInflationIndexCurves_t_Tenors_t Tenors{};
     xsd::optional<domain::market_YYInflationIndexCurves_t_DayCounters_t> DayCounters;
 };
 
@@ -9397,10 +9398,10 @@ struct market_CPICapFloorVolatilities_t_Strikes_t : xsd::string
 struct market_CPICapFloorVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_CPICapFloorVolatilities_t_Names_t Names;
-    domain::market_CPICapFloorVolatilities_t_Expiries_t Expiries;
-    domain::market_CPICapFloorVolatilities_t_Strikes_t Strikes;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_CPICapFloorVolatilities_t_Names_t Names{};
+    domain::market_CPICapFloorVolatilities_t_Expiries_t Expiries{};
+    domain::market_CPICapFloorVolatilities_t_Strikes_t Strikes{};
     xsd::vector<domain::market_CPICapFloorVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
 
@@ -9420,10 +9421,10 @@ struct market_YYCapFloorVolatilities_t_Strikes_t : xsd::string
 struct market_YYCapFloorVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_YYCapFloorVolatilities_t_Names_t Names;
-    domain::market_YYCapFloorVolatilities_t_Expiries_t Expiries;
-    domain::market_YYCapFloorVolatilities_t_Strikes_t Strikes;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_YYCapFloorVolatilities_t_Names_t Names{};
+    domain::market_YYCapFloorVolatilities_t_Expiries_t Expiries{};
+    domain::market_YYCapFloorVolatilities_t_Strikes_t Strikes{};
     xsd::vector<domain::market_YYCapFloorVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
 
@@ -9435,7 +9436,7 @@ struct market_Commodities_t_Names_t
 struct market_Commodities_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::market_Commodities_t_Names_t Names;
+    domain::market_Commodities_t_Names_t Names{};
     xsd::vector<domain::market_Commodities_t_Tenors_t> Tenors;
     xsd::optional<domain::market_Commodities_t_DayCounters_t> DayCounters;
 };
@@ -9449,8 +9450,8 @@ struct market_CommodityVolatilities_t
 {
     xsd::optional<domain::bool_> Simulate;
     xsd::optional<bool> SimulateATMOnly;
-    domain::timeDecayType ReactionToTimeDecay;
-    domain::market_CommodityVolatilities_t_Names_t Names;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_CommodityVolatilities_t_Names_t Names{};
     xsd::optional<domain::market_CommodityVolatilities_t_DayCounter_t> DayCounter;
     xsd::vector<domain::market_CommodityVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
@@ -9467,7 +9468,7 @@ struct market_AggregationScenarioDataIndices_t
 
 struct market_AggregationScenarioDataCreditStates_t
 {
-    int64_t NumberOfFactors;
+    int64_t NumberOfFactors{};
 };
 
 struct market_AggregationScenarioDataSurvivalWeights_t
@@ -9483,7 +9484,7 @@ struct market_BaseCorrelations_t_IndexNames_t
 struct market_BaseCorrelations_t
 {
     xsd::vector<domain::bool_> Simulate;
-    domain::market_BaseCorrelations_t_IndexNames_t IndexNames;
+    domain::market_BaseCorrelations_t_IndexNames_t IndexNames{};
     xsd::vector<domain::market_BaseCorrelations_t_Terms_t> Terms;
     xsd::vector<domain::market_BaseCorrelations_t_DetachmentPoints_t> DetachmentPoints;
     xsd::optional<domain::market_BaseCorrelations_t_DayCounters_t> DayCounters;
@@ -9501,8 +9502,8 @@ struct market_Correlations_t_Expiries_t : xsd::string
 struct market_Correlations_t
 {
     xsd::optional<domain::bool_> Simulate;
-    domain::market_Correlations_t_Pairs_t Pairs;
-    domain::market_Correlations_t_Expiries_t Expiries;
+    domain::market_Correlations_t_Pairs_t Pairs{};
+    domain::market_Correlations_t_Expiries_t Expiries{};
 };
 
 struct market_CreditStates_t_NumberOfFactors_t : xsd::string
@@ -9511,7 +9512,7 @@ struct market_CreditStates_t_NumberOfFactors_t : xsd::string
 
 struct market_CreditStates_t
 {
-    domain::market_CreditStates_t_NumberOfFactors_t NumberOfFactors;
+    domain::market_CreditStates_t_NumberOfFactors_t NumberOfFactors{};
 };
 
 struct curveAlgebra
@@ -9549,9 +9550,9 @@ struct lgm_CalibrationSwaptions_t_Strikes_t : xsd::string
 
 struct lgm_CalibrationSwaptions_t
 {
-    domain::lgm_CalibrationSwaptions_t_Expiries_t Expiries;
-    domain::lgm_CalibrationSwaptions_t_Terms_t Terms;
-    domain::lgm_CalibrationSwaptions_t_Strikes_t Strikes;
+    domain::lgm_CalibrationSwaptions_t_Expiries_t Expiries{};
+    domain::lgm_CalibrationSwaptions_t_Terms_t Terms{};
+    domain::lgm_CalibrationSwaptions_t_Strikes_t Strikes{};
 };
 
 struct lgm_CalibrationCapFloors_t_CapFloor_t : xsd::string
@@ -9568,9 +9569,9 @@ struct lgm_CalibrationCapFloors_t_Strikes_t : xsd::string
 
 struct lgm_CalibrationCapFloors_t
 {
-    domain::lgm_CalibrationCapFloors_t_CapFloor_t CapFloor;
-    domain::lgm_CalibrationCapFloors_t_Expiries_t Expiries;
-    domain::lgm_CalibrationCapFloors_t_Strikes_t Strikes;
+    domain::lgm_CalibrationCapFloors_t_CapFloor_t CapFloor{};
+    domain::lgm_CalibrationCapFloors_t_Expiries_t Expiries{};
+    domain::lgm_CalibrationCapFloors_t_Strikes_t Strikes{};
 };
 
 struct lgm_CalibrationBaskets_t
@@ -9589,11 +9590,11 @@ struct hw_Volatility_t_InitialValue_t
 
 struct hw_Volatility_t
 {
-    domain::bool_ Calibrate;
+    domain::bool_ Calibrate{};
     xsd::optional<domain::volatilityTypeType> VolatilityType;
-    domain::paramTypeType ParamType;
-    domain::hw_Volatility_t_TimeGrid_t TimeGrid;
-    domain::hw_Volatility_t_InitialValue_t InitialValue;
+    domain::paramTypeType ParamType{};
+    domain::hw_Volatility_t_TimeGrid_t TimeGrid{};
+    domain::hw_Volatility_t_InitialValue_t InitialValue{};
 };
 
 struct hw_Reversion_t_InitialValue_t_Kappa_t : xsd::string
@@ -9612,10 +9613,10 @@ struct volatilityParameter_InitialValue_t : xsd::string
 struct volatilityParameter
 {
     xsd::optional<domain::volatilityTypeType> VolatilityType;
-    domain::bool_ Calibrate;
-    domain::paramTypeType ParamType;
+    domain::bool_ Calibrate{};
+    domain::paramTypeType ParamType{};
     xsd::optional<domain::volatilityParameter_TimeGrid_t> TimeGrid;
-    domain::volatilityParameter_InitialValue_t InitialValue;
+    domain::volatilityParameter_InitialValue_t InitialValue{};
 };
 
 struct hw_PCASigmaRatios_t : xsd::string
@@ -9636,9 +9637,9 @@ struct hw_CalibrationSwaptions_t_Strikes_t : xsd::string
 
 struct hw_CalibrationSwaptions_t
 {
-    domain::hw_CalibrationSwaptions_t_Expiries_t Expiries;
-    domain::hw_CalibrationSwaptions_t_Terms_t Terms;
-    domain::hw_CalibrationSwaptions_t_Strikes_t Strikes;
+    domain::hw_CalibrationSwaptions_t_Expiries_t Expiries{};
+    domain::hw_CalibrationSwaptions_t_Terms_t Terms{};
+    domain::hw_CalibrationSwaptions_t_Strikes_t Strikes{};
 };
 
 struct crossCurrencyLGM_CalibrationType_t : xsd::string
@@ -9659,18 +9660,18 @@ struct crossCurrencyLGM_Sigma_t_InitialValue_t : xsd::string
 
 struct crossCurrencyLGM_Sigma_t
 {
-    domain::bool_ Calibrate;
-    domain::crossCurrencyLGM_Sigma_t_ParamType_t ParamType;
-    domain::crossCurrencyLGM_Sigma_t_TimeGrid_t TimeGrid;
-    domain::crossCurrencyLGM_Sigma_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::crossCurrencyLGM_Sigma_t_ParamType_t ParamType{};
+    domain::crossCurrencyLGM_Sigma_t_TimeGrid_t TimeGrid{};
+    domain::crossCurrencyLGM_Sigma_t_InitialValue_t InitialValue{};
 };
 
 struct crossCurrencyLGM
 {
-    domain::currencyCodeWithDefault foreignCcy;
-    domain::currencyCode DomesticCcy;
-    domain::crossCurrencyLGM_CalibrationType_t CalibrationType;
-    domain::crossCurrencyLGM_Sigma_t Sigma;
+    domain::currencyCodeWithDefault foreignCcy{};
+    domain::currencyCode DomesticCcy{};
+    domain::crossCurrencyLGM_CalibrationType_t CalibrationType{};
+    domain::crossCurrencyLGM_Sigma_t Sigma{};
     xsd::optional<domain::crossCurrencyLGM_CalibrationOptions_t> CalibrationOptions;
 };
 
@@ -9692,18 +9693,18 @@ struct crossAssetLGM_Sigma_t_InitialValue_t : xsd::string
 
 struct crossAssetLGM_Sigma_t
 {
-    domain::bool_ Calibrate;
-    domain::crossAssetLGM_Sigma_t_ParamType_t ParamType;
-    domain::crossAssetLGM_Sigma_t_TimeGrid_t TimeGrid;
-    domain::crossAssetLGM_Sigma_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::crossAssetLGM_Sigma_t_ParamType_t ParamType{};
+    domain::crossAssetLGM_Sigma_t_TimeGrid_t TimeGrid{};
+    domain::crossAssetLGM_Sigma_t_InitialValue_t InitialValue{};
 };
 
 struct crossAssetLGM
 {
-    xsd::string name;
-    domain::currencyCode Currency;
-    domain::crossAssetLGM_CalibrationType_t CalibrationType;
-    domain::crossAssetLGM_Sigma_t Sigma;
+    xsd::string name{};
+    domain::currencyCode Currency{};
+    domain::crossAssetLGM_CalibrationType_t CalibrationType{};
+    domain::crossAssetLGM_Sigma_t Sigma{};
     xsd::optional<domain::crossAssetLGM_CalibrationOptions_t> CalibrationOptions;
 };
 
@@ -9713,39 +9714,39 @@ struct reversionParameter_InitialValue_t : xsd::string
 
 struct reversionParameter
 {
-    domain::reversionTypeType ReversionType;
-    domain::bool_ Calibrate;
-    domain::paramTypeType ParamType;
+    domain::reversionTypeType ReversionType{};
+    domain::bool_ Calibrate{};
+    domain::paramTypeType ParamType{};
     xsd::optional<domain::reversionParameter_TimeGrid_t> TimeGrid;
-    domain::reversionParameter_InitialValue_t InitialValue;
+    domain::reversionParameter_InitialValue_t InitialValue{};
 };
 
 struct lgmReversionTransformation
 {
-    float ShiftHorizon;
-    float Scaling;
+    float ShiftHorizon{};
+    float Scaling{};
 };
 
 struct jarrowYildrim_RealRate_t
 {
-    domain::volatilityParameter Volatility;
-    domain::reversionParameter Reversion;
-    domain::lgmReversionTransformation ParameterTransformation;
+    domain::volatilityParameter Volatility{};
+    domain::reversionParameter Reversion{};
+    domain::lgmReversionTransformation ParameterTransformation{};
 };
 
 struct jarrowYildrim_Index_t
 {
-    domain::volatilityParameter Volatility;
+    domain::volatilityParameter Volatility{};
 };
 
 struct jarrowYildrim
 {
     xsd::optional<xsd::string> index;
-    domain::currencyCode Currency;
-    domain::calibrationTypeType CalibrationType;
+    domain::currencyCode Currency{};
+    domain::calibrationTypeType CalibrationType{};
     xsd::optional<domain::jarrowYildrim_CalibrationBaskets_t> CalibrationBaskets;
-    domain::jarrowYildrim_RealRate_t RealRate;
-    domain::jarrowYildrim_Index_t Index;
+    domain::jarrowYildrim_RealRate_t RealRate{};
+    domain::jarrowYildrim_Index_t Index{};
     xsd::optional<domain::calibrationConfiguration> CalibrationConfiguration;
 };
 
@@ -9759,11 +9760,11 @@ struct dodgsonKainth_Reversion_t_InitialValue_t : xsd::string
 
 struct dodgsonKainth_Reversion_t
 {
-    domain::bool_ Calibrate;
-    domain::reversionTypeType ReversionType;
-    domain::paramTypeType ParamType;
-    domain::dodgsonKainth_Reversion_t_TimeGrid_t TimeGrid;
-    domain::dodgsonKainth_Reversion_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::reversionTypeType ReversionType{};
+    domain::paramTypeType ParamType{};
+    domain::dodgsonKainth_Reversion_t_TimeGrid_t TimeGrid{};
+    domain::dodgsonKainth_Reversion_t_InitialValue_t InitialValue{};
 };
 
 struct dodgsonKainth_Volatility_t_TimeGrid_t : xsd::string
@@ -9776,28 +9777,28 @@ struct dodgsonKainth_Volatility_t_InitialValue_t : xsd::string
 
 struct dodgsonKainth_Volatility_t
 {
-    domain::bool_ Calibrate;
-    domain::volatilityTypeType VolatilityType;
-    domain::paramTypeType ParamType;
-    domain::dodgsonKainth_Volatility_t_TimeGrid_t TimeGrid;
-    domain::dodgsonKainth_Volatility_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::volatilityTypeType VolatilityType{};
+    domain::paramTypeType ParamType{};
+    domain::dodgsonKainth_Volatility_t_TimeGrid_t TimeGrid{};
+    domain::dodgsonKainth_Volatility_t_InitialValue_t InitialValue{};
 };
 
 struct dodgsonKainth_ParameterTransformation_t
 {
-    float ShiftHorizon;
-    float Scaling;
+    float ShiftHorizon{};
+    float Scaling{};
 };
 
 struct dodgsonKainth
 {
     xsd::optional<xsd::string> index;
-    domain::currencyCode Currency;
-    domain::calibrationTypeType CalibrationType;
+    domain::currencyCode Currency{};
+    domain::calibrationTypeType CalibrationType{};
     xsd::optional<domain::dodgsonKainth_CalibrationBaskets_t> CalibrationBaskets;
-    domain::dodgsonKainth_Reversion_t Reversion;
-    domain::dodgsonKainth_Volatility_t Volatility;
-    domain::dodgsonKainth_ParameterTransformation_t ParameterTransformation;
+    domain::dodgsonKainth_Reversion_t Reversion{};
+    domain::dodgsonKainth_Volatility_t Volatility{};
+    domain::dodgsonKainth_ParameterTransformation_t ParameterTransformation{};
     xsd::optional<domain::calibrationConfiguration> CalibrationConfiguration;
 };
 
@@ -9811,11 +9812,11 @@ struct crlgm_Volatility_t_InitialValue_t : xsd::string
 
 struct crlgm_Volatility_t
 {
-    domain::bool_ Calibrate;
-    domain::volatilityTypeType VolatilityType;
-    domain::paramTypeType ParamType;
-    domain::crlgm_Volatility_t_TimeGrid_t TimeGrid;
-    domain::crlgm_Volatility_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::volatilityTypeType VolatilityType{};
+    domain::paramTypeType ParamType{};
+    domain::crlgm_Volatility_t_TimeGrid_t TimeGrid{};
+    domain::crlgm_Volatility_t_InitialValue_t InitialValue{};
 };
 
 struct crlgm_Reversion_t_TimeGrid_t : xsd::string
@@ -9828,28 +9829,28 @@ struct crlgm_Reversion_t_InitialValue_t : xsd::string
 
 struct crlgm_Reversion_t
 {
-    domain::bool_ Calibrate;
-    domain::reversionTypeType ReversionType;
-    domain::paramTypeType ParamType;
-    domain::crlgm_Reversion_t_TimeGrid_t TimeGrid;
-    domain::crlgm_Reversion_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::reversionTypeType ReversionType{};
+    domain::paramTypeType ParamType{};
+    domain::crlgm_Reversion_t_TimeGrid_t TimeGrid{};
+    domain::crlgm_Reversion_t_InitialValue_t InitialValue{};
 };
 
 struct crlgm_ParameterTransformation_t
 {
-    float ShiftHorizon;
-    float Scaling;
+    float ShiftHorizon{};
+    float Scaling{};
 };
 
 struct crlgm
 {
     xsd::optional<xsd::string> name;
     xsd::optional<domain::currencyCode> Currency;
-    domain::calibrationTypeType CalibrationType;
-    domain::crlgm_Volatility_t Volatility;
-    domain::crlgm_Reversion_t Reversion;
+    domain::calibrationTypeType CalibrationType{};
+    domain::crlgm_Volatility_t Volatility{};
+    domain::crlgm_Reversion_t Reversion{};
     xsd::optional<domain::crlgm_CalibrationCdsOptions_t> CalibrationCdsOptions;
-    domain::crlgm_ParameterTransformation_t ParameterTransformation;
+    domain::crlgm_ParameterTransformation_t ParameterTransformation{};
     xsd::optional<domain::floatSpreadMappingType> FloatSpreadMapping;
 };
 
@@ -9871,24 +9872,24 @@ struct cir_CalibrationCdsOptions_t_Strikes_t : xsd::string
 
 struct cir_CalibrationCdsOptions_t
 {
-    domain::cir_CalibrationCdsOptions_t_Expiries_t Expiries;
-    domain::cir_CalibrationCdsOptions_t_Terms_t Terms;
-    domain::cir_CalibrationCdsOptions_t_Strikes_t Strikes;
+    domain::cir_CalibrationCdsOptions_t_Expiries_t Expiries{};
+    domain::cir_CalibrationCdsOptions_t_Terms_t Terms{};
+    domain::cir_CalibrationCdsOptions_t_Strikes_t Strikes{};
 };
 
 struct cir
 {
     xsd::optional<domain::currencyCode> Currency;
-    domain::calibrationTypeType CalibrationType;
-    domain::cir_CalibrationStrategy_t CalibrationStrategy;
-    float StartValue;
-    float ReversionValue;
-    float LongTermValue;
-    float Volatility;
-    domain::bool_ RelaxedFeller;
-    float FellerFactor;
-    float Tolerance;
-    domain::cir_CalibrationCdsOptions_t CalibrationCdsOptions;
+    domain::calibrationTypeType CalibrationType{};
+    domain::cir_CalibrationStrategy_t CalibrationStrategy{};
+    float StartValue{};
+    float ReversionValue{};
+    float LongTermValue{};
+    float Volatility{};
+    domain::bool_ RelaxedFeller{};
+    float FellerFactor{};
+    float Tolerance{};
+    domain::cir_CalibrationCdsOptions_t CalibrationCdsOptions{};
 };
 
 struct commoditySchwartz_CalibrationType_t : xsd::string
@@ -9901,8 +9902,8 @@ struct commoditySchwartz_Sigma_t_InitialValue_t : xsd::string
 
 struct commoditySchwartz_Sigma_t
 {
-    domain::bool_ Calibrate;
-    domain::commoditySchwartz_Sigma_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::commoditySchwartz_Sigma_t_InitialValue_t InitialValue{};
 };
 
 struct commoditySchwartz_Kappa_t_InitialValue_t : xsd::string
@@ -9911,17 +9912,17 @@ struct commoditySchwartz_Kappa_t_InitialValue_t : xsd::string
 
 struct commoditySchwartz_Kappa_t
 {
-    domain::bool_ Calibrate;
-    domain::commoditySchwartz_Kappa_t_InitialValue_t InitialValue;
+    domain::bool_ Calibrate{};
+    domain::commoditySchwartz_Kappa_t_InitialValue_t InitialValue{};
 };
 
 struct commoditySchwartz
 {
-    xsd::string name;
-    domain::currencyCode Currency;
-    domain::commoditySchwartz_CalibrationType_t CalibrationType;
-    domain::commoditySchwartz_Sigma_t Sigma;
-    domain::commoditySchwartz_Kappa_t Kappa;
+    xsd::string name{};
+    domain::currencyCode Currency{};
+    domain::commoditySchwartz_CalibrationType_t CalibrationType{};
+    domain::commoditySchwartz_Sigma_t Sigma{};
+    domain::commoditySchwartz_Kappa_t Kappa{};
     xsd::optional<domain::commoditySchwartz_Seasonality_t> Seasonality;
     xsd::optional<domain::commoditySchwartz_CalibrationOptions_t> CalibrationOptions;
     xsd::optional<bool> DriftFreeState;
@@ -9931,8 +9932,8 @@ typedef double correlationValue;
 
 struct crossAssetModel_InstantaneousCorrelations_t_Correlation_t : xsd::base<domain::correlationValue>
 {
-    xsd::string factor1;
-    xsd::string factor2;
+    xsd::string factor1{};
+    xsd::string factor2{};
     xsd::optional<xsd::string> index1;
     xsd::optional<xsd::string> index2;
 };
@@ -9982,8 +9983,8 @@ struct fxSpot_CurveDescription_t : xsd::string
 
 struct fxSpot
 {
-    domain::fxSpot_CurveId_t CurveId;
-    domain::fxSpot_CurveDescription_t CurveDescription;
+    domain::fxSpot_CurveId_t CurveId{};
+    domain::fxSpot_CurveDescription_t CurveDescription{};
 };
 
 struct fxVolatility_CurveId_t : xsd::string
@@ -10037,9 +10038,9 @@ std::string to_string(extrapolationType);
 
 struct fxVolatility
 {
-    domain::fxVolatility_CurveId_t CurveId;
-    domain::fxVolatility_CurveDescription_t CurveDescription;
-    domain::dimensionType Dimension;
+    domain::fxVolatility_CurveId_t CurveId{};
+    domain::fxVolatility_CurveDescription_t CurveDescription{};
+    domain::dimensionType Dimension{};
     xsd::optional<domain::smileType> SmileType;
     xsd::optional<domain::fxVolInterpolation> SmileInterpolation;
     xsd::optional<domain::fxVolatility_Deltas_t> Deltas;
@@ -10080,8 +10081,8 @@ std::string to_string(volatilityType);
 
 struct swaptionVolatility
 {
-    domain::swaptionVolatility_CurveId_t CurveId;
-    domain::swaptionVolatility_CurveDescription_t CurveDescription;
+    domain::swaptionVolatility_CurveId_t CurveId{};
+    domain::swaptionVolatility_CurveDescription_t CurveDescription{};
     xsd::optional<domain::swaptionVolatility_ProxyConfig_t> ProxyConfig;
     xsd::optional<domain::dimensionType> Dimension;
     xsd::optional<domain::volatilityType> VolatilityType;
@@ -10127,17 +10128,17 @@ struct yieldVolatility_BondTenors_t : xsd::string
 
 struct yieldVolatility
 {
-    domain::yieldVolatility_CurveId_t CurveId;
-    domain::yieldVolatility_CurveDescription_t CurveDescription;
-    domain::yieldVolatility_Qualifier_t Qualifier;
+    domain::yieldVolatility_CurveId_t CurveId{};
+    domain::yieldVolatility_CurveDescription_t CurveDescription{};
+    domain::yieldVolatility_Qualifier_t Qualifier{};
     xsd::optional<domain::dimensionType> Dimension;
-    domain::volatilityType VolatilityType;
-    domain::extrapolationType Extrapolation;
-    domain::dayCounter DayCounter;
-    domain::calendar Calendar;
-    domain::businessDayConvention BusinessDayConvention;
-    domain::yieldVolatility_OptionTenors_t OptionTenors;
-    domain::yieldVolatility_BondTenors_t BondTenors;
+    domain::volatilityType VolatilityType{};
+    domain::extrapolationType Extrapolation{};
+    domain::dayCounter DayCounter{};
+    domain::calendar Calendar{};
+    domain::businessDayConvention BusinessDayConvention{};
+    domain::yieldVolatility_OptionTenors_t OptionTenors{};
+    domain::yieldVolatility_BondTenors_t BondTenors{};
     xsd::optional<domain::reportConfiguration> Report;
 };
 
@@ -10201,8 +10202,8 @@ std::string to_string(capFloorVolatility_InputType_t);
 
 struct capFloorVolatility
 {
-    domain::capFloorVolatility_CurveId_t CurveId;
-    domain::capFloorVolatility_CurveDescription_t CurveDescription;
+    domain::capFloorVolatility_CurveId_t CurveId{};
+    domain::capFloorVolatility_CurveDescription_t CurveDescription{};
     xsd::optional<domain::capFloorVolatility_ProxyConfig_t> ProxyConfig;
     xsd::optional<domain::volatilityType> VolatilityType;
     xsd::optional<domain::volatilityType> OutputVolatilityType;
@@ -10244,8 +10245,8 @@ struct cdsVolatility_CurveDescription_t : xsd::string
 
 struct cdsVolatility
 {
-    domain::cdsVolatility_CurveId_t CurveId;
-    domain::cdsVolatility_CurveDescription_t CurveDescription;
+    domain::cdsVolatility_CurveId_t CurveId{};
+    domain::cdsVolatility_CurveDescription_t CurveDescription{};
     xsd::optional<domain::cdsVolatility_Terms_t> Terms;
     xsd::optional<domain::cdsVolatility_Expiries_t> Expiries;
     xsd::optional<domain::constantVolatilityConfig> Constant;
@@ -10282,9 +10283,9 @@ std::string to_string(defaultCurveType);
 
 struct defaultCurve
 {
-    domain::defaultCurve_CurveId_t CurveId;
-    domain::defaultCurve_CurveDescription_t CurveDescription;
-    domain::currencyCode Currency;
+    domain::defaultCurve_CurveId_t CurveId{};
+    domain::defaultCurve_CurveDescription_t CurveDescription{};
+    domain::currencyCode Currency{};
     xsd::optional<domain::defaultCurve_Configurations_t> Configurations;
     xsd::optional<domain::defaultCurveType> Type;
     xsd::optional<domain::defaultCurve_DiscountCurve_t> DiscountCurve;
@@ -10383,11 +10384,11 @@ std::string to_string(interpolationMethodType);
 
 struct yieldCurve
 {
-    domain::yieldCurve_CurveId_t CurveId;
-    domain::yieldCurve_CurveDescription_t CurveDescription;
-    domain::currencyCode Currency;
-    domain::yieldCurve_DiscountCurve_t DiscountCurve;
-    domain::segmentsType Segments;
+    domain::yieldCurve_CurveId_t CurveId{};
+    domain::yieldCurve_CurveDescription_t CurveDescription{};
+    domain::currencyCode Currency{};
+    domain::yieldCurve_DiscountCurve_t DiscountCurve{};
+    domain::segmentsType Segments{};
     xsd::optional<domain::interpolationVariableType> InterpolationVariable;
     xsd::optional<domain::interpolationMethodType> InterpolationMethod;
     xsd::optional<uint64_t> MixedInterpolationCutoff;
@@ -10425,18 +10426,18 @@ struct inflationCurve_Lag_t : xsd::string
 
 struct inflationCurve
 {
-    domain::inflationCurve_CurveId_t CurveId;
-    domain::inflationCurve_CurveDescription_t CurveDescription;
-    domain::inflationCurve_NominalTermStructure_t NominalTermStructure;
-    domain::inflationType Type;
+    domain::inflationCurve_CurveId_t CurveId{};
+    domain::inflationCurve_CurveDescription_t CurveDescription{};
+    domain::inflationCurve_NominalTermStructure_t NominalTermStructure{};
+    domain::inflationType Type{};
     xsd::optional<domain::quoteType> Quotes;
     xsd::optional<domain::inflationCurve_Conventions_t> Conventions;
     xsd::optional<domain::inflSegmentsType> Segments;
     xsd::optional<domain::bool_> Extrapolation;
-    domain::calendar Calendar;
+    domain::calendar Calendar{};
     xsd::optional<domain::dayCounter> DayCounter;
-    domain::inflationCurve_Lag_t Lag;
-    domain::frequencyType Frequency;
+    domain::inflationCurve_Lag_t Lag{};
+    domain::frequencyType Frequency{};
     xsd::optional<domain::inflationCurve_BaseRate_t> BaseRate;
     xsd::optional<double> Tolerance;
     xsd::optional<domain::seasonalityType> Seasonality;
@@ -10479,25 +10480,25 @@ struct inflationCapFloorVolatility_YieldTermStructure_t : xsd::string
 
 struct inflationCapFloorVolatility
 {
-    domain::inflationCapFloorVolatility_CurveId_t CurveId;
-    domain::inflationCapFloorVolatility_CurveDescription_t CurveDescription;
-    domain::inflationType Type;
-    domain::inflationCapFloorVolatility_QuoteType_t QuoteType;
-    domain::volatilityType VolatilityType;
-    domain::bool_ Extrapolation;
-    domain::inflationCapFloorVolatility_Tenors_t Tenors;
+    domain::inflationCapFloorVolatility_CurveId_t CurveId{};
+    domain::inflationCapFloorVolatility_CurveDescription_t CurveDescription{};
+    domain::inflationType Type{};
+    domain::inflationCapFloorVolatility_QuoteType_t QuoteType{};
+    domain::volatilityType VolatilityType{};
+    domain::bool_ Extrapolation{};
+    domain::inflationCapFloorVolatility_Tenors_t Tenors{};
     xsd::optional<uint64_t> SettlementDays;
     xsd::optional<domain::inflationCapFloorVolatility_CapStrikes_t> CapStrikes;
     xsd::optional<domain::inflationCapFloorVolatility_FloorStrikes_t> FloorStrikes;
     xsd::optional<domain::inflationCapFloorVolatility_Strikes_t> Strikes;
-    domain::calendar Calendar;
-    domain::dayCounter DayCounter;
-    domain::businessDayConvention BusinessDayConvention;
-    domain::inflationCapFloorVolatility_Index_t Index;
-    domain::inflationCapFloorVolatility_IndexCurve_t IndexCurve;
+    domain::calendar Calendar{};
+    domain::dayCounter DayCounter{};
+    domain::businessDayConvention BusinessDayConvention{};
+    domain::inflationCapFloorVolatility_Index_t Index{};
+    domain::inflationCapFloorVolatility_IndexCurve_t IndexCurve{};
     xsd::optional<domain::bool_> IndexInterpolated;
-    domain::inflationCapFloorVolatility_ObservationLag_t ObservationLag;
-    domain::inflationCapFloorVolatility_YieldTermStructure_t YieldTermStructure;
+    domain::inflationCapFloorVolatility_ObservationLag_t ObservationLag{};
+    domain::inflationCapFloorVolatility_YieldTermStructure_t YieldTermStructure{};
     xsd::optional<domain::inflationCapFloorVolatility_QuoteIndex_t> QuoteIndex;
     xsd::optional<domain::inflationCapFloorVolatility_Conventions_t> Conventions;
     xsd::optional<domain::bool_> UseLastFixingDate;
@@ -10543,14 +10544,14 @@ struct equityCurve_SpotQuote_t : xsd::string
 
 struct equityCurve
 {
-    domain::equityCurve_CurveId_t CurveId;
-    domain::equityCurve_CurveDescription_t CurveDescription;
-    domain::extendedCurrencyCode Currency;
+    domain::equityCurve_CurveId_t CurveId{};
+    domain::equityCurve_CurveDescription_t CurveDescription{};
+    domain::extendedCurrencyCode Currency{};
     xsd::optional<domain::calendar> Calendar;
-    domain::equityCurve_ForecastingCurve_t ForecastingCurve;
-    domain::equityType Type;
+    domain::equityCurve_ForecastingCurve_t ForecastingCurve{};
+    domain::equityType Type{};
     xsd::optional<domain::exerciseStyle> ExerciseStyle;
-    domain::equityCurve_SpotQuote_t SpotQuote;
+    domain::equityCurve_SpotQuote_t SpotQuote{};
     xsd::optional<domain::quoteType> Quotes;
     xsd::optional<domain::dayCounter> DayCounter;
     xsd::optional<domain::dividendInterpolation> DividendInterpolation;
@@ -10568,10 +10569,10 @@ struct equityVolatility_CurveDescription_t : xsd::string
 
 struct equityVolatility
 {
-    domain::equityVolatility_CurveId_t CurveId;
-    domain::equityVolatility_CurveDescription_t CurveDescription;
+    domain::equityVolatility_CurveId_t CurveId{};
+    domain::equityVolatility_CurveDescription_t CurveDescription{};
     xsd::optional<domain::equityVolatility_EquityId_t> EquityId;
-    domain::extendedCurrencyCode Currency;
+    domain::extendedCurrencyCode Currency{};
     xsd::optional<domain::dimensionType> Dimension;
     xsd::optional<domain::equityVolatility_Expiries_t> Expiries;
     xsd::optional<domain::equityVolatility_Strikes_t> Strikes;
@@ -10601,8 +10602,8 @@ struct security_CurveDescription_t : xsd::string
 
 struct security
 {
-    domain::security_CurveId_t CurveId;
-    domain::security_CurveDescription_t CurveDescription;
+    domain::security_CurveId_t CurveId{};
+    domain::security_CurveDescription_t CurveDescription{};
     xsd::optional<domain::security_SpreadQuote_t> SpreadQuote;
     xsd::optional<domain::security_RecoveryRateQuote_t> RecoveryRateQuote;
     xsd::optional<domain::security_CPRQuote_t> CPRQuote;
@@ -10628,14 +10629,14 @@ struct baseCorrelation_DetachmentPoints_t : xsd::string
 
 struct baseCorrelation
 {
-    domain::baseCorrelation_CurveId_t CurveId;
-    domain::baseCorrelation_CurveDescription_t CurveDescription;
-    domain::baseCorrelation_Terms_t Terms;
-    domain::baseCorrelation_DetachmentPoints_t DetachmentPoints;
-    float SettlementDays;
-    domain::calendar Calendar;
-    domain::businessDayConvention BusinessDayConvention;
-    domain::dayCounter DayCounter;
+    domain::baseCorrelation_CurveId_t CurveId{};
+    domain::baseCorrelation_CurveDescription_t CurveDescription{};
+    domain::baseCorrelation_Terms_t Terms{};
+    domain::baseCorrelation_DetachmentPoints_t DetachmentPoints{};
+    float SettlementDays{};
+    domain::calendar Calendar{};
+    domain::businessDayConvention BusinessDayConvention{};
+    domain::dayCounter DayCounter{};
     xsd::optional<domain::bool_> Extrapolate;
     xsd::optional<domain::baseCorrelation_QuoteName_t> QuoteName;
     xsd::optional<domain::date> StartDate;
@@ -10663,9 +10664,9 @@ typedef domain::interpolationMethodType commodityInterpolationType;
 
 struct simCommodityCurve
 {
-    domain::simCommodityCurve_CurveId_t CurveId;
-    domain::simCommodityCurve_CurveDescription_t CurveDescription;
-    domain::currencyCode Currency;
+    domain::simCommodityCurve_CurveId_t CurveId{};
+    domain::simCommodityCurve_CurveDescription_t CurveDescription{};
+    domain::currencyCode Currency{};
     xsd::optional<domain::simCommodityCurve_BasePriceCurve_t> BasePriceCurve;
     xsd::optional<domain::simCommodityCurve_BaseYieldCurve_t> BaseYieldCurve;
     xsd::optional<domain::simCommodityCurve_YieldCurve_t> YieldCurve;
@@ -10698,9 +10699,9 @@ std::string to_string(commVolQuoteSuffix);
 
 struct commodityVolatility
 {
-    domain::commodityVolatility_CurveId_t CurveId;
-    domain::commodityVolatility_CurveDescription_t CurveDescription;
-    domain::currencyCode Currency;
+    domain::commodityVolatility_CurveId_t CurveId{};
+    domain::commodityVolatility_CurveDescription_t CurveDescription{};
+    domain::currencyCode Currency{};
     xsd::optional<domain::volatilityConfig> VolatilityConfig;
     xsd::optional<domain::constantVolatilityConfig> Constant;
     xsd::optional<domain::volatilityCurveConfig> Curve;
@@ -10748,9 +10749,9 @@ std::string to_string(correlationQuoteType);
 
 struct correlation
 {
-    domain::correlation_CurveId_t CurveId;
-    domain::correlation_CurveDescription_t CurveDescription;
-    domain::correlationType CorrelationType;
+    domain::correlation_CurveId_t CurveId{};
+    domain::correlation_CurveDescription_t CurveDescription{};
+    domain::correlationType CorrelationType{};
     xsd::optional<domain::correlation_Index1_t> Index1;
     xsd::optional<domain::correlation_Index2_t> Index2;
     xsd::optional<domain::correlation_Conventions_t> Conventions;
@@ -10879,7 +10880,7 @@ struct prohibitedExpiriesType_Dates_t
 
 struct prohibitedExpiriesType
 {
-    domain::prohibitedExpiriesType_Dates_t Dates;
+    domain::prohibitedExpiriesType_Dates_t Dates{};
 };
 
 struct commodityFutureType_ValidContractMonths_t
@@ -10891,8 +10892,8 @@ typedef int64_t nthWeekdayType_Nth_t;
 
 struct nthWeekdayType
 {
-    domain::nthWeekdayType_Nth_t Nth;
-    domain::weekdayType Weekday;
+    domain::nthWeekdayType_Nth_t Nth{};
+    domain::weekdayType Weekday{};
 };
 
 struct continuationMappingsType
@@ -10922,10 +10923,10 @@ struct averagingDataType_Conventions_t : xsd::string
 
 struct averagingDataType
 {
-    domain::averagingDataType_CommodityName_t CommodityName;
-    domain::averagingDataPeriodType Period;
-    domain::averagingDataType_PricingCalendar_t PricingCalendar;
-    domain::averagingDataType_Conventions_t Conventions;
+    domain::averagingDataType_CommodityName_t CommodityName{};
+    domain::averagingDataPeriodType Period{};
+    domain::averagingDataType_PricingCalendar_t PricingCalendar{};
+    domain::averagingDataType_Conventions_t Conventions{};
     xsd::optional<domain::bool_> UseBusinessDays;
     xsd::optional<uint64_t> DeliveryRollDays;
     xsd::optional<uint64_t> FutureMonthOffset;
@@ -10948,10 +10949,10 @@ struct offPeakPowerIndexDataType_PeakCalendar_t : xsd::string
 
 struct offPeakPowerIndexDataType
 {
-    domain::offPeakPowerIndexDataType_OffPeakIndex_t OffPeakIndex;
-    domain::offPeakPowerIndexDataType_PeakIndex_t PeakIndex;
-    domain::offPeakPowerIndexDataType_OffPeakHours_t OffPeakHours;
-    domain::offPeakPowerIndexDataType_PeakCalendar_t PeakCalendar;
+    domain::offPeakPowerIndexDataType_OffPeakIndex_t OffPeakIndex{};
+    domain::offPeakPowerIndexDataType_PeakIndex_t PeakIndex{};
+    domain::offPeakPowerIndexDataType_OffPeakHours_t OffPeakHours{};
+    domain::offPeakPowerIndexDataType_PeakCalendar_t PeakCalendar{};
 };
 
 struct commodityFutureType_IndexName_t : xsd::string
@@ -11004,14 +11005,14 @@ struct fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t : xsd::
 
 struct fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t
 {
-    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Name_t Name;
-    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t Calendar;
-    float Weight;
+    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Name_t Name{};
+    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t Calendar{};
+    float Weight{};
 };
 
 struct fxOptionTimeWeighting_TradingCenters_t
 {
-    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t TradingCenter;
+    domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t TradingCenter{};
 };
 
 struct fxOptionTimeWeighting_Events_t_Event_t_Description_t : xsd::string
@@ -11020,14 +11021,14 @@ struct fxOptionTimeWeighting_Events_t_Event_t_Description_t : xsd::string
 
 struct fxOptionTimeWeighting_Events_t_Event_t
 {
-    domain::fxOptionTimeWeighting_Events_t_Event_t_Description_t Description;
-    domain::date Date;
-    float Weight;
+    domain::fxOptionTimeWeighting_Events_t_Event_t_Description_t Description{};
+    domain::date Date{};
+    float Weight{};
 };
 
 struct fxOptionTimeWeighting_Events_t
 {
-    domain::fxOptionTimeWeighting_Events_t_Event_t Event;
+    domain::fxOptionTimeWeighting_Events_t_Event_t Event{};
 };
 
 struct bondYield_PriceType_t : xsd::string
@@ -11069,7 +11070,7 @@ struct nettingsetdefinitions_NettingSet_t_CSADetails_t : xsd::string
 
 struct parameter : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct configurationType_YieldCurvesId_t : xsd::string
@@ -11162,45 +11163,45 @@ struct configurationType_CorrelationsId_t : xsd::string
 
 struct yieldCurvesType_YieldCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct discountCurvesType_DiscountingCurve_t : xsd::string
 {
-    xsd::string currency;
+    xsd::string currency{};
 };
 
 struct indexForwardingCurvesType_Index_t : xsd::string
 {
-    domain::indexNameType name;
+    domain::indexNameType name{};
 };
 
 struct swapIndexCurvesType_SwapIndex_t
 {
-    domain::indexNameType name;
-    domain::indexNameType Discounting;
+    domain::indexNameType name{};
+    domain::indexNameType Discounting{};
 };
 
 struct zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct yyInflationIndexCurvesType_YYInflationIndexCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 typedef xsd::string currencyPair;
 
 struct fxSpotsType_FxSpot_t : xsd::string
 {
-    domain::currencyPair pair;
+    domain::currencyPair pair{};
 };
 
 struct fxVolatilitiesType_FxVolatility_t : xsd::string
 {
-    domain::currencyPair pair;
+    domain::currencyPair pair{};
 };
 
 struct swaptionVolatilitiesType_SwaptionVolatility_t : xsd::string
@@ -11211,7 +11212,7 @@ struct swaptionVolatilitiesType_SwaptionVolatility_t : xsd::string
 
 struct yieldVolatilitiesType_YieldVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct capFloorVolatilitiesType_CapFloorVolatility_t : xsd::string
@@ -11222,57 +11223,57 @@ struct capFloorVolatilitiesType_CapFloorVolatility_t : xsd::string
 
 struct cdsVolatilitiesType_CDSVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct defaultCurvesType_DefaultCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct equityCurvesType_EquityCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct equityVolatilitiesType_EquityVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct securitiesType_Security_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct baseCorrelationsType_BaseCorrelation_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct commodityCurvesType_CommodityCurve_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct commodityVolatilitiesType_CommodityVolatility_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct correlationsType_Correlation_t : xsd::string
 {
-    xsd::string name;
+    xsd::string name{};
 };
 
 struct parExcludes_Type_t : xsd::string
@@ -11331,12 +11332,12 @@ struct indexcurve_ShiftTenors_t : xsd::string
 
 struct indexcurve
 {
-    domain::indexNameType index;
+    domain::indexNameType index{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::indexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::indexcurve_ShiftTenors_t ShiftTenors;
+    domain::indexcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -11346,19 +11347,19 @@ struct yieldcurve_ShiftTenors_t : xsd::string
 
 struct yieldcurve
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::optional<domain::yieldcurve_CurveType_t> CurveType;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yieldcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::yieldcurve_ShiftTenors_t ShiftTenors;
+    domain::yieldcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
 struct fxspot
 {
-    domain::currencyPair ccypair;
+    domain::currencyPair ccypair{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::fxspot_Shifts_t> Shifts;
@@ -11371,12 +11372,12 @@ struct fxvolatility_ShiftExpiries_t : xsd::string
 
 struct fxvolatility
 {
-    domain::currencyPair ccypair;
+    domain::currencyPair ccypair{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::fxvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::fxvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::fxvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::fxvolatility_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11396,9 +11397,9 @@ struct swaptionvolatility
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::swaptionvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::swaptionvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::swaptionvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::swaptionvolatility_ShiftStrikes_t> ShiftStrikes;
-    domain::swaptionvolatility_ShiftTerms_t ShiftTerms;
+    domain::swaptionvolatility_ShiftTerms_t ShiftTerms{};
 };
 
 struct yieldvolatility_ShiftExpiries_t : xsd::string
@@ -11411,13 +11412,13 @@ struct yieldvolatility_ShiftTerms_t : xsd::string
 
 struct yieldvolatility
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yieldvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::yieldvolatility_ShiftExpiries_t ShiftExpiries;
-    domain::yieldvolatility_ShiftTerms_t ShiftTerms;
+    domain::yieldvolatility_ShiftExpiries_t ShiftExpiries{};
+    domain::yieldvolatility_ShiftTerms_t ShiftTerms{};
 };
 
 struct capfloorvolatility_ShiftExpiries_t : xsd::string
@@ -11432,7 +11433,7 @@ struct capfloorvolatility
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::capfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::capfloorvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::capfloorvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::capfloorvolatility_ShiftStrikes_t> ShiftStrikes;
     xsd::optional<domain::indexNameType> Index;
     xsd::optional<bool> IsRelative;
@@ -11445,12 +11446,12 @@ struct cdsvolatility_ShiftExpiries_t : xsd::string
 
 struct cdsvolatility
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::cdsvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::cdsvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::cdsvolatility_ShiftExpiries_t ShiftExpiries{};
 };
 
 struct creditcurve_ShiftTenors_t : xsd::string
@@ -11459,19 +11460,19 @@ struct creditcurve_ShiftTenors_t : xsd::string
 
 struct creditcurve
 {
-    xsd::string name;
-    domain::currencyCode Currency;
+    xsd::string name{};
+    domain::currencyCode Currency{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::creditcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::creditcurve_ShiftTenors_t ShiftTenors;
+    domain::creditcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
 struct equityspot
 {
-    xsd::string equity;
+    xsd::string equity{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::equityspot_Shifts_t> Shifts;
@@ -11484,12 +11485,12 @@ struct equityvolatility_ShiftExpiries_t : xsd::string
 
 struct equityvolatility
 {
-    xsd::string equity;
+    xsd::string equity{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::equityvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::equityvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::equityvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::equityvolatility_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11499,12 +11500,12 @@ struct zeroinflationindexcurve_ShiftTenors_t : xsd::string
 
 struct zeroinflationindexcurve
 {
-    xsd::string index;
+    xsd::string index{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::zeroinflationindexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::zeroinflationindexcurve_ShiftTenors_t ShiftTenors;
+    domain::zeroinflationindexcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -11514,12 +11515,12 @@ struct yyinflationindexcurve_ShiftTenors_t : xsd::string
 
 struct yyinflationindexcurve
 {
-    xsd::string index;
+    xsd::string index{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yyinflationindexcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::yyinflationindexcurve_ShiftTenors_t ShiftTenors;
+    domain::yyinflationindexcurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -11529,12 +11530,12 @@ struct cpicapfloorvolatility_ShiftExpiries_t : xsd::string
 
 struct cpicapfloorvolatility
 {
-    xsd::string index;
+    xsd::string index{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::cpicapfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::cpicapfloorvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::cpicapfloorvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::cpicapfloorvolatility_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11544,12 +11545,12 @@ struct yycapfloorvolatility_ShiftExpiries_t : xsd::string
 
 struct yycapfloorvolatility
 {
-    xsd::string index;
+    xsd::string index{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::yycapfloorvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::yycapfloorvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::yycapfloorvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::yycapfloorvolatility_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11559,12 +11560,12 @@ struct dividendyield_ShiftTenors_t : xsd::string
 
 struct dividendyield
 {
-    xsd::string equity;
+    xsd::string equity{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::dividendyield_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::dividendyield_ShiftTenors_t ShiftTenors;
+    domain::dividendyield_ShiftTenors_t ShiftTenors{};
 };
 
 struct basecorrelation_ShiftLossLevels_t : xsd::string
@@ -11577,18 +11578,18 @@ struct basecorrelation_ShiftTerms_t : xsd::string
 
 struct basecorrelation
 {
-    xsd::string indexName;
+    xsd::string indexName{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::basecorrelation_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::basecorrelation_ShiftLossLevels_t ShiftLossLevels;
-    domain::basecorrelation_ShiftTerms_t ShiftTerms;
+    domain::basecorrelation_ShiftLossLevels_t ShiftLossLevels{};
+    domain::basecorrelation_ShiftTerms_t ShiftTerms{};
 };
 
 struct securityspread
 {
-    xsd::string security;
+    xsd::string security{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::securityspread_Shifts_t> Shifts;
@@ -11601,13 +11602,13 @@ struct commodityCurve_ShiftTenors_t : xsd::string
 
 struct commodityCurve
 {
-    xsd::string name;
-    domain::currencyCode Currency;
+    xsd::string name{};
+    domain::currencyCode Currency{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::commodityCurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::commodityCurve_ShiftTenors_t ShiftTenors;
+    domain::commodityCurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -11617,12 +11618,12 @@ struct commodityvolatility_ShiftExpiries_t : xsd::string
 
 struct commodityvolatility
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::commodityvolatility_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::commodityvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::commodityvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::commodityvolatility_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11632,13 +11633,13 @@ struct correlationcurve_ShiftExpiries_t : xsd::string
 
 struct correlationcurve
 {
-    xsd::string index1;
-    xsd::string index2;
+    xsd::string index1{};
+    xsd::string index2{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::correlationcurve_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::correlationcurve_ShiftExpiries_t ShiftExpiries;
+    domain::correlationcurve_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::correlationcurve_ShiftStrikes_t> ShiftStrikes;
 };
 
@@ -11703,7 +11704,7 @@ std::string to_string(creditQualityType);
 
 struct counterparty
 {
-    domain::counterparty_CounterpartyId_t CounterpartyId;
+    domain::counterparty_CounterpartyId_t CounterpartyId{};
     xsd::optional<bool> ClearingCounterparty;
     xsd::optional<domain::creditQualityType> CreditQuality;
     xsd::optional<double> BaCvaRiskWeight;
@@ -11713,8 +11714,8 @@ struct counterparty
 
 struct counterPartyCorrelations_Correlation_t : xsd::base<domain::correlationValue>
 {
-    xsd::string cpty1;
-    xsd::string cpty2;
+    xsd::string cpty1{};
+    xsd::string cpty2{};
 };
 
 struct envelope_PortfolioIds_t_PortfolioId_t : xsd::string
@@ -11758,9 +11759,9 @@ struct DerivedScheduleType_Shift_t : xsd::string
 
 struct premiumData_Premium_t
 {
-    float Amount;
-    domain::extendedCurrencyCode Currency;
-    domain::date PayDate;
+    float Amount{};
+    domain::extendedCurrencyCode Currency{};
+    domain::date PayDate{};
     xsd::optional<domain::premiumData_Premium_t_SettlementData_t> SettlementData;
 };
 
@@ -11785,9 +11786,9 @@ std::string to_string(optionPayRelativeTo);
 
 struct optionPaymentData_Rules_t
 {
-    uint64_t Lag;
-    domain::calendar Calendar;
-    domain::businessDayConvention Convention;
+    uint64_t Lag{};
+    domain::calendar Calendar{};
+    domain::businessDayConvention Convention{};
     xsd::optional<domain::optionPayRelativeTo> RelativeTo;
 };
 
@@ -11848,8 +11849,8 @@ struct tradeLevelFixings
 
 struct stubInterpolation
 {
-    domain::indexNameType ShortIndex;
-    domain::indexNameType LongIndex;
+    domain::indexNameType ShortIndex{};
+    domain::indexNameType LongIndex{};
     xsd::optional<domain::roundingType> RoundingType;
     xsd::optional<int64_t> RoundingPrecision;
 };
@@ -11873,7 +11874,7 @@ struct _CPILegData_t_Interpolation_t : xsd::string
 
 struct _DigitalCMSLegData_t_CMSLegData_t
 {
-    domain::indexNameType Index;
+    domain::indexNameType Index{};
     xsd::optional<bool> IsInArrears;
     xsd::optional<int64_t> FixingDays;
     xsd::optional<domain::spreads> Spreads;
@@ -11913,8 +11914,8 @@ struct _DigitalCMSLegData_t_PutPayoffs_t
 
 struct _DigitalCMSSpreadLegData_t_CMSSpreadLegData_t
 {
-    domain::indexNameType Index1;
-    domain::indexNameType Index2;
+    domain::indexNameType Index1{};
+    domain::indexNameType Index2{};
     xsd::optional<bool> IsInArrears;
     xsd::optional<int64_t> FixingDays;
     xsd::optional<domain::spreads> Spreads;
@@ -12026,13 +12027,13 @@ struct capFloorData_Floors_t_Floor_t : xsd::base<float>
 struct strikePriceData
 {
     xsd::optional<domain::extendedCurrencyCode> Currency;
-    float Value;
+    float Value{};
 };
 
 struct strikeYieldData
 {
     xsd::optional<domain::compounding> Compounding;
-    float Yield;
+    float Yield{};
 };
 
 struct eqForwardSettlementData_FXIndex_t : xsd::string
@@ -12063,7 +12064,7 @@ std::string to_string(amortizationType);
 
 struct amortizationData
 {
-    domain::amortizationType Type;
+    domain::amortizationType Type{};
     xsd::optional<float> Value;
     xsd::optional<domain::amortizationData_StartDate_t> StartDate;
     xsd::optional<domain::amortizationData_EndDate_t> EndDate;
@@ -12124,9 +12125,9 @@ typedef double recoveryRate;
 
 struct nameData
 {
-    domain::nameData_IssuerId_t IssuerId;
+    domain::nameData_IssuerId_t IssuerId{};
     xsd::optional<domain::nameData_Qualifier_t> Qualifier;
-    domain::creditCurveIdType_group_t creditCurveIdType;
+    domain::creditCurveIdType_group_t creditCurveIdType{};
     xsd::optional<float> Notional;
     xsd::optional<float> Weight;
     xsd::optional<domain::currencyCode> Currency;
@@ -12186,13 +12187,13 @@ struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t
 struct cbCallData_MakeWhole_t_ConversionRatioIncrease_t
 {
     xsd::optional<float> Cap;
-    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_StockPrices_t StockPrices;
-    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t CrIncreases;
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_StockPrices_t StockPrices{};
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t_CrIncreases_t CrIncreases{};
 };
 
 struct cbCallData_MakeWhole_t
 {
-    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t ConversionRatioIncrease;
+    domain::cbCallData_MakeWhole_t_ConversionRatioIncrease_t ConversionRatioIncrease{};
 };
 
 struct cbConversionData_Styles_t
@@ -12216,8 +12217,8 @@ struct cbConversionData_FixedAmountConversion_t_Amounts_t
 
 struct cbConversionData_FixedAmountConversion_t
 {
-    domain::cbConversionData_FixedAmountConversion_t_Currency_t Currency;
-    domain::cbConversionData_FixedAmountConversion_t_Amounts_t Amounts;
+    domain::cbConversionData_FixedAmountConversion_t_Currency_t Currency{};
+    domain::cbConversionData_FixedAmountConversion_t_Amounts_t Amounts{};
 };
 
 struct cbContingentConversionData
@@ -12232,17 +12233,17 @@ struct cbMandatoryConversionData_Type_t : xsd::string
 
 struct cbPepsData
 {
-    float UpperBarrier;
-    float LowerBarrier;
-    float UpperConversionRatio;
-    float LowerConversionRatio;
+    float UpperBarrier{};
+    float LowerBarrier{};
+    float UpperConversionRatio{};
+    float LowerConversionRatio{};
 };
 
 struct cbMandatoryConversionData
 {
-    domain::date Date;
-    domain::cbMandatoryConversionData_Type_t Type;
-    domain::cbPepsData PepsData;
+    domain::date Date{};
+    domain::cbMandatoryConversionData_Type_t Type{};
+    domain::cbPepsData PepsData{};
 };
 
 struct cbConversionResetData_References_t
@@ -12262,10 +12263,10 @@ struct cbConversionResetData_Gearings_t
 
 struct cbConversionResetData
 {
-    domain::scheduleData ScheduleData;
-    domain::cbConversionResetData_References_t References;
-    domain::cbConversionResetData_Thresholds_t Thresholds;
-    domain::cbConversionResetData_Gearings_t Gearings;
+    domain::scheduleData ScheduleData{};
+    domain::cbConversionResetData_References_t References{};
+    domain::cbConversionResetData_Thresholds_t Thresholds{};
+    domain::cbConversionResetData_Gearings_t Gearings{};
     xsd::optional<domain::cbConversionResetData_Floors_t> Floors;
     xsd::optional<domain::cbConversionResetData_GlobalFloors_t> GlobalFloors;
 };
@@ -12276,7 +12277,7 @@ struct cbConversionData_FXIndex_t : xsd::string
 
 struct cbExchangeableData
 {
-    domain::bool_ IsExchangeable;
+    domain::bool_ IsExchangeable{};
     xsd::optional<domain::cbExchangeableData_EquityCreditCurve_t> EquityCreditCurve;
     xsd::optional<domain::bool_> Secured;
 };
@@ -12323,7 +12324,7 @@ struct cboStructure_ReinvestmentEndDate_t : xsd::string
 struct cboBondBasketData_Trade_t
 {
     xsd::optional<xsd::string> id;
-    domain::oreTradeType TradeType;
+    domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::bondData> BondData;
 };
@@ -12334,11 +12335,11 @@ struct cbotranche_Name_t : xsd::string
 
 struct cbotranche
 {
-    domain::cbotranche_Name_t Name;
-    float ICRatio;
-    float OCRatio;
-    float Notional;
-    domain::legDataType_group_t legDataType;
+    domain::cbotranche_Name_t Name{};
+    float ICRatio{};
+    float OCRatio{};
+    float Notional{};
+    domain::legDataType_group_t legDataType{};
 };
 
 struct trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t : xsd::string
@@ -12348,7 +12349,7 @@ struct trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t : xsd::string
 struct compositeTradeComponents_Trade_t
 {
     xsd::optional<xsd::string> id;
-    domain::oreTradeType TradeType;
+    domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::swapData> CrossCurrencySwapData;
     xsd::optional<domain::swapData> InflationSwapData;
@@ -12662,10 +12663,10 @@ struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t : xsd::st
 
 struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t
 {
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t BaseSchedule;
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t Shift;
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t Calendar;
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t Convention;
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t BaseSchedule{};
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t Shift{};
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t Calendar{};
+    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t Convention{};
 };
 
 struct scriptedTradeData_Data_t_Daycounter_t_Value_t : xsd::string
@@ -12688,9 +12689,9 @@ struct market_SwapIndices_t_SwapIndex_t_Name_t : xsd::string
 
 struct market_SwapIndices_t_SwapIndex_t
 {
-    domain::market_SwapIndices_t_SwapIndex_t_Name_t Name;
+    domain::market_SwapIndices_t_SwapIndex_t_Name_t Name{};
     xsd::optional<domain::indexNameType> ForwardingIndex;
-    domain::indexNameType DiscountingIndex;
+    domain::indexNameType DiscountingIndex{};
 };
 
 struct market_DefaultCurves_t_Names_t_Name_t : xsd::string
@@ -12854,8 +12855,8 @@ struct market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t : xsd::string
 
 struct market_BenchmarkCurves_t_BenchmarkCurve_t
 {
-    domain::currencyCode Currency;
-    domain::market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t Name;
+    domain::currencyCode Currency{};
+    domain::market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t Name{};
 };
 
 struct market_Securities_t_Names_t
@@ -12929,7 +12930,7 @@ struct market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t : xsd::string
 struct market_CommodityVolatilities_t_Names_t_Name_t
 {
     xsd::optional<xsd::string> id;
-    domain::market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t Expiries;
+    domain::market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t Expiries{};
     xsd::optional<domain::market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t> Moneyness;
 };
 
@@ -12977,14 +12978,14 @@ struct curveAlgebraCurveOperation_Type_t : xsd::string
 
 struct curveAlgebraCurveOperation
 {
-    domain::curveAlgebraCurveOperation_Type_t Type;
+    domain::curveAlgebraCurveOperation_Type_t Type{};
     xsd::optional<domain::curveAlgebraCurveOperation_Arguments_t> Arguments;
 };
 
 struct curveAlgebraCurve
 {
-    domain::curveAlgebraCurve_Key_t Key;
-    domain::curveAlgebraCurveOperation Operation;
+    domain::curveAlgebraCurve_Key_t Key{};
+    domain::curveAlgebraCurveOperation Operation{};
 };
 
 struct calibrationBasket
@@ -13024,8 +13025,8 @@ struct crossAssetLGM_CalibrationOptions_t_Strikes_t : xsd::string
 
 struct crossAssetLGM_CalibrationOptions_t
 {
-    domain::crossAssetLGM_CalibrationOptions_t_Expiries_t Expiries;
-    domain::crossAssetLGM_CalibrationOptions_t_Strikes_t Strikes;
+    domain::crossAssetLGM_CalibrationOptions_t_Expiries_t Expiries{};
+    domain::crossAssetLGM_CalibrationOptions_t_Strikes_t Strikes{};
 };
 
 struct jarrowYildrim_CalibrationBaskets_t
@@ -13063,9 +13064,9 @@ struct crlgm_CalibrationCdsOptions_t_Strikes_t : xsd::string
 
 struct crlgm_CalibrationCdsOptions_t
 {
-    domain::crlgm_CalibrationCdsOptions_t_Expiries_t Expiries;
-    domain::crlgm_CalibrationCdsOptions_t_Terms_t Terms;
-    domain::crlgm_CalibrationCdsOptions_t_Strikes_t Strikes;
+    domain::crlgm_CalibrationCdsOptions_t_Expiries_t Expiries{};
+    domain::crlgm_CalibrationCdsOptions_t_Terms_t Terms{};
+    domain::crlgm_CalibrationCdsOptions_t_Strikes_t Strikes{};
 };
 
 struct commoditySchwartz_Seasonality_t
@@ -13086,8 +13087,8 @@ struct commoditySchwartz_CalibrationOptions_t_Strikes_t : xsd::string
 
 struct commoditySchwartz_CalibrationOptions_t
 {
-    domain::commoditySchwartz_CalibrationOptions_t_Expiries_t Expiries;
-    domain::commoditySchwartz_CalibrationOptions_t_Strikes_t Strikes;
+    domain::commoditySchwartz_CalibrationOptions_t_Expiries_t Expiries{};
+    domain::commoditySchwartz_CalibrationOptions_t_Strikes_t Strikes{};
 };
 
 struct reportConfiguration
@@ -13173,9 +13174,9 @@ struct swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t : xsd::string
 
 struct swaptionVolatility_ProxyConfig_t_Source_t
 {
-    domain::swaptionVolatility_ProxyConfig_t_Source_t_CurveId_t CurveId;
-    domain::swaptionVolatility_ProxyConfig_t_Source_t_ShortSwapIndexBase_t ShortSwapIndexBase;
-    domain::swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t SwapIndexBase;
+    domain::swaptionVolatility_ProxyConfig_t_Source_t_CurveId_t CurveId{};
+    domain::swaptionVolatility_ProxyConfig_t_Source_t_ShortSwapIndexBase_t ShortSwapIndexBase{};
+    domain::swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t SwapIndexBase{};
 };
 
 struct swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t : xsd::string
@@ -13188,14 +13189,14 @@ struct swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t : xsd::string
 
 struct swaptionVolatility_ProxyConfig_t_Target_t
 {
-    domain::swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t ShortSwapIndexBase;
-    domain::swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t SwapIndexBase;
+    domain::swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t ShortSwapIndexBase{};
+    domain::swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t SwapIndexBase{};
 };
 
 struct swaptionVolatility_ProxyConfig_t
 {
-    domain::swaptionVolatility_ProxyConfig_t_Source_t Source;
-    domain::swaptionVolatility_ProxyConfig_t_Target_t Target;
+    domain::swaptionVolatility_ProxyConfig_t_Source_t Source{};
+    domain::swaptionVolatility_ProxyConfig_t_Target_t Target{};
 };
 
 struct swaptionVolatility_Interpolation_t : xsd::string
@@ -13209,15 +13210,15 @@ struct parametricSmileConfigParameters
 
 struct parametricSmileConfigCalibration
 {
-    int64_t MaxCalibrationAttempts;
-    float ExitEarlyErrorThreshold;
-    float MaxAcceptableError;
+    int64_t MaxCalibrationAttempts{};
+    float ExitEarlyErrorThreshold{};
+    float MaxAcceptableError{};
 };
 
 struct parametricSmileConfig
 {
-    domain::parametricSmileConfigParameters Parameters;
-    domain::parametricSmileConfigCalibration Calibration;
+    domain::parametricSmileConfigParameters Parameters{};
+    domain::parametricSmileConfigCalibration Calibration{};
 };
 
 struct swaptionVolatility_Extrapolation_t : xsd::string
@@ -13278,8 +13279,8 @@ struct capFloorVolatility_ProxyConfig_t_Source_t_Index_t : xsd::string
 
 struct capFloorVolatility_ProxyConfig_t_Source_t
 {
-    domain::capFloorVolatility_ProxyConfig_t_Source_t_CurveId_t CurveId;
-    domain::capFloorVolatility_ProxyConfig_t_Source_t_Index_t Index;
+    domain::capFloorVolatility_ProxyConfig_t_Source_t_CurveId_t CurveId{};
+    domain::capFloorVolatility_ProxyConfig_t_Source_t_Index_t Index{};
     xsd::optional<domain::capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t> RateComputationPeriod;
 };
 
@@ -13289,15 +13290,15 @@ struct capFloorVolatility_ProxyConfig_t_Target_t_Index_t : xsd::string
 
 struct capFloorVolatility_ProxyConfig_t_Target_t
 {
-    domain::capFloorVolatility_ProxyConfig_t_Target_t_Index_t Index;
+    domain::capFloorVolatility_ProxyConfig_t_Target_t_Index_t Index{};
     xsd::optional<domain::capFloorVolatility_ProxyConfig_t_Target_t_RateComputationPeriod_t> RateComputationPeriod;
     xsd::optional<int64_t> ONCapSettlementDays;
 };
 
 struct capFloorVolatility_ProxyConfig_t
 {
-    domain::capFloorVolatility_ProxyConfig_t_Source_t Source;
-    domain::capFloorVolatility_ProxyConfig_t_Target_t Target;
+    domain::capFloorVolatility_ProxyConfig_t_Source_t Source{};
+    domain::capFloorVolatility_ProxyConfig_t_Target_t Target{};
     xsd::optional<double> ScalingFactor;
 };
 
@@ -13352,7 +13353,7 @@ struct constantVolatilityConfig
     xsd::optional<domain::constantVolatilityConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::constantVolatilityConfig_VolatilityType_t> VolatilityType;
     xsd::optional<domain::constantVolatilityConfig_ExerciseType_t> ExerciseType;
-    domain::constantVolatilityConfig_Quote_t Quote;
+    domain::constantVolatilityConfig_Quote_t Quote{};
     xsd::optional<domain::calendar> Calendar;
 };
 
@@ -13367,9 +13368,9 @@ struct volatilityCurveConfig
     xsd::optional<domain::volatilityCurveConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::volatilityCurveConfig_VolatilityType_t> VolatilityType;
     xsd::optional<domain::volatilityCurveConfig_ExerciseType_t> ExerciseType;
-    domain::quoteType Quotes;
-    domain::interpolationMethodType Interpolation;
-    domain::extrapolationType Extrapolation;
+    domain::quoteType Quotes{};
+    domain::interpolationMethodType Interpolation{};
+    domain::extrapolationType Extrapolation{};
     xsd::optional<bool> EnforceMontoneVariance;
     xsd::optional<domain::calendar> Calendar;
 };
@@ -13388,14 +13389,14 @@ struct volatilityStrikeSurfaceConfig
     xsd::optional<domain::volatilityStrikeSurfaceConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::volatilityStrikeSurfaceConfig_VolatilityType_t> VolatilityType;
     xsd::optional<domain::volatilityStrikeSurfaceConfig_ExerciseType_t> ExerciseType;
-    domain::volatilityStrikeSurfaceConfig_Strikes_t Strikes;
-    domain::volatilityStrikeSurfaceConfig_Expiries_t Expiries;
-    domain::interpolationMethodType TimeInterpolation;
-    domain::interpolationMethodType StrikeInterpolation;
-    domain::bool_ Extrapolation;
-    domain::extrapolationType TimeExtrapolation;
+    domain::volatilityStrikeSurfaceConfig_Strikes_t Strikes{};
+    domain::volatilityStrikeSurfaceConfig_Expiries_t Expiries{};
+    domain::interpolationMethodType TimeInterpolation{};
+    domain::interpolationMethodType StrikeInterpolation{};
+    domain::bool_ Extrapolation{};
+    domain::extrapolationType TimeExtrapolation{};
     xsd::optional<domain::bool_> TimeExtrapolationVariance;
-    domain::extrapolationType StrikeExtrapolation;
+    domain::extrapolationType StrikeExtrapolation{};
     xsd::optional<domain::calendar> Calendar;
 };
 
@@ -13406,7 +13407,7 @@ struct proxySurface_ProxyVolatilityCurve_t : xsd::string
 struct proxySurface
 {
     xsd::optional<uint64_t> priority;
-    domain::proxySurface_ProxyVolatilityCurve_t ProxyVolatilityCurve;
+    domain::proxySurface_ProxyVolatilityCurve_t ProxyVolatilityCurve{};
     xsd::optional<domain::proxySurface_FXVolatilityCurve_t> FXVolatilityCurve;
     xsd::optional<domain::proxySurface_CorrelationCurve_t> CorrelationCurve;
     xsd::optional<domain::proxySurface_CDSVolatilityCurve_t> CDSVolatilityCurve;
@@ -13481,8 +13482,8 @@ std::string to_string(directSegmentTypeType);
 
 struct directSegmentType
 {
-    domain::directSegmentTypeType Type;
-    domain::quoteType Quotes;
+    domain::directSegmentTypeType Type{};
+    domain::quoteType Quotes{};
     xsd::optional<domain::directSegmentType_Conventions_t> Conventions;
     xsd::optional<domain::directSegmentType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
@@ -13507,9 +13508,9 @@ struct simpleSegmentType_Conventions_t : xsd::string
 
 struct simpleSegmentType
 {
-    domain::simpleSegmentTypeType Type;
-    domain::quoteType Quotes;
-    domain::simpleSegmentType_Conventions_t Conventions;
+    domain::simpleSegmentTypeType Type{};
+    domain::quoteType Quotes{};
+    domain::simpleSegmentType_Conventions_t Conventions{};
     xsd::optional<domain::simpleSegmentType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
@@ -13531,9 +13532,9 @@ struct aoisSegmentType_Conventions_t : xsd::string
 
 struct aoisSegmentType
 {
-    domain::aoisSegmentType_Type_t Type;
-    domain::compositeQuoteType Quotes;
-    domain::aoisSegmentType_Conventions_t Conventions;
+    domain::aoisSegmentType_Type_t Type{};
+    domain::compositeQuoteType Quotes{};
+    domain::aoisSegmentType_Conventions_t Conventions{};
     xsd::optional<domain::aoisSegmentType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
@@ -13554,9 +13555,9 @@ struct tenorBasisSegmentType_Conventions_t : xsd::string
 
 struct tenorBasisSegmentType
 {
-    domain::tenorBasisSegmentTypeType Type;
-    domain::quoteType Quotes;
-    domain::tenorBasisSegmentType_Conventions_t Conventions;
+    domain::tenorBasisSegmentTypeType Type{};
+    domain::quoteType Quotes{};
+    domain::tenorBasisSegmentType_Conventions_t Conventions{};
     xsd::optional<domain::tenorBasisSegmentType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
@@ -13589,14 +13590,14 @@ struct crossCurrencySegmentType_SpotRate_t : xsd::string
 
 struct crossCurrencySegmentType
 {
-    domain::crossCurrencySegmentTypeType Type;
-    domain::quoteType Quotes;
-    domain::crossCurrencySegmentType_Conventions_t Conventions;
+    domain::crossCurrencySegmentTypeType Type{};
+    domain::quoteType Quotes{};
+    domain::crossCurrencySegmentType_Conventions_t Conventions{};
     xsd::optional<domain::crossCurrencySegmentType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
-    domain::crossCurrencySegmentType_DiscountCurve_t DiscountCurve;
-    domain::crossCurrencySegmentType_SpotRate_t SpotRate;
+    domain::crossCurrencySegmentType_DiscountCurve_t DiscountCurve{};
+    domain::crossCurrencySegmentType_SpotRate_t SpotRate{};
     xsd::optional<domain::crossCurrencySegmentType_ProjectionCurveDomestic_t> ProjectionCurveDomestic;
     xsd::optional<domain::crossCurrencySegmentType_ProjectionCurveForeign_t> ProjectionCurveForeign;
 };
@@ -13618,10 +13619,10 @@ struct zeroSpreadType_ReferenceCurve_t : xsd::string
 
 struct zeroSpreadType
 {
-    domain::zeroSpreadSegmentTypeType Type;
-    domain::quoteType Quotes;
-    domain::zeroSpreadType_Conventions_t Conventions;
-    domain::zeroSpreadType_ReferenceCurve_t ReferenceCurve;
+    domain::zeroSpreadSegmentTypeType Type{};
+    domain::quoteType Quotes{};
+    domain::zeroSpreadType_Conventions_t Conventions{};
+    domain::zeroSpreadType_ReferenceCurve_t ReferenceCurve{};
     xsd::optional<domain::zeroSpreadType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
@@ -13636,19 +13637,19 @@ std::string to_string(discountRatioTypeType);
 
 struct discountRatioCurveElement : xsd::string
 {
-    xsd::string currency;
+    xsd::string currency{};
 };
 
 struct discountRatioType
 {
-    domain::discountRatioTypeType Type;
+    domain::discountRatioTypeType Type{};
     xsd::optional<domain::discountRatioType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
     xsd::optional<domain::discountRatioType_Conventions_t> Conventions;
-    domain::discountRatioCurveElement BaseCurve;
-    domain::discountRatioCurveElement NumeratorCurve;
-    domain::discountRatioCurveElement DenominatorCurve;
+    domain::discountRatioCurveElement BaseCurve{};
+    domain::discountRatioCurveElement NumeratorCurve{};
+    domain::discountRatioCurveElement DenominatorCurve{};
 };
 
 struct fittedBondType_Type_t : xsd::string
@@ -13657,8 +13658,8 @@ struct fittedBondType_Type_t : xsd::string
 
 struct fittedBondType
 {
-    domain::fittedBondType_Type_t Type;
-    domain::quoteType Quotes;
+    domain::fittedBondType_Type_t Type{};
+    domain::quoteType Quotes{};
     xsd::optional<domain::fittedBondType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
@@ -13680,11 +13681,11 @@ struct BondYieldShiftedType_Conventions_t : xsd::string
 
 struct BondYieldShiftedType
 {
-    domain::BondYieldShiftedType_Type_t Type;
-    domain::BondYieldShiftedType_ReferenceCurve_t ReferenceCurve;
-    domain::quoteType Quotes;
+    domain::BondYieldShiftedType_Type_t Type{};
+    domain::BondYieldShiftedType_ReferenceCurve_t ReferenceCurve{};
+    domain::quoteType Quotes{};
     xsd::optional<domain::BondYieldShiftedType_IborIndexCurves_t> IborIndexCurves;
-    domain::BondYieldShiftedType_Conventions_t Conventions;
+    domain::BondYieldShiftedType_Conventions_t Conventions{};
     xsd::optional<bool> ExtrapolateFlat;
 };
 
@@ -13702,11 +13703,11 @@ struct weightedAverageType_ReferenceCurve2_t : xsd::string
 
 struct weightedAverageType
 {
-    domain::weightedAverageType_Type_t Type;
-    domain::weightedAverageType_ReferenceCurve1_t ReferenceCurve1;
-    domain::weightedAverageType_ReferenceCurve2_t ReferenceCurve2;
-    float Weight1;
-    float Weight2;
+    domain::weightedAverageType_Type_t Type{};
+    domain::weightedAverageType_ReferenceCurve1_t ReferenceCurve1{};
+    domain::weightedAverageType_ReferenceCurve2_t ReferenceCurve2{};
+    float Weight1{};
+    float Weight2{};
 };
 
 struct yieldPlusDefaultType_Type_t : xsd::string
@@ -13723,20 +13724,20 @@ struct yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t : xsd::string
 
 struct yieldPlusDefaultType_DefaultCurves_t
 {
-    domain::yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t DefaultCurve;
+    domain::yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t DefaultCurve{};
 };
 
 struct yieldPlusDefaultType_Weights_t
 {
-    float Weight;
+    float Weight{};
 };
 
 struct yieldPlusDefaultType
 {
-    domain::yieldPlusDefaultType_Type_t Type;
-    domain::yieldPlusDefaultType_ReferenceCurve_t ReferenceCurve;
-    domain::yieldPlusDefaultType_DefaultCurves_t DefaultCurves;
-    domain::yieldPlusDefaultType_Weights_t Weights;
+    domain::yieldPlusDefaultType_Type_t Type{};
+    domain::yieldPlusDefaultType_ReferenceCurve_t ReferenceCurve{};
+    domain::yieldPlusDefaultType_DefaultCurves_t DefaultCurves{};
+    domain::yieldPlusDefaultType_Weights_t Weights{};
 };
 
 struct iborFallbackType_Type_t : xsd::string
@@ -13749,9 +13750,9 @@ struct iborFallbackType_RfrCurve_t : xsd::string
 
 struct iborFallbackType
 {
-    domain::iborFallbackType_Type_t Type;
-    domain::indexNameType IborIndex;
-    domain::iborFallbackType_RfrCurve_t RfrCurve;
+    domain::iborFallbackType_Type_t Type{};
+    domain::indexNameType IborIndex{};
+    domain::iborFallbackType_RfrCurve_t RfrCurve{};
     xsd::optional<domain::indexNameType> RfrIndex;
     xsd::optional<float> Spread;
     xsd::optional<domain::iborFallbackType_PillarChoice_t> PillarChoice;
@@ -13779,9 +13780,9 @@ struct factorType
 
 struct seasonalityType
 {
-    domain::date BaseDate;
-    domain::frequencyType Frequency;
-    domain::factorType Factors;
+    domain::date BaseDate{};
+    domain::frequencyType Frequency{};
+    domain::factorType Factors{};
 };
 
 struct inflationCurve_InterpolationVariable_t : xsd::string
@@ -13863,15 +13864,15 @@ struct volatilityMoneynessSurfaceConfig
     xsd::optional<domain::volatilityMoneynessSurfaceConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::volatilityMoneynessSurfaceConfig_VolatilityType_t> VolatilityType;
     xsd::optional<domain::volatilityMoneynessSurfaceConfig_ExerciseType_t> ExerciseType;
-    domain::strikeMoneynessType MoneynessType;
-    domain::volatilityMoneynessSurfaceConfig_MoneynessLevels_t MoneynessLevels;
-    domain::volatilityMoneynessSurfaceConfig_Expiries_t Expiries;
-    domain::interpolationMethodType TimeInterpolation;
-    domain::interpolationMethodType StrikeInterpolation;
-    domain::bool_ Extrapolation;
-    domain::extrapolationType TimeExtrapolation;
+    domain::strikeMoneynessType MoneynessType{};
+    domain::volatilityMoneynessSurfaceConfig_MoneynessLevels_t MoneynessLevels{};
+    domain::volatilityMoneynessSurfaceConfig_Expiries_t Expiries{};
+    domain::interpolationMethodType TimeInterpolation{};
+    domain::interpolationMethodType StrikeInterpolation{};
+    domain::bool_ Extrapolation{};
+    domain::extrapolationType TimeExtrapolation{};
     xsd::optional<domain::bool_> TimeExtrapolationVariance;
-    domain::extrapolationType StrikeExtrapolation;
+    domain::extrapolationType StrikeExtrapolation{};
     xsd::optional<domain::bool_> FuturePriceCorrection;
     xsd::optional<domain::calendar> Calendar;
 };
@@ -13916,27 +13917,27 @@ struct volatilityDeltaSurfaceConfig
     xsd::optional<domain::volatilityDeltaSurfaceConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::volatilityDeltaSurfaceConfig_VolatilityType_t> VolatilityType;
     xsd::optional<domain::volatilityDeltaSurfaceConfig_ExerciseType_t> ExerciseType;
-    domain::strikeDeltaType DeltaType;
-    domain::strikeAtmType AtmType;
+    domain::strikeDeltaType DeltaType{};
+    domain::strikeAtmType AtmType{};
     xsd::optional<domain::strikeDeltaType> AtmDeltaType;
-    domain::volatilityDeltaSurfaceConfig_PutDeltas_t PutDeltas;
-    domain::volatilityDeltaSurfaceConfig_CallDeltas_t CallDeltas;
-    domain::volatilityDeltaSurfaceConfig_Expiries_t Expiries;
-    domain::interpolationMethodType TimeInterpolation;
-    domain::interpolationMethodType StrikeInterpolation;
-    domain::bool_ Extrapolation;
-    domain::extrapolationType TimeExtrapolation;
+    domain::volatilityDeltaSurfaceConfig_PutDeltas_t PutDeltas{};
+    domain::volatilityDeltaSurfaceConfig_CallDeltas_t CallDeltas{};
+    domain::volatilityDeltaSurfaceConfig_Expiries_t Expiries{};
+    domain::interpolationMethodType TimeInterpolation{};
+    domain::interpolationMethodType StrikeInterpolation{};
+    domain::bool_ Extrapolation{};
+    domain::extrapolationType TimeExtrapolation{};
     xsd::optional<domain::bool_> TimeExtrapolationVariance;
-    domain::extrapolationType StrikeExtrapolation;
+    domain::extrapolationType StrikeExtrapolation{};
     xsd::optional<domain::bool_> FuturePriceCorrection;
     xsd::optional<domain::calendar> Calendar;
 };
 
 struct oneDimSolverConfigType
 {
-    uint64_t MaxEvaluations;
-    double InitialGuess;
-    double Accuracy;
+    uint64_t MaxEvaluations{};
+    double InitialGuess{};
+    double Accuracy{};
     xsd::optional<domain::minMaxType> MinMax;
     xsd::optional<double> Step;
     xsd::optional<double> LowerBound;
@@ -14028,10 +14029,10 @@ struct commodityBasisConfig_BasisConventions_t : xsd::string
 
 struct commodityBasisConfig
 {
-    domain::commodityBasisConfig_BasePriceCurve_t BasePriceCurve;
-    domain::commodityBasisConfig_BasePriceConventions_t BasePriceConventions;
-    domain::quoteType BasisQuotes;
-    domain::commodityBasisConfig_BasisConventions_t BasisConventions;
+    domain::commodityBasisConfig_BasePriceCurve_t BasePriceCurve{};
+    domain::commodityBasisConfig_BasePriceConventions_t BasePriceConventions{};
+    domain::quoteType BasisQuotes{};
+    domain::commodityBasisConfig_BasisConventions_t BasisConventions{};
     xsd::optional<domain::dayCounter> DayCounter;
     xsd::optional<domain::commodityInterpolationType> InterpolationMethod;
     xsd::optional<domain::bool_> AddBasis;
@@ -14066,16 +14067,16 @@ struct volatilityApoFutureSurfaceConfig
     xsd::optional<uint64_t> priority;
     xsd::optional<domain::volatilityApoFutureSurfaceConfig_QuoteType_t> QuoteType;
     xsd::optional<domain::volatilityApoFutureSurfaceConfig_VolatilityType_t> VolatilityType;
-    domain::volatilityApoFutureSurfaceConfig_MoneynessLevels_t MoneynessLevels;
-    domain::volatilityApoFutureSurfaceConfig_VolatilityId_t VolatilityId;
-    domain::volatilityApoFutureSurfaceConfig_PriceCurveId_t PriceCurveId;
-    domain::volatilityApoFutureSurfaceConfig_FutureConventions_t FutureConventions;
-    domain::interpolationMethodType TimeInterpolation;
-    domain::interpolationMethodType StrikeInterpolation;
-    domain::bool_ Extrapolation;
-    domain::extrapolationType TimeExtrapolation;
+    domain::volatilityApoFutureSurfaceConfig_MoneynessLevels_t MoneynessLevels{};
+    domain::volatilityApoFutureSurfaceConfig_VolatilityId_t VolatilityId{};
+    domain::volatilityApoFutureSurfaceConfig_PriceCurveId_t PriceCurveId{};
+    domain::volatilityApoFutureSurfaceConfig_FutureConventions_t FutureConventions{};
+    domain::interpolationMethodType TimeInterpolation{};
+    domain::interpolationMethodType StrikeInterpolation{};
+    domain::bool_ Extrapolation{};
+    domain::extrapolationType TimeExtrapolation{};
     xsd::optional<domain::bool_> TimeExtrapolationVariance;
-    domain::extrapolationType StrikeExtrapolation;
+    domain::extrapolationType StrikeExtrapolation{};
     xsd::optional<domain::volatilityApoFutureSurfaceConfig_MaxTenor_t> MaxTenor;
     xsd::optional<domain::non_negative_decimal> Beta;
 };
@@ -14132,8 +14133,8 @@ struct prohibitedExpiriesType_Dates_t_Date_t : domain::date
 
 struct continuationMappingType
 {
-    uint64_t From;
-    uint64_t To;
+    uint64_t From{};
+    uint64_t To{};
 };
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_Index_t : xsd::string
@@ -14149,8 +14150,8 @@ std::string to_string(independentAmountType);
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t
 {
-    double IndependentAmountHeld;
-    domain::independentAmountType IndependentAmountType;
+    double IndependentAmountHeld{};
+    domain::independentAmountType IndependentAmountType{};
 };
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t : xsd::string
@@ -14163,8 +14164,8 @@ struct nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_Post
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t
 {
-    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t CallFrequency;
-    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_PostFrequency_t PostFrequency;
+    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t CallFrequency{};
+    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_PostFrequency_t PostFrequency{};
 };
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginPeriodOfRisk_t : xsd::string
@@ -14178,7 +14179,7 @@ struct nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Cur
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t
 {
-    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Currencies_t Currencies;
+    domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Currencies_t Currencies{};
 };
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations_t : xsd::string
@@ -14326,7 +14327,7 @@ struct correlationcurve_ShiftStrikes_t : xsd::string
 
 struct stressfxvolatility
 {
-    domain::currencyPair ccypair;
+    domain::currencyPair ccypair{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::optional<domain::stressfxvolatility_Shifts_t> Shifts;
     xsd::optional<domain::stressfxvolatility_ShiftExpiries_t> ShiftExpiries;
@@ -14347,8 +14348,8 @@ struct stresscapfloorvolatility
     xsd::optional<xsd::string> key;
     xsd::optional<domain::currencyCode> ccy;
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    domain::stresscapfloorvolatility_Shifts_t Shifts;
-    domain::stresscapfloorvolatility_ShiftExpiries_t ShiftExpiries;
+    domain::stresscapfloorvolatility_Shifts_t Shifts{};
+    domain::stresscapfloorvolatility_ShiftExpiries_t ShiftExpiries{};
     xsd::optional<domain::stresscapfloorvolatility_ShiftStrikes_t> ShiftStrikes;
     xsd::optional<domain::indexNameType> Index;
     xsd::optional<bool> IsRelative;
@@ -14364,11 +14365,11 @@ struct stresscommoditycurve_ShiftTenors_t : xsd::string
 
 struct stresscommoditycurve
 {
-    xsd::string commodity;
-    domain::currencyCode Currency;
+    xsd::string commodity{};
+    domain::currencyCode Currency{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    domain::stresscommoditycurve_Shifts_t Shifts;
-    domain::stresscommoditycurve_ShiftTenors_t ShiftTenors;
+    domain::stresscommoditycurve_Shifts_t Shifts{};
+    domain::stresscommoditycurve_ShiftTenors_t ShiftTenors{};
 };
 
 struct stresscommodityvolatility_Shifts_t : xsd::string
@@ -14385,16 +14386,16 @@ struct stresscommodityvolatility_ShiftMoneyness_t : xsd::string
 
 struct stresscommodityvolatility
 {
-    xsd::string commodity;
+    xsd::string commodity{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
-    domain::stresscommodityvolatility_Shifts_t Shifts;
-    domain::stresscommodityvolatility_ShiftExpiries_t ShiftExpiries;
-    domain::stresscommodityvolatility_ShiftMoneyness_t ShiftMoneyness;
+    domain::stresscommodityvolatility_Shifts_t Shifts{};
+    domain::stresscommodityvolatility_ShiftExpiries_t ShiftExpiries{};
+    domain::stresscommodityvolatility_ShiftMoneyness_t ShiftMoneyness{};
 };
 
 struct recoveryrate
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::recoveryrate_Shifts_t> Shifts;
@@ -14407,12 +14408,12 @@ struct survivalprobability_ShiftTenors_t : xsd::string
 
 struct survivalprobability
 {
-    xsd::string name;
+    xsd::string name{};
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     xsd::vector<domain::shiftSizeEntry> ShiftSize;
     xsd::optional<domain::survivalprobability_Shifts_t> Shifts;
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::survivalprobability_ShiftTenors_t ShiftTenors;
+    domain::survivalprobability_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
 };
 
@@ -14422,8 +14423,8 @@ struct premiumData_Premium_t_SettlementData_t_FXIndex_t : xsd::string
 
 struct premiumData_Premium_t_SettlementData_t
 {
-    domain::currencyCode PayCurrency;
-    domain::premiumData_Premium_t_SettlementData_t_FXIndex_t FXIndex;
+    domain::currencyCode PayCurrency{};
+    domain::premiumData_Premium_t_SettlementData_t_FXIndex_t FXIndex{};
     xsd::optional<domain::premiumData_Premium_t_SettlementData_t_FixingDate_t> FixingDate;
 };
 
@@ -14571,9 +14572,9 @@ struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t 
 
 struct flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t
 {
-    domain::date ExerciseDate;
-    domain::flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t Type;
-    float Value;
+    domain::date ExerciseDate{};
+    domain::flexiSwapData_Prepayment_t_PrepaymentOptions_t_PrepaymentOption_t_Type_t Type{};
+    float Value{};
 };
 
 struct ore_script_Results_t_Result_t : xsd::string
@@ -14602,8 +14603,8 @@ struct ore_script_CalibrationSpec_t_Calibration_t_Strikes_t
 
 struct ore_script_CalibrationSpec_t_Calibration_t
 {
-    domain::ore_script_CalibrationSpec_t_Calibration_t_Index_t Index;
-    domain::ore_script_CalibrationSpec_t_Calibration_t_Strikes_t Strikes;
+    domain::ore_script_CalibrationSpec_t_Calibration_t_Index_t Index{};
+    domain::ore_script_CalibrationSpec_t_Calibration_t_Strikes_t Strikes{};
 };
 
 struct ore_script_ScheduleCoarsening_t_EligibleSchedule_t : xsd::string
@@ -14625,9 +14626,9 @@ struct ore_script_NewSchedules_t_NewSchedule_t_Schedules_t
 
 struct ore_script_NewSchedules_t_NewSchedule_t
 {
-    domain::ore_script_NewSchedules_t_NewSchedule_t_Name_t Name;
-    domain::ore_script_NewSchedules_t_NewSchedule_t_Operation_t Operation;
-    domain::ore_script_NewSchedules_t_NewSchedule_t_Schedules_t Schedules;
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Name_t Name{};
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Operation_t Operation{};
+    domain::ore_script_NewSchedules_t_NewSchedule_t_Schedules_t Schedules{};
 };
 
 struct ore_script_StickyCloseOutStates_t_StickyCloseOutState_t : xsd::string
@@ -14654,8 +14655,8 @@ struct ore_script_AmcCg_t_Target_t_Derivative_t : xsd::string
 
 struct ore_script_AmcCg_t_Target_t
 {
-    domain::ore_script_AmcCg_t_Target_t_Value_t Value;
-    domain::ore_script_AmcCg_t_Target_t_Derivative_t Derivative;
+    domain::ore_script_AmcCg_t_Target_t_Value_t Value{};
+    domain::ore_script_AmcCg_t_Target_t_Derivative_t Derivative{};
 };
 
 struct scriptedTradeData_Data_t_Index_t_Values_t_Value_t : xsd::string
@@ -14785,9 +14786,9 @@ struct calibrationCpiCapFloor_Strike_t : xsd::string
 
 struct calibrationCpiCapFloor
 {
-    domain::capFloor Type;
-    domain::calibrationCpiCapFloor_Maturity_t Maturity;
-    domain::calibrationCpiCapFloor_Strike_t Strike;
+    domain::capFloor Type{};
+    domain::calibrationCpiCapFloor_Maturity_t Maturity{};
+    domain::calibrationCpiCapFloor_Strike_t Strike{};
 };
 
 struct calibrationYoYCapFloor_Tenor_t : xsd::string
@@ -14800,9 +14801,9 @@ struct calibrationYoYCapFloor_Strike_t : xsd::string
 
 struct calibrationYoYCapFloor
 {
-    domain::capFloor Type;
-    domain::calibrationYoYCapFloor_Tenor_t Tenor;
-    domain::calibrationYoYCapFloor_Strike_t Strike;
+    domain::capFloor Type{};
+    domain::calibrationYoYCapFloor_Tenor_t Tenor{};
+    domain::calibrationYoYCapFloor_Strike_t Strike{};
 };
 
 struct calibrationYoYSwap_Tenor_t : xsd::string
@@ -14811,7 +14812,7 @@ struct calibrationYoYSwap_Tenor_t : xsd::string
 
 struct calibrationYoYSwap
 {
-    domain::calibrationYoYSwap_Tenor_t Tenor;
+    domain::calibrationYoYSwap_Tenor_t Tenor{};
 };
 
 struct hw_Volatility_t_InitialValue_t_Sigma_t_Row_t : xsd::string
@@ -14894,9 +14895,9 @@ std::string to_string(parametricVolatilityParameterCalibration);
 
 struct parametricSmileConfigParameter
 {
-    domain::parametricSmileConfigParameter_Name_t Name;
-    domain::parametricSmileConfigParameter_InitialValue_t InitialValue;
-    domain::parametricVolatilityParameterCalibration Calibration;
+    domain::parametricSmileConfigParameter_Name_t Name{};
+    domain::parametricSmileConfigParameter_InitialValue_t InitialValue{};
+    domain::parametricVolatilityParameterCalibration Calibration{};
 };
 
 struct capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t : xsd::string
@@ -14917,8 +14918,8 @@ struct cdsVolatility_Terms_t_Term_t_Curve_t : xsd::string
 
 struct cdsVolatility_Terms_t_Term_t
 {
-    domain::cdsVolatility_Terms_t_Term_t_Label_t Label;
-    domain::cdsVolatility_Terms_t_Term_t_Curve_t Curve;
+    domain::cdsVolatility_Terms_t_Term_t_Label_t Label{};
+    domain::cdsVolatility_Terms_t_Term_t_Curve_t Curve{};
 };
 
 struct constantVolatilityConfig_QuoteType_t : xsd::string
@@ -14977,9 +14978,9 @@ struct proxySurface_CDSVolatilityCurve_t : xsd::string
 struct defaultCurve_Configurations_t_Configuration_t
 {
     xsd::optional<uint64_t> priority;
-    domain::defaultCurveType Type;
+    domain::defaultCurveType Type{};
     xsd::optional<domain::defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t> DiscountCurve;
-    domain::dayCounter DayCounter;
+    domain::dayCounter DayCounter{};
     xsd::optional<domain::defaultCurve_Configurations_t_Configuration_t_RecoveryRate_t> RecoveryRate;
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::quoteType> Quotes;
@@ -15035,8 +15036,8 @@ struct compositeQuoteType_CompositeQuote_t_RateQuote_t : xsd::string
 
 struct compositeQuoteType_CompositeQuote_t
 {
-    domain::compositeQuoteType_CompositeQuote_t_SpreadQuote_t SpreadQuote;
-    domain::compositeQuoteType_CompositeQuote_t_RateQuote_t RateQuote;
+    domain::compositeQuoteType_CompositeQuote_t_SpreadQuote_t SpreadQuote{};
+    domain::compositeQuoteType_CompositeQuote_t_RateQuote_t RateQuote{};
 };
 
 struct aoisSegmentType_PillarChoice_t : xsd::string
@@ -15115,8 +15116,8 @@ struct inlfSegmentType_Conventions_t : xsd::string
 
 struct inlfSegmentType
 {
-    domain::inlfSegmentType_Conventions_t Conventions;
-    domain::quoteType Quotes;
+    domain::inlfSegmentType_Conventions_t Conventions{};
+    domain::quoteType Quotes{};
 };
 
 struct factorType_Factor_t : xsd::string
@@ -15149,18 +15150,18 @@ struct volatilityDeltaSurfaceConfig_ExerciseType_t : xsd::string
 
 struct minMaxType
 {
-    double Min;
-    double Max;
+    double Min{};
+    double Max{};
 };
 
 struct baseCorrelation_RecoveryGrid_t_Grid_t : xsd::string
 {
-    xsd::string seniority;
+    xsd::string seniority{};
 };
 
 struct baseCorrelation_RecoveryProbabilities_t_Probabilities_t : xsd::string
 {
-    xsd::string seniority;
+    xsd::string seniority{};
 };
 
 struct baseCorrelation_QuoteTypes_t_QuoteType_t : xsd::string
@@ -15184,9 +15185,9 @@ struct priceSegmentType_Conventions_t : xsd::string
 
 struct priceSegmentType
 {
-    domain::priceSegmentTypeType Type;
+    domain::priceSegmentTypeType Type{};
     xsd::optional<uint64_t> Priority;
-    domain::priceSegmentType_Conventions_t Conventions;
+    domain::priceSegmentType_Conventions_t Conventions{};
     xsd::optional<domain::quoteType> Quotes;
     xsd::optional<domain::priceSegmentType_PeakPriceCurveId_t> PeakPriceCurveId;
     xsd::optional<domain::priceSegmentType_PeakPriceCalendar_t> PeakPriceCalendar;
@@ -15244,9 +15245,9 @@ struct stressfxvolatility_WeightedShifts_t_Tenor_t : xsd::string
 
 struct stressfxvolatility_WeightedShifts_t
 {
-    domain::stressfxvolatility_WeightedShifts_t_WeightingSchema_t WeightingSchema;
-    domain::stressfxvolatility_WeightedShifts_t_Shift_t Shift;
-    domain::stressfxvolatility_WeightedShifts_t_Tenor_t Tenor;
+    domain::stressfxvolatility_WeightedShifts_t_WeightingSchema_t WeightingSchema{};
+    domain::stressfxvolatility_WeightedShifts_t_Shift_t Shift{};
+    domain::stressfxvolatility_WeightedShifts_t_Tenor_t Tenor{};
     xsd::optional<domain::stressfxvolatility_WeightedShifts_t_ShiftWeights_t> ShiftWeights;
     xsd::optional<domain::stressfxvolatility_WeightedShifts_t_WeightTenors_t> WeightTenors;
 };
@@ -15324,9 +15325,9 @@ struct curveAlgebraCurveOperation_Arguments_t_Argument_t : xsd::string
 
 struct boundaryConstraint
 {
-    xsd::string parameter;
-    float LowerBound;
-    float UpperBound;
+    xsd::string parameter{};
+    float LowerBound{};
+    float UpperBound{};
 };
 
 struct defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t : xsd::string
@@ -15395,8 +15396,8 @@ struct priceSegmentType_PeakPriceCalendar_t : xsd::string
 
 struct offPeakDailyType
 {
-    domain::quoteType OffPeakQuotes;
-    domain::quoteType PeakQuotes;
+    domain::quoteType OffPeakQuotes{};
+    domain::quoteType PeakQuotes{};
 };
 
 struct stressfxvolatility_WeightedShifts_t_ShiftWeights_t : xsd::string

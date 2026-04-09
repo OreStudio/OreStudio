@@ -148,5 +148,4 @@ on delete to "ores_trading_rpa_instruments_tbl" do instead
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and instrument_id = OLD.instrument_id
-      and party_id = ANY(ores_iam_visible_party_ids_fn())
       and valid_to = ores_utility_infinity_timestamp_fn();

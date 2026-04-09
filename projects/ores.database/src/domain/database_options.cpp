@@ -55,7 +55,7 @@ sqlgen::postgres::Credentials to_credentials(const database_options& opts) {
             std::string_view sv(msg);
             if (!sv.empty() && sv.back() == '\n')
                 sv.remove_suffix(1);
-            BOOST_LOG_SEV(lg(), info) << sv;
+            BOOST_LOG_SEV(lg(), debug) << sv;
         }
     };
 }

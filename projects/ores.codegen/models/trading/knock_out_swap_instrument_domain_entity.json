@@ -1,0 +1,109 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "knock_out_swap_instrument",
+    "entity_plural": "knock_out_swap_instruments",
+    "entity_title": "Knock-Out Swap Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Knock-out interest rate swap instrument.",
+    "description": "Represents a knock-out interest rate swap that terminates automatically\nif the floating rate breaches a specified barrier level.",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this knock-out swap instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap effective start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "maturity_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap maturity date.",
+        "detail": "Must be after start_date."
+      },
+      {
+        "name": "barrier_level",
+        "type": "double precision",
+        "cpp_type": "double",
+        "nullable": false,
+        "description": "Barrier level that triggers knock-out.",
+        "detail": "Expressed as a decimal fraction.",
+        "default_value": "0.0"
+      },
+      {
+        "name": "barrier_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Barrier type: UpOut or DownOut.",
+        "detail": "UpOut knocks out when rate rises above barrier; DownOut when it falls below."
+      },
+      {
+        "name": "knock_out_dates_json",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional JSON array of knock-out observation dates.",
+        "detail": "ISO 8601 date strings for discrete barrier observation."
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_knock_out_swap_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "knock_out_swap_instrument",
+      "entity_plural_short": "knock_out_swap_instruments",
+      "entity_singular_words": "knock-out swap instrument",
+      "entity_plural_words": "knock-out swap instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "ko"
+    }
+  }
+}

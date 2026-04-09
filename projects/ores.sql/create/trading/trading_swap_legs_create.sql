@@ -21,7 +21,7 @@
 -- =============================================================================
 -- Swap Legs Table
 --
--- Child table of ores_trading_instruments_tbl. Each row is one leg of a
+-- Shared legs table for all rates instrument types. Each row is one leg of a
 -- rates instrument (Swap, CrossCurrencySwap, CapFloor, Swaption).
 -- A plain IRS has two rows (fixed + floating). A cross-currency swap also
 -- has two rows with different currencies.
@@ -33,6 +33,7 @@
 create table if not exists "ores_trading_swap_legs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
+    "party_id" uuid not null,
     "version" integer not null,
     "instrument_id" uuid not null,
     "leg_number" integer not null,
@@ -79,6 +80,11 @@ create index if not exists ores_trading_swap_legs_tenant_idx
 on "ores_trading_swap_legs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+-- Party index for RLS
+create index if not exists ores_trading_swap_legs_party_idx
+on "ores_trading_swap_legs_tbl" (tenant_id, party_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Instrument index for leg lookups
 create index if not exists ores_trading_swap_legs_instrument_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
@@ -92,16 +98,8 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate instrument_id (soft FK to ores_trading_instruments_tbl)
-    if not exists (
-        select 1 from ores_trading_instruments_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.instrument_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid instrument_id: %. Instrument must exist for tenant.', NEW.instrument_id
-            using errcode = '23503';
-    end if;
+    -- Set party_id from session context
+    NEW.party_id := current_setting('app.current_party_id')::uuid;
 
     -- Validate leg_type_code
     NEW.leg_type_code := ores_trading_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);

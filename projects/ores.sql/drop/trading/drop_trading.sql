@@ -37,6 +37,16 @@
 \ir ./trading_swap_legs_notify_trigger_drop.sql
 \ir ./trading_swap_legs_drop.sql
 
+\ir ./trading_fra_instruments_drop.sql
+\ir ./trading_vanilla_swap_instruments_drop.sql
+\ir ./trading_cap_floor_instruments_drop.sql
+\ir ./trading_swaption_instruments_drop.sql
+\ir ./trading_balance_guaranteed_swap_instruments_drop.sql
+\ir ./trading_callable_swap_instruments_drop.sql
+\ir ./trading_knock_out_swap_instruments_drop.sql
+\ir ./trading_inflation_swap_instruments_drop.sql
+\ir ./trading_risk_participation_agreement_instruments_drop.sql
+
 \ir ./trading_instruments_notify_trigger_drop.sql
 \ir ./trading_instruments_drop.sql
 

@@ -40,6 +40,7 @@ struct composite_instrument_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::optional<std::string> trade_id;
     std::string trade_type_code;
     std::optional<std::string> description;

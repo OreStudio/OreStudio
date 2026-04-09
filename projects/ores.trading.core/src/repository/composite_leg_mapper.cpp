@@ -36,6 +36,7 @@ composite_leg_mapper::map(const composite_leg_entity& v) {
     domain::composite_leg r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id);
     r.leg_sequence = v.leg_sequence;
@@ -59,6 +60,7 @@ composite_leg_mapper::map(const domain::composite_leg& v) {
     composite_leg_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
     r.instrument_id = boost::uuids::to_string(v.instrument_id);
     r.leg_sequence = v.leg_sequence;

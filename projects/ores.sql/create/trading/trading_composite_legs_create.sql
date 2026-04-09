@@ -30,6 +30,7 @@ create table if not exists "ores_trading_composite_legs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "instrument_id" uuid not null,
     "leg_sequence" integer not null,
     "constituent_trade_id" text not null,
@@ -65,6 +66,11 @@ create index if not exists ores_trading_composite_legs_tenant_idx
 on "ores_trading_composite_legs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+-- Party index for party isolation
+create index if not exists ores_trading_composite_legs_party_idx
+on "ores_trading_composite_legs_tbl" (tenant_id, party_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Instrument index for leg lookups
 create index if not exists ores_trading_composite_legs_instrument_idx
 on "ores_trading_composite_legs_tbl" (tenant_id, instrument_id)
@@ -77,6 +83,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Set party_id from session context
+    NEW.party_id := current_setting('app.current_party_id')::uuid;
 
     -- Validate instrument_id (soft FK to ores_trading_composite_instruments_tbl)
     if not exists (

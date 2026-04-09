@@ -34,7 +34,15 @@
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
-#include "ores.trading.core/service/instrument_service.hpp"
+#include "ores.trading.core/service/fra_instrument_service.hpp"
+#include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
+#include "ores.trading.core/service/cap_floor_instrument_service.hpp"
+#include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
+#include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rpa_instrument_service.hpp"
 #include "ores.trading.core/service/fx_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
@@ -88,13 +96,83 @@ private:
         case product_type::unknown:
             return; // unreachable, handled above
         case product_type::swap: {
-            service::instrument_service isvc(ctx);
-            if (auto r = isvc.find_instrument(id)) {
-                swap_export_result ex;
-                ex.instrument = std::move(*r);
-                ex.legs = isvc.get_legs(id);
-                item.instrument = std::move(ex);
+            service::fra_instrument_service fra_svc(ctx);
+            const auto& ttc = t.trade_type;
+            std::optional<swap_export_result> ex_opt;
+            if (ttc == "ForwardRateAgreement") {
+                if (auto r = fra_svc.find_fra_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "Swap" || ttc == "CrossCurrencySwap"
+                       || ttc == "FlexiSwap") {
+                service::vanilla_swap_instrument_service svc(ctx);
+                if (auto r = svc.find_vanilla_swap_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "CapFloor") {
+                service::cap_floor_instrument_service svc(ctx);
+                if (auto r = svc.find_cap_floor_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "Swaption") {
+                service::swaption_instrument_service svc(ctx);
+                if (auto r = svc.find_swaption_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "BalanceGuaranteedSwap") {
+                service::balance_guaranteed_swap_instrument_service svc(ctx);
+                if (auto r = svc.find_balance_guaranteed_swap_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "CallableSwap") {
+                service::callable_swap_instrument_service svc(ctx);
+                if (auto r = svc.find_callable_swap_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "KnockOutSwap") {
+                service::knock_out_swap_instrument_service svc(ctx);
+                if (auto r = svc.find_knock_out_swap_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "InflationSwap") {
+                service::inflation_swap_instrument_service svc(ctx);
+                if (auto r = svc.find_inflation_swap_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "RiskParticipationAgreement") {
+                service::rpa_instrument_service svc(ctx);
+                if (auto r = svc.find_rpa_instrument(id)) {
+                    swap_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex.legs = fra_svc.get_swap_legs(id);
+                    ex_opt = std::move(ex);
+                }
             }
+            if (ex_opt) item.instrument = std::move(*ex_opt);
             break;
         }
         case product_type::fx: {

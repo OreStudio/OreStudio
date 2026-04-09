@@ -1,0 +1,100 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "callable_swap_instrument",
+    "entity_plural": "callable_swap_instruments",
+    "entity_title": "Callable Swap Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Callable interest rate swap instrument.",
+    "description": "Represents a callable interest rate swap where one party has the right\nto terminate the swap early on specified call dates.",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this callable swap instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap effective start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "maturity_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap maturity date.",
+        "detail": "Must be after start_date."
+      },
+      {
+        "name": "call_dates_json",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional JSON array of call dates.",
+        "detail": "ISO 8601 date strings when the party may exercise the call option."
+      },
+      {
+        "name": "call_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional call type: Bermudan or One-Time.",
+        "detail": "Bermudan allows multiple call dates; One-Time allows exactly one."
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_callable_swap_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "callable_swap_instrument",
+      "entity_plural_short": "callable_swap_instruments",
+      "entity_singular_words": "callable swap instrument",
+      "entity_plural_words": "callable swap instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "cs"
+    }
+  }
+}

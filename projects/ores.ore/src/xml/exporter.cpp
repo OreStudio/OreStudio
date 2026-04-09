@@ -94,22 +94,30 @@ std::string exporter::export_portfolio(
                     << "Skipping unmapped trade: " << tr.external_id;
                 return;
             } else if constexpr (std::is_same_v<T, swap_export_result>) {
-                if (tt == "Swap" || tt == "CrossCurrencySwap" ||
-                        tt == "InflationSwap")
+                if (tt == "Swap" || tt == "CrossCurrencySwap")
                     xsd_t = swap_instrument_mapper::reverse_swap(
-                        r.instrument, r.legs);
+                        std::get<trading::domain::vanilla_swap_instrument>(
+                            r.instrument),
+                        r.legs);
                 else if (tt == "ForwardRateAgreement")
                     xsd_t = swap_instrument_mapper::reverse_fra(
-                        r.instrument, r.legs);
+                        std::get<trading::domain::fra_instrument>(r.instrument),
+                        r.legs);
                 else if (tt == "CapFloor")
                     xsd_t = swap_instrument_mapper::reverse_capfloor(
-                        r.instrument, r.legs);
+                        std::get<trading::domain::cap_floor_instrument>(
+                            r.instrument),
+                        r.legs);
                 else if (tt == "Swaption")
                     xsd_t = swap_instrument_mapper::reverse_swaption(
-                        r.instrument, r.legs);
+                        std::get<trading::domain::swaption_instrument>(
+                            r.instrument),
+                        r.legs);
                 else if (tt == "CallableSwap")
                     xsd_t = swap_instrument_mapper::reverse_callable_swap(
-                        r.instrument, r.legs);
+                        std::get<trading::domain::callable_swap_instrument>(
+                            r.instrument),
+                        r.legs);
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for swap type: " << tt;

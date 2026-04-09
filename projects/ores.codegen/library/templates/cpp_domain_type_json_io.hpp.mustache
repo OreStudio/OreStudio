@@ -4,7 +4,7 @@
 #define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_JSON_IO_HPP
 
 #include <iosfwd>
-#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 
 namespace ores::{{component}}::domain {
 
@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
 #define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_JSON_IO_HPP
 
 #include <iosfwd>
-#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 
 namespace ores::{{component}}::domain {
 

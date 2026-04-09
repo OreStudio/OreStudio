@@ -62,6 +62,11 @@ struct commodity_instrument final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Party that owns this instrument.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief UUID of the associated trade record.
      *
      * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.

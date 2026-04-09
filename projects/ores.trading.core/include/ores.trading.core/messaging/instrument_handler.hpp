@@ -29,7 +29,15 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.trading.core/service/instrument_service.hpp"
+#include "ores.trading.core/service/fra_instrument_service.hpp"
+#include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
+#include "ores.trading.core/service/cap_floor_instrument_service.hpp"
+#include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
+#include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rpa_instrument_service.hpp"
 #include "ores.trading.core/service/fx_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
@@ -54,170 +62,18 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
+/**
+ * @brief Routes get_instrument_for_trade to the correct per-type service.
+ *
+ * The swap case dispatches by trade_type_code to one of the nine rates
+ * instrument tables. All other families route by product_type enum.
+ */
 class instrument_handler {
 public:
     instrument_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
-
-    void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::instrument_service svc(ctx);
-        get_instruments_response resp;
-        try {
-            if (auto req = decode<get_instruments_request>(msg)) {
-                const auto offset =
-                    static_cast<std::uint32_t>(req->offset);
-                const auto limit =
-                    static_cast<std::uint32_t>(req->limit);
-                resp.instruments = svc.list_instruments(offset, limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.count_instruments());
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(instrument_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
-        }
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::instruments:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::instrument_service svc(ctx);
-        if (auto req = decode<save_instrument_request>(msg)) {
-            try {
-                svc.save_instrument(req->data, req->legs);
-                BOOST_LOG_SEV(instrument_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, save_instrument_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(instrument_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_instrument_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::instruments:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::instrument_service svc(ctx);
-        if (auto req = decode<delete_instrument_request>(msg)) {
-            try {
-                for (const auto& id : req->ids)
-                    svc.remove_instrument(id);
-                BOOST_LOG_SEV(instrument_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, delete_instrument_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(instrument_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_instrument_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::instrument_service svc(ctx);
-        if (auto req = decode<get_instrument_history_request>(msg)) {
-            try {
-                auto versions = svc.get_instrument_history(req->id);
-                BOOST_LOG_SEV(instrument_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_instrument_history_response{
-                    .success = true,
-                    .history = std::move(versions)});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(instrument_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_instrument_history_response{
-                    .success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void list_legs(ores::nats::message msg) {
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::instrument_service svc(ctx);
-        get_swap_legs_response resp;
-        try {
-            if (auto req = decode<get_swap_legs_request>(msg)) {
-                resp.legs = svc.get_legs(req->instrument_id);
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(instrument_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
-        }
-        BOOST_LOG_SEV(instrument_handler_lg(), debug)
-            << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
-    }
 
     void get_instrument_for_trade(ores::nats::message msg) {
         BOOST_LOG_SEV(instrument_handler_lg(), debug)
@@ -249,12 +105,89 @@ public:
                 case product_type::unknown:
                     break; // unreachable, handled above
                 case product_type::swap: {
-                    service::instrument_service svc(ctx);
-                    if (auto r = svc.find_instrument(id)) {
-                        swap_export_result ex;
-                        ex.instrument = std::move(*r);
-                        ex.legs = svc.get_legs(id);
-                        resp.instrument = std::move(ex);
+                    const auto& ttc = req->trade_type_code;
+                    service::fra_instrument_service fra_svc(ctx);
+                    if (ttc == "ForwardRateAgreement") {
+                        if (auto r = fra_svc.find_fra_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "Swap" || ttc == "CrossCurrencySwap"
+                               || ttc == "FlexiSwap") {
+                        service::vanilla_swap_instrument_service svc(ctx);
+                        if (auto r = svc.find_vanilla_swap_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "CapFloor") {
+                        service::cap_floor_instrument_service svc(ctx);
+                        if (auto r = svc.find_cap_floor_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "Swaption") {
+                        service::swaption_instrument_service svc(ctx);
+                        if (auto r = svc.find_swaption_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "BalanceGuaranteedSwap") {
+                        service::balance_guaranteed_swap_instrument_service svc(ctx);
+                        if (auto r = svc.find_balance_guaranteed_swap_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "CallableSwap") {
+                        service::callable_swap_instrument_service svc(ctx);
+                        if (auto r = svc.find_callable_swap_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "KnockOutSwap") {
+                        service::knock_out_swap_instrument_service svc(ctx);
+                        if (auto r = svc.find_knock_out_swap_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "InflationSwap") {
+                        service::inflation_swap_instrument_service svc(ctx);
+                        if (auto r = svc.find_inflation_swap_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else if (ttc == "RiskParticipationAgreement") {
+                        service::rpa_instrument_service svc(ctx);
+                        if (auto r = svc.find_rpa_instrument(id)) {
+                            swap_export_result ex;
+                            ex.instrument = std::move(*r);
+                            ex.legs = fra_svc.get_swap_legs(id);
+                            resp.instrument = std::move(ex);
+                        }
+                    } else {
+                        resp.success = false;
+                        resp.message =
+                            "get_instrument_for_trade: unknown swap "
+                            "trade_type_code: " + ttc;
+                        BOOST_LOG_SEV(instrument_handler_lg(), warn)
+                            << msg.subject << ": " << resp.message;
+                        reply(nats_, msg, resp);
+                        return;
                     }
                     break;
                 }

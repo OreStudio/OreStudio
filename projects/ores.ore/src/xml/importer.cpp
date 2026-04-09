@@ -174,29 +174,45 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                 using T = std::decay_t<decltype(result)>;
                 if constexpr (!std::is_same_v<T, std::monostate>) {
                     const auto instr_id = gen();
-                    result.instrument.id = instr_id;
-                    result.instrument.trade_id = item.trade.id;
                     item.trade.instrument_id = instr_id;
 
                     using ores::trading::domain::product_type;
                     if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
                         item.trade.product_type = product_type::swap;
+                        std::visit([&](auto& instr) {
+                            instr.instrument_id = instr_id;
+                            instr.trade_id = item.trade.id;
+                        }, result.instrument);
                         for (auto& leg : result.legs)
                             leg.instrument_id = instr_id;
                     } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
                         item.trade.product_type = product_type::fx;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
                         item.trade.product_type = product_type::bond;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
                         item.trade.product_type = product_type::credit;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
                         item.trade.product_type = product_type::equity;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
                         item.trade.product_type = product_type::commodity;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
                         item.trade.product_type = product_type::composite;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
                         item.trade.product_type = product_type::scripted;
+                        result.instrument.id = instr_id;
+                        result.instrument.trade_id = item.trade.id;
                     }
                 }
             }, item.instrument);

@@ -106,31 +106,31 @@
       "templates": [
         {
           "template": "cpp_domain_type_class.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_json_io.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}_json_io.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.cpp.mustache",
-          "output": "projects/ores.{component}/src/domain/{entity}_json_io.cpp"
+          "output": "projects/ores.{component_include}/src/domain/{entity}_json_io.cpp"
         },
         {
           "template": "cpp_domain_type_table.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_table.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}_table.hpp"
         },
         {
           "template": "cpp_domain_type_table.cpp.mustache",
-          "output": "projects/ores.{component}/src/domain/{entity}_table.cpp"
+          "output": "projects/ores.{component_include}/src/domain/{entity}_table.cpp"
         },
         {
           "template": "cpp_domain_type_table_io.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_table_io.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}_table_io.hpp"
         },
         {
           "template": "cpp_domain_type_table_io.cpp.mustache",
-          "output": "projects/ores.{component}/src/domain/{entity}_table_io.cpp"
+          "output": "projects/ores.{component_include}/src/domain/{entity}_table_io.cpp"
         }
       ]
     },
@@ -140,11 +140,11 @@
       "templates": [
         {
           "template": "cpp_domain_type_generator.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/generator/{entity}_generator.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/generator/{entity}_generator.hpp"
         },
         {
           "template": "cpp_domain_type_generator.cpp.mustache",
-          "output": "projects/ores.{component}/src/generator/{entity}_generator.cpp"
+          "output": "projects/ores.{component_include}/src/generator/{entity}_generator.cpp"
         }
       ]
     },
@@ -154,27 +154,27 @@
       "templates": [
         {
           "template": "cpp_domain_type_entity.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_entity.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_entity.hpp"
         },
         {
           "template": "cpp_domain_type_entity.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_entity.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_entity.cpp"
         },
         {
           "template": "cpp_domain_type_mapper.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_mapper.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_mapper.hpp"
         },
         {
           "template": "cpp_domain_type_mapper.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_mapper.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_mapper.cpp"
         },
         {
           "template": "cpp_domain_type_repository.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_repository.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_repository.hpp"
         },
         {
           "template": "cpp_domain_type_repository.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_repository.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_repository.cpp"
         }
       ]
     },
@@ -219,15 +219,15 @@
       "templates": [
         {
           "template": "cpp_domain_type_class_non_temporal.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_json_io.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}_json_io.hpp"
         },
         {
           "template": "cpp_domain_type_json_io.cpp.mustache",
-          "output": "projects/ores.{component}/src/domain/{entity}_json_io.cpp"
+          "output": "projects/ores.{component_include}/src/domain/{entity}_json_io.cpp"
         }
       ]
     },
@@ -237,27 +237,27 @@
       "templates": [
         {
           "template": "cpp_domain_type_entity_non_temporal.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_entity.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_entity.hpp"
         },
         {
           "template": "cpp_domain_type_entity_non_temporal.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_entity.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_entity.cpp"
         },
         {
           "template": "cpp_domain_type_mapper_non_temporal.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_mapper.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_mapper.hpp"
         },
         {
           "template": "cpp_domain_type_mapper_non_temporal.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_mapper.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_mapper.cpp"
         },
         {
           "template": "cpp_domain_type_repository_non_temporal.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_repository.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/repository/{entity}_repository.hpp"
         },
         {
           "template": "cpp_domain_type_repository_non_temporal.cpp.mustache",
-          "output": "projects/ores.{component}/src/repository/{entity}_repository.cpp"
+          "output": "projects/ores.{component_core}/src/repository/{entity}_repository.cpp"
         }
       ]
     },

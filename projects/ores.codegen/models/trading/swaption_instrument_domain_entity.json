@@ -1,0 +1,116 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "swaption_instrument",
+    "entity_plural": "swaption_instruments",
+    "entity_title": "Swaption Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Swaption (option on an interest rate swap) instrument.",
+    "description": "Represents a swaption \u2014 an option granting the right to enter into an\ninterest rate swap at a future date. Exercise type may be European,\nBermudan, or American.",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this swaption instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "expiry_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Option expiry date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "exercise_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Exercise type: European, Bermudan, or American.",
+        "detail": "Determines when the option may be exercised."
+      },
+      {
+        "name": "settlement_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Settlement type: Cash or Physical.",
+        "detail": "Determines how the swaption is settled upon exercise."
+      },
+      {
+        "name": "long_short",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Position direction: Long or Short.",
+        "detail": "Indicates whether the party holds or writes the option."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional underlying swap start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD). Null if not yet determined."
+      },
+      {
+        "name": "maturity_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional underlying swap maturity date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD). Null if not yet determined."
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_swaption_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "swaption_instrument",
+      "entity_plural_short": "swaption_instruments",
+      "entity_singular_words": "swaption instrument",
+      "entity_plural_words": "swaption instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "sw"
+    }
+  }
+}

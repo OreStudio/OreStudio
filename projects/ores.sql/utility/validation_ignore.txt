@@ -321,3 +321,9 @@ RLS_002 ores_mq_message_archive_tbl
 # MQ queue stats — aggregate metrics; no per-party row isolation needed.
 RLS_002 ores_mq_queue_stats_tbl
 
+# IAM account parties — this IS the party membership table. It must be
+# readable before a party context is established (e.g. during login), so a
+# party isolation policy would cause a chicken-and-egg deadlock. Tenant
+# isolation (applied above in the create file) is the correct boundary here.
+RLS_002 ores_iam_account_parties_tbl
+

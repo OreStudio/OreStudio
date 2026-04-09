@@ -19,13 +19,26 @@
  */
 #include "ores.platform/filesystem/file.hpp"
 
+#include <cstdio>
 #include <filesystem>
+#include <string>
 #include <system_error>
 #include <boost/throw_exception.hpp>
 #include "ores.platform/filesystem/io_error.hpp"
 #include "ores.platform/filesystem/file_not_found.hpp"
 
 namespace ores::platform::filesystem {
+
+FILE* file::open_c_file(const std::filesystem::path& p, const char* mode) {
+#ifdef _WIN32
+    // On Windows path::c_str() returns const wchar_t*; convert mode to wide.
+    const std::string m(mode);
+    const std::wstring wmode(m.begin(), m.end());
+    return _wfopen(p.c_str(), wmode.c_str());
+#else
+    return std::fopen(p.c_str(), mode);
+#endif
+}
 
 std::string file::read_content(std::istream& s) {
     s.exceptions(std::ifstream::failbit | std::ifstream::badbit);

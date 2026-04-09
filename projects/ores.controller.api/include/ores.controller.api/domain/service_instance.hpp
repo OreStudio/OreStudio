@@ -82,10 +82,36 @@ struct service_instance final {
      * @brief Human-readable reason for the most recent failure, if any.
      *
      * Set by the controller when phase transitions to "failed" (max_restart_count
-     * exceeded). Includes the interpreted exit code and a snippet from the log.
-     * Absent for instances that have never failed.
+     * exceeded). Contains the interpreted exit code name and restart count only.
+     * Log and stderr output are stored separately in last_log_snippet and
+     * last_stderr_snippet. Absent for instances that have never failed.
      */
     std::optional<std::string> last_error;
+
+    /**
+     * @brief Tail of the Boost.Log file from the most recent failure.
+     *
+     * Captured when max_restart_count is exceeded. Shown in the "Log" tab
+     * of the service detail dialog. Absent if the service has never failed.
+     */
+    std::optional<std::string> last_log_snippet;
+
+    /**
+     * @brief Tail of the stderr capture file from the most recent failure.
+     *
+     * Captures pre-logging output (e.g. argument parser errors that occur
+     * before lifecycle_manager initialises). Shown in the "Stderr" tab.
+     * Absent if no stderr output was produced.
+     */
+    std::optional<std::string> last_stderr_snippet;
+
+    /**
+     * @brief Full command line used to launch the most recent process.
+     *
+     * Set each time the supervisor launches the service. Shown in the
+     * "Command" tab of the service detail dialog to aid debugging.
+     */
+    std::optional<std::string> last_command_line;
 
     /**
      * @brief Timestamp when this row was first created.

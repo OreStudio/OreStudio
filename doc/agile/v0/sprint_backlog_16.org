@@ -1018,6 +1018,95 @@ that belongs in =ores.ore= (not in =ores.reporting=).
 - [ ] Add unit tests with representative trade portfolios (IR swaps, FX,
       credit, equity, commodity) verifying correct market data derivation
 
+*** TODO Scheduler: complete Qt UI and promote to top-level menu          :code:
+
+*Background*
+
+The scheduler backend (=ores.scheduler.*=) is fully implemented: =job_definition=,
+=job_instance=, =job_status=, =cron_expression=, =cron_scheduler=, and
+=scheduler_loop= are all present. On the Qt side only =JobDefinitionController=
+exists, and it is wired into =Reporting > &Job Definitions=.
+
+This is architecturally wrong on two counts:
+
+1. *Wrong menu placement*: scheduling is a cross-domain concern. It will drive
+   report runs, trade expiry, housekeeping jobs, data archival, cache
+   invalidation, and any future scheduled workflow. Placing it under Reporting
+   implies it only exists to schedule reports.
+
+2. *Missing UI*: =job_instance= (the execution record) has no Qt controller,
+   window, or detail dialog. Users can define schedules but cannot see what ran,
+   when, whether it succeeded, or inspect its output.
+
+*Target state*
+
+A dedicated top-level =&Scheduler= menu replaces the =Reporting > &Job Definitions=
+entry:
+
+#+begin_example
+&Scheduler
+├── &Job Definitions        ← move from Reporting > Job Definitions
+├── &Job Instances          ← new: execution history per job
+├── ─────
+└── &Monitor                ← new: live view of running/queued jobs and
+                                   next-fire times (analogous to Service Dashboard)
+#+end_example
+
+=Job Definitions= and =Job Instances= follow the same controller/MDI window/detail
+dialog/history dialog pattern used throughout the application.
+
+=Scheduler Monitor= is a singleton MDI window (similar to =ServiceDashboardMdiWindow=)
+showing: currently running jobs, queue depth, next scheduled fire time per job,
+and last execution status per job. Auto-refreshes on a configurable timer.
+
+*What already exists*
+
+| Layer                | Exists                                               | Missing                             |
+|----------------------+------------------------------------------------------+-------------------------------------|
+| Backend API          | =job_definition=, =job_instance=, =job_status=,      |                                     |
+|                      | =cron_expression= domain types + JSON/table I/O      |                                     |
+| Backend service      | =cron_scheduler=, =scheduler_loop=,                  |                                     |
+|                      | =job_definition_service=,                            |                                     |
+|                      | =job_definition_handler=,                            |                                     |
+|                      | =job_instance_repository=                            |                                     |
+| NATS protocol        | =scheduler_protocol.hpp=                             | =list_job_instances= endpoint        |
+|                      |                                                      | =get_scheduler_status= endpoint      |
+| Qt                   | =JobDefinitionController=,                           | =JobInstanceController=              |
+|                      | =JobDefinitionMdiWindow=,                            | =JobInstanceMdiWindow=               |
+|                      | =JobDefinitionDetailDialog=,                         | =JobInstanceDetailDialog=            |
+|                      | =JobDefinitionHistoryDialog=                         | =SchedulerMonitorMdiWindow=          |
+|                      |                                                      | =SchedulerPlugin= (new plugin)       |
+
+*Scope*
+
+This story covers the full stack: any missing NATS endpoints, all missing Qt
+widgets, relocation of =JobDefinitionController= from =ComputePlugin= to the new
+=SchedulerPlugin=, and the new =&Scheduler= top-level menu.
+
+***** Tasks
+
+- [ ] NATS: add =scheduler.v1.job-instances.list= request/response to
+      =ores.scheduler.api/messaging/scheduler_protocol.hpp=; implement handler
+      in =ores.scheduler.core=
+- [ ] NATS: add =scheduler.v1.status= request/response (queue depth, running
+      count, next-fire map per job); implement handler
+- [ ] Qt: =ClientJobInstanceModel= — table model wrapping =job_instance= list
+- [ ] Qt: =JobInstanceMdiWindow= — list view of instances with status badges,
+      start time, duration, exit code
+- [ ] Qt: =JobInstanceDetailDialog= — detail view of a single instance
+      (cron expression, trigger time, log excerpt if available)
+- [ ] Qt: =SchedulerMonitorMdiWindow= — singleton live view; auto-refresh
+      timer; shows per-job: last run status, next fire time, running count
+- [ ] Qt: =SchedulerPlugin= — new plugin in =ores.qt.compute=; owns
+      =JobDefinitionController=, =JobInstanceController=,
+      =SchedulerMonitorController=; creates =&Scheduler= menu; contributes
+      no toolbar actions (scheduler is not a daily-ops toolbar item)
+- [ ] Qt: remove =Job Definitions= from =ComputePlugin::create_menus=
+      (=Reporting= menu); delete the entry from =Reporting=
+- [ ] Qt: register =SchedulerPlugin= in =PluginRegistry= in the correct
+      position so =&Scheduler= appears between =&Reporting= and =&System=
+- [ ] Update =doc/analysis/qt-menu-analysis.org= to reflect the new structure
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

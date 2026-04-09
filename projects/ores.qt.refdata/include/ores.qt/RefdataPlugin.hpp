@@ -33,18 +33,10 @@ class CurrencyController;
 class CountryController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
-class OriginDimensionController;
-class NatureDimensionController;
-class TreatmentDimensionController;
 class CodingSchemeAuthorityTypeController;
 class CodeDomainController;
-class DataDomainController;
-class SubjectAreaController;
-class CatalogController;
 class CodingSchemeController;
-class MethodologyController;
 class DatasetController;
-class DatasetBundleController;
 class DayCountFractionTypeController;
 class BusinessDayConventionTypeController;
 class FloatingIndexTypeController;
@@ -81,8 +73,7 @@ public:
     int load_order() const override { return 100; }  // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
-    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
-                     QMenu* telemetry_menu) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -102,18 +93,10 @@ private:
     std::unique_ptr<CountryController>                     countryController_;
     std::unique_ptr<ChangeReasonCategoryController>        changeReasonCategoryController_;
     std::unique_ptr<ChangeReasonController>                changeReasonController_;
-    std::unique_ptr<OriginDimensionController>             originDimensionController_;
-    std::unique_ptr<NatureDimensionController>             natureDimensionController_;
-    std::unique_ptr<TreatmentDimensionController>          treatmentDimensionController_;
     std::unique_ptr<CodingSchemeAuthorityTypeController>   codingSchemeAuthorityTypeController_;
     std::unique_ptr<CodeDomainController>                  codeDomainController_;
-    std::unique_ptr<DataDomainController>                  dataDomainController_;
-    std::unique_ptr<SubjectAreaController>                 subjectAreaController_;
-    std::unique_ptr<CatalogController>                     catalogController_;
     std::unique_ptr<CodingSchemeController>                codingSchemeController_;
-    std::unique_ptr<MethodologyController>                 methodologyController_;
     std::unique_ptr<DatasetController>                     datasetController_;
-    std::unique_ptr<DatasetBundleController>               datasetBundleController_;
     std::unique_ptr<DayCountFractionTypeController>        dayCountFractionTypeController_;
     std::unique_ptr<BusinessDayConventionTypeController>   businessDayConventionTypeController_;
     std::unique_ptr<FloatingIndexTypeController>           floatingIndexTypeController_;

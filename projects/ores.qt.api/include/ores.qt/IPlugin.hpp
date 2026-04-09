@@ -31,6 +31,21 @@ class QAction;
 namespace ores::qt {
 
 /**
+ * @brief Context passed to setup_menus() containing all host-owned shared menus.
+ *
+ * Plugins may freely add sub-menus or actions to any of these menus.
+ * Pointers may be null if the host has not created that menu yet.
+ */
+struct shared_menus_context {
+    QMenu* system_menu = nullptr;
+    QMenu* reference_data_menu = nullptr;
+    QMenu* telemetry_menu = nullptr;
+    QMenu* identity_menu = nullptr;
+    QMenu* data_transfer_menu = nullptr;
+    QMenu* trading_codes_menu = nullptr;
+};
+
+/**
  * @brief Abstract interface that every domain plugin must implement.
  *
  * The host (MainWindow) calls these methods at well-defined lifecycle points:
@@ -68,22 +83,17 @@ public:
     /**
      * @brief Contribute items to host-owned shared menus.
      *
-     * Called once at startup, before create_menus().  The host passes two
-     * pre-created menus that plugins may freely add sub-menus or actions to:
-     *
-     *  @p system_menu        — the application &System top-level menu.
-     *  @p reference_data_menu — the &Reference Data top-level menu.
+     * Called once at startup, before create_menus().  The host passes a
+     * struct containing pre-created menus that plugins may freely add
+     * sub-menus or actions to.
      *
      * Plugins that only need to add sub-menus to these shared containers
      * should do all their work here and return {} from create_menus().
      *
      * The default implementation does nothing.
      */
-    virtual void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
-                             QMenu* telemetry_menu) {
-        Q_UNUSED(system_menu)
-        Q_UNUSED(reference_data_menu)
-        Q_UNUSED(telemetry_menu)
+    virtual void setup_menus(const shared_menus_context& ctx) {
+        Q_UNUSED(ctx)
     }
 
     /**

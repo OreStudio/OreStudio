@@ -75,6 +75,35 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// IPlugin::setup_menus — populate Trading Codes submenu and Data Transfer menu.
+// ---------------------------------------------------------------------------
+void TradingPlugin::setup_menus(const shared_menus_context& smc) {
+    using IC = IconUtils;
+    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+
+    // Save reference so create_menus() can append it to the Trading menu.
+    trading_codes_menu_ = smc.trading_codes_menu;
+
+    // ---- Trading Codes — add Book Statuses (RefdataPlugin adds Purpose Types) --
+    if (trading_codes_menu_) {
+        auto* actBookStatuses = trading_codes_menu_->addAction(
+            ico(Icon::Flag), tr("Book &Statuses"));
+        connect(actBookStatuses, &QAction::triggered, this, [this]() {
+            if (bookStatusController_) bookStatusController_->showListWindow();
+        });
+    }
+
+    // ---- Data Transfer menu — contribute Import ORE Data ----------------
+    if (smc.data_transfer_menu) {
+        auto* actImportOre = smc.data_transfer_menu->addAction(
+            ico(Icon::ImportOre), tr("&Import ORE Data..."));
+        connect(actImportOre, &QAction::triggered, this, [this]() {
+            if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
+        });
+    }
+}
+
+// ---------------------------------------------------------------------------
 // IPlugin::create_menus — return the Trading menu (portfolios, books, explorers,
 // trades).  The standalone Data menu was removed; portfolios and books now live
 // at the top of the Trading menu.
@@ -93,11 +122,6 @@ QList<QMenu*> TradingPlugin::create_menus() {
     act_books_ = menuTrading->addAction(ico(Icon::BookOpen), tr("&Books"));
     connect(act_books_, &QAction::triggered, this, [this]() {
         if (bookController_) bookController_->showListWindow();
-    });
-
-    auto* actBookStatuses = menuTrading->addAction(ico(Icon::Flag), tr("Book &Statuses"));
-    connect(actBookStatuses, &QAction::triggered, this, [this]() {
-        if (bookStatusController_) bookStatusController_->showListWindow();
     });
 
     menuTrading->addSeparator();
@@ -180,11 +204,11 @@ QList<QMenu*> TradingPlugin::create_menus() {
         if (tradeController_) tradeController_->showListWindow();
     });
 
-    menuTrading->addSeparator();
-    act_import_ore_ = menuTrading->addAction(ico(Icon::ImportOre), tr("&Import ORE Data..."));
-    connect(act_import_ore_, &QAction::triggered, this, [this]() {
-        if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
-    });
+    // Append the Trading Codes submenu (populated during setup_menus).
+    if (trading_codes_menu_) {
+        menuTrading->addSeparator();
+        menuTrading->addMenu(trading_codes_menu_);
+    }
 
     return {menuTrading};
 }

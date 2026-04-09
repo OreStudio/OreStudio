@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <cstdio>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -37,6 +38,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/executable.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/service/exit_codes.hpp"
@@ -124,6 +126,13 @@ std::filesystem::path process_supervisor::log_path_for(
     const std::string& service_name, int replica_index) const {
     const auto log_dir = bin_dir_ / ".." / "log";
     const auto filename = service_name + "." + std::to_string(replica_index) + ".log";
+    return log_dir / filename;
+}
+
+std::filesystem::path process_supervisor::stderr_path_for(
+    const std::string& service_name, int replica_index) const {
+    const auto log_dir = bin_dir_ / ".." / "log";
+    const auto filename = service_name + "." + std::to_string(replica_index) + ".err";
     return log_dir / filename;
 }
 
@@ -233,7 +242,7 @@ boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(
 }
 
 boost::asio::awaitable<void> process_supervisor::start_all() {
-    BOOST_LOG_SEV(lg(), info) << "Starting all enabled services (dependency-ordered)";
+    BOOST_LOG_SEV(lg(), info) << "Starting all services...";
 
     repository::service_definition_repository def_repo;
     const auto defs = def_repo.read_latest(db_ctx_);
@@ -327,7 +336,7 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "All services started";
+    BOOST_LOG_SEV(lg(), info) << "All services started.";
 }
 
 boost::asio::awaitable<void> process_supervisor::do_launch(
@@ -358,37 +367,67 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
     const auto args = build_args(def, replica_index);
 
     BOOST_LOG_SEV(lg(), info)
-        << "Launching " << service_name << "[" << replica_index << "]"
-        << " binary=" << exe.filename().string();
+        << "Starting service " << service_name << "[" << replica_index << "]...";
+
+    std::string command_line;
+    {
+        std::ostringstream cmd;
+        cmd << exe.string();
+        for (const auto& a : args) cmd << ' ' << a;
+        command_line = cmd.str();
+        BOOST_LOG_SEV(lg(), debug) << "Command: " << command_line;
+    }
 
     auto executor = co_await boost::asio::this_coro::executor;
     auto entry = std::make_shared<process_entry>();
     entry->def = def;
     entry->replica_index = replica_index;
 
+    // Open a separate .err file to capture any child stderr output that occurs
+    // before Boost.Log is initialised (e.g. argument-parser errors).  stdout
+    // stays null — child services write structured output via Boost.Log only.
+    const auto stderr_path = stderr_path_for(service_name, replica_index);
+    {
+        std::error_code dir_ec;
+        std::filesystem::create_directories(stderr_path.parent_path(), dir_ec);
+    }
+    FILE* const stderr_file =
+        ores::platform::filesystem::file::open_c_file(stderr_path, "a");
+    if (!stderr_file)
+        BOOST_LOG_SEV(lg(), warn)
+            << "Could not open stderr capture file: " << stderr_path;
+
     try {
         // cd into bin_dir then exec with a relative name (like the shell would
         // do with `cd "$BIN_DIR" && exec ./binary`), so that `ps` shows the
         // short name instead of the full absolute path.
-        // Redirect stdout/stderr to /dev/null: child processes log via
-        // Boost.Log to their own log files; any stray writes to std::cout or
-        // std::cerr must not bleed through to the controller's terminal.
+        // stdout is discarded (null); stderr is redirected to a separate .err
+        // file so pre-logging startup errors are captured without polluting the
+        // controller's terminal or the service's own Boost.Log file.
         bp2::filesystem::path bp_exe("./" + def.binary_name);
         bp2::filesystem::path bp_dir(bin_dir_.string());
-        entry->proc.emplace(executor, bp_exe, args,
-            bp2::process_start_dir(bp_dir),
-            bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
+        if (stderr_file) {
+            entry->proc.emplace(executor, bp_exe, args,
+                bp2::process_start_dir(bp_dir),
+                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = stderr_file});
+        } else {
+            entry->proc.emplace(executor, bp_exe, args,
+                bp2::process_start_dir(bp_dir),
+                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
+        }
     } catch (const std::exception& e) {
+        if (stderr_file) std::fclose(stderr_file);
         BOOST_LOG_SEV(lg(), error)
             << "Failed to launch " << service_name << "[" << replica_index
             << "]: " << e.what();
         co_return;
     }
+    if (stderr_file) std::fclose(stderr_file);
 
     const auto pid = entry->proc->id();
     BOOST_LOG_SEV(lg(), info)
-        << "Launched " << service_name << "[" << replica_index
-        << "] PID=" << pid;
+        << "Started service " << service_name << "[" << replica_index
+        << "]. PID=" << pid;
 
     write_pid_file(service_name, replica_index, pid);
 
@@ -402,6 +441,7 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
             existing->pid = static_cast<int>(pid);
             existing->started_at = now;
             existing->stopped_at = std::nullopt;
+            existing->last_command_line = command_line;
             inst_repo.update_phase(db_ctx_, *existing);
         } else {
             api::domain::service_instance inst;
@@ -412,6 +452,7 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
             inst.phase = "running";
             inst.created_at = now;
             inst.started_at = now;
+            inst.last_command_line = command_line;
             inst_repo.insert(db_ctx_, inst);
         }
 
@@ -453,8 +494,8 @@ boost::asio::awaitable<void> process_supervisor::do_stop(
     entry.stop_requested = true;
 
     BOOST_LOG_SEV(lg(), info)
-        << "Sending SIGTERM to " << service_name << "[" << replica_index
-        << "] PID=" << entry.proc->id();
+        << "Stopping service " << service_name << "[" << replica_index
+        << "]... PID=" << entry.proc->id();
     boost::system::error_code ec;
     entry.proc->request_exit(ec);
     if (ec)
@@ -484,10 +525,27 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     processes_.erase(key);
     remove_pid_file(service_name, replica_index);
 
-    BOOST_LOG_SEV(lg(), info)
-        << service_name << "[" << replica_index << "]"
-        << " exited with code=" << exit_code
-        << (entry->stop_requested ? " (stop requested)" : " (unexpected)");
+    if (entry->stop_requested) {
+        BOOST_LOG_SEV(lg(), info)
+            << "Stopped service " << service_name << "[" << replica_index
+            << "]. Exit code=" << exit_code;
+    } else {
+        const auto lvl = (exit_code != 0) ? error : warn;
+        BOOST_LOG_SEV(lg(), lvl)
+            << "Service " << service_name << "[" << replica_index
+            << "] exited unexpectedly. Exit code=" << exit_code;
+    }
+
+    // If the process exited unexpectedly, log any pre-logging stderr output
+    // immediately so the cause is visible even on the first failure.
+    if (!entry->stop_requested) {
+        const auto err_path = stderr_path_for(service_name, replica_index);
+        const auto err_snippet = tail_log(err_path, log_tail_lines);
+        if (!err_snippet.empty())
+            BOOST_LOG_SEV(lg(), error)
+                << service_name << "[" << replica_index << "] stderr output:\n"
+                << err_snippet;
+    }
 
     // Update DB.
     try {
@@ -552,12 +610,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         const auto log_path = log_path_for(service_name, replica_index);
         const auto log_snippet = tail_log(log_path, log_tail_lines);
 
+        const auto err_path = stderr_path_for(service_name, replica_index);
+        const auto err_snippet = tail_log(err_path, log_tail_lines);
+
         const std::string error_summary =
             std::string(ec_name) +
             " (failed after " + std::to_string(max_restarts) + " restart" +
-            (max_restarts == 1 ? "" : "s") + ")" +
-            "\n\n--- last " + std::to_string(log_tail_lines) +
-            " log lines ---\n" + log_snippet;
+            (max_restarts == 1 ? "" : "s") + ")";
 
         BOOST_LOG_SEV(lg(), error)
             << service_name << "[" << replica_index << "]"
@@ -571,6 +630,12 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
             if (inst) {
                 inst->phase = "failed";
                 inst->last_error = error_summary;
+                inst->last_log_snippet = log_snippet.empty()
+                    ? std::nullopt
+                    : std::optional<std::string>(log_snippet);
+                inst->last_stderr_snippet = err_snippet.empty()
+                    ? std::nullopt
+                    : std::optional<std::string>(err_snippet);
                 inst_repo.update_phase(db_ctx_, *inst);
             }
 
@@ -598,9 +663,8 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     const int next_count = entry->retry.failure_count();
 
     BOOST_LOG_SEV(lg(), info)
-        << "Restarting " << service_name << "[" << replica_index << "]"
-        << " (attempt " << next_count << ")"
-        << " after " << delay.count() << "s";
+        << "Starting service " << service_name << "[" << replica_index
+        << "]... (restart attempt " << next_count << ", delay " << delay.count() << "s)";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer t(executor);
@@ -633,7 +697,7 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
 boost::asio::awaitable<void> process_supervisor::stop_all() {
     BOOST_LOG_SEV(lg(), info)
-        << "Stopping all supervised services (" << processes_.size() << " processes)";
+        << "Stopping all services... (" << processes_.size() << " running)";
 
     auto executor = co_await boost::asio::this_coro::executor;
 
@@ -649,8 +713,8 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
                     << "[" << key.second << "]: " << ec.message();
             else
                 BOOST_LOG_SEV(lg(), info)
-                    << "Sent SIGTERM to " << key.first
-                    << "[" << key.second << "] PID=" << entry->proc->id();
+                    << "Stopping service " << key.first
+                    << "[" << key.second << "]... PID=" << entry->proc->id();
         }
     }
 
@@ -676,8 +740,8 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
                 boost::system::error_code ec;
                 entry->proc->request_exit(ec);
                 BOOST_LOG_SEV(lg(), warn)
-                    << "Sent second exit request to " << key.first
-                    << "[" << key.second << "] PID=" << entry->proc->id();
+                    << "Stopping service " << key.first
+                    << "[" << key.second << "]... (second attempt) PID=" << entry->proc->id();
             }
         }
 
@@ -707,7 +771,7 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "All supervised services stopped.";
+    BOOST_LOG_SEV(lg(), info) << "All services stopped.";
 }
 
 void process_supervisor::request_launch(

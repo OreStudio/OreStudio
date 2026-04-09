@@ -20,6 +20,7 @@
 #ifndef ORES_PLATFORM_FILESYSTEM_FILE_HPP
 #define ORES_PLATFORM_FILESYSTEM_FILE_HPP
 
+#include <cstdio>
 #include <set>
 #include <list>
 #include <string>
@@ -93,6 +94,18 @@ public:
      * @brief Deletes all files in the supplied list.
      */
     static void remove(const std::list<std::filesystem::path>& files);
+
+    /**
+     * @brief Opens a file as a C FILE* in the given mode, cross-platform.
+     *
+     * On Windows, std::filesystem::path::c_str() returns const wchar_t* so
+     * std::fopen cannot be used directly. This function calls _wfopen on
+     * Windows and std::fopen on all other platforms, using the native path
+     * string in both cases.
+     *
+     * Returns nullptr on failure (same semantics as std::fopen).
+     */
+    static FILE* open_c_file(const std::filesystem::path& p, const char* mode);
 
     /**
      * @brief Removes all empty directories, recursively.

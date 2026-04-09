@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <QCloseEvent>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
@@ -68,7 +69,12 @@ public:
         QWidget* parent = nullptr);
     ~ServiceDashboardMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {900, 600}; }
+    QSize sizeHint() const override {
+        return savedWindowSize_.isValid() ? savedWindowSize_ : QSize{900, 600};
+    }
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 public slots:
     void refresh();
@@ -108,7 +114,9 @@ private:
     QPushButton* restartButton_;
     QTableWidget* detailTable_;
 
+    QSplitter* splitter_;
     QTimer* autoRefreshTimer_;
+    QSize savedWindowSize_;
 
     std::string selectedServiceName_;
     std::vector<controller::api::domain::service_definition> serviceDefinitions_;

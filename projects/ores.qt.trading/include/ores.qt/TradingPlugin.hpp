@@ -61,6 +61,7 @@ public:
     int load_order() const override { return 200; }
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -73,12 +74,14 @@ private:
     DetachableMdiSubWindow* portfolio_explorer_sub_window_{nullptr};
     DetachableMdiSubWindow* org_explorer_sub_window_{nullptr};
 
+    // Shared Trading Codes submenu (populated in setup_menus, appended in create_menus)
+    QMenu* trading_codes_menu_{nullptr};
+
     QAction* act_portfolios_{nullptr};
     QAction* act_books_{nullptr};
     QAction* act_portfolio_explorer_{nullptr};
     QAction* act_org_explorer_{nullptr};
     QAction* act_trades_{nullptr};
-    QAction* act_import_ore_{nullptr};
 
     // Entity controllers
     std::unique_ptr<OreImportController>   oreImportController_;

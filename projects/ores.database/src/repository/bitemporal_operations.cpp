@@ -49,7 +49,7 @@ void pg_notice_to_log(void* /*arg*/, const char* msg) {
     std::string_view sv(msg);
     if (!sv.empty() && sv.back() == '\n')
         sv.remove_suffix(1);
-    BOOST_LOG_SEV(bitemporal_lg(), info) << sv;
+    BOOST_LOG_SEV(bitemporal_lg(), debug) << sv;
 }
 
 /**

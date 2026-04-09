@@ -30,9 +30,11 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFontDatabase>
+#include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QPointer>
 #include <QHeaderView>
@@ -44,6 +46,7 @@
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 #include "ores.controller.api/messaging/service_instance_protocol.hpp"
 #include "ores.controller.api/messaging/service_definition_protocol.hpp"
@@ -151,10 +154,23 @@ QColor phase_color(const QString& phase) {
     return color_constants::level_trace; // stopped, unknown
 }
 
+// Custom data roles for table items in this window.
+// BadgeRole/BadgeColorRole are used by badge items; the ErrorDetail* roles are
+// used on the LastError column item to store text shown in the detail dialog.
+enum ItemRole {
+    BadgeTagRole   = Qt::UserRole,      // QString "badge" sentinel
+    BadgeColorRole = Qt::UserRole + 1,  // QColor  badge background
+
+    ErrorDetailRole   = Qt::UserRole,   // QString full error text
+    LogDetailRole     = Qt::UserRole + 1,
+    StderrDetailRole  = Qt::UserRole + 2,
+    CommandDetailRole = Qt::UserRole + 3,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Badge delegate — used for both the main status column and the phase column
 // in the detail table. The column that needs badge rendering is identified by
-// the Qt::UserRole data being the string "badge".
+// the BadgeTagRole data being the string "badge".
 // ─────────────────────────────────────────────────────────────────────────────
 
 class BadgeDelegate final : public QStyledItemDelegate {
@@ -164,7 +180,7 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override {
-        if (index.data(Qt::UserRole).toString() != QStringLiteral("badge")) {
+        if (index.data(BadgeTagRole).toString() != QStringLiteral("badge")) {
             QStyledItemDelegate::paint(painter, option, index);
             return;
         }
@@ -175,7 +191,7 @@ public:
             QStyle::PE_PanelItemViewItem, &opt, painter);
 
         const QString text   = index.data(Qt::DisplayRole).toString();
-        const QColor  bg     = index.data(Qt::UserRole + 1).value<QColor>();
+        const QColor  bg     = index.data(BadgeColorRole).value<QColor>();
         const QColor  fg     = color_constants::level_text;
 
         QFont badgeFont = opt.font;
@@ -189,7 +205,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option,
                    const QModelIndex& index) const override {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
-        if (index.data(Qt::UserRole).toString() == QStringLiteral("badge"))
+        if (index.data(BadgeTagRole).toString() == QStringLiteral("badge"))
             s = QSize(qMax(s.width(), 80), qMax(s.height(), 24));
         return s;
     }
@@ -201,8 +217,8 @@ public:
 
 QTableWidgetItem* make_badge_item(const QString& text, const QColor& bg) {
     auto* item = new QTableWidgetItem(text);
-    item->setData(Qt::UserRole,     QStringLiteral("badge"));
-    item->setData(Qt::UserRole + 1, bg); // badge color — NOT BackgroundRole (avoids coloring whole cell)
+    item->setData(BadgeTagRole,   QStringLiteral("badge"));
+    item->setData(BadgeColorRole, bg); // badge color — NOT BackgroundRole (avoids coloring whole cell)
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     return item;
 }
@@ -236,6 +252,7 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
       stopButton_(nullptr),
       restartButton_(nullptr),
       detailTable_(nullptr),
+      splitter_(nullptr),
       autoRefreshTimer_(nullptr) {
 
     autoRefreshTimer_ = new QTimer(this);
@@ -244,7 +261,19 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
             &ServiceDashboardMdiWindow::refresh);
 
     setupUi();
+
+    savedWindowSize_ = UiPersistence::restoreSize(
+        QStringLiteral("ServiceDashboardMdiWindow"), {900, 600});
+    UiPersistence::restoreSplitter(
+        QStringLiteral("ServiceDashboardMdiWindow"), splitter_);
+
     refresh();
+}
+
+void ServiceDashboardMdiWindow::closeEvent(QCloseEvent* event) {
+    UiPersistence::saveSize(QStringLiteral("ServiceDashboardMdiWindow"), this);
+    UiPersistence::saveSplitter(QStringLiteral("ServiceDashboardMdiWindow"), splitter_);
+    QWidget::closeEvent(event);
 }
 
 void ServiceDashboardMdiWindow::setupUi() {
@@ -339,30 +368,44 @@ void ServiceDashboardMdiWindow::setupUi() {
     detailTable_->verticalHeader()->setVisible(false);
     detailLayout->addWidget(detailTable_);
 
-    // Double-clicking a row with a last-error shows the full message in a dialog.
+    // Double-clicking a row with a last-error opens the tabbed detail dialog.
     connect(detailTable_, &QTableWidget::cellDoubleClicked,
             this, [this](int row, int /*col*/) {
         const int errorCol = static_cast<int>(DCol::LastError);
         auto* item = detailTable_->item(row, errorCol);
         if (!item || item->text() == QStringLiteral("-"))
             return;
-        const QString full = item->data(Qt::UserRole).toString();
+
+        const QString error_text   = item->data(ErrorDetailRole).toString();
+        const QString log_text     = item->data(LogDetailRole).toString();
+        const QString stderr_text  = item->data(StderrDetailRole).toString();
+        const QString command_text = item->data(CommandDetailRole).toString();
 
         auto* dlg = new QDialog(this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
-        dlg->setWindowTitle(tr("Error details — %1")
+        dlg->setWindowTitle(tr("Service details — %1")
             .arg(QString::fromStdString(selectedServiceName_)));
-        dlg->resize(700, 420);
+        dlg->resize(760, 500);
 
         auto* layout = new QVBoxLayout(dlg);
-        auto* summary = new QLabel(item->text(), dlg);
-        summary->setWordWrap(true);
-        layout->addWidget(summary);
 
-        auto* edit = new QPlainTextEdit(full, dlg);
-        edit->setReadOnly(true);
-        edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        layout->addWidget(edit);
+        auto* tabs = new QTabWidget(dlg);
+        const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+
+        auto make_tab = [&](const QString& content) -> QPlainTextEdit* {
+            auto* edit = new QPlainTextEdit(
+                content.isEmpty() ? tr("(none)") : content, tabs);
+            edit->setReadOnly(true);
+            edit->setFont(fixed);
+            return edit;
+        };
+
+        tabs->addTab(make_tab(command_text), tr("Command"));
+        tabs->addTab(make_tab(error_text),   tr("Error"));
+        tabs->addTab(make_tab(log_text),     tr("Log"));
+        tabs->addTab(make_tab(stderr_text),  tr("Stderr"));
+
+        layout->addWidget(tabs);
 
         auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
         connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
@@ -372,13 +415,13 @@ void ServiceDashboardMdiWindow::setupUi() {
     });
 
     // Splitter
-    auto* splitter = new QSplitter(Qt::Vertical, this);
-    splitter->addWidget(table_);
-    splitter->addWidget(detailGroup_);
-    splitter->setStretchFactor(0, 2);
-    splitter->setStretchFactor(1, 1);
+    splitter_ = new QSplitter(Qt::Vertical, this);
+    splitter_->addWidget(table_);
+    splitter_->addWidget(detailGroup_);
+    splitter_->setStretchFactor(0, 2);
+    splitter_->setStretchFactor(1, 1);
 
-    mainLayout->addWidget(splitter);
+    mainLayout->addWidget(splitter_);
 }
 
 void ServiceDashboardMdiWindow::setupToolbar() {
@@ -397,7 +440,7 @@ void ServiceDashboardMdiWindow::setupToolbar() {
     autoRefreshAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Auto-Refresh"));
-    autoRefreshAction_->setToolTip(tr("Toggle automatic refresh every 30 seconds"));
+    autoRefreshAction_->setToolTip(tr("Enable automatic refresh; click again to disable"));
     autoRefreshAction_->setCheckable(true);
     autoRefreshAction_->setChecked(false);
     connect(autoRefreshAction_, &QAction::toggled,
@@ -686,11 +729,23 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 const QString full_error = inst.last_error
                     ? QString::fromStdString(*inst.last_error)
                     : QStringLiteral("-");
-                // Show only the first line; store full text as UserRole for double-click.
                 const QString summary = full_error.section(u'\n', 0, 0);
                 auto* err_item = make_item(summary);
-                if (inst.last_error)
-                    err_item->setData(Qt::UserRole, full_error);
+                if (inst.last_error) {
+                    err_item->setData(ErrorDetailRole, full_error);
+                    err_item->setData(LogDetailRole,
+                        inst.last_log_snippet
+                            ? QString::fromStdString(*inst.last_log_snippet)
+                            : QString{});
+                    err_item->setData(StderrDetailRole,
+                        inst.last_stderr_snippet
+                            ? QString::fromStdString(*inst.last_stderr_snippet)
+                            : QString{});
+                    err_item->setData(CommandDetailRole,
+                        inst.last_command_line
+                            ? QString::fromStdString(*inst.last_command_line)
+                            : QString{});
+                }
                 self->detailTable_->setItem(
                     row, static_cast<int>(DCol::LastError), err_item);
             }
@@ -855,11 +910,29 @@ void ServiceDashboardMdiWindow::onRestartService() {
 
 void ServiceDashboardMdiWindow::onRefreshToggled(bool checked) {
     if (checked) {
-        BOOST_LOG_SEV(lg(), info) << "Auto-refresh enabled for service dashboard";
+        bool ok = false;
+        const int current_secs = autoRefreshTimer_->interval() / 1000;
+        const int secs = QInputDialog::getInt(
+            this, tr("Auto-Refresh Interval"),
+            tr("Refresh every (seconds):"),
+            current_secs, 5, 3600, 5, &ok);
+        if (!ok) {
+            // User cancelled — revert the toggle without re-entering this slot.
+            QSignalBlocker blocker(autoRefreshAction_);
+            autoRefreshAction_->setChecked(false);
+            return;
+        }
+        autoRefreshTimer_->setInterval(secs * 1000);
+        autoRefreshAction_->setToolTip(
+            tr("Auto-refresh every %1 s — click to disable").arg(secs));
+        BOOST_LOG_SEV(lg(), info)
+            << "Auto-refresh enabled, interval=" << secs << "s";
         autoRefreshTimer_->start();
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Auto-refresh disabled for service dashboard";
+        BOOST_LOG_SEV(lg(), info) << "Auto-refresh disabled";
         autoRefreshTimer_->stop();
+        autoRefreshAction_->setToolTip(
+            tr("Enable automatic refresh; click again to disable"));
     }
 }
 

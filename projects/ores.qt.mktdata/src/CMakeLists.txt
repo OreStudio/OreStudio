@@ -60,7 +60,6 @@ target_link_libraries(${lib_target_name}
         ores.qt.refdata.lib
         ores.refdata.core.lib
         ores.marketdata.api.lib
-        ores.analytics.api.lib
         ores.dq.api.lib
         ores.storage.lib
     PRIVATE

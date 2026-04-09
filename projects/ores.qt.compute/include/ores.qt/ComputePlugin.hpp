@@ -29,14 +29,9 @@ namespace ores::qt {
 
 class AppController;
 class AppVersionController;
-class PricingEngineTypeController;
-class PricingModelConfigController;
-class PricingModelProductController;
-class PricingModelProductParameterController;
 class ComputeDashboardController;
 class ComputeConsoleController;
 class ServiceDashboardController;
-class JobDefinitionController;
 class QueueMonitorController;
 class ReportTypeController;
 class ConcurrencyPolicyController;
@@ -44,11 +39,10 @@ class ReportDefinitionController;
 class ReportInstanceController;
 
 /**
- * @brief Plugin owning all compute, reporting and job controllers.
+ * @brief Plugin owning all compute and reporting controllers.
  *
  * Manages compute dashboard, console, service dashboard, job definitions,
- * queue monitor, report types/definitions/instances, concurrency policies,
- * and ORE import.
+ * queue monitor, report types/definitions/instances, and concurrency policies.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
 class ComputePlugin : public PluginBase {
@@ -64,8 +58,7 @@ public:
     int load_order() const override { return 400; }
 
     void on_login(const plugin_context& ctx) override;
-    void setup_menus(QMenu* system_menu, QMenu* reference_data_menu,
-                     QMenu* telemetry_menu) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;
@@ -79,14 +72,9 @@ private:
 
     std::unique_ptr<AppController>               appController_;
     std::unique_ptr<AppVersionController>        appVersionController_;
-    std::unique_ptr<PricingEngineTypeController>             pricingEngineTypeController_;
-    std::unique_ptr<PricingModelConfigController>            pricingModelConfigController_;
-    std::unique_ptr<PricingModelProductController>           pricingModelProductController_;
-    std::unique_ptr<PricingModelProductParameterController>  pricingModelProductParameterController_;
     std::unique_ptr<ComputeDashboardController>  computeDashboardController_;
     std::unique_ptr<ComputeConsoleController>    computeConsoleController_;
     std::unique_ptr<ServiceDashboardController>  serviceDashboardController_;
-    std::unique_ptr<JobDefinitionController>     jobDefinitionController_;
     std::unique_ptr<QueueMonitorController>      queueMonitorController_;
     std::unique_ptr<ReportTypeController>        reportTypeController_;
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;

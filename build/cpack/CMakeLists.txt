@@ -122,6 +122,13 @@ elseif(UNIX)
     set(CPACK_DEB_COMPONENT_INSTALL YES)
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS YES)
 
+    # Tell dpkg-shlibdeps where to find bundled plugin libraries.
+    # Plugins install to lib/plugins/ which is not on the default search path.
+    # Strip the leading slash so the path is relative to the CPack staging root.
+    string(REGEX REPLACE "^/" "" _plugins_staging_rel
+        "${CPACK_PACKAGING_INSTALL_PREFIX}/lib/plugins")
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS "${_plugins_staging_rel}")
+
     set(CPACK_DEB_PACKAGE_DEBUG "1")
     set(CPACK_DEB_COMPONENT_INSTALL ON)
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Marco Craveiro")

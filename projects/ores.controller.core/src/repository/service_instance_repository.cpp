@@ -101,7 +101,10 @@ void service_instance_repository::update_phase(context ctx,
         "started_at"_c.set(entity.started_at),
         "stopped_at"_c.set(entity.stopped_at),
         "restart_count"_c.set(entity.restart_count),
-        "last_error"_c.set(entity.last_error)
+        "last_error"_c.set(entity.last_error),
+        "last_log_snippet"_c.set(entity.last_log_snippet),
+        "last_stderr_snippet"_c.set(entity.last_stderr_snippet),
+        "last_command_line"_c.set(entity.last_command_line)
     ) | where("id"_c == entity.id.value());
 
     const auto r = sqlgen::session(ctx.connection_pool())

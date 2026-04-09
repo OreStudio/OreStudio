@@ -45,9 +45,13 @@ struct FontUtils {
 
     /**
      * @brief Returns a CSS font-family/font-size snippet for use in stylesheets.
+     *
+     * Includes the generic "monospace" fallback so that if the preferred font
+     * (Fira Code) is not installed, Qt still selects the system monospace font
+     * rather than falling through to the application's default proportional font.
      */
     static QString monospaceCssFragment() {
-        return QString("font-family: \"%1\"; font-size: %2px;")
+        return QString("font-family: \"%1\", monospace; font-size: %2px;")
             .arg(MonospaceFontFamily)
             .arg(DefaultPixelSize);
     }

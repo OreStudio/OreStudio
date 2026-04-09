@@ -61,6 +61,14 @@ if [[ -z "$PRESET" ]]; then
     exit 1
 fi
 
+# If --preset was given explicitly but differs from .env, refuse to start.
+# Mixing presets causes stop/status to look in the wrong directory.
+if [[ -n "$PRESET_ARG" && -n "${ORES_PRESET:-}" && "$ORES_PRESET" != "$PRESET_ARG" ]]; then
+    echo "error: --preset '$PRESET_ARG' does not match ORES_PRESET='$ORES_PRESET' in .env" >&2
+    echo "       run: ./build/scripts/init-environment.sh --preset $PRESET_ARG" >&2
+    exit 1
+fi
+
 # Override the JWT signing key from the PEM file (real newlines, not '\n').
 KEY_FILE="$PROJECT_DIR/build/keys/iam-rsa-private.pem"
 if [[ -f "$KEY_FILE" ]]; then

@@ -5614,7 +5614,6 @@ xsdcpp::ChildElementInfo _trade_Children[] = {
 };
 void* _get_trade_id(domain::trade* elem) { return &elem->id; }
 void _any_trade(domain::trade* element, std::string&& name, std::string&& value) { element->other_attributes.emplace_back(xsd::any_attribute{std::move(name), std::move(value)}); }
-void _any_elem_trade(domain::trade* element, std::string&& name, std::string&& value) { element->other_elements.emplace_back(xsd::any_element{std::move(name), std::move(value)}); }
 xsdcpp::AttributeInfo _trade_Attributes[] = {
     {"id", 1ULL, (xsdcpp::get_field_t)&_get_trade_id, (xsdcpp::set_value_t)&xsdcpp::set_string, true, nullptr},
     {nullptr}
@@ -27632,7 +27631,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_trade(xsdcpp::XmlWriter& w, const char* name
     if (v.EquityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", *v.EquityStrikeResettableOptionData);
     if (v.FxStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", *v.FxStrikeResettableOptionData);
     if (v.CommodityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", *v.CommodityStrikeResettableOptionData);
-    for (const auto& e : v.other_elements) { w.startElement(e.name.c_str()); w.writeText(e.value); w.endElement(e.name.c_str()); }
     w.endElement(name);
 }
 
@@ -36079,7 +36077,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_counterpartyInformation(xsdcpp::XmlWriter& w
 namespace domain {
 
 const xsdcpp::ElementInfo _portfolio_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _portfolio_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr };
-const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::AnyAttributeFlag|xsdcpp::ElementInfo::AnyElementFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, (xsdcpp::set_any_attribute_t)&_any_trade, (xsdcpp::set_any_element_t)&_any_elem_trade };
+const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::AnyAttributeFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, (xsdcpp::set_any_attribute_t)&_any_trade, nullptr };
 const xsdcpp::ElementInfo _simulation_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _simulation_Children, 3, nullptr, 0ULL, nullptr, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_Currencies_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _crossAssetModel_Currencies_t_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_InterestRateModels_t_Info = { 0, nullptr, _crossAssetModel_InterestRateModels_t_Children, 2, nullptr, 0ULL, nullptr, nullptr, nullptr };

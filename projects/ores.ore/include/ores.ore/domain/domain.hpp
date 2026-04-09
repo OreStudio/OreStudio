@@ -1906,7 +1906,6 @@ struct trade
 {
     xsd::string id{};
     xsd::vector<xsd::any_attribute> other_attributes;
-    xsd::vector<xsd::any_element> other_elements;
     domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::tradeActions> TradeActions;

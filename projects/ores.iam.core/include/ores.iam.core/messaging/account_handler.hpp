@@ -32,7 +32,6 @@
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -47,6 +46,8 @@
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::messaging {
 
@@ -638,8 +639,18 @@ public:
             }
 
             auto claims_result = signer_.validate(token);
-            if (!claims_result ||
-                claims_result->audience != "select_party_only") {
+            if (!claims_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: JWT validation failed";
+                reply(nats_, msg, select_party_response{
+                    .success = false,
+                    .message = "Invalid or expired token"});
+                return;
+            }
+            if (claims_result->audience != "select_party_only") {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: unexpected token audience: "
+                    << claims_result->audience;
                 reply(nats_, msg, select_party_response{
                     .success = false,
                     .message = "Invalid or expired token"});
@@ -648,19 +659,44 @@ public:
 
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "select_party: account=" << claims_result->subject
+                << " requested_party=" << req->party_id;
 
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
+            // Build the DB context directly from the already-validated claims.
+            // Do NOT call make_request_context here — it re-validates the JWT
+            // using the standard audience ("authenticated"), which would reject
+            // the "select_party_only" token.
+            const auto tenant_id_str = claims_result->tenant_id.value_or("");
+            if (tenant_id_str.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: token has no tenant_id";
+                reply(nats_, msg, select_party_response{
+                    .success = false,
+                    .message = "Invalid token: missing tenant"});
                 return;
             }
-            const auto& ctx = *ctx_expected;
-            boost::uuids::uuid requested_party_id =
-                sg(req->party_id);
+            auto tid_result =
+                ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+            if (!tid_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: invalid tenant_id in token: "
+                    << tenant_id_str;
+                reply(nats_, msg, select_party_response{
+                    .success = false,
+                    .message = "Invalid token: malformed tenant"});
+                return;
+            }
+            const auto ctx = ctx_.with_tenant(
+                *tid_result, claims_result->username.value_or(""));
+
+            boost::uuids::uuid requested_party_id = sg(req->party_id);
             repository::account_party_repository ap_repo(ctx);
-            auto parties =
-                ap_repo.read_latest_by_account(account_id);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "select_party: account has " << parties.size()
+                << " party membership(s)";
 
             bool is_member = false;
             for (const auto& ap : parties) {
@@ -671,15 +707,16 @@ public:
             }
 
             if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: party " << req->party_id
+                    << " not in account's party list (account has "
+                    << parties.size() << " parties)";
                 reply(nats_, msg, select_party_response{
                     .success = false,
-                    .message =
-                        "User is not a member of requested party"});
+                    .message = "User is not a member of requested party"});
                 return;
             }
 
-            auto tenant_id_str = claims_result->tenant_id.value_or(
-                ctx_.tenant_id().to_string());
             auto visible = acct_compute_visible_party_ids(
                 ctx, requested_party_id);
 

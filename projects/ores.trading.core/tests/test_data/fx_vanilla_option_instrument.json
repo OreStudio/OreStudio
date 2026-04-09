@@ -1,0 +1,21 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Option_European.xml",
+  "trade_id_in_xml": "FX_CALL_OPTION",
+  "mapper": "fx_instrument_mapper::forward_fx_option",
+  "instrument": {
+    "trade_type_code": "FxOption",
+    "bought_currency": "EUR",
+    "bought_amount": 1000000.0,
+    "sold_currency": "USD",
+    "sold_amount": 1100000.0,
+    "option_type": "Call",
+    "expiry_date": "2033-02-20",
+    "exercise_style": "European",
+    "settlement": "Cash",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

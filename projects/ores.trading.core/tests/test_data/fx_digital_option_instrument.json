@@ -1,0 +1,29 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Digital_Option.xml",
+  "trade_id_in_xml": "FX_DIGITAL_CALL_OPTION_EURUSD_10Y",
+  "mapper": "fx_instrument_mapper::forward_fx_digital_option (via trade_mapper::map_fx_instrument)",
+  "notes": [
+    "payoff_currency defaults to foreign_currency (EUR)",
+    "long_short is hardcoded to Long by mapper",
+    "barrier_type, lower_barrier, upper_barrier are absent for plain FxDigitalOption"
+  ],
+  "instrument": {
+    "trade_type_code": "FxDigitalOption",
+    "foreign_currency": "EUR",
+    "domestic_currency": "USD",
+    "payoff_currency": "EUR",
+    "payoff_amount": 100.0,
+    "option_type": "Call",
+    "expiry_date": "2033-02-20",
+    "long_short": "Long",
+    "strike": 1.1,
+    "barrier_type": "",
+    "lower_barrier": null,
+    "upper_barrier": null,
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

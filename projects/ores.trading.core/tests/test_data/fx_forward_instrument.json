@@ -1,0 +1,19 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Forward.xml",
+  "trade_id_in_xml": "FXFWD_EURUSD_10Y",
+  "mapper": "fx_instrument_mapper::forward_fx_forward",
+  "instrument": {
+    "trade_type_code": "FxForward",
+    "bought_currency": "EUR",
+    "bought_amount": 1000000.0,
+    "sold_currency": "USD",
+    "sold_amount": 1100000.0,
+    "value_date": "2033-02-20",
+    "settlement": "Cash",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

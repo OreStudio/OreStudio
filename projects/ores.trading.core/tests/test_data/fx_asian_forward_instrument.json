@@ -1,0 +1,29 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Average_Forward.xml",
+  "trade_id_in_xml": "FX_AVG_FWD",
+  "mapper": "fx_instrument_mapper::forward_fx_average_forward (via trade_mapper::map_fx_instrument)",
+  "notes": [
+    "long_short is hardcoded to Long by mapper",
+    "currency, fixing_amount, target_amount, strike are FxTaRF-specific — empty/null for FxAverageForward",
+    "observation dates are not captured (Phase 2 gap)"
+  ],
+  "instrument": {
+    "trade_type_code": "FxAverageForward",
+    "fx_index": "FX-TR20H-EUR-USD",
+    "reference_currency": "EUR",
+    "reference_notional": 8614.0,
+    "settlement_currency": "USD",
+    "settlement_notional": 10000.0,
+    "payment_date": "2025-09-30",
+    "long_short": "Long",
+    "currency": "",
+    "fixing_amount": null,
+    "target_amount": null,
+    "strike": null,
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

@@ -38,6 +38,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/executable.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/service/exit_codes.hpp"
@@ -390,13 +391,8 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         std::error_code dir_ec;
         std::filesystem::create_directories(stderr_path.parent_path(), dir_ec);
     }
-    // path::c_str() returns const wchar_t* on Windows and const char* elsewhere;
-    // use _wfopen / fopen accordingly so both platforms get the native API.
-#ifdef _WIN32
-    FILE* const stderr_file = _wfopen(stderr_path.c_str(), L"a");
-#else
-    FILE* const stderr_file = std::fopen(stderr_path.c_str(), "a");
-#endif
+    FILE* const stderr_file =
+        ores::platform::filesystem::file::open_c_file(stderr_path, "a");
     if (!stderr_file)
         BOOST_LOG_SEV(lg(), warn)
             << "Could not open stderr capture file: " << stderr_path;

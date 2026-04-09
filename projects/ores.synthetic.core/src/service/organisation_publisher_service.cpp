@@ -124,6 +124,19 @@ organisation_publisher_service::publish(
         BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
                                   << "single transaction";
 
+        // Before inserting party-scoped data (business units, portfolios,
+        // books) the session needs app.visible_party_ids set so that
+        // trigger self-referencing SELECTs (e.g. parent_business_unit_id
+        // validation) pass the party-isolation RLS policy.  Parties are
+        // inserted first (no party-isolation on the parties table itself),
+        // then party context is set for the root org party before the
+        // remaining inserts.
+        const auto set_party_sql = bus_units.empty()
+            ? std::string("SELECT 1")
+            : "SELECT ores_iam_set_party_context_fn('" +
+                bus_units[0].tenant_id + "'::uuid, '" +
+                bus_units[0].party_id + "'::uuid)";
+
         // Insert all entities atomically in FK order within a single
         // transaction. If any insert fails, the entire transaction rolls back.
         using namespace sqlgen;
@@ -137,6 +150,7 @@ organisation_publisher_service::publish(
             .and_then(insert(cp_ids))
             .and_then(insert(party_cps))
             .and_then(insert(bu_types))
+            .and_then(sqlgen::exec(set_party_sql))
             .and_then(insert(bus_units))
             .and_then(insert(portfolios))
             .and_then(insert(books))

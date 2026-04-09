@@ -20,14 +20,17 @@
 #include "ores.testing/database_helper.hpp"
 
 #include <vector>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.database/service/party_context.hpp"
 
 namespace ores::testing {
 
 using namespace ores::logging;
 using ores::testing::test_database_manager;
 using ores::database::service::tenant_context;
+using ores::database::service::party_context;
 
 database_helper::database_helper()
     : context_(test_database_manager::make_context()) {
@@ -117,6 +120,13 @@ void database_helper::seed_rbac() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully seeded RBAC data";
+}
+
+void database_helper::set_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), info) << "Setting party context: "
+                              << boost::uuids::to_string(party_id);
+    context_ = party_context::with_party(context_, tenant_id(), party_id, db_user());
+    BOOST_LOG_SEV(lg(), info) << "Party context set";
 }
 
 std::string database_helper::db_user() {

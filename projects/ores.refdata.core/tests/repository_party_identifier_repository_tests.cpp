@@ -107,6 +107,7 @@ TEST_CASE("read_latest_party_identifiers", tags) {
         if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
     }
     party_repo.write(party);
+    h.set_party(party.id);
 
     auto written_party_identifiers = generate_synthetic_party_identifiers(3, ctx);
     for (auto& pi : written_party_identifiers) {
@@ -139,6 +140,7 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
         if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
     }
     party_repo.write(party);
+    h.set_party(party.id);
 
     auto pi = generate_synthetic_party_identifier(ctx);
     pi.change_reason_code = "system.test";

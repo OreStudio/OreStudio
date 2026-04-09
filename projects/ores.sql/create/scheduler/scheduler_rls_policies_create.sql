@@ -80,3 +80,18 @@ with check (
     OR tenant_id = ores_iam_current_tenant_id_fn()
     OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- Null party_id (system-scope jobs) are excluded from party isolation so
+-- system jobs remain visible to all authenticated callers regardless of party
+-- context. The system tenant bypasses party isolation for cross-tenant ops.
+-- FOR SELECT only: party_id is set by the scheduler service; WITH CHECK would
+-- block bulk writes from the service context.
+create policy ores_scheduler_job_instances_party_isolation_policy
+on ores_scheduler_job_instances_tbl
+as restrictive
+for select using (
+    party_id is null
+    OR party_id = ANY(ores_iam_visible_party_ids_fn())
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+);

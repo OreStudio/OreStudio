@@ -159,3 +159,13 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party membership is managed by the IAM service; WITH CHECK
+-- would block bulk inserts from the IAM publisher.
+create policy ores_iam_account_parties_party_isolation_policy
+on ores_iam_account_parties_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);

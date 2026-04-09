@@ -299,6 +299,16 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
+-- bulk inserts from the publisher.
+create policy ores_refdata_party_identifiers_party_isolation_policy
+on ores_refdata_party_identifiers_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Party Contact Informations
 -- -----------------------------------------------------------------------------
@@ -310,6 +320,16 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
+-- bulk inserts from the publisher.
+create policy ores_refdata_party_contact_informations_party_isolation_policy
+on ores_refdata_party_contact_informations_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -362,6 +382,62 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
+-- bulk inserts from the publisher.
+create policy ores_refdata_business_units_party_isolation_policy
+on ores_refdata_business_units_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Party Countries
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_countries_tbl enable row level security;
+
+create policy ores_refdata_party_countries_tenant_isolation_policy on ores_refdata_party_countries_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
+-- inserts from the publisher.
+create policy ores_refdata_party_countries_party_isolation_policy
+on ores_refdata_party_countries_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Party Currencies
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_currencies_tbl enable row level security;
+
+create policy ores_refdata_party_currencies_tenant_isolation_policy on ores_refdata_party_currencies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
+-- inserts from the publisher.
+create policy ores_refdata_party_currencies_party_isolation_policy
+on ores_refdata_party_currencies_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------

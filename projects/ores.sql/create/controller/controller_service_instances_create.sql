@@ -40,6 +40,8 @@ create table if not exists "ores_controller_service_instances_tbl" (
     "stopped_at" timestamp with time zone null,
     "restart_count" integer not null default 0,
     "last_error" text null,
+    "last_log_snippet" text null,
+    "last_stderr_snippet" text null,
     "created_at" timestamp with time zone not null default current_timestamp,
     primary key (id),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)

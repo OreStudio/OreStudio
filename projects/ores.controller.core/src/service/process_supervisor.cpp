@@ -25,6 +25,7 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <cstdio>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -124,6 +125,13 @@ std::filesystem::path process_supervisor::log_path_for(
     const std::string& service_name, int replica_index) const {
     const auto log_dir = bin_dir_ / ".." / "log";
     const auto filename = service_name + "." + std::to_string(replica_index) + ".log";
+    return log_dir / filename;
+}
+
+std::filesystem::path process_supervisor::stderr_path_for(
+    const std::string& service_name, int replica_index) const {
+    const auto log_dir = bin_dir_ / ".." / "log";
+    const auto filename = service_name + "." + std::to_string(replica_index) + ".err";
     return log_dir / filename;
 }
 
@@ -361,29 +369,57 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         << "Launching " << service_name << "[" << replica_index << "]"
         << " binary=" << exe.filename().string();
 
+    {
+        std::ostringstream cmd;
+        cmd << exe.string();
+        for (const auto& a : args) cmd << ' ' << a;
+        BOOST_LOG_SEV(lg(), debug) << "Command: " << cmd.str();
+    }
+
     auto executor = co_await boost::asio::this_coro::executor;
     auto entry = std::make_shared<process_entry>();
     entry->def = def;
     entry->replica_index = replica_index;
 
+    // Open a separate .err file to capture any child stderr output that occurs
+    // before Boost.Log is initialised (e.g. argument-parser errors).  stdout
+    // stays null — child services write structured output via Boost.Log only.
+    const auto stderr_path = stderr_path_for(service_name, replica_index);
+    {
+        std::error_code dir_ec;
+        std::filesystem::create_directories(stderr_path.parent_path(), dir_ec);
+    }
+    FILE* const stderr_file = std::fopen(stderr_path.c_str(), "a");
+    if (!stderr_file)
+        BOOST_LOG_SEV(lg(), warn)
+            << "Could not open stderr capture file: " << stderr_path;
+
     try {
         // cd into bin_dir then exec with a relative name (like the shell would
         // do with `cd "$BIN_DIR" && exec ./binary`), so that `ps` shows the
         // short name instead of the full absolute path.
-        // Redirect stdout/stderr to /dev/null: child processes log via
-        // Boost.Log to their own log files; any stray writes to std::cout or
-        // std::cerr must not bleed through to the controller's terminal.
+        // stdout is discarded (null); stderr is redirected to a separate .err
+        // file so pre-logging startup errors are captured without polluting the
+        // controller's terminal or the service's own Boost.Log file.
         bp2::filesystem::path bp_exe("./" + def.binary_name);
         bp2::filesystem::path bp_dir(bin_dir_.string());
-        entry->proc.emplace(executor, bp_exe, args,
-            bp2::process_start_dir(bp_dir),
-            bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
+        if (stderr_file) {
+            entry->proc.emplace(executor, bp_exe, args,
+                bp2::process_start_dir(bp_dir),
+                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = stderr_file});
+        } else {
+            entry->proc.emplace(executor, bp_exe, args,
+                bp2::process_start_dir(bp_dir),
+                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
+        }
     } catch (const std::exception& e) {
+        if (stderr_file) std::fclose(stderr_file);
         BOOST_LOG_SEV(lg(), error)
             << "Failed to launch " << service_name << "[" << replica_index
             << "]: " << e.what();
         co_return;
     }
+    if (stderr_file) std::fclose(stderr_file);
 
     const auto pid = entry->proc->id();
     BOOST_LOG_SEV(lg(), info)
@@ -489,6 +525,17 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         << " exited with code=" << exit_code
         << (entry->stop_requested ? " (stop requested)" : " (unexpected)");
 
+    // If the process exited unexpectedly, log any pre-logging stderr output
+    // immediately so the cause is visible even on the first failure.
+    if (!entry->stop_requested) {
+        const auto err_path = stderr_path_for(service_name, replica_index);
+        const auto err_snippet = tail_log(err_path, log_tail_lines);
+        if (!err_snippet.empty())
+            BOOST_LOG_SEV(lg(), error)
+                << service_name << "[" << replica_index << "] stderr output:\n"
+                << err_snippet;
+    }
+
     // Update DB.
     try {
         const auto now = std::chrono::system_clock::now();
@@ -552,12 +599,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         const auto log_path = log_path_for(service_name, replica_index);
         const auto log_snippet = tail_log(log_path, log_tail_lines);
 
+        const auto err_path = stderr_path_for(service_name, replica_index);
+        const auto err_snippet = tail_log(err_path, log_tail_lines);
+
         const std::string error_summary =
             std::string(ec_name) +
             " (failed after " + std::to_string(max_restarts) + " restart" +
-            (max_restarts == 1 ? "" : "s") + ")" +
-            "\n\n--- last " + std::to_string(log_tail_lines) +
-            " log lines ---\n" + log_snippet;
+            (max_restarts == 1 ? "" : "s") + ")";
 
         BOOST_LOG_SEV(lg(), error)
             << service_name << "[" << replica_index << "]"
@@ -571,6 +619,12 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
             if (inst) {
                 inst->phase = "failed";
                 inst->last_error = error_summary;
+                inst->last_log_snippet = log_snippet.empty()
+                    ? std::nullopt
+                    : std::optional<std::string>(log_snippet);
+                inst->last_stderr_snippet = err_snippet.empty()
+                    ? std::nullopt
+                    : std::optional<std::string>(err_snippet);
                 inst_repo.update_phase(db_ctx_, *inst);
             }
 

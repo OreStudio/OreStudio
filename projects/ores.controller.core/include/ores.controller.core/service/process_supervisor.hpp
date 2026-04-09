@@ -159,6 +159,8 @@ private:
         int replica_index) const;
     std::filesystem::path log_path_for(const std::string& service_name,
         int replica_index) const;
+    std::filesystem::path stderr_path_for(const std::string& service_name,
+        int replica_index) const;
     std::filesystem::path pid_path_for(const std::string& service_name,
         int replica_index) const;
     void write_pid_file(const std::string& service_name, int replica_index,

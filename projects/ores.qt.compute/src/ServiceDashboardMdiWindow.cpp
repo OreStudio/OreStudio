@@ -33,6 +33,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QPointer>
 #include <QHeaderView>
@@ -339,30 +340,42 @@ void ServiceDashboardMdiWindow::setupUi() {
     detailTable_->verticalHeader()->setVisible(false);
     detailLayout->addWidget(detailTable_);
 
-    // Double-clicking a row with a last-error shows the full message in a dialog.
+    // Double-clicking a row with a last-error opens the tabbed detail dialog.
     connect(detailTable_, &QTableWidget::cellDoubleClicked,
             this, [this](int row, int /*col*/) {
         const int errorCol = static_cast<int>(DCol::LastError);
         auto* item = detailTable_->item(row, errorCol);
         if (!item || item->text() == QStringLiteral("-"))
             return;
-        const QString full = item->data(Qt::UserRole).toString();
+
+        const QString error_text  = item->data(Qt::UserRole).toString();
+        const QString log_text    = item->data(Qt::UserRole + 1).toString();
+        const QString stderr_text = item->data(Qt::UserRole + 2).toString();
 
         auto* dlg = new QDialog(this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
-        dlg->setWindowTitle(tr("Error details — %1")
+        dlg->setWindowTitle(tr("Service details — %1")
             .arg(QString::fromStdString(selectedServiceName_)));
-        dlg->resize(700, 420);
+        dlg->resize(760, 500);
 
         auto* layout = new QVBoxLayout(dlg);
-        auto* summary = new QLabel(item->text(), dlg);
-        summary->setWordWrap(true);
-        layout->addWidget(summary);
 
-        auto* edit = new QPlainTextEdit(full, dlg);
-        edit->setReadOnly(true);
-        edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        layout->addWidget(edit);
+        auto* tabs = new QTabWidget(dlg);
+        const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+
+        auto make_tab = [&](const QString& content) -> QPlainTextEdit* {
+            auto* edit = new QPlainTextEdit(
+                content.isEmpty() ? tr("(none)") : content, tabs);
+            edit->setReadOnly(true);
+            edit->setFont(fixed);
+            return edit;
+        };
+
+        tabs->addTab(make_tab(error_text),   tr("Error"));
+        tabs->addTab(make_tab(log_text),     tr("Log"));
+        tabs->addTab(make_tab(stderr_text),  tr("Stderr"));
+
+        layout->addWidget(tabs);
 
         auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
         connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
@@ -686,11 +699,19 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 const QString full_error = inst.last_error
                     ? QString::fromStdString(*inst.last_error)
                     : QStringLiteral("-");
-                // Show only the first line; store full text as UserRole for double-click.
                 const QString summary = full_error.section(u'\n', 0, 0);
                 auto* err_item = make_item(summary);
-                if (inst.last_error)
+                if (inst.last_error) {
                     err_item->setData(Qt::UserRole, full_error);
+                    err_item->setData(Qt::UserRole + 1,
+                        inst.last_log_snippet
+                            ? QString::fromStdString(*inst.last_log_snippet)
+                            : QString{});
+                    err_item->setData(Qt::UserRole + 2,
+                        inst.last_stderr_snippet
+                            ? QString::fromStdString(*inst.last_stderr_snippet)
+                            : QString{});
+                }
                 self->detailTable_->setItem(
                     row, static_cast<int>(DCol::LastError), err_item);
             }

@@ -15,10 +15,10 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.qt.mktdata")
+set(name "ores.qt.analytics")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-set(ORES_QT_MKTDATA_DIR ${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata)
+set(ORES_QT_ANALYTICS_DIR ${CMAKE_SOURCE_DIR}/projects/ores.qt.analytics)
 
 # Qt code generation (MOC for Q_OBJECT, UIC for .ui forms)
 set(CMAKE_AUTOMOC ON)
@@ -29,15 +29,15 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS "${ORES_QT_MKTDATA_DIR}/include/*.hpp")
+file(GLOB_RECURSE HEADERS "${ORES_QT_ANALYTICS_DIR}/include/*.hpp")
 # UI forms for AUTOUIC.
-file(GLOB FORMS "${ORES_QT_MKTDATA_DIR}/ui/*.ui")
+file(GLOB FORMS "${ORES_QT_ANALYTICS_DIR}/ui/*.ui")
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
 
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
-    AUTOUIC_SEARCH_PATHS "${ORES_QT_MKTDATA_DIR}/ui;${ORES_QT_API_UI_DIR}"
+    AUTOUIC_SEARCH_PATHS "${ORES_QT_ANALYTICS_DIR}/ui;${ORES_QT_API_UI_DIR}"
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins"
@@ -45,25 +45,19 @@ set_target_properties(${lib_target_name} PROPERTIES
     BUILD_RPATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY};${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins")
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${ORES_QT_MKTDATA_DIR}/include)
+    ${ORES_QT_ANALYTICS_DIR}/include)
 target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include"
-    # Transient: mktdata controllers include headers still in ores.qt.
-    # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.refdata/include"
-    )
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.refdata/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.refdata.lib
         ores.refdata.core.lib
-        ores.marketdata.api.lib
-        ores.dq.api.lib
-        ores.storage.lib
+        ores.analytics.api.lib
     PRIVATE
-        # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
         ores.qt.lib)
 
 install(TARGETS ${lib_target_name}

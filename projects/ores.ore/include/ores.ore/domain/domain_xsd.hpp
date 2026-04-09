@@ -12,19 +12,10 @@ namespace xsd {
 
 typedef std::string string;
 
-// Wrapper for vector to allow specialization for bool
-// std::vector<bool> is specialized and .back() returns a proxy, not a real reference
-template <typename T>
-class vector : public std::vector<T>
-{
-public:
-    using std::vector<T>::vector;
-    using std::vector<T>::operator=;
-};
+namespace detail {
 
-// Specialization for vector<bool> using char storage to avoid proxy issues
-template <>
-class vector<bool> : public std::vector<char>
+// Custom bool vector using char storage to avoid std::vector<bool>'s proxy type.
+class bool_vector : public std::vector<char>
 {
 public:
     using std::vector<char>::vector;
@@ -33,6 +24,20 @@ public:
     bool& back() { return reinterpret_cast<bool&>(std::vector<char>::back()); }
     const bool& back() const { return reinterpret_cast<const bool&>(std::vector<char>::back()); }
 };
+
+template <typename T>
+struct vector_selector { using type = std::vector<T>; };
+
+template <>
+struct vector_selector<bool> { using type = bool_vector; };
+
+} // namespace detail
+
+// vector<T> is std::vector<T> for all non-bool types (preserving MSVC's lenient
+// handling of incomplete element types in generated headers), and the char-backed
+// bool_vector for bool (avoiding std::vector<bool>'s bit-packing proxy).
+template <typename T>
+using vector = typename detail::vector_selector<T>::type;
 
 template <typename T>
 class optional

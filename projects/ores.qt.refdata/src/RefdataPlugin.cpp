@@ -20,7 +20,9 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QMdiArea>
 #include <QMdiSubWindow>
+#include <QMainWindow>
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -283,8 +285,7 @@ void RefdataPlugin::setup_menus(QMenu* /*system_menu*/, QMenu* ref,
     act_data_librarian_ = menuCatalogue->addAction(ico(Icon::Library), tr("Data &Librarian"));
     connect(act_data_librarian_, &QAction::triggered, this, [this]() {
         if (data_librarian_window_) {
-            ctx_.mdi_area->setActiveSubWindow(
-                qobject_cast<QMdiSubWindow*>(data_librarian_window_->parent()));
+            ctx_.mdi_area->setActiveSubWindow(data_librarian_window_);
             return;
         }
 

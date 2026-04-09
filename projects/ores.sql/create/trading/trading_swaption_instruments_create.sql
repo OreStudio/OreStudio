@@ -19,33 +19,28 @@
  */
 
 -- =============================================================================
--- Swap Legs Table
+-- Swaption Instruments Table
 --
--- Child table of ores_trading_instruments_tbl. Each row is one leg of a
--- rates instrument (Swap, CrossCurrencySwap, CapFloor, Swaption).
--- A plain IRS has two rows (fixed + floating). A cross-currency swap also
--- has two rows with different currencies.
---
--- Fields not applicable to a leg type are NULL (e.g. fixed_rate is NULL
--- for floating legs; floating_index_code is NULL for fixed legs).
+-- Option to enter an interest rate swap. ORE product type: Swaption.
+-- The underlying swap legs live in ores_trading_swap_legs_tbl linked by
+-- instrument_id. start_date and maturity_date are the underlying swap
+-- dates (nullable for cash-settled swaptions where they may not apply).
 -- =============================================================================
 
-create table if not exists "ores_trading_swap_legs_tbl" (
+create table if not exists "ores_trading_swaption_instruments_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "party_id" uuid not null,
     "version" integer not null,
-    "instrument_id" uuid not null,
-    "leg_number" integer not null,
-    "leg_type_code" text not null,
-    "day_count_fraction_code" text not null,
-    "business_day_convention_code" text not null,
-    "payment_frequency_code" text not null,
-    "floating_index_code" text null,
-    "fixed_rate" numeric(18, 10) null,
-    "spread" numeric(18, 10) null,
-    "notional" numeric(28, 10) not null,
-    "currency" text not null,
+    "trade_id" uuid null,
+    "trade_type_code" text not null,
+    "expiry_date" date not null,
+    "exercise_type" text not null,
+    "settlement_type" text not null,
+    "long_short" text not null,
+    "start_date" date null,
+    "maturity_date" date null,
+    "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -60,37 +55,43 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
-    check ("leg_number" >= 1),
-    check ("notional" > 0),
-    check ("currency" <> '')
+    check ("exercise_type" in ('European', 'Bermudan', 'American')),
+    check ("settlement_type" in ('Cash', 'Physical')),
+    check ("long_short" in ('Long', 'Short')),
+    check (
+        "maturity_date" is null
+        or "start_date" is null
+        or "maturity_date" > "start_date"
+    )
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_swap_legs_version_uniq_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, id, version)
+create unique index if not exists ores_trading_swaption_instruments_version_uniq_idx
+on "ores_trading_swaption_instruments_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_swap_legs_id_uniq_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, id)
+create unique index if not exists ores_trading_swaption_instruments_id_uniq_idx
+on "ores_trading_swaption_instruments_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_swap_legs_tenant_idx
-on "ores_trading_swap_legs_tbl" (tenant_id)
+create index if not exists ores_trading_swaption_instruments_tenant_idx
+on "ores_trading_swaption_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for RLS
-create index if not exists ores_trading_swap_legs_party_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, party_id)
+create index if not exists ores_trading_swaption_instruments_party_idx
+on "ores_trading_swaption_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Instrument index for leg lookups
-create index if not exists ores_trading_swap_legs_instrument_idx
-on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
+-- Soft FK back to trade (NULL for standalone instruments)
+create unique index if not exists ores_trading_swaption_instruments_trade_id_idx
+on "ores_trading_swaption_instruments_tbl" (tenant_id, trade_id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and trade_id is not null;
 
-create or replace function ores_trading_swap_legs_insert_fn()
+create or replace function ores_trading_swaption_instruments_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -101,33 +102,15 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate leg_type_code
-    NEW.leg_type_code := ores_trading_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
-
-    -- Validate day_count_fraction_code
-    NEW.day_count_fraction_code := ores_trading_validate_day_count_fraction_type_fn(
-        NEW.tenant_id, NEW.day_count_fraction_code);
-
-    -- Validate business_day_convention_code
-    NEW.business_day_convention_code := ores_trading_validate_business_day_convention_type_fn(
-        NEW.tenant_id, NEW.business_day_convention_code);
-
-    -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_trading_validate_payment_frequency_type_fn(
-        NEW.tenant_id, NEW.payment_frequency_code);
-
-    -- Validate floating_index_code (optional, required for floating legs)
-    if NEW.floating_index_code is not null then
-        NEW.floating_index_code := ores_trading_validate_floating_index_type_fn(
-            NEW.tenant_id, NEW.floating_index_code);
-    end if;
+    -- Validate trade_type_code
+    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
-    from "ores_trading_swap_legs_tbl"
+    from "ores_trading_swaption_instruments_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -141,7 +124,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores_trading_swap_legs_tbl"
+        update "ores_trading_swaption_instruments_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -160,13 +143,13 @@ begin
 end;
 $$ language plpgsql security definer;
 
-create or replace trigger ores_trading_swap_legs_insert_trg
-before insert on "ores_trading_swap_legs_tbl"
-for each row execute function ores_trading_swap_legs_insert_fn();
+create or replace trigger ores_trading_swaption_instruments_insert_trg
+before insert on "ores_trading_swaption_instruments_tbl"
+for each row execute function ores_trading_swaption_instruments_insert_fn();
 
-create or replace rule ores_trading_swap_legs_delete_rule as
-on delete to "ores_trading_swap_legs_tbl" do instead
-    update "ores_trading_swap_legs_tbl"
+create or replace rule ores_trading_swaption_instruments_delete_rule as
+on delete to "ores_trading_swaption_instruments_tbl" do instead
+    update "ores_trading_swaption_instruments_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and id = OLD.id

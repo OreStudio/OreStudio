@@ -261,3 +261,194 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+create policy ores_trading_swap_legs_party_isolation_policy
+on ores_trading_swap_legs_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- =============================================================================
+-- Rates Instrument Tables
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- FRA Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fra_instruments_tbl enable row level security;
+
+create policy ores_trading_fra_instruments_tenant_isolation_policy on ores_trading_fra_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fra_instruments_party_isolation_policy
+on ores_trading_fra_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Vanilla Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_vanilla_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_vanilla_swap_instruments_tenant_isolation_policy on ores_trading_vanilla_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_vanilla_swap_instruments_party_isolation_policy
+on ores_trading_vanilla_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Cap/Floor Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_cap_floor_instruments_tbl enable row level security;
+
+create policy ores_trading_cap_floor_instruments_tenant_isolation_policy on ores_trading_cap_floor_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_cap_floor_instruments_party_isolation_policy
+on ores_trading_cap_floor_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Swaption Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_swaption_instruments_tbl enable row level security;
+
+create policy ores_trading_swaption_instruments_tenant_isolation_policy on ores_trading_swaption_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_swaption_instruments_party_isolation_policy
+on ores_trading_swaption_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Balance Guaranteed Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_balance_guaranteed_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_bgs_instruments_tenant_isolation_policy on ores_trading_balance_guaranteed_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_bgs_instruments_party_isolation_policy
+on ores_trading_balance_guaranteed_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Callable Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_callable_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_callable_swap_instruments_tenant_isolation_policy on ores_trading_callable_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_callable_swap_instruments_party_isolation_policy
+on ores_trading_callable_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Knock-Out Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_knock_out_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_knock_out_swap_instruments_tenant_isolation_policy on ores_trading_knock_out_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_knock_out_swap_instruments_party_isolation_policy
+on ores_trading_knock_out_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Inflation Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_inflation_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_inflation_swap_instruments_tenant_isolation_policy on ores_trading_inflation_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_inflation_swap_instruments_party_isolation_policy
+on ores_trading_inflation_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Risk Participation Agreement Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_rpa_instruments_tbl enable row level security;
+
+create policy ores_trading_rpa_instruments_tenant_isolation_policy on ores_trading_rpa_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_rpa_instruments_party_isolation_policy
+on ores_trading_rpa_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);

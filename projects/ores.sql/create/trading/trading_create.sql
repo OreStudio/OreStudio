@@ -64,6 +64,34 @@
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
 
+-- Rates instruments (depend on swap_legs and reference data above)
+\ir ./trading_fra_instruments_create.sql
+\ir ./trading_fra_instruments_notify_trigger_create.sql
+
+\ir ./trading_vanilla_swap_instruments_create.sql
+\ir ./trading_vanilla_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_cap_floor_instruments_create.sql
+\ir ./trading_cap_floor_instruments_notify_trigger_create.sql
+
+\ir ./trading_swaption_instruments_create.sql
+\ir ./trading_swaption_instruments_notify_trigger_create.sql
+
+\ir ./trading_balance_guaranteed_swap_instruments_create.sql
+\ir ./trading_balance_guaranteed_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_callable_swap_instruments_create.sql
+\ir ./trading_callable_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_knock_out_swap_instruments_create.sql
+\ir ./trading_knock_out_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_inflation_swap_instruments_create.sql
+\ir ./trading_inflation_swap_instruments_notify_trigger_create.sql
+
+\ir ./trading_risk_participation_agreement_instruments_create.sql
+\ir ./trading_risk_participation_agreement_instruments_notify_trigger_create.sql
+
 -- FX instruments (depends on reference data above)
 \ir ./trading_fx_instruments_create.sql
 \ir ./trading_fx_instruments_notify_trigger_create.sql

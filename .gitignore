@@ -73,3 +73,15 @@ build/nats/
 # Transient local files (logs, scratch)
 /tmp/*
 !/tmp/.gitkeep
+
+.bash_profile
+.bashrc
+.claude/agents
+.claude/commands
+.claude/settings.json
+.gitconfig
+.mcp.json
+.profile
+.ripgreprc
+.zprofile
+.zshrc

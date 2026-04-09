@@ -1084,7 +1084,7 @@ trade fx_instrument_mapper::reverse_fx_accumulator(
 
     if (instr.knock_out_barrier.has_value())
         d.Barriers = [&]() {
-            barriers_t b;
+            accumulatorData_Barriers_t b;
             b.BarrierData.push_back(make_barrier("UpAndOut", *instr.knock_out_barrier));
             return b;
         }();

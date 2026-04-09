@@ -5613,6 +5613,7 @@ xsdcpp::ChildElementInfo _trade_Children[] = {
     {nullptr}
 };
 void* _get_trade_id(domain::trade* elem) { return &elem->id; }
+void _any_trade(domain::trade* element, std::string&& name, std::string&& value) { element->other_attributes.emplace_back(xsd::any_attribute{std::move(name), std::move(value)}); }
 void _any_elem_trade(domain::trade* element, std::string&& name, std::string&& value) { element->other_elements.emplace_back(xsd::any_element{std::move(name), std::move(value)}); }
 xsdcpp::AttributeInfo _trade_Attributes[] = {
     {"id", 1ULL, (xsdcpp::get_field_t)&_get_trade_id, (xsdcpp::set_value_t)&xsdcpp::set_string, true, nullptr},
@@ -6020,24 +6021,24 @@ xsdcpp::ChildElementInfo _counterpartyInformation_Children[] = {
 };
 struct _root_t
 {
-    domain::portfolio Portfolio;
-    domain::trade Trade;
-    domain::simulation Simulation;
-    domain::crossAssetModel CrossAssetModel;
-    domain::creditsimulation CreditSimulation;
-    domain::curveconfiguration CurveConfiguration;
-    domain::conventions Conventions;
-    domain::collateralBalances CollateralBalances;
-    domain::nettingsetdefinitions NettingSetDefinitions;
-    domain::pricingengines PricingEngines;
-    domain::todaysmarket TodaysMarket;
-    domain::sensitivityanalysis SensitivityAnalysis;
-    domain::stresstesting StressTesting;
-    domain::ore ORE;
-    domain::calendaradjustment CalendarAdjustments;
-    domain::currencyConfig CurrencyConfig;
-    domain::currencyDefinition Currency;
-    domain::counterpartyInformation CounterpartyInformation;
+    domain::portfolio Portfolio{};
+    domain::trade Trade{};
+    domain::simulation Simulation{};
+    domain::crossAssetModel CrossAssetModel{};
+    domain::creditsimulation CreditSimulation{};
+    domain::curveconfiguration CurveConfiguration{};
+    domain::conventions Conventions{};
+    domain::collateralBalances CollateralBalances{};
+    domain::nettingsetdefinitions NettingSetDefinitions{};
+    domain::pricingengines PricingEngines{};
+    domain::todaysmarket TodaysMarket{};
+    domain::sensitivityanalysis SensitivityAnalysis{};
+    domain::stresstesting StressTesting{};
+    domain::ore ORE{};
+    domain::calendaradjustment CalendarAdjustments{};
+    domain::currencyConfig CurrencyConfig{};
+    domain::currencyDefinition Currency{};
+    domain::counterpartyInformation CounterpartyInformation{};
 };
 
 void* _get__root_t_Portfolio(_root_t* parent) {return &parent->Portfolio;}
@@ -27450,6 +27451,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_totalReturnSwapData(xsdcpp::XmlWriter& w, co
 XSDCPP_MAYBE_UNUSED void _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v) {
     w.startElement(name);
     w.writeAttribute("id", (&v)->id);
+    for (const auto& attr : (&v)->other_attributes) w.writeAttribute(attr.name.c_str(), attr.value);
     _serialize_oreTradeType(w, "TradeType", v.TradeType);
     if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
     if (v.TradeActions) _serialize_tradeActions(w, "TradeActions", *v.TradeActions);
@@ -36077,7 +36079,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_counterpartyInformation(xsdcpp::XmlWriter& w
 namespace domain {
 
 const xsdcpp::ElementInfo _portfolio_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _portfolio_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr };
-const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::AnyElementFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, nullptr, (xsdcpp::set_any_element_t)&_any_elem_trade };
+const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::AnyAttributeFlag|xsdcpp::ElementInfo::AnyElementFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, (xsdcpp::set_any_attribute_t)&_any_trade, (xsdcpp::set_any_element_t)&_any_elem_trade };
 const xsdcpp::ElementInfo _simulation_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _simulation_Children, 3, nullptr, 0ULL, nullptr, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_Currencies_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _crossAssetModel_Currencies_t_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_InterestRateModels_t_Info = { 0, nullptr, _crossAssetModel_InterestRateModels_t_Children, 2, nullptr, 0ULL, nullptr, nullptr, nullptr };

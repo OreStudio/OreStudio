@@ -1,0 +1,1010 @@
+#+title: Instrument Tables Redesign — Standalone Asset-Class Tables
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+This plan replaces the current two-level instrument schema (a common
+=ores_trading_instruments_tbl= parent + per-asset-class subtables) with a set
+of fully standalone, bitemporal tables — one per instrument grouping. Each
+table is self-contained: it carries its own booking fields (=id=,
+=tenant_id=, =party_id=, =version=, =trade_id=, =trade_type_code=, audit
+columns, bitemporal columns) and uses field names that are idiomatic to its
+instrument type rather than forced into a common nomenclature.
+
+The work on the current branch (=feature/trading-instruments-party-id=) that
+adds =party_id= to all tables is the last change made under the old
+architecture and will be subsumed by this redesign.
+
+* Motivation
+
+** The common table does not model a coherent concept
+
+=ores_trading_instruments_tbl= holds fields — =notional=, =currency=,
+=start_date=, =maturity_date= — that are not universal across instrument
+types:
+
+- FX instruments use =value_date= and =expiry_date=, not =maturity_date=.
+- Bonds use =face_value= and =issue_date=; =notional= means something
+  different.
+- Credit instruments use =tenor=, =spread=, =recovery_rate= — none of which
+  fit the common table.
+- Scripted instruments have no conventional economics at all.
+
+The Phase 7 extensions (=fra_fixing_date=, =lockout_days=,
+=callable_dates_json=, =rpa_counterparty=, =inflation_index_code=,
+=base_cpi=) already demonstrate the leakage: rates-specific fields were
+bolt-on additions to a table that was supposed to be universal.
+
+** The pattern adds complexity without benefit
+
+Every instrument insert requires two transactions (parent + subtable).
+The C++ layer must always construct two objects and call two mappers. The
+bitemporal trigger pattern must be duplicated in every subtable anyway — the
+parent buys nothing. PostgreSQL table inheritance was already ruled out (see
+analysis below). The only concrete benefit — single-table cross-asset queries
+— is better served by a =UNION ALL= view at the SQL layer.
+
+** Correct nomenclature matters
+
+Each instrument table should use the field names that practitioners and the
+ORE XML schema use for that instrument type. This makes the SQL layer
+self-documenting and removes the cognitive overhead of translating between
+"what ORE calls it" and "what the database stores it as".
+
+* Design Principles
+
+1. Every instrument table is fully standalone: =id=, =tenant_id=, =party_id=,
+   =version=, =trade_id=, =trade_type_code=, =valid_from=, =valid_to=, and
+   audit columns on every table.
+
+2. =party_id= is populated from =current_setting('app.current_party_id')::uuid=
+   by the insert trigger — same pattern as all other party-isolated tables.
+
+3. Field names follow ORE XML element names (snake_cased), not a generic
+   financial vocabulary. Where ORE uses =Maturity=, a rates table says
+   =maturity_date=; where ORE uses =ExpiryDate=, an options table says
+   =expiry_date=.
+
+4. Tables group instrument types that share the *same economic structure*. A
+   few nullable extension fields are acceptable. A table with many NULLs for
+   one sub-type is a signal to split.
+
+5. Leg tables (=swap_legs=, =commodity_swap_legs=, =composite_legs=) remain
+   as child tables — these relationships are structurally real (one instrument,
+   N legs) and cannot be collapsed into a single row.
+
+6. Cross-asset queries go through a view with =UNION ALL=, not through a
+   physical common table.
+
+7. RLS: direct =party_id = ANY(ores_iam_visible_party_ids_fn())= restrictive
+   policy on every table — no JOIN to a parent needed.
+
+* What Is Removed
+
+- =ores_trading_instruments_tbl= (the common parent table) — deleted entirely.
+- =ores_trading_instruments_extensions_create.sql= (Phase 7 bolt-ons) —
+  fields redistributed to the correct specific tables.
+- =instrument_entity.hpp= / =instrument.hpp= / =instrument_mapper.cpp= in the
+  C++ layer — replaced by per-asset-class domain types.
+- The common =instrument= RLS policies and notify trigger.
+
+* Proposed Table Groupings
+
+The following sections describe each proposed table, the ORE product types it
+covers, and the key fields. Booking / bitemporal / audit columns are omitted
+for brevity — they are identical across all tables.
+
+Common booking columns present on every table:
+
+| Column              | Type                      | Notes                          |
+|---------------------+---------------------------+--------------------------------|
+| =id=                | uuid not null             | Primary key                    |
+| =tenant_id=         | uuid not null             | Multi-tenancy isolation        |
+| =party_id=          | uuid not null             | Set by trigger from session    |
+| =version=           | integer not null          | Optimistic locking             |
+| =trade_id=          | uuid null                 | Soft FK to trades table        |
+| =trade_type_code=   | text not null             | ORE product type discriminator |
+| =modified_by=       | text not null             | Audit                          |
+| =performed_by=      | text not null             | Audit                          |
+| =change_reason_code= | text not null            | Audit                          |
+| =change_commentary= | text not null             | Audit                          |
+| =valid_from=        | timestamptz not null      | Bitemporal                     |
+| =valid_to=          | timestamptz not null      | Bitemporal                     |
+
+** Rates / Interest Rate
+
+*** =ores_trading_vanilla_swap_instruments_tbl=
+
+ORE types: =Swap=, =CrossCurrencySwap=
+
+The header row holds only what is common to all legs. Leg economics live in
+=ores_trading_swap_legs_tbl= (unchanged).
+
+| Column           | Type             | Notes                              |
+|------------------+------------------+------------------------------------|
+| =start_date=     | date not null    |                                    |
+| =maturity_date=  | date not null    |                                    |
+| =settlement_lag= | integer null     | Business days; ORE =SettlementLag= |
+| =netting_set_id= | text null        | Link to netting agreement          |
+
+Cross-currency swaps carry an additional initial/final exchange flag on the
+legs, handled in =swap_legs_tbl=.
+
+*** =ores_trading_cap_floor_instruments_tbl=
+
+ORE types: =CapFloor=
+
+Structurally a swap with an embedded cap or floor rate. Uses swap legs but
+with =leg_type_code= = =Capfloor=.
+
+| Column          | Type          | Notes               |
+|-----------------+---------------+---------------------|
+| =start_date=    | date not null |                     |
+| =maturity_date= | date not null |                     |
+
+*** =ores_trading_swaption_instruments_tbl=
+
+ORE types: =Swaption=
+
+An option to enter a swap. The underlying swap is described by the legs.
+
+| Column              | Type          | Notes                               |
+|---------------------+---------------+-------------------------------------|
+| =expiry_date=       | date not null | Option exercise date                |
+| =exercise_type=     | text not null | European / Bermudan / American      |
+| =settlement_type=   | text not null | Cash / Physical                     |
+| =long_short=        | text not null | Long / Short                        |
+| =start_date=        | date null     | Underlying swap start (if Physical) |
+| =maturity_date=     | date null     | Underlying swap maturity            |
+
+*** =ores_trading_fra_instruments_tbl=
+
+ORE types: =ForwardRateAgreement=
+
+A simple single-period forward-rate contract. No legs needed — the
+instrument is fully described by a single row. ORE XML:
+=ForwardRateAgreementData= with =StartDate=, =EndDate=, =Currency=, =Index=,
+=LongShort=, =Strike=, =Notional=.
+
+| Column         | Type              | Notes                              |
+|----------------+-------------------+------------------------------------|
+| =start_date=   | date not null     | Accrual start / fixing date        |
+| =end_date=     | date not null     | Accrual end / settlement date      |
+| =currency=     | text not null     |                                    |
+| =rate_index=   | text not null     | ORE index code e.g. EUR-EURIBOR-6M |
+| =long_short=   | text not null     | Long / Short                       |
+| =strike=       | numeric not null  | Agreed forward rate                |
+| =notional=     | numeric not null  |                                    |
+
+*** =ores_trading_balance_guaranteed_swap_instruments_tbl=
+
+ORE types: =BalanceGuaranteedSwap=
+
+Mortgage-backed swap where notional tracks an amortising pool balance.
+
+| Column            | Type          | Notes                              |
+|-------------------+---------------+------------------------------------|
+| =start_date=      | date not null |                                    |
+| =maturity_date=   | date not null |                                    |
+| =lockout_days=    | integer null  | Observation lag in business days   |
+
+Legs in =swap_legs_tbl=.
+
+*** =ores_trading_callable_swap_instruments_tbl=
+
+ORE types: =CallableSwap=
+
+A swap with embedded call (or put) options on specified dates.
+
+| Column               | Type          | Notes                             |
+|----------------------+---------------+-----------------------------------|
+| =start_date=         | date not null |                                   |
+| =maturity_date=      | date not null |                                   |
+| =call_dates_json=    | text null     | JSON array of ISO-8601 call dates |
+| =call_type=          | text null     | Bermudan / One-Time               |
+
+Legs in =swap_legs_tbl=.
+
+*** =ores_trading_knock_out_swap_instruments_tbl=
+
+ORE types: =KnockOutSwap=
+
+A swap that terminates early if a rate index crosses a barrier.
+
+| Column                  | Type             | Notes                    |
+|-------------------------+------------------+--------------------------|
+| =start_date=            | date not null    |                          |
+| =maturity_date=         | date not null    |                          |
+| =barrier_level=         | numeric not null | Rate level triggering KO |
+| =barrier_type=          | text not null    | UpOut / DownOut          |
+| =knock_out_dates_json=  | text null        | Observation schedule     |
+
+Legs in =swap_legs_tbl=.
+
+*** =ores_trading_inflation_swap_instruments_tbl=
+
+ORE types: =InflationSwap=
+
+One leg pays a fixed rate; the other pays inflation-linked returns.
+
+| Column                 | Type          | Notes                           |
+|------------------------+---------------+---------------------------------|
+| =start_date=           | date not null |                                 |
+| =maturity_date=        | date not null |                                 |
+| =inflation_index_code= | text not null | e.g. HICP, RPI, CPURNSA         |
+| =base_cpi=             | numeric null  | CPI level at trade inception    |
+| =lag_convention=       | text null     | Observation lag convention      |
+
+Legs in =swap_legs_tbl=.
+
+*** =ores_trading_risk_participation_agreement_instruments_tbl=
+
+ORE types: =RiskParticipationAgreement=
+
+A credit derivative written on an underlying swap. The protection seller
+participates in the credit risk of the reference counterparty's swap.
+
+| Column                     | Type             | Notes                      |
+|----------------------------+------------------+----------------------------|
+| =start_date=               | date not null    |                            |
+| =maturity_date=            | date not null    |                            |
+| =reference_counterparty=   | text not null    | ORE =ReferenceCounterparty= |
+| =participation_rate=       | numeric not null | Fraction participated      |
+| =protection_fee=           | numeric null     | Upfront fee if any         |
+
+Legs in =swap_legs_tbl= (the underlying swap legs).
+
+** FX
+
+*** =ores_trading_fx_forward_instruments_tbl=
+
+ORE types: =FxForward=, =FxSpot=, =FxSwap=
+
+FX forward, spot, and swap share the same economic structure. An FX swap
+adds a far-date pair of amounts. Near/far amounts are nullable; a plain
+forward sets only the near amounts.
+
+| Column              | Type             | Notes                          |
+|---------------------+------------------+--------------------------------|
+| =bought_currency=   | text not null    | Currency received              |
+| =sold_currency=     | text not null    | Currency delivered             |
+| =bought_amount=     | numeric not null | Near-date bought amount        |
+| =sold_amount=       | numeric not null | Near-date sold amount          |
+| =value_date=        | date not null    | Near settlement date           |
+| =far_bought_amount= | numeric null     | FxSwap far leg; null otherwise |
+| =far_sold_amount=   | numeric null     | FxSwap far leg; null otherwise |
+| =far_value_date=    | date null        | FxSwap far settlement date     |
+| =settlement_type=   | text null        | Cash / Physical                |
+
+*** =ores_trading_fx_vanilla_option_instruments_tbl=
+
+ORE types: =FxOption=
+
+Plain European or American FX option.
+
+| Column             | Type             | Notes                        |
+|--------------------+------------------+------------------------------|
+| =bought_currency=  | text not null    |                              |
+| =sold_currency=    | text not null    |                              |
+| =bought_amount=    | numeric not null | Notional in bought currency  |
+| =sold_amount=      | numeric not null | Notional in sold currency    |
+| =expiry_date=      | date not null    |                              |
+| =settlement_date=  | date null        | Payment date after exercise  |
+| =option_type=      | text not null    | Call / Put                   |
+| =exercise_type=    | text not null    | European / American          |
+| =long_short=       | text not null    |                              |
+| =premium_amount=   | numeric null     |                              |
+| =premium_currency= | text null        |                              |
+| =premium_date=     | date null        |                              |
+
+*** =ores_trading_fx_barrier_option_instruments_tbl=
+
+ORE types: =FxBarrierOption=, =FxDoubleBarrierOption=,
+=FxEuropeanBarrierOption=, =FxKIKOBarrierOption=, =FxGenericBarrierOption=
+
+Barrier variants of FX options. Single-barrier products leave
+=upper_barrier= / =upper_barrier_type= null.
+
+| Column               | Type          | Notes                             |
+|----------------------+---------------+-----------------------------------|
+| =bought_currency=    | text not null |                                   |
+| =sold_currency=      | text not null |                                   |
+| =bought_amount=      | numeric null  |                                   |
+| =sold_amount=        | numeric null  |                                   |
+| =expiry_date=        | date not null |                                   |
+| =settlement_date=    | date null     |                                   |
+| =option_type=        | text null     | Call / Put (null for touch)       |
+| =exercise_type=      | text null     |                                   |
+| =long_short=         | text not null |                                   |
+| =lower_barrier=      | numeric null  |                                   |
+| =lower_barrier_type= | text null     | UpIn / UpOut / DownIn / DownOut   |
+| =upper_barrier=      | numeric null  | Double-barrier products only      |
+| =upper_barrier_type= | text null     |                                   |
+| =rebate=             | numeric null  | Paid on knock-out / no-touch      |
+
+*** =ores_trading_fx_digital_option_instruments_tbl=
+
+ORE types: =FxDigitalOption=, =FxTouchOption=, =FxDoubleTouchOption=
+
+Binary / touch payoffs. Touch options leave =strike= null; digital options
+leave =barrier_level= null.
+
+| Column            | Type          | Notes                             |
+|-------------------+---------------+-----------------------------------|
+| =bought_currency= | text not null |                                   |
+| =sold_currency=   | text not null |                                   |
+| =expiry_date=     | date not null |                                   |
+| =settlement_date= | date null     |                                   |
+| =option_type=     | text null     | Call / Put                        |
+| =long_short=      | text not null |                                   |
+| =strike=          | numeric null  | Digital options                   |
+| =payout_amount=   | numeric null  | Cash payout                       |
+| =payout_currency= | text null     |                                   |
+| =barrier_level=   | numeric null  | Touch options                     |
+| =barrier_type=    | text null     | OneTouch / NoTouch / DoubleOneTouch etc. |
+
+*** =ores_trading_fx_asian_forward_instruments_tbl=
+
+ORE types: =FxAverageForward=
+
+FX forward where the settlement rate is the average of fixings over a
+schedule.
+
+| Column               | Type          | Notes                        |
+|----------------------+---------------+------------------------------|
+| =bought_currency=    | text not null |                              |
+| =sold_currency=      | text not null |                              |
+| =bought_amount=      | numeric not null |                           |
+| =sold_amount=        | numeric not null |                           |
+| =averaging_start_date= | date not null |                           |
+| =averaging_end_date= | date not null |                             |
+| =settlement_date=    | date not null |                             |
+| =average_type=       | text not null | Arithmetic / Geometric      |
+
+*** =ores_trading_fx_accumulator_instruments_tbl=
+
+ORE types: =FxAccumulator=, =FxTaRF=
+
+Accumulators and TaRFs share the same structure; =trade_type_code=
+discriminates. TaRF adds =target_amount= and =target_type=.
+
+| Column            | Type          | Notes                              |
+|-------------------+---------------+------------------------------------|
+| =bought_currency= | text not null |                                    |
+| =sold_currency=   | text not null |                                    |
+| =strike=          | numeric not null |                                 |
+| =fixing_amount=   | numeric not null | Notional per fixing              |
+| =start_date=      | date not null |                                    |
+| =expiry_date=     | date not null |                                    |
+| =fixing_frequency= | text not null | Daily / Weekly / Monthly          |
+| =long_short=      | text not null |                                    |
+| =knock_out_level= | numeric null  |                                    |
+| =leverage=        | numeric null  |                                    |
+| =target_amount=   | numeric null  | TaRF only                          |
+| =target_type=     | text null     | TaRF: TargetFull / TargetExact     |
+| =payoff_type=     | text not null | Accumulator / Decumulator / TaRF   |
+
+*** =ores_trading_fx_variance_swap_instruments_tbl=
+
+ORE types: =FxVarianceSwap=
+
+| Column            | Type             | Notes                         |
+|-------------------+------------------+-------------------------------|
+| =bought_currency= | text not null    |                               |
+| =sold_currency=   | text not null    |                               |
+| =notional=        | numeric not null |                               |
+| =variance_strike= | numeric not null |                               |
+| =start_date=      | date not null    |                               |
+| =maturity_date=   | date not null    |                               |
+| =long_short=      | text not null    |                               |
+
+** Equity
+
+*** =ores_trading_equity_option_instruments_tbl=
+
+ORE types: =EquityOption=, =EquityCliquetOption=
+
+Vanilla options. Cliquet adds one field (=cliquet_frequency=) — acceptable
+to share this table.
+
+| Column              | Type             | Notes                              |
+|---------------------+------------------+------------------------------------|
+| =underlying_name=   | text not null    | ORE equity =Name= identifier       |
+| =currency=          | text not null    |                                    |
+| =notional=          | numeric not null |                                    |
+| =option_type=       | text not null    | Call / Put                         |
+| =strike=            | numeric not null |                                    |
+| =expiry_date=       | date not null    |                                    |
+| =exercise_type=     | text not null    | European / American / Bermudan     |
+| =long_short=        | text not null    |                                    |
+| =settlement_type=   | text null        | Cash / Physical                    |
+| =cliquet_frequency= | text null        | Cliquet only: Annual / Quarterly   |
+
+*** =ores_trading_equity_digital_option_instruments_tbl=
+
+ORE types: =EquityDigitalOption=, =EquityTouchOption=
+
+| Column            | Type             | Notes                             |
+|-------------------+------------------+-----------------------------------|
+| =underlying_name= | text not null    |                                   |
+| =currency=        | text not null    |                                   |
+| =notional=        | numeric not null |                                   |
+| =option_type=     | text null        | Call / Put (null for touch)       |
+| =strike=          | numeric null     | Digital; null for touch           |
+| =barrier_level=   | numeric null     | Touch; null for digital           |
+| =barrier_type=    | text null        |                                   |
+| =expiry_date=     | date not null    |                                   |
+| =long_short=      | text not null    |                                   |
+| =payout_amount=   | numeric null     |                                   |
+
+*** =ores_trading_equity_barrier_option_instruments_tbl=
+
+ORE types: =EquityBarrierOption=, =EquityDoubleBarrierOption=,
+=EquityEuropeanBarrierOption=
+
+| Column               | Type             | Notes                          |
+|----------------------+------------------+--------------------------------|
+| =underlying_name=    | text not null    |                                |
+| =currency=           | text not null    |                                |
+| =notional=           | numeric not null |                                |
+| =option_type=        | text not null    | Call / Put                     |
+| =strike=             | numeric not null |                                |
+| =expiry_date=        | date not null    |                                |
+| =exercise_type=      | text not null    |                                |
+| =long_short=         | text not null    |                                |
+| =lower_barrier=      | numeric not null |                                |
+| =lower_barrier_type= | text not null    | UpIn / UpOut / DownIn / DownOut |
+| =upper_barrier=      | numeric null     | Double-barrier only            |
+| =upper_barrier_type= | text null        |                                |
+| =rebate=             | numeric null     |                                |
+
+*** =ores_trading_equity_asian_option_instruments_tbl=
+
+ORE types: =EquityAsianOption=
+
+| Column                | Type             | Notes                        |
+|-----------------------+------------------+------------------------------|
+| =underlying_name=     | text not null    |                              |
+| =currency=            | text not null    |                              |
+| =notional=            | numeric not null |                              |
+| =option_type=         | text not null    | Call / Put                   |
+| =strike=              | numeric not null |                              |
+| =expiry_date=         | date not null    |                              |
+| =exercise_type=       | text not null    |                              |
+| =long_short=          | text not null    |                              |
+| =average_type=        | text not null    | Arithmetic / Geometric       |
+| =averaging_start_date= | date not null   |                              |
+| =averaging_end_date=  | date not null    |                              |
+
+*** =ores_trading_equity_forward_instruments_tbl=
+
+ORE types: =EquityForward=
+
+| Column            | Type             | Notes               |
+|-------------------+------------------+---------------------|
+| =underlying_name= | text not null    |                     |
+| =currency=        | text not null    |                     |
+| =quantity=        | numeric not null |                     |
+| =forward_price=   | numeric null     | Null = at-market    |
+| =expiry_date=     | date not null    |                     |
+| =long_short=      | text not null    |                     |
+| =settlement_type= | text null        | Cash / Physical     |
+
+*** =ores_trading_equity_variance_swap_instruments_tbl=
+
+ORE types: =EquityVarianceSwap=
+
+| Column            | Type             | Notes                        |
+|-------------------+------------------+------------------------------|
+| =underlying_name= | text not null    |                              |
+| =currency=        | text not null    |                              |
+| =notional=        | numeric not null | Vega notional                |
+| =variance_strike= | numeric not null |                              |
+| =start_date=      | date not null    |                              |
+| =maturity_date=   | date not null    |                              |
+| =long_short=      | text not null    |                              |
+
+*** =ores_trading_equity_swap_instruments_tbl=
+
+ORE types: =EquitySwap=, =EquityWorstOfBasketSwap=
+
+Equity swap: one leg equity-linked, one rates. WorstOfBasketSwap adds a
+=basket_json= with multiple underlyings.
+
+| Column            | Type             | Notes                             |
+|-------------------+------------------+-----------------------------------|
+| =underlying_name= | text null        | Single underlying; null for basket |
+| =basket_json=     | text null        | JSON array of underlyings          |
+| =currency=        | text not null    |                                    |
+| =notional=        | numeric not null |                                    |
+| =return_type=     | text not null    | TotalReturn / PriceReturn          |
+| =start_date=      | date not null    |                                    |
+| =maturity_date=   | date not null    |                                    |
+| =long_short=      | text not null    |                                    |
+| =payment_frequency= | text not null  |                                    |
+
+*** =ores_trading_equity_accumulator_instruments_tbl=
+
+ORE types: =EquityAccumulator=, =EquityTaRF=
+
+| Column            | Type             | Notes                             |
+|-------------------+------------------+-----------------------------------|
+| =underlying_name= | text not null    |                                   |
+| =currency=        | text not null    |                                   |
+| =strike=          | numeric not null |                                   |
+| =fixing_amount=   | numeric not null |                                   |
+| =start_date=      | date not null    |                                   |
+| =expiry_date=     | date not null    |                                   |
+| =fixing_frequency= | text not null   |                                   |
+| =long_short=      | text not null    |                                   |
+| =knock_out_level= | numeric null     |                                   |
+| =target_amount=   | numeric null     | TaRF only                         |
+| =target_type=     | text null        | TaRF: TargetFull / TargetExact    |
+| =payoff_type=     | text not null    | Accumulator / Decumulator / TaRF  |
+
+*** =ores_trading_equity_position_instruments_tbl=
+
+ORE types: =EquityPosition=, =EquityOptionPosition=
+
+| Column            | Type             | Notes                             |
+|-------------------+------------------+-----------------------------------|
+| =underlying_name= | text not null    |                                   |
+| =currency=        | text not null    |                                   |
+| =quantity=        | numeric not null |                                   |
+| =price=           | numeric null     | Entry price; null = market        |
+| =option_data_json= | text null       | EquityOptionPosition only         |
+
+** Commodity
+
+*** =ores_trading_commodity_forward_instruments_tbl=
+
+ORE types: =CommodityForward=
+
+| Column            | Type             | Notes                        |
+|-------------------+------------------+------------------------------|
+| =commodity_name=  | text not null    | ORE commodity =Name=         |
+| =currency=        | text not null    |                              |
+| =quantity=        | numeric not null |                              |
+| =unit=            | text not null    |                              |
+| =maturity=        | date not null    | ORE =Maturity= element       |
+| =strike=          | numeric null     | Fixed delivery price         |
+| =position=        | text not null    | Long / Short                 |
+| =is_future_price= | boolean null     | If strike is a futures price |
+
+*** =ores_trading_commodity_option_instruments_tbl=
+
+ORE types: =CommodityOption=, =CommodityDigitalOption=,
+=CommodityBarrierOption=
+
+Commodity option family. Barrier and digital fields are nullable.
+
+| Column             | Type             | Notes                             |
+|--------------------+------------------+-----------------------------------|
+| =commodity_name=   | text not null    |                                   |
+| =currency=         | text not null    |                                   |
+| =quantity=         | numeric not null |                                   |
+| =unit=             | text not null    |                                   |
+| =expiry_date=      | date not null    |                                   |
+| =option_type=      | text null        | Call / Put; null for touch/barrier|
+| =strike=           | numeric null     |                                   |
+| =exercise_type=    | text not null    | European / American               |
+| =long_short=       | text not null    |                                   |
+| =is_future_price=  | boolean null     |                                   |
+| =future_expiry_date= | date null      |                                   |
+| =barrier_level=    | numeric null     | Barrier options                   |
+| =barrier_type=     | text null        |                                   |
+| =payout_amount=    | numeric null     | Digital options                   |
+
+*** =ores_trading_commodity_asian_option_instruments_tbl=
+
+ORE types: =CommodityAsianOption=, =CommodityAveragePriceOption=,
+=CommodityOptionStrip=
+
+Average-price / Asian commodity options and option strips.
+
+| Column                | Type             | Notes                          |
+|-----------------------+------------------+--------------------------------|
+| =commodity_name=      | text not null    |                                |
+| =currency=            | text not null    |                                |
+| =quantity=            | numeric not null |                                |
+| =unit=                | text not null    |                                |
+| =option_type=         | text not null    | Call / Put                     |
+| =strike=              | numeric null     | Null for strips                |
+| =expiry_date=         | date null        | Null for strips                |
+| =long_short=          | text not null    |                                |
+| =average_type=        | text not null    | Arithmetic / Geometric         |
+| =averaging_start_date= | date not null   |                                |
+| =averaging_end_date=  | date not null    |                                |
+| =is_future_price=     | boolean null     |                                |
+| =strip_frequency=     | text null        | OptionStrip: Monthly / Annual  |
+
+*** =ores_trading_commodity_swap_instruments_tbl=
+
+ORE types: =CommoditySwap=
+
+Commodity swap: fixed vs floating commodity price. Legs live in
+=ores_trading_commodity_swap_legs_tbl= (new table; different structure from
+rate swap legs).
+
+| Column          | Type          | Notes |
+|-----------------+---------------+-------|
+| =start_date=    | date not null |       |
+| =maturity_date= | date not null |       |
+
+*** =ores_trading_commodity_swaption_instruments_tbl=
+
+ORE types: =CommoditySwaption=
+
+Option to enter a commodity swap. The underlying swap is described by
+commodity swap legs.
+
+| Column           | Type          | Notes                          |
+|------------------+---------------+--------------------------------|
+| =expiry_date=    | date not null |                                |
+| =exercise_type=  | text not null | European / American / Bermudan |
+| =long_short=     | text not null |                                |
+| =settlement_type= | text null    | Cash / Physical                |
+
+Underlying swap legs in =ores_trading_commodity_swap_legs_tbl=.
+
+*** =ores_trading_commodity_variance_swap_instruments_tbl=
+
+ORE types: =CommodityVarianceSwap=
+
+| Column            | Type             | Notes                |
+|-------------------+------------------+----------------------|
+| =commodity_name=  | text not null    |                      |
+| =currency=        | text not null    |                      |
+| =notional=        | numeric not null |                      |
+| =variance_strike= | numeric not null |                      |
+| =start_date=      | date not null    |                      |
+| =maturity_date=   | date not null    |                      |
+| =long_short=      | text not null    |                      |
+
+*** =ores_trading_commodity_accumulator_instruments_tbl=
+
+ORE types: =CommodityAccumulator=, =CommodityTaRF=
+
+| Column            | Type             | Notes                            |
+|-------------------+------------------+----------------------------------|
+| =commodity_name=  | text not null    |                                  |
+| =currency=        | text not null    |                                  |
+| =unit=            | text not null    |                                  |
+| =strike=          | numeric not null |                                  |
+| =fixing_amount=   | numeric not null |                                  |
+| =start_date=      | date not null    |                                  |
+| =expiry_date=     | date not null    |                                  |
+| =fixing_frequency= | text not null   |                                  |
+| =long_short=      | text not null    |                                  |
+| =knock_out_level= | numeric null     |                                  |
+| =target_amount=   | numeric null     | TaRF only                        |
+| =target_type=     | text null        | TaRF: TargetFull / TargetExact   |
+| =payoff_type=     | text not null    | Accumulator / Decumulator / TaRF |
+
+** Bond / Fixed Income
+
+*** =ores_trading_bond_instruments_tbl=
+
+ORE types: =Bond=, =ForwardBond=, =BondPosition=
+
+Plain bonds and positions. ForwardBond adds =forward_settlement_date=.
+
+| Column                   | Type             | Notes                             |
+|--------------------------+------------------+-----------------------------------|
+| =issuer=                 | text not null    |                                   |
+| =currency=               | text not null    |                                   |
+| =face_value=             | numeric not null |                                   |
+| =coupon_rate=            | numeric not null |                                   |
+| =coupon_frequency_code=  | text not null    | FK to payment_frequency_types     |
+| =day_count_code=         | text not null    | FK to day_count_fraction_types    |
+| =issue_date=             | date not null    |                                   |
+| =maturity_date=          | date not null    |                                   |
+| =settlement_days=        | integer null     |                                   |
+| =quantity=               | numeric null     | BondPosition only                 |
+| =forward_settlement_date= | date null       | ForwardBond only                  |
+
+*** =ores_trading_bond_option_instruments_tbl=
+
+ORE types: =BondOption=
+
+| Column             | Type             | Notes                        |
+|--------------------+------------------+------------------------------|
+| =underlying_id=    | text not null    | ORE bond =BondData= reference |
+| =currency=         | text not null    |                              |
+| =notional=         | numeric not null |                              |
+| =option_type=      | text not null    | Call / Put                   |
+| =strike=           | numeric not null | Clean price                  |
+| =expiry_date=      | date not null    |                              |
+| =exercise_type=    | text not null    | European / American          |
+| =long_short=       | text not null    |                              |
+| =settlement_type=  | text null        | Cash / Physical              |
+
+*** =ores_trading_callable_bond_instruments_tbl=
+
+ORE types: =CallableBond=
+
+| Column                  | Type             | Notes                          |
+|-------------------------+------------------+--------------------------------|
+| =issuer=                | text not null    |                                |
+| =currency=              | text not null    |                                |
+| =face_value=            | numeric not null |                                |
+| =coupon_rate=           | numeric not null |                                |
+| =coupon_frequency_code= | text not null    |                                |
+| =day_count_code=        | text not null    |                                |
+| =issue_date=            | date not null    |                                |
+| =maturity_date=         | date not null    |                                |
+| =call_schedule_json=    | text null        | JSON array of call date/price  |
+
+*** =ores_trading_convertible_bond_instruments_tbl=
+
+ORE types: =ConvertibleBond=
+
+| Column                  | Type             | Notes                         |
+|-------------------------+------------------+-------------------------------|
+| =issuer=                | text not null    |                               |
+| =currency=              | text not null    |                               |
+| =face_value=            | numeric not null |                               |
+| =coupon_rate=           | numeric not null |                               |
+| =coupon_frequency_code= | text not null    |                               |
+| =day_count_code=        | text not null    |                               |
+| =issue_date=            | date not null    |                               |
+| =maturity_date=         | date not null    |                               |
+| =conversion_ratio=      | numeric not null | Shares per bond unit          |
+| =conversion_price=      | numeric null     |                               |
+| =underlying_equity=     | text not null    | ORE equity =Name=             |
+
+*** =ores_trading_bond_repo_instruments_tbl=
+
+ORE types: =BondRepo=
+
+| Column               | Type             | Notes                         |
+|----------------------+------------------+-------------------------------|
+| =underlying_bond_id= | text not null    | Reference to the collateral   |
+| =currency=           | text not null    |                               |
+| =notional=           | numeric not null |                               |
+| =repo_rate=          | numeric not null |                               |
+| =start_date=         | date not null    |                               |
+| =end_date=           | date not null    |                               |
+| =haircut=            | numeric null     | Fraction (0–1)                |
+
+*** =ores_trading_bond_trs_instruments_tbl=
+
+ORE types: =BondTRS=, =TotalReturnSwap= (bond underlying)
+
+| Column               | Type             | Notes                        |
+|----------------------+------------------+------------------------------|
+| =underlying_bond_id= | text not null    |                              |
+| =currency=           | text not null    |                              |
+| =notional=           | numeric not null |                              |
+| =return_type=        | text not null    | TotalReturn / PriceReturn    |
+| =start_date=         | date not null    |                              |
+| =maturity_date=      | date not null    |                              |
+| =long_short=         | text not null    |                              |
+| =funding_rate_index= | text null        | Floating funding leg index   |
+| =funding_spread=     | numeric null     |                              |
+
+** Credit
+
+*** =ores_trading_credit_default_swap_instruments_tbl=
+
+ORE types: =CreditDefaultSwap=, =IndexCreditDefaultSwap=
+
+Single-name CDS and index CDS share the same structure. Index products add
+=index_name=, =index_series=, =seniority=, =restructuring= which are null for
+single-name.
+
+| Column               | Type             | Notes                            |
+|----------------------+------------------+----------------------------------|
+| =reference_entity=   | text not null    | Obligor name or index identifier |
+| =currency=           | text not null    |                                  |
+| =notional=           | numeric not null |                                  |
+| =spread=             | numeric not null | Running spread (bps)             |
+| =recovery_rate=      | numeric not null | 0–1                              |
+| =tenor=              | text not null    | e.g. 5Y                          |
+| =start_date=         | date not null    |                                  |
+| =maturity_date=      | date not null    |                                  |
+| =day_count_code=     | text not null    |                                  |
+| =payment_frequency=  | text not null    |                                  |
+| =buy_sell=           | text not null    | Buy (protection) / Sell          |
+| =index_name=         | text null        | Index CDS only                   |
+| =index_series=       | integer null     | Index CDS only                   |
+| =seniority=          | text null        | Senior / Subordinated            |
+| =restructuring=      | text null        | CR / MR / MM / XR / NR          |
+
+*** =ores_trading_cds_option_instruments_tbl=
+
+ORE types: =IndexCreditDefaultSwapOption=
+
+| Column              | Type             | Notes                        |
+|---------------------+------------------+------------------------------|
+| =reference_index=   | text not null    | Underlying CDS index         |
+| =currency=          | text not null    |                              |
+| =notional=          | numeric not null |                              |
+| =option_type=       | text not null    | Payer / Receiver             |
+| =strike=            | numeric not null | Strike spread (bps)          |
+| =expiry_date=       | date not null    |                              |
+| =exercise_type=     | text not null    |                              |
+| =long_short=        | text not null    |                              |
+| =index_series=      | integer null     |                              |
+
+*** =ores_trading_synthetic_cdo_instruments_tbl=
+
+ORE types: =SyntheticCDO=
+
+Materially different structure from a single-name CDS — tranche-based,
+with a portfolio of reference entities.
+
+| Column               | Type             | Notes                          |
+|----------------------+------------------+--------------------------------|
+| =reference_pool_json= | text not null   | JSON array of reference names  |
+| =currency=           | text not null    |                                |
+| =notional=           | numeric not null |                                |
+| =attachment_point=   | numeric not null | 0–1                            |
+| =detachment_point=   | numeric not null | 0–1                            |
+| =coupon_rate=        | numeric not null |                                |
+| =start_date=         | date not null    |                                |
+| =maturity_date=      | date not null    |                                |
+| =buy_sell=           | text not null    |                                |
+
+** Scripted and Composite
+
+These are unchanged in structure; they just lose their dependency on the
+common instruments parent.
+
+*** =ores_trading_scripted_instruments_tbl=
+
+ORE types: =ScriptedTrade= and AMC scripted products.
+
+| Column             | Type          | Notes                   |
+|--------------------+---------------+-------------------------|
+| =script_name=      | text not null |                         |
+| =script_body=      | text null     | Inline ORE script XML   |
+| =events_json=      | text null     |                         |
+| =underlyings_json= | text null     |                         |
+| =parameters_json=  | text null     |                         |
+
+*** =ores_trading_composite_instruments_tbl=
+
+ORE types: =CompositeTrade=, =MultiLegOption=
+
+Thin header; constituent trades in =composite_legs_tbl=.
+
+* Leg / Child Tables
+
+** =ores_trading_swap_legs_tbl=
+
+Unchanged in structure. Referenced by: vanilla_swap, cap_floor, swaption,
+balance_guaranteed_swap, callable_swap, knock_out_swap, inflation_swap,
+risk_participation_agreement. The =instrument_id= FK now points to whichever
+rates instrument table owns the leg.
+
+** =ores_trading_commodity_swap_legs_tbl= (new)
+
+Referenced by: commodity_swap, commodity_swaption.
+
+| Column            | Type             | Notes                              |
+|-------------------+------------------+------------------------------------|
+| =id=              | uuid not null    | Leg identifier                     |
+| =instrument_id=   | uuid not null    | FK to commodity_swap / swaption    |
+| =leg_number=      | integer not null | 1 = fixed, 2 = floating            |
+| =leg_type=        | text not null    | Fixed / Floating                   |
+| =commodity_name=  | text null        | Floating leg underlying            |
+| =currency=        | text not null    |                                    |
+| =quantities_json= | text not null    | JSON schedule of quantities        |
+| =prices_json=     | text null        | Fixed leg prices JSON              |
+| =price_type=      | text null        | Spot / FutureSettlement            |
+| =is_averaged=     | boolean null     | Floating leg averaging flag        |
+| + bitemporal/audit columns |         |                                    |
+
+** =ores_trading_composite_legs_tbl=
+
+Unchanged.
+
+* Cross-Asset View
+
+A read-only =ores_trading_all_instruments_view= replaces the former common
+table as the single query point across asset classes. It uses =UNION ALL=
+with a minimal common projection:
+
+#+begin_src sql
+select id, tenant_id, party_id, version, trade_id, trade_type_code,
+       'vanilla_swap' as instrument_table, valid_from, valid_to
+from ores_trading_vanilla_swap_instruments_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+-- ... one arm per instrument table
+#+end_src
+
+RLS on each underlying table propagates through the view automatically.
+
+* Implementation Tasks
+
+** Phase 0 — Cleanup current branch
+
+- [ ] Revert the =party_id= additions to the old subtables on
+  =feature/trading-instruments-party-id= (they will reappear correctly on
+  the new standalone tables).
+- [ ] Drop the current common instruments table DDL and all SQL that
+  references it.
+- [ ] Remove =instrument_entity.hpp=, =instrument.hpp=, =instrument_mapper.cpp=
+  from C++.
+- [ ] Remove =ores_trading_instruments_tbl= RLS policies and notify trigger.
+
+** Phase 1 — Rates instruments
+
+- [ ] =ores_trading_vanilla_swap_instruments_tbl= DDL, trigger, RLS, notify
+- [ ] =ores_trading_cap_floor_instruments_tbl= same
+- [ ] =ores_trading_swaption_instruments_tbl= same
+- [ ] =ores_trading_fra_instruments_tbl= same
+- [ ] =ores_trading_balance_guaranteed_swap_instruments_tbl= same
+- [ ] =ores_trading_callable_swap_instruments_tbl= same
+- [ ] =ores_trading_knock_out_swap_instruments_tbl= same
+- [ ] =ores_trading_inflation_swap_instruments_tbl= same
+- [ ] =ores_trading_risk_participation_agreement_instruments_tbl= same
+- [ ] =ores_trading_swap_legs_tbl= — remove parent FK reference to old common
+  table; =instrument_id= now is an application-level reference
+- [ ] C++ domain types, entities, mappers for all rates types
+- [ ] Roundtrip tests against ORE XML samples for each type
+
+** Phase 2 — FX instruments
+
+- [ ] All seven FX tables (forward, vanilla_option, barrier_option,
+  digital_option, asian_forward, accumulator, variance_swap)
+- [ ] C++ domain types, entities, mappers
+- [ ] Roundtrip tests
+
+** Phase 3 — Equity instruments
+
+- [ ] All nine equity tables
+- [ ] C++ domain types, entities, mappers
+- [ ] Roundtrip tests
+
+** Phase 4 — Commodity instruments
+
+- [ ] All seven commodity tables
+- [ ] =ores_trading_commodity_swap_legs_tbl= (new)
+- [ ] C++ domain types, entities, mappers
+- [ ] Roundtrip tests
+
+** Phase 5 — Bond / Fixed Income
+
+- [ ] Six bond tables (bond, bond_option, callable_bond, convertible_bond,
+  bond_repo, bond_trs)
+- [ ] C++ domain types, entities, mappers
+- [ ] Roundtrip tests
+
+** Phase 6 — Credit
+
+- [ ] Three credit tables (cds, cds_option, synthetic_cdo)
+- [ ] C++ domain types, entities, mappers
+- [ ] Roundtrip tests
+
+** Phase 7 — Scripted / Composite
+
+- [ ] Remove parent FK dependency on old common table
+- [ ] Confirm field coverage against ORE scripted trade samples
+
+** Phase 8 — Cross-asset view and validation
+
+- [ ] =ores_trading_all_instruments_view= (UNION ALL across all tables)
+- [ ] Update =trading_ore_envelope_view_create.sql= to join the correct
+  instrument table per =trade_type_code=
+- [ ] Schema validation script update (=validate_schemas.sh=)
+- [ ] Integration test: import ORE sample portfolio, verify all instrument
+  types persist and round-trip correctly
+
+* Open Issues
+
+- =FlexiSwap= — ORE type not yet analysed for field structure; add to rates
+  during Phase 1 analysis.
+- =CreditLinkedSwap= — credit-linked note embedded in an IRS. Rates or
+  credit table? Needs ORE XML analysis.
+- =Ascot= — insurance/reinsurance structured product. Low priority; park
+  in scripted or standalone.
+- Leg tables and =instrument_id= — with no common instruments table, the
+  =instrument_id= FK on swap_legs is a soft reference (no enforced FK to a
+  specific table). The trigger validates existence. This is consistent with
+  how the rest of the system handles soft FKs.
+- =EquityOutperformanceOption= — outperformance on two underlyings. Needs
+  its own table (two =underlying_name= columns, a spread strike). Deferred
+  to Phase 3 analysis.

@@ -158,6 +158,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_trading_bond_instruments_party_isolation_policy
+on ores_trading_bond_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Commodity Instruments
 -- -----------------------------------------------------------------------------
@@ -169,6 +176,13 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_commodity_instruments_party_isolation_policy
+on ores_trading_commodity_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -184,6 +198,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_trading_equity_instruments_party_isolation_policy
+on ores_trading_equity_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- FX Instruments
 -- -----------------------------------------------------------------------------
@@ -195,6 +216,13 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_instruments_party_isolation_policy
+on ores_trading_fx_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -210,6 +238,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_trading_credit_instruments_party_isolation_policy
+on ores_trading_credit_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Scripted Instruments
 -- -----------------------------------------------------------------------------
@@ -221,6 +256,13 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_scripted_instruments_party_isolation_policy
+on ores_trading_scripted_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -236,6 +278,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_trading_composite_instruments_party_isolation_policy
+on ores_trading_composite_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Composite Legs
 -- -----------------------------------------------------------------------------
@@ -247,6 +296,13 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_composite_legs_party_isolation_policy
+on ores_trading_composite_legs_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------

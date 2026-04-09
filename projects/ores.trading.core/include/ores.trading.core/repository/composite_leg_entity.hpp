@@ -40,6 +40,7 @@ struct composite_leg_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string instrument_id;
     int leg_sequence = 1;
     std::string constituent_trade_id;

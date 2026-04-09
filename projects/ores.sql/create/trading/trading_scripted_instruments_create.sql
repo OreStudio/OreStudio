@@ -32,6 +32,7 @@ create table if not exists "ores_trading_scripted_instruments_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "trade_id" uuid null,
     "trade_type_code" text not null,
     "script_name" text not null,
@@ -73,6 +74,11 @@ create index if not exists ores_trading_scripted_instruments_tenant_idx
 on "ores_trading_scripted_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+-- Party index for party isolation
+create index if not exists ores_trading_scripted_instruments_party_idx
+on "ores_trading_scripted_instruments_tbl" (tenant_id, party_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Trade type index for product filtering
 create index if not exists ores_trading_scripted_instruments_trade_type_idx
 on "ores_trading_scripted_instruments_tbl" (tenant_id, trade_type_code)
@@ -91,6 +97,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Set party_id from session context
+    NEW.party_id := current_setting('app.current_party_id')::uuid;
 
     -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);

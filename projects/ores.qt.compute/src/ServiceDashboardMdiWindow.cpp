@@ -249,9 +249,8 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
 
     setupUi();
 
-    const auto sz = UiPersistence::restoreSize(
+    savedWindowSize_ = UiPersistence::restoreSize(
         QStringLiteral("ServiceDashboardMdiWindow"), {900, 600});
-    resize(sz);
     UiPersistence::restoreSplitter(
         QStringLiteral("ServiceDashboardMdiWindow"), splitter_);
 

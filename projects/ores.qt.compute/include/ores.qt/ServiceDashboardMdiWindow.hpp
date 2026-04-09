@@ -69,7 +69,9 @@ public:
         QWidget* parent = nullptr);
     ~ServiceDashboardMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {900, 600}; }
+    QSize sizeHint() const override {
+        return savedWindowSize_.isValid() ? savedWindowSize_ : QSize{900, 600};
+    }
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -114,6 +116,7 @@ private:
 
     QSplitter* splitter_;
     QTimer* autoRefreshTimer_;
+    QSize savedWindowSize_;
 
     std::string selectedServiceName_;
     std::vector<controller::api::domain::service_definition> serviceDefinitions_;

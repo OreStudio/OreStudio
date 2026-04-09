@@ -154,10 +154,23 @@ QColor phase_color(const QString& phase) {
     return color_constants::level_trace; // stopped, unknown
 }
 
+// Custom data roles for table items in this window.
+// BadgeRole/BadgeColorRole are used by badge items; the ErrorDetail* roles are
+// used on the LastError column item to store text shown in the detail dialog.
+enum ItemRole {
+    BadgeTagRole   = Qt::UserRole,      // QString "badge" sentinel
+    BadgeColorRole = Qt::UserRole + 1,  // QColor  badge background
+
+    ErrorDetailRole   = Qt::UserRole,   // QString full error text
+    LogDetailRole     = Qt::UserRole + 1,
+    StderrDetailRole  = Qt::UserRole + 2,
+    CommandDetailRole = Qt::UserRole + 3,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Badge delegate — used for both the main status column and the phase column
 // in the detail table. The column that needs badge rendering is identified by
-// the Qt::UserRole data being the string "badge".
+// the BadgeTagRole data being the string "badge".
 // ─────────────────────────────────────────────────────────────────────────────
 
 class BadgeDelegate final : public QStyledItemDelegate {
@@ -167,7 +180,7 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override {
-        if (index.data(Qt::UserRole).toString() != QStringLiteral("badge")) {
+        if (index.data(BadgeTagRole).toString() != QStringLiteral("badge")) {
             QStyledItemDelegate::paint(painter, option, index);
             return;
         }
@@ -178,7 +191,7 @@ public:
             QStyle::PE_PanelItemViewItem, &opt, painter);
 
         const QString text   = index.data(Qt::DisplayRole).toString();
-        const QColor  bg     = index.data(Qt::UserRole + 1).value<QColor>();
+        const QColor  bg     = index.data(BadgeColorRole).value<QColor>();
         const QColor  fg     = color_constants::level_text;
 
         QFont badgeFont = opt.font;
@@ -192,7 +205,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option,
                    const QModelIndex& index) const override {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
-        if (index.data(Qt::UserRole).toString() == QStringLiteral("badge"))
+        if (index.data(BadgeTagRole).toString() == QStringLiteral("badge"))
             s = QSize(qMax(s.width(), 80), qMax(s.height(), 24));
         return s;
     }
@@ -204,8 +217,8 @@ public:
 
 QTableWidgetItem* make_badge_item(const QString& text, const QColor& bg) {
     auto* item = new QTableWidgetItem(text);
-    item->setData(Qt::UserRole,     QStringLiteral("badge"));
-    item->setData(Qt::UserRole + 1, bg); // badge color — NOT BackgroundRole (avoids coloring whole cell)
+    item->setData(BadgeTagRole,   QStringLiteral("badge"));
+    item->setData(BadgeColorRole, bg); // badge color — NOT BackgroundRole (avoids coloring whole cell)
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     return item;
 }
@@ -363,10 +376,10 @@ void ServiceDashboardMdiWindow::setupUi() {
         if (!item || item->text() == QStringLiteral("-"))
             return;
 
-        const QString error_text   = item->data(Qt::UserRole).toString();
-        const QString log_text     = item->data(Qt::UserRole + 1).toString();
-        const QString stderr_text  = item->data(Qt::UserRole + 2).toString();
-        const QString command_text = item->data(Qt::UserRole + 3).toString();
+        const QString error_text   = item->data(ErrorDetailRole).toString();
+        const QString log_text     = item->data(LogDetailRole).toString();
+        const QString stderr_text  = item->data(StderrDetailRole).toString();
+        const QString command_text = item->data(CommandDetailRole).toString();
 
         auto* dlg = new QDialog(this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -719,16 +732,16 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                 const QString summary = full_error.section(u'\n', 0, 0);
                 auto* err_item = make_item(summary);
                 if (inst.last_error) {
-                    err_item->setData(Qt::UserRole, full_error);
-                    err_item->setData(Qt::UserRole + 1,
+                    err_item->setData(ErrorDetailRole, full_error);
+                    err_item->setData(LogDetailRole,
                         inst.last_log_snippet
                             ? QString::fromStdString(*inst.last_log_snippet)
                             : QString{});
-                    err_item->setData(Qt::UserRole + 2,
+                    err_item->setData(StderrDetailRole,
                         inst.last_stderr_snippet
                             ? QString::fromStdString(*inst.last_stderr_snippet)
                             : QString{});
-                    err_item->setData(Qt::UserRole + 3,
+                    err_item->setData(CommandDetailRole,
                         inst.last_command_line
                             ? QString::fromStdString(*inst.last_command_line)
                             : QString{});

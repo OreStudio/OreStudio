@@ -60,7 +60,13 @@ public:
 
     // ---- Assignment --------------------------------------------------------
     vector& operator=(const vector& o) {
-        if (this != &o) { delete impl_; impl_ = new std::vector<T>(*o.impl_); }
+        if (this != &o) {
+            // Allocate first so that if new throws, impl_ is unchanged.
+            // Also handles moved-from o (o.impl_ == nullptr).
+            auto* tmp = o.impl_ ? new std::vector<T>(*o.impl_) : nullptr;
+            delete impl_;
+            impl_ = tmp;
+        }
         return *this;
     }
 

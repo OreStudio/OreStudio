@@ -1905,7 +1905,7 @@ std::string to_string(oreTradeType);
 struct trade
 {
     xsd::string id{};
-    xsd::vector<xsd::any_element> other_elements;
+    xsd::vector<xsd::any_attribute> other_attributes;
     domain::oreTradeType TradeType{};
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::tradeActions> TradeActions;

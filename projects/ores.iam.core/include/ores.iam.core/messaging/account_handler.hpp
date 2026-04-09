@@ -690,7 +690,17 @@ public:
             const auto ctx = ctx_.with_tenant(
                 *tid_result, claims_result->username.value_or(""));
 
-            boost::uuids::uuid requested_party_id = sg(req->party_id);
+            boost::uuids::uuid requested_party_id;
+            try {
+                requested_party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: invalid party_id: " << req->party_id;
+                reply(nats_, msg, select_party_response{
+                    .success = false,
+                    .message = "Invalid party_id format"});
+                return;
+            }
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);
 

@@ -267,13 +267,19 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     REQUIRE(std::holds_alternative<swap_mapping_result>(item.instrument));
 
     const auto& r = std::get<swap_mapping_result>(item.instrument);
-    CHECK(r.instrument.id != item.trade.id);
-    CHECK(r.instrument.trade_id == item.trade.id);
-    CHECK(item.trade.instrument_id == r.instrument.id);
+    // Extract instrument_id from the inner variant.
+    const auto instr_id = std::visit(
+        [](const auto& instr) { return instr.instrument_id; }, r.instrument);
+    const auto trade_id_opt = std::visit(
+        [](const auto& instr) { return instr.trade_id; }, r.instrument);
+    CHECK(instr_id != item.trade.id);
+    REQUIRE(trade_id_opt.has_value());
+    CHECK(*trade_id_opt == item.trade.id);
+    CHECK(item.trade.instrument_id == instr_id);
     CHECK(item.trade.product_type == ores::trading::domain::product_type::swap);
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)
-        CHECK(leg.instrument_id == r.instrument.id);
+        CHECK(leg.instrument_id == instr_id);
 
     BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }

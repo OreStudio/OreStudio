@@ -89,9 +89,10 @@ std::vector<trading::domain::trade> trade_mapper::map(const portfolio& v) {
 std::optional<swap_mapping_result>
 trade_mapper::map_swap_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
-    if (type == "Swap" || type == "CrossCurrencySwap" ||
-            type == "InflationSwap")
+    if (type == "Swap" || type == "CrossCurrencySwap")
         return swap_instrument_mapper::forward_swap(v);
+    if (type == "InflationSwap")
+        return swap_instrument_mapper::forward_inflation_swap(v);
     if (type == "ForwardRateAgreement")
         return swap_instrument_mapper::forward_fra(v);
     if (type == "CapFloor")

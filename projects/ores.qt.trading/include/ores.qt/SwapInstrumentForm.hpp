@@ -20,10 +20,13 @@
 #ifndef ORES_QT_SWAP_INSTRUMENT_FORM_HPP
 #define ORES_QT_SWAP_INSTRUMENT_FORM_HPP
 
+#include <chrono>
+#include <optional>
+#include <string>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 
 namespace Ui {
@@ -53,6 +56,58 @@ private:
     }
 
 public:
+    /**
+     * @brief Form-local state for the swap instrument editor.
+     *
+     * Aggregates fields from all nine rates instrument types into a single
+     * flat struct so the form can display any type without storing a domain
+     * object directly. Fields that are not applicable to the active trade type
+     * will be empty/zero.
+     *
+     * This is NOT a domain type. It is never serialised or transmitted.
+     */
+    struct SwapFormState {
+        // Identity
+        boost::uuids::uuid instrument_id;
+        std::optional<boost::uuids::uuid> trade_id;
+        // Set by setTradeType(); not carried by any domain object.
+        std::string trade_type_code;
+
+        // Common to most types
+        std::string start_date;
+        std::string maturity_date; // FRA: maps from/to end_date
+        std::string description;
+
+        // FRA-specific
+        std::string currency;
+        double notional = 0.0;
+        std::string rate_index;
+        double strike = 0.0;
+        std::string long_short;
+
+        // Callable swap-specific
+        std::string call_dates_json;
+        std::string call_type;
+
+        // RPA-specific
+        std::string reference_counterparty;
+        double participation_rate = 0.0;
+        std::optional<double> protection_fee;
+
+        // Inflation swap-specific
+        std::string inflation_index_code;
+        std::optional<double> base_cpi;
+        std::string lag_convention;
+
+        // Provenance
+        int version = 0;
+        std::string modified_by;
+        std::string performed_by;
+        std::chrono::system_clock::time_point recorded_at;
+        std::string change_reason_code;
+        std::string change_commentary;
+    };
+
     explicit SwapInstrumentForm(QWidget* parent = nullptr);
     ~SwapInstrumentForm() override;
 
@@ -79,14 +134,14 @@ public:
 
 private:
     void setupConnections();
-    void populateFromInstrument();
+    void populateFromState();
     void emitProvenance();
     void onFieldChanged();
 
     Ui::SwapInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
     std::string username_;
-    trading::domain::instrument instrument_;
+    SwapFormState state_;
     std::vector<trading::domain::swap_leg> legs_;
     bool dirty_ = false;
     bool loaded_ = false;

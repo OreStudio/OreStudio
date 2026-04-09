@@ -174,13 +174,15 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                 using T = std::decay_t<decltype(result)>;
                 if constexpr (!std::is_same_v<T, std::monostate>) {
                     const auto instr_id = gen();
-                    result.instrument.id = instr_id;
-                    result.instrument.trade_id = item.trade.id;
                     item.trade.instrument_id = instr_id;
 
                     using ores::trading::domain::product_type;
                     if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
                         item.trade.product_type = product_type::swap;
+                        std::visit([&](auto& instr) {
+                            instr.instrument_id = instr_id;
+                            instr.trade_id = item.trade.id;
+                        }, result.instrument);
                         for (auto& leg : result.legs)
                             leg.instrument_id = instr_id;
                     } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {

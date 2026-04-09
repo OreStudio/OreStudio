@@ -382,12 +382,82 @@ ore_import_result OreImporter::execute(
                     };
 
                     if constexpr (std::is_same_v<T, swap_mapping_result>) {
-                        save_instrument_request req;
-                        req.data = r.instrument;
-                        req.legs = r.legs;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
+                        std::visit([&](const auto& instr) {
+                            using InstrT = std::decay_t<decltype(instr)>;
+                            using ores::trading::domain::fra_instrument;
+                            using ores::trading::domain::vanilla_swap_instrument;
+                            using ores::trading::domain::cap_floor_instrument;
+                            using ores::trading::domain::swaption_instrument;
+                            using ores::trading::domain::balance_guaranteed_swap_instrument;
+                            using ores::trading::domain::callable_swap_instrument;
+                            using ores::trading::domain::knock_out_swap_instrument;
+                            using ores::trading::domain::inflation_swap_instrument;
+                            using ores::trading::domain::rpa_instrument;
+                            if constexpr (std::is_same_v<InstrT, fra_instrument>) {
+                                save_fra_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
+                                save_vanilla_swap_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
+                                save_cap_floor_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
+                                save_swaption_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, balance_guaranteed_swap_instrument>) {
+                                save_balance_guaranteed_swap_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
+                                save_callable_swap_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, knock_out_swap_instrument>) {
+                                save_knock_out_swap_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, inflation_swap_instrument>) {
+                                save_inflation_swap_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
+                                save_rpa_instrument_request req;
+                                req.data = instr;
+                                const auto resp =
+                                    cm_->process_authenticated_request(std::move(req));
+                                if (!resp || !resp->success) record_error(resp);
+                                else ++res.instruments;
+                            }
+                        }, r.instrument);
                     } else if constexpr (std::is_same_v<T, fx_mapping_result>) {
                         save_fx_instrument_request req;
                         req.data = r.instrument;

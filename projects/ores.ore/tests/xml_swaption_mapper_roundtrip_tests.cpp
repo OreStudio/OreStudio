@@ -69,13 +69,11 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     const auto t = load_trade("IR_Swaption_European.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr = result.instrument;
+    const auto& instr =
+        std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
-    CHECK(instr.trade_type_code == "Swaption");
-    CHECK(instr.description == "European");
-    CHECK(instr.start_date == "2033-02-20");   // first exercise date
-    CHECK(instr.currency == "EUR");
-    CHECK(instr.notional == Approx(10000000.0).epsilon(0.001));
+    CHECK(instr.exercise_type == "European");
+    CHECK(instr.expiry_date == "2033-02-20");   // first exercise date
     CHECK(instr.maturity_date == "2043-02-21");
     REQUIRE(result.legs.size() == 2u);
     // leg 0: floating (EUR-EURIBOR-3M)
@@ -94,7 +92,10 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swaption(t);
 
     const auto reconstructed =
-        swap_instrument_mapper::reverse_swaption(result.instrument, result.legs);
+        swap_instrument_mapper::reverse_swaption(
+            std::get<ores::trading::domain::swaption_instrument>(
+                result.instrument),
+            result.legs);
 
     REQUIRE(reconstructed.SwaptionData.operator bool());
     const auto& sd = *reconstructed.SwaptionData;
@@ -125,14 +126,12 @@ TEST_CASE("mapper_roundtrip_swaption_bermudan_forward", tags) {
     const auto t = load_trade("IR_Swaption_Bermudan.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr = result.instrument;
+    const auto& instr =
+        std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
-    CHECK(instr.trade_type_code == "Swaption");
-    CHECK(instr.description == "Bermudan");
+    CHECK(instr.exercise_type == "Bermudan");
     // First exercise date from the 6 listed
-    CHECK(instr.start_date == "2035-09-23");
-    CHECK(instr.currency == "EUR");
-    CHECK(instr.notional == Approx(10000000.0).epsilon(0.001));
+    CHECK(instr.expiry_date == "2035-09-23");
     REQUIRE(result.legs.size() == 2u);
     BOOST_LOG_SEV(lg, info) << "Swaption Bermudan forward-mapper test passed";
 }
@@ -146,19 +145,17 @@ TEST_CASE("mapper_roundtrip_callable_swap_forward", tags) {
     const auto t = load_trade("IR_Callable_Swap_Bermudan.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
-    const auto& instr = result.instrument;
+    const auto& instr =
+        std::get<ores::trading::domain::callable_swap_instrument>(
+            result.instrument);
 
-    CHECK(instr.trade_type_code == "CallableSwap");
-    CHECK(!instr.currency.empty());
-    CHECK(instr.notional != Approx(0.0));
     // Exercise dates captured as JSON array
-    CHECK(!instr.callable_dates_json.empty());
-    CHECK(instr.callable_dates_json.front() == '[');
-    CHECK(instr.callable_dates_json.back() == ']');
+    CHECK(!instr.call_dates_json.empty());
+    CHECK(instr.call_dates_json.front() == '[');
+    CHECK(instr.call_dates_json.back() == ']');
     CHECK(!result.legs.empty());
     BOOST_LOG_SEV(lg, info) << "CallableSwap forward-mapper test passed, "
-                            << "currency=" << instr.currency
-                            << " dates=" << instr.callable_dates_json;
+                            << " dates=" << instr.call_dates_json;
 }
 
 TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
@@ -167,8 +164,10 @@ TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
 
     const auto reconstructed =
-        swap_instrument_mapper::reverse_callable_swap(result.instrument,
-                                                      result.legs);
+        swap_instrument_mapper::reverse_callable_swap(
+            std::get<ores::trading::domain::callable_swap_instrument>(
+                result.instrument),
+            result.legs);
 
     REQUIRE(reconstructed.CallableSwapData.operator bool());
     const auto& cd = *reconstructed.CallableSwapData;

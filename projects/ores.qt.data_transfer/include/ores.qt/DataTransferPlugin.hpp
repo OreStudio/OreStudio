@@ -35,10 +35,12 @@ class NatureDimensionController;
 class TreatmentDimensionController;
 
 /**
- * @brief Plugin owning the Data Transfer domain: data catalogue and import tools.
+ * @brief Qt plugin providing the Data Transfer top-level menu.
  *
- * Provides the top-level Data Transfer menu. Data Librarian and Import ORE Data
- * are contributed by RefdataPlugin and TradingPlugin respectively via setup_menus.
+ * Manages data catalogue controllers (data domains, subject areas, catalogues,
+ * dataset bundles, methodologies, and dimension types).
+ * Data Librarian and Import ORE Data are contributed by RefdataPlugin and
+ * TradingPlugin via setup_menus on the shared data_transfer_menu.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
 class DataTransferPlugin : public PluginBase {
@@ -51,7 +53,7 @@ public:
     ~DataTransferPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.data_transfer"); }
-    int load_order() const override { return 380; }
+    int load_order() const override { return 375; }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;

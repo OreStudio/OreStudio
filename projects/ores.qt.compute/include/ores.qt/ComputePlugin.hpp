@@ -39,11 +39,10 @@ class ReportDefinitionController;
 class ReportInstanceController;
 
 /**
- * @brief Plugin owning all compute, reporting and job controllers.
+ * @brief Plugin owning all compute and reporting controllers.
  *
  * Manages compute dashboard, console, service dashboard, job definitions,
- * queue monitor, report types/definitions/instances, concurrency policies,
- * and ORE import.
+ * queue monitor, report types/definitions/instances, and concurrency policies.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
 class ComputePlugin : public PluginBase {

@@ -123,7 +123,6 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(reportInstanceController_.get());
-
 }
 
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {

@@ -28,10 +28,10 @@ namespace ores::qt {
 class JobDefinitionController;
 
 /**
- * @brief Plugin owning the scheduler domain: job definitions and instances.
+ * @brief Qt plugin providing the Scheduler top-level menu.
  *
+ * Manages job definitions and the Scheduler menu bar entry.
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Scheduler top-level menu.
  */
 class SchedulerPlugin : public PluginBase {
     Q_OBJECT

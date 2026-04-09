@@ -8,8 +8,8 @@
 #include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
-#include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 
 namespace ores::{{component}}::service {
 
@@ -64,8 +64,8 @@ private:
 {{/has_uuid_left_or_right}}
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.{{component}}/domain/{{name_singular}}.hpp"
-#include "ores.{{component}}/repository/{{name_singular}}_repository.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
 
 namespace ores::{{component}}::service {
 

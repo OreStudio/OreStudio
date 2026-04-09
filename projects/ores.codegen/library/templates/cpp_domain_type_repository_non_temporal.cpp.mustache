@@ -1,12 +1,12 @@
 {{{cpp_license}}}
 {{#domain_entity}}
-#include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
-#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
-#include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
 
 namespace ores::{{component}}::repository {
 

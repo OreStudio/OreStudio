@@ -1,0 +1,109 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "inflation_swap_instrument",
+    "entity_plural": "inflation_swap_instruments",
+    "entity_title": "Inflation Swap Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Inflation-linked interest rate swap instrument.",
+    "description": "Represents an inflation-linked swap where one leg pays a fixed or floating\nrate and the other is linked to an inflation index (e.g., CPI, RPI).",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this inflation swap instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap effective start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "maturity_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Swap maturity date.",
+        "detail": "Must be after start_date."
+      },
+      {
+        "name": "inflation_index_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Inflation index code.",
+        "detail": "e.g., UKRPI, USCPI, EUHICPXT."
+      },
+      {
+        "name": "base_cpi",
+        "type": "double precision",
+        "cpp_type": "std::optional<double>",
+        "nullable": false,
+        "description": "Optional base CPI value at inception.",
+        "detail": "Used to calculate the inflation accrual. Must be positive if set.",
+        "default_value": "std::nullopt"
+      },
+      {
+        "name": "lag_convention",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional CPI lag convention.",
+        "detail": "e.g., 3M, 2M. Specifies the publication lag for the inflation index."
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_inflation_swap_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "inflation_swap_instrument",
+      "entity_plural_short": "inflation_swap_instruments",
+      "entity_singular_words": "inflation swap instrument",
+      "entity_plural_words": "inflation swap instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "is"
+    }
+  }
+}

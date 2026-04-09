@@ -1,6 +1,6 @@
 {{{cpp_license}}}
 {{#domain_entity}}
-#include "ores.{{component}}/domain/{{entity_singular}}_table.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}_table.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -22,7 +22,7 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
 }
 {{/domain_entity}}
 {{#junction}}
-#include "ores.{{component}}/domain/{{name_singular}}_table.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}_table.hpp"
 
 {{#cpp.has_uuid_table_display}}
 #include <boost/uuid/uuid_io.hpp>

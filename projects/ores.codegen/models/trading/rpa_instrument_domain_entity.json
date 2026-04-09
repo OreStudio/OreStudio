@@ -1,0 +1,110 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "rpa_instrument",
+    "entity_plural": "rpa_instruments",
+    "entity_title": "RPA Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Risk Participation Agreement (RPA) instrument.",
+    "description": "Represents a Risk Participation Agreement where one bank (protection\nbuyer) pays a fee to another (protection seller) to assume a portion of\ncredit risk on a reference counterparty.",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this RPA instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Agreement effective start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "maturity_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Agreement maturity date.",
+        "detail": "Must be after start_date."
+      },
+      {
+        "name": "reference_counterparty",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Identifier of the reference counterparty whose credit risk is shared.",
+        "detail": "e.g., LEI code or name of the reference entity."
+      },
+      {
+        "name": "participation_rate",
+        "type": "double precision",
+        "cpp_type": "double",
+        "nullable": false,
+        "description": "Participation rate (0, 1] representing the fraction of risk transferred.",
+        "detail": "Expressed as a decimal fraction (e.g., 0.5 for 50%).",
+        "default_value": "0.0"
+      },
+      {
+        "name": "protection_fee",
+        "type": "double precision",
+        "cpp_type": "std::optional<double>",
+        "nullable": false,
+        "description": "Optional protection fee paid by the buyer.",
+        "detail": "Expressed as a decimal fraction. Must be non-negative if set.",
+        "default_value": "std::nullopt"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_rpa_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "rpa_instrument",
+      "entity_plural_short": "rpa_instruments",
+      "entity_singular_words": "RPA instrument",
+      "entity_plural_words": "RPA instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "rp"
+    }
+  }
+}

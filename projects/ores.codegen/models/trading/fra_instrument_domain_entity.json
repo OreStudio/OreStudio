@@ -1,0 +1,126 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
+    "entity_singular": "fra_instrument",
+    "entity_plural": "fra_instruments",
+    "entity_title": "FRA Instrument",
+    "has_tenant_id": true,
+    "generator_facet_name": "generators",
+    "brief": "Forward Rate Agreement (FRA) instrument.",
+    "description": "Represents a Forward Rate Agreement instrument that fixes a future\ninterest rate for a notional principal amount over a specified period.",
+    "primary_key": {
+      "column": "instrument_id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this FRA instrument.",
+      "detail": "Surrogate key for the instrument record."
+    },
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this instrument.",
+        "detail": "Set from session variable app.current_party_id."
+      },
+      {
+        "name": "trade_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional soft FK to the parent trade.",
+        "detail": "Links instrument to a trade if applicable."
+      },
+      {
+        "name": "start_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "FRA start date.",
+        "detail": "ISO 8601 date string (YYYY-MM-DD)."
+      },
+      {
+        "name": "end_date",
+        "type": "date",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "FRA end date.",
+        "detail": "Must be after start_date."
+      },
+      {
+        "name": "currency",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "ISO 4217 currency code.",
+        "detail": "e.g., USD, EUR, GBP."
+      },
+      {
+        "name": "rate_index",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Floating rate index code.",
+        "detail": "e.g., LIBOR, EURIBOR, SOFR."
+      },
+      {
+        "name": "long_short",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Position direction: Long or Short.",
+        "detail": "Indicates whether the party is a buyer (Long) or seller (Short)."
+      },
+      {
+        "name": "strike",
+        "type": "double precision",
+        "cpp_type": "double",
+        "nullable": false,
+        "description": "Fixed contract rate.",
+        "detail": "Expressed as a decimal fraction.",
+        "default_value": "0.0"
+      },
+      {
+        "name": "notional",
+        "type": "double precision",
+        "cpp_type": "double",
+        "nullable": false,
+        "description": "Notional principal amount.",
+        "detail": "Must be positive.",
+        "default_value": "0.0"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description.",
+        "detail": "Human-readable notes about this instrument."
+      }
+    ],
+    "sql": {
+      "tablename": "ores_trading_fra_instruments_tbl"
+    },
+    "repository": {
+      "entity_singular_short": "fra_instrument",
+      "entity_plural_short": "fra_instruments",
+      "entity_singular_words": "FRA instrument",
+      "entity_plural_words": "FRA instruments"
+    },
+    "cpp": {
+      "includes": {
+        "domain": [
+          "<chrono>",
+          "<optional>",
+          "<string>",
+          "<boost/uuid/uuid.hpp>"
+        ]
+      },
+      "iterator_var": "fi"
+    }
+  }
+}

@@ -4,7 +4,7 @@
 #define ORES_{{component_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
 
 #include <vector>
-#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::{{component}}::{{generator_facet_name}} {
@@ -31,7 +31,7 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 #define ORES_{{component_upper}}_GENERATORS_{{name_singular_upper}}_GENERATOR_HPP
 
 #include <vector>
-#include "ores.{{component}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::{{component}}::generators {

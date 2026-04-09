@@ -1,6 +1,6 @@
 {{{cpp_license}}}
 {{#domain_entity}}
-#include "ores.{{component}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
+#include "ores.{{component_include}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -51,7 +51,7 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 }
 {{/domain_entity}}
 {{#junction}}
-#include "ores.{{component}}/generators/{{name_singular}}_generator.hpp"
+#include "ores.{{component_include}}/generators/{{name_singular}}_generator.hpp"
 
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid_io.hpp>

@@ -61,43 +61,43 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
 }
 
 QList<QMenu*> AnalyticsPlugin::create_menus() {
-    auto* menuAnalytics = new QMenu(tr("&Analytics"));
+    auto* menuPricing = new QMenu(tr("&Pricing"));
 
-    // ---- Pricing Models submenu -----------------------------------------
-    auto* menuPricingModels = menuAnalytics->addMenu(tr("&Pricing Models"));
-
-    auto* actPricingEngineTypes = menuPricingModels->addAction(
-        ico(Icon::Tag), tr("&Pricing Engine Types"));
-    connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
-        if (pricingEngineTypeController_)
-            pricingEngineTypeController_->showListWindow();
-    });
-
-    // ---- Configuration submenu ------------------------------------------
-    auto* menuConfig = menuAnalytics->addMenu(tr("&Configuration"));
-
-    auto* actModelConfigs = menuConfig->addAction(
+    // ---- Flat model configuration items at the top ----------------------
+    auto* actModelConfigs = menuPricing->addAction(
         ico(Icon::Chart), tr("Model &Configurations"));
     connect(actModelConfigs, &QAction::triggered, this, [this]() {
         if (pricingModelConfigController_)
             pricingModelConfigController_->showListWindow();
     });
 
-    auto* actModelProducts = menuConfig->addAction(
+    auto* actModelProducts = menuPricing->addAction(
         ico(Icon::Table), tr("Model &Products"));
     connect(actModelProducts, &QAction::triggered, this, [this]() {
         if (pricingModelProductController_)
             pricingModelProductController_->showListWindow();
     });
 
-    auto* actModelProductParameters = menuConfig->addAction(
+    auto* actModelProductParameters = menuPricing->addAction(
         ico(Icon::Settings), tr("Model Product &Parameters"));
     connect(actModelProductParameters, &QAction::triggered, this, [this]() {
         if (pricingModelProductParameterController_)
             pricingModelProductParameterController_->showListWindow();
     });
 
-    return {menuAnalytics};
+    menuPricing->addSeparator();
+
+    // ---- Pricing Codes submenu ------------------------------------------
+    auto* menuPricingCodes = menuPricing->addMenu(tr("Pricing &Codes"));
+
+    auto* actPricingEngineTypes = menuPricingCodes->addAction(
+        ico(Icon::Tag), tr("&Pricing Engine Types"));
+    connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
+        if (pricingEngineTypeController_)
+            pricingEngineTypeController_->showListWindow();
+    });
+
+    return {menuPricing};
 }
 
 void AnalyticsPlugin::on_logout() {

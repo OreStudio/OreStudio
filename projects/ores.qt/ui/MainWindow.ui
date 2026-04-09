@@ -38,9 +38,6 @@
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
     <addaction name="separator"/>
-    <addaction name="ActionMyAccount"/>
-    <addaction name="ActionMySessions"/>
-    <addaction name="separator"/>
     <addaction name="ExitAction"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
@@ -203,10 +200,10 @@
   </action>
   <action name="ActionShell">
    <property name="text">
-    <string>&amp;Shell...</string>
+    <string>&amp;Console...</string>
    </property>
    <property name="toolTip">
-    <string>Open an interactive command shell</string>
+    <string>Open an interactive console</string>
    </property>
   </action>
   <action name="ActionConnectionBrowser">

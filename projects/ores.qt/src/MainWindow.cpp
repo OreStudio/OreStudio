@@ -413,19 +413,60 @@ MainWindow::MainWindow(QWidget* parent) :
     // System, keeping System/Window/Help always last.
     auto* systemAction = ui_->menuSystem->menuAction();
 
+    // Pre-create the shared &Identity menu (before Reference Data).
+    auto* identityMenu = new QMenu(tr("&Identity"), this);
+    menuBar()->insertMenu(systemAction, identityMenu);
+    plugin_menus_.append(identityMenu);
+
     // Pre-create the shared &Reference Data menu so RefdataPlugin and
-    // PartyPlugin can both populate it during setup_menus().
+    // other plugins can populate it during setup_menus().
     auto* referenceDataMenu = new QMenu(tr("&Reference Data"), this);
     menuBar()->insertMenu(systemAction, referenceDataMenu);
     plugin_menus_.append(referenceDataMenu);
 
-    // Phase 1 — let plugins contribute to shared menus (System, Reference Data).
+    // Pre-create trading codes menu (NOT inserted directly; TradingPlugin
+    // appends it to its own Trading menu in create_menus()).
+    auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
+
+    // Pre-create data transfer menu (NOT inserted directly; DataTransferPlugin
+    // returns it from create_menus() so it appears in plugin load_order).
+    auto* dataTransferMenu = new QMenu(tr("&Data Transfer"), this);
+
+    // Phase 1 — let plugins contribute to shared menus.
     // Phase 2 — collect standalone menus returned by create_menus().
     // Phase 3 — wire signals and collect toolbar actions.
     const auto& plugins = PluginRegistry::instance().plugins();
 
+    shared_menus_context smc;
+    smc.system_menu        = ui_->menuSystem;
+    smc.reference_data_menu = referenceDataMenu;
+    smc.telemetry_menu     = ui_->menuTelemetry;
+    smc.identity_menu      = identityMenu;
+    smc.data_transfer_menu = dataTransferMenu;
+    smc.trading_codes_menu = tradingCodesMenu;
+
     for (auto* plugin : plugins)
-        plugin->setup_menus(ui_->menuSystem, referenceDataMenu, ui_->menuTelemetry);
+        plugin->setup_menus(smc);
+
+    // Prepend My Account / My Sessions to the Identity menu (after plugins
+    // have had a chance to add their items first).
+    auto* firstIdentityAction = identityMenu->actions().isEmpty()
+        ? nullptr : identityMenu->actions().first();
+    if (firstIdentityAction) {
+        auto* sep = new QAction(this);
+        sep->setSeparator(true);
+        identityMenu->insertAction(firstIdentityAction, sep);
+        identityMenu->insertAction(sep, ui_->ActionMySessions);
+        identityMenu->insertAction(ui_->ActionMySessions, ui_->ActionMyAccount);
+    } else {
+        identityMenu->addAction(ui_->ActionMyAccount);
+        identityMenu->addAction(ui_->ActionMySessions);
+    }
+
+    // Remove My Account / My Sessions from the File menu (they now live in
+    // Identity).
+    ui_->menuFile->removeAction(ui_->ActionMyAccount);
+    ui_->menuFile->removeAction(ui_->ActionMySessions);
 
     for (auto* plugin : plugins) {
         auto* pb = static_cast<PluginBase*>(plugin);

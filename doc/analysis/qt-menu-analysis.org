@@ -1,0 +1,666 @@
+#+TITLE: Qt Menu & Toolbar Structure — Analysis
+#+AUTHOR: Marco Craveiro
+#+DATE: 2026-04-09
+#+OPTIONS: toc:2 num:t
+
+* Overview
+
+This document captures the current state of the ORE Studio Qt application
+menu bar and toolbar, followed by a UX, discoverability, consistency, and
+idiomaticness analysis. The goal is to inform a future menu restructuring
+effort.
+
+Source files examined:
+- =projects/ores.qt/ui/MainWindow.ui=
+- =projects/ores.qt/src/MainWindow.cpp=
+- =projects/ores.qt.admin/src/AdminPlugin.cpp=
+- =projects/ores.qt.analytics/src/AnalyticsPlugin.cpp=
+- =projects/ores.qt.compute/src/ComputePlugin.cpp=
+- =projects/ores.qt.mktdata/src/MktdataPlugin.cpp=
+- =projects/ores.qt.party/src/PartyPlugin.cpp=
+- =projects/ores.qt.refdata/src/RefdataPlugin.cpp=
+- =projects/ores.qt.trading/src/TradingPlugin.cpp=
+
+* Current Menu Structure
+
+Menu bar order:
+=File | Reference Data | Analytics | Entities | Trading | Market Data | Compute | Reporting | System | Window | Help=
+
+** Architecture note
+
+=MainWindow.cpp= pre-creates the shared =&Reference Data= menu and inserts it
+before =&System=. Plugins then contribute in two phases:
+
+1. =setup_menus()= — populate shared menus (System, Reference Data, Telemetry)
+2. =create_menus()= — return standalone menus inserted before =&System=
+
+Plugin registration order determines the final menu bar order between
+=Reference Data= and =System=.
+
+** ASCII Tree
+
+#+begin_example
+Menu Bar
+├── &File
+│   ├── &Connections...                          [toolbar]
+│   ├── ─────
+│   ├── &Connect                                 [toolbar]
+│   ├── &Disconnect                              [toolbar]
+│   ├── ─────
+│   ├── &My Account...
+│   ├── My &Sessions...
+│   ├── ─────
+│   └── E&xit
+│
+├── &Reference Data
+│   ├── &Currencies                              [toolbar]
+│   ├── C&ountries                               [toolbar]
+│   ├── ─────
+│   ├── Trading &Conventions
+│   │   ├── &Day Count Fraction Types
+│   │   ├── &Business Day Convention Types
+│   │   ├── &Floating Index Types
+│   │   ├── &Payment Frequency Types
+│   │   └── &Leg Types
+│   ├── ─────
+│   ├── C&lassifications
+│   │   ├── Codin&g Schemes
+│   │   ├── Code &Domains
+│   │   └── Coding Scheme &Authority Types
+│   ├── Data Ca&talogue
+│   │   ├── &Data Domains
+│   │   ├── &Subject Areas
+│   │   ├── &Catalogs
+│   │   ├── Dataset &Bundles
+│   │   ├── &Methodologies
+│   │   ├── ─────
+│   │   ├── Data &Librarian                      [toolbar]
+│   │   ├── ─────
+│   │   └── &Dimensions
+│   │       ├── &Origin Dimensions
+│   │       ├── &Nature Dimensions
+│   │       └── &Treatment Dimensions
+│   ├── ─────
+│   ├── &Monetary Natures
+│   ├── &Rounding Types
+│   ├── &Purpose Types
+│   ├── ─────
+│   ├── Change Reason &Categories
+│   └── Change &Reasons
+│
+├── &Analytics
+│   ├── &Pricing Models
+│   │   └── &Pricing Engine Types
+│   └── &Configuration
+│       ├── Model &Configurations
+│       ├── Model &Products
+│       └── Model Product &Parameters
+│
+├── &Entities
+│   ├── &Parties                                 [toolbar]
+│   ├── &Counterparties                          [toolbar]
+│   ├── ─────
+│   ├── &Business Centres                        [toolbar]
+│   ├── Business &Units                          [toolbar]
+│   ├── ─────
+│   └── Entity &Types
+│       ├── Party &Types
+│       ├── Party &Statuses
+│       ├── Party &ID Schemes
+│       ├── &Contact Types
+│       └── Business Unit &Types
+│
+├── &Trading
+│   ├── &Portfolios                              [toolbar]
+│   ├── &Books                                   [toolbar]
+│   ├── Book &Statuses
+│   ├── ─────
+│   ├── &Portfolio Explorer                      [toolbar]
+│   ├── &Org Explorer                            [toolbar]
+│   ├── ─────
+│   ├── &Trades                                  [toolbar]
+│   ├── ─────
+│   └── &Import ORE Data...
+│
+├── &Market Data
+│   ├── Market &Series
+│   ├── Market &Fixings
+│   ├── ─────
+│   └── Currency Market &Tiers
+│
+├── &Compute
+│   ├── &Dashboard
+│   ├── &Console
+│   ├── ─────
+│   ├── &Apps
+│   └── App &Versions
+│
+├── &Reporting
+│   ├── Report &Types
+│   ├── &Concurrency Policies
+│   ├── ─────
+│   ├── Report &Definitions                      [toolbar]
+│   ├── Report &Instances                        [toolbar]
+│   ├── ─────
+│   └── &Job Definitions
+│
+├── &System
+│   ├── &Identity
+│   │   ├── &Accounts                            [toolbar]
+│   │   ├── &Roles
+│   │   ├── &Tenants                             [toolbar]
+│   │   ├── Tenant &Types
+│   │   ├── ─────
+│   │   └── &Onboard Tenant...
+│   ├── &Configuration
+│   │   ├── &System Settings                     [toolbar]
+│   │   ├── ─────
+│   │   ├── Badge &Definitions
+│   │   └── Badge &Severities
+│   ├── &Message Queue
+│   │   └── &Queue Monitor
+│   └── &Telemetry
+│       ├── &Service Dashboard...
+│       ├── ─────
+│       ├── &Log Viewer...
+│       ├── &Event Viewer...
+│       ├── &Shell...                            [toolbar]
+│       ├── ─────
+│       ├── &Protocol
+│       │   ├── &Record Session                  [checkable]
+│       │   ├── &Open Recording...
+│       │   ├── ─────
+│       │   └── Set Recording &Directory...
+│       ├── ─────
+│       └── &Settings...
+│
+├── &Window
+│   ├── &Detach All
+│   ├── ─────
+│   └── (dynamic window list)
+│
+└── &Help
+    └── &About
+#+end_example
+
+** Toolbar
+
+22 action buttons + 6 separators = 28 toolbar slots, left to right:
+
+#+begin_example
+Toolbar  (left → right)
+├── Connections...        [File]
+├── ─────
+├── Connect               [File]
+├── Disconnect            [File]
+├── ─────
+├── Shell...              [System > Telemetry]
+├── ─────
+├── Currencies            [Reference Data]
+├── Countries             [Reference Data]
+├── Data Librarian        [Reference Data > Data Catalogue]
+├── ─────
+├── Accounts              [System > Identity]
+├── Tenants               [System > Identity]
+├── System Settings       [System > Configuration]
+├── ─────
+├── Business Centres      [Entities]
+├── Parties               [Entities]
+├── Counterparties        [Entities]
+├── Business Units        [Entities]
+├── ─────
+├── Portfolios            [Trading]
+├── Books                 [Trading]
+├── Portfolio Explorer    [Trading]
+├── Org Explorer          [Trading]
+├── Trades                [Trading]
+├── ─────
+├── Report Definitions    [Reporting]
+└── Report Instances      [Reporting]
+#+end_example
+
+* Analysis
+
+** Toolbar — critically overcrowded
+
+28 slots, icon-only, no labels, no grouping headers. Most financial desktop
+applications (Bloomberg Terminal, Reuters Eikon) limit toolbars to 8–12 slots
+and rely on menus for everything else. At 22 buttons the toolbar is
+essentially a visual duplicate of the menus that adds noise rather than speed.
+
+Particular problems:
+- Refdata trio (Currencies, Countries, Data Librarian) are low-frequency
+  setup items that do not justify permanent toolbar real estate.
+- Shell is a developer/admin tool visible to all users at all times.
+- A user unfamiliar with the icons cannot locate =Org Explorer= or
+  =Data Librarian= without hovering every button.
+- No plugin (AnalyticsPlugin, MktdataPlugin) contributes zero toolbar
+  actions, creating an implicit two-tier system with no documented rationale.
+
+** Structural inconsistencies within menus
+
+| Menu          | Problem                                                          |
+|---------------+------------------------------------------------------------------|
+| Trading       | =Book Statuses= is a top-level item alongside primary entities.  |
+|               | Every other domain hides type/status enumerations in a           |
+|               | submenu (e.g. =Entities > Entity Types=). No submenu equivalent  |
+|               | exists for =Trading=.                                            |
+| Reference Data| Mixes leaf items (=Monetary Natures=, =Rounding Types=,          |
+|               | =Purpose Types=, =Change Reason Categories=, =Change Reasons=)   |
+|               | at the top level alongside three submenus. The bottom half       |
+|               | appears structurally inconsistent with the top.                  |
+| Compute       | =Apps= and =App Versions= live under Compute, but               |
+|               | =Job Definitions= (which schedules app executions) lives under   |
+|               | Reporting. The split is arbitrary.                               |
+| Analytics     | Only 4 leaf items total, split into two submenus of 1–3 items   |
+|               | each. Both submenus are shallow enough to be flat.               |
+| Market Data   | Thinnest top-level menu: 3 items, 1 separator, no submenus.      |
+|               | Could be a submenu of another domain.                            |
+
+** Conceptual boundary problems
+
+- *Analytics vs Compute*: Pricing models, configurations, and products
+  (Analytics menu) are the inputs to computation jobs (Compute menu).
+  Separating them at the top level forces users to navigate two menus to
+  complete a single workflow.
+
+- *Reporting vs Compute*: =Job Definitions= lives in Reporting but is a
+  scheduling concern closer to Compute. Meanwhile Compute has =Apps= and
+  =App Versions= — the execution units for reports. The boundary is
+  arbitrary from a user perspective.
+
+- *Data Librarian placement*: Data Librarian has a toolbar button, marking
+  it as a primary workflow tool. Yet its menu location is 4 levels deep:
+  =Reference Data > Data Catalogue > [separator] > Data Librarian=. Depth
+  contradicts importance.
+
+- *Shell in Telemetry*: Shell is a developer/admin tool. Its presence in
+  =System > Telemetry= alongside Log Viewer and Event Viewer is reasonable
+  from an implementation perspective, but it also has a permanent toolbar
+  button, making it visible and one-click accessible for all users including
+  non-technical ones.
+
+- *Service Dashboard vs Compute Dashboard*: =Compute > Dashboard= shows
+  the compute workload; =System > Telemetry > Service Dashboard= shows
+  service health. Both are dashboards, both are compute-adjacent, separated
+  across two menus. The label distinction is insufficient for a new user.
+
+** File menu mixing unrelated concerns
+
+=File= contains connection management (Connections, Connect, Disconnect),
+user account management (My Account, My Sessions), and application exit. In
+standard desktop UX, =File= is for document/session-level operations.
+
+- Connect/Disconnect are borderline acceptable in File.
+- =My Account= and =My Sessions= are user-profile concerns and belong in a
+  dedicated =Account= or =Profile= menu, or under a logged-in username
+  widget in the toolbar or status bar.
+
+** Naming inconsistencies
+
+| Issue                          | Details                                      |
+|--------------------------------+----------------------------------------------|
+| Exit vs Quit                   | File menu says "Exit"; system tray says      |
+|                                | "Quit". Should be consistent.                |
+| Console vs Shell               | =Compute > Console= and                      |
+|                                | =System > Telemetry > Shell= are both        |
+|                                | interactive terminals. Distinction unclear.  |
+| Service Dashboard vs Dashboard | =Compute > Dashboard= vs                     |
+|                                | =System > Telemetry > Service Dashboard=.    |
+|                                | Both are dashboards, both compute-related,   |
+|                                | separated across two menus.                  |
+| Catalog vs Catalogue           | Submenu is "Data Ca&talogue" (British) but   |
+|                                | its child item is "&Catalogs" (American).    |
+
+** No keyboard shortcuts
+
+Zero =Ctrl+= shortcuts are defined anywhere in the application. For a
+financial back-office tool where users switch between Portfolios, Trades,
+Market Data, and Reports many times per day, this is a significant
+productivity gap. Standard desktop idiom expects at minimum:
+- =Ctrl+W= or =Ctrl+F4= to close an MDI window
+- =Ctrl+Q= to quit
+- Domain-specific shortcuts for the highest-frequency windows
+
+* Scheduler: missing top-level domain
+
+The scheduler backend (=ores.scheduler.*=) is fully implemented but has no
+dedicated menu. Currently =Job Definitions= is the only exposed item and it
+lives under =Reporting=. This is wrong: scheduling is a cross-domain concern
+that will drive report runs, trade expiry, housekeeping, data archival, and
+future scheduled workflows. It should have its own top-level =&Scheduler= menu
+between =Reporting= and =System=:
+
+#+begin_example
+&Scheduler
+├── &Job Definitions        ← move from Reporting > Job Definitions
+├── &Job Instances          ← missing Qt controller/window; backend exists
+├── ─────
+└── &Monitor                ← missing: live view of running jobs,
+                                   next-fire times, queue depth
+#+end_example
+
+See sprint backlog 16 story "Scheduler: complete Qt UI and promote to
+top-level menu" for implementation tasks.
+
+* Proposed Menu Structure
+
+** Naming rationale
+
+*** The "auxiliary types" problem
+
+Every domain in the system contains two distinct layers:
+
+1. *Primary objects* — the things users create and manage daily: Parties,
+   Portfolios, Trades, Report Definitions, Job Definitions, etc.
+
+2. *Controlled vocabularies* — pre-seeded code tables that classify the primary
+   objects: Party Types, Party Statuses, Book Statuses, Pricing Engine Types,
+   Report Types, Concurrency Policies, Monetary Natures, Rounding Types, etc.
+
+These are a well-recognised category in financial systems. The naming
+options — with pros and cons — are:
+
+| Candidate      | Used by                        | Pros                                    | Cons                                              |
+|----------------+--------------------------------+-----------------------------------------+---------------------------------------------------|
+| *Setup*        | SAP, some SaaS apps            | Clear intent; separates from daily work | Feels transient; implies one-time not ongoing     |
+| *Codes*        | FpML, ISO 20022, SWIFT         | Short; aligns with codelist standards   | Sounds like programming to non-technical users    |
+| *Maintenance*  | Murex, Calypso, Temenos T24,   | Historically accurate; signals          | Old-fashioned; suggests IT rather than user work  |
+|                | Finastra Fusion, most legacy   | "edit occasionally"                     |                                                   |
+|                | banking systems                |                                         |                                                   |
+| *Attributes*   | Bloomberg Terminal             | Short; professional; Bloomberg idiom    | "Party Attributes" sounds odd to some             |
+| *Configuration*| Many enterprise apps           | Accurate                                | Already used in System > Configuration            |
+| *Reference*    | Generic                        | Short; professional                     | Already the top-level menu name                   |
+| *Parameters*   | Some trading systems           | Used in domain (Trading Parameters)     | "Organisation Parameters" feels unnatural         |
+| *Static Data*  | Goldman, most IB systems       | Most precise financial term             | Jargon; implies data never changes                |
+| *Types*        | —                              | Short                                   | Severely overloaded — every item already has      |
+|                |                                |                                         | "Types" in its name                               |
+
+The strongest candidates in this codebase's context:
+- *Codes* — FpML-aligned, short, professional, scales consistently across all
+  domains: "Organisation Codes", "Trading Codes", "Pricing Codes", "Reporting Codes".
+- *Maintenance* — the most historically accurate financial term; every major
+  legacy platform uses it for exactly this category of tables.
+- *Attributes* — Bloomberg idiom; short and unambiguous.
+
+The current tree uses =Setup= as a placeholder pending a decision. The chosen
+name should be applied uniformly across all domain submenus.
+
+*** Entities → Organisation
+
+"Entities" is too abstract and from a data-modelling perspective, not a user
+concept. The menu contains parties, counterparties, business centres, and
+business units — all organisational structures. "Organisation" is the
+idiomatic term in FpML and ISDA CDM for this category.
+
+*** Identity top-level menu
+
+=System > Identity= (Accounts, Roles, Tenants, Tenant Types, Onboard Tenant)
+plus =File > My Account= / =My Sessions= are all IAM concerns. Elevating them
+to a top-level =&Identity= menu removes account management from =File= (where
+it does not belong) and surfaces tenant management outside of =System=
+(where it is buried from tenant admins). "Identity" is preferred over
+"Accounts" because the menu also contains Roles and Tenants — not just accounts.
+
+*** External data menu
+
+=Import ORE Data= does not belong in =File= (which should be app operations
+only) or in =Trading= (import is not a trading operation). A top-level
+=&External= menu groups all inbound connectivity concerns together and provides
+a natural home for future Bloomberg/Reuters/SWIFT feeds.
+
+The Data Catalogue (Data Domains, Subject Areas, Catalogues, Dataset Bundles,
+Methodologies, Dimensions) exists solely to support the DQ pipeline — it
+defines the structural taxonomy within which the Data Librarian operates.
+A financial user doing trades or running reports never touches it. It belongs
+in =&Data Transfer= alongside the Librarian, not in =&Reference Data= which
+is a domain term covering financial reference data (currencies, countries,
+trading conventions). The Dimensions sub-submenu is also eliminated; Origin,
+Nature, and Treatment Dimensions are peers of the other catalogue items and
+sit at the same level.
+
+*** Compute = grid only
+
+Analytics/Pricing models are *inputs* to the compute grid, not part of grid
+infrastructure. =&Compute= is reduced to grid execution concerns (Dashboard,
+Console, Apps, App Versions). A new top-level =&Pricing= menu holds model
+configuration.
+
+*** Purpose Types relocation
+
+=purpose_type= (Hedging, Trading, Investment) classifies portfolio purpose —
+portfolios belong to the Trading domain. It currently lives in Reference Data
+as a loose item, which is architecturally wrong. It is moved to
+=Trading Codes=.
+
+*** Shell → Console
+
+=Compute > Console= and =System > Telemetry > Shell= both open interactive
+terminals. "Console" is the more idiomatic term and is already used elsewhere;
+"Shell" implies OS-level access which may alarm non-technical users. Rename
+=Shell= to =Console= throughout.
+
+** Proposed ASCII tree
+
+Menu bar order:
+=File | Identity | Reference Data | Organisation | Trading | Market Data | Pricing | Reporting | Scheduler | Data Transfer | Compute | System | Window | Help=
+
+Items marked =(*open*)= are decisions to confirm before implementation.
+=Codes= submenus are placeholders — final name to be decided (see naming rationale).
+
+#+begin_example
+Menu Bar
+├── &File
+│   ├── &Connections...                          [toolbar]
+│   ├── ─────
+│   ├── &Connect                                 [toolbar]
+│   ├── &Disconnect                              [toolbar]
+│   ├── ─────
+│   └── E&xit
+│
+├── &Identity                                    ← NEW top-level; absorbs System > Identity
+│   ├── &My Account...                           ← moved from File
+│   ├── My &Sessions...                          ← moved from File
+│   ├── ─────
+│   ├── &Accounts
+│   ├── &Roles
+│   ├── ─────
+│   ├── &Tenants
+│   ├── Tenant &Types
+│   ├── ─────
+│   └── &Onboard Tenant...
+│
+├── &Reference Data
+│   ├── &Currencies                              [toolbar]
+│   ├── C&ountries                               [toolbar]
+│   ├── ─────
+│   ├── Trading &Conventions
+│   │   ├── &Day Count Fraction Types
+│   │   ├── &Business Day Convention Types
+│   │   ├── &Floating Index Types
+│   │   ├── &Payment Frequency Types
+│   │   └── &Leg Types
+│   ├── C&lassifications
+│   │   ├── Codin&g Schemes
+│   │   ├── Code &Domains
+│   │   └── Coding Scheme &Authority Types
+│   ├── ─────
+│   ├── Currency &Codes                          ← placeholder name; see naming rationale
+│   │   ├── &Monetary Natures
+│   │   └── &Rounding Types
+│   └── &Audit Trail
+│       ├── Change Reason &Categories
+│       └── Change &Reasons
+│
+├── &Organisation                                ← renamed from Entities
+│   ├── &Parties                                 [toolbar]
+│   ├── &Counterparties                          [toolbar]
+│   ├── ─────
+│   ├── &Business Centres                        [toolbar]
+│   ├── Business &Units                          [toolbar]
+│   ├── ─────
+│   └── Organisation &Codes                      ← renamed from Entity Types
+│       ├── Party &Types
+│       ├── Party &Statuses
+│       ├── Party &ID Schemes
+│       ├── &Contact Types
+│       └── Business Unit &Types
+│
+├── &Trading
+│   ├── &Portfolios                              [toolbar]
+│   ├── &Books                                   [toolbar]
+│   ├── ─────
+│   ├── &Portfolio Explorer                      [toolbar]
+│   ├── &Org Explorer                            [toolbar]
+│   ├── ─────
+│   ├── &Trades                                  [toolbar]
+│   ├── ─────
+│   └── Trading &Codes                           ← was orphan Book Statuses; Purpose Types moved here
+│       ├── Book &Statuses
+│       └── &Purpose Types                       ← moved from Reference Data (classifies portfolios)
+│
+├── &Market Data
+│   ├── Market &Series
+│   ├── Market &Fixings
+│   ├── ─────
+│   └── Currency Market &Tiers
+│
+├── &Pricing                                     ← NEW top-level; Analytics dissolved
+│   ├── Model &Configurations
+│   ├── Model &Products
+│   ├── Model Product &Parameters
+│   ├── ─────
+│   └── Pricing &Codes
+│       └── &Pricing Engine Types
+│
+├── &Reporting
+│   ├── Report &Definitions                      [toolbar]
+│   ├── Report &Instances                        [toolbar]
+│   ├── ─────
+│   └── Reporting &Codes                         ← config items demoted below primary objects
+│       ├── Report &Types
+│       └── &Concurrency Policies
+│
+├── &Scheduler                                   ← NEW top-level
+│   ├── &Job Definitions                         ← moved from Reporting
+│   ├── &Job Instances                           ← new (backend exists, no Qt yet)
+│   ├── ─────
+│   └── &Monitor                                 ← new (live queue/next-fire view)
+│
+├── &Data Transfer                               ← NEW top-level; data in/out of production tables
+│   ├── &Import ORE Data...                      ← moved from Trading
+│   ├── ─────
+│   ├── Data &Librarian                          ← moved from Reference Data > Data Catalogue
+│   └── Data Ca&talogue                          ← pipeline setup; belongs with Librarian workflow
+│       ├── &Data Domains
+│       ├── &Subject Areas
+│       ├── &Catalogues
+│       ├── Dataset &Bundles
+│       ├── &Methodologies
+│       ├── ─────
+│       ├── &Origin Dimensions
+│       ├── &Nature Dimensions
+│       └── &Treatment Dimensions
+│
+├── &Compute                                     ← grid only; Pricing models moved out
+│   ├── &Dashboard
+│   ├── &Console
+│   ├── ─────
+│   ├── &Apps
+│   └── App &Versions
+│
+├── &System
+│   ├── &Configuration                           ← Identity submenu removed (now top-level)
+│   │   ├── &System Settings
+│   │   ├── ─────
+│   │   ├── Badge &Definitions
+│   │   └── Badge &Severities
+│   ├── &Message Queue
+│   │   └── &Queue Monitor
+│   └── &Telemetry
+│       ├── &Service Dashboard...
+│       ├── ─────
+│       ├── &Log Viewer...
+│       ├── &Event Viewer...
+│       ├── &Console...                          ← renamed from Shell
+│       ├── ─────
+│       ├── &Protocol
+│       │   ├── &Record Session                  [checkable]
+│       │   ├── &Open Recording...
+│       │   ├── ─────
+│       │   └── Set Recording &Directory...
+│       ├── ─────
+│       └── &Settings...
+│
+├── &Window
+│   ├── &Detach All
+│   ├── ─────
+│   └── (dynamic window list)
+│
+└── &Help
+    └── &About
+
+
+Toolbar  (proposed — reduced from 22 to 10 actions)
+├── Connections...        [File]
+├── ─────
+├── Connect               [File]
+├── Disconnect            [File]
+├── ─────
+├── Parties               [Organisation]
+├── Portfolios            [Trading]
+├── Trades                [Trading]
+├── ─────
+├── Report Definitions    [Reporting]
+└── Report Instances      [Reporting]
+#+end_example
+
+** Open questions
+
+1. =(*open*)= *Auxiliary types submenu name*: "Codes" is used as a placeholder
+   throughout. To be revisited — other candidates: *Maintenance* (classic
+   banking term; Murex/Calypso/Temenos), *Attributes* (Bloomberg idiom).
+   The chosen name applies uniformly to all domain submenus: Currency Codes,
+   Organisation Codes, Trading Codes, Pricing Codes, Reporting Codes.
+
+2. =(*open*)= *Identity vs Accounts*: "Identity" accurately covers accounts,
+   roles, and tenants. "Accounts" would be simpler and more approachable.
+   Which is preferred?
+
+3. =(*open*)= *Data Catalogue placement*: Currently proposed under =Data Transfer=
+   alongside the Librarian, on the grounds that both serve the same DQ
+   pipeline workflow. Alternative: keep it in =Reference Data= as it is
+   structural taxonomy for the system, not a data movement operation.
+
+4. =(*open*)= *Toolbar scope*: The proposed toolbar drops 12 buttons from the
+   current 22. Confirm which (if any) of the removed items warrant
+   reinstatement: Currencies, Countries, Accounts, Tenants, System Settings,
+   Business Centres, Counterparties, Business Units, Books, Portfolio
+   Explorer, Org Explorer, Data Librarian.
+
+5. =(*open*)= *Shell vs Console*: Are =Compute > Console= and
+   =System > Telemetry > Shell= the same tool (rename Shell → Console) or
+   two distinct tools that should keep distinct names?
+
+6. =(*open*)= *Catalogue spelling*: Standardise on British "Catalogue"
+   throughout or American "Catalog"?
+
+* Proposed Changes (to be detailed)
+
+Items identified for a future restructuring pass:
+
+1. Collapse toolbar to 8–10 slots (Connect/Disconnect, the 3–4 most-used
+   domain windows, Shell removed or hidden behind a developer mode).
+2. Move =My Account= / =My Sessions= out of File.
+3. Standardise Trading with a =Book Types= submenu, mirroring =Entity Types=.
+4. Merge Analytics into Compute, or rename both under a single
+   =Models & Compute= top-level menu.
+5. Move =Job Definitions= from Reporting to Compute.
+6. Promote Data Librarian: move it out of =Data Catalogue= to the top level
+   of =Reference Data= or give it its own menu section.
+7. Rationalise the thin bottom of Reference Data (Monetary Natures,
+   Rounding Types, Purpose Types, Change Reason Categories, Change Reasons)
+   into a named submenu.
+8. Rename Shell consistently (either Console everywhere or Shell everywhere).
+9. Align Exit/Quit across menu and system tray.
+10. Define =Ctrl+= shortcuts for the 6–8 most-used windows.

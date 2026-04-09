@@ -100,55 +100,57 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 
 }
 
-void AdminPlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/,
-                               QMenu* telemetry_menu) {
-    // Insert Identity and Configuration BEFORE Telemetry to preserve the
-    // pre-refactor order: Identity, Configuration, [Message Queue], Telemetry.
-    auto* telemetryAction = telemetry_menu->menuAction();
+void AdminPlugin::setup_menus(const shared_menus_context& smc) {
+    // ---- Identity menu (top-level, pre-created by MainWindow) ---------------
+    if (smc.identity_menu) {
+        act_accounts_ = smc.identity_menu->addAction(
+            ico(Icon::PersonAccounts), tr("&Accounts"));
+        connect(act_accounts_, &QAction::triggered, this,
+            [this]() { if (accountController_) accountController_->showListWindow(); });
 
-    // ---- System > Identity -----------------------------------------------
-    auto* identity = new QMenu(tr("&Identity"), system_menu);
-    system_menu->insertMenu(telemetryAction, identity);
+        auto* actRoles = smc.identity_menu->addAction(tr("&Roles"));
+        connect(actRoles, &QAction::triggered, this,
+            [this]() { if (roleController_) roleController_->showListWindow(); });
 
-    act_accounts_ = identity->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
-    connect(act_accounts_, &QAction::triggered, this,
-        [this]() { if (accountController_) accountController_->showListWindow(); });
+        smc.identity_menu->addSeparator();
 
-    auto* actRoles = identity->addAction(tr("&Roles"));
-    connect(actRoles, &QAction::triggered, this,
-        [this]() { if (roleController_) roleController_->showListWindow(); });
+        act_tenants_ = smc.identity_menu->addAction(
+            ico(Icon::BuildingSkyscraper), tr("&Tenants"));
+        connect(act_tenants_, &QAction::triggered, this,
+            [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
-    act_tenants_ = identity->addAction(ico(Icon::BuildingSkyscraper), tr("&Tenants"));
-    connect(act_tenants_, &QAction::triggered, this,
-        [this]() { if (tenantController_) tenantController_->showListWindow(); });
+        auto* actTenantTypes = smc.identity_menu->addAction(tr("Tenant &Types"));
+        connect(actTenantTypes, &QAction::triggered, this,
+            [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
 
-    auto* actTenantTypes = identity->addAction(tr("Tenant &Types"));
-    connect(actTenantTypes, &QAction::triggered, this,
-        [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
+        smc.identity_menu->addSeparator();
 
-    identity->addSeparator();
-
-    auto* actOnboardTenant = identity->addAction(tr("&Onboard Tenant..."));
-    connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
+        auto* actOnboardTenant = smc.identity_menu->addAction(tr("&Onboard Tenant..."));
+        connect(actOnboardTenant, &QAction::triggered,
+                this, &AdminPlugin::show_onboarding_wizard);
+    }
 
     // ---- System > Configuration ------------------------------------------
-    auto* config = new QMenu(tr("&Configuration"), system_menu);
-    system_menu->insertMenu(telemetryAction, config);
+    if (smc.system_menu && smc.telemetry_menu) {
+        auto* telemetryAction = smc.telemetry_menu->menuAction();
+        auto* config = new QMenu(tr("&Configuration"), smc.system_menu);
+        smc.system_menu->insertMenu(telemetryAction, config);
 
-    act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
-    connect(act_system_settings_, &QAction::triggered, this,
-        [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
+        act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
+        connect(act_system_settings_, &QAction::triggered, this,
+            [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
-    config->addSeparator();
+        config->addSeparator();
 
-    auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
-    connect(actBadgeDefs, &QAction::triggered, this,
-        [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
+        auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
+        connect(actBadgeDefs, &QAction::triggered, this,
+            [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
 
-    auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
-    connect(actBadgeSevs, &QAction::triggered, this,
-        [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
-    // Apps and App Versions live in the Compute menu (see ComputePlugin).
+        auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
+        connect(actBadgeSevs, &QAction::triggered, this,
+            [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
+        // Apps and App Versions live in the Compute menu (see ComputePlugin).
+    }
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {

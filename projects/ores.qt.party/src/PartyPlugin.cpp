@@ -98,7 +98,7 @@ QList<QMenu*> PartyPlugin::create_menus() {
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
-    auto* menuEntities = new QMenu(tr("&Entities"));
+    auto* menuEntities = new QMenu(tr("&Organisation"));
 
     act_parties_ = menuEntities->addAction(ico(Icon::Organization), tr("&Parties"));
     connect(act_parties_, &QAction::triggered, this, [this]() {
@@ -123,8 +123,8 @@ QList<QMenu*> PartyPlugin::create_menus() {
 
     menuEntities->addSeparator();
 
-    // Entity type tables — consistent naming replacing the old "Auxiliary Types"
-    auto* menuEntityTypes = menuEntities->addMenu(tr("Entity &Types"));
+    // Organisation code tables
+    auto* menuEntityTypes = menuEntities->addMenu(tr("Organisation &Codes"));
     auto* actPartyTypes = menuEntityTypes->addAction(ico(Icon::Tag), tr("Party &Types"));
     connect(actPartyTypes, &QAction::triggered, this, [this]() {
         if (partyTypeController_) partyTypeController_->showListWindow();

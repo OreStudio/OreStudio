@@ -31,7 +31,6 @@
 #include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
-#include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/QueueMonitorController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
@@ -101,11 +100,6 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
     connect(serviceDashboardController_.get(), &ServiceDashboardController::detachableWindowDestroyed,
             this, &PluginBase::windowDestroyed);
 
-    jobDefinitionController_ = std::make_unique<JobDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, this);
-    connectControllerSignals(jobDefinitionController_.get());
-
     queueMonitorController_ = std::make_unique<QueueMonitorController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(queueMonitorController_.get());
@@ -132,13 +126,15 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 
 }
 
-void ComputePlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu*/,
-                                QMenu* telemetry_menu) {
-    auto* telemetryAction = telemetry_menu->menuAction();
+void ComputePlugin::setup_menus(const shared_menus_context& smc) {
+    if (!smc.system_menu || !smc.telemetry_menu)
+        return;
+
+    auto* telemetryAction = smc.telemetry_menu->menuAction();
 
     // ---- System > Message Queue (before Telemetry) -----------------------
-    auto* msgQueue = new QMenu(tr("&Message Queue"), system_menu);
-    system_menu->insertMenu(telemetryAction, msgQueue);
+    auto* msgQueue = new QMenu(tr("&Message Queue"), smc.system_menu);
+    smc.system_menu->insertMenu(telemetryAction, msgQueue);
 
     auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
     connect(actQueueMonitor, &QAction::triggered, this, [this]() {
@@ -146,8 +142,8 @@ void ComputePlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu
     });
 
     // ---- System > Telemetry > Service Dashboard (first item) ------------
-    auto* firstTelemetryAction = telemetry_menu->actions().isEmpty()
-        ? nullptr : telemetry_menu->actions().first();
+    auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty()
+        ? nullptr : smc.telemetry_menu->actions().first();
 
     auto* actServiceDashboard = new QAction(ico(Icon::Chart), tr("&Service Dashboard..."), this);
     connect(actServiceDashboard, &QAction::triggered, this, [this]() {
@@ -155,12 +151,12 @@ void ComputePlugin::setup_menus(QMenu* system_menu, QMenu* /*reference_data_menu
     });
 
     if (firstTelemetryAction) {
-        telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
+        smc.telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
         auto* sep = new QAction(this);
         sep->setSeparator(true);
-        telemetry_menu->insertAction(firstTelemetryAction, sep);
+        smc.telemetry_menu->insertAction(firstTelemetryAction, sep);
     } else {
-        telemetry_menu->addAction(actServiceDashboard);
+        smc.telemetry_menu->addAction(actServiceDashboard);
     }
 }
 
@@ -195,19 +191,6 @@ QList<QMenu*> ComputePlugin::create_menus() {
     // ---- Reporting (inserted before Compute in the menu bar) ------------
     auto* menuReporting = new QMenu(tr("&Reporting"));
 
-    auto* actReportTypes = menuReporting->addAction(ico(Icon::Chart), tr("Report &Types"));
-    connect(actReportTypes, &QAction::triggered, this, [this]() {
-        if (reportTypeController_) reportTypeController_->showListWindow();
-    });
-
-    auto* actConcurrencyPolicies = menuReporting->addAction(
-        ico(Icon::Settings), tr("&Concurrency Policies"));
-    connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
-        if (concurrencyPolicyController_) concurrencyPolicyController_->showListWindow();
-    });
-
-    menuReporting->addSeparator();
-
     act_report_definitions_ = menuReporting->addAction(
         ico(Icon::ChartMultiple), tr("Report &Definitions"));
     connect(act_report_definitions_, &QAction::triggered, this, [this]() {
@@ -221,13 +204,23 @@ QList<QMenu*> ComputePlugin::create_menus() {
 
     menuReporting->addSeparator();
 
-    auto* actJobDefs = menuReporting->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
-    connect(actJobDefs, &QAction::triggered, this, [this]() {
-        if (jobDefinitionController_) jobDefinitionController_->showListWindow();
+    // ---- Reporting Codes submenu ----------------------------------------
+    auto* menuReportingCodes = menuReporting->addMenu(tr("Reporting &Codes"));
+
+    auto* actReportTypes = menuReportingCodes->addAction(ico(Icon::Chart), tr("Report &Types"));
+    connect(actReportTypes, &QAction::triggered, this, [this]() {
+        if (reportTypeController_) reportTypeController_->showListWindow();
     });
 
-    menus.append(menuCompute);
+    auto* actConcurrencyPolicies = menuReportingCodes->addAction(
+        ico(Icon::Settings), tr("&Concurrency Policies"));
+    connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
+        if (concurrencyPolicyController_) concurrencyPolicyController_->showListWindow();
+    });
+
+    // Return Reporting before Compute so Reporting appears first in the menu bar.
     menus.append(menuReporting);
+    menus.append(menuCompute);
 
     return menus;
 }
@@ -242,7 +235,6 @@ void ComputePlugin::on_logout() {
     concurrencyPolicyController_.reset();
     reportTypeController_.reset();
     queueMonitorController_.reset();
-    jobDefinitionController_.reset();
     serviceDashboardController_.reset();
     computeConsoleController_.reset();
     computeDashboardController_.reset();

@@ -266,6 +266,30 @@ exception
 end;
 $$ language plpgsql stable;
 
+-- Set the party context for the current session.
+-- Computes the visible party set (given party and all its descendants in the
+-- party hierarchy) and writes it to app.visible_party_ids so that all
+-- party-isolation RLS policies apply correctly for the remainder of the
+-- session.  Call this once per party before a batch of party-scoped DML.
+-- Raises an exception if the party does not exist in the tenant.
+create or replace function ores_iam_set_party_context_fn(
+    p_tenant_id uuid,
+    p_party_id  uuid
+) returns void as $$
+declare
+    v_ids uuid[];
+begin
+    v_ids := ores_refdata_visible_party_ids_fn(p_tenant_id, p_party_id);
+    if v_ids is null or array_length(v_ids, 1) = 0 then
+        raise exception 'Party % not found in tenant %', p_party_id, p_tenant_id
+            using errcode = '23503';
+    end if;
+    perform set_config('app.visible_party_ids',
+        '{' || array_to_string(v_ids, ',') || '}',
+        false);
+end;
+$$ language plpgsql security definer;
+
 -- Generic trigger function to set tenant_id from session variable on insert.
 -- Used by tables that don't have their own complex insert triggers.
 create or replace function ores_iam_set_tenant_id_on_insert_fn()

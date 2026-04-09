@@ -84,6 +84,16 @@ public:
      */
     std::string db_user();
 
+    /**
+     * @brief Switches the context to party-scoped isolation.
+     *
+     * Resolves the visible party set for the given party (the party and all
+     * its descendants) and rebuilds the internal context with
+     * app.visible_party_ids set on each connection. Call this once per test
+     * after finding the target party, before any party-isolated reads/writes.
+     */
+    void set_party(const boost::uuids::uuid& party_id);
+
 private:
     database::context context_;
 };

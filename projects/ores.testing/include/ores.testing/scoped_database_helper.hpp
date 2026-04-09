@@ -71,6 +71,16 @@ public:
      */
     std::string db_user() { return helper_.db_user(); }
 
+    /**
+     * @brief Switches the context to party-scoped isolation.
+     *
+     * Delegates to database_helper::set_party(). Call once per test after
+     * finding the target party, before any party-isolated reads/writes.
+     */
+    void set_party(const boost::uuids::uuid& party_id) {
+        helper_.set_party(party_id);
+    }
+
 private:
     database_helper helper_;
 };

@@ -109,6 +109,7 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
         if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
     }
     party_repo.write(party);
+    h.set_party(party.id);
 
     auto written_party_contact_informations =
         generate_synthetic_party_contact_informations(3, ctx);
@@ -143,6 +144,7 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
         if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
     }
     party_repo.write(party);
+    h.set_party(party.id);
 
     auto pci = generate_synthetic_party_contact_information(ctx);
     pci.change_reason_code = "system.test";

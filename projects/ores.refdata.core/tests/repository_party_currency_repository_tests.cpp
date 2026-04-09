@@ -130,6 +130,8 @@ TEST_CASE("read_latest_party_currencies_by_party", tags) {
 
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
+    h.set_party(system_party_id);
+
     auto gctx = ores::testing::make_generation_context(h);
     auto test_currency = generate_synthetic_currency(gctx);
     cur_repo.write(h.context(), test_currency);
@@ -163,6 +165,8 @@ TEST_CASE("read_latest_party_currencies_by_currency", tags) {
 
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
+    h.set_party(system_party_id);
+
     auto gctx = ores::testing::make_generation_context(h);
     auto test_currency = generate_synthetic_currency(gctx);
     cur_repo.write(h.context(), test_currency);

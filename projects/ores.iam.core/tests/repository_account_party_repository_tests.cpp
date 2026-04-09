@@ -122,7 +122,6 @@ TEST_CASE("read_latest_account_parties", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    account_party_repository repo(h.context());
     party_repository party_repo(h.context());
     const auto system_party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
@@ -144,6 +143,12 @@ TEST_CASE("read_latest_account_parties", tags) {
     }
 
     BOOST_LOG_SEV(lg, debug) << "Written account parties: " << written;
+
+    // Set party context after child parties exist so the visible set includes
+    // all descendants of system_party_id (the 3 newly created parties).
+    // Construct repo after set_party so its stored context has party IDs.
+    h.set_party(system_party_id);
+    account_party_repository repo(h.context());
     repo.write(written);
 
     auto read_aps = repo.read_latest();
@@ -160,10 +165,13 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     auto ctx = ores::testing::make_generation_context(h);
 
     account_repository acc_repo(h.context());
-    account_party_repository repo(h.context());
     party_repository party_repo(h.context());
     const auto party_id = find_system_party_id(
         party_repo, h.tenant_id().to_string());
+
+    // Construct repo after set_party so its stored context has party IDs.
+    h.set_party(party_id);
+    account_party_repository repo(h.context());
 
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);

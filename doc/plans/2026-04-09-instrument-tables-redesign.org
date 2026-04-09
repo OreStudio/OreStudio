@@ -919,32 +919,47 @@ RLS on each underlying table propagates through the view automatically.
 
 * Implementation Tasks
 
-** Phase 0 — Cleanup current branch
+** Phase 0 — Cleanup current branch [DONE — branch: feature/trading-instruments-party-id]
 
-- [ ] Revert the =party_id= additions to the old subtables on
-  =feature/trading-instruments-party-id= (they will reappear correctly on
-  the new standalone tables).
-- [ ] Drop the current common instruments table DDL and all SQL that
-  references it.
-- [ ] Remove =instrument_entity.hpp=, =instrument.hpp=, =instrument_mapper.cpp=
-  from C++.
-- [ ] Remove =ores_trading_instruments_tbl= RLS policies and notify trigger.
+- [X] Revert the =party_id= additions to the old subtables on
+  =feature/trading-instruments-party-id= (superseded: old common table deleted
+  entirely; =party_id= lives on the new standalone tables).
+- [X] Drop the current common instruments table DDL and all SQL that
+  references it. (commit: =307b26c77=)
+- [X] Remove =instrument_entity.hpp=, =instrument.hpp=, =instrument_mapper.cpp=
+  and all related C++ infrastructure (json_io, table_io, generator, repository,
+  service). (commit: =ea24755c5=)
+- [X] Remove =ores_trading_instruments_tbl= RLS policies and notify trigger.
+  (included in =307b26c77= / =67d74d62c=)
 
-** Phase 1 — Rates instruments
+** Phase 1 — Rates instruments [DONE — branch: feature/trading-instruments-party-id]
 
-- [ ] =ores_trading_vanilla_swap_instruments_tbl= DDL, trigger, RLS, notify
-- [ ] =ores_trading_cap_floor_instruments_tbl= same
-- [ ] =ores_trading_swaption_instruments_tbl= same
-- [ ] =ores_trading_fra_instruments_tbl= same
-- [ ] =ores_trading_balance_guaranteed_swap_instruments_tbl= same
-- [ ] =ores_trading_callable_swap_instruments_tbl= same
-- [ ] =ores_trading_knock_out_swap_instruments_tbl= same
-- [ ] =ores_trading_inflation_swap_instruments_tbl= same
-- [ ] =ores_trading_risk_participation_agreement_instruments_tbl= same
-- [ ] =ores_trading_swap_legs_tbl= — remove parent FK reference to old common
-  table; =instrument_id= now is an application-level reference
-- [ ] C++ domain types, entities, mappers for all rates types
-- [ ] Roundtrip tests against ORE XML samples for each type
+- [X] =ores_trading_vanilla_swap_instruments_tbl= DDL, trigger, RLS, notify
+- [X] =ores_trading_cap_floor_instruments_tbl= same
+- [X] =ores_trading_swaption_instruments_tbl= same
+- [X] =ores_trading_fra_instruments_tbl= same
+- [X] =ores_trading_balance_guaranteed_swap_instruments_tbl= same
+- [X] =ores_trading_callable_swap_instruments_tbl= same
+- [X] =ores_trading_knock_out_swap_instruments_tbl= same
+- [X] =ores_trading_inflation_swap_instruments_tbl= same
+- [X] =ores_trading_risk_participation_agreement_instruments_tbl= same
+  (all nine tables: commit =e11a846b4=; drop scripts: =c93c1d04a=)
+- [X] =ores_trading_swap_legs_tbl= — remove parent FK reference to old common
+  table; =instrument_id= now is an application-level reference (commit =307b26c77=)
+- [X] C++ domain types, entities, mappers for all rates types (commit =3fa682bec=)
+- [X] =rates_instrument_handler= covering all 9 types (36 NATS methods: list /
+  save / remove / history × 9); =instrument_protocol.hpp= updated with per-type
+  request/response structs and =rates_instrument_variant= (commit =42b29ea66=)
+- [X] =instrument_service= replaced by 9 per-type services with service-layer
+  pagination (commit =42b29ea66=)
+- [X] =swap_instrument_mapper= updated to produce/consume =rates_instrument_variant=;
+  =trade_mapper= and =exporter= / =importer= updated accordingly (commit =42b29ea66=)
+- [X] =SwapInstrumentForm= migrated from generic =instrument_= member to flat
+  =SwapFormState=; load/save dispatch by =trade_type_code= (commit =42b29ea66=)
+- [X] =OreImporter= and =ImportTradeDialog= updated to dispatch per-type save
+  requests (commit =42b29ea66=)
+- [ ] Roundtrip tests against ORE XML samples for each type (partial — IR and
+  swaption tests updated; full per-type coverage still needed)
 
 ** Phase 2 — FX instruments
 
@@ -995,8 +1010,8 @@ RLS on each underlying table propagates through the view automatically.
 
 * Open Issues
 
-- =FlexiSwap= — ORE type not yet analysed for field structure; add to rates
-  during Phase 1 analysis.
+- =FlexiSwap= — Resolved: treated as =vanilla_swap_instrument= (same economic
+  structure); discriminated by =trade_type_code= at handler/mapper level.
 - =CreditLinkedSwap= — credit-linked note embedded in an IRS. Rates or
   credit table? Needs ORE XML analysis.
 - =Ascot= — insurance/reinsurance structured product. Low priority; park
@@ -1008,3 +1023,8 @@ RLS on each underlying table propagates through the view automatically.
 - =EquityOutperformanceOption= — outperformance on two underlyings. Needs
   its own table (two =underlying_name= columns, a spread strike). Deferred
   to Phase 3 analysis.
+- =SwapInstrumentForm= dead widgets — =fraFixingDateEdit= and
+  =fraSettlementDateEdit= have no corresponding domain fields and always show
+  empty; =lockoutDaysSpinBox= is wired to zero but =lockout_days= is a real
+  field on =balance_guaranteed_swap_instrument= that should be added to
+  =SwapFormState= and wired up. Clean up during UI polish pass.

@@ -96,6 +96,28 @@
 \ir ./trading_fx_instruments_create.sql
 \ir ./trading_fx_instruments_notify_trigger_create.sql
 
+-- Per-type FX instrument tables (Phase 2)
+\ir ./trading_fx_forward_instruments_create.sql
+\ir ./trading_fx_forward_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_vanilla_option_instruments_create.sql
+\ir ./trading_fx_vanilla_option_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_barrier_option_instruments_create.sql
+\ir ./trading_fx_barrier_option_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_digital_option_instruments_create.sql
+\ir ./trading_fx_digital_option_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_asian_forward_instruments_create.sql
+\ir ./trading_fx_asian_forward_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_accumulator_instruments_create.sql
+\ir ./trading_fx_accumulator_instruments_notify_trigger_create.sql
+
+\ir ./trading_fx_variance_swap_instruments_create.sql
+\ir ./trading_fx_variance_swap_instruments_notify_trigger_create.sql
+
 -- Bond instruments (depends on reference data above)
 \ir ./trading_bond_instruments_create.sql
 \ir ./trading_bond_instruments_notify_trigger_create.sql

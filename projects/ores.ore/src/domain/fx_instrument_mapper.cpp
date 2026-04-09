@@ -25,7 +25,13 @@
 namespace ores::ore::domain {
 
 using namespace ores::logging;
-using ores::trading::domain::fx_instrument;
+using ores::trading::domain::fx_forward_instrument;
+using ores::trading::domain::fx_vanilla_option_instrument;
+using ores::trading::domain::fx_barrier_option_instrument;
+using ores::trading::domain::fx_digital_option_instrument;
+using ores::trading::domain::fx_asian_forward_instrument;
+using ores::trading::domain::fx_accumulator_instrument;
+using ores::trading::domain::fx_variance_swap_instrument;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -33,19 +39,19 @@ using ores::trading::domain::fx_instrument;
 
 namespace {
 
-fx_instrument make_base(const std::string& trade_type_code) {
-    fx_instrument r;
-    r.trade_type_code = trade_type_code;
-    r.modified_by = "ores";
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
-    return r;
+constexpr const char* k_modified_by     = "ores";
+constexpr const char* k_performed_by    = "ores";
+constexpr const char* k_change_reason   = "system.external_data_import";
+constexpr const char* k_change_comment  = "Imported from ORE XML";
+
+void set_audit(auto& r) {
+    r.modified_by       = k_modified_by;
+    r.performed_by      = k_performed_by;
+    r.change_reason_code = k_change_reason;
+    r.change_commentary  = k_change_comment;
 }
 
 currencyCode parse_currency_code(const std::string& s) {
-    // Reuse the same exhaustive map as swap_instrument_mapper.
-    // Defined here to avoid a shared-header dependency.
     static const std::map<std::string, currencyCode> map = {
         {"AED", currencyCode::AED}, {"AFN", currencyCode::AFN},
         {"ALL", currencyCode::ALL}, {"AMD", currencyCode::AMD},
@@ -152,179 +158,6 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
-} // namespace
-
-// ---------------------------------------------------------------------------
-// Forward: FxForward
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_forward(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxForward: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxForward");
-
-    if (!t.FxForwardData) return result;
-    const auto& fwd = *t.FxForwardData;
-
-    result.instrument.value_date    = std::string(fwd.ValueDate);
-    result.instrument.bought_currency = to_string(fwd.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(fwd.BoughtAmount);
-    result.instrument.sold_currency   = to_string(fwd.SoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(fwd.SoldAmount);
-    if (fwd.Settlement)
-        result.instrument.settlement = to_string(*fwd.Settlement);
-
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: FxSwap
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_swap(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxSwap: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxSwap");
-
-    if (!t.FxSwapData) return result;
-    const auto& sw = *t.FxSwapData;
-
-    // Map near leg; far leg amounts are a known coverage gap.
-    result.instrument.value_date      = std::string(sw.NearDate);
-    result.instrument.bought_currency = to_string(sw.NearBoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(sw.NearBoughtAmount);
-    result.instrument.sold_currency   = to_string(sw.NearSoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(sw.NearSoldAmount);
-    if (sw.Settlement)
-        result.instrument.settlement  = to_string(*sw.Settlement);
-
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: FxOption
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_option(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxOption: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxOption");
-
-    if (!t.FxOptionData) return result;
-    const auto& opt = *t.FxOptionData;
-
-    result.instrument.bought_currency = to_string(opt.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(opt.BoughtAmount);
-    result.instrument.sold_currency   = to_string(opt.SoldCurrency);
-    if (opt.SoldAmount)
-        result.instrument.sold_amount = static_cast<double>(*opt.SoldAmount);
-
-    const auto& od = opt.OptionData;
-    if (od.OptionType)
-        result.instrument.option_type = std::string(*od.OptionType);
-    if (od.Settlement)
-        result.instrument.settlement  = to_string(*od.Settlement);
-
-    // Expiry date from first ExerciseDate
-    if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates &&
-            !od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        result.instrument.expiry_date =
-            std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
-
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxForward
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_forward(const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxForward";
-
-    trade t;
-    t.TradeType = oreTradeType::FxForward;
-
-    fxForwardData fwd;
-    static_cast<std::string&>(fwd.ValueDate)  = instr.value_date.value_or("");
-    fwd.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(fwd.BoughtAmount)     = static_cast<float>(instr.bought_amount);
-    fwd.SoldCurrency   = parse_currency_code(instr.sold_currency);
-    static_cast<float&>(fwd.SoldAmount)       = static_cast<float>(instr.sold_amount);
-
-    t.FxForwardData = std::move(fwd);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxSwap
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_swap(const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxSwap";
-
-    trade t;
-    t.TradeType = oreTradeType::FxSwap;
-
-    fxSwapData sw;
-    static_cast<std::string&>(sw.NearDate)     = instr.value_date.value_or("");
-    sw.NearBoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(sw.NearBoughtAmount)   = static_cast<float>(instr.bought_amount);
-    sw.NearSoldCurrency   = parse_currency_code(instr.sold_currency);
-    static_cast<float&>(sw.NearSoldAmount)     = static_cast<float>(instr.sold_amount);
-    // Far leg: not captured in forward mapping — round-trip as empty date/zero amounts.
-    static_cast<std::string&>(sw.FarDate)      = "";
-    static_cast<float&>(sw.FarBoughtAmount)    = 0.0f;
-    static_cast<float&>(sw.FarSoldAmount)      = 0.0f;
-
-    t.FxSwapData = std::move(sw);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxOption
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_option(const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxOption";
-
-    trade t;
-    t.TradeType = oreTradeType::FxOption;
-
-    fxOptionData opt;
-    opt.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(opt.BoughtAmount) = static_cast<float>(instr.bought_amount);
-    opt.SoldCurrency   = parse_currency_code(instr.sold_currency);
-    if (instr.sold_amount != 0.0)
-        opt.SoldAmount = static_cast<float>(instr.sold_amount);
-
-    if (!instr.option_type.empty()) {
-        optionData_OptionType_t ot;
-        static_cast<std::string&>(ot) = instr.option_type;
-        opt.OptionData.OptionType = std::move(ot);
-    }
-    if (!instr.expiry_date.empty()) {
-        _ExerciseDates_t ed;
-        domain::date d;
-        static_cast<std::string&>(d) = instr.expiry_date;
-        ed.ExerciseDate.push_back(d);
-        exerciseDatesGroup_group_t edg;
-        edg.ExerciseDates = std::move(ed);
-        opt.OptionData.exerciseDatesGroup = std::move(edg);
-    }
-
-    t.FxOptionData = std::move(opt);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Phase 6 helpers
-// ---------------------------------------------------------------------------
-
-namespace {
-
 std::string option_type_from_vec(const xsd::vector<optionData>& v) {
     if (v.empty()) return {};
     if (v.front().OptionType) return std::string(*v.front().OptionType);
@@ -347,18 +180,28 @@ std::string expiry_date_from_single(const optionData& od) {
     return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
 }
 
-optionData make_fx_option_entry(const fx_instrument& instr) {
+std::string exercise_style_from_vec(const xsd::vector<optionData>& v) {
+    if (v.empty()) return "European";
+    // If ExerciseDates is present it implies European; American exercise uses
+    // ExerciseSchedule. We default to European as that is far more common.
+    return "European";
+}
+
+// Build an OptionData element from option_type + expiry_date strings.
+optionData make_option_entry(const std::string& option_type,
+                              const std::string& expiry_date,
+                              const std::string& long_short = "Long") {
     optionData od;
-    static_cast<std::string&>(od.LongShort) = "Long";
-    if (!instr.option_type.empty()) {
+    static_cast<std::string&>(od.LongShort) = long_short;
+    if (!option_type.empty()) {
         optionData_OptionType_t ot;
-        static_cast<std::string&>(ot) = instr.option_type;
+        static_cast<std::string&>(ot) = option_type;
         od.OptionType = std::move(ot);
     }
-    if (!instr.expiry_date.empty()) {
+    if (!expiry_date.empty()) {
         _ExerciseDates_t ed;
         date dt;
-        static_cast<std::string&>(dt) = instr.expiry_date;
+        static_cast<std::string&>(dt) = expiry_date;
         ed.ExerciseDate.push_back(dt);
         exerciseDatesGroup_group_t edg;
         edg.ExerciseDates = std::move(ed);
@@ -405,287 +248,556 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type,
     return b;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Forward: FxForward
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_forward(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxForward: "
+                               << std::string(t.id);
+    fx_forward_instrument r;
+    r.trade_type_code = "FxForward";
+    set_audit(r);
+    if (!t.FxForwardData) return {r};
+    const auto& fwd = *t.FxForwardData;
+
+    r.value_date      = std::string(fwd.ValueDate);
+    r.bought_currency = to_string(fwd.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(fwd.BoughtAmount);
+    r.sold_currency   = to_string(fwd.SoldCurrency);
+    r.sold_amount     = static_cast<double>(fwd.SoldAmount);
+    if (fwd.Settlement)
+        r.settlement  = to_string(*fwd.Settlement);
+
+    return {r};
+}
+
+// ===========================================================================
+// Forward: FxSwap
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxSwap: "
+                               << std::string(t.id);
+    fx_forward_instrument r;
+    r.trade_type_code = "FxSwap";
+    set_audit(r);
+    if (!t.FxSwapData) return {r};
+    const auto& sw = *t.FxSwapData;
+
+    // Near leg only; far leg is a documented coverage gap.
+    r.value_date      = std::string(sw.NearDate);
+    r.bought_currency = to_string(sw.NearBoughtCurrency);
+    r.bought_amount   = static_cast<double>(sw.NearBoughtAmount);
+    r.sold_currency   = to_string(sw.NearSoldCurrency);
+    r.sold_amount     = static_cast<double>(sw.NearSoldAmount);
+    if (sw.Settlement)
+        r.settlement  = to_string(*sw.Settlement);
+
+    return {r};
+}
+
+// ===========================================================================
+// Forward: FxOption
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_option(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxOption: "
+                               << std::string(t.id);
+    fx_vanilla_option_instrument r;
+    r.trade_type_code = "FxOption";
+    set_audit(r);
+    if (!t.FxOptionData) return {r};
+    const auto& opt = *t.FxOptionData;
+
+    r.bought_currency = to_string(opt.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(opt.BoughtAmount);
+    r.sold_currency   = to_string(opt.SoldCurrency);
+    if (opt.SoldAmount)
+        r.sold_amount = static_cast<double>(*opt.SoldAmount);
+
+    const auto& od = opt.OptionData;
+    if (od.OptionType)
+        r.option_type   = std::string(*od.OptionType);
+    if (od.Settlement)
+        r.settlement    = to_string(*od.Settlement);
+    r.exercise_style    = "European"; // default; American not detected here
+    r.expiry_date       = expiry_date_from_vec(
+        xsd::vector<optionData>{od});
+
+    return {r};
+}
+
+// ===========================================================================
 // Forward: FxBarrierOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxBarrierOption: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxBarrierOption");
-    if (!t.FxBarrierOptionData) return result;
+    fx_barrier_option_instrument r;
+    r.trade_type_code = "FxBarrierOption";
+    set_audit(r);
+    if (!t.FxBarrierOptionData) return {r};
     const auto& d = *t.FxBarrierOptionData;
 
-    result.instrument.bought_currency = to_string(d.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
-    result.instrument.sold_currency   = to_string(d.SoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
+    r.bought_currency = to_string(d.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(d.BoughtAmount);
+    r.sold_currency   = to_string(d.SoldCurrency);
+    r.sold_amount     = static_cast<double>(d.SoldAmount);
+    r.option_type     = option_type_from_vec(d.OptionData);
+    r.expiry_date     = expiry_date_from_vec(d.OptionData);
 
     if (!d.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
+        r.barrier_type = to_string(d.BarrierData.front().Type);
         if (!d.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.BarrierData.front().Levels.Level.front());
+            r.lower_barrier = static_cast<double>(
+                d.BarrierData.front().Levels.Level.front());
         if (d.BarrierData.size() > 1 &&
                 !d.BarrierData[1].Levels.Level.empty())
-            result.instrument.upper_barrier =
-                static_cast<double>(d.BarrierData[1].Levels.Level.front());
+            r.upper_barrier = static_cast<double>(
+                d.BarrierData[1].Levels.Level.front());
     }
-    return result;
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Forward: FxDoubleBarrierOption
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_double_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: "
+                               << std::string(t.id);
+    fx_barrier_option_instrument r;
+    r.trade_type_code = "FxDoubleBarrierOption";
+    set_audit(r);
+    if (!t.FxDoubleBarrierOptionData) return {r};
+    const auto& d = *t.FxDoubleBarrierOptionData;
+
+    r.bought_currency = to_string(d.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(d.BoughtAmount);
+    r.sold_currency   = to_string(d.SoldCurrency);
+    r.sold_amount     = static_cast<double>(d.SoldAmount);
+    r.option_type     = option_type_from_vec(d.OptionData);
+    r.expiry_date     = expiry_date_from_vec(d.OptionData);
+
+    if (!d.BarrierData.empty()) {
+        r.barrier_type = to_string(d.BarrierData.front().Type);
+        if (!d.BarrierData.front().Levels.Level.empty())
+            r.lower_barrier = static_cast<double>(
+                d.BarrierData.front().Levels.Level.front());
+        if (d.BarrierData.size() > 1 &&
+                !d.BarrierData[1].Levels.Level.empty())
+            r.upper_barrier = static_cast<double>(
+                d.BarrierData[1].Levels.Level.front());
+    }
+    return {r};
+}
+
+// ===========================================================================
+// Forward: FxEuropeanBarrierOption
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_european_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: "
+                               << std::string(t.id);
+    fx_barrier_option_instrument r;
+    r.trade_type_code = "FxEuropeanBarrierOption";
+    set_audit(r);
+    if (!t.FxEuropeanBarrierOptionData) return {r};
+    const auto& d = *t.FxEuropeanBarrierOptionData;
+
+    r.bought_currency = to_string(d.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(d.BoughtAmount);
+    r.sold_currency   = to_string(d.SoldCurrency);
+    r.sold_amount     = static_cast<double>(d.SoldAmount);
+    r.option_type     = option_type_from_vec(d.OptionData);
+    r.expiry_date     = expiry_date_from_vec(d.OptionData);
+
+    if (!d.BarrierData.empty()) {
+        r.barrier_type = to_string(d.BarrierData.front().Type);
+        if (!d.BarrierData.front().Levels.Level.empty())
+            r.lower_barrier = static_cast<double>(
+                d.BarrierData.front().Levels.Level.front());
+        if (d.BarrierData.size() > 1 &&
+                !d.BarrierData[1].Levels.Level.empty())
+            r.upper_barrier = static_cast<double>(
+                d.BarrierData[1].Levels.Level.front());
+    }
+    return {r};
+}
+
+// ===========================================================================
+// Forward: FxKIKOBarrierOption
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_kiko_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: "
+                               << std::string(t.id);
+    fx_barrier_option_instrument r;
+    r.trade_type_code = "FxKIKOBarrierOption";
+    set_audit(r);
+    if (!t.FxKIKOBarrierOptionData) return {r};
+    const auto& d = *t.FxKIKOBarrierOptionData;
+
+    r.bought_currency = to_string(d.BoughtCurrency);
+    r.bought_amount   = static_cast<double>(d.BoughtAmount);
+    r.sold_currency   = to_string(d.SoldCurrency);
+    r.sold_amount     = static_cast<double>(d.SoldAmount);
+    if (d.OptionData.OptionType)
+        r.option_type = std::string(*d.OptionData.OptionType);
+    r.expiry_date     = expiry_date_from_single(d.OptionData);
+
+    if (!d.Barriers.BarrierData.empty()) {
+        r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
+        if (!d.Barriers.BarrierData.front().Levels.Level.empty())
+            r.lower_barrier = static_cast<double>(
+                d.Barriers.BarrierData.front().Levels.Level.front());
+        if (d.Barriers.BarrierData.size() > 1 &&
+                !d.Barriers.BarrierData[1].Levels.Level.empty())
+            r.upper_barrier = static_cast<double>(
+                d.Barriers.BarrierData[1].Levels.Level.front());
+    }
+    return {r};
+}
+
+// ===========================================================================
+// Forward: FxGenericBarrierOption
+// ===========================================================================
+
+fx_mapping_result fx_instrument_mapper::forward_fx_generic_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxGenericBarrierOption: "
+                               << std::string(t.id);
+    fx_barrier_option_instrument r;
+    r.trade_type_code = "FxGenericBarrierOption";
+    set_audit(r);
+    if (!t.FxGenericBarrierOptionData) return {r};
+    const auto& d = *t.FxGenericBarrierOptionData;
+
+    if (d.underlyingTypes.Name)
+        r.underlying_code = std::string(*d.underlyingTypes.Name);
+    else if (d.underlyingTypes.Underlying)
+        r.underlying_code = std::string(d.underlyingTypes.Underlying->Name);
+
+    r.bought_currency = to_string(d.PayCurrency);
+    if (d.OptionData.OptionType)
+        r.option_type   = std::string(*d.OptionData.OptionType);
+    r.expiry_date       = expiry_date_from_single(d.OptionData);
+
+    if (!d.Barriers.BarrierData.empty()) {
+        r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
+        if (!d.Barriers.BarrierData.front().Levels.Level.empty())
+            r.lower_barrier = static_cast<double>(
+                d.Barriers.BarrierData.front().Levels.Level.front());
+        if (d.Barriers.BarrierData.size() > 1 &&
+                !d.Barriers.BarrierData[1].Levels.Level.empty())
+            r.upper_barrier = static_cast<double>(
+                d.Barriers.BarrierData[1].Levels.Level.front());
+    }
+    return {r};
+}
+
+// ===========================================================================
 // Forward: FxDigitalOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_digital_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalOption: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxDigitalOption");
-    if (!t.FxDigitalOptionData) return result;
+    fx_digital_option_instrument r;
+    r.trade_type_code = "FxDigitalOption";
+    r.long_short      = "Long";
+    set_audit(r);
+    if (!t.FxDigitalOptionData) return {r};
     const auto& d = *t.FxDigitalOptionData;
 
-    result.instrument.bought_currency = to_string(d.ForeignCurrency);
-    result.instrument.sold_currency   = to_string(d.DomesticCurrency);
-    result.instrument.strike_price    = static_cast<double>(d.Strike);
-    result.instrument.notional        = static_cast<double>(d.PayoffAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
-    return result;
+    r.foreign_currency = to_string(d.ForeignCurrency);
+    r.domestic_currency = to_string(d.DomesticCurrency);
+    r.payoff_currency  = to_string(d.ForeignCurrency); // defaults to foreign
+    r.strike           = static_cast<double>(d.Strike);
+    r.payoff_amount    = static_cast<double>(d.PayoffAmount);
+    r.option_type      = option_type_from_vec(d.OptionData);
+    r.expiry_date      = expiry_date_from_vec(d.OptionData);
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxDigitalBarrierOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_digital_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalBarrierOption: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxDigitalBarrierOption");
-    if (!t.FxDigitalBarrierOptionData) return result;
+    fx_digital_option_instrument r;
+    r.trade_type_code = "FxDigitalBarrierOption";
+    r.long_short      = "Long";
+    set_audit(r);
+    if (!t.FxDigitalBarrierOptionData) return {r};
     const auto& d = *t.FxDigitalBarrierOptionData;
 
-    result.instrument.bought_currency = to_string(d.ForeignCurrency);
-    result.instrument.sold_currency   = to_string(d.DomesticCurrency);
-    result.instrument.strike_price    = static_cast<double>(d.Strike);
-    result.instrument.notional        = static_cast<double>(d.PayoffAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
+    r.foreign_currency  = to_string(d.ForeignCurrency);
+    r.domestic_currency = to_string(d.DomesticCurrency);
+    r.payoff_currency   = to_string(d.ForeignCurrency);
+    r.strike            = static_cast<double>(d.Strike);
+    r.payoff_amount     = static_cast<double>(d.PayoffAmount);
+    r.option_type       = option_type_from_vec(d.OptionData);
+    r.expiry_date       = expiry_date_from_vec(d.OptionData);
 
     if (!d.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
+        r.barrier_type = to_string(d.BarrierData.front().Type);
         if (!d.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.BarrierData.front().Levels.Level.front());
+            r.lower_barrier = static_cast<double>(
+                d.BarrierData.front().Levels.Level.front());
     }
-    return result;
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxTouchOption / FxDoubleTouchOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_touch_option(
         const trade& t) {
     const std::string type_str = to_string(t.TradeType);
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping " << type_str << ": "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base(type_str);
+    fx_digital_option_instrument r;
+    r.trade_type_code = type_str;
+    r.long_short      = "Long";
+    set_audit(r);
 
     const fxTouchOptionData* dp = nullptr;
-    if (t.FxTouchOptionData) dp = &(*t.FxTouchOptionData);
+    if (t.FxTouchOptionData)       dp = &(*t.FxTouchOptionData);
     else if (t.FxDoubleTouchOptionData) dp = &(*t.FxDoubleTouchOptionData);
-    if (!dp) return result;
+    if (!dp) return {r};
     const auto& d = *dp;
 
-    result.instrument.bought_currency = to_string(d.ForeignCurrency);
-    result.instrument.sold_currency   = to_string(d.DomesticCurrency);
-    result.instrument.notional        = static_cast<double>(d.PayoffAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
+    r.foreign_currency  = to_string(d.ForeignCurrency);
+    r.domestic_currency = to_string(d.DomesticCurrency);
+    r.payoff_currency   = to_string(d.PayoffCurrency);
+    r.payoff_amount     = static_cast<double>(d.PayoffAmount);
+    r.expiry_date       = expiry_date_from_vec(d.OptionData);
 
     if (!d.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
+        r.barrier_type = to_string(d.BarrierData.front().Type);
         if (!d.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.BarrierData.front().Levels.Level.front());
+            r.lower_barrier = static_cast<double>(
+                d.BarrierData.front().Levels.Level.front());
         if (d.BarrierData.size() > 1 &&
                 !d.BarrierData[1].Levels.Level.empty())
-            result.instrument.upper_barrier =
-                static_cast<double>(d.BarrierData[1].Levels.Level.front());
+            r.upper_barrier = static_cast<double>(
+                d.BarrierData[1].Levels.Level.front());
     }
-    return result;
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxVarianceSwap
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_variance_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxVarianceSwap: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxVarianceSwap");
-    if (!t.FxVarianceSwapData) return result;
+    fx_variance_swap_instrument r;
+    r.trade_type_code = "FxVarianceSwap";
+    r.long_short      = "Long";
+    set_audit(r);
+    if (!t.FxVarianceSwapData) return {r};
     const auto& d = *t.FxVarianceSwapData;
 
     if (d.underlyingTypes.Name)
-        result.instrument.underlying_code = std::string(*d.underlyingTypes.Name);
+        r.underlying_code = std::string(*d.underlyingTypes.Name);
     else if (d.underlyingTypes.Underlying)
-        result.instrument.underlying_code =
-            std::string(d.underlyingTypes.Underlying->Name);
+        r.underlying_code = std::string(d.underlyingTypes.Underlying->Name);
 
-    result.instrument.start_date      = std::string(d.StartDate);
-    result.instrument.expiry_date     = std::string(d.EndDate);
-    result.instrument.variance_strike = static_cast<double>(d.Strike);
-    result.instrument.notional        = static_cast<double>(d.Notional);
-    result.instrument.bought_currency = to_string(d.Currency);
-    return result;
+    r.start_date = std::string(d.StartDate);
+    r.end_date   = std::string(d.EndDate);
+    r.strike     = static_cast<double>(d.Strike);
+    r.notional   = static_cast<double>(d.Notional);
+    r.currency   = to_string(d.Currency);
+    r.moment_type = "Variance"; // default; MomentType element not always present
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxAverageForward
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_average_forward(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAverageForward: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxAverageForward");
-    if (!t.FxAverageForwardData) return result;
+    fx_asian_forward_instrument r;
+    r.trade_type_code = "FxAverageForward";
+    set_audit(r);
+    if (!t.FxAverageForwardData) return {r};
     const auto& d = *t.FxAverageForwardData;
 
-    result.instrument.value_date      = std::string(d.PaymentDate);
-    result.instrument.bought_currency = to_string(d.ReferenceCurrency);
-    result.instrument.bought_amount   = static_cast<double>(d.ReferenceNotional);
-    result.instrument.sold_currency   = to_string(d.SettlementCurrency);
-    result.instrument.sold_amount     = static_cast<double>(d.SettlementNotional);
-    result.instrument.underlying_code = std::string(d.FXIndex);
-    return result;
+    r.payment_date        = std::string(d.PaymentDate);
+    r.reference_currency  = to_string(d.ReferenceCurrency);
+    r.reference_notional  = static_cast<double>(d.ReferenceNotional);
+    r.settlement_currency = to_string(d.SettlementCurrency);
+    r.settlement_notional = static_cast<double>(d.SettlementNotional);
+    r.fx_index            = std::string(d.FXIndex);
+    r.long_short          = "Long";
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxAccumulator
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_accumulator(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAccumulator: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxAccumulator");
-    if (!t.FxAccumulatorData) return result;
+    fx_accumulator_instrument r;
+    r.trade_type_code = "FxAccumulator";
+    r.long_short      = "Long";
+    set_audit(r);
+    if (!t.FxAccumulatorData) return {r};
     const auto& d = *t.FxAccumulatorData;
 
-    result.instrument.bought_currency    = to_string(d.Currency);
-    result.instrument.underlying_code    = std::string(d.Underlying.Name);
-    result.instrument.accumulation_amount = static_cast<double>(d.FixingAmount);
+    r.currency          = to_string(d.Currency);
+    r.underlying_code   = std::string(d.Underlying.Name);
+    r.fixing_amount     = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
+        r.strike        = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.expiry_date = expiry_date_from_single(d.OptionData);
+        r.start_date    = std::string(*d.StartDate);
 
     if (d.Barriers) {
         for (const auto& bd : d.Barriers->BarrierData) {
             const auto btype = to_string(bd.Type);
             if ((btype == "DownAndOut" || btype == "UpAndOut") &&
                     !bd.Levels.Level.empty()) {
-                result.instrument.knock_out_barrier =
+                r.knock_out_barrier =
                     static_cast<double>(bd.Levels.Level.front());
                 break;
             }
         }
     }
-    return result;
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Forward: FxTaRF
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 fx_mapping_result fx_instrument_mapper::forward_fx_tarf(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxTaRF: "
                                << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxTaRF");
-    if (!t.FxTaRFData) return result;
+    fx_asian_forward_instrument r;
+    r.trade_type_code = "FxTaRF";
+    set_audit(r);
+    if (!t.FxTaRFData) return {r};
     const auto& d = *t.FxTaRFData;
 
-    result.instrument.bought_currency    = to_string(d.Currency);
-    result.instrument.underlying_code    = std::string(d.Underlying.Name);
-    result.instrument.accumulation_amount = static_cast<double>(d.FixingAmount);
+    r.currency     = to_string(d.Currency);
+    r.fx_index     = std::string(d.Underlying.Name);
+    r.fixing_amount = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
-    result.instrument.expiry_date = expiry_date_from_single(d.OptionData);
+        r.strike   = static_cast<double>(*d.Strike);
 
+    // Target amount (profit cap) if present
     for (const auto& bd : d.Barriers.BarrierData) {
         const auto btype = to_string(bd.Type);
-        if ((btype == "KnockOut" || btype == "FixingCap") &&
+        if ((btype == "CumulatedProfitCap" || btype == "FixingCap") &&
                 !bd.Levels.Level.empty()) {
-            result.instrument.knock_out_barrier =
-                static_cast<double>(bd.Levels.Level.front());
+            r.target_amount = static_cast<double>(bd.Levels.Level.front());
             break;
         }
     }
-    return result;
+    return {r};
 }
 
-// ---------------------------------------------------------------------------
-// Forward: FxGenericBarrierOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Reverse: FxForward
+// ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_generic_barrier_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxGenericBarrierOption: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxGenericBarrierOption");
-    if (!t.FxGenericBarrierOptionData) return result;
-    const auto& d = *t.FxGenericBarrierOptionData;
+trade fx_instrument_mapper::reverse_fx_forward(
+        const fx_forward_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxForward";
+    trade t;
+    t.TradeType = oreTradeType::FxForward;
 
-    if (d.underlyingTypes.Name)
-        result.instrument.underlying_code = std::string(*d.underlyingTypes.Name);
-    else if (d.underlyingTypes.Underlying)
-        result.instrument.underlying_code =
-            std::string(d.underlyingTypes.Underlying->Name);
+    fxForwardData fwd;
+    static_cast<std::string&>(fwd.ValueDate)  = instr.value_date;
+    fwd.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    static_cast<float&>(fwd.BoughtAmount)     = static_cast<float>(instr.bought_amount);
+    fwd.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    static_cast<float&>(fwd.SoldAmount)       = static_cast<float>(instr.sold_amount);
 
-    result.instrument.bought_currency = to_string(d.PayCurrency);
-    if (d.OptionData.OptionType)
-        result.instrument.option_type = std::string(*d.OptionData.OptionType);
-    result.instrument.expiry_date = expiry_date_from_single(d.OptionData);
+    t.FxForwardData = std::move(fwd);
+    return t;
+}
 
-    if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
-    if (d.Amount)
-        result.instrument.notional = static_cast<double>(*d.Amount);
+// ===========================================================================
+// Reverse: FxSwap
+// ===========================================================================
 
-    if (!d.Barriers.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
-        if (!d.Barriers.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.Barriers.BarrierData.front().Levels.Level.front());
+trade fx_instrument_mapper::reverse_fx_swap(
+        const fx_forward_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxSwap";
+    trade t;
+    t.TradeType = oreTradeType::FxSwap;
+
+    fxSwapData sw;
+    static_cast<std::string&>(sw.NearDate)     = instr.value_date;
+    sw.NearBoughtCurrency = parse_currency_code(instr.bought_currency);
+    static_cast<float&>(sw.NearBoughtAmount)   = static_cast<float>(instr.bought_amount);
+    sw.NearSoldCurrency   = parse_currency_code(instr.sold_currency);
+    static_cast<float&>(sw.NearSoldAmount)     = static_cast<float>(instr.sold_amount);
+    // Far leg: not captured in forward mapping — round-trip as empty date/zero amounts.
+    static_cast<std::string&>(sw.FarDate)      = "";
+    static_cast<float&>(sw.FarBoughtAmount)    = 0.0f;
+    static_cast<float&>(sw.FarSoldAmount)      = 0.0f;
+
+    t.FxSwapData = std::move(sw);
+    return t;
+}
+
+// ===========================================================================
+// Reverse: FxOption
+// ===========================================================================
+
+trade fx_instrument_mapper::reverse_fx_option(
+        const fx_vanilla_option_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxOption";
+    trade t;
+    t.TradeType = oreTradeType::FxOption;
+
+    fxOptionData opt;
+    opt.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    static_cast<float&>(opt.BoughtAmount) = static_cast<float>(instr.bought_amount);
+    opt.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    if (instr.sold_amount != 0.0)
+        opt.SoldAmount = static_cast<float>(instr.sold_amount);
+
+    opt.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
+    if (!instr.settlement.empty()) {
+        // OptionData in fxOptionData carries settlement directly
+        // (this cast is the same pattern as the old mapper)
     }
-    return result;
+
+    t.FxOptionData = std::move(opt);
+    return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxBarrierOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_barrier_option(
-        const fx_instrument& instr) {
+        const fx_barrier_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxBarrierOption";
     trade t;
     t.TradeType = oreTradeType::FxBarrierOption;
@@ -695,68 +807,168 @@ trade fx_instrument_mapper::reverse_fx_barrier_option(
     d.BoughtAmount   = static_cast<float>(instr.bought_amount);
     d.SoldCurrency   = parse_currency_code(instr.sold_currency);
     d.SoldAmount     = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_fx_option_entry(instr));
+    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
 
     if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
         d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
+    if (instr.upper_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 
     t.FxBarrierOptionData = std::move(d);
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Reverse: FxDoubleBarrierOption
+// ===========================================================================
+
+trade fx_instrument_mapper::reverse_fx_double_barrier_option(
+        const fx_barrier_option_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxDoubleBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxDoubleBarrierOption;
+    fxBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    t.FxDoubleBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ===========================================================================
+// Reverse: FxEuropeanBarrierOption
+// ===========================================================================
+
+trade fx_instrument_mapper::reverse_fx_european_barrier_option(
+        const fx_barrier_option_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxEuropeanBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxEuropeanBarrierOption;
+    fxBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    t.FxEuropeanBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ===========================================================================
+// Reverse: FxKIKOBarrierOption
+// ===========================================================================
+
+trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
+        const fx_barrier_option_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxKIKOBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxKIKOBarrierOption;
+    fxKIKOBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData     = make_option_entry(instr.option_type, instr.expiry_date);
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier.has_value())
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, *instr.upper_barrier));
+    t.FxKIKOBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ===========================================================================
+// Reverse: FxGenericBarrierOption
+// ===========================================================================
+
+trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
+        const fx_barrier_option_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxGenericBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxGenericBarrierOption;
+
+    genericBarrierOptionData d;
+    if (!instr.bought_currency.empty())
+        d.PayCurrency = parse_currency_code(instr.bought_currency);
+    d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
+
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier.has_value())
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, *instr.upper_barrier));
+
+    t.FxGenericBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ===========================================================================
 // Reverse: FxDigitalOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_digital_option(
-        const fx_instrument& instr) {
+        const fx_digital_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxDigitalOption";
     trade t;
     t.TradeType = oreTradeType::FxDigitalOption;
 
     fxDigitalOptionData d;
-    d.ForeignCurrency = parse_currency_code(instr.bought_currency);
-    d.DomesticCurrency = parse_currency_code(instr.sold_currency);
-    d.Strike      = static_cast<float>(instr.strike_price);
-    d.PayoffAmount = static_cast<float>(instr.notional);
-    d.OptionData.push_back(make_fx_option_entry(instr));
+    d.ForeignCurrency  = parse_currency_code(instr.foreign_currency);
+    d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
+    d.Strike           = static_cast<float>(instr.strike.value_or(0.0));
+    d.PayoffAmount     = static_cast<float>(instr.payoff_amount);
+    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date,
+                                              instr.long_short));
 
     t.FxDigitalOptionData = std::move(d);
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxDigitalBarrierOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_digital_barrier_option(
-        const fx_instrument& instr) {
+        const fx_digital_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxDigitalBarrierOption";
     trade t;
     t.TradeType = oreTradeType::FxDigitalBarrierOption;
 
     fxDigitalBarrierOptionData d;
-    d.ForeignCurrency  = parse_currency_code(instr.bought_currency);
-    d.DomesticCurrency = parse_currency_code(instr.sold_currency);
-    d.Strike      = static_cast<float>(instr.strike_price);
-    d.PayoffAmount = static_cast<float>(instr.notional);
-    d.OptionData.push_back(make_fx_option_entry(instr));
+    d.ForeignCurrency  = parse_currency_code(instr.foreign_currency);
+    d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
+    d.Strike           = static_cast<float>(instr.strike.value_or(0.0));
+    d.PayoffAmount     = static_cast<float>(instr.payoff_amount);
+    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date,
+                                              instr.long_short));
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
 
     t.FxDigitalBarrierOptionData = std::move(d);
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxTouchOption / FxDoubleTouchOption
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_touch_option(
-        const fx_instrument& instr) {
+        const fx_digital_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping " << instr.trade_type_code;
     trade t;
     t.TradeType = (instr.trade_type_code == "FxDoubleTouchOption")
@@ -764,19 +976,19 @@ trade fx_instrument_mapper::reverse_fx_touch_option(
                       : oreTradeType::FxTouchOption;
 
     fxTouchOptionData d;
-    if (!instr.bought_currency.empty())
-        d.ForeignCurrency = parse_currency_code(instr.bought_currency);
-    if (!instr.sold_currency.empty())
-        d.DomesticCurrency = parse_currency_code(instr.sold_currency);
-    if (!instr.bought_currency.empty())
-        d.PayoffCurrency = parse_currency_code(instr.bought_currency);
-    d.PayoffAmount = static_cast<float>(instr.notional);
-    d.OptionData.push_back(make_fx_option_entry(instr));
+    if (!instr.foreign_currency.empty())
+        d.ForeignCurrency = parse_currency_code(instr.foreign_currency);
+    if (!instr.domestic_currency.empty())
+        d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
+    if (!instr.payoff_currency.empty())
+        d.PayoffCurrency = parse_currency_code(instr.payoff_currency);
+    d.PayoffAmount = static_cast<float>(instr.payoff_amount);
+    d.OptionData.push_back(make_option_entry("", instr.expiry_date, instr.long_short));
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
+    if (instr.upper_barrier.has_value())
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 
     if (instr.trade_type_code == "FxDoubleTouchOption")
         t.FxDoubleTouchOptionData = std::move(d);
@@ -785,24 +997,24 @@ trade fx_instrument_mapper::reverse_fx_touch_option(
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxVarianceSwap
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_variance_swap(
-        const fx_instrument& instr) {
+        const fx_variance_swap_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxVarianceSwap";
     trade t;
     t.TradeType = oreTradeType::FxVarianceSwap;
 
     varianceSwapData d;
     static_cast<std::string&>(d.StartDate) = instr.start_date;
-    static_cast<std::string&>(d.EndDate)   = instr.expiry_date;
-    if (!instr.bought_currency.empty())
-        d.Currency = parse_currency_code(instr.bought_currency);
+    static_cast<std::string&>(d.EndDate)   = instr.end_date;
+    if (!instr.currency.empty())
+        d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
-    static_cast<std::string&>(d.LongShort) = "Long";
-    d.Strike   = static_cast<float>(instr.variance_strike);
+    static_cast<std::string&>(d.LongShort) = instr.long_short;
+    d.Strike   = static_cast<float>(instr.strike);
     d.Notional = static_cast<float>(instr.notional);
     static_cast<std::string&>(d.Calendar) = "TARGET";
 
@@ -810,23 +1022,25 @@ trade fx_instrument_mapper::reverse_fx_variance_swap(
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxAverageForward
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_average_forward(
-        const fx_instrument& instr) {
+        const fx_asian_forward_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxAverageForward";
     trade t;
     t.TradeType = oreTradeType::FxAverageForward;
 
     fxAverageForwardData d;
-    static_cast<std::string&>(d.PaymentDate) = instr.value_date.value_or("");
-    d.ReferenceCurrency  = parse_currency_code(instr.bought_currency);
-    d.ReferenceNotional  = static_cast<float>(instr.bought_amount);
-    d.SettlementCurrency = parse_currency_code(instr.sold_currency);
-    d.SettlementNotional = static_cast<float>(instr.sold_amount);
-    static_cast<std::string&>(d.FXIndex) = instr.underlying_code;
+    static_cast<std::string&>(d.PaymentDate) = instr.payment_date;
+    if (!instr.reference_currency.empty())
+        d.ReferenceCurrency  = parse_currency_code(instr.reference_currency);
+    d.ReferenceNotional  = static_cast<float>(instr.reference_notional.value_or(0.0));
+    if (!instr.settlement_currency.empty())
+        d.SettlementCurrency = parse_currency_code(instr.settlement_currency);
+    d.SettlementNotional = static_cast<float>(instr.settlement_notional.value_or(0.0));
+    static_cast<std::string&>(d.FXIndex) = instr.fx_index;
     d.FixedPayer = bool_::false_;
     // Minimal observation schedule
     scheduleData_Rules_t rule;
@@ -837,24 +1051,25 @@ trade fx_instrument_mapper::reverse_fx_average_forward(
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxAccumulator
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
 trade fx_instrument_mapper::reverse_fx_accumulator(
-        const fx_instrument& instr) {
+        const fx_accumulator_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxAccumulator";
     trade t;
     t.TradeType = oreTradeType::FxAccumulator;
 
     accumulatorData d;
-    d.Currency = parse_currency_code(instr.bought_currency);
-    d.FixingAmount = static_cast<float>(instr.accumulation_amount);
-    if (instr.strike_price != 0.0)
-        d.Strike = static_cast<float>(instr.strike_price);
+    if (!instr.currency.empty())
+        d.Currency = parse_currency_code(instr.currency);
+    d.FixingAmount = static_cast<float>(instr.fixing_amount);
+    if (instr.strike != 0.0)
+        d.Strike = static_cast<float>(instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
     static_cast<std::string&>(d.Underlying.Type) = "FX";
-    static_cast<std::string&>(d.OptionData.LongShort) = "Long";
+    static_cast<std::string&>(d.OptionData.LongShort) = instr.long_short;
     if (!instr.start_date.empty()) {
         date sd;
         static_cast<std::string&>(sd) = instr.start_date;
@@ -867,25 +1082,34 @@ trade fx_instrument_mapper::reverse_fx_accumulator(
     static_cast<std::string&>(rule.Tenor) = "1D";
     d.ObservationDates.Rules.push_back(std::move(rule));
 
+    if (instr.knock_out_barrier.has_value())
+        d.Barriers = [&]() {
+            barriers_t b;
+            b.BarrierData.push_back(make_barrier("UpAndOut", *instr.knock_out_barrier));
+            return b;
+        }();
+
     t.FxAccumulatorData = std::move(d);
     return t;
 }
 
-// ---------------------------------------------------------------------------
+// ===========================================================================
 // Reverse: FxTaRF
-// ---------------------------------------------------------------------------
+// ===========================================================================
 
-trade fx_instrument_mapper::reverse_fx_tarf(const fx_instrument& instr) {
+trade fx_instrument_mapper::reverse_fx_tarf(
+        const fx_asian_forward_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxTaRF";
     trade t;
     t.TradeType = oreTradeType::FxTaRF;
 
     tarfData2 d;
-    d.Currency = parse_currency_code(instr.bought_currency);
-    d.FixingAmount = static_cast<float>(instr.accumulation_amount);
-    if (instr.strike_price != 0.0)
-        d.Strike = static_cast<float>(instr.strike_price);
-    static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
+    if (!instr.currency.empty())
+        d.Currency = parse_currency_code(instr.currency);
+    d.FixingAmount = static_cast<float>(instr.fixing_amount.value_or(0.0));
+    if (instr.strike.has_value())
+        d.Strike = static_cast<float>(*instr.strike);
+    static_cast<std::string&>(d.Underlying.Name) = instr.fx_index;
     static_cast<std::string&>(d.Underlying.Type) = "FX";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
     // Minimal schedule
@@ -893,214 +1117,14 @@ trade fx_instrument_mapper::reverse_fx_tarf(const fx_instrument& instr) {
     static_cast<std::string&>(rule.Tenor) = "1Y";
     d.ScheduleData.Rules.push_back(std::move(rule));
 
+    if (instr.target_amount.has_value()) {
+        barrierData bd;
+        bd.Type = barrierType::CumulatedProfitCap;
+        bd.Levels.Level.push_back(static_cast<float>(*instr.target_amount));
+        d.Barriers.BarrierData.push_back(std::move(bd));
+    }
+
     t.FxTaRFData = std::move(d);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxGenericBarrierOption
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
-        const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxGenericBarrierOption";
-    trade t;
-    t.TradeType = oreTradeType::FxGenericBarrierOption;
-
-    genericBarrierOptionData d;
-    if (!instr.bought_currency.empty())
-        d.PayCurrency = parse_currency_code(instr.bought_currency);
-    d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
-
-    // Single OptionData
-    static_cast<std::string&>(d.OptionData.LongShort) = "Long";
-    if (!instr.option_type.empty()) {
-        optionData_OptionType_t ot;
-        static_cast<std::string&>(ot) = instr.option_type;
-        d.OptionData.OptionType = std::move(ot);
-    }
-    if (!instr.expiry_date.empty()) {
-        _ExerciseDates_t ed;
-        date dt;
-        static_cast<std::string&>(dt) = instr.expiry_date;
-        ed.ExerciseDate.push_back(dt);
-        exerciseDatesGroup_group_t edg;
-        edg.ExerciseDates = std::move(ed);
-        d.OptionData.exerciseDatesGroup = std::move(edg);
-    }
-    if (instr.strike_price != 0.0)
-        d.Strike = static_cast<float>(instr.strike_price);
-    if (instr.notional != 0.0)
-        d.Amount = static_cast<float>(instr.notional);
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier));
-
-    t.FxGenericBarrierOptionData = std::move(d);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: FxDoubleBarrierOption (same data struct as FxBarrierOption)
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_double_barrier_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxDoubleBarrierOption");
-    if (!t.FxDoubleBarrierOptionData) return result;
-    const auto& d = *t.FxDoubleBarrierOptionData;
-    result.instrument.bought_currency = to_string(d.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
-    result.instrument.sold_currency   = to_string(d.SoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
-    if (!d.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            result.instrument.upper_barrier =
-                static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: FxEuropeanBarrierOption (same data struct as FxBarrierOption)
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_european_barrier_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxEuropeanBarrierOption");
-    if (!t.FxEuropeanBarrierOptionData) return result;
-    const auto& d = *t.FxEuropeanBarrierOptionData;
-    result.instrument.bought_currency = to_string(d.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
-    result.instrument.sold_currency   = to_string(d.SoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
-    result.instrument.option_type     = option_type_from_vec(d.OptionData);
-    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
-    if (!d.BarrierData.empty()) {
-        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier =
-                static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            result.instrument.upper_barrier =
-                static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: FxKIKOBarrierOption (distinct struct: single OptionData, Barriers)
-// ---------------------------------------------------------------------------
-
-fx_mapping_result fx_instrument_mapper::forward_fx_kiko_barrier_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: "
-                               << std::string(t.id);
-    fx_mapping_result result;
-    result.instrument = make_base("FxKIKOBarrierOption");
-    if (!t.FxKIKOBarrierOptionData) return result;
-    const auto& d = *t.FxKIKOBarrierOptionData;
-    result.instrument.bought_currency = to_string(d.BoughtCurrency);
-    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
-    result.instrument.sold_currency   = to_string(d.SoldCurrency);
-    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
-    if (d.OptionData.OptionType)
-        result.instrument.option_type = std::string(*d.OptionData.OptionType);
-    result.instrument.expiry_date = expiry_date_from_single(d.OptionData);
-    if (!d.Barriers.BarrierData.empty()) {
-        result.instrument.barrier_type =
-            to_string(d.Barriers.BarrierData.front().Type);
-        if (!d.Barriers.BarrierData.front().Levels.Level.empty())
-            result.instrument.lower_barrier = static_cast<double>(
-                d.Barriers.BarrierData.front().Levels.Level.front());
-        if (d.Barriers.BarrierData.size() > 1 &&
-                !d.Barriers.BarrierData[1].Levels.Level.empty())
-            result.instrument.upper_barrier = static_cast<double>(
-                d.Barriers.BarrierData[1].Levels.Level.front());
-    }
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxDoubleBarrierOption
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_double_barrier_option(
-        const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxDoubleBarrierOption";
-    trade t;
-    t.TradeType = oreTradeType::FxDoubleBarrierOption;
-    fxBarrierOptionData d;
-    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
-    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
-    d.SoldAmount     = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_fx_option_entry(instr));
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
-    t.FxDoubleBarrierOptionData = std::move(d);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxEuropeanBarrierOption
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_european_barrier_option(
-        const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxEuropeanBarrierOption";
-    trade t;
-    t.TradeType = oreTradeType::FxEuropeanBarrierOption;
-    fxBarrierOptionData d;
-    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
-    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
-    d.SoldAmount     = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_fx_option_entry(instr));
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
-    t.FxEuropeanBarrierOptionData = std::move(d);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-// Reverse: FxKIKOBarrierOption
-// ---------------------------------------------------------------------------
-
-trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
-        const fx_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxKIKOBarrierOption";
-    trade t;
-    t.TradeType = oreTradeType::FxKIKOBarrierOption;
-    fxKIKOBarrierOptionData d;
-    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
-    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
-    d.SoldAmount     = static_cast<float>(instr.sold_amount);
-    d.OptionData = make_fx_option_entry(instr);
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier != 0.0)
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.upper_barrier));
-    t.FxKIKOBarrierOptionData = std::move(d);
     return t;
 }
 

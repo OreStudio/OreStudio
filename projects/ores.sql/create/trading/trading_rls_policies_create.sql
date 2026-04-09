@@ -508,3 +508,147 @@ as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- =============================================================================
+-- Per-Type FX Instrument Tables (Phase 2)
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- FX Forward Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_forward_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_forward_instruments_tenant_isolation_policy on ores_trading_fx_forward_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_forward_instruments_party_isolation_policy
+on ores_trading_fx_forward_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Vanilla Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_vanilla_option_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_vanilla_option_instruments_tenant_isolation_policy on ores_trading_fx_vanilla_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_vanilla_option_instruments_party_isolation_policy
+on ores_trading_fx_vanilla_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Barrier Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_barrier_option_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_barrier_option_instruments_tenant_isolation_policy on ores_trading_fx_barrier_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_barrier_option_instruments_party_isolation_policy
+on ores_trading_fx_barrier_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Digital Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_digital_option_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_digital_option_instruments_tenant_isolation_policy on ores_trading_fx_digital_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_digital_option_instruments_party_isolation_policy
+on ores_trading_fx_digital_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Asian Forward Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_asian_forward_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_asian_forward_instruments_tenant_isolation_policy on ores_trading_fx_asian_forward_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_asian_forward_instruments_party_isolation_policy
+on ores_trading_fx_asian_forward_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Accumulator Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_accumulator_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_accumulator_instruments_tenant_isolation_policy on ores_trading_fx_accumulator_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_accumulator_instruments_party_isolation_policy
+on ores_trading_fx_accumulator_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_fx_variance_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_fx_variance_swap_instruments_tenant_isolation_policy on ores_trading_fx_variance_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_fx_variance_swap_instruments_party_isolation_policy
+on ores_trading_fx_variance_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);

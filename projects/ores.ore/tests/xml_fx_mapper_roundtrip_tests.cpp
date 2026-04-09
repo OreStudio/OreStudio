@@ -34,7 +34,7 @@ using Catch::Approx;
  *
  * For each example trade:
  *   1. Parse ORE XML using ores.ore XSD types.
- *   2. Forward-map to ORES domain types.
+ *   2. Forward-map to ORES typed domain object (via fx_instrument_variant).
  *   3. Verify key fields were captured correctly.
  *   4. Reverse-map back to ORE XSD types.
  *   5. Verify the reconstructed ORE type has the fields we mapped.
@@ -47,6 +47,8 @@ const std::string tags("[ore][xml][mapper][roundtrip][fx]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
+using ores::trading::domain::fx_forward_instrument;
+using ores::trading::domain::fx_vanilla_option_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -75,11 +77,11 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto t = load_first_trade("FX_Forward.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = result.instrument;
+    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
 
     CHECK(instr.trade_type_code == "FxForward");
-    REQUIRE(instr.value_date.has_value());
-    CHECK(*instr.value_date == "2033-02-20");
+    CHECK(!instr.value_date.empty());
+    CHECK(instr.value_date == "2033-02-20");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");
@@ -92,9 +94,9 @@ TEST_CASE("mapper_roundtrip_fx_forward_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Forward.xml");
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
+    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
 
-    const auto reconstructed =
-        fx_instrument_mapper::reverse_fx_forward(result.instrument);
+    const auto reconstructed = fx_instrument_mapper::reverse_fx_forward(instr);
 
     REQUIRE(reconstructed.FxForwardData.operator bool());
     const auto& fwd = *reconstructed.FxForwardData;
@@ -115,11 +117,11 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto t = load_first_trade("FX_Swap.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
-    const auto& instr = result.instrument;
+    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
 
     CHECK(instr.trade_type_code == "FxSwap");
-    REQUIRE(instr.value_date.has_value());
-    CHECK(*instr.value_date == "2025-08-23");
+    CHECK(!instr.value_date.empty());
+    CHECK(instr.value_date == "2025-08-23");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");
@@ -132,9 +134,9 @@ TEST_CASE("mapper_roundtrip_fx_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Swap.xml");
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
+    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
 
-    const auto reconstructed =
-        fx_instrument_mapper::reverse_fx_swap(result.instrument);
+    const auto reconstructed = fx_instrument_mapper::reverse_fx_swap(instr);
 
     REQUIRE(reconstructed.FxSwapData.operator bool());
     const auto& sw = *reconstructed.FxSwapData;
@@ -153,7 +155,7 @@ TEST_CASE("mapper_roundtrip_fx_option_forward", tags) {
     const auto t = load_first_trade("FX_Option_European.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_option(t);
-    const auto& instr = result.instrument;
+    const auto& instr = std::get<fx_vanilla_option_instrument>(result.instrument);
 
     CHECK(instr.trade_type_code == "FxOption");
     CHECK(instr.bought_currency == "EUR");
@@ -169,9 +171,9 @@ TEST_CASE("mapper_roundtrip_fx_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Option_European.xml");
     const auto result = fx_instrument_mapper::forward_fx_option(t);
+    const auto& instr = std::get<fx_vanilla_option_instrument>(result.instrument);
 
-    const auto reconstructed =
-        fx_instrument_mapper::reverse_fx_option(result.instrument);
+    const auto reconstructed = fx_instrument_mapper::reverse_fx_option(instr);
 
     REQUIRE(reconstructed.FxOptionData.operator bool());
     const auto& opt = *reconstructed.FxOptionData;

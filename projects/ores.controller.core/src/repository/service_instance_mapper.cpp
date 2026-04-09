@@ -46,6 +46,7 @@ service_instance_mapper::map(const service_instance_entity& v) {
     r.last_error = v.last_error;
     r.last_log_snippet = v.last_log_snippet;
     r.last_stderr_snippet = v.last_stderr_snippet;
+    r.last_command_line = v.last_command_line;
     r.created_at = timestamp_to_timepoint(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
@@ -70,6 +71,7 @@ service_instance_mapper::map(const api::domain::service_instance& v) {
     r.last_error = v.last_error;
     r.last_log_snippet = v.last_log_snippet;
     r.last_stderr_snippet = v.last_stderr_snippet;
+    r.last_command_line = v.last_command_line;
     r.created_at = timepoint_to_timestamp(v.created_at, lg());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity.";

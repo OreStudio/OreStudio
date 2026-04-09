@@ -30,6 +30,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFontDatabase>
+#include <QInputDialog>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -45,6 +46,7 @@
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 #include "ores.controller.api/messaging/service_instance_protocol.hpp"
 #include "ores.controller.api/messaging/service_definition_protocol.hpp"
@@ -237,6 +239,7 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
       stopButton_(nullptr),
       restartButton_(nullptr),
       detailTable_(nullptr),
+      splitter_(nullptr),
       autoRefreshTimer_(nullptr) {
 
     autoRefreshTimer_ = new QTimer(this);
@@ -245,7 +248,20 @@ ServiceDashboardMdiWindow::ServiceDashboardMdiWindow(
             &ServiceDashboardMdiWindow::refresh);
 
     setupUi();
+
+    const auto sz = UiPersistence::restoreSize(
+        QStringLiteral("ServiceDashboardMdiWindow"), {900, 600});
+    resize(sz);
+    UiPersistence::restoreSplitter(
+        QStringLiteral("ServiceDashboardMdiWindow"), splitter_);
+
     refresh();
+}
+
+void ServiceDashboardMdiWindow::closeEvent(QCloseEvent* event) {
+    UiPersistence::saveSize(QStringLiteral("ServiceDashboardMdiWindow"), this);
+    UiPersistence::saveSplitter(QStringLiteral("ServiceDashboardMdiWindow"), splitter_);
+    QWidget::closeEvent(event);
 }
 
 void ServiceDashboardMdiWindow::setupUi() {
@@ -348,9 +364,10 @@ void ServiceDashboardMdiWindow::setupUi() {
         if (!item || item->text() == QStringLiteral("-"))
             return;
 
-        const QString error_text  = item->data(Qt::UserRole).toString();
-        const QString log_text    = item->data(Qt::UserRole + 1).toString();
-        const QString stderr_text = item->data(Qt::UserRole + 2).toString();
+        const QString error_text   = item->data(Qt::UserRole).toString();
+        const QString log_text     = item->data(Qt::UserRole + 1).toString();
+        const QString stderr_text  = item->data(Qt::UserRole + 2).toString();
+        const QString command_text = item->data(Qt::UserRole + 3).toString();
 
         auto* dlg = new QDialog(this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -371,6 +388,7 @@ void ServiceDashboardMdiWindow::setupUi() {
             return edit;
         };
 
+        tabs->addTab(make_tab(command_text), tr("Command"));
         tabs->addTab(make_tab(error_text),   tr("Error"));
         tabs->addTab(make_tab(log_text),     tr("Log"));
         tabs->addTab(make_tab(stderr_text),  tr("Stderr"));
@@ -385,13 +403,13 @@ void ServiceDashboardMdiWindow::setupUi() {
     });
 
     // Splitter
-    auto* splitter = new QSplitter(Qt::Vertical, this);
-    splitter->addWidget(table_);
-    splitter->addWidget(detailGroup_);
-    splitter->setStretchFactor(0, 2);
-    splitter->setStretchFactor(1, 1);
+    splitter_ = new QSplitter(Qt::Vertical, this);
+    splitter_->addWidget(table_);
+    splitter_->addWidget(detailGroup_);
+    splitter_->setStretchFactor(0, 2);
+    splitter_->setStretchFactor(1, 1);
 
-    mainLayout->addWidget(splitter);
+    mainLayout->addWidget(splitter_);
 }
 
 void ServiceDashboardMdiWindow::setupToolbar() {
@@ -410,7 +428,7 @@ void ServiceDashboardMdiWindow::setupToolbar() {
     autoRefreshAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Auto-Refresh"));
-    autoRefreshAction_->setToolTip(tr("Toggle automatic refresh every 30 seconds"));
+    autoRefreshAction_->setToolTip(tr("Enable automatic refresh; click again to disable"));
     autoRefreshAction_->setCheckable(true);
     autoRefreshAction_->setChecked(false);
     connect(autoRefreshAction_, &QAction::toggled,
@@ -711,6 +729,10 @@ void ServiceDashboardMdiWindow::loadInstanceDetails(const QString& serviceName) 
                         inst.last_stderr_snippet
                             ? QString::fromStdString(*inst.last_stderr_snippet)
                             : QString{});
+                    err_item->setData(Qt::UserRole + 3,
+                        inst.last_command_line
+                            ? QString::fromStdString(*inst.last_command_line)
+                            : QString{});
                 }
                 self->detailTable_->setItem(
                     row, static_cast<int>(DCol::LastError), err_item);
@@ -876,11 +898,29 @@ void ServiceDashboardMdiWindow::onRestartService() {
 
 void ServiceDashboardMdiWindow::onRefreshToggled(bool checked) {
     if (checked) {
-        BOOST_LOG_SEV(lg(), info) << "Auto-refresh enabled for service dashboard";
+        bool ok = false;
+        const int current_secs = autoRefreshTimer_->interval() / 1000;
+        const int secs = QInputDialog::getInt(
+            this, tr("Auto-Refresh Interval"),
+            tr("Refresh every (seconds):"),
+            current_secs, 5, 3600, 5, &ok);
+        if (!ok) {
+            // User cancelled — revert the toggle without re-entering this slot.
+            QSignalBlocker blocker(autoRefreshAction_);
+            autoRefreshAction_->setChecked(false);
+            return;
+        }
+        autoRefreshTimer_->setInterval(secs * 1000);
+        autoRefreshAction_->setToolTip(
+            tr("Auto-refresh every %1 s — click to disable").arg(secs));
+        BOOST_LOG_SEV(lg(), info)
+            << "Auto-refresh enabled, interval=" << secs << "s";
         autoRefreshTimer_->start();
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Auto-refresh disabled for service dashboard";
+        BOOST_LOG_SEV(lg(), info) << "Auto-refresh disabled";
         autoRefreshTimer_->stop();
+        autoRefreshAction_->setToolTip(
+            tr("Enable automatic refresh; click again to disable"));
     }
 }
 

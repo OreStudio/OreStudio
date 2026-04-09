@@ -33,7 +33,6 @@ struct FontUtils {
 
     static QFont monospace() {
         QFont f(MonospaceFontFamily);
-        f.setStyleHint(QFont::Monospace);
         f.setPointSize(DefaultPointSize);
         return f;
     }

@@ -140,7 +140,7 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -v wt_user="${ORES_DB_WT_USER:-}" \
     -v shell_user="${ORES_DB_SHELL_USER:-}" \
     -v http_user="${ORES_DB_HTTP_USER:-}" \
-    -v compute_wrapper_user="${ORES_COMPUTE_WRAPPER_USER:-}" \
+    -v compute_wrapper_user="${ORES_DB_COMPUTE_WRAPPER_USER:-}" \
     -v test_ddl_user="${ORES_TEST_DB_DDL_USER:-}" \
     -v test_dml_user="${ORES_TEST_DB_USER:-}" \
     "${_SVC_PSQL_ARGS[@]}" \

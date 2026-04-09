@@ -106,6 +106,14 @@ struct service_instance final {
     std::optional<std::string> last_stderr_snippet;
 
     /**
+     * @brief Full command line used to launch the most recent process.
+     *
+     * Set each time the supervisor launches the service. Shown in the
+     * "Command" tab of the service detail dialog to aid debugging.
+     */
+    std::optional<std::string> last_command_line;
+
+    /**
      * @brief Timestamp when this row was first created.
      */
     std::chrono::system_clock::time_point created_at = {};

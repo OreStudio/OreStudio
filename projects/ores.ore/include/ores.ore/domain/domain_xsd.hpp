@@ -4,6 +4,7 @@
 #define XSDCPP_H
 
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <string>
 #include <vector>

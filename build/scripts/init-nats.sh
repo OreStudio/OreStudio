@@ -141,64 +141,13 @@ if [[ "${DO_START}" -eq 1 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Phase 4: Provision JetStream streams (optional)
+# Phase 4: JetStream streams
 # ---------------------------------------------------------------------------
+# Streams are self-provisioned by each service on startup (idempotent).
+# No external provisioning step is required or supported.
 if [[ "${DO_PROVISION}" -eq 1 ]]; then
-    if ! command -v nats &>/dev/null; then
-        echo "Error: nats CLI not found. Install from https://github.com/nats-io/natscli" >&2
-        exit 1
-    fi
-
-    # Build base nats CLI command with optional mTLS
-    NATS_CMD="nats --server ${NATS_URL}"
-    if [[ -n "${NATS_TLS_CA}" ]]; then
-        NATS_CMD+=" --tlsca ${NATS_TLS_CA}"
-        NATS_CMD+=" --tlscert ${KEYS_DIR}/ores.http.server.crt"
-        NATS_CMD+=" --tlskey ${KEYS_DIR}/ores.http.server.key"
-    fi
-
-    # Wait for NATS to become ready
-    echo "--- Waiting for NATS to be ready (timeout: ${WAIT_TIMEOUT}s) ---"
-    elapsed=0
-    while ! ${NATS_CMD} server ping &>/dev/null; do
-        if [[ ${elapsed} -ge ${WAIT_TIMEOUT} ]]; then
-            echo "Error: NATS did not become ready within ${WAIT_TIMEOUT}s" >&2
-            exit 1
-        fi
-        sleep 1
-        elapsed=$((elapsed + 1))
-    done
-    echo "  NATS is ready."
-
-    # Derive a safe stream name suffix from the prefix (dots/hyphens → underscores, uppercase)
-    STREAM_SUFFIX="$(echo "${NATS_PREFIX}" | tr '.,-' '_' | tr '[:lower:]' '[:upper:]')"
-
-    echo "--- Provisioning JetStream streams ---"
-
-    ensure_stream() {
-        local name="$1"
-        local subjects="$2"
-        if ${NATS_CMD} stream info "${name}" &>/dev/null; then
-            printf "  ok      stream %-40s (already exists)\n" "${name}"
-            return
-        fi
-        ${NATS_CMD} stream add "${name}" \
-            --subjects="${subjects}" \
-            --storage=file \
-            --retention=limits \
-            --max-age=24h \
-            --max-msgs=-1 \
-            --max-bytes=-1 \
-            --replicas=1 \
-            --defaults \
-            2>/dev/null
-        printf "  created stream %-40s subjects: %s\n" "${name}" "${subjects}"
-    }
-
-    ensure_stream \
-        "ORES_COMPUTE_ASSIGNMENTS_${STREAM_SUFFIX}" \
-        "${NATS_PREFIX}.compute.v1.work.assignments.>"
-
+    echo "--- JetStream streams: self-provisioned by services on startup ---"
+    echo "    No manual provisioning required."
     echo ""
 fi
 

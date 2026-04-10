@@ -319,13 +319,7 @@ launch ores.controller.service \
     "${controller_tls_args[@]}"
 echo ""
 
-# Provision JetStream streams (needed by compute wrappers that the controller spawns).
-if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
-    provision_tls_args=()
-    [[ -n "$NATS_TLS_CA" ]] && provision_tls_args+=(--nats-tls-ca "$NATS_TLS_CA")
-    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX" "${provision_tls_args[@]}"
-    echo ""
-fi
+# JetStream streams are self-provisioned by each service on startup.
 
 echo "Logs : $LOG_DIR"
 echo "Stop : ./build/scripts/stop-services.sh"

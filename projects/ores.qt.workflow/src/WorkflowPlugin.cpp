@@ -58,12 +58,10 @@ void WorkflowPlugin::on_login(const plugin_context& ctx) {
 
     connect(controller_.get(), &WorkflowController::statusMessage,
             this, &WorkflowPlugin::statusMessage);
-    connect(controller_.get(), &WorkflowController::errorMessage,
-            this, &WorkflowPlugin::errorMessage);
     connect(controller_.get(), &WorkflowController::detachableWindowCreated,
-            this, &WorkflowPlugin::detachableWindowCreated);
+            this, &WorkflowPlugin::windowCreated);
     connect(controller_.get(), &WorkflowController::detachableWindowDestroyed,
-            this, &WorkflowPlugin::detachableWindowDestroyed);
+            this, &WorkflowPlugin::windowDestroyed);
 }
 
 QList<QMenu*> WorkflowPlugin::create_menus() {

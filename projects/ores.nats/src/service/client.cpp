@@ -327,6 +327,19 @@ std::string client::make_subject(std::string_view relative) const {
     return impl_->opts.subject_prefix + '.' + std::string(relative);
 }
 
+std::string client::make_stream_name(std::string_view logical_suffix) const {
+    // JetStream stream names cannot contain dots — replace with underscores.
+    // Result is all-lowercase: e.g. "ores.dev.local2" + "workflow"
+    //   → "ores_dev_local2_workflow"
+    std::string name = impl_->opts.subject_prefix;
+    std::replace(name.begin(), name.end(), '.', '_');
+    if (!logical_suffix.empty()) {
+        name += '_';
+        name += logical_suffix;
+    }
+    return name;
+}
+
 void client::publish(std::string_view subject,
     std::span<const std::byte> data,
     std::unordered_map<std::string, std::string> headers) {

@@ -236,6 +236,20 @@ public:
      */
     [[nodiscard]] std::string make_subject(std::string_view relative) const;
 
+    /**
+     * @brief Derive a JetStream stream name for this environment.
+     *
+     * Combines the configured subject prefix with @p logical_suffix to
+     * produce a stream name that is unique per environment and valid for
+     * NATS (no dots — replaced with underscores, all lowercase).
+     *
+     * Example: prefix @c "ores.dev.local2", suffix @c "workflow"
+     *          → @c "ores_dev_local2_workflow"
+     *
+     * Pass the result directly to @c jetstream_admin::ensure_stream().
+     */
+    [[nodiscard]] std::string make_stream_name(std::string_view logical_suffix) const;
+
 private:
     struct impl;
     std::unique_ptr<impl> impl_;

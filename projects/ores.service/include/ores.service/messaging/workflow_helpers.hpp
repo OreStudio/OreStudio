@@ -156,7 +156,7 @@ private:
         const auto json = rfl::json::write(event);
         const auto data = std::as_bytes(
             std::span{json.data(), json.size()});
-        nats->publish(
+        nats->js_publish(
             ores::workflow::messaging::step_completed_event::nats_subject, data);
     }
 };

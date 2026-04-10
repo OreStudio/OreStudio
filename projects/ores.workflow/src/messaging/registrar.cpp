@@ -75,19 +75,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Create the engine (shared across all engine subscriptions).
     // ----------------------------------------------------------------
     auto engine = std::make_shared<service::workflow_engine>(
-        nats, ctx, *registry, instance_states, step_states);
+        nats, ctx, registry, instance_states, step_states);
 
     // ----------------------------------------------------------------
-    // Engine subscriptions
+    // Engine subscriptions (durable JetStream — survive service restarts)
     // ----------------------------------------------------------------
-    subs.push_back(nats.queue_subscribe(
-        messaging::step_completed_event::nats_subject, qg,
+    subs.push_back(nats.js_queue_subscribe(
+        messaging::step_completed_event::nats_subject,
+        "workflow-engine-step-completed", qg,
         [engine](ores::nats::message msg) {
             engine->on_step_completed(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        messaging::start_workflow_message::nats_subject, qg,
+    subs.push_back(nats.js_queue_subscribe(
+        messaging::start_workflow_message::nats_subject,
+        "workflow-engine-start", qg,
         [engine](ores::nats::message msg) {
             engine->on_start_workflow(std::move(msg));
         }));

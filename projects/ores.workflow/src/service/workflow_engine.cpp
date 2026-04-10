@@ -38,12 +38,12 @@ using namespace ores::logging;
 
 workflow_engine::workflow_engine(ores::nats::service::client& nats,
     ores::database::context ctx,
-    const workflow_registry& registry,
+    std::shared_ptr<const workflow_registry> registry,
     fsm_state_map instance_states,
     fsm_state_map step_states)
     : nats_(nats)
     , ctx_(std::move(ctx))
-    , registry_(registry)
+    , registry_(std::move(registry))
     , instance_states_(std::move(instance_states))
     , step_states_(std::move(step_states)) {}
 
@@ -99,7 +99,7 @@ void workflow_engine::dispatch_next_step(
     domain::workflow_instance& instance,
     const std::string& last_result_json) {
 
-    const auto* def = registry_.find(instance.type);
+    const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error)
             << "No workflow definition for type: " << instance.type;
@@ -186,7 +186,7 @@ void workflow_engine::begin_compensation(
         instance_states_.require("compensating"), "", failure_msg);
     publish_status_event(instance.id, instance.tenant_id);
 
-    const auto* def = registry_.find(instance.type);
+    const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error)
             << "Cannot compensate: no definition for type " << instance.type;
@@ -385,7 +385,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         << " instance_id=" << (req.instance_id.empty() ? "(auto)" : req.instance_id)
         << " corr=" << req.correlation_id;
 
-    const auto* def = registry_.find(req.type);
+    const auto* def = registry_->find(req.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << req.type;
         return;

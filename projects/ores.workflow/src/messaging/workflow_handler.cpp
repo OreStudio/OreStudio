@@ -112,7 +112,7 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
 
         const auto json = rfl::json::write(start_msg);
         const auto data = std::as_bytes(std::span{json.data(), json.size()});
-        nats_.publish(start_workflow_message::nats_subject, data);
+        nats_.js_publish(start_workflow_message::nats_subject, data);
 
         resp.party_ids.push_back(party_id_str);
     }

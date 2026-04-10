@@ -122,7 +122,7 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
 
     const auto swm_json = rfl::json::write(swm);
     const auto data = std::as_bytes(std::span{swm_json.data(), swm_json.size()});
-    nats_.publish(start_workflow_message::nats_subject, data);
+    nats_.js_publish(start_workflow_message::nats_subject, data);
 
     BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
                               << " instance_id=" << instance_id_str;

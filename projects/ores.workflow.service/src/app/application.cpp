@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.workflow/messaging/registrar.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 
@@ -69,6 +70,23 @@ application::run(boost::asio::io_context& io_ctx,
                               << " (namespace: '"
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
+
+    // Ensure the durable workflow stream exists before subscribing.
+    // Idempotent — safe to call on every startup and across multiple instances.
+    try {
+        using ores::workflow::messaging::start_workflow_message;
+        using ores::workflow::messaging::step_completed_event;
+        const auto stream_name = nats.make_stream_name("workflow");
+        auto admin = nats.make_admin();
+        admin.ensure_stream(stream_name, {
+            nats.make_subject(start_workflow_message::nats_subject),
+            nats.make_subject(step_completed_event::nats_subject)
+        });
+        BOOST_LOG_SEV(lg(), info) << "Workflow JetStream stream ready: " << stream_name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure workflow stream: " << e.what();
+        throw; // propagate — service cannot run without the stream
+    }
 
     ores::nats::service::nats_client svc_nats(nats,
         ores::iam::client::make_service_token_provider(

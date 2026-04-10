@@ -20,6 +20,7 @@
 #ifndef ORES_WORKFLOW_SERVICE_WORKFLOW_ENGINE_HPP
 #define ORES_WORKFLOW_SERVICE_WORKFLOW_ENGINE_HPP
 
+#include <memory>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -68,7 +69,7 @@ public:
      */
     workflow_engine(ores::nats::service::client& nats,
         ores::database::context ctx,
-        const workflow_registry& registry,
+        std::shared_ptr<const workflow_registry> registry,
         fsm_state_map instance_states,
         fsm_state_map step_states);
 
@@ -152,7 +153,7 @@ private:
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    const workflow_registry& registry_;
+    std::shared_ptr<const workflow_registry> registry_;
     fsm_state_map instance_states_;
     fsm_state_map step_states_;
     repository::workflow_instance_repository instance_repo_;

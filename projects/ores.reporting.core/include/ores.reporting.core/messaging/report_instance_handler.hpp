@@ -304,7 +304,7 @@ public:
                 const auto swm_json = rfl::json::write(swm);
                 const auto data = std::as_bytes(
                     std::span{swm_json.data(), swm_json.size()});
-                nats_.publish(
+                nats_.js_publish(
                     ores::workflow::messaging::start_workflow_message::nats_subject,
                     data);
 

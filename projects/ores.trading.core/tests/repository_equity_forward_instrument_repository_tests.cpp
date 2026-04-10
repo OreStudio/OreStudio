@@ -36,18 +36,24 @@ using ores::trading::repository::equity_forward_instrument_repository;
 using ores::trading::domain::equity_forward_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Forward.xml
+ * trade id in XML: EqForward
+ * See tests/test_data/equity_forward_instrument.json for the full mapping snapshot.
+ */
 equity_forward_instrument make_instrument(database_helper& h) {
     equity_forward_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityForward";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = "RIC:.SPX";
     r.currency           = "USD";
-    r.quantity           = 1000.0;
-    r.forward_price      = 4600.0;
-    r.expiry_date        = "2026-12-19";
+    r.quantity           = 775.0;
+    r.forward_price      = 2800.0;
+    r.expiry_date        = "2025-02-20";
     r.long_short         = "Long";
-    r.settlement_type    = "Cash";
+    r.settlement_type    = "";
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
     r.change_reason_code = "system.external_data_import";
@@ -74,13 +80,12 @@ TEST_CASE("equity_forward_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityForward");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == "RIC:.SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].quantity == 1000.0);
-    CHECK(read[0].forward_price == 4600.0);
-    CHECK(read[0].expiry_date == "2026-12-19");
+    CHECK(read[0].quantity == 775.0);
+    CHECK(read[0].forward_price == 2800.0);
+    CHECK(read[0].expiry_date == "2025-02-20");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].settlement_type == "Cash");
     BOOST_LOG_SEV(lg, debug) << "Read equity forward instrument: " << read[0];
 }
 

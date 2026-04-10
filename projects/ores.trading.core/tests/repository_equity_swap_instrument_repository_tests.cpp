@@ -36,20 +36,26 @@ using ores::trading::repository::equity_swap_instrument_repository;
 using ores::trading::domain::equity_swap_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Swap.xml
+ * trade id in XML: EqSwap
+ * See tests/test_data/equity_swap_instrument.json for the full mapping snapshot.
+ */
 equity_swap_instrument make_instrument(database_helper& h) {
     equity_swap_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquitySwap";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = ".SPX";
     r.basket_json        = "";
     r.currency           = "USD";
-    r.notional           = 1000000.0;
+    r.notional           = 2000000.0;
     r.return_type        = "TotalReturn";
-    r.start_date         = "2026-01-01";
-    r.maturity_date      = "2027-01-01";
+    r.start_date         = "2025-10-16";
+    r.maturity_date      = "2025-12-31";
     r.long_short         = "Long";
-    r.payment_frequency  = "3M";
+    r.payment_frequency  = "1M";
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
     r.change_reason_code = "system.external_data_import";
@@ -76,14 +82,14 @@ TEST_CASE("equity_swap_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquitySwap");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == ".SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 1000000.0);
+    CHECK(read[0].notional == 2000000.0);
     CHECK(read[0].return_type == "TotalReturn");
-    CHECK(read[0].start_date == "2026-01-01");
-    CHECK(read[0].maturity_date == "2027-01-01");
+    CHECK(read[0].start_date == "2025-10-16");
+    CHECK(read[0].maturity_date == "2025-12-31");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].payment_frequency == "3M");
+    CHECK(read[0].payment_frequency == "1M");
     BOOST_LOG_SEV(lg, debug) << "Read equity swap instrument: " << read[0];
 }
 

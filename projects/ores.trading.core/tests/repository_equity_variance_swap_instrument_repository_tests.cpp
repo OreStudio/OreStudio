@@ -36,17 +36,23 @@ using ores::trading::repository::equity_variance_swap_instrument_repository;
 using ores::trading::domain::equity_variance_swap_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Variance_Swap.xml
+ * trade id in XML: Var_Swap
+ * See tests/test_data/equity_variance_swap_instrument.json for the full mapping snapshot.
+ */
 equity_variance_swap_instrument make_instrument(database_helper& h) {
     equity_variance_swap_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityVarianceSwap";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = ".SPX";
     r.currency           = "USD";
-    r.notional           = 1000000.0;
-    r.variance_strike    = 0.04;
-    r.start_date         = "2026-01-01";
-    r.maturity_date      = "2026-12-31";
+    r.notional           = 50000.0;
+    r.variance_strike    = 0.20;
+    r.start_date         = "2025-02-20";
+    r.maturity_date      = "2025-05-20";
     r.long_short         = "Long";
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
@@ -74,12 +80,12 @@ TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityVarianceSwap");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == ".SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 1000000.0);
-    CHECK(read[0].variance_strike == 0.04);
-    CHECK(read[0].start_date == "2026-01-01");
-    CHECK(read[0].maturity_date == "2026-12-31");
+    CHECK(read[0].notional == 50000.0);
+    CHECK(read[0].variance_strike == 0.20);
+    CHECK(read[0].start_date == "2025-02-20");
+    CHECK(read[0].maturity_date == "2025-05-20");
     CHECK(read[0].long_short == "Long");
     BOOST_LOG_SEV(lg, debug) << "Read equity variance swap instrument: " << read[0];
 }

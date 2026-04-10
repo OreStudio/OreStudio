@@ -36,21 +36,27 @@ using ores::trading::repository::equity_barrier_option_instrument_repository;
 using ores::trading::domain::equity_barrier_option_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Barrier_Option.xml
+ * trade id in XML: EQBarrierOption
+ * See tests/test_data/equity_barrier_option_instrument.json for the full mapping snapshot.
+ */
 equity_barrier_option_instrument make_instrument(database_helper& h) {
     equity_barrier_option_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityBarrierOption";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = "RIC:.SPX";
     r.currency           = "USD";
-    r.notional           = 100000.0;
+    r.notional           = 1000.0;
     r.option_type        = "Call";
-    r.strike             = 4500.0;
-    r.expiry_date        = "2026-12-19";
+    r.strike             = 3200.0;
+    r.expiry_date        = "2026-08-15";
     r.exercise_type      = "European";
     r.long_short         = "Long";
-    r.lower_barrier      = 4000.0;
-    r.lower_barrier_type = "DownIn";
+    r.lower_barrier      = 3500.0;
+    r.lower_barrier_type = "UpAndOut";
     r.upper_barrier_type = "";
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
@@ -78,16 +84,16 @@ TEST_CASE("equity_barrier_option_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityBarrierOption");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == "RIC:.SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 100000.0);
+    CHECK(read[0].notional == 1000.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].strike == 4500.0);
-    CHECK(read[0].expiry_date == "2026-12-19");
+    CHECK(read[0].strike == 3200.0);
+    CHECK(read[0].expiry_date == "2026-08-15");
     CHECK(read[0].exercise_type == "European");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].lower_barrier == 4000.0);
-    CHECK(read[0].lower_barrier_type == "DownIn");
+    CHECK(read[0].lower_barrier == 3500.0);
+    CHECK(read[0].lower_barrier_type == "UpAndOut");
     BOOST_LOG_SEV(lg, debug) << "Read equity barrier option instrument: " << read[0];
 }
 

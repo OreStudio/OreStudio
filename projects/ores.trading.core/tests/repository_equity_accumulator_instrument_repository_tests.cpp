@@ -36,21 +36,28 @@ using ores::trading::repository::equity_accumulator_instrument_repository;
 using ores::trading::domain::equity_accumulator_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Exotic_EquityAccumulator_single_name.xml
+ * trade id in XML: EQ_DECUMULATOR
+ * See tests/test_data/equity_accumulator_instrument.json for the full mapping snapshot.
+ */
 equity_accumulator_instrument make_instrument(database_helper& h) {
     equity_accumulator_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityAccumulator";
-    r.underlying_name    = "SP5";
-    r.currency           = "USD";
-    r.strike             = 4500.0;
-    r.fixing_amount      = 1000.0;
-    r.start_date         = "2026-01-01";
-    r.expiry_date        = "2026-12-31";
+    r.underlying_name    = ".STOXX50";
+    r.currency           = "EUR";
+    r.strike             = 4000.0;
+    r.fixing_amount      = 30.0;
+    r.start_date         = "2025-02-05";
+    r.expiry_date        = "2026-02-05";
     r.fixing_frequency   = "Monthly";
     r.long_short         = "Long";
+    r.knock_out_level    = 3500.0;
     r.target_type        = "";
-    r.payoff_type        = "Accumulator";
+    r.payoff_type        = "Decumulator";
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
     r.change_reason_code = "system.external_data_import";
@@ -77,15 +84,16 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityAccumulator");
-    CHECK(read[0].underlying_name == "SP5");
-    CHECK(read[0].currency == "USD");
-    CHECK(read[0].strike == 4500.0);
-    CHECK(read[0].fixing_amount == 1000.0);
-    CHECK(read[0].start_date == "2026-01-01");
-    CHECK(read[0].expiry_date == "2026-12-31");
+    CHECK(read[0].underlying_name == ".STOXX50");
+    CHECK(read[0].currency == "EUR");
+    CHECK(read[0].strike == 4000.0);
+    CHECK(read[0].fixing_amount == 30.0);
+    CHECK(read[0].start_date == "2025-02-05");
+    CHECK(read[0].expiry_date == "2026-02-05");
     CHECK(read[0].fixing_frequency == "Monthly");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].payoff_type == "Accumulator");
+    CHECK(read[0].knock_out_level == 3500.0);
+    CHECK(read[0].payoff_type == "Decumulator");
     BOOST_LOG_SEV(lg, debug) << "Read equity accumulator instrument: " << read[0];
 }
 

@@ -36,17 +36,23 @@ using ores::trading::repository::equity_option_instrument_repository;
 using ores::trading::domain::equity_option_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Option_European.xml
+ * trade id in XML: EquityOption
+ * See tests/test_data/equity_option_instrument.json for the full mapping snapshot.
+ */
 equity_option_instrument make_instrument(database_helper& h) {
     equity_option_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityOption";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = "RIC:.SPX";
     r.currency           = "USD";
-    r.notional           = 100000.0;
+    r.notional           = 775.0;
     r.option_type        = "Call";
-    r.strike             = 4500.0;
-    r.expiry_date        = "2026-12-19";
+    r.strike             = 2800.0;
+    r.expiry_date        = "2025-02-20";
     r.exercise_type      = "European";
     r.long_short         = "Long";
     r.settlement_type    = "Cash";
@@ -77,12 +83,12 @@ TEST_CASE("equity_option_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityOption");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == "RIC:.SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 100000.0);
+    CHECK(read[0].notional == 775.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].strike == 4500.0);
-    CHECK(read[0].expiry_date == "2026-12-19");
+    CHECK(read[0].strike == 2800.0);
+    CHECK(read[0].expiry_date == "2025-02-20");
     CHECK(read[0].exercise_type == "European");
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].settlement_type == "Cash");

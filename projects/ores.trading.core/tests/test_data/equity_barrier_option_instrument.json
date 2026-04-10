@@ -1,0 +1,32 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Barrier_Option.xml",
+  "trade_id_in_xml": "EQBarrierOption",
+  "mapper": "equity_instrument_mapper::forward_equity_barrier_option (planned Phase 3 mapper)",
+  "notes": [
+    "notional maps from Quantity (1000)",
+    "lower_barrier maps from BarrierData.Levels.Level (3500)",
+    "lower_barrier_type maps from BarrierData.Type (UpAndOut)",
+    "upper_barrier is absent: XML has a single-level BarrierData block"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityBarrierOption",
+    "underlying_name": "RIC:.SPX",
+    "currency": "USD",
+    "notional": 1000.0,
+    "option_type": "Call",
+    "strike": 3200.0,
+    "expiry_date": "2026-08-15",
+    "exercise_type": "European",
+    "long_short": "Long",
+    "lower_barrier": 3500.0,
+    "lower_barrier_type": "UpAndOut",
+    "upper_barrier": null,
+    "upper_barrier_type": "",
+    "rebate": null,
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

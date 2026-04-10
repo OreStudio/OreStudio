@@ -1,0 +1,23 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Option_European.xml",
+  "trade_id_in_xml": "EquityOption",
+  "mapper": "equity_instrument_mapper::forward_equity_option (planned Phase 3 mapper)",
+  "instrument": {
+    "trade_type_code": "EquityOption",
+    "underlying_name": "RIC:.SPX",
+    "currency": "USD",
+    "notional": 775.0,
+    "option_type": "Call",
+    "strike": 2800.0,
+    "expiry_date": "2025-02-20",
+    "exercise_type": "European",
+    "long_short": "Long",
+    "settlement_type": "Cash",
+    "cliquet_frequency": "",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

@@ -36,20 +36,26 @@ using ores::trading::repository::equity_digital_option_instrument_repository;
 using ores::trading::domain::equity_digital_option_instrument;
 using namespace ores::logging;
 
+/*
+ * Test data derived from:
+ *   external/ore/examples/Products/Example_Trades/Equity_Digital_Option.xml
+ * trade id in XML: EQDigitalOption
+ * See tests/test_data/equity_digital_option_instrument.json for the full mapping snapshot.
+ */
 equity_digital_option_instrument make_instrument(database_helper& h) {
     equity_digital_option_instrument r;
     r.instrument_id      = boost::uuids::random_generator()();
     r.tenant_id          = h.tenant_id();
     r.trade_type_code    = "EquityDigitalOption";
-    r.underlying_name    = "SP5";
+    r.underlying_name    = "RIC:.SPX";
     r.currency           = "USD";
-    r.notional           = 50000.0;
+    r.notional           = 1000.0;
     r.option_type        = "Call";
-    r.strike             = 4500.0;
+    r.strike             = 3300.0;
     r.barrier_type       = "";
-    r.expiry_date        = "2026-12-19";
+    r.expiry_date        = "2026-07-17";
     r.long_short         = "Long";
-    r.payout_amount      = 10000.0;
+    r.payout_amount      = 1000.0;
     r.modified_by        = h.db_user();
     r.performed_by       = "ores";
     r.change_reason_code = "system.external_data_import";
@@ -76,14 +82,14 @@ TEST_CASE("equity_digital_option_instrument_write_and_read_latest", tags) {
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
     CHECK(read[0].trade_type_code == "EquityDigitalOption");
-    CHECK(read[0].underlying_name == "SP5");
+    CHECK(read[0].underlying_name == "RIC:.SPX");
     CHECK(read[0].currency == "USD");
-    CHECK(read[0].notional == 50000.0);
+    CHECK(read[0].notional == 1000.0);
     CHECK(read[0].option_type == "Call");
-    CHECK(read[0].strike == 4500.0);
-    CHECK(read[0].expiry_date == "2026-12-19");
+    CHECK(read[0].strike == 3300.0);
+    CHECK(read[0].expiry_date == "2026-07-17");
     CHECK(read[0].long_short == "Long");
-    CHECK(read[0].payout_amount == 10000.0);
+    CHECK(read[0].payout_amount == 1000.0);
     BOOST_LOG_SEV(lg, debug) << "Read equity digital option instrument: " << read[0];
 }
 

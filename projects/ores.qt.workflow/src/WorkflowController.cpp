@@ -20,6 +20,7 @@
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WorkflowMdiWindow.hpp"
+#include "ores.qt/WorkflowDefinitionMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
@@ -36,7 +37,9 @@ WorkflowController::WorkflowController(
       mdiArea_(mdiArea),
       clientManager_(clientManager),
       listWindow_(nullptr),
-      listSubWindow_(nullptr) {
+      listSubWindow_(nullptr),
+      defsWindow_(nullptr),
+      defsSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "WorkflowController created";
 }
@@ -83,11 +86,58 @@ void WorkflowController::showListWindow() {
     listSubWindow_->show();
 }
 
+void WorkflowController::showDefinitionsWindow() {
+    if (defsSubWindow_) {
+        mdiArea_->setActiveSubWindow(defsSubWindow_);
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Opening workflow definitions";
+
+    defsWindow_ = new WorkflowDefinitionMdiWindow(clientManager_);
+
+    connect(defsWindow_, &WorkflowDefinitionMdiWindow::statusChanged,
+            this, [self = QPointer<WorkflowController>(this)](const QString& msg) {
+        if (!self) return;
+        emit self->statusMessage(msg);
+    });
+    connect(defsWindow_, &WorkflowDefinitionMdiWindow::errorOccurred,
+            this, [self = QPointer<WorkflowController>(this)](const QString& err) {
+        if (!self) return;
+        emit self->errorMessage(err);
+    });
+
+    defsSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    defsSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    defsSubWindow_->setWidget(defsWindow_);
+    defsSubWindow_->setWindowTitle(tr("Workflow Definitions"));
+    defsSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::DocumentTable, IconUtils::DefaultIconColor));
+
+    connect(defsSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<WorkflowController>(this)]() {
+        if (!self) return;
+        self->defsWindow_ = nullptr;
+        self->defsSubWindow_ = nullptr;
+    });
+
+    emit detachableWindowCreated(defsSubWindow_);
+
+    mdiArea_->addSubWindow(defsSubWindow_);
+    defsSubWindow_->adjustSize();
+    defsSubWindow_->show();
+}
+
 void WorkflowController::closeAllWindows() {
     if (listSubWindow_) {
         listSubWindow_->close();
         listSubWindow_ = nullptr;
         listWindow_ = nullptr;
+    }
+    if (defsSubWindow_) {
+        defsSubWindow_->close();
+        defsSubWindow_ = nullptr;
+        defsWindow_ = nullptr;
     }
 }
 

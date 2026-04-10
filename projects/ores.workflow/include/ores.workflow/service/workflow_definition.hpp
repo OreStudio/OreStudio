@@ -39,6 +39,11 @@ struct workflow_step_def {
     std::string name;
 
     /**
+     * @brief Human-readable description of what this step does.
+     */
+    std::string description;
+
+    /**
      * @brief NATS subject to which the step command is published.
      *
      * E.g. "refdata.v1.parties.save"
@@ -93,6 +98,11 @@ struct workflow_definition {
      * E.g. "provision_parties_workflow"
      */
     std::string type_name;
+
+    /**
+     * @brief Human-readable description of what this workflow does.
+     */
+    std::string description;
 
     /**
      * @brief Ordered sequence of step descriptors.

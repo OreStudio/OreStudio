@@ -48,9 +48,10 @@ struct options final {
      * @brief Root directory for per-import working directories.
      *
      * Each import unpacks its tarball into work_dir/{request_id}/.
-     * Default: /var/ores/ore-service/work.
+     * Default: ../var/ore-service/work (relative to the binary directory,
+     * resolves to publish/var/ore-service/work/ in the build tree).
      */
-    std::string work_dir = "/var/ores/ore-service/work";
+    std::string work_dir = "../var/ore-service/work";
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

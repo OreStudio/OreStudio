@@ -121,6 +121,50 @@ struct get_workflow_steps_response {
     std::vector<workflow_step_summary> steps;
 };
 
+// ============================================================================
+// List workflow definitions (registry metadata — no auth required)
+// ============================================================================
+
+/**
+ * @brief Summary of a single step within a workflow definition.
+ */
+struct workflow_step_definition_summary {
+    int step_index = 0;
+    std::string name;
+    std::string description;
+    std::string command_subject;
+    bool has_compensation = false;
+};
+
+/**
+ * @brief Summary of a workflow definition registered in the engine.
+ */
+struct workflow_definition_summary {
+    std::string type_name;
+    std::string description;
+    int step_count = 0;
+    std::vector<workflow_step_definition_summary> steps;
+};
+
+/**
+ * @brief Request to list all registered workflow definitions.
+ *
+ * Returns the type name, description, and step metadata for every
+ * workflow type known to the engine. No authentication required — the
+ * definitions are public metadata.
+ */
+struct list_workflow_definitions_request {
+    using response_type = struct list_workflow_definitions_response;
+    static constexpr std::string_view nats_subject =
+        "workflow.v1.definitions.list";
+};
+
+struct list_workflow_definitions_response {
+    bool success = false;
+    std::string message;
+    std::vector<workflow_definition_summary> definitions;
+};
+
 }  // namespace ores::workflow::messaging
 
 #endif

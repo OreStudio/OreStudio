@@ -23,6 +23,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFontDatabase>
+#include <QFormLayout>
 #include <QFrame>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -78,7 +79,7 @@ enum class Col {
     Steps,
     CreatedBy,
     CreatedAt,
-    CorrelationId,
+    WorkflowId,
     Count
 };
 
@@ -89,7 +90,6 @@ enum class SCol {
     Status,
     StartedAt,
     CompletedAt,
-    Error,
     Count
 };
 
@@ -359,7 +359,7 @@ void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
     instanceTable_ = new QTableWidget(0, static_cast<int>(Col::Count), tab);
     instanceTable_->setHorizontalHeaderLabels(
         {tr("Status"), tr("Type"), tr("Steps"),
-         tr("Created By"), tr("Created At"), tr("Correlation ID")});
+         tr("Created By"), tr("Created At"), tr("Workflow ID")});
     instanceTable_->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
     instanceTable_->horizontalHeader()->setStretchLastSection(true);
@@ -383,7 +383,7 @@ void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
     stepsTable_ = new QTableWidget(0, static_cast<int>(SCol::Count), stepsGroup_);
     stepsTable_->setHorizontalHeaderLabels(
         {tr("#"), tr("Name"), tr("Status"),
-         tr("Started At"), tr("Completed At"), tr("Error")});
+         tr("Started At"), tr("Completed At")});
     stepsTable_->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
     stepsTable_->horizontalHeader()->setStretchLastSection(true);
@@ -584,8 +584,8 @@ void WorkflowMdiWindow::populateExecutionList(
         instanceTable_->setItem(row, static_cast<int>(Col::CreatedAt),
             make_item(QString::fromStdString(inst.created_at)));
 
-        instanceTable_->setItem(row, static_cast<int>(Col::CorrelationId),
-            make_item(corrId));
+        instanceTable_->setItem(row, static_cast<int>(Col::WorkflowId),
+            make_item(id));
 
         if (id == prevSelectedId)
             reSelectRow = row;
@@ -677,16 +677,15 @@ void WorkflowMdiWindow::populateSteps(
                 ? QString::fromStdString(*step.started_at)
                 : QStringLiteral("—")));
 
-        stepsTable_->setItem(row, static_cast<int>(SCol::CompletedAt),
-            make_item(step.completed_at
+        auto* completedItem = make_item(step.completed_at
                 ? QString::fromStdString(*step.completed_at)
-                : QStringLiteral("—")));
+                : QStringLiteral("—"));
+        stepsTable_->setItem(row, static_cast<int>(SCol::CompletedAt),
+            completedItem);
 
-        // Store full error text as item data; truncate for display.
+        // Store full error text on the last visible item for the details dialog.
         const QString fullError = QString::fromStdString(step.error);
-        auto* errorItem = make_item(fullError);
-        errorItem->setData(ErrorDetailRole, fullError);
-        stepsTable_->setItem(row, static_cast<int>(SCol::Error), errorItem);
+        completedItem->setData(ErrorDetailRole, fullError);
     }
 
     stepsTable_->resizeColumnsToContents();
@@ -749,10 +748,11 @@ void WorkflowMdiWindow::onInstanceSelectionChanged() {
 }
 
 void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
-    auto* errorItem = stepsTable_->item(row, static_cast<int>(SCol::Error));
-    if (!errorItem) return;
+    // Error text is stored on the CompletedAt column item.
+    auto* dataItem = stepsTable_->item(row, static_cast<int>(SCol::CompletedAt));
+    if (!dataItem) return;
 
-    const QString fullError = errorItem->data(ErrorDetailRole).toString();
+    const QString fullError = dataItem->data(ErrorDetailRole).toString();
 
     // Always show the dialog (even without an error) so the user can see step info.
     auto* nameItem = stepsTable_->item(row, static_cast<int>(SCol::Name));
@@ -769,37 +769,45 @@ void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
         }
     }
 
-    auto* dlg = new QDialog(this);
+    auto* dlg = new QDialog(nullptr);  // no parent → independent top-level window
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle(tr("Step details — %1").arg(stepName));
-    dlg->resize(760, 480);
+    dlg->resize(760, 520);
 
-    auto* layout = new QVBoxLayout(dlg);
+    auto* vbox = new QVBoxLayout(dlg);
 
-    // ── Header: workflow ID and correlation ID (copyable) ─────────────────────
-    auto* headerLayout = new QHBoxLayout;
-    auto makeCopyLabel = [dlg](const QString& label, const QString& value) {
-        auto* l = new QLabel(
-            QStringLiteral("<b>%1:</b> %2").arg(label, value), dlg);
-        l->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        return l;
+    // ── Form fields ───────────────────────────────────────────────────────────
+    auto* form = new QFormLayout;
+    form->setLabelAlignment(Qt::AlignRight);
+    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    auto makeField = [dlg](const QString& value) {
+        auto* le = new QLineEdit(value, dlg);
+        le->setReadOnly(true);
+        le->setFrame(false);
+        le->setStyleSheet(QStringLiteral(
+            "QLineEdit { background: transparent; }"));
+        return le;
     };
-    headerLayout->addWidget(makeCopyLabel(tr("Workflow ID"), workflowId));
-    headerLayout->addWidget(makeCopyLabel(tr("Correlation ID"), corrId));
-    headerLayout->addStretch();
-    layout->addLayout(headerLayout);
 
-    // ── Error text ────────────────────────────────────────────────────────────
+    form->addRow(tr("Workflow ID:"),    makeField(workflowId));
+    form->addRow(tr("Correlation ID:"), makeField(corrId));
+    form->addRow(tr("Step:"),           makeField(stepName));
+
+    vbox->addLayout(form);
+
+    // ── Error message ─────────────────────────────────────────────────────────
+    vbox->addWidget(new QLabel(tr("Error:"), dlg));
     const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     auto* edit = new QPlainTextEdit(
         fullError.isEmpty() ? tr("(no error)") : fullError, dlg);
     edit->setReadOnly(true);
     edit->setFont(fixed);
-    layout->addWidget(edit);
+    vbox->addWidget(edit);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
     connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
-    layout->addWidget(buttons);
+    vbox->addWidget(buttons);
 
     dlg->show();
 }

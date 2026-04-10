@@ -48,6 +48,9 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
 
     workflow_definition def;
     def.type_name = "report_execution_workflow";
+    def.description = "Executes a risk report end-to-end: gathers trades and "
+        "market data, assembles the input bundle, prepares the ORE package, "
+        "submits to the compute grid, collects results, and finalises the report.";
 
     // ----------------------------------------------------------------
     // Step 0: gather trades
@@ -55,6 +58,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "gather_trades";
+        s.description = "Fetch trades matching the report's book scope.";
         s.command_subject = std::string(gather_trades_request::nats_subject);
         // Compensation marks the report instance as failed.
         s.compensation_subject = std::string(fail_report_request::nats_subject);
@@ -90,6 +94,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "gather_market_data";
+        s.description = "Fetch market data (price series) for the report period.";
         s.command_subject = std::string(gather_market_data_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 
@@ -124,6 +129,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "assemble_bundle";
+        s.description = "Assemble aggregated input data bundle from trades and market data.";
         s.command_subject = std::string(assemble_bundle_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 
@@ -176,6 +182,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "prepare_ore_package";
+        s.description = "Package trades and market data into ORE XML tarballs for compute.";
         s.command_subject = std::string(prepare_ore_package_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 
@@ -230,6 +237,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "submit_compute";
+        s.description = "Submit ORE packages to the compute grid for pricing.";
         s.command_subject = std::string(submit_compute_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 
@@ -273,6 +281,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "collect_compute_results";
+        s.description = "Collect and aggregate compute grid results.";
         s.command_subject = std::string(collect_compute_results_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 
@@ -316,6 +325,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "finalise";
+        s.description = "Mark the report instance as completed.";
         s.command_subject = std::string(finalise_report_request::nats_subject);
         s.compensation_subject = std::string(fail_report_request::nats_subject);
 

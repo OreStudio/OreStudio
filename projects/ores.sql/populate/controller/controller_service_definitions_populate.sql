@@ -68,7 +68,14 @@ begin
             ('ores.compute.service',    'ores.compute.service',    1, null,       'Compute grid orchestration'),
             ('ores.synthetic.service',  'ores.synthetic.service',  1, null,       'Synthetic data generation'),
             ('ores.workflow.service',   'ores.workflow.service',   1, null,       'Workflow execution engine'),
-            ('ores.ore.service',        'ores.ore.service',        1, null,       'ORE pricing engine integration'),
+            -- ore-service: custom args to set work-dir under publish/var (not /var/ores).
+            ('ores.ore.service', 'ores.ore.service', 1,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-replica-index {replica_index}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' --work-dir ../var/ore-service/work',
+                'ORE pricing engine integration'),
             ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
             ('ores.analytics.service', 'ores.analytics.service',  1, null,       'Analytics pricing engine integration'),
             -- HTTP server: needs --port and --storage-dir.

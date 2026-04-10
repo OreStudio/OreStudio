@@ -49,6 +49,12 @@ public:
     [[nodiscard]] const workflow_definition*
     find(const std::string& type_name) const;
 
+    /**
+     * @brief Returns all registered workflow definitions.
+     */
+    [[nodiscard]] const std::unordered_map<std::string, workflow_definition>&
+    all() const { return definitions_; }
+
 private:
     std::unordered_map<std::string, workflow_definition> definitions_;
 };

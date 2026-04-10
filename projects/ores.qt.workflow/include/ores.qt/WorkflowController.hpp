@@ -30,6 +30,7 @@
 namespace ores::qt {
 
 class WorkflowMdiWindow;
+class WorkflowDefinitionMdiWindow;
 
 /**
  * @brief Controller for the workflow monitor window.
@@ -58,6 +59,7 @@ public:
         QObject* parent = nullptr);
 
     void showListWindow();
+    void showDefinitionsWindow();
     void closeAllWindows();
 
 signals:
@@ -73,6 +75,9 @@ private:
 
     QPointer<WorkflowMdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listSubWindow_;
+
+    QPointer<WorkflowDefinitionMdiWindow> defsWindow_;
+    QPointer<DetachableMdiSubWindow> defsSubWindow_;
 };
 
 }

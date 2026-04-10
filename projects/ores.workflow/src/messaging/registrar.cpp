@@ -99,7 +99,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ctx and signer are copied here; they are moved into wh below.
     // ----------------------------------------------------------------
     auto qh = std::make_shared<workflow_query_handler>(
-        nats, ctx, signer, instance_states, step_states);
+        nats, ctx, signer, instance_states, step_states, registry);
 
     subs.push_back(nats.queue_subscribe(
         list_workflow_instances_request::nats_subject, qg,
@@ -111,6 +111,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_workflow_steps_request::nats_subject, qg,
         [qh](ores::nats::message msg) {
             qh->get_steps(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        list_workflow_definitions_request::nats_subject, qg,
+        [qh](ores::nats::message msg) {
+            qh->list_definitions(std::move(msg));
         }));
 
     // ----------------------------------------------------------------

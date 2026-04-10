@@ -79,6 +79,7 @@ private:
         std::vector<ores::workflow::messaging::workflow_step_summary> steps;
     };
 
+
 public:
     explicit WorkflowMdiWindow(ClientManager* clientManager,
                                QWidget* parent = nullptr);

@@ -74,6 +74,12 @@ QList<QMenu*> WorkflowPlugin::create_menus() {
         if (controller_) controller_->showListWindow();
     });
 
+    auto* actDefinitions = menuWorkflows->addAction(
+        ico(Icon::DocumentTable), tr("&Definitions"));
+    connect(actDefinitions, &QAction::triggered, this, [this]() {
+        if (controller_) controller_->showDefinitionsWindow();
+    });
+
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuWorkflows};
 }

@@ -20,6 +20,7 @@
 #ifndef ORES_WORKFLOW_MESSAGING_WORKFLOW_QUERY_HANDLER_HPP
 #define ORES_WORKFLOW_MESSAGING_WORKFLOW_QUERY_HANDLER_HPP
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <boost/uuid/uuid.hpp>
@@ -29,6 +30,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.workflow/service/workflow_registry.hpp"
 #include "ores.workflow/repository/workflow_instance_repository.hpp"
 #include "ores.workflow/repository/workflow_step_repository.hpp"
 
@@ -61,7 +63,8 @@ public:
         ores::database::context ctx,
         ores::security::jwt::jwt_authenticator signer,
         const service::fsm_state_map& instance_states,
-        const service::fsm_state_map& step_states);
+        const service::fsm_state_map& step_states,
+        std::shared_ptr<const service::workflow_registry> registry);
 
     /**
      * @brief Lists workflow instances for the authenticated tenant.
@@ -81,6 +84,13 @@ public:
      */
     void get_steps(ores::nats::message msg);
 
+    /**
+     * @brief Returns all registered workflow definitions.
+     *
+     * No authentication required — definitions are public metadata.
+     */
+    void list_definitions(ores::nats::message msg);
+
 private:
     /**
      * @brief Maps a state UUID to its human-readable name.
@@ -99,6 +109,8 @@ private:
         std::hash<boost::uuids::uuid>> instance_state_names_;
     std::unordered_map<boost::uuids::uuid, std::string,
         std::hash<boost::uuids::uuid>> step_state_names_;
+
+    std::shared_ptr<const service::workflow_registry> registry_;
 
     repository::workflow_instance_repository instance_repo_;
     repository::workflow_step_repository step_repo_;

@@ -37,10 +37,12 @@ workflow_query_handler::workflow_query_handler(
     ores::database::context ctx,
     ores::security::jwt::jwt_authenticator signer,
     const service::fsm_state_map& instance_states,
-    const service::fsm_state_map& step_states)
+    const service::fsm_state_map& step_states,
+    std::shared_ptr<const service::workflow_registry> registry)
     : nats_(nats)
     , ctx_(std::move(ctx))
-    , signer_(std::move(signer)) {
+    , signer_(std::move(signer))
+    , registry_(std::move(registry)) {
 
     // Build reverse maps: UUID → name
     for (const auto& [name, uuid] : instance_states.states)
@@ -218,6 +220,46 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), debug)
         << "get_steps returning " << resp.steps.size() << " step(s)"
         << " for workflow=" << req->workflow_instance_id;
+    reply(nats_, msg, resp);
+}
+
+void workflow_query_handler::list_definitions(ores::nats::message msg) {
+    BOOST_LOG_SEV(lg(), debug) << "list_definitions request received";
+
+    list_workflow_definitions_response resp;
+    resp.success = true;
+
+    if (registry_) {
+        for (const auto& [type_name, def] : registry_->all()) {
+            workflow_definition_summary ds;
+            ds.type_name   = def.type_name;
+            ds.description = def.description;
+            ds.step_count  = static_cast<int>(def.steps.size());
+
+            for (int i = 0; i < static_cast<int>(def.steps.size()); ++i) {
+                const auto& s = def.steps[static_cast<std::size_t>(i)];
+                workflow_step_definition_summary ss;
+                ss.step_index       = i;
+                ss.name             = s.name;
+                ss.description      = s.description;
+                ss.command_subject   = s.command_subject;
+                ss.has_compensation  = !s.compensation_subject.empty();
+                ds.steps.push_back(std::move(ss));
+            }
+
+            resp.definitions.push_back(std::move(ds));
+        }
+    }
+
+    // Sort by type_name for stable ordering.
+    std::sort(resp.definitions.begin(), resp.definitions.end(),
+        [](const auto& a, const auto& b) {
+            return a.type_name < b.type_name;
+        });
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "list_definitions returning " << resp.definitions.size()
+        << " definition(s)";
     reply(nats_, msg, resp);
 }
 

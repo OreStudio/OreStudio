@@ -44,7 +44,7 @@ SchedulerMonitorMdiWindow::SchedulerMonitorMdiWindow(
 
     setupUi();
 
-    autoRefreshTimer_->setInterval(30000); // default 30 s
+    autoRefreshTimer_->setInterval(15000); // default 15 s
     connect(autoRefreshTimer_, &QTimer::timeout, this, &SchedulerMonitorMdiWindow::refresh);
 
     refresh();
@@ -78,7 +78,7 @@ void SchedulerMonitorMdiWindow::setupUi() {
 
     intervalSpin_ = new QSpinBox(this);
     intervalSpin_->setRange(5, 3600);
-    intervalSpin_->setValue(30);
+    intervalSpin_->setValue(15);
     intervalSpin_->setSuffix(tr(" s"));
     intervalSpin_->setToolTip(tr("Auto-refresh interval in seconds"));
     connect(intervalSpin_, &QSpinBox::valueChanged,

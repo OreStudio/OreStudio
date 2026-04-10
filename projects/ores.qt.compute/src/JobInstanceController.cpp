@@ -35,7 +35,7 @@ JobInstanceController::JobInstanceController(
     ClientManager* clientManager,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, {},
-          std::string_view{}, parent),
+          event_subject, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 

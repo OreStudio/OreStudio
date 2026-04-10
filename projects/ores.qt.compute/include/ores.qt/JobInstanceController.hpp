@@ -42,6 +42,8 @@ class JobInstanceController final : public EntityController {
 private:
     inline static std::string_view logger_name =
         "ores.qt.job_instance_controller";
+    static constexpr std::string_view event_subject =
+        "scheduler.v1.job-instance-events";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

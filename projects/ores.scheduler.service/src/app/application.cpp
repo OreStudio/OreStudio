@@ -84,7 +84,7 @@ application::run(boost::asio::io_context& io_ctx,
         std::make_unique<ores::scheduler::service::nats_publish_action_handler>(nats));
 
     auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
-        db_ctx, std::move(handlers));
+        nats, db_ctx, std::move(handlers));
 
     co_await ores::service::service::run(
         io_ctx, nats, db_ctx, "ores.scheduler.service",

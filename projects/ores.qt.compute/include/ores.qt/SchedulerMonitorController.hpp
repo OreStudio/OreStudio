@@ -47,12 +47,16 @@ private:
         return instance;
     }
 
+    static constexpr std::string_view event_subject =
+        "scheduler.v1.job-instance-events";
+
 public:
     SchedulerMonitorController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         QObject* parent = nullptr);
+    ~SchedulerMonitorController() override;
 
     void showWindow();
     void closeWindow();

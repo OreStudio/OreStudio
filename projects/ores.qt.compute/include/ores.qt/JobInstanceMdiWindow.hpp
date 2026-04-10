@@ -20,6 +20,9 @@
 #ifndef ORES_QT_JOB_INSTANCE_MDI_WINDOW_HPP
 #define ORES_QT_JOB_INSTANCE_MDI_WINDOW_HPP
 
+#include <QTimer>
+#include <QLabel>
+#include <QSpinBox>
 #include <QToolBar>
 #include <QTableView>
 #include <QSortFilterProxyModel>
@@ -73,6 +76,8 @@ private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
     void onDoubleClicked(const QModelIndex& index);
+    void onAutoRefreshToggled(bool enabled);
+    void onAutoRefreshIntervalChanged(int seconds);
 
 private:
     void setupUi();
@@ -88,6 +93,9 @@ private:
     QSortFilterProxyModel* proxyModel_;
 
     QAction* reloadAction_;
+    QAction* autoRefreshAction_;
+    QSpinBox* intervalSpin_;
+    QTimer* autoRefreshTimer_;
 };
 
 }

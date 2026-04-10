@@ -23,10 +23,12 @@
 #include <chrono>
 #include <map>
 #include <memory>
+#include <string_view>
 #include <vector>
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/service/action_handler.hpp"
 
@@ -44,7 +46,11 @@ namespace ores::scheduler::service {
  */
 class scheduler_loop final {
 public:
-    scheduler_loop(database::context system_ctx,
+    static constexpr std::string_view job_instance_events_subject =
+        "scheduler.v1.job-instance-events";
+
+    scheduler_loop(ores::nats::service::client& nats,
+        database::context system_ctx,
         std::vector<std::unique_ptr<action_handler>> handlers);
 
     /**
@@ -64,7 +70,10 @@ private:
     boost::asio::awaitable<void> tick(boost::asio::io_context& ioc);
     boost::asio::awaitable<void> fire_job(const domain::job_definition& job);
     void load_jobs();
+    void publish_instance_event(std::string_view change_type,
+        const domain::job_definition& job, std::int64_t inst_id);
 
+    ores::nats::service::client& nats_;
     database::context system_ctx_;
     std::vector<std::unique_ptr<action_handler>> handlers_;
     std::vector<domain::job_definition> jobs_;

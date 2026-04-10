@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: C7E3B2A4-8F95-4D9C-B3E7-H4C95G1F2678
+:END:
+#+title: Scheduler Real-Time UI — Job Lifecycle Events and Live Views
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+The =feature/scheduler-ui= branch added =JobInstanceMdiWindow= and
+=SchedulerMonitorMdiWindow= to the Qt client, but both are polling-only and
+neither reacts to server-side job state changes in a timely way:
+
+- =JobInstanceMdiWindow= has no auto-refresh at all — a manual Reload is
+  required to see new runs.
+- =SchedulerMonitorMdiWindow= polls every 30 seconds, which is too coarse for
+  jobs that may start and finish in seconds.
+- =scheduler_loop= writes job lifecycle (started / completed / failed) only to
+  the database; it publishes no NATS event that clients can subscribe to.
+- =JobInstanceController= was constructed without an event-subscription name, so
+  =EntityController='s stale-mark machinery is idle.
+
+* Architecture
+
+The scheduler is a general-purpose service.  Any client — the Qt UI, a
+reporting service, another microservice — can both:
+
+1. *Schedule* a job by sending =schedule_job_request= to
+   =scheduler.v1.job-definitions.schedule=.
+2. *Get notified* of job lifecycle transitions by subscribing to
+   =scheduler.v1.job-instance-events=.
+
+There is nothing special about the Qt client here.  The existing =nats_publish=
+action handler already demonstrates this pattern for service-to-service
+triggering (the scheduler fires a job and publishes to a per-job configurable
+subject).  What is missing is a *fixed lifecycle subject* published for every
+job regardless of action type.
+
+** Event format
+
+Re-use the existing =entity_change_event= format (=ores.eventing= library) so
+no new struct or =ClientManager= code is needed:
+
+#+begin_src
+subject:      scheduler.v1.job-instance-events
+entity:       ores.scheduler.job_instance
+change_type:  created   (job started)
+              updated   (job completed — succeeded or failed)
+entity_ids:   [ job_definition_id ]
+tenant_id:    from job_definition.tenant_id
+#+end_src
+
+Any subscriber that already handles =entity_change_event= events (e.g. via
+=ClientManager::subscribeToEvent=) can consume these without modification.
+
+* Implementation Plan
+
+** Phase 1 — Server: publish lifecycle events from =scheduler_loop=
+
+*** 1.1  Add NATS client reference to =scheduler_loop=
+
+=scheduler_loop= currently has no NATS access.  The registrar already holds a
+=nats::service::client&= (it passes it to =nats_publish_action_handler=); pass
+the same reference to =scheduler_loop=.
+
+Files:
+- =projects/ores.scheduler.core/include/ores.scheduler.core/service/scheduler_loop.hpp=
+  — add =ores::nats::service::client& nats_= member; update constructor signature.
+- =projects/ores.scheduler.core/src/service/scheduler_loop.cpp=
+  — accept =nats::service::client&= in constructor; add publish helper.
+- =projects/ores.scheduler.core/src/messaging/registrar.cpp=
+  — pass =nats= into =scheduler_loop= constructor.
+- =projects/ores.scheduler.service/src/main.cpp= (or wherever =scheduler_loop=
+  is instantiated outside the registrar) — update if needed.
+
+*** 1.2  Publish events in =fire_job()=
+
+Add a private helper =publish_instance_event(change_type, job, inst_id)= that
+serialises an =entity_change_event= and calls =nats_.publish(...)=.
+
+Publish twice:
+1. After =inst_repo.write_started= succeeds → =change_type = "created"=.
+2. After =inst_repo.write_completed= succeeds (both success and failure paths)
+   → =change_type = "updated"=.
+
+Files:
+- =projects/ores.scheduler.core/src/service/scheduler_loop.cpp=
+
+** Phase 2 — Client: =JobInstanceController= subscribes to events
+
+Pass ="scheduler.v1.job-instance-events"= as the =eventName= argument to the
+=EntityController= base constructor inside =JobInstanceController=.  The base
+class then handles subscribe / unsubscribe / reconnect automatically and calls
+=window->markAsStale()= on every event, showing the stale indicator immediately.
+
+Files:
+- =projects/ores.qt.compute/include/ores.qt/JobInstanceController.hpp=
+  — add =static constexpr std::string_view event_subject= constant.
+- =projects/ores.qt.compute/src/JobInstanceController.cpp=
+  — pass =event_subject= to =EntityController= base.
+- =projects/ores.qt.scheduler/src/SchedulerPlugin.cpp=
+  — remove the empty =eventName= passed to =JobInstanceController= (or confirm
+  the default picks it up from the constant).
+
+** Phase 3 — Client: =JobInstanceMdiWindow= auto-refresh
+
+Add an auto-refresh toolbar section to =JobInstanceMdiWindow= following the
+=ServiceDashboardMdiWindow= pattern exactly:
+
+#+begin_src
+[Reload] | sep | [Auto-Refresh toggle] | "Every" label | QSpinBox 5–3600 s | "s" suffix
+#+end_src
+
+Default interval: *15 seconds* (jobs can start and finish within a minute).
+
+The stale-mark from Phase 2 gives an immediate visual indicator; the timer
+provides a fallback refresh if an event is missed.
+
+Files:
+- =projects/ores.qt.compute/include/ores.qt/JobInstanceMdiWindow.hpp=
+  — add =QTimer*=, =QAction* autoRefreshAction_=, =QSpinBox* intervalSpin_=.
+- =projects/ores.qt.compute/src/JobInstanceMdiWindow.cpp=
+  — wire timer in =setupToolbar()=; add =onAutoRefreshToggled= and
+  =onAutoRefreshIntervalChanged= slots.
+
+** Phase 4 — Client: =SchedulerMonitorController= reacts to events
+
+=SchedulerMonitorController= does not inherit =EntityController=, so subscribe
+directly:
+
+- In constructor: connect =clientManager_->notificationReceived= to a lambda
+  that calls =window_->refresh()= when =eventType ==
+  "scheduler.v1.job-instance-events"= and the window is open.
+- On =on_login= (via =SchedulerPlugin=): call
+  =clientManager_->subscribeToEvent("scheduler.v1.job-instance-events")= and
+  unsubscribe in =closeWindow()= / destructor.
+
+This makes the monitor window update immediately when any job fires, instead of
+waiting up to 30 seconds.
+
+Also reduce the default auto-refresh interval from 30 s to *15 s* to match the
+job instances view.
+
+Files:
+- =projects/ores.qt.compute/include/ores.qt/SchedulerMonitorController.hpp=
+- =projects/ores.qt.compute/src/SchedulerMonitorController.cpp=
+
+* Out of Scope
+
+- Pagination in =JobInstanceMdiWindow= (limit currently 200 rows; acceptable for now).
+- Per-job filtering in the instances view.
+- Job cancellation / manual trigger from the UI.

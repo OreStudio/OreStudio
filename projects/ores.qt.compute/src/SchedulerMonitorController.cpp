@@ -36,7 +36,31 @@ SchedulerMonitorController::SchedulerMonitorController(
     : QObject(parent),
       mainWindow_(mainWindow),
       mdiArea_(mdiArea),
-      clientManager_(clientManager) {}
+      clientManager_(clientManager) {
+
+    connect(clientManager_, &ClientManager::notificationReceived,
+        this, [this](const QString& eventType, const QDateTime&,
+                     const QStringList&, const QString&) {
+            if (eventType == QString::fromUtf8(event_subject.data(),
+                    static_cast<int>(event_subject.size())) && window_) {
+                window_->refresh();
+            }
+        });
+
+    connect(clientManager_, &ClientManager::loggedIn, this, [this]() {
+        clientManager_->subscribeToEvent(std::string(event_subject));
+    });
+    connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+        clientManager_->subscribeToEvent(std::string(event_subject));
+    });
+    if (clientManager_->isConnected())
+        clientManager_->subscribeToEvent(std::string(event_subject));
+}
+
+SchedulerMonitorController::~SchedulerMonitorController() {
+    if (clientManager_)
+        clientManager_->unsubscribeFromEvent(std::string(event_subject));
+}
 
 void SchedulerMonitorController::showWindow() {
     // Singleton: if the window already exists, bring it to front.

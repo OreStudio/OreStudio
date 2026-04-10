@@ -19,6 +19,7 @@
  */
 #include "ores.qt/JobInstanceMdiWindow.hpp"
 
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include "ores.qt/IconUtils.hpp"
@@ -37,7 +38,14 @@ JobInstanceMdiWindow::JobInstanceMdiWindow(
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
-      reloadAction_(nullptr) {
+      reloadAction_(nullptr),
+      autoRefreshAction_(nullptr),
+      intervalSpin_(nullptr),
+      autoRefreshTimer_(new QTimer(this)) {
+
+    autoRefreshTimer_->setInterval(15000); // default 15 s
+    connect(autoRefreshTimer_, &QTimer::timeout,
+            this, &EntityListMdiWindow::reload);
 
     setupUi();
     setupConnections();
@@ -67,6 +75,27 @@ void JobInstanceMdiWindow::setupToolbar() {
             this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    autoRefreshAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor),
+        tr("Auto Refresh"));
+    autoRefreshAction_->setCheckable(true);
+    autoRefreshAction_->setChecked(false);
+    connect(autoRefreshAction_, &QAction::toggled,
+            this, &JobInstanceMdiWindow::onAutoRefreshToggled);
+
+    toolbar_->addWidget(new QLabel(tr(" Every "), this));
+
+    intervalSpin_ = new QSpinBox(this);
+    intervalSpin_->setRange(5, 3600);
+    intervalSpin_->setValue(15);
+    intervalSpin_->setSuffix(tr(" s"));
+    intervalSpin_->setToolTip(tr("Auto-refresh interval in seconds"));
+    connect(intervalSpin_, &QSpinBox::valueChanged,
+            this, &JobInstanceMdiWindow::onAutoRefreshIntervalChanged);
+    toolbar_->addWidget(intervalSpin_);
 }
 
 void JobInstanceMdiWindow::setupTable() {
@@ -124,6 +153,17 @@ void JobInstanceMdiWindow::onDoubleClicked(const QModelIndex& index) {
     const auto sourceIndex = proxyModel_->mapToSource(index);
     if (const auto* inst = model_->getInstance(sourceIndex.row()))
         emit showInstanceDetails(*inst);
+}
+
+void JobInstanceMdiWindow::onAutoRefreshToggled(bool enabled) {
+    if (enabled)
+        autoRefreshTimer_->start();
+    else
+        autoRefreshTimer_->stop();
+}
+
+void JobInstanceMdiWindow::onAutoRefreshIntervalChanged(int seconds) {
+    autoRefreshTimer_->setInterval(seconds * 1000);
 }
 
 }

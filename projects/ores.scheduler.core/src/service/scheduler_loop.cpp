@@ -19,12 +19,16 @@
  */
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
 
+#include <span>
 #include <stdexcept>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
@@ -44,13 +48,37 @@ auto& lg() {
 
 } // anonymous namespace
 
-scheduler_loop::scheduler_loop(database::context system_ctx,
+scheduler_loop::scheduler_loop(ores::nats::service::client& nats,
+    database::context system_ctx,
     std::vector<std::unique_ptr<action_handler>> handlers)
-    : system_ctx_(std::move(system_ctx))
+    : nats_(nats)
+    , system_ctx_(std::move(system_ctx))
     , handlers_(std::move(handlers)) {}
 
 void scheduler_loop::reload() {
     needs_reload_.store(true, std::memory_order_relaxed);
+}
+
+void scheduler_loop::publish_instance_event(std::string_view change_type,
+    const domain::job_definition& job, std::int64_t inst_id) {
+    try {
+        eventing::domain::entity_change_event ev;
+        ev.entity = "ores.scheduler.job_instance";
+        ev.timestamp = std::chrono::system_clock::now();
+        ev.entity_ids = {boost::uuids::to_string(job.id),
+                         std::to_string(inst_id)};
+        if (job.tenant_id)
+            ev.tenant_id = boost::uuids::to_string(*job.tenant_id);
+
+        const auto json = rfl::json::write(ev);
+        const auto* p = reinterpret_cast<const std::byte*>(json.data());
+        nats_.publish(job_instance_events_subject,
+            std::span<const std::byte>(p, json.size()));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to publish instance event (" << change_type
+            << ") for job " << job.job_name << ": " << e.what();
+    }
 }
 
 void scheduler_loop::load_jobs() {
@@ -99,6 +127,7 @@ scheduler_loop::fire_job(const domain::job_definition& job) {
             << job.job_name << ": " << e.what();
         co_return;
     }
+    publish_instance_event("created", job, inst_id);
 
     // Find the handler matching the job's action_type.
     action_handler* chosen = nullptr;
@@ -116,6 +145,7 @@ scheduler_loop::fire_job(const domain::job_definition& job) {
             inst_repo.write_completed(system_ctx_, inst_id, now,
                 domain::job_status::failed, msg);
         } catch (...) {}
+        publish_instance_event("updated", job, inst_id);
         last_run_[job.id] = now;
         co_return;
     }
@@ -131,6 +161,7 @@ scheduler_loop::fire_job(const domain::job_definition& job) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to write completion for "
                 << job.job_name << ": " << e.what();
         }
+        publish_instance_event("updated", job, inst_id);
         last_run_[job.id] = now;
         BOOST_LOG_SEV(lg(), info) << "Job succeeded: " << job.job_name;
     } else {
@@ -142,6 +173,7 @@ scheduler_loop::fire_job(const domain::job_definition& job) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to write failure for "
                 << job.job_name << ": " << e.what();
         }
+        publish_instance_event("updated", job, inst_id);
         last_run_[job.id] = now;
         BOOST_LOG_SEV(lg(), error) << "Job failed: " << job.job_name
                                    << " error: " << err;

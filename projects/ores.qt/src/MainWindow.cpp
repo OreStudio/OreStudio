@@ -519,6 +519,20 @@ MainWindow::MainWindow(QWidget* parent) :
     // Initially disable data-related actions until logged in
     updateMenuState();
 
+    // Warn the user about any plugins that failed to load.
+    // Deferred so the main window is fully visible before the dialog appears.
+    const auto& errs = PluginRegistry::instance().load_errors();
+    if (!errs.isEmpty()) {
+        QTimer::singleShot(0, this, [this, errs]() {
+            QString msg = tr("The following plugins could not be loaded. "
+                             "Some features will be unavailable:\n\n");
+            for (const auto& e : errs)
+                msg += u"\u2022 " + e.filename + ":\n  " + e.message + "\n\n";
+            msg = msg.trimmed();
+            QMessageBox::warning(this, tr("Plugin Load Failures"), msg);
+        });
+    }
+
     // Initialize system tray
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
         BOOST_LOG_SEV(lg(), debug) << "System tray is available, initializing...";

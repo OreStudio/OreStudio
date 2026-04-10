@@ -104,7 +104,7 @@ inserted_version as (
         ore_app.id,
         '1.0.0',
         '1.8.15.0',
-        '/api/v1/compute/packages/' || new_version_id.uuid::text,
+        '/api/v1/storage/compute/packages/' || new_version_id.uuid::text,
         512,
         current_user,
         current_user,

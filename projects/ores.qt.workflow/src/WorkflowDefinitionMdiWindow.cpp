@@ -18,13 +18,16 @@
  */
 #include "ores.qt/WorkflowDefinitionMdiWindow.hpp"
 
+#include <QAction>
 #include <QCloseEvent>
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QLabel>
+#include <QPointer>
 #include <QSplitter>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QWidget>
 #include <QtConcurrent>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"

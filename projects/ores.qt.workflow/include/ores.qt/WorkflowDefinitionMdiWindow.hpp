@@ -20,9 +20,11 @@
 #define ORES_QT_WORKFLOW_DEFINITION_MDI_WINDOW_HPP
 
 #include <vector>
-#include <QSplitter>
+#include <QAction>
 #include <QGroupBox>
+#include <QSplitter>
 #include <QTableWidget>
+#include <QToolBar>
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"

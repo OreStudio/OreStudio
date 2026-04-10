@@ -19,6 +19,7 @@
 #include "ores.qt/WorkflowMdiWindow.hpp"
 
 #include <algorithm>
+#include <QFrame>
 #include <QPainter>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -247,7 +248,7 @@ void WorkflowMdiWindow::setupDashboardTab(QWidget* tab) {
     auto* cardsLayout = new QHBoxLayout;
 
     auto makeCard = [this](const QString& label, QLabel*& countOut) {
-        auto* frame = new QWidget(this);
+        auto* frame = new QFrame(this);
         frame->setFrameShape(QFrame::StyledPanel);
         auto* fl = new QVBoxLayout(frame);
         auto* title = new QLabel(label, frame);

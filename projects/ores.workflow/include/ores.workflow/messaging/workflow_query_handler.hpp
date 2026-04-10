@@ -96,9 +96,9 @@ private:
 
     // Reverse maps: state UUID → state name, built from the fsm_state_maps.
     std::unordered_map<boost::uuids::uuid, std::string,
-        boost::hash<boost::uuids::uuid>> instance_state_names_;
+        std::hash<boost::uuids::uuid>> instance_state_names_;
     std::unordered_map<boost::uuids::uuid, std::string,
-        boost::hash<boost::uuids::uuid>> step_state_names_;
+        std::hash<boost::uuids::uuid>> step_state_names_;
 
     repository::workflow_instance_repository instance_repo_;
     repository::workflow_step_repository step_repo_;

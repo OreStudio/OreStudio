@@ -1,0 +1,39 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_SCHEDULER_REPOSITORY_JOB_INSTANCE_MAPPER_HPP
+#define ORES_SCHEDULER_REPOSITORY_JOB_INSTANCE_MAPPER_HPP
+
+#include <vector>
+#include <optional>
+#include "ores.scheduler.api/domain/job_instance.hpp"
+#include "ores.scheduler.core/repository/job_instance_entity.hpp"
+
+namespace ores::scheduler::repository {
+
+class job_instance_mapper {
+public:
+    static domain::job_instance map(const job_instance_entity& e);
+    static std::vector<domain::job_instance>
+        map(const std::vector<job_instance_entity>& v);
+};
+
+}
+
+#endif

@@ -133,6 +133,8 @@ struct job_instance_summary {
 };
 
 struct get_job_instances_response {
+    bool success = true;
+    std::string message;
     std::vector<job_instance_summary> instances;
     int total_available_count = 0;
 };
@@ -163,6 +165,8 @@ struct job_schedule_status {
 };
 
 struct get_scheduler_status_response {
+    bool success = true;
+    std::string message;
     std::vector<job_schedule_status> jobs;
     int total_running = 0;
     int total_active = 0;

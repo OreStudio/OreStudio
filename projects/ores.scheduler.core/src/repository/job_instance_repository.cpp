@@ -23,6 +23,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.scheduler.core/repository/job_instance_mapper.hpp"
 
 namespace ores::scheduler::repository {
 
@@ -40,10 +41,28 @@ std::string job_status_to_string(domain::job_status s) {
     return "starting";
 }
 
-domain::job_status job_status_from_string(const std::string& s) {
-    if (s == "succeeded") return domain::job_status::succeeded;
-    if (s == "failed")    return domain::job_status::failed;
-    return domain::job_status::starting;
+// Maps raw SQL result rows to domain objects via job_instance_entity.
+std::vector<domain::job_instance> parse_rows(
+    const std::vector<std::vector<std::optional<std::string>>>& rows) {
+    std::vector<job_instance_entity> entities;
+    entities.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 11) continue;
+        job_instance_entity e;
+        e.id             = row[0];
+        e.tenant_id      = row[1];
+        e.party_id       = row[2];
+        e.job_definition_id = row[3];
+        e.action_type    = row[4];
+        e.status         = row[5];
+        e.triggered_at   = row[6];
+        e.started_at     = row[7];
+        e.completed_at   = row[8];
+        e.duration_ms    = row[9];
+        e.error_message  = row[10];
+        entities.push_back(std::move(e));
+    }
+    return job_instance_mapper::map(entities);
 }
 
 } // anonymous namespace
@@ -138,44 +157,7 @@ std::vector<domain::job_instance> job_instance_repository::read_latest(
         {job_def_id_str, limit_str},
         lg(), "Reading latest job instances.");
 
-    std::vector<domain::job_instance> result;
-    result.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() < 11) continue;
-
-        domain::job_instance inst;
-        if (row[0]) inst.id = std::stoll(*row[0]);
-        if (row[1]) inst.tenant_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
-        if (row[2]) inst.party_id = boost::lexical_cast<boost::uuids::uuid>(*row[2]);
-        if (row[3])
-            inst.job_definition_id = boost::lexical_cast<boost::uuids::uuid>(*row[3]);
-        if (row[4]) inst.action_type = *row[4];
-        if (row[5]) inst.status = job_status_from_string(*row[5]);
-        if (row[6]) {
-            try {
-                inst.triggered_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[6]);
-            } catch (...) {}
-        }
-        if (row[7]) {
-            try {
-                inst.started_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[7]);
-            } catch (...) {}
-        }
-        if (row[8]) {
-            try {
-                inst.completed_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[8]);
-            } catch (...) {}
-        }
-        if (row[9]) inst.duration_ms = std::stoll(*row[9]);
-        if (row[10]) inst.error_message = *row[10];
-
-        result.push_back(std::move(inst));
-    }
-
+    auto result = parse_rows(rows);
     BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
                                << " job instances for: " << job_definition_id;
     return result;
@@ -199,44 +181,7 @@ std::vector<domain::job_instance> job_instance_repository::read_all_latest(
     const auto rows = execute_parameterized_multi_column_query(ctx, sql,
         {limit_str}, lg(), "Reading all latest job instances.");
 
-    std::vector<domain::job_instance> result;
-    result.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() < 11) continue;
-
-        domain::job_instance inst;
-        if (row[0]) inst.id = std::stoll(*row[0]);
-        if (row[1]) inst.tenant_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
-        if (row[2]) inst.party_id = boost::lexical_cast<boost::uuids::uuid>(*row[2]);
-        if (row[3])
-            inst.job_definition_id = boost::lexical_cast<boost::uuids::uuid>(*row[3]);
-        if (row[4]) inst.action_type = *row[4];
-        if (row[5]) inst.status = job_status_from_string(*row[5]);
-        if (row[6]) {
-            try {
-                inst.triggered_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[6]);
-            } catch (...) {}
-        }
-        if (row[7]) {
-            try {
-                inst.started_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[7]);
-            } catch (...) {}
-        }
-        if (row[8]) {
-            try {
-                inst.completed_at =
-                    ores::platform::time::datetime::from_iso8601_utc(*row[8]);
-            } catch (...) {}
-        }
-        if (row[9]) inst.duration_ms = std::stoll(*row[9]);
-        if (row[10]) inst.error_message = *row[10];
-
-        result.push_back(std::move(inst));
-    }
-
+    auto result = parse_rows(rows);
     BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size() << " job instances.";
     return result;
 }

@@ -69,53 +69,64 @@ public:
         }
         const auto& ctx = *ctx_expected;
 
+        auto req = decode<get_job_instances_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(job_instance_handler_lg(), warn)
+                << "Failed to decode get_job_instances_request";
+            reply(nats_, msg, get_job_instances_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+
         get_job_instances_response resp;
         try {
-            if (auto req = decode<get_job_instances_request>(msg)) {
-                // Load all job definitions to build a name look-up map.
-                repository::job_definition_repository def_repo;
-                const auto defs = def_repo.read_latest(ctx);
-                std::unordered_map<std::string, std::string> id_to_name;
-                for (const auto& d : defs)
-                    id_to_name[boost::uuids::to_string(d.id)] = d.job_name;
+            // Load all job definitions to build a name look-up map.
+            repository::job_definition_repository def_repo;
+            const auto defs = def_repo.read_latest(ctx);
+            std::unordered_map<std::string, std::string> id_to_name;
+            for (const auto& d : defs)
+                id_to_name[boost::uuids::to_string(d.id)] = d.job_name;
 
-                // Load recent instances across all jobs.
-                repository::job_instance_repository inst_repo;
-                const auto limit = static_cast<std::size_t>(
-                    req->limit > 0 ? req->limit : 100);
-                const auto instances = inst_repo.read_all_latest(ctx, limit);
+            // Load recent instances across all jobs.
+            repository::job_instance_repository inst_repo;
+            const auto limit = static_cast<std::size_t>(
+                req->limit > 0 ? req->limit : 100);
+            const auto instances = inst_repo.read_all_latest(ctx, limit);
 
-                resp.instances.reserve(instances.size());
-                for (const auto& inst : instances) {
-                    job_instance_summary s;
-                    s.id = inst.id;
-                    s.job_definition_id = boost::uuids::to_string(inst.job_definition_id);
-                    const auto it = id_to_name.find(s.job_definition_id);
-                    s.job_name = (it != id_to_name.end()) ? it->second : s.job_definition_id;
-                    s.action_type = inst.action_type;
-                    s.status = [&]() -> std::string {
-                        switch (inst.status) {
-                        case domain::job_status::succeeded: return "succeeded";
-                        case domain::job_status::failed:    return "failed";
-                        default:                            return "starting";
-                        }
-                    }();
-                    s.triggered_at =
-                        ores::platform::time::datetime::to_iso8601_utc(inst.triggered_at);
-                    s.started_at =
-                        ores::platform::time::datetime::to_iso8601_utc(inst.started_at);
-                    if (inst.completed_at)
-                        s.completed_at =
-                            ores::platform::time::datetime::to_iso8601_utc(*inst.completed_at);
-                    s.duration_ms = inst.duration_ms;
-                    s.error_message = inst.error_message;
-                    resp.instances.push_back(std::move(s));
-                }
-                resp.total_available_count = static_cast<int>(resp.instances.size());
+            resp.instances.reserve(instances.size());
+            for (const auto& inst : instances) {
+                job_instance_summary s;
+                s.id = inst.id;
+                s.job_definition_id = boost::uuids::to_string(inst.job_definition_id);
+                const auto it = id_to_name.find(s.job_definition_id);
+                s.job_name = (it != id_to_name.end()) ? it->second : s.job_definition_id;
+                s.action_type = inst.action_type;
+                s.status = [&]() -> std::string {
+                    switch (inst.status) {
+                    case domain::job_status::succeeded: return "succeeded";
+                    case domain::job_status::failed:    return "failed";
+                    default:                            return "starting";
+                    }
+                }();
+                s.triggered_at =
+                    ores::platform::time::datetime::to_iso8601_utc(inst.triggered_at);
+                s.started_at =
+                    ores::platform::time::datetime::to_iso8601_utc(inst.started_at);
+                if (inst.completed_at)
+                    s.completed_at =
+                        ores::platform::time::datetime::to_iso8601_utc(*inst.completed_at);
+                s.duration_ms = inst.duration_ms;
+                s.error_message = inst.error_message;
+                resp.instances.push_back(std::move(s));
             }
+            resp.total_available_count = static_cast<int>(resp.instances.size());
+            resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(job_instance_handler_lg(), error)
                 << "Error listing job instances: " << e.what();
+            reply(nats_, msg, get_job_instances_response{
+                .success = false, .message = e.what()});
+            return;
         }
 
         reply(nats_, msg, resp);

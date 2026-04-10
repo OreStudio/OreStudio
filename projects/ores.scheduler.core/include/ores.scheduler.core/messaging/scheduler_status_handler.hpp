@@ -69,6 +69,14 @@ public:
         }
         const auto& ctx = *ctx_expected;
 
+        if (!decode<get_scheduler_status_request>(msg)) {
+            BOOST_LOG_SEV(scheduler_status_handler_lg(), warn)
+                << "Failed to decode get_scheduler_status_request";
+            reply(nats_, msg, get_scheduler_status_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+
         get_scheduler_status_response resp;
         try {
             repository::job_definition_repository def_repo;
@@ -115,9 +123,13 @@ public:
 
                 resp.jobs.push_back(std::move(jss));
             }
+            resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(scheduler_status_handler_lg(), error)
                 << "Error computing scheduler status: " << e.what();
+            reply(nats_, msg, get_scheduler_status_response{
+                .success = false, .message = e.what()});
+            return;
         }
 
         reply(nats_, msg, resp);

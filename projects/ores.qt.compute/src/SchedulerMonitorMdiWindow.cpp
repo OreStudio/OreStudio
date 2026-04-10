@@ -123,14 +123,21 @@ void SchedulerMonitorMdiWindow::refresh() {
 
     QPointer<SchedulerMonitorMdiWindow> self = this;
 
-    using FetchResult = scheduler::messaging::get_scheduler_status_response;
+    struct FetchResult {
+        scheduler::messaging::get_scheduler_status_response response;
+        QString error;
+    };
 
     auto future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {.error = tr("Widget destroyed during fetch")};
         scheduler::messaging::get_scheduler_status_request req;
         auto result = self->clientManager_->process_authenticated_request(std::move(req));
-        if (!result) return {};
-        return std::move(*result);
+        if (!result)
+            return {.error = QString::fromStdString(result.error())};
+        if (!result->success)
+            return {.error = QString::fromStdString(result->message)};
+        return {.response = std::move(*result)};
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);
@@ -139,11 +146,18 @@ void SchedulerMonitorMdiWindow::refresh() {
         watcher->deleteLater();
         if (!self) return;
 
-        const auto resp = watcher->result();
-        self->applyStatus(resp.jobs);
+        const auto res = watcher->result();
+        if (!res.error.isEmpty()) {
+            BOOST_LOG_SEV(lg(), error) << "Scheduler status fetch failed: "
+                                       << res.error.toStdString();
+            emit self->errorOccurred(res.error);
+            return;
+        }
 
-        const int active = resp.total_active;
-        const int running = resp.total_running;
+        self->applyStatus(res.response.jobs);
+
+        const int active = res.response.total_active;
+        const int running = res.response.total_running;
         emit self->statusChanged(
             tr("Scheduler: %1 active job(s), %2 currently running")
                 .arg(active).arg(running));

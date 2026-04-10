@@ -97,7 +97,9 @@ public:
         std::filesystem::path bin_dir,
         ores::nats::config::nats_options nats,
         std::string log_level,
-        ores::database::context db_ctx);
+        ores::database::context db_ctx,
+        int http_port = 51000,
+        int wt_port = 51002);
 
     // -------------------------------------------------------------------------
     // Bulk start / stop
@@ -173,6 +175,8 @@ private:
     ores::nats::config::nats_options nats_;
     std::string log_level_;
     ores::database::context db_ctx_;
+    int http_port_;
+    int wt_port_;
     std::map<process_key, std::shared_ptr<process_entry>> processes_;
 };
 

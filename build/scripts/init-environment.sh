@@ -125,6 +125,20 @@ else
 fi
 NATS_URL="nats://localhost:${NATS_PORT}"
 NATS_MONITOR_URL="http://localhost:${NATS_MONITOR_PORT}"
+
+# HTTP / WT ports: same base-port scheme as ores-prodigy.el ores/port-bases.
+# local1→51000, local2→52000, …  remote→50000.
+declare -A PORT_BASES=([remote]=50000 [local1]=51000 [local2]=52000
+    [local3]=53000 [local4]=54000 [local5]=55000)
+BASE_PORT="${PORT_BASES[$LABEL]:-51000}"
+# Debug preset: HTTP=base+0, WT=base+2.  Release: HTTP=base+1, WT=base+3.
+if [[ "${PRESET}" == *release* ]]; then
+    HTTP_PORT=$((BASE_PORT + 1))
+    WT_PORT=$((BASE_PORT + 3))
+else
+    HTTP_PORT=$((BASE_PORT + 0))
+    WT_PORT=$((BASE_PORT + 2))
+fi
 NATS_STORE_DIR="${CHECKOUT_ROOT}/build/nats/${LABEL}/jetstream"
 
 NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
@@ -361,6 +375,10 @@ ORES_DATABASE_NAME=${DB_NAME}
 # NATS (per-environment: port derived from label suffix)
 # Run build/scripts/init-nats.sh to generate the server config and store dir.
 # ---------------------------------------------------------------------------
+ORES_HTTP_PORT=${HTTP_PORT}
+ORES_WT_PORT=${WT_PORT}
+ORES_CONTROLLER_SERVICE_HTTP_PORT=${HTTP_PORT}
+ORES_CONTROLLER_SERVICE_WT_PORT=${WT_PORT}
 ORES_NATS_PORT=${NATS_PORT}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_MONITOR_PORT=${NATS_MONITOR_PORT}

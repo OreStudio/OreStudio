@@ -71,7 +71,8 @@ application::run(boost::asio::io_context& io_ctx,
     const auto log_level = cfg.logging ? cfg.logging->severity : std::string("info");
 
     service::process_supervisor supervisor(
-        io_ctx, bin_dir, cfg.nats, log_level, db_ctx);
+        io_ctx, bin_dir, cfg.nats, log_level, db_ctx,
+        cfg.http_port, cfg.wt_port);
 
     // Start all services in the background (dependency-ordered: IAM first,
     // then dependents). Runs concurrently with our own NATS connect and JWKS

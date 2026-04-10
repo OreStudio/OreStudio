@@ -30,6 +30,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
 
 namespace ores::workflow::service {
 
@@ -73,6 +74,27 @@ void workflow_engine::publish_command(
     });
 }
 
+void workflow_engine::publish_status_event(
+    const boost::uuids::uuid& instance_id,
+    const boost::uuids::uuid& tenant_id) {
+
+    using ev = ores::eventing::domain::entity_change_event;
+    ev e;
+    e.entity     = "ores.workflow.workflow_instance";
+    e.timestamp  = std::chrono::system_clock::now();
+    e.entity_ids = { boost::uuids::to_string(instance_id) };
+    e.tenant_id  = boost::uuids::to_string(tenant_id);
+
+    const auto json = rfl::json::write(e);
+    const auto data = std::as_bytes(std::span{json.data(), json.size()});
+    try {
+        nats_.publish("ores.workflow.workflow_instance_changed", data, {});
+    } catch (const std::exception& ex) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to publish workflow status event: " << ex.what();
+    }
+}
+
 void workflow_engine::dispatch_next_step(
     domain::workflow_instance& instance,
     const std::string& last_result_json) {
@@ -98,6 +120,7 @@ void workflow_engine::dispatch_next_step(
             << " steps=" << instance.step_count;
         instance_repo_.update_state(ctx_, instance.id,
             instance_states_.require("completed"), last_result_json, "");
+        publish_status_event(instance.id, instance.tenant_id);
         return;
     }
 
@@ -146,6 +169,7 @@ void workflow_engine::dispatch_next_step(
         << " (" << step_def.name << ")"
         << " for workflow=" << boost::uuids::to_string(instance.id)
         << " type=" << instance.type;
+    publish_status_event(instance.id, instance.tenant_id);
 }
 
 void workflow_engine::begin_compensation(
@@ -160,6 +184,7 @@ void workflow_engine::begin_compensation(
 
     instance_repo_.update_state(ctx_, instance.id,
         instance_states_.require("compensating"), "", failure_msg);
+    publish_status_event(instance.id, instance.tenant_id);
 
     const auto* def = registry_.find(instance.type);
     if (!def) {
@@ -250,6 +275,7 @@ void workflow_engine::check_compensation_complete(
         << " workflow=" << boost::uuids::to_string(instance.id);
     instance_repo_.update_state(ctx_, instance.id,
         instance_states_.require("compensated"), "", "");
+    publish_status_event(instance.id, instance.tenant_id);
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
@@ -434,6 +460,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         << " first_step=" << step_def.name
         << " subject=" << step_def.command_subject
         << " corr=" << req.correlation_id;
+    publish_status_event(instance_id, tenant_id);
 }
 
 void workflow_engine::recover_in_progress() {

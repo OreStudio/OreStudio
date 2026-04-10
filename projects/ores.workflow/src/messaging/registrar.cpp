@@ -23,7 +23,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow/messaging/workflow_handler.hpp"
+#include "ores.workflow/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/workflow_engine.hpp"
 #include "ores.workflow/service/workflow_registry.hpp"
@@ -88,6 +90,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
         messaging::start_workflow_message::nats_subject, qg,
         [engine](ores::nats::message msg) {
             engine->on_start_workflow(std::move(msg));
+        }));
+
+    // ----------------------------------------------------------------
+    // Query handler (list instances, get steps).
+    // ctx and signer are copied here; they are moved into wh below.
+    // ----------------------------------------------------------------
+    auto qh = std::make_shared<workflow_query_handler>(
+        nats, ctx, signer, instance_states, step_states);
+
+    subs.push_back(nats.queue_subscribe(
+        list_workflow_instances_request::nats_subject, qg,
+        [qh](ores::nats::message msg) {
+            qh->list_instances(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        get_workflow_steps_request::nats_subject, qg,
+        [qh](ores::nats::message msg) {
+            qh->get_steps(std::move(msg));
         }));
 
     // ----------------------------------------------------------------

@@ -111,6 +111,15 @@ private:
         const boost::uuids::uuid& tenant_id);
 
     /**
+     * @brief Publishes a workflow_instance_changed event to the NATS event bus.
+     *
+     * Called at every instance state transition so Qt clients can call
+     * markAsStale() and refresh their workflow monitor view.
+     */
+    void publish_status_event(const boost::uuids::uuid& instance_id,
+        const boost::uuids::uuid& tenant_id);
+
+    /**
      * @brief Dispatches the next step in the workflow after a success.
      *
      * Builds the next step's command, persists the step record, publishes

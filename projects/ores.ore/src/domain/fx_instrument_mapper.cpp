@@ -187,13 +187,25 @@ std::string exercise_style_from_vec(const xsd::vector<optionData>& v) {
     return "European";
 }
 
+void validate_long_short(const std::string& v) {
+    if (v != "Long" && v != "Short")
+        throw std::invalid_argument("Unrecognised LongShort value: '" + v + "'");
+}
+
+void validate_option_type(const std::string& v) {
+    if (v != "Call" && v != "Put")
+        throw std::invalid_argument("Unrecognised OptionType value: '" + v + "'");
+}
+
 // Build an OptionData element from option_type + expiry_date strings.
 optionData make_option_entry(const std::string& option_type,
                               const std::string& expiry_date,
                               const std::string& long_short = "Long") {
+    validate_long_short(long_short);
     optionData od;
     static_cast<std::string&>(od.LongShort) = long_short;
     if (!option_type.empty()) {
+        validate_option_type(option_type);
         optionData_OptionType_t ot;
         static_cast<std::string&>(ot) = option_type;
         od.OptionType = std::move(ot);
@@ -1018,6 +1030,7 @@ trade fx_instrument_mapper::reverse_fx_variance_swap(
     if (!instr.currency.empty())
         d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
+    validate_long_short(instr.long_short);
     static_cast<std::string&>(d.LongShort) = instr.long_short;
     d.Strike   = static_cast<float>(instr.strike);
     d.Notional = static_cast<float>(instr.notional);
@@ -1074,6 +1087,7 @@ trade fx_instrument_mapper::reverse_fx_accumulator(
         d.Strike = static_cast<float>(instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
     static_cast<std::string&>(d.Underlying.Type) = "FX";
+    validate_long_short(instr.long_short);
     static_cast<std::string&>(d.OptionData.LongShort) = instr.long_short;
     if (!instr.start_date.empty()) {
         date sd;

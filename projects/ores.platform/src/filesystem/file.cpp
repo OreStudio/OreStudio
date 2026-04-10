@@ -32,9 +32,12 @@ namespace ores::platform::filesystem {
 FILE* file::open_c_file(const std::filesystem::path& p, const char* mode) {
 #ifdef _WIN32
     // On Windows path::c_str() returns const wchar_t*; convert mode to wide.
+    // Use _wfopen_s to avoid MSVC/Clang deprecation warning for _wfopen.
     const std::string m(mode);
     const std::wstring wmode(m.begin(), m.end());
-    return _wfopen(p.c_str(), wmode.c_str());
+    FILE* f = nullptr;
+    _wfopen_s(&f, p.c_str(), wmode.c_str());
+    return f;
 #else
     return std::fopen(p.c_str(), mode);
 #endif

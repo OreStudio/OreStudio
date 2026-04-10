@@ -26,11 +26,21 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 set(lib_files ${files})
-add_library(${lib_target_name} ${lib_files})
+# On Windows the DLL export table is capped at 65535 symbols. This library
+# instantiates enough rfl/Boost templates to exceed that limit, and it is
+# only consumed by executables, so no DLL boundary needs to be crossed.
+# Build it as a static library on Windows to avoid the limit.
+if(WIN32)
+    add_library(${lib_target_name} STATIC ${lib_files})
+else()
+    add_library(${lib_target_name} ${lib_files})
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+if(NOT WIN32)
+    set_target_properties(${lib_target_name}
+        PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+endif()
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
@@ -52,4 +62,6 @@ target_link_libraries(${lib_target_name}
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)

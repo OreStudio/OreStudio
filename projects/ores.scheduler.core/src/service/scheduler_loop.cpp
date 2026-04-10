@@ -29,6 +29,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"

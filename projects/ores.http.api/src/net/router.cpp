@@ -44,7 +44,12 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(
             if (end != std::string::npos) {
                 std::string param_name = pattern.substr(pos + 1, end - pos - 1);
                 param_names.push_back(param_name);
-                regex_str << "([^/]+)";
+                // If this is the last segment in the pattern, use a greedy
+                // match so keys like "packages/uuid.tar.gz" work.
+                if (end + 1 >= pattern.size())
+                    regex_str << "(.+)";
+                else
+                    regex_str << "([^/]+)";
                 pos = end + 1;
                 continue;
             }

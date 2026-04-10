@@ -174,9 +174,6 @@ if(WIN32)
         # Required by large translation units (e.g. registrar.cpp with many
         # template instantiations from rfl and Boost headers).
         add_compile_options(/bigobj)
-        # Serialise PDB writes when Ninja runs multiple cl.exe in parallel.
-        # Without /FS, concurrent writes to the same vc140.pdb cause C1041.
-        add_compile_options(/FS)
     endif()
 endif()
 

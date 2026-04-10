@@ -784,8 +784,13 @@ trade fx_instrument_mapper::reverse_fx_option(
 
     opt.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.settlement.empty()) {
-        // OptionData in fxOptionData carries settlement directly
-        // (this cast is the same pattern as the old mapper)
+        if (instr.settlement == "Physical")
+            opt.OptionData.Settlement = settlementType::Physical;
+        else if (instr.settlement == "Cash")
+            opt.OptionData.Settlement = settlementType::Cash;
+        else
+            throw std::invalid_argument(
+                "Unrecognised settlement type: " + instr.settlement);
     }
 
     t.FxOptionData = std::move(opt);

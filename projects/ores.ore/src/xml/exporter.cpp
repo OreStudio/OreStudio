@@ -47,8 +47,8 @@ using trading::domain::scripted_instrument;
 
 namespace {
 
-// Adapters: convert legacy flat fx_instrument (from old messaging protocol)
-// to the typed per-product structs that reverse_* methods expect.
+// Adapters: convert typed per-product FX domain structs to the flat
+// fx_instrument (legacy messaging type) that the export path reads from DB.
 
 trading::domain::fx_forward_instrument
 to_forward(const fx_instrument& r) {
@@ -114,7 +114,7 @@ to_digital_option(const fx_instrument& r) {
     dig.trade_type_code = r.trade_type_code;
     dig.foreign_currency = r.bought_currency;
     dig.domestic_currency = r.sold_currency;
-    dig.payoff_currency = r.sold_currency;
+    dig.payoff_currency = r.bought_currency;
     dig.payoff_amount = r.notional;
     dig.option_type = r.option_type;
     dig.expiry_date = r.expiry_date;

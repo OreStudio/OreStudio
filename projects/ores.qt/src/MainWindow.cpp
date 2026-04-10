@@ -527,7 +527,7 @@ MainWindow::MainWindow(QWidget* parent) :
             QString msg = tr("The following plugins could not be loaded. "
                              "Some features will be unavailable:\n\n");
             for (const auto& e : errs)
-                msg += u"\u2022 " + e.filename + ":\n  " + e.message + "\n\n";
+                msg += QStringLiteral("\u2022 ") + e.filename + ":\n  " + e.message + "\n\n";
             msg = msg.trimmed();
             QMessageBox::warning(this, tr("Plugin Load Failures"), msg);
         });

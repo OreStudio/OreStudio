@@ -52,17 +52,16 @@ target_include_directories(${lib_target_name} PRIVATE
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.compute/include")
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.party.lib
-        ores.qt.compute.lib
         ores.refdata.core.lib
         ores.trading.api.lib
         ores.ore.lib
+        ores.ore.api.lib
         ores.marketdata.api.lib
         ores.storage.lib
     PRIVATE

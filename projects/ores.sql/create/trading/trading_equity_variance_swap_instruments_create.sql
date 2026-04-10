@@ -56,7 +56,8 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityVarianceSwap'))
+    check ("trade_type_code" in ('EquityVarianceSwap')),
+    check ("variance_strike" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency

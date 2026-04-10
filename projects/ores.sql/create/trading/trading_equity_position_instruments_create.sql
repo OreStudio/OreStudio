@@ -56,7 +56,13 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition'))
+    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition')),
+    -- option_data_json is required for EquityOptionPosition and must be null otherwise
+    check (
+        ("trade_type_code" = 'EquityOptionPosition' and "option_data_json" is not null)
+        or
+        ("trade_type_code" = 'EquityPosition' and "option_data_json" is null)
+    )
 );
 
 -- Version uniqueness for optimistic concurrency

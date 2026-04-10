@@ -60,7 +60,13 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     check ("strike" >= 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityOption', 'EquityCliquetOption'))
+    check ("trade_type_code" in ('EquityOption', 'EquityCliquetOption')),
+    -- cliquet_frequency is required for EquityCliquetOption and must be null otherwise
+    check (
+        ("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null)
+        or
+        ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null)
+    )
 );
 
 -- Version uniqueness for optimistic concurrency

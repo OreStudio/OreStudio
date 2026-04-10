@@ -59,7 +59,17 @@ create table if not exists "ores_trading_equity_digital_option_instruments_tbl" 
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityDigitalOption', 'EquityTouchOption'))
+    check ("trade_type_code" in ('EquityDigitalOption', 'EquityTouchOption')),
+    -- EquityDigitalOption uses option_type + strike; EquityTouchOption uses barrier fields
+    check (
+        ("trade_type_code" = 'EquityDigitalOption'
+            and "option_type" is not null and "strike" is not null
+            and "barrier_level" is null and "barrier_type" is null)
+        or
+        ("trade_type_code" = 'EquityTouchOption'
+            and "barrier_level" is not null and "barrier_type" is not null
+            and "option_type" is null and "strike" is null)
+    )
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -63,7 +63,15 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     check ("fixing_amount" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityAccumulator', 'EquityTaRF'))
+    check ("trade_type_code" in ('EquityAccumulator', 'EquityTaRF')),
+    -- EquityTaRF requires target fields; EquityAccumulator must not have them
+    check (
+        ("trade_type_code" = 'EquityTaRF'
+            and "target_amount" is not null and "target_type" is not null)
+        or
+        ("trade_type_code" = 'EquityAccumulator'
+            and "target_amount" is null and "target_type" is null)
+    )
 );
 
 -- Version uniqueness for optimistic concurrency

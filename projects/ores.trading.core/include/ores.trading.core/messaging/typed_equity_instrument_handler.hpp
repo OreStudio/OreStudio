@@ -90,6 +90,7 @@ void handle_typed_equity_save(
     } else {
         BOOST_LOG_SEV(typed_equity_instrument_handler_lg(), warn)
             << "Failed to decode: " << msg.subject;
+        reply(nats, msg, Response{.success = false, .message = "Failed to decode request"});
     }
 }
 

@@ -59,7 +59,15 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("notional" > 0),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap'))
+    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
+    -- EquityWorstOfBasketSwap uses basket_json; EquitySwap uses underlying_name
+    check (
+        ("trade_type_code" = 'EquityWorstOfBasketSwap'
+            and "basket_json" is not null and "underlying_name" is null)
+        or
+        ("trade_type_code" = 'EquitySwap'
+            and "underlying_name" is not null and "basket_json" is null)
+    )
 );
 
 -- Version uniqueness for optimistic concurrency

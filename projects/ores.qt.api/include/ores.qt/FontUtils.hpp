@@ -31,8 +31,17 @@ struct FontUtils {
     static constexpr int DefaultPointSize = 10;
     static constexpr int DefaultPixelSize = 11;
 
+    /**
+     * @brief Returns a monospace QFont.
+     *
+     * Prefers Fira Code.  Sets StyleHint::Monospace so Qt falls back to the
+     * system monospace font (e.g. DejaVu Sans Mono, Courier New) when Fira
+     * Code is not installed.  Use setFont() rather than stylesheets — Qt's
+     * QSS engine does not honour the CSS "monospace" generic family.
+     */
     static QFont monospace() {
         QFont f(MonospaceFontFamily);
+        f.setStyleHint(QFont::Monospace);
         f.setPointSize(DefaultPointSize);
         return f;
     }
@@ -44,11 +53,10 @@ struct FontUtils {
     }
 
     /**
-     * @brief Returns a CSS font-family/font-size snippet for use in stylesheets.
+     * @brief CSS font fragment for use in Qt stylesheets.
      *
-     * Includes the generic "monospace" fallback so that if the preferred font
-     * (Fira Code) is not installed, Qt still selects the system monospace font
-     * rather than falling through to the application's default proportional font.
+     * Note: Qt's QSS engine does not honour the "monospace" generic family as
+     * a fallback, so prefer setFont(monospace()) over this where possible.
      */
     static QString monospaceCssFragment() {
         return QString("font-family: \"%1\", monospace; font-size: %2px;")

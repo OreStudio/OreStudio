@@ -206,6 +206,186 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Equity Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_option_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_option_instruments_tenant_isolation_policy on ores_trading_equity_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_option_instruments_party_isolation_policy
+on ores_trading_equity_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Digital Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_digital_option_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_digital_option_instruments_tenant_isolation_policy on ores_trading_equity_digital_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_digital_option_instruments_party_isolation_policy
+on ores_trading_equity_digital_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Barrier Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_barrier_option_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_barrier_option_instruments_tenant_isolation_policy on ores_trading_equity_barrier_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_barrier_option_instruments_party_isolation_policy
+on ores_trading_equity_barrier_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Asian Option Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_asian_option_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_asian_option_instruments_tenant_isolation_policy on ores_trading_equity_asian_option_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_asian_option_instruments_party_isolation_policy
+on ores_trading_equity_asian_option_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Forward Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_forward_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_forward_instruments_tenant_isolation_policy on ores_trading_equity_forward_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_forward_instruments_party_isolation_policy
+on ores_trading_equity_forward_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Variance Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_variance_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_variance_swap_instruments_tenant_isolation_policy on ores_trading_equity_variance_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_variance_swap_instruments_party_isolation_policy
+on ores_trading_equity_variance_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Swap Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_swap_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_swap_instruments_tenant_isolation_policy on ores_trading_equity_swap_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_swap_instruments_party_isolation_policy
+on ores_trading_equity_swap_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Accumulator Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_accumulator_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_accumulator_instruments_tenant_isolation_policy on ores_trading_equity_accumulator_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_accumulator_instruments_party_isolation_policy
+on ores_trading_equity_accumulator_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Position Instruments
+-- -----------------------------------------------------------------------------
+alter table ores_trading_equity_position_instruments_tbl enable row level security;
+
+create policy ores_trading_equity_position_instruments_tenant_isolation_policy on ores_trading_equity_position_instruments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_trading_equity_position_instruments_party_isolation_policy
+on ores_trading_equity_position_instruments_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- FX Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_fx_instruments_tbl enable row level security;

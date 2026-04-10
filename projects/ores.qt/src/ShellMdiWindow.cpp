@@ -150,13 +150,11 @@ void ShellMdiWindow::setup_ui() {
     output_area_ = new QPlainTextEdit(this);
     output_area_->setReadOnly(true);
     output_area_->setMaximumBlockCount(max_shell_output_lines);
-    output_area_->setStyleSheet(
-        "QPlainTextEdit { " + FontUtils::monospaceCssFragment() + " }");
+    output_area_->setFont(FontUtils::monospace());
 
     // Input line
     input_line_ = new QLineEdit(this);
-    input_line_->setStyleSheet(
-        "QLineEdit { " + FontUtils::monospaceCssFragment() + " }");
+    input_line_->setFont(FontUtils::monospace());
     input_line_->setPlaceholderText("Enter command...");
 
     layout->addWidget(output_area_);

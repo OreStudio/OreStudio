@@ -1,0 +1,25 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Hybrid_GenericTRS_with_EquityPosition.xml",
+  "trade_id_in_xml": "TRS1000240_asTRSonEquityPosition1DEC (embedded EquityPosition)",
+  "mapper": "equity_instrument_mapper::forward_equity_position (planned Phase 3 mapper)",
+  "notes": [
+    "underlying_name maps from Underlying.Name (BBG00R251JN8, FIGI identifier)",
+    "quantity maps from Quantity (18101.486)",
+    "price maps from InitialPrice (6927.586) on the TRS ReturnData",
+    "option_data_json is empty for plain EquityPosition (used only for EquityOptionPosition)",
+    "currency maps from ReturnData.Currency (USD)"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityPosition",
+    "underlying_name": "BBG00R251JN8",
+    "currency": "USD",
+    "quantity": 18101.486,
+    "price": 6927.586,
+    "option_data_json": "",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

@@ -26,6 +26,7 @@
 
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
 #include "ores.qt/TenantController.hpp"
@@ -36,15 +37,28 @@
 #include "ores.qt/BadgeSeverityController.hpp"
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.admin_plugin");
+    return instance;
+}
+
 auto ico(Icon icon) {
     return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
 }
+
 }
 
-AdminPlugin::AdminPlugin(QObject* parent) : PluginBase(parent) {}
+AdminPlugin::AdminPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
 
-AdminPlugin::~AdminPlugin() = default;
+AdminPlugin::~AdminPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 void AdminPlugin::show_onboarding_wizard() {
     auto* wizard = new TenantOnboardingWizard(ctx_.client_manager, ctx_.main_window);
@@ -62,6 +76,7 @@ void AdminPlugin::show_onboarding_wizard() {
 }
 
 void AdminPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     accountController_ = std::make_unique<AccountController>(
@@ -101,6 +116,10 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 }
 
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " identity=" << (smc.identity_menu ? "ok" : "null")
+        << " system=" << (smc.system_menu ? "ok" : "null")
+        << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
     // ---- Identity menu (top-level, pre-created by MainWindow) ---------------
     if (smc.identity_menu) {
         act_accounts_ = smc.identity_menu->addAction(
@@ -154,14 +173,18 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "No standalone menus — all entries contributed via shared menus.";
     return {};  // all items contributed via setup_menus()
 }
 
 QList<QAction*> AdminPlugin::toolbar_actions() {
+    if (!act_accounts_ || !act_tenants_ || !act_system_settings_)
+        BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_accounts_, act_tenants_, act_system_settings_};
 }
 
 void AdminPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     badgeSeverityController_.reset();
     badgeDefinitionController_.reset();
     systemSettingController_.reset();

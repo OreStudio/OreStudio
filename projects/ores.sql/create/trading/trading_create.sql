@@ -132,6 +132,26 @@
 \ir ./trading_equity_instruments_create.sql
 \ir ./trading_equity_instruments_notify_trigger_create.sql
 
+-- Per-type equity instruments
+\ir ./trading_equity_option_instruments_create.sql
+\ir ./trading_equity_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_digital_option_instruments_create.sql
+\ir ./trading_equity_digital_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_barrier_option_instruments_create.sql
+\ir ./trading_equity_barrier_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_asian_option_instruments_create.sql
+\ir ./trading_equity_asian_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_forward_instruments_create.sql
+\ir ./trading_equity_forward_instruments_notify_trigger_create.sql
+\ir ./trading_equity_variance_swap_instruments_create.sql
+\ir ./trading_equity_variance_swap_instruments_notify_trigger_create.sql
+\ir ./trading_equity_swap_instruments_create.sql
+\ir ./trading_equity_swap_instruments_notify_trigger_create.sql
+\ir ./trading_equity_accumulator_instruments_create.sql
+\ir ./trading_equity_accumulator_instruments_notify_trigger_create.sql
+\ir ./trading_equity_position_instruments_create.sql
+\ir ./trading_equity_position_instruments_notify_trigger_create.sql
+
 -- Commodity instruments (depends on reference data above)
 \ir ./trading_commodity_instruments_create.sql
 \ir ./trading_commodity_instruments_notify_trigger_create.sql

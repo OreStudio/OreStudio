@@ -1,0 +1,31 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Swap.xml",
+  "trade_id_in_xml": "EqSwap",
+  "mapper": "equity_instrument_mapper::forward_equity_swap (planned Phase 3 mapper)",
+  "notes": [
+    "notional maps from equity leg Notional (2000000)",
+    "underlying_name maps from EquityLegData.Underlying.Name (.SPX)",
+    "return_type maps from ReturnType (Total -> TotalReturn)",
+    "start_date and maturity_date map from equity leg ScheduleData.Rules",
+    "payment_frequency maps from equity leg ScheduleData.Rules.Tenor (1M)",
+    "long_short maps from equity leg Payer (true -> Short; false -> Long); here Payer=true on equity leg means Short in equity convention, set Long as perspective is receiver of equity return",
+    "basket_json is empty for single-underlying swaps"
+  ],
+  "instrument": {
+    "trade_type_code": "EquitySwap",
+    "underlying_name": ".SPX",
+    "basket_json": "",
+    "currency": "USD",
+    "notional": 2000000.0,
+    "return_type": "TotalReturn",
+    "start_date": "2025-10-16",
+    "maturity_date": "2025-12-31",
+    "long_short": "Long",
+    "payment_frequency": "1M",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

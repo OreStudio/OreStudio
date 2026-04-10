@@ -1,0 +1,28 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Digital_Option.xml",
+  "trade_id_in_xml": "EQDigitalOption",
+  "mapper": "equity_instrument_mapper::forward_equity_digital_option (planned Phase 3 mapper)",
+  "notes": [
+    "notional maps from Quantity (1000), not a separate Notional element",
+    "payout_amount maps from PayoffAmount; PayoffCurrency is captured separately in currency",
+    "barrier_level is absent for digital options (present only for touch options)"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityDigitalOption",
+    "underlying_name": "RIC:.SPX",
+    "currency": "USD",
+    "notional": 1000.0,
+    "option_type": "Call",
+    "strike": 3300.0,
+    "barrier_level": null,
+    "barrier_type": "",
+    "expiry_date": "2026-07-17",
+    "long_short": "Long",
+    "payout_amount": 1000.0,
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

@@ -21,6 +21,8 @@
 
 #include <set>
 #include <QDate>
+#include <QGuiApplication>
+#include <QClipboard>
 #include <QPalette>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -916,6 +918,28 @@ void OreTradeImportPage::onImportFinished() {
 // OreDonePage
 // ============================================================================
 
+static QWidget* makeIdRow(const QString& labelText, QLineEdit*& editOut,
+                          QPushButton*& copyBtnOut, QWidget* parent) {
+    auto* row = new QWidget(parent);
+    auto* hbox = new QHBoxLayout(row);
+    hbox->setContentsMargins(0, 0, 0, 0);
+
+    auto* lbl = new QLabel(labelText + ":", row);
+    lbl->setMinimumWidth(100);
+    hbox->addWidget(lbl);
+
+    editOut = new QLineEdit(row);
+    editOut->setReadOnly(true);
+    editOut->setFont(FontUtils::monospace());
+    hbox->addWidget(editOut, 1);
+
+    copyBtnOut = new QPushButton(QStringLiteral("Copy"), row);
+    copyBtnOut->setFixedWidth(60);
+    hbox->addWidget(copyBtnOut);
+
+    return row;
+}
+
 OreDonePage::OreDonePage(OreImportWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
@@ -923,14 +947,38 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     setSubTitle(tr("The ORE import has finished."));
 
     auto* layout = new QVBoxLayout(this);
+
     summaryLabel_ = new QLabel(this);
     summaryLabel_->setWordWrap(true);
+    summaryLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     layout->addWidget(summaryLabel_);
+
+    // Selectable ID rows
+    QPushButton* workflowCopyBtn = nullptr;
+    workflowIdRow_ = makeIdRow(tr("Workflow ID"), workflowIdEdit_, workflowCopyBtn, this);
+    layout->addWidget(workflowIdRow_);
+    workflowIdRow_->hide();
+
+    QPushButton* correlCopyBtn = nullptr;
+    correlIdRow_ = makeIdRow(tr("Correlation ID"), correlIdEdit_, correlCopyBtn, this);
+    layout->addWidget(correlIdRow_);
+    correlIdRow_->hide();
+
+    connect(workflowCopyBtn, &QPushButton::clicked, this, [this]() {
+        QGuiApplication::clipboard()->setText(workflowIdEdit_->text());
+    });
+    connect(correlCopyBtn, &QPushButton::clicked, this, [this]() {
+        QGuiApplication::clipboard()->setText(correlIdEdit_->text());
+    });
+
     layout->addStretch();
 }
 
 void OreDonePage::initializePage() {
     const auto& resp = wizard_->importResponse();
+
+    workflowIdRow_->hide();
+    correlIdRow_->hide();
 
     if (wizard_->importSuccess()) {
         QString html;
@@ -939,9 +987,10 @@ void OreDonePage::initializePage() {
             // Asynchronous path: import is running in the background.
             html += tr("<p><b>Import submitted successfully.</b></p>");
             html += tr("<p>The import is processing in the background. "
-                       "Check the workflow status for results.</p>");
-            html += tr("<p style='color:gray;font-size:small;'>Workflow ID: %1</p>")
-                .arg(QString::fromStdString(resp.workflow_instance_id));
+                       "Use the Workflow ID below to track progress in the log files "
+                       "or a future workflow monitor.</p>");
+            workflowIdEdit_->setText(QString::fromStdString(resp.workflow_instance_id));
+            workflowIdRow_->show();
         } else {
             // Synchronous path (legacy / direct).
             const auto& errors = resp.item_errors;
@@ -968,8 +1017,8 @@ void OreDonePage::initializePage() {
         }
 
         if (!resp.correlation_id.empty()) {
-            html += tr("<p style='color:gray;font-size:small;'>Correlation ID: %1</p>")
-                .arg(QString::fromStdString(resp.correlation_id));
+            correlIdEdit_->setText(QString::fromStdString(resp.correlation_id));
+            correlIdRow_->show();
         }
 
         summaryLabel_->setText(html);

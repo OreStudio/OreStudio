@@ -1,0 +1,26 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Variance_Swap.xml",
+  "trade_id_in_xml": "Var_Swap",
+  "mapper": "equity_instrument_mapper::forward_equity_variance_swap (planned Phase 3 mapper)",
+  "notes": [
+    "long_short is hardcoded to Long by mapper",
+    "variance_strike maps from Strike (0.20)",
+    "maturity_date maps from EndDate (2025-05-20)",
+    "MomentType (Variance) is implicit in the trade type — not stored separately"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityVarianceSwap",
+    "underlying_name": ".SPX",
+    "currency": "USD",
+    "notional": 50000.0,
+    "variance_strike": 0.20,
+    "start_date": "2025-02-20",
+    "maturity_date": "2025-05-20",
+    "long_short": "Long",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

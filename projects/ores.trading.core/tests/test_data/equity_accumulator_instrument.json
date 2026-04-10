@@ -1,0 +1,34 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Exotic_EquityAccumulator_single_name.xml",
+  "trade_id_in_xml": "EQ_DECUMULATOR",
+  "mapper": "equity_instrument_mapper::forward_equity_accumulator (planned Phase 3 mapper)",
+  "notes": [
+    "long_short is hardcoded to Long by mapper",
+    "knock_out_level maps from first DownAndOut barrier level (3500)",
+    "FixingFloor barrier (level 1) and RangeBounds are not captured (Phase 3 gap)",
+    "fixing_frequency defaults to Monthly derived from PricingDates cadence (not explicit in XML)",
+    "expiry_date maps from ObservationDates.Rules.EndDate (2026-02-05)",
+    "target_type is empty for Decumulator (used only for TaRF)",
+    "target_amount is absent for Decumulator"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityAccumulator",
+    "underlying_name": ".STOXX50",
+    "currency": "EUR",
+    "strike": 4000.0,
+    "fixing_amount": 30.0,
+    "start_date": "2025-02-05",
+    "expiry_date": "2026-02-05",
+    "fixing_frequency": "Monthly",
+    "long_short": "Long",
+    "knock_out_level": 3500.0,
+    "target_amount": null,
+    "target_type": "",
+    "payoff_type": "Decumulator",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

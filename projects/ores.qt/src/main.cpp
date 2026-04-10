@@ -82,9 +82,10 @@ int main(int argc, char *argv[]) {
     ores::qt::PluginRegistry plugin_registry;
     ores::qt::PluginRegistry::initialise(plugin_registry);
 
-    // Load domain plugins from plugins/ directory next to the library directory
-    const QString plugin_dir =
-        QCoreApplication::applicationDirPath() + "/../lib/plugins";
+    // Load domain plugins from the same directory as the executable.
+    // This works on both Linux and Windows without any platform-specific path
+    // logic: plugins are built to ORES_PLUGIN_OUTPUT_DIRECTORY = bin/.
+    const QString plugin_dir = QCoreApplication::applicationDirPath();
     plugin_registry.load_from_directory(plugin_dir);
 
     ores::qt::SplashScreen splash(QPixmap(":/images/splash-screen.png"));

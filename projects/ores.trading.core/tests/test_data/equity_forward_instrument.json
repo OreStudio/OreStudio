@@ -1,0 +1,26 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Forward.xml",
+  "trade_id_in_xml": "EqForward",
+  "mapper": "equity_instrument_mapper::forward_equity_forward (planned Phase 3 mapper)",
+  "notes": [
+    "quantity maps from Quantity (775)",
+    "forward_price maps from Strike (2800)",
+    "expiry_date maps from Maturity (2025-02-20)",
+    "settlement_type is not present in XML — field is empty"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityForward",
+    "underlying_name": "RIC:.SPX",
+    "currency": "USD",
+    "quantity": 775.0,
+    "forward_price": 2800.0,
+    "expiry_date": "2025-02-20",
+    "long_short": "Long",
+    "settlement_type": "",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

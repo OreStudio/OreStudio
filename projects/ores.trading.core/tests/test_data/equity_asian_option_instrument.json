@@ -1,0 +1,33 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Equity_Asian_Option.xml",
+  "trade_id_in_xml": "EQAsianOption",
+  "mapper": "equity_instrument_mapper::forward_equity_asian_option (planned Phase 3 mapper)",
+  "notes": [
+    "notional maps from Quantity (1)",
+    "strike maps from StrikeData.Value (3100)",
+    "expiry_date maps from ExerciseDates.ExerciseDate (2026-01-28)",
+    "exercise_type defaults to European (not present in XML for Asian options)",
+    "average_type defaults to Arithmetic (not present in XML; implied by ObservationDates rules)",
+    "averaging_start_date maps from ObservationDates.Rules.StartDate (2025-07-12)",
+    "averaging_end_date maps from ObservationDates.Rules.EndDate (2026-01-19)"
+  ],
+  "instrument": {
+    "trade_type_code": "EquityAsianOption",
+    "underlying_name": "RIC:.SPX",
+    "currency": "USD",
+    "notional": 1.0,
+    "option_type": "Call",
+    "strike": 3100.0,
+    "expiry_date": "2026-01-28",
+    "exercise_type": "European",
+    "long_short": "Long",
+    "average_type": "Arithmetic",
+    "averaging_start_date": "2025-07-12",
+    "averaging_end_date": "2026-01-19",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

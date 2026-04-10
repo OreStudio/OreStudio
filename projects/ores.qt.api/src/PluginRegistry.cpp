@@ -60,6 +60,7 @@ PluginRegistry::~PluginRegistry() {
 
 void PluginRegistry::load_from_directory(const QString& plugin_dir) {
     QDir dir(plugin_dir);
+    BOOST_LOG_SEV(lg(), info) << "Scanning for plugins in: " << dir.absolutePath().toStdString();
     if (!dir.exists()) {
         BOOST_LOG_SEV(lg(), error)
             << "Plugin directory does not exist: " << plugin_dir.toStdString();
@@ -78,17 +79,20 @@ void PluginRegistry::load_from_directory(const QString& plugin_dir) {
         auto* loader = new QPluginLoader(filepath);
         QObject* obj = loader->instance();
         if (!obj) {
+            const QString err = loader->errorString();
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to load plugin: " << filename.toStdString()
-                << " - " << loader->errorString().toStdString();
+                << " - " << err.toStdString();
+            load_errors_.push_back({filename, err});
             delete loader;
             continue;
         }
 
         auto* plugin = qobject_cast<IPlugin*>(obj);
         if (!plugin) {
-            BOOST_LOG_SEV(lg(), error)
-                << filename.toStdString() << " does not implement IPlugin";
+            const QString err = filename + " does not implement IPlugin";
+            BOOST_LOG_SEV(lg(), error) << err.toStdString();
+            load_errors_.push_back({filename, err});
             loader->unload();
             delete loader;
             continue;

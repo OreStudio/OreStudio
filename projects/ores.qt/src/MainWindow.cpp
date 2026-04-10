@@ -436,6 +436,7 @@ MainWindow::MainWindow(QWidget* parent) :
     // Phase 2 — collect standalone menus returned by create_menus().
     // Phase 3 — wire signals and collect toolbar actions.
     const auto& plugins = PluginRegistry::instance().plugins();
+    BOOST_LOG_SEV(lg(), info) << plugins.size() << " plugin(s) registered.";
 
     shared_menus_context smc;
     smc.system_menu        = ui_->menuSystem;
@@ -445,8 +446,11 @@ MainWindow::MainWindow(QWidget* parent) :
     smc.data_transfer_menu = dataTransferMenu;
     smc.trading_codes_menu = tradingCodesMenu;
 
-    for (auto* plugin : plugins)
+    BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";
+    for (auto* plugin : plugins) {
+        BOOST_LOG_SEV(lg(), debug) << "  " << plugin->name().toStdString();
         plugin->setup_menus(smc);
+    }
 
     // Prepend My Account / My Sessions to the Identity menu (after plugins
     // have had a chance to add their items first).
@@ -468,6 +472,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->menuFile->removeAction(ui_->ActionMyAccount);
     ui_->menuFile->removeAction(ui_->ActionMySessions);
 
+    BOOST_LOG_SEV(lg(), debug) << "Collecting plugin menus and toolbar actions.";
     for (auto* plugin : plugins) {
         auto* pb = static_cast<PluginBase*>(plugin);
         connect(pb, &PluginBase::statusMessage,
@@ -477,23 +482,56 @@ MainWindow::MainWindow(QWidget* parent) :
         connect(pb, &PluginBase::windowDestroyed,
                 this, &MainWindow::onDetachableWindowDestroyed);
 
-        for (auto* menu : plugin->create_menus()) {
-            menuBar()->insertMenu(systemAction, menu);
-            plugin_menus_.append(menu);
+        const auto menus = plugin->create_menus();
+        BOOST_LOG_SEV(lg(), info)
+            << "  " << plugin->name().toStdString()
+            << ": " << menus.size() << " menu(s)";
+        for (auto* menu : menus) {
+            if (menu) {
+                BOOST_LOG_SEV(lg(), debug) << "    \"" << menu->title().toStdString() << "\"";
+                menuBar()->insertMenu(systemAction, menu);
+                plugin_menus_.append(menu);
+            } else {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "    Null menu returned by " << plugin->name().toStdString();
+            }
         }
 
-        auto acts = plugin->toolbar_actions();
+        const auto acts = plugin->toolbar_actions();
         if (!acts.isEmpty()) {
             ui_->toolBar->addSeparator();
             for (auto* a : acts) {
-                ui_->toolBar->addAction(a);
-                plugin_toolbar_actions_.append(a);
+                if (a) {
+                    ui_->toolBar->addAction(a);
+                    plugin_toolbar_actions_.append(a);
+                } else {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "  Null toolbar action returned by " << plugin->name().toStdString();
+                }
             }
         }
     }
 
+    BOOST_LOG_SEV(lg(), info)
+        << "Menu bar ready: " << plugin_menus_.size() << " managed menus, "
+        << plugin_toolbar_actions_.size() << " toolbar actions.";
+
     // Initially disable data-related actions until logged in
     updateMenuState();
+
+    // Warn the user about any plugins that failed to load.
+    // Deferred so the main window is fully visible before the dialog appears.
+    const auto& errs = PluginRegistry::instance().load_errors();
+    if (!errs.isEmpty()) {
+        QTimer::singleShot(0, this, [this, errs]() {
+            QString msg = tr("The following plugins could not be loaded. "
+                             "Some features will be unavailable:\n\n");
+            for (const auto& e : errs)
+                msg += u"\u2022 " + e.filename + ":\n  " + e.message + "\n\n";
+            msg = msg.trimmed();
+            QMessageBox::warning(this, tr("Plugin Load Failures"), msg);
+        });
+    }
 
     // Initialize system tray
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -701,12 +739,22 @@ void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
     const bool isLoggedIn = clientManager_ && clientManager_->isLoggedIn();
 
+    BOOST_LOG_SEV(lg(), debug)
+        << "Menu state update: connected=" << isConnected
+        << " logged_in=" << isLoggedIn
+        << " menus=" << plugin_menus_.size()
+        << " toolbar_actions=" << plugin_toolbar_actions_.size();
+
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
     // Plugin-contributed domain menus enabled when logged in
-    for (auto* menu : plugin_menus_)
+    for (auto* menu : plugin_menus_) {
         menu->setEnabled(isLoggedIn);
+        BOOST_LOG_SEV(lg(), debug)
+            << "  \"" << menu->title().toStdString()
+            << "\" -> enabled=" << isLoggedIn;
+    }
 
     // Plugin toolbar actions follow the same login gate as their menus
     for (auto* action : plugin_toolbar_actions_)

@@ -29,6 +29,14 @@ class QPluginLoader;
 namespace ores::qt {
 
 /**
+ * @brief Records a plugin that could not be loaded.
+ */
+struct plugin_load_error {
+    QString filename;   ///< Short filename (e.g. libores.qt.admin.so)
+    QString message;    ///< Human-readable error from QPluginLoader::errorString()
+};
+
+/**
  * @brief Singleton registry that discovers and owns all loaded domain plugins.
  *
  * Call load_from_directory() once at application startup (before constructing
@@ -75,6 +83,14 @@ public:
      */
     const QVector<IPlugin*>& plugins() const { return plugins_; }
 
+    /**
+     * @brief Return any errors collected during load_from_directory().
+     *
+     * Non-empty when one or more .so files failed to load or did not implement
+     * IPlugin.  Callers may use this to warn the user after startup.
+     */
+    const QVector<plugin_load_error>& load_errors() const { return load_errors_; }
+
     PluginRegistry() = default;
     ~PluginRegistry();
     PluginRegistry(const PluginRegistry&) = delete;
@@ -82,8 +98,9 @@ public:
 
 private:
 
-    QVector<QPluginLoader*> loaders_;  ///< Must outlive plugin instances.
-    QVector<IPlugin*>       plugins_;
+    QVector<QPluginLoader*>   loaders_;     ///< Must outlive plugin instances.
+    QVector<IPlugin*>         plugins_;
+    QVector<plugin_load_error> load_errors_;
 };
 
 }

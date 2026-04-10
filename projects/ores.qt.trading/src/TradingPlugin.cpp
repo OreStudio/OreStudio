@@ -23,6 +23,7 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QMainWindow>
+#include "ores.logging/make_logger.hpp"
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -36,14 +37,28 @@
 
 namespace ores::qt {
 
-TradingPlugin::TradingPlugin(QObject* parent) : PluginBase(parent) {}
+using namespace ores::logging;
 
-TradingPlugin::~TradingPlugin() = default;
+namespace {
+auto& lg() {
+    static auto instance = make_logger("ores.qt.trading_plugin");
+    return instance;
+}
+}
+
+TradingPlugin::TradingPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
+
+TradingPlugin::~TradingPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
 // ---------------------------------------------------------------------------
 void TradingPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     oreImportController_ = std::make_unique<OreImportController>(
@@ -78,6 +93,9 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 // IPlugin::setup_menus — populate Trading Codes submenu and Data Transfer menu.
 // ---------------------------------------------------------------------------
 void TradingPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null")
+        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -109,6 +127,7 @@ void TradingPlugin::setup_menus(const shared_menus_context& smc) {
 // at the top of the Trading menu.
 // ---------------------------------------------------------------------------
 QList<QMenu*> TradingPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -210,10 +229,14 @@ QList<QMenu*> TradingPlugin::create_menus() {
         menuTrading->addMenu(trading_codes_menu_);
     }
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuTrading};
 }
 
 QList<QAction*> TradingPlugin::toolbar_actions() {
+    if (!act_portfolios_ || !act_books_ || !act_portfolio_explorer_ ||
+            !act_org_explorer_ || !act_trades_)
+        BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_portfolios_, act_books_, act_portfolio_explorer_,
             act_org_explorer_, act_trades_};
 }
@@ -222,6 +245,7 @@ QList<QAction*> TradingPlugin::toolbar_actions() {
 // IPlugin::on_logout — close open singleton windows, destroy all controllers
 // ---------------------------------------------------------------------------
 void TradingPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     if (portfolio_explorer_sub_window_) {
         portfolio_explorer_sub_window_->close();
         portfolio_explorer_sub_window_ = nullptr;

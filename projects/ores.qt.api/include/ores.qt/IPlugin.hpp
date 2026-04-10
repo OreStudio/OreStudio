@@ -50,10 +50,19 @@ struct shared_menus_context {
  *
  * The host (MainWindow) calls these methods at well-defined lifecycle points:
  *
- *  1. on_login() — called after authentication succeeds; create controllers here.
- *  2. create_menus() — called after on_login(); return domain menus to be inserted
- *     into the menu bar.  The host takes ownership of the returned QMenu objects.
- *  3. on_logout() — called when the client disconnects; destroy controllers here.
+ *  Startup (once, before any login):
+ *    1. setup_menus(ctx)  — contribute items to host-owned shared menus.
+ *    2. create_menus()    — return standalone domain menus; host inserts them
+ *                           into the menu bar (disabled until login).
+ *    3. toolbar_actions() — return actions to add to the main toolbar.
+ *
+ *  Per-session:
+ *    4. on_login(ctx)  — authentication succeeded; create controllers here.
+ *    5. on_logout()    — client disconnected; destroy controllers here.
+ *
+ * Menus and toolbar actions are created once at startup and live for the entire
+ * application lifetime.  on_login()/on_logout() enable/disable them without
+ * recreating them.
  *
  * Implementations must inherit from QObject as well as IPlugin so that signal/slot
  * connections can be made between plugin internals and the host.
@@ -99,8 +108,9 @@ public:
     /**
      * @brief Build and return standalone domain menus for this plugin.
      *
-     * Called by the host after setup_menus().  The host inserts the returned
-     * menus into the menu bar before the &System menu, in plugin load_order.
+     * Called once at startup, after setup_menus().  The host inserts the
+     * returned menus into the menu bar before the &System menu, in plugin
+     * load_order.  Menus are initially disabled and are enabled on login.
      *
      * Plugins that contribute exclusively to shared menus via setup_menus()
      * should return an empty list here.

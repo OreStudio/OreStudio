@@ -22,19 +22,34 @@
 #include <QAction>
 
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/MarketDataController.hpp"
 
 namespace ores::qt {
 
-MktdataPlugin::MktdataPlugin(QObject* parent) : PluginBase(parent) {}
+using namespace ores::logging;
 
-MktdataPlugin::~MktdataPlugin() = default;
+namespace {
+auto& lg() {
+    static auto instance = make_logger("ores.qt.mktdata_plugin");
+    return instance;
+}
+}
+
+MktdataPlugin::MktdataPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
+
+MktdataPlugin::~MktdataPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
 // ---------------------------------------------------------------------------
 void MktdataPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
@@ -59,6 +74,7 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
 // IPlugin::create_menus — return the Market Data menu.
 // ---------------------------------------------------------------------------
 QList<QMenu*> MktdataPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -79,6 +95,7 @@ QList<QMenu*> MktdataPlugin::create_menus() {
     connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
         if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
     });
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuMarketData};
 }
 
@@ -90,6 +107,7 @@ QList<QAction*> MktdataPlugin::toolbar_actions() {
 // IPlugin::on_logout — close open singleton windows, destroy all controllers
 // ---------------------------------------------------------------------------
 void MktdataPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     marketDataController_.reset();
     currencyMarketTierController_.reset();
 

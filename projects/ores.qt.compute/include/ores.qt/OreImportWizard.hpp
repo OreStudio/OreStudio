@@ -321,8 +321,17 @@ public:
     explicit OreDonePage(OreImportWizard* wizard);
     void initializePage() override;
 private:
+    void setupIdRow(QWidget* container, QLabel* label, QLineEdit* edit,
+                    QPushButton* copyBtn, const QString& labelText);
+
     OreImportWizard* wizard_;
     QLabel* summaryLabel_;
+
+    // Selectable ID rows — shown only when the IDs are present
+    QWidget*      workflowIdRow_  = nullptr;
+    QLineEdit*    workflowIdEdit_ = nullptr;
+    QWidget*      correlIdRow_    = nullptr;
+    QLineEdit*    correlIdEdit_   = nullptr;
 };
 
 }

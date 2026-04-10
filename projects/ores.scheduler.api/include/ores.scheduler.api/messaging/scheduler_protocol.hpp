@@ -20,6 +20,8 @@
 #ifndef ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 #define ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -97,6 +99,73 @@ struct get_job_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::scheduler::domain::job_instance> instances;
+};
+
+// ---------------------------------------------------------------------------
+// Job instances — global execution history view
+// ---------------------------------------------------------------------------
+
+struct get_job_instances_request {
+    using response_type = struct get_job_instances_response;
+    static constexpr std::string_view nats_subject =
+        "scheduler.v1.job-instances.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+/**
+ * @brief A job_instance enriched with the parent job's display name.
+ *
+ * Returned by get_job_instances so the Qt layer can render the job name
+ * without a separate look-up.
+ */
+struct job_instance_summary {
+    std::int64_t id = 0;
+    std::string job_definition_id;
+    std::string job_name;
+    std::string action_type;
+    std::string status;          ///< "starting" | "succeeded" | "failed"
+    std::string triggered_at;    ///< ISO-8601 UTC
+    std::string started_at;      ///< ISO-8601 UTC
+    std::optional<std::string> completed_at;
+    std::optional<std::int64_t> duration_ms;
+    std::string error_message;
+};
+
+struct get_job_instances_response {
+    std::vector<job_instance_summary> instances;
+    int total_available_count = 0;
+};
+
+// ---------------------------------------------------------------------------
+// Scheduler status — live overview for the Monitor window
+// ---------------------------------------------------------------------------
+
+struct get_scheduler_status_request {
+    using response_type = struct get_scheduler_status_response;
+    static constexpr std::string_view nats_subject =
+        "scheduler.v1.status";
+};
+
+/**
+ * @brief Per-job status snapshot used by the Scheduler Monitor window.
+ */
+struct job_schedule_status {
+    std::string job_definition_id;
+    std::string job_name;
+    std::string description;
+    std::string schedule_expression;
+    bool is_active = false;
+    std::optional<std::string> last_run_at;     ///< ISO-8601 UTC, if ever run
+    std::optional<std::string> last_run_status; ///< "succeeded" | "failed" | "starting"
+    std::optional<std::string> next_fire_at;    ///< ISO-8601 UTC, null if inactive
+    int running_count = 0;                      ///< currently running instances
+};
+
+struct get_scheduler_status_response {
+    std::vector<job_schedule_status> jobs;
+    int total_running = 0;
+    int total_active = 0;
 };
 
 }

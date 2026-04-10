@@ -24,6 +24,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
+#include "ores.qt/JobInstanceController.hpp"
+#include "ores.qt/SchedulerMonitorController.hpp"
 
 namespace ores::qt {
 
@@ -58,6 +60,17 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
         ctx_.change_reason_cache, this);
     connectControllerSignals(jobDefinitionController_.get());
+
+    jobInstanceController_ = std::make_unique<JobInstanceController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
+    connectControllerSignals(jobInstanceController_.get());
+
+    schedulerMonitorController_ = std::make_unique<SchedulerMonitorController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
+    connect(schedulerMonitorController_.get(), &SchedulerMonitorController::statusMessage,
+            this, &SchedulerPlugin::statusMessage);
+    connect(schedulerMonitorController_.get(), &SchedulerMonitorController::errorMessage,
+            this, &SchedulerPlugin::statusMessage);
 }
 
 QList<QMenu*> SchedulerPlugin::create_menus() {
@@ -70,15 +83,19 @@ QList<QMenu*> SchedulerPlugin::create_menus() {
         if (jobDefinitionController_) jobDefinitionController_->showListWindow();
     });
 
-    auto* actJobInstances = menuScheduler->addAction(tr("&Job Instances"));
-    actJobInstances->setEnabled(false);
-    actJobInstances->setToolTip(tr("Not yet implemented"));
+    auto* actJobInstances = menuScheduler->addAction(
+        ico(Icon::Clock), tr("&Job Instances"));
+    connect(actJobInstances, &QAction::triggered, this, [this]() {
+        if (jobInstanceController_) jobInstanceController_->showListWindow();
+    });
 
     menuScheduler->addSeparator();
 
-    auto* actMonitor = menuScheduler->addAction(tr("&Monitor"));
-    actMonitor->setEnabled(false);
-    actMonitor->setToolTip(tr("Not yet implemented"));
+    auto* actMonitor = menuScheduler->addAction(
+        ico(Icon::Clock), tr("&Monitor"));
+    connect(actMonitor, &QAction::triggered, this, [this]() {
+        if (schedulerMonitorController_) schedulerMonitorController_->showWindow();
+    });
 
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuScheduler};
@@ -86,6 +103,8 @@ QList<QMenu*> SchedulerPlugin::create_menus() {
 
 void SchedulerPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
+    schedulerMonitorController_.reset();
+    jobInstanceController_.reset();
     jobDefinitionController_.reset();
     ctx_ = {};
 }

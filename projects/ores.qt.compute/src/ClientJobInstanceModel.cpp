@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ClientJobInstanceModel.hpp"
 
+#include <QColor>
 #include <QtConcurrent>
 #include "ores.scheduler.api/rfl/reflectors.hpp"
 #include "ores.qt/ExceptionHelper.hpp"

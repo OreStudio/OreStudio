@@ -987,8 +987,9 @@ void OreDonePage::initializePage() {
             // Asynchronous path: import is running in the background.
             html += tr("<p><b>Import submitted successfully.</b></p>");
             html += tr("<p>The import is processing in the background. "
-                       "Use the Workflow ID below to track progress in the log files "
-                       "or a future workflow monitor.</p>");
+                       "Use the Workflow ID below to track progress, or open "
+                       "<b>Workflows &rarr; Execution List</b> to monitor all "
+                       "active workflows.</p>");
             workflowIdEdit_->setText(QString::fromStdString(resp.workflow_instance_id));
             workflowIdRow_->show();
         } else {

@@ -130,7 +130,9 @@ run(boost::asio::io_context& io_ctx,
     }();
 
     boost::asio::cancellation_signal startup_cancel;
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM, SIGQUIT);
+    boost::asio::signal_set signals(io_ctx);
+    for (int s : ores::platform::process::shutdown_signals)
+        signals.add(s);
     signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
         if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
     });

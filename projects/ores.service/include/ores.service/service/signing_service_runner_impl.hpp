@@ -20,12 +20,12 @@
 #ifndef ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 
-#include <csignal>
 #include <functional>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/error_code.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/process/signals.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::service::service {
@@ -49,7 +49,9 @@ run_signing(boost::asio::io_context& io_ctx,
         return instance;
     }();
 
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM, SIGQUIT);
+    boost::asio::signal_set signals(io_ctx);
+    for (int s : ores::platform::process::shutdown_signals)
+        signals.add(s);
 
     auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
         jwt_private_key);

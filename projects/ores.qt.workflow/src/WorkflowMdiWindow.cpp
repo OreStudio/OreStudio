@@ -19,23 +19,31 @@
 #include "ores.qt/WorkflowMdiWindow.hpp"
 
 #include <algorithm>
+#include <QCloseEvent>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFontDatabase>
 #include <QFrame>
-#include <QPainter>
+#include <QGroupBox>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QApplication>
 #include <QInputDialog>
+#include <QLabel>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPlainTextEdit>
+#include <QSplitter>
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
+#include <QVBoxLayout>
+#include <QApplication>
+#include <QHeaderView>
 #include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
+#include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/WorkflowInstanceDetailDialog.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 
 namespace ores::qt {
@@ -52,11 +60,15 @@ namespace {
 constexpr std::string_view kWorkflowChangedEvent =
     "ores.workflow.workflow_instance_changed";
 
-// Custom item roles for badge cells
+constexpr auto kSettingsGroup = "WorkflowMdiWindow";
+
+// Custom item roles
 enum ItemRole {
     BadgeTagRole   = Qt::UserRole,
     BadgeColorRole = Qt::UserRole + 1,
-    InstanceIdRole = Qt::UserRole + 2,   // stored on col-0 of each instance row
+    InstanceIdRole = Qt::UserRole + 2,
+    ErrorDetailRole = Qt::UserRole + 3,
+    CorrIdRole     = Qt::UserRole + 4,
 };
 
 // Execution list table columns
@@ -67,6 +79,17 @@ enum class Col {
     CreatedBy,
     CreatedAt,
     CorrelationId,
+    Count
+};
+
+// Steps detail table columns
+enum class SCol {
+    Index = 0,
+    Name,
+    Status,
+    StartedAt,
+    CompletedAt,
+    Error,
     Count
 };
 
@@ -139,17 +162,31 @@ QTableWidgetItem* make_item(const QString& text) {
     return item;
 }
 
+// Map internal state name to user-visible display label.
+// "compensating" and "compensated" are failure states from the user's perspective.
+QString display_status(const QString& status) {
+    if (status == QStringLiteral("compensating") ||
+        status == QStringLiteral("compensated"))
+        return QStringLiteral("Failed");
+    return status;
+}
+
 QColor status_color(const QString& status) {
     if (status == QStringLiteral("completed"))
         return color_constants::level_info;
-    if (status == QStringLiteral("failed"))
+    if (status == QStringLiteral("failed") ||
+        status == QStringLiteral("compensating") ||
+        status == QStringLiteral("compensated"))
         return color_constants::level_error;
-    if (status == QStringLiteral("in_progress") ||
-        status == QStringLiteral("compensating"))
+    if (status == QStringLiteral("in_progress"))
         return color_constants::level_warn;
-    if (status == QStringLiteral("compensated"))
-        return color_constants::level_debug;
     return color_constants::level_trace;
+}
+
+bool is_failed(const QString& status) {
+    return status == QStringLiteral("failed") ||
+           status == QStringLiteral("compensating") ||
+           status == QStringLiteral("compensated");
 }
 
 } // namespace
@@ -168,25 +205,43 @@ WorkflowMdiWindow::WorkflowMdiWindow(ClientManager* clientManager,
       autoRefreshTimer_(nullptr),
       tabs_(nullptr),
       activeCountLabel_(nullptr),
-      compensatingCountLabel_(nullptr),
       failedCountLabel_(nullptr),
       failuresTable_(nullptr),
       searchEdit_(nullptr),
       statusFilter_(nullptr),
       instanceTable_(nullptr),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+      splitter_(nullptr),
+      stepsGroup_(nullptr),
+      stepsTable_(nullptr),
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      stepsWatcher_(new QFutureWatcher<StepsFetchResult>(this)) {
 
     autoRefreshTimer_ = new QTimer(this);
-    autoRefreshTimer_->setInterval(60'000); // 1 minute default
+    autoRefreshTimer_->setInterval(60'000);
 
     connect(autoRefreshTimer_, &QTimer::timeout,
             this, &WorkflowMdiWindow::reload);
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &WorkflowMdiWindow::onFetchFinished);
+    connect(stepsWatcher_, &QFutureWatcher<StepsFetchResult>::finished,
+            this, &WorkflowMdiWindow::onStepsFetchFinished);
 
     setupUi();
     setupEventSubscriptions();
+
+    // Restore persisted geometry.
+    UiPersistence::restoreSize(
+        QLatin1String(kSettingsGroup), {900, 600});
+    UiPersistence::restoreSplitter(
+        QLatin1String(kSettingsGroup), splitter_);
+
     reload();
+}
+
+void WorkflowMdiWindow::closeEvent(QCloseEvent* event) {
+    UiPersistence::saveSize(QLatin1String(kSettingsGroup), this);
+    UiPersistence::saveSplitter(QLatin1String(kSettingsGroup), splitter_);
+    EntityListMdiWindow::closeEvent(event);
 }
 
 void WorkflowMdiWindow::setupUi() {
@@ -265,7 +320,6 @@ void WorkflowMdiWindow::setupDashboardTab(QWidget* tab) {
     };
 
     cardsLayout->addWidget(makeCard(tr("Active"), activeCountLabel_));
-    cardsLayout->addWidget(makeCard(tr("Compensating"), compensatingCountLabel_));
     cardsLayout->addWidget(makeCard(tr("Failed"), failedCountLabel_));
     layout->addLayout(cardsLayout);
 
@@ -284,9 +338,11 @@ void WorkflowMdiWindow::setupDashboardTab(QWidget* tab) {
 
 void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
     auto* layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     // ── Filter bar ───────────────────────────────────────────────────────────
     auto* filterLayout = new QHBoxLayout;
+    filterLayout->setContentsMargins(4, 4, 4, 0);
     searchEdit_ = new QLineEdit(tab);
     searchEdit_->setPlaceholderText(tr("Search by type or correlation ID…"));
     filterLayout->addWidget(searchEdit_);
@@ -296,12 +352,10 @@ void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
     statusFilter_->addItem(tr("In Progress"),   QStringLiteral("in_progress"));
     statusFilter_->addItem(tr("Completed"),      QStringLiteral("completed"));
     statusFilter_->addItem(tr("Failed"),         QStringLiteral("failed"));
-    statusFilter_->addItem(tr("Compensating"),   QStringLiteral("compensating"));
-    statusFilter_->addItem(tr("Compensated"),    QStringLiteral("compensated"));
     filterLayout->addWidget(statusFilter_);
     layout->addLayout(filterLayout);
 
-    // ── Instance table ───────────────────────────────────────────────────────
+    // ── Instance table (top of splitter) ─────────────────────────────────────
     instanceTable_ = new QTableWidget(0, static_cast<int>(Col::Count), tab);
     instanceTable_->setHorizontalHeaderLabels(
         {tr("Status"), tr("Type"), tr("Steps"),
@@ -310,14 +364,49 @@ void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
         QHeaderView::ResizeToContents);
     instanceTable_->horizontalHeader()->setStretchLastSection(true);
     instanceTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    instanceTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     instanceTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     instanceTable_->setAlternatingRowColors(true);
     instanceTable_->setItemDelegate(new BadgeDelegate(instanceTable_));
+    instanceTable_->verticalHeader()->setVisible(false);
 
-    connect(instanceTable_, &QTableWidget::doubleClicked,
-            this, &WorkflowMdiWindow::onInstanceDoubleClicked);
+    connect(instanceTable_, &QTableWidget::currentItemChanged,
+            this, [this](QTableWidgetItem*, QTableWidgetItem*) {
+                onInstanceSelectionChanged();
+            });
 
-    layout->addWidget(instanceTable_);
+    // ── Steps detail panel (bottom of splitter) ───────────────────────────────
+    stepsGroup_ = new QGroupBox(tr("Steps"), tab);
+    auto* stepsLayout = new QVBoxLayout(stepsGroup_);
+    stepsLayout->setContentsMargins(4, 4, 4, 4);
+
+    stepsTable_ = new QTableWidget(0, static_cast<int>(SCol::Count), stepsGroup_);
+    stepsTable_->setHorizontalHeaderLabels(
+        {tr("#"), tr("Name"), tr("Status"),
+         tr("Started At"), tr("Completed At"), tr("Error")});
+    stepsTable_->horizontalHeader()->setSectionResizeMode(
+        QHeaderView::ResizeToContents);
+    stepsTable_->horizontalHeader()->setStretchLastSection(true);
+    stepsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    stepsTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    stepsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    stepsTable_->setAlternatingRowColors(true);
+    stepsTable_->setItemDelegate(new BadgeDelegate(stepsTable_));
+    stepsTable_->verticalHeader()->setVisible(false);
+
+    connect(stepsTable_, &QTableWidget::cellDoubleClicked,
+            this, &WorkflowMdiWindow::onStepDoubleClicked);
+
+    stepsLayout->addWidget(stepsTable_);
+
+    // ── Splitter ──────────────────────────────────────────────────────────────
+    splitter_ = new QSplitter(Qt::Vertical, tab);
+    splitter_->addWidget(instanceTable_);
+    splitter_->addWidget(stepsGroup_);
+    splitter_->setStretchFactor(0, 2);
+    splitter_->setStretchFactor(1, 1);
+
+    layout->addWidget(splitter_);
 
     connect(searchEdit_, &QLineEdit::textChanged,
             this, &WorkflowMdiWindow::onFilterChanged);
@@ -346,7 +435,7 @@ void WorkflowMdiWindow::setupEventSubscriptions() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// doReload / async fetch
+// doReload / async fetch — instances
 // ─────────────────────────────────────────────────────────────────────────────
 
 void WorkflowMdiWindow::doReload() {
@@ -411,14 +500,14 @@ void WorkflowMdiWindow::onFetchFinished() {
 void WorkflowMdiWindow::populateDashboard(
     const std::vector<wf::workflow_instance_summary>& instances) {
 
-    int active = 0, compensating = 0, failed = 0;
+    int active = 0, failed = 0;
     failuresTable_->setRowCount(0);
 
     for (const auto& inst : instances) {
         const QString status = QString::fromStdString(inst.status);
-        if (status == QStringLiteral("in_progress"))   ++active;
-        else if (status == QStringLiteral("compensating")) ++compensating;
-        else if (status == QStringLiteral("failed")) {
+        if (status == QStringLiteral("in_progress"))
+            ++active;
+        else if (is_failed(status)) {
             ++failed;
             const int row = failuresTable_->rowCount();
             failuresTable_->insertRow(row);
@@ -432,28 +521,39 @@ void WorkflowMdiWindow::populateDashboard(
     }
 
     activeCountLabel_->setText(QString::number(active));
-    compensatingCountLabel_->setText(QString::number(compensating));
     failedCountLabel_->setText(QString::number(failed));
 }
 
 void WorkflowMdiWindow::populateExecutionList(
     const std::vector<wf::workflow_instance_summary>& instances) {
 
+    // Remember selected instance ID so we can re-select after repopulation.
+    QString prevSelectedId = selectedInstanceId_;
+
     const QString searchText = searchEdit_->text().trimmed().toLower();
     const QString filterStatus = statusFilter_->currentData().toString();
 
     instanceTable_->setRowCount(0);
 
+    int reSelectRow = -1;
+
     for (const auto& inst : instances) {
         const QString status = QString::fromStdString(inst.status);
         const QString type   = QString::fromStdString(inst.type);
         const QString corrId = QString::fromStdString(inst.correlation_id);
+        const QString id     = QString::fromStdString(inst.id);
 
-        // Apply status filter
-        if (!filterStatus.isEmpty() && status != filterStatus)
-            continue;
+        // Apply status filter — map display "Failed" to all failure states.
+        if (!filterStatus.isEmpty()) {
+            const bool wantFailed = (filterStatus == QStringLiteral("failed"));
+            if (wantFailed) {
+                if (!is_failed(status)) continue;
+            } else {
+                if (status != filterStatus) continue;
+            }
+        }
 
-        // Apply search filter (type or correlation ID)
+        // Apply search filter (type or correlation ID).
         if (!searchText.isEmpty()) {
             if (!type.toLower().contains(searchText) &&
                 !corrId.toLower().contains(searchText))
@@ -463,9 +563,11 @@ void WorkflowMdiWindow::populateExecutionList(
         const int row = instanceTable_->rowCount();
         instanceTable_->insertRow(row);
 
-        // Status badge — also store instance ID for detail dialog
-        auto* statusItem = make_badge_item(status, status_color(status));
-        statusItem->setData(InstanceIdRole, QString::fromStdString(inst.id));
+        // Status badge — store instance and correlation IDs on col-0.
+        auto* statusItem = make_badge_item(
+            display_status(status), status_color(status));
+        statusItem->setData(InstanceIdRole, id);
+        statusItem->setData(CorrIdRole, corrId);
         instanceTable_->setItem(row, static_cast<int>(Col::Status), statusItem);
 
         instanceTable_->setItem(row, static_cast<int>(Col::Type),
@@ -473,7 +575,7 @@ void WorkflowMdiWindow::populateExecutionList(
 
         instanceTable_->setItem(row, static_cast<int>(Col::Steps),
             make_item(QStringLiteral("%1/%2")
-                .arg(inst.current_step_index)
+                .arg(inst.current_step_index + 1)
                 .arg(inst.step_count)));
 
         instanceTable_->setItem(row, static_cast<int>(Col::CreatedBy),
@@ -484,10 +586,112 @@ void WorkflowMdiWindow::populateExecutionList(
 
         instanceTable_->setItem(row, static_cast<int>(Col::CorrelationId),
             make_item(corrId));
+
+        if (id == prevSelectedId)
+            reSelectRow = row;
     }
 
     instanceTable_->resizeColumnsToContents();
     instanceTable_->horizontalHeader()->setStretchLastSection(true);
+
+    // Re-select the previously selected row (or clear steps panel).
+    if (reSelectRow >= 0) {
+        instanceTable_->selectRow(reSelectRow);
+    } else {
+        selectedInstanceId_.clear();
+        stepsTable_->setRowCount(0);
+        stepsGroup_->setTitle(tr("Steps"));
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Steps — async fetch and populate
+// ─────────────────────────────────────────────────────────────────────────────
+
+void WorkflowMdiWindow::loadStepsForInstance(const QString& instanceId) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    if (stepsWatcher_->isRunning())
+        stepsWatcher_->cancel();
+
+    QPointer<WorkflowMdiWindow> self = this;
+    const std::string id = instanceId.toStdString();
+
+    stepsWatcher_->setFuture(QtConcurrent::run([self, id]() -> StepsFetchResult {
+        if (!self || !self->clientManager_)
+            return {};
+
+        try {
+            wf::get_workflow_steps_request req;
+            req.workflow_instance_id = id;
+            auto resp = self->clientManager_->process_authenticated_request(req);
+            if (!resp)
+                return {false, QString::fromStdString(resp.error()), {}};
+            if (!resp->success)
+                return {false, QString::fromStdString(resp->message), {}};
+            return {true, {}, std::move(resp->steps)};
+        } catch (const std::exception& e) {
+            return {false, QString::fromLatin1(e.what()), {}};
+        } catch (...) {
+            return {false, QStringLiteral("Unknown error loading steps"), {}};
+        }
+    }));
+}
+
+void WorkflowMdiWindow::onStepsFetchFinished() {
+    const auto result = stepsWatcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Step fetch failed: " << result.error.toStdString();
+        stepsGroup_->setTitle(
+            tr("Steps — Error: %1").arg(result.error));
+        return;
+    }
+
+    populateSteps(result.steps);
+}
+
+void WorkflowMdiWindow::populateSteps(
+    const std::vector<wf::workflow_step_summary>& steps) {
+
+    stepsTable_->setRowCount(0);
+
+    for (const auto& step : steps) {
+        const int row = stepsTable_->rowCount();
+        stepsTable_->insertRow(row);
+
+        stepsTable_->setItem(row, static_cast<int>(SCol::Index),
+            make_item(QString::number(step.step_index + 1)));
+
+        stepsTable_->setItem(row, static_cast<int>(SCol::Name),
+            make_item(QString::fromStdString(step.name)));
+
+        const QString status = QString::fromStdString(step.status);
+        stepsTable_->setItem(row, static_cast<int>(SCol::Status),
+            make_badge_item(display_status(status), status_color(status)));
+
+        stepsTable_->setItem(row, static_cast<int>(SCol::StartedAt),
+            make_item(step.started_at
+                ? QString::fromStdString(*step.started_at)
+                : QStringLiteral("—")));
+
+        stepsTable_->setItem(row, static_cast<int>(SCol::CompletedAt),
+            make_item(step.completed_at
+                ? QString::fromStdString(*step.completed_at)
+                : QStringLiteral("—")));
+
+        // Store full error text as item data; truncate for display.
+        const QString fullError = QString::fromStdString(step.error);
+        auto* errorItem = make_item(fullError);
+        errorItem->setData(ErrorDetailRole, fullError);
+        stepsTable_->setItem(row, static_cast<int>(SCol::Error), errorItem);
+    }
+
+    stepsTable_->resizeColumnsToContents();
+    stepsTable_->horizontalHeader()->setStretchLastSection(true);
+    stepsGroup_->setTitle(tr("Steps (%1)").arg(steps.size()));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -517,28 +721,87 @@ void WorkflowMdiWindow::onRefreshToggled(bool checked) {
     }
 }
 
-void WorkflowMdiWindow::onInstanceDoubleClicked(const QModelIndex& index) {
-    const int row = index.row();
-    if (row < 0 || row >= instanceTable_->rowCount())
+void WorkflowMdiWindow::onInstanceSelectionChanged() {
+    const int row = instanceTable_->currentRow();
+    if (row < 0) {
+        selectedInstanceId_.clear();
+        stepsTable_->setRowCount(0);
+        stepsGroup_->setTitle(tr("Steps"));
         return;
+    }
 
     auto* statusItem = instanceTable_->item(row, static_cast<int>(Col::Status));
-    auto* typeItem   = instanceTable_->item(row, static_cast<int>(Col::Type));
-    if (!statusItem || !typeItem)
+    if (!statusItem) return;
+
+    const QString id = statusItem->data(InstanceIdRole).toString();
+    if (id.isEmpty() || id == selectedInstanceId_)
         return;
 
-    const QString instanceId = statusItem->data(InstanceIdRole).toString();
-    const QString type       = typeItem->text();
-    const QString status     = statusItem->text();
+    selectedInstanceId_ = id;
 
-    if (instanceId.isEmpty())
-        return;
+    const QString corrId = statusItem->data(CorrIdRole).toString();
+    auto* typeItem = instanceTable_->item(row, static_cast<int>(Col::Type));
+    const QString type = typeItem ? typeItem->text() : QString{};
 
-    auto* dlg = new WorkflowInstanceDetailDialog(
-        clientManager_, instanceId, type, status, this);
+    stepsGroup_->setTitle(tr("Steps — %1  [%2]").arg(type, corrId));
+    stepsTable_->setRowCount(0);
+    loadStepsForInstance(id);
+}
+
+void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
+    auto* errorItem = stepsTable_->item(row, static_cast<int>(SCol::Error));
+    if (!errorItem) return;
+
+    const QString fullError = errorItem->data(ErrorDetailRole).toString();
+
+    // Always show the dialog (even without an error) so the user can see step info.
+    auto* nameItem = stepsTable_->item(row, static_cast<int>(SCol::Name));
+    const QString stepName = nameItem ? nameItem->text() : QString{};
+
+    // Find correlation ID and workflow ID from the selected instance row.
+    const int instRow = instanceTable_->currentRow();
+    QString workflowId, corrId;
+    if (instRow >= 0) {
+        auto* si = instanceTable_->item(instRow, static_cast<int>(Col::Status));
+        if (si) {
+            workflowId = si->data(InstanceIdRole).toString();
+            corrId     = si->data(CorrIdRole).toString();
+        }
+    }
+
+    auto* dlg = new QDialog(this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->loadSteps();
-    dlg->exec();
+    dlg->setWindowTitle(tr("Step details — %1").arg(stepName));
+    dlg->resize(760, 480);
+
+    auto* layout = new QVBoxLayout(dlg);
+
+    // ── Header: workflow ID and correlation ID (copyable) ─────────────────────
+    auto* headerLayout = new QHBoxLayout;
+    auto makeCopyLabel = [dlg](const QString& label, const QString& value) {
+        auto* l = new QLabel(
+            QStringLiteral("<b>%1:</b> %2").arg(label, value), dlg);
+        l->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        return l;
+    };
+    headerLayout->addWidget(makeCopyLabel(tr("Workflow ID"), workflowId));
+    headerLayout->addWidget(makeCopyLabel(tr("Correlation ID"), corrId));
+    headerLayout->addStretch();
+    layout->addLayout(headerLayout);
+
+    // ── Error text ────────────────────────────────────────────────────────────
+    const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    auto* edit = new QPlainTextEdit(
+        fullError.isEmpty() ? tr("(no error)") : fullError, dlg);
+    edit->setReadOnly(true);
+    edit->setFont(fixed);
+    layout->addWidget(edit);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
+    connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
+    layout->addWidget(buttons);
+
+    dlg->show();
 }
 
 void WorkflowMdiWindow::onNotificationReceived(
@@ -552,7 +815,6 @@ void WorkflowMdiWindow::onNotificationReceived(
 }
 
 void WorkflowMdiWindow::onFilterChanged() {
-    // Re-apply filters to the already-loaded instances without a server round-trip.
     populateExecutionList(currentInstances_);
 }
 

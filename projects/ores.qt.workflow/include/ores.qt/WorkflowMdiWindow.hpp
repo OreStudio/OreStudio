@@ -25,7 +25,9 @@
 #include <QAction>
 #include <QComboBox>
 #include <QDateTime>
+#include <QGroupBox>
 #include <QLineEdit>
+#include <QSplitter>
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QToolBar>
@@ -43,7 +45,9 @@ namespace ores::qt {
  *
  * Provides two tabs:
  *  - Execution List: searchable, filterable table of all workflow instances
- *    with status badges. Double-click opens WorkflowInstanceDetailDialog.
+ *    with status badges. Selecting a row loads its steps in a detail panel
+ *    below (service-dashboard style). Double-clicking a step with an error
+ *    opens a read-only error detail dialog.
  *  - Dashboard: summary counts (active/failed) and recent failures table.
  *
  * Refreshes automatically on "ores.workflow.workflow_instance_changed" NATS
@@ -69,6 +73,12 @@ private:
         std::vector<ores::workflow::messaging::workflow_instance_summary> instances;
     };
 
+    struct StepsFetchResult {
+        bool success = false;
+        QString error;
+        std::vector<ores::workflow::messaging::workflow_step_summary> steps;
+    };
+
 public:
     explicit WorkflowMdiWindow(ClientManager* clientManager,
                                QWidget* parent = nullptr);
@@ -80,6 +90,7 @@ signals:
 
 protected:
     void doReload() override;
+    void closeEvent(QCloseEvent* event) override;
     QString normalRefreshTooltip() const override {
         return tr("Refresh workflow list");
     }
@@ -87,7 +98,9 @@ protected:
 private slots:
     void onFetchFinished();
     void onRefreshToggled(bool checked);
-    void onInstanceDoubleClicked(const QModelIndex& index);
+    void onInstanceSelectionChanged();
+    void onStepsFetchFinished();
+    void onStepDoubleClicked(int row, int col);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds, const QString& tenantId);
     void onFilterChanged();
@@ -104,6 +117,9 @@ private:
         const std::vector<ores::workflow::messaging::workflow_instance_summary>& instances);
     void populateExecutionList(
         const std::vector<ores::workflow::messaging::workflow_instance_summary>& instances);
+    void loadStepsForInstance(const QString& instanceId);
+    void populateSteps(
+        const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
 
     ClientManager* clientManager_;
 
@@ -116,7 +132,6 @@ private:
 
     // Dashboard tab widgets
     QLabel* activeCountLabel_;
-    QLabel* compensatingCountLabel_;
     QLabel* failedCountLabel_;
     QTableWidget* failuresTable_;
 
@@ -124,10 +139,17 @@ private:
     QLineEdit* searchEdit_;
     QComboBox* statusFilter_;
     QTableWidget* instanceTable_;
+    QSplitter* splitter_;
+    QGroupBox* stepsGroup_;
+    QTableWidget* stepsTable_;
 
-    // Async fetch
+    // Async fetch — instances
     QFutureWatcher<FetchResult>* watcher_;
     std::vector<ores::workflow::messaging::workflow_instance_summary> currentInstances_;
+
+    // Async fetch — steps
+    QFutureWatcher<StepsFetchResult>* stepsWatcher_;
+    QString selectedInstanceId_;
 };
 
 }

@@ -36,6 +36,15 @@
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
@@ -356,6 +365,116 @@ struct get_equity_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::equity_instrument> history;
+};
+
+// ---- Typed equity instrument protocol ----
+
+struct save_equity_option_instrument_request {
+    using response_type = struct save_equity_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_option_instruments.save";
+    ores::trading::domain::equity_option_instrument data;
+};
+
+struct save_equity_option_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_digital_option_instrument_request {
+    using response_type = struct save_equity_digital_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_digital_option_instruments.save";
+    ores::trading::domain::equity_digital_option_instrument data;
+};
+
+struct save_equity_digital_option_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_barrier_option_instrument_request {
+    using response_type = struct save_equity_barrier_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_barrier_option_instruments.save";
+    ores::trading::domain::equity_barrier_option_instrument data;
+};
+
+struct save_equity_barrier_option_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_asian_option_instrument_request {
+    using response_type = struct save_equity_asian_option_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_asian_option_instruments.save";
+    ores::trading::domain::equity_asian_option_instrument data;
+};
+
+struct save_equity_asian_option_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_forward_instrument_request {
+    using response_type = struct save_equity_forward_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_forward_instruments.save";
+    ores::trading::domain::equity_forward_instrument data;
+};
+
+struct save_equity_forward_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_variance_swap_instrument_request {
+    using response_type = struct save_equity_variance_swap_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_variance_swap_instruments.save";
+    ores::trading::domain::equity_variance_swap_instrument data;
+};
+
+struct save_equity_variance_swap_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_swap_instrument_request {
+    using response_type = struct save_equity_swap_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_swap_instruments.save";
+    ores::trading::domain::equity_swap_instrument data;
+};
+
+struct save_equity_swap_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_accumulator_instrument_request {
+    using response_type = struct save_equity_accumulator_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_accumulator_instruments.save";
+    ores::trading::domain::equity_accumulator_instrument data;
+};
+
+struct save_equity_accumulator_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct save_equity_position_instrument_request {
+    using response_type = struct save_equity_position_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_position_instruments.save";
+    ores::trading::domain::equity_position_instrument data;
+};
+
+struct save_equity_position_instrument_response {
+    bool success = false;
+    std::string message;
 };
 
 // ---- Commodity instrument protocol ----

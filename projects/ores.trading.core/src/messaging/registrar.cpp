@@ -27,6 +27,7 @@
 #include "ores.trading.core/messaging/bond_instrument_handler.hpp"
 #include "ores.trading.core/messaging/credit_instrument_handler.hpp"
 #include "ores.trading.core/messaging/equity_instrument_handler.hpp"
+#include "ores.trading.core/messaging/typed_equity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/commodity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/composite_instrument_handler.hpp"
 #include "ores.trading.core/messaging/scripted_instrument_handler.hpp"
@@ -697,6 +698,70 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             equity_instrument_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
+        }));
+
+    // Typed equity instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_digital_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_digital_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_barrier_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_barrier_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_asian_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_asian_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_forward_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_forward(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_variance_swap_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_variance_swap(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_swap_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_swap(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_accumulator_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_accumulator(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_equity_position_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_equity_instrument_handler h(nats, ctx, verifier);
+            h.save_position(std::move(msg));
         }));
 
     // Commodity instruments

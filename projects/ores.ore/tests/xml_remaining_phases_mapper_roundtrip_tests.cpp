@@ -52,6 +52,7 @@ const std::string tags(
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
 using ores::ore::domain::fx_mapping_result;
+using ores::trading::domain::fx_barrier_option_instrument;
 using ores::ore::domain::equity_instrument_mapper;
 using ores::ore::domain::equity_mapping_result;
 using ores::ore::domain::scripted_instrument_mapper;
@@ -137,11 +138,12 @@ bond_mapping_result load_and_map_bond(const std::string& filename,
 TEST_CASE("fx_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    CHECK(r.instrument.trade_type_code == "FxDoubleBarrierOption");
-    CHECK(!r.instrument.bought_currency.empty());
-    CHECK(!r.instrument.sold_currency.empty());
-    CHECK(!r.instrument.option_type.empty());
+    CHECK(instr.trade_type_code == "FxDoubleBarrierOption");
+    CHECK(!instr.bought_currency.empty());
+    CHECK(!instr.sold_currency.empty());
+    CHECK(!instr.option_type.empty());
 
     BOOST_LOG_SEV(lg, info) << "FxDoubleBarrierOption forward test passed";
 }
@@ -149,9 +151,9 @@ TEST_CASE("fx_double_barrier_option_forward", tags) {
 TEST_CASE("fx_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    const auto rt = fx_instrument_mapper::reverse_fx_double_barrier_option(
-        r.instrument);
+    const auto rt = fx_instrument_mapper::reverse_fx_double_barrier_option(instr);
     REQUIRE(rt.FxDoubleBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "FxDoubleBarrierOption reverse test passed";
@@ -164,10 +166,11 @@ TEST_CASE("fx_double_barrier_option_reverse", tags) {
 TEST_CASE("fx_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    CHECK(r.instrument.trade_type_code == "FxEuropeanBarrierOption");
-    CHECK(!r.instrument.bought_currency.empty());
-    CHECK(!r.instrument.sold_currency.empty());
+    CHECK(instr.trade_type_code == "FxEuropeanBarrierOption");
+    CHECK(!instr.bought_currency.empty());
+    CHECK(!instr.sold_currency.empty());
 
     BOOST_LOG_SEV(lg, info) << "FxEuropeanBarrierOption forward test passed";
 }
@@ -175,9 +178,9 @@ TEST_CASE("fx_european_barrier_option_forward", tags) {
 TEST_CASE("fx_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    const auto rt = fx_instrument_mapper::reverse_fx_european_barrier_option(
-        r.instrument);
+    const auto rt = fx_instrument_mapper::reverse_fx_european_barrier_option(instr);
     REQUIRE(rt.FxEuropeanBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "FxEuropeanBarrierOption reverse test passed";
@@ -190,9 +193,10 @@ TEST_CASE("fx_european_barrier_option_reverse", tags) {
 TEST_CASE("fx_kiko_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    CHECK(r.instrument.trade_type_code == "FxKIKOBarrierOption");
-    CHECK(!r.instrument.option_type.empty());
+    CHECK(instr.trade_type_code == "FxKIKOBarrierOption");
+    CHECK(!instr.option_type.empty());
 
     BOOST_LOG_SEV(lg, info) << "FxKIKOBarrierOption forward test passed";
 }
@@ -200,9 +204,9 @@ TEST_CASE("fx_kiko_barrier_option_forward", tags) {
 TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
+    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
 
-    const auto rt = fx_instrument_mapper::reverse_fx_kiko_barrier_option(
-        r.instrument);
+    const auto rt = fx_instrument_mapper::reverse_fx_kiko_barrier_option(instr);
     REQUIRE(rt.FxKIKOBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "FxKIKOBarrierOption reverse test passed";

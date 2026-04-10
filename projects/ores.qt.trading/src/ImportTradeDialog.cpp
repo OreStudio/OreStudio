@@ -617,6 +617,11 @@ void ImportTradeDialog::onImportClicked() {
                     }, r.instrument);
                     for (auto& leg : r.legs)
                         leg.instrument_id = instr_id;
+                } else if constexpr (std::is_same_v<T, ore::domain::fx_mapping_result>) {
+                    std::visit([&](auto& instr) {
+                        instr.instrument_id = instr_id;
+                        instr.trade_id = tti.trade.id;
+                    }, r.instrument);
                 } else {
                     r.instrument.id = instr_id;
                     r.instrument.trade_id = tti.trade.id;
@@ -832,9 +837,45 @@ void ImportTradeDialog::onImportClicked() {
                                     }
                                 }, r.instrument);
                             } else if constexpr (std::is_same_v<T, ore::domain::fx_mapping_result>) {
-                                save_fx_instrument_request req;
-                                req.data = r.instrument;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                std::visit([&](const auto& instr) {
+                                    using InstrT = std::decay_t<decltype(instr)>;
+                                    using ores::trading::domain::fx_forward_instrument;
+                                    using ores::trading::domain::fx_vanilla_option_instrument;
+                                    using ores::trading::domain::fx_barrier_option_instrument;
+                                    using ores::trading::domain::fx_digital_option_instrument;
+                                    using ores::trading::domain::fx_asian_forward_instrument;
+                                    using ores::trading::domain::fx_accumulator_instrument;
+                                    using ores::trading::domain::fx_variance_swap_instrument;
+                                    if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
+                                        save_fx_forward_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_vanilla_option_instrument>) {
+                                        save_fx_vanilla_option_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_barrier_option_instrument>) {
+                                        save_fx_barrier_option_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_digital_option_instrument>) {
+                                        save_fx_digital_option_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_asian_forward_instrument>) {
+                                        save_fx_asian_forward_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_accumulator_instrument>) {
+                                        save_fx_accumulator_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    } else if constexpr (std::is_same_v<InstrT, fx_variance_swap_instrument>) {
+                                        save_fx_variance_swap_instrument_request req;
+                                        req.data = instr;
+                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                    }
+                                }, r.instrument);
                             } else if constexpr (std::is_same_v<T, ore::domain::bond_mapping_result>) {
                                 save_bond_instrument_request req;
                                 req.data = r.instrument;

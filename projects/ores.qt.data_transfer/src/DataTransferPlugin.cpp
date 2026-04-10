@@ -22,6 +22,7 @@
 #include <QAction>
 
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/CatalogController.hpp"
@@ -33,17 +34,31 @@
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.data_transfer_plugin");
+    return instance;
+}
+
 auto ico(Icon icon) {
     return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
 }
+
 }
 
-DataTransferPlugin::DataTransferPlugin(QObject* parent) : PluginBase(parent) {}
+DataTransferPlugin::DataTransferPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
 
-DataTransferPlugin::~DataTransferPlugin() = default;
+DataTransferPlugin::~DataTransferPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 void DataTransferPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     dataDomainController_ = std::make_unique<DataDomainController>(
@@ -88,6 +103,8 @@ void DataTransferPlugin::on_login(const plugin_context& ctx) {
 }
 
 void DataTransferPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Transfer menu handle."
+        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
     // Save reference so create_menus() can return the pre-created menu.
     // Other plugins (RefdataPlugin, TradingPlugin) contribute actions to it
     // during their own setup_menus calls.
@@ -95,8 +112,12 @@ void DataTransferPlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> DataTransferPlugin::create_menus() {
-    if (!data_transfer_menu_)
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus."
+        << " data_transfer_menu=" << (data_transfer_menu_ ? "ok" : "null");
+    if (!data_transfer_menu_) {
+        BOOST_LOG_SEV(lg(), warn) << "Data Transfer menu handle is missing — no menu will appear.";
         return {};
+    }
 
     // ---- Data Catalogue submenu -----------------------------------------
     auto* menuCatalogue = data_transfer_menu_->addMenu(tr("Data Ca&talogue"));
@@ -147,10 +168,12 @@ QList<QMenu*> DataTransferPlugin::create_menus() {
         if (treatmentDimensionController_) treatmentDimensionController_->showListWindow();
     });
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {data_transfer_menu_};
 }
 
 void DataTransferPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     treatmentDimensionController_.reset();
     natureDimensionController_.reset();
     originDimensionController_.reset();

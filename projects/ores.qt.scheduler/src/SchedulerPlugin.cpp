@@ -22,21 +22,36 @@
 #include <QAction>
 
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.scheduler_plugin");
+    return instance;
+}
+
 auto ico(Icon icon) {
     return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
 }
+
 }
 
-SchedulerPlugin::SchedulerPlugin(QObject* parent) : PluginBase(parent) {}
+SchedulerPlugin::SchedulerPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
 
-SchedulerPlugin::~SchedulerPlugin() = default;
+SchedulerPlugin::~SchedulerPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 void SchedulerPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
@@ -46,6 +61,7 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
 }
 
 QList<QMenu*> SchedulerPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     auto* menuScheduler = new QMenu(tr("&Scheduler"));
 
     auto* actJobDefs = menuScheduler->addAction(
@@ -64,10 +80,12 @@ QList<QMenu*> SchedulerPlugin::create_menus() {
     actMonitor->setEnabled(false);
     actMonitor->setToolTip(tr("Not yet implemented"));
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuScheduler};
 }
 
 void SchedulerPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     jobDefinitionController_.reset();
     ctx_ = {};
 }

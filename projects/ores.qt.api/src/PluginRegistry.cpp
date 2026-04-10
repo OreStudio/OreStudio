@@ -60,6 +60,7 @@ PluginRegistry::~PluginRegistry() {
 
 void PluginRegistry::load_from_directory(const QString& plugin_dir) {
     QDir dir(plugin_dir);
+    BOOST_LOG_SEV(lg(), info) << "Scanning for plugins in: " << dir.absolutePath().toStdString();
     if (!dir.exists()) {
         BOOST_LOG_SEV(lg(), error)
             << "Plugin directory does not exist: " << plugin_dir.toStdString();

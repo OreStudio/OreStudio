@@ -22,6 +22,7 @@
 #include <QAction>
 
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/PricingEngineTypeController.hpp"
 #include "ores.qt/PricingModelConfigController.hpp"
 #include "ores.qt/PricingModelProductController.hpp"
@@ -29,17 +30,31 @@
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.analytics_plugin");
+    return instance;
+}
+
 auto ico(Icon icon) {
     return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
 }
+
 }
 
-AnalyticsPlugin::AnalyticsPlugin(QObject* parent) : PluginBase(parent) {}
+AnalyticsPlugin::AnalyticsPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
 
-AnalyticsPlugin::~AnalyticsPlugin() = default;
+AnalyticsPlugin::~AnalyticsPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 void AnalyticsPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
@@ -61,6 +76,7 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
 }
 
 QList<QMenu*> AnalyticsPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     auto* menuPricing = new QMenu(tr("&Pricing"));
 
     // ---- Flat model configuration items at the top ----------------------
@@ -97,10 +113,12 @@ QList<QMenu*> AnalyticsPlugin::create_menus() {
             pricingEngineTypeController_->showListWindow();
     });
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuPricing};
 }
 
 void AnalyticsPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     pricingModelProductParameterController_.reset();
     pricingModelProductController_.reset();
     pricingModelConfigController_.reset();

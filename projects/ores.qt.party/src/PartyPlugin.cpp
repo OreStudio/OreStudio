@@ -22,6 +22,7 @@
 #include <QAction>
 
 #include "ores.qt/IconUtils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/PartyTypeController.hpp"
 #include "ores.qt/PartyStatusController.hpp"
@@ -35,14 +36,28 @@
 
 namespace ores::qt {
 
-PartyPlugin::PartyPlugin(QObject* parent) : PluginBase(parent) {}
+using namespace ores::logging;
 
-PartyPlugin::~PartyPlugin() = default;
+namespace {
+auto& lg() {
+    static auto instance = make_logger("ores.qt.party_plugin");
+    return instance;
+}
+}
+
+PartyPlugin::PartyPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
+
+PartyPlugin::~PartyPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers
 // ---------------------------------------------------------------------------
 void PartyPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     partyTypeController_ = std::make_unique<PartyTypeController>(
@@ -95,6 +110,7 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 // IPlugin::create_menus — return the standalone Entities menu.
 // ---------------------------------------------------------------------------
 QList<QMenu*> PartyPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -148,10 +164,13 @@ QList<QMenu*> PartyPlugin::create_menus() {
         if (businessUnitTypeController_) businessUnitTypeController_->showListWindow();
     });
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuEntities};
 }
 
 QList<QAction*> PartyPlugin::toolbar_actions() {
+    if (!act_business_centres_ || !act_parties_ || !act_counterparties_ || !act_business_units_)
+        BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_business_centres_, act_parties_, act_counterparties_, act_business_units_};
 }
 
@@ -159,6 +178,7 @@ QList<QAction*> PartyPlugin::toolbar_actions() {
 // IPlugin::on_logout — destroy all controllers in reverse dependency order
 // ---------------------------------------------------------------------------
 void PartyPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     businessUnitTypeController_.reset();
     businessUnitController_.reset();
     businessCentreController_.reset();

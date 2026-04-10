@@ -23,6 +23,7 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include <QStatusBar>
+#include "ores.logging/make_logger.hpp"
 
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -39,17 +40,31 @@
 
 namespace ores::qt {
 
+using namespace ores::logging;
+
 namespace {
+
+auto& lg() {
+    static auto instance = make_logger("ores.qt.compute_plugin");
+    return instance;
+}
+
 auto ico(Icon icon) {
     return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
 }
+
 }
 
-ComputePlugin::ComputePlugin(QObject* parent) : PluginBase(parent) {}
+ComputePlugin::ComputePlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
 
-ComputePlugin::~ComputePlugin() = default;
+ComputePlugin::~ComputePlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 void ComputePlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     appController_ = std::make_unique<AppController>(
@@ -126,6 +141,9 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 }
 
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " system=" << (smc.system_menu ? "ok" : "null")
+        << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
     if (!smc.system_menu || !smc.telemetry_menu)
         return;
 
@@ -160,6 +178,7 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 }
 
 QList<QMenu*> ComputePlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     QList<QMenu*> menus;
 
     // ---- Compute --------------------------------------------------------
@@ -221,14 +240,18 @@ QList<QMenu*> ComputePlugin::create_menus() {
     menus.append(menuReporting);
     menus.append(menuCompute);
 
+    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return menus;
 }
 
 QList<QAction*> ComputePlugin::toolbar_actions() {
+    if (!act_report_definitions_ || !act_report_instances_)
+        BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_report_definitions_, act_report_instances_};
 }
 
 void ComputePlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     reportInstanceController_.reset();
     reportDefinitionController_.reset();
     concurrencyPolicyController_.reset();

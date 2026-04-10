@@ -36,8 +36,8 @@ set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/plugins"
-    INSTALL_RPATH "$ORIGIN/.."
+    LIBRARY_OUTPUT_DIRECTORY "${ORES_PLUGIN_OUTPUT_DIRECTORY}"
+    INSTALL_RPATH "$ORIGIN/../lib"
     BUILD_RPATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 target_include_directories(${lib_target_name} PUBLIC
@@ -55,5 +55,5 @@ target_link_libraries(${lib_target_name}
         ores.qt.lib)
 
 install(TARGETS ${lib_target_name}
-    LIBRARY DESTINATION lib/plugins
-    RUNTIME DESTINATION bin/plugins)
+    LIBRARY DESTINATION bin
+    RUNTIME DESTINATION bin)

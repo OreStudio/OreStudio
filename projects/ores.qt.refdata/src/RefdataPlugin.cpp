@@ -23,6 +23,7 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QMainWindow>
+#include "ores.logging/make_logger.hpp"
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -46,14 +47,28 @@
 
 namespace ores::qt {
 
-RefdataPlugin::RefdataPlugin(QObject* parent) : PluginBase(parent) {}
+using namespace ores::logging;
 
-RefdataPlugin::~RefdataPlugin() = default;
+namespace {
+auto& lg() {
+    static auto instance = make_logger("ores.qt.refdata_plugin");
+    return instance;
+}
+}
+
+RefdataPlugin::RefdataPlugin(QObject* parent) : PluginBase(parent) {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
+}
+
+RefdataPlugin::~RefdataPlugin() {
+    BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
+}
 
 // ---------------------------------------------------------------------------
 // IPlugin::on_login — create all controllers and wire cross-controller relays
 // ---------------------------------------------------------------------------
 void RefdataPlugin::on_login(const plugin_context& ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
     currencyController_ = std::make_unique<CurrencyController>(
@@ -144,11 +159,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::create_menus — return reference data domain menus.
-// ---------------------------------------------------------------------------
 // IPlugin::setup_menus — populate the shared Reference Data menu.
 // ---------------------------------------------------------------------------
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
+        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null")
+        << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -299,10 +316,13 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
 // ---------------------------------------------------------------------------
 QList<QMenu*> RefdataPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "No standalone menus — all entries contributed via shared menus.";
     return {};  // all items contributed to the shared Reference Data menu
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {
+    if (!act_currencies_ || !act_countries_)
+        BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_currencies_, act_countries_};
 }
 
@@ -310,6 +330,7 @@ QList<QAction*> RefdataPlugin::toolbar_actions() {
 // IPlugin::on_logout — destroy all controllers in reverse dependency order
 // ---------------------------------------------------------------------------
 void RefdataPlugin::on_logout() {
+    BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     if (data_librarian_window_) {
         data_librarian_window_->close();
         data_librarian_window_ = nullptr;

@@ -20,6 +20,13 @@
 #include "ores.qt/ComputeConsoleWindow.hpp"
 
 #include <QtConcurrent>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFontDatabase>
+#include <QFormLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QSplitter>
@@ -190,10 +197,11 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     logs_action_ = new QAction(
         IconUtils::createRecoloredIcon(Icon::Notepad,
             color_constants::icon_color),
-        tr("Logs"), this);
+        tr("Details"), this);
+    logs_action_->setToolTip(tr("Show task details, error message, and logs"));
     logs_action_->setEnabled(false);
     connect(logs_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_show_logs);
+            this, &ComputeConsoleWindow::on_show_details);
     toolbar->addAction(logs_action_);
 
     download_input_action_ = new QAction(
@@ -593,16 +601,72 @@ void ComputeConsoleWindow::on_new_work_unit() {
     show_detail_as_window(dlg, tr("New Work Unit"));
 }
 
-void ComputeConsoleWindow::on_show_logs() {
-    if (selected_result_id_.isEmpty()) return;
+void ComputeConsoleWindow::on_show_details() {
+    if (!selected_task_ || selected_result_id_.isEmpty()) return;
 
-    auto* viewer = new OreLogViewerWidget(client_manager_, this);
-    viewer->setAttribute(Qt::WA_DeleteOnClose);
-    viewer->setWindowTitle(tr("Logs — %1").arg(selected_result_id_));
-    viewer->setWindowFlags(Qt::Window);
-    viewer->resize(900, 600);
-    viewer->load_result(selected_result_id_);
-    viewer->show();
+    const auto& result = selected_task_->result;
+    const auto& workunit = selected_task_->workunit;
+
+    auto* dlg = new QDialog(nullptr);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setWindowTitle(tr("Task Details — %1").arg(selected_result_id_));
+    dlg->setWindowFlags(Qt::Window);
+    dlg->resize(900, 600);
+
+    auto* vbox = new QVBoxLayout(dlg);
+
+    // ── Form fields ──────────────────────────────────────────────────────────
+    auto* form = new QFormLayout;
+    form->setLabelAlignment(Qt::AlignRight);
+    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    auto makeField = [dlg](const QString& value) {
+        auto* le = new QLineEdit(value, dlg);
+        le->setReadOnly(true);
+        le->setFrame(false);
+        le->setStyleSheet(
+            QStringLiteral("QLineEdit { background: transparent; }"));
+        return le;
+    };
+
+    form->addRow(tr("Result ID:"),   makeField(selected_result_id_));
+    form->addRow(tr("Batch:"),       makeField(QString::fromStdString(
+        selected_task_->batch.external_ref)));
+    form->addRow(tr("State:"),       makeField(
+        ComputeTaskViewModel::format_state(result.server_state)));
+    form->addRow(tr("Outcome:"),     makeField(
+        ComputeTaskViewModel::format_outcome(result.outcome)));
+
+    const QString hostId = (result.host_id != boost::uuids::uuid{})
+        ? QString::fromStdString(boost::uuids::to_string(result.host_id))
+        : tr("—");
+    form->addRow(tr("Host:"), makeField(
+        host_cache_ ? host_cache_->display_name_for(hostId) : hostId));
+
+    vbox->addLayout(form);
+
+    // ── Error message ────────────────────────────────────────────────────────
+    const QString errorText = QString::fromStdString(result.error_message);
+    if (!errorText.isEmpty()) {
+        vbox->addWidget(new QLabel(tr("Error:"), dlg));
+        auto* errorEdit = new QPlainTextEdit(errorText, dlg);
+        errorEdit->setReadOnly(true);
+        errorEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        errorEdit->setMaximumHeight(120);
+        vbox->addWidget(errorEdit);
+    }
+
+    // ── Logs viewer ──────────────────────────────────────────────────────────
+    vbox->addWidget(new QLabel(tr("Logs:"), dlg));
+    auto* logViewer = new OreLogViewerWidget(client_manager_, dlg);
+    logViewer->load_result(selected_result_id_);
+    vbox->addWidget(logViewer);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
+    connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
+    vbox->addWidget(buttons);
+
+    dlg->show();
 }
 
 void ComputeConsoleWindow::on_download_input() {

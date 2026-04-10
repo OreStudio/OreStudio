@@ -80,6 +80,9 @@ public:
         QObject* parent = nullptr);
     ~ComputeTaskViewModel() override = default;
 
+    static QString format_state(int server_state);
+    static QString format_outcome(int outcome);
+
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;

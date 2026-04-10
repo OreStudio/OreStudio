@@ -47,6 +47,153 @@ using trading::domain::scripted_instrument;
 
 namespace {
 
+// Adapters: convert typed per-product FX domain structs to the flat
+// fx_instrument (legacy messaging type) that the export path reads from DB.
+
+trading::domain::fx_forward_instrument
+to_forward(const fx_instrument& r) {
+    trading::domain::fx_forward_instrument fwd;
+    fwd.instrument_id = r.id;
+    fwd.party_id = r.party_id;
+    fwd.trade_id = r.trade_id;
+    fwd.trade_type_code = r.trade_type_code;
+    fwd.bought_currency = r.bought_currency;
+    fwd.bought_amount = r.bought_amount;
+    fwd.sold_currency = r.sold_currency;
+    fwd.sold_amount = r.sold_amount;
+    fwd.value_date = r.value_date.value_or("");
+    fwd.settlement = r.settlement;
+    return fwd;
+}
+
+trading::domain::fx_vanilla_option_instrument
+to_vanilla_option(const fx_instrument& r) {
+    trading::domain::fx_vanilla_option_instrument opt;
+    opt.instrument_id = r.id;
+    opt.party_id = r.party_id;
+    opt.trade_id = r.trade_id;
+    opt.trade_type_code = r.trade_type_code;
+    opt.bought_currency = r.bought_currency;
+    opt.bought_amount = r.bought_amount;
+    opt.sold_currency = r.sold_currency;
+    opt.sold_amount = r.sold_amount;
+    opt.option_type = r.option_type;
+    opt.expiry_date = r.expiry_date;
+    opt.exercise_style = "European";
+    opt.settlement = r.settlement;
+    return opt;
+}
+
+trading::domain::fx_barrier_option_instrument
+to_barrier_option(const fx_instrument& r) {
+    trading::domain::fx_barrier_option_instrument bo;
+    bo.instrument_id = r.id;
+    bo.party_id = r.party_id;
+    bo.trade_id = r.trade_id;
+    bo.trade_type_code = r.trade_type_code;
+    bo.bought_currency = r.bought_currency;
+    bo.bought_amount = r.bought_amount;
+    bo.sold_currency = r.sold_currency;
+    bo.sold_amount = r.sold_amount;
+    bo.option_type = r.option_type;
+    bo.expiry_date = r.expiry_date;
+    bo.barrier_type = r.barrier_type;
+    bo.lower_barrier = r.lower_barrier;
+    if (r.upper_barrier != 0.0)
+        bo.upper_barrier = r.upper_barrier;
+    bo.underlying_code = r.underlying_code;
+    return bo;
+}
+
+trading::domain::fx_digital_option_instrument
+to_digital_option(const fx_instrument& r) {
+    trading::domain::fx_digital_option_instrument dig;
+    dig.instrument_id = r.id;
+    dig.party_id = r.party_id;
+    dig.trade_id = r.trade_id;
+    dig.trade_type_code = r.trade_type_code;
+    dig.foreign_currency = r.bought_currency;
+    dig.domestic_currency = r.sold_currency;
+    dig.payoff_currency = r.bought_currency;
+    dig.payoff_amount = r.notional;
+    dig.option_type = r.option_type;
+    dig.expiry_date = r.expiry_date;
+    if (r.strike_price != 0.0)
+        dig.strike = r.strike_price;
+    dig.barrier_type = r.barrier_type;
+    if (r.lower_barrier != 0.0)
+        dig.lower_barrier = r.lower_barrier;
+    if (r.upper_barrier != 0.0)
+        dig.upper_barrier = r.upper_barrier;
+    return dig;
+}
+
+trading::domain::fx_variance_swap_instrument
+to_variance_swap(const fx_instrument& r) {
+    trading::domain::fx_variance_swap_instrument vs;
+    vs.instrument_id = r.id;
+    vs.party_id = r.party_id;
+    vs.trade_id = r.trade_id;
+    vs.trade_type_code = r.trade_type_code;
+    vs.start_date = r.start_date;
+    vs.end_date = r.expiry_date;
+    vs.currency = r.bought_currency;
+    vs.underlying_code = r.underlying_code;
+    vs.long_short = "Long";
+    vs.strike = r.variance_strike;
+    vs.notional = r.notional;
+    vs.moment_type = "Variance";
+    return vs;
+}
+
+trading::domain::fx_asian_forward_instrument
+to_asian_forward(const fx_instrument& r) {
+    trading::domain::fx_asian_forward_instrument af;
+    af.instrument_id = r.id;
+    af.party_id = r.party_id;
+    af.trade_id = r.trade_id;
+    af.trade_type_code = r.trade_type_code;
+    af.fx_index = r.underlying_code;
+    af.reference_currency = r.bought_currency;
+    af.settlement_currency = r.sold_currency;
+    af.payment_date = r.expiry_date;
+    af.long_short = "Long";
+    return af;
+}
+
+trading::domain::fx_asian_forward_instrument
+to_tarf(const fx_instrument& r) {
+    trading::domain::fx_asian_forward_instrument af;
+    af.instrument_id = r.id;
+    af.party_id = r.party_id;
+    af.trade_id = r.trade_id;
+    af.trade_type_code = r.trade_type_code;
+    af.fx_index = r.underlying_code;
+    af.currency = r.bought_currency;
+    if (r.accumulation_amount != 0.0)
+        af.fixing_amount = r.accumulation_amount;
+    if (r.strike_price != 0.0)
+        af.strike = r.strike_price;
+    return af;
+}
+
+trading::domain::fx_accumulator_instrument
+to_accumulator(const fx_instrument& r) {
+    trading::domain::fx_accumulator_instrument acc;
+    acc.instrument_id = r.id;
+    acc.party_id = r.party_id;
+    acc.trade_id = r.trade_id;
+    acc.trade_type_code = r.trade_type_code;
+    acc.currency = r.bought_currency;
+    acc.fixing_amount = r.accumulation_amount;
+    acc.strike = r.strike_price;
+    acc.underlying_code = r.underlying_code;
+    acc.start_date = r.start_date;
+    if (r.knock_out_barrier != 0.0)
+        acc.knock_out_barrier = r.knock_out_barrier;
+    return acc;
+}
+
 void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
     static_cast<std::string&>(t.id) = src.external_id;
     if (!src.netting_set_id.empty()) {
@@ -125,35 +272,49 @@ std::string exporter::export_portfolio(
                 }
             } else if constexpr (std::is_same_v<T, fx_instrument>) {
                 if (tt == "FxForward")
-                    xsd_t = fx_instrument_mapper::reverse_fx_forward(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_forward(
+                        to_forward(r));
                 else if (tt == "FxSwap")
-                    xsd_t = fx_instrument_mapper::reverse_fx_swap(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_swap(
+                        to_forward(r));
                 else if (tt == "FxOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_option(
+                        to_vanilla_option(r));
                 else if (tt == "FxBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_barrier_option(
+                        to_barrier_option(r));
                 else if (tt == "FxDigitalOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_digital_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_digital_option(
+                        to_digital_option(r));
                 else if (tt == "FxDigitalBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_digital_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_digital_barrier_option(
+                        to_digital_option(r));
                 else if (tt == "FxTouchOption" || tt == "FxDoubleTouchOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_touch_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_touch_option(
+                        to_digital_option(r));
                 else if (tt == "FxVarianceSwap")
-                    xsd_t = fx_instrument_mapper::reverse_fx_variance_swap(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_variance_swap(
+                        to_variance_swap(r));
                 else if (tt == "FxAverageForward")
-                    xsd_t = fx_instrument_mapper::reverse_fx_average_forward(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_average_forward(
+                        to_asian_forward(r));
                 else if (tt == "FxAccumulator")
-                    xsd_t = fx_instrument_mapper::reverse_fx_accumulator(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_accumulator(
+                        to_accumulator(r));
                 else if (tt == "FxTaRF")
-                    xsd_t = fx_instrument_mapper::reverse_fx_tarf(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_tarf(to_tarf(r));
                 else if (tt == "FxGenericBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_generic_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_generic_barrier_option(
+                        to_barrier_option(r));
                 else if (tt == "FxDoubleBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_double_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_double_barrier_option(
+                        to_barrier_option(r));
                 else if (tt == "FxEuropeanBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_european_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_european_barrier_option(
+                        to_barrier_option(r));
                 else if (tt == "FxKIKOBarrierOption")
-                    xsd_t = fx_instrument_mapper::reverse_fx_kiko_barrier_option(r);
+                    xsd_t = fx_instrument_mapper::reverse_fx_kiko_barrier_option(
+                        to_barrier_option(r));
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for FX type: " << tt;

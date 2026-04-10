@@ -48,6 +48,7 @@ using ores::ore::xml::trade_import_item;
 using ores::ore::domain::instrument_mapping_result;
 using ores::ore::domain::swap_mapping_result;
 using ores::ore::domain::fx_mapping_result;
+using ores::trading::domain::fx_forward_instrument;
 using ores::ore::domain::bond_mapping_result;
 using ores::trading::domain::trade;
 using namespace ores::logging;
@@ -296,16 +297,17 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     REQUIRE(std::holds_alternative<fx_mapping_result>(item.instrument));
 
     const auto& r = std::get<fx_mapping_result>(item.instrument);
-    CHECK(r.instrument.id != item.trade.id);
-    CHECK(r.instrument.trade_id == item.trade.id);
-    CHECK(item.trade.instrument_id == r.instrument.id);
+    const auto& instr = std::get<fx_forward_instrument>(r.instrument);
+    CHECK(instr.instrument_id != item.trade.id);
+    CHECK(instr.trade_id == item.trade.id);
+    CHECK(item.trade.instrument_id == instr.instrument_id);
     CHECK(item.trade.product_type == ores::trading::domain::product_type::fx);
-    CHECK(!r.instrument.bought_currency.empty());
-    CHECK(!r.instrument.sold_currency.empty());
+    CHECK(!instr.bought_currency.empty());
+    CHECK(!instr.sold_currency.empty());
 
     BOOST_LOG_SEV(lg, info) << "FX instrument mapped: "
-                            << r.instrument.bought_currency << "/"
-                            << r.instrument.sold_currency;
+                            << instr.bought_currency << "/"
+                            << instr.sold_currency;
 }
 
 TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {

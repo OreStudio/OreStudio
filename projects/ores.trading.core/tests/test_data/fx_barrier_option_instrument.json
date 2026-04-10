@@ -1,0 +1,29 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Barrier_Option.xml",
+  "trade_id_in_xml": "FX_UPIN_BARRIER_CALL_OPTION_EURUSD_10Y",
+  "mapper": "fx_instrument_mapper::forward_fx_barrier_option (via trade_mapper::map_fx_instrument)",
+  "notes": [
+    "settlement is not extracted by forward_fx_barrier_option — field is empty",
+    "underlying_code is not extracted by forward_fx_barrier_option for FxBarrierOption — field is empty",
+    "upper_barrier is absent: XML has a single-level BarrierData block"
+  ],
+  "instrument": {
+    "trade_type_code": "FxBarrierOption",
+    "bought_currency": "EUR",
+    "bought_amount": 1000000.0,
+    "sold_currency": "USD",
+    "sold_amount": 1100000.0,
+    "option_type": "Call",
+    "expiry_date": "2033-02-20",
+    "settlement": "",
+    "barrier_type": "UpAndIn",
+    "lower_barrier": 1.2,
+    "upper_barrier": null,
+    "underlying_code": "",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

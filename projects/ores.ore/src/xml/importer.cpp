@@ -187,8 +187,10 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                             leg.instrument_id = instr_id;
                     } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
                         item.trade.product_type = product_type::fx;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
+                        std::visit([&](auto& instr) {
+                            instr.instrument_id = instr_id;
+                            instr.trade_id = item.trade.id;
+                        }, result.instrument);
                     } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
                         item.trade.product_type = product_type::bond;
                         result.instrument.id = instr_id;

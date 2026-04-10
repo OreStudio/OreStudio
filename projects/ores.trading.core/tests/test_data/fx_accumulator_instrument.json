@@ -1,0 +1,26 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/Exotic_FxAccumulator.xml",
+  "trade_id_in_xml": "FX_Accumulator-AKO",
+  "mapper": "fx_instrument_mapper::forward_fx_accumulator (via trade_mapper::map_fx_instrument)",
+  "notes": [
+    "long_short is hardcoded to Long by mapper",
+    "knock_out_barrier is extracted from the first UpAndOut barrier (level 126)",
+    "FixingFloor barrier (level 2) and range bounds are not captured (Phase 2 gap)",
+    "observation dates are not captured (Phase 2 gap)"
+  ],
+  "instrument": {
+    "trade_type_code": "FxAccumulator",
+    "currency": "JPY",
+    "fixing_amount": 350000.0,
+    "strike": 122.0,
+    "underlying_code": "TR20H-EUR-JPY",
+    "long_short": "Long",
+    "start_date": "2026-01-12",
+    "knock_out_barrier": 126.0,
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

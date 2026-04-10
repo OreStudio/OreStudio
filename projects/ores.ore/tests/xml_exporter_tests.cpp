@@ -54,7 +54,88 @@ ores::trading::messaging::instrument_export_result to_export_result(
         else if constexpr (std::is_same_v<T, swap_mapping_result>)
             return swap_export_result{v.instrument, v.legs};
         else if constexpr (std::is_same_v<T, fx_mapping_result>)
-            return v.instrument;
+            return std::visit([](const auto& instr)
+                -> ores::trading::domain::fx_instrument {
+                using InstrT = std::decay_t<decltype(instr)>;
+                using ores::trading::domain::fx_forward_instrument;
+                using ores::trading::domain::fx_vanilla_option_instrument;
+                using ores::trading::domain::fx_barrier_option_instrument;
+                using ores::trading::domain::fx_digital_option_instrument;
+                using ores::trading::domain::fx_asian_forward_instrument;
+                using ores::trading::domain::fx_accumulator_instrument;
+                using ores::trading::domain::fx_variance_swap_instrument;
+                ores::trading::domain::fx_instrument fx;
+                fx.id = instr.instrument_id;
+                fx.party_id = instr.party_id;
+                fx.trade_id = instr.trade_id;
+                fx.trade_type_code = instr.trade_type_code;
+                fx.modified_by = instr.modified_by;
+                fx.performed_by = instr.performed_by;
+                fx.change_reason_code = instr.change_reason_code;
+                fx.change_commentary = instr.change_commentary;
+                fx.description = instr.description;
+                if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
+                    fx.bought_currency = instr.bought_currency;
+                    fx.bought_amount = instr.bought_amount;
+                    fx.sold_currency = instr.sold_currency;
+                    fx.sold_amount = instr.sold_amount;
+                    fx.value_date = instr.value_date;
+                    fx.settlement = instr.settlement;
+                } else if constexpr (std::is_same_v<InstrT, fx_vanilla_option_instrument>) {
+                    fx.bought_currency = instr.bought_currency;
+                    fx.bought_amount = instr.bought_amount;
+                    fx.sold_currency = instr.sold_currency;
+                    fx.sold_amount = instr.sold_amount;
+                    fx.option_type = instr.option_type;
+                    fx.expiry_date = instr.expiry_date;
+                    fx.settlement = instr.settlement;
+                } else if constexpr (std::is_same_v<InstrT, fx_barrier_option_instrument>) {
+                    fx.bought_currency = instr.bought_currency;
+                    fx.bought_amount = instr.bought_amount;
+                    fx.sold_currency = instr.sold_currency;
+                    fx.sold_amount = instr.sold_amount;
+                    fx.option_type = instr.option_type;
+                    fx.expiry_date = instr.expiry_date;
+                    fx.barrier_type = instr.barrier_type;
+                    fx.lower_barrier = instr.lower_barrier;
+                    fx.upper_barrier = instr.upper_barrier.value_or(0.0);
+                    fx.underlying_code = instr.underlying_code;
+                } else if constexpr (std::is_same_v<InstrT, fx_digital_option_instrument>) {
+                    fx.bought_currency = instr.foreign_currency;
+                    fx.sold_currency = instr.domestic_currency;
+                    fx.option_type = instr.option_type;
+                    fx.expiry_date = instr.expiry_date;
+                    fx.strike_price = instr.strike.value_or(0.0);
+                    fx.notional = instr.payoff_amount;
+                    fx.barrier_type = instr.barrier_type;
+                    fx.lower_barrier = instr.lower_barrier.value_or(0.0);
+                    fx.upper_barrier = instr.upper_barrier.value_or(0.0);
+                } else if constexpr (std::is_same_v<InstrT, fx_asian_forward_instrument>) {
+                    fx.bought_currency = instr.reference_currency;
+                    fx.sold_currency = instr.settlement_currency;
+                    fx.underlying_code = instr.fx_index;
+                    fx.expiry_date = instr.payment_date;
+                    if (instr.fixing_amount) fx.accumulation_amount = *instr.fixing_amount;
+                    if (instr.strike) fx.strike_price = *instr.strike;
+                    fx.bought_amount = instr.reference_notional.value_or(0.0);
+                    fx.sold_amount = instr.settlement_notional.value_or(0.0);
+                } else if constexpr (std::is_same_v<InstrT, fx_accumulator_instrument>) {
+                    fx.bought_currency = instr.currency;
+                    fx.accumulation_amount = instr.fixing_amount;
+                    fx.strike_price = instr.strike;
+                    fx.underlying_code = instr.underlying_code;
+                    fx.start_date = instr.start_date;
+                    fx.knock_out_barrier = instr.knock_out_barrier.value_or(0.0);
+                } else if constexpr (std::is_same_v<InstrT, fx_variance_swap_instrument>) {
+                    fx.bought_currency = instr.currency;
+                    fx.underlying_code = instr.underlying_code;
+                    fx.start_date = instr.start_date;
+                    fx.expiry_date = instr.end_date;
+                    fx.variance_strike = instr.strike;
+                    fx.notional = instr.notional;
+                }
+                return fx;
+            }, v.instrument);
         else if constexpr (std::is_same_v<T, bond_mapping_result>)
             return v.instrument;
         else if constexpr (std::is_same_v<T, credit_mapping_result>)

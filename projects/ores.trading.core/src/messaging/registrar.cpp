@@ -23,6 +23,7 @@
 #include "ores.trading.core/messaging/instrument_handler.hpp"
 #include "ores.trading.core/messaging/rates_instrument_handler.hpp"
 #include "ores.trading.core/messaging/fx_instrument_handler.hpp"
+#include "ores.trading.core/messaging/typed_fx_instrument_handler.hpp"
 #include "ores.trading.core/messaging/bond_instrument_handler.hpp"
 #include "ores.trading.core/messaging/credit_instrument_handler.hpp"
 #include "ores.trading.core/messaging/equity_instrument_handler.hpp"
@@ -559,6 +560,56 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             fx_instrument_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
+        }));
+
+    // Typed FX instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_forward_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_forward(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_vanilla_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_vanilla_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_barrier_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_barrier_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_digital_option_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_digital_option(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_asian_forward_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_asian_forward(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_accumulator_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_accumulator(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_fx_variance_swap_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            typed_fx_instrument_handler h(nats, ctx, verifier);
+            h.save_variance_swap(std::move(msg));
         }));
 
     // Bond instruments

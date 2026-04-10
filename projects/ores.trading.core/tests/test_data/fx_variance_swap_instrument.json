@@ -1,0 +1,26 @@
+{
+  "source_xml": "external/ore/examples/Products/Example_Trades/FX_Variance_Swap.xml",
+  "trade_id_in_xml": "Fx_Vol_Swap",
+  "mapper": "fx_instrument_mapper::forward_fx_variance_swap (via trade_mapper::map_fx_instrument)",
+  "notes": [
+    "long_short is hardcoded to Long by mapper",
+    "moment_type is hardcoded to Variance by mapper (MomentType element from XML is ignored)",
+    "underlying_code comes from Underlying.Name (TR20H-EUR-USD), not the FX prefix version"
+  ],
+  "instrument": {
+    "trade_type_code": "FxVarianceSwap",
+    "start_date": "2025-10-22",
+    "end_date": "2026-04-26",
+    "currency": "USD",
+    "underlying_code": "TR20H-EUR-USD",
+    "long_short": "Long",
+    "strike": 0.02,
+    "notional": 50000.0,
+    "moment_type": "Variance",
+    "description": "",
+    "modified_by": "ores",
+    "performed_by": "ores",
+    "change_reason_code": "system.external_data_import",
+    "change_commentary": "Imported from ORE XML"
+  }
+}

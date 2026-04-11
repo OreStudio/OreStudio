@@ -26,12 +26,16 @@
 namespace ores::qt {
 
 class JobDefinitionController;
+class JobInstanceController;
+class SchedulerMonitorController;
 
 /**
- * @brief Qt plugin providing the Scheduler top-level menu.
+ * @brief Qt plugin providing the top-level &Scheduler menu.
  *
- * Manages job definitions and the Scheduler menu bar entry.
- * Loaded as a shared library by QPluginLoader at application startup.
+ * Owns all three scheduler UI controllers:
+ *   - JobDefinitionController  — &Job Definitions
+ *   - JobInstanceController    — &Job Instances
+ *   - SchedulerMonitorController — &Monitor
  */
 class SchedulerPlugin : public PluginBase {
     Q_OBJECT
@@ -52,7 +56,9 @@ public:
 private:
     plugin_context ctx_;
 
-    std::unique_ptr<JobDefinitionController> jobDefinitionController_;
+    std::unique_ptr<JobDefinitionController>     jobDefinitionController_;
+    std::unique_ptr<JobInstanceController>       jobInstanceController_;
+    std::unique_ptr<SchedulerMonitorController>  schedulerMonitorController_;
 };
 
 }

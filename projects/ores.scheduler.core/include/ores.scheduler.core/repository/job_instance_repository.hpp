@@ -68,6 +68,11 @@ public:
         const boost::uuids::uuid& job_definition_id, std::size_t limit = 100);
 
     /**
+     * @brief Returns the most recent job instances across all job definitions, newest-first.
+     */
+    std::vector<domain::job_instance> read_all_latest(context ctx, std::size_t limit = 100);
+
+    /**
      * @brief Returns the triggered_at of the most recent run for a job definition, if any.
      */
     std::optional<std::chrono::system_clock::time_point> last_run_at(

@@ -375,14 +375,13 @@ private slots:
         status_label_->clear();
 
         // Derive URI immediately so user can proceed without uploading
-        // if the package is already on the server.
-        const QString ext = QFileInfo(path).completeSuffix();
+        // if the package is already on the server. Always .tar.gz — the
+        // wrapper assumes tar.gz format when extracting.
         const QString id  = QString::fromStdString(
             boost::uuids::to_string(app_version_id_));
         const QString uri = QString::fromStdString(
             ores::compute::net::compute_storage::package_path(
-                id.toStdString(),
-                ext.isEmpty() ? "" : "." + ext.toStdString()));
+                id.toStdString(), ""));
         if (uri_edit_->text().isEmpty())
             uri_edit_->setText(uri);
     }
@@ -397,14 +396,12 @@ private slots:
             return;
         }
 
-        const QString ext = QFileInfo(file_path_edit_->text()).completeSuffix();
         const QString id  = QString::fromStdString(
             boost::uuids::to_string(app_version_id_));
         QUrl url(http_base);
         url.setPath(QString::fromStdString(
             ores::compute::net::compute_storage::package_path(
-                id.toStdString(),
-                ext.isEmpty() ? "" : "." + ext.toStdString())));
+                id.toStdString(), "")));
 
         auto* file = new QFile(file_path_edit_->text(), this);
         if (!file->open(QIODevice::ReadOnly)) {
@@ -435,7 +432,7 @@ private slots:
         });
 
         connect(reply, &QNetworkReply::finished,
-                this, [this, reply, file, nm, ext, id]() {
+                this, [this, reply, file, nm, id]() {
             reply->deleteLater(); file->deleteLater(); nm->deleteLater();
 
             uploading_ = false;
@@ -452,8 +449,7 @@ private slots:
 
             uri_edit_->setText(QString::fromStdString(
                 ores::compute::net::compute_storage::package_path(
-                    id.toStdString(),
-                    ext.isEmpty() ? "" : "." + ext.toStdString())));
+                    id.toStdString(), "")));
             status_label_->setText(tr("Upload complete."));
             emit completeChanged();
         });

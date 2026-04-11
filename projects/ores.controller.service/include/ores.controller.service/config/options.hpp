@@ -44,6 +44,16 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+
+    /**
+     * @brief HTTP server port, substituted into {http_port} in args templates.
+     */
+    int http_port = 51000;
+
+    /**
+     * @brief WT server port, substituted into {wt_port} in args templates.
+     */
+    int wt_port = 51002;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

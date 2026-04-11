@@ -115,12 +115,16 @@ process_supervisor::process_supervisor(boost::asio::io_context& ioc,
     std::filesystem::path bin_dir,
     ores::nats::config::nats_options nats,
     std::string log_level,
-    ores::database::context db_ctx)
+    ores::database::context db_ctx,
+    int http_port,
+    int wt_port)
     : ioc_(ioc)
     , bin_dir_(std::move(bin_dir))
     , nats_(std::move(nats))
     , log_level_(std::move(log_level))
-    , db_ctx_(std::move(db_ctx)) {}
+    , db_ctx_(std::move(db_ctx))
+    , http_port_(http_port)
+    , wt_port_(wt_port) {}
 
 std::filesystem::path process_supervisor::log_path_for(
     const std::string& service_name, int replica_index) const {
@@ -190,6 +194,10 @@ std::vector<std::string> process_supervisor::build_args(
                  + " --nats-tls-key "  + key.string();
     }
     replace_all(tmpl, "{nats_tls_args}", tls_args);
+
+    // {http_port} / {wt_port}: read from controller config, set via env/CLI.
+    replace_all(tmpl, "{http_port}", std::to_string(http_port_));
+    replace_all(tmpl, "{wt_port}",   std::to_string(wt_port_));
 
     // {host_id}: stable UUID for compute wrapper nodes (hostname:replica_index).
     const std::string host_key =

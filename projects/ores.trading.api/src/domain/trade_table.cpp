@@ -38,7 +38,9 @@ std::string convert_to_table(const std::vector<trade>& v) {
         table << boost::uuids::to_string(tr.id)
               << boost::uuids::to_string(tr.party_id)
               << tr.trade_type << tr.activity_type_code
-              << tr.trade_date << tr.effective_date << tr.termination_date
+              << tr.trade_date.value_or("")
+              << tr.effective_date.value_or("")
+              << tr.termination_date.value_or("")
               << tr.modified_by << tr.version
               << fort::endr;
     }

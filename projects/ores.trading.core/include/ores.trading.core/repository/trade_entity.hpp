@@ -53,10 +53,10 @@ struct trade_entity {
     std::string netting_set_id;
     std::string activity_type_code;
     std::string status_id;
-    std::string trade_date;
-    std::string execution_timestamp;
-    std::string effective_date;
-    std::string termination_date;
+    std::optional<std::string> trade_date;
+    std::optional<std::string> execution_timestamp;
+    std::optional<std::string> effective_date;
+    std::optional<std::string> termination_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

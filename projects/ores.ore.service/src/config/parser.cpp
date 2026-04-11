@@ -66,7 +66,7 @@ options_description make_options_description() {
             value<std::string>()->default_value("http://localhost:8080"),
             "Base URL of the storage HTTP API")
         (work_dir_arg.c_str(),
-            value<std::string>()->default_value("/var/ores/ore-service/work"),
+            value<std::string>()->default_value("../var/ore-service/work"),
             "Root directory for per-import working directories");
     r.add(storage);
     return r;

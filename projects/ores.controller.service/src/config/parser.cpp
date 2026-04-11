@@ -59,6 +59,17 @@ options_description make_options_description() {
         "ores.controller.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+
+    options_description ports("Port configuration");
+    ports.add_options()
+        ("http-port",
+            value<int>()->default_value(51000),
+            "HTTP server port (substituted into {http_port} in service args)")
+        ("wt-port",
+            value<int>()->default_value(51002),
+            "WT server port (substituted into {wt_port} in service args)");
+    r.add(ports);
+
     return r;
 }
 
@@ -117,6 +128,8 @@ parse_arguments(const std::vector<std::string>& arguments,
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    r.http_port = vm["http-port"].as<int>();
+    r.wt_port = vm["wt-port"].as<int>();
     return r;
 }
 

@@ -64,6 +64,22 @@ public:
     // -------------------------------------------------------------------------
 
     /**
+     * @brief Create a durable stream covering @p subjects, or update it if a
+     *        stream with @p name already exists.
+     *
+     * Idempotent: safe to call on every service startup. The stream uses
+     * file-backed storage and retains messages for up to @p max_age_days days.
+     *
+     * @param name          Stream name (NATS naming rules: A-Z a-z 0-9 - _).
+     * @param subjects      Subjects the stream captures (fully-qualified,
+     *                      including any subject prefix).
+     * @param max_age_days  How long messages are retained (default: 7 days).
+     */
+    void ensure_stream(std::string_view name,
+        std::vector<std::string> subjects,
+        int max_age_days = 7);
+
+    /**
      * @brief List all streams on the connected NATS server.
      */
     [[nodiscard]] std::vector<domain::stream_info> list_streams();

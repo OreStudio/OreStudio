@@ -48,6 +48,9 @@ namespace ores::workflow::service {
 inline void register_ore_import_workflow(workflow_registry& registry) {
     workflow_definition def;
     def.type_name = "ore_import_workflow";
+    def.description = "Imports an ORE XML tarball: downloads from storage, "
+        "parses XML, maps to domain entities, and persists all "
+        "currencies, portfolios, books, and trades.";
 
     // ----------------------------------------------------------------
     // Step 0: execute the full ORE import
@@ -55,6 +58,8 @@ inline void register_ore_import_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "ore_import_execute";
+        s.description = "Fetch tarball from storage, parse ORE XML, map to "
+            "domain entities, and persist all to repositories.";
         s.command_subject = std::string(
             ores::ore::messaging::ore_import_execute_request::nats_subject);
         s.compensation_subject = std::string(

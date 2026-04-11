@@ -56,6 +56,9 @@ namespace ores::workflow::service {
 inline void register_provision_parties_workflow(workflow_registry& registry) {
     workflow_definition def;
     def.type_name = "provision_parties_workflow";
+    def.description = "Provisions a new party with associated IAM account. "
+        "Creates the party record, IAM account, and links them together. "
+        "Compensates in reverse order on failure.";
 
     // ----------------------------------------------------------------
     // Step 0: save party (refdata)
@@ -63,6 +66,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "save_party";
+        s.description = "Create party record in the reference data service.";
         s.command_subject = "refdata.v1.parties.save";
         s.compensation_subject = "refdata.v1.parties.delete";
 
@@ -114,6 +118,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "save_account";
+        s.description = "Create IAM account for the party's principal.";
         s.command_subject = "iam.v1.accounts.save";
         s.compensation_subject = "iam.v1.accounts.delete";
 
@@ -156,6 +161,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
     {
         workflow_step_def s;
         s.name = "link_account_party";
+        s.description = "Link the IAM account to the party record.";
         s.command_subject = "iam.v1.account-parties.save";
         s.compensation_subject = "iam.v1.account-parties.delete";
 

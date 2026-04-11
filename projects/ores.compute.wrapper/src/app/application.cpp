@@ -533,7 +533,10 @@ void process_assignment(ores::nats::service::client& nats,
         //    Args in the manifest are passed verbatim; no placeholder substitution
         //    is needed for engines (like ORE) whose config is fully self-contained
         //    inside the input archive.
-        const fs::path exe = pkg_cache_dir / mf.executable;
+        const fs::path exe_rel = pkg_cache_dir / mf.executable;
+        if (!fs::exists(exe_rel))
+            throw std::runtime_error("Engine executable not found: " + exe_rel.string());
+        const fs::path exe = fs::canonical(exe_rel);
         const auto& args = mf.args;
 
         // Log exact command line so it can be reproduced manually.
@@ -689,6 +692,19 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
+    // Ensure the durable compute assignments stream exists. Idempotent.
+    try {
+        const auto stream_name = nats.make_stream_name("compute_assignments");
+        auto admin = nats.make_admin();
+        admin.ensure_stream(stream_name, {
+            nats.make_subject("compute.v1.work.assignments.>")
+        });
+        BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();
+        throw;
+    }
+
     // Idle heartbeat — compute-domain signal; tells the compute service this
     // worker is alive even when no job is running (subject: compute.v1.work.heartbeat).
     heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
@@ -704,10 +720,10 @@ application::run(boost::asio::io_context& io_ctx,
 
     // Durable consumer name scoped to this environment to avoid collisions.
     std::string sanitised_tenant = cfg.tenant_id;
-    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '-');
+    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
     const std::string work_subject = "compute.v1.work.assignments.>";
-    const std::string durable_name = "ores-compute-wrapper-" + sanitised_tenant;
-    const std::string queue_group  = "ores-compute-wrapper";
+    const std::string durable_name = "compute_wrapper_" + sanitised_tenant;
+    const std::string queue_group  = "ores.compute.wrapper";
 
     co_await ores::service::service::run(
         io_ctx, nats, service_name,

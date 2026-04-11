@@ -308,15 +308,15 @@ ore_import_result OreImporter::execute(
             for (auto& item : plan.trades) {
                 auto& t = item.trade;
                 bool any = false;
-                if (t.execution_timestamp.empty()) {
+                if (!t.execution_timestamp || t.execution_timestamp->empty()) {
                     t.execution_timestamp = ts_fallback;
                     any = true;
                 }
-                if (t.effective_date.empty()) {
+                if (!t.effective_date || t.effective_date->empty()) {
                     t.effective_date = date_fallback;
                     any = true;
                 }
-                if (t.termination_date.empty()) {
+                if (!t.termination_date || t.termination_date->empty()) {
                     t.termination_date = std::string(fallback_termination_date);
                     any = true;
                 }

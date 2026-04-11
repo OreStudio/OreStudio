@@ -112,7 +112,7 @@ private slots:
     void on_new_app_version();
     void on_new_batch();
     void on_new_work_unit();
-    void on_show_logs();
+    void on_show_details();
     void on_download_input();
     void on_download_output();
     void on_task_double_clicked(const QModelIndex& index);

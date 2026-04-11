@@ -32,9 +32,7 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-QString format_state(int s) {
+QString ComputeTaskViewModel::format_state(int s) {
     switch (s) {
     case 1: return QObject::tr("Inactive");
     case 2: return QObject::tr("Unsent");
@@ -44,7 +42,7 @@ QString format_state(int s) {
     }
 }
 
-QString format_outcome(int o) {
+QString ComputeTaskViewModel::format_outcome(int o) {
     switch (o) {
     case 0: return QObject::tr("Pending");
     case 1: return QObject::tr("Success");
@@ -53,6 +51,8 @@ QString format_outcome(int o) {
     default: return QString::number(o);
     }
 }
+
+namespace {
 
 QString format_duration(const compute::domain::result& r) {
     if (r.server_state != 5 ||

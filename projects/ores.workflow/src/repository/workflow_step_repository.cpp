@@ -152,7 +152,8 @@ void workflow_step_repository::mark_command_published(
     const auto opt_now = std::optional<ts_t>(now);
 
     const auto query = sqlgen::update<workflow_step_entity>(
-        "command_published_at"_c.set(opt_now)
+        "command_published_at"_c.set(opt_now),
+        "started_at"_c.set(opt_now)
     ) | where("id"_c == id_str);
 
     const auto r = sqlgen::session(ctx.connection_pool())

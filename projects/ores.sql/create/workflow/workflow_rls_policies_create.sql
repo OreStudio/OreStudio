@@ -26,28 +26,36 @@
 -- parent instance.
 
 -- -----------------------------------------------------------------------------
--- Workflow Instances (strictly tenant-scoped)
+-- Workflow Instances
 -- -----------------------------------------------------------------------------
+-- The workflow engine runs with system-tenant context and must be able to
+-- create and manage instances for any tenant (cross-tenant service).
+-- Regular callers are restricted to their own tenant's instances.
 alter table ores_workflow_workflow_instances_tbl enable row level security;
 
 create policy ores_workflow_workflow_instances_tenant_isolation_policy
 on ores_workflow_workflow_instances_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
 -- Workflow Steps (tenant isolation via parent instance join)
 -- -----------------------------------------------------------------------------
+-- System-tenant context bypasses the join check to allow the workflow engine
+-- to read and write steps for any tenant.
 alter table ores_workflow_workflow_steps_tbl enable row level security;
 
 create policy ores_workflow_workflow_steps_tenant_isolation_policy
 on ores_workflow_workflow_steps_tbl
 for all using (
-    exists (
+    ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR exists (
         select 1
         from ores_workflow_workflow_instances_tbl i
         where i.id = workflow_id

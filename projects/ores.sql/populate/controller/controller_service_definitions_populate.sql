@@ -29,8 +29,9 @@
  *   --log-replica-index {replica_index}
  *   --nats-url {nats_url} --nats-subject-prefix {nats_prefix} {nats_tls_args}
  *
- * HTTP/WT/wrapper services have a custom args_template.  Ports are seeded with
- * local1-debug defaults (51000 / 51002); update the DB row to change them.
+ * HTTP/WT/wrapper services have a custom args_template.  Ports use template
+ * variables {http_port} and {wt_port} resolved by the controller from the
+ * checkout label in the NATS subject prefix.
  *
  * This script is idempotent: each INSERT is guarded by WHERE NOT EXISTS.
  */
@@ -68,26 +69,34 @@ begin
             ('ores.compute.service',    'ores.compute.service',    1, null,       'Compute grid orchestration'),
             ('ores.synthetic.service',  'ores.synthetic.service',  1, null,       'Synthetic data generation'),
             ('ores.workflow.service',   'ores.workflow.service',   1, null,       'Workflow execution engine'),
-            ('ores.ore.service',        'ores.ore.service',        1, null,       'ORE pricing engine integration'),
+            -- ore-service: custom args to set work-dir under publish/var (not /var/ores).
+            ('ores.ore.service', 'ores.ore.service', 1,
+                '--log-enabled --log-level {log_level} --log-directory {log_dir}'
+                ' --log-replica-index {replica_index}'
+                ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' {nats_tls_args}'
+                ' --work-dir ../var/ore-service/work'
+                ' --http-base-url http://localhost:{http_port}',
+                'ORE pricing engine integration'),
             ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
             ('ores.analytics.service', 'ores.analytics.service',  1, null,       'Analytics pricing engine integration'),
             -- HTTP server: needs --port and --storage-dir.
-            -- Port 51000 = local1 debug default; update DB row to change it.
+            -- {http_port} is resolved by the controller from the checkout label.
             ('ores.http.server', 'ores.http.server', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
-                ' --port 51000 --storage-dir ../storage',
+                ' --port {http_port} --storage-dir ../storage',
                 'HTTP API gateway'),
             -- WT server: Wt args passed after --.
-            -- Port 51002 = local1 debug default; update DB row to change it.
+            -- {wt_port} is resolved by the controller from the checkout label.
             ('ores.wt.service', 'ores.wt.service', 1,
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
-                ' -- --http-address 0.0.0.0 --docroot . --http-port 51002',
+                ' -- --http-address 0.0.0.0 --docroot . --http-port {wt_port}',
                 'Web UI server (Wt framework)'),
             -- Compute wrapper nodes: 5 replicas, one per grid node.
             -- {host_id} = stable UUID derived from hostname:replica_index.
@@ -99,7 +108,7 @@ begin
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
                 ' --host-id {host_id} --tenant-id {tenant_id}'
-                ' --work-dir {work_dir} --http-base-url http://localhost:51000',
+                ' --work-dir {work_dir} --http-base-url http://localhost:{http_port}',
                 'Compute grid worker nodes')
         ) as t(service_name, binary_name, desired_replicas, args_template, description)
     loop

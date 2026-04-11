@@ -28,9 +28,9 @@ std::vector<ores::nats::service::subscription>
 register_trade_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    std::string http_base_url) {
+    const std::string& http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
-    constexpr auto queue = "ores.trading.service";
+    constexpr auto queue = queue_name;
 
     subs.push_back(nats.queue_subscribe(
         std::string(get_activity_types_request::nats_subject), queue,

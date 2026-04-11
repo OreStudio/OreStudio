@@ -33,7 +33,7 @@ register_other_instrument_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    constexpr auto queue = "ores.trading.service";
+    constexpr auto queue = queue_name;
 
     // Bond instruments
     subs.push_back(nats.queue_subscribe(

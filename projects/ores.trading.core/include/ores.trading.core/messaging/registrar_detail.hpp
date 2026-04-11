@@ -34,11 +34,13 @@ namespace ores::trading::messaging::detail {
 // subscriptions. Split across translation units to avoid MSVC C1202 when too
 // many rfl::json::write<T> instantiations land in a single TU.
 
+inline constexpr auto queue_name = "ores.trading.service";
+
 std::vector<ores::nats::service::subscription>
 register_trade_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    std::string http_base_url);
+    const std::string& http_base_url);
 
 std::vector<ores::nats::service::subscription>
 register_rates_handlers(ores::nats::service::client& nats,

@@ -29,6 +29,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::string http_base_url) {
 
     auto subs = detail::register_trade_handlers(nats, ctx, verifier, http_base_url);
+    subs.reserve(113);
 
     auto rates = detail::register_rates_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

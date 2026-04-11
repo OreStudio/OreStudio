@@ -533,7 +533,7 @@ void process_assignment(ores::nats::service::client& nats,
         //    Args in the manifest are passed verbatim; no placeholder substitution
         //    is needed for engines (like ORE) whose config is fully self-contained
         //    inside the input archive.
-        const fs::path exe = pkg_cache_dir / mf.executable;
+        const fs::path exe = fs::canonical(pkg_cache_dir / mf.executable);
         const auto& args = mf.args;
 
         // Log exact command line so it can be reproduced manually.

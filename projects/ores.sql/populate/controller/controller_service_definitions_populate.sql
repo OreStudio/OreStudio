@@ -75,7 +75,8 @@ begin
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
                 ' {nats_tls_args}'
-                ' --work-dir ../var/ore-service/work',
+                ' --work-dir ../var/ore-service/work'
+                ' --http-base-url http://localhost:{http_port}',
                 'ORE pricing engine integration'),
             ('ores.marketdata.service', 'ores.marketdata.service', 1, null,       'Market data and price series'),
             ('ores.analytics.service', 'ores.analytics.service',  1, null,       'Analytics pricing engine integration'),

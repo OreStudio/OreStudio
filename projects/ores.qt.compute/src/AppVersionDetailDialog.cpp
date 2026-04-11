@@ -355,7 +355,7 @@ void AppVersionDetailDialog::updateVersionFromUi() {
         // format when extracting, so the extension is fixed rather than
         // derived from the original filename.
         const std::string base_uri = "api/v1/storage/compute/packages/" +
-            boost::uuids::to_string(app_version_.id) + ".tar.gz";
+            boost::uuids::to_string(app_version_.id) ;
         if (!selectedPackageFilePath_.isEmpty() || app_version_.package_uri.empty())
             app_version_.package_uri = base_uri;
     }
@@ -445,7 +445,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
     const QString path = "/api/v1/storage/compute/packages/"
-        + QString::fromStdString(id_str) + ".tar.gz";
+        + QString::fromStdString(id_str) ;
     QUrl uploadUrl = httpBaseUrl_;
     uploadUrl.setPath(path);
 
@@ -499,7 +499,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
 
         // Update in-memory package_uri so any subsequent save persists it.
         const std::string new_uri = "api/v1/storage/compute/packages/"
-            + boost::uuids::to_string(self->app_version_.id) + ".tar.gz";
+            + boost::uuids::to_string(self->app_version_.id) ;
         self->app_version_.package_uri = new_uri;
         BOOST_LOG_SEV(lg(), info) << "Updated in-memory package_uri: " << new_uri;
 

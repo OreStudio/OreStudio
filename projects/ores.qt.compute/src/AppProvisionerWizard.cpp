@@ -381,7 +381,7 @@ private slots:
             boost::uuids::to_string(app_version_id_));
         const QString uri = QString::fromStdString(
             ores::compute::net::compute_storage::package_path(
-                id.toStdString(), ".tar.gz"));
+                id.toStdString(), ""));
         if (uri_edit_->text().isEmpty())
             uri_edit_->setText(uri);
     }
@@ -401,7 +401,7 @@ private slots:
         QUrl url(http_base);
         url.setPath(QString::fromStdString(
             ores::compute::net::compute_storage::package_path(
-                id.toStdString(), ".tar.gz")));
+                id.toStdString(), "")));
 
         auto* file = new QFile(file_path_edit_->text(), this);
         if (!file->open(QIODevice::ReadOnly)) {
@@ -449,7 +449,7 @@ private slots:
 
             uri_edit_->setText(QString::fromStdString(
                 ores::compute::net::compute_storage::package_path(
-                    id.toStdString(), ".tar.gz")));
+                    id.toStdString(), "")));
             status_label_->setText(tr("Upload complete."));
             emit completeChanged();
         });

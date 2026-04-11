@@ -533,7 +533,10 @@ void process_assignment(ores::nats::service::client& nats,
         //    Args in the manifest are passed verbatim; no placeholder substitution
         //    is needed for engines (like ORE) whose config is fully self-contained
         //    inside the input archive.
-        const fs::path exe = fs::canonical(pkg_cache_dir / mf.executable);
+        const fs::path exe_rel = pkg_cache_dir / mf.executable;
+        if (!fs::exists(exe_rel))
+            throw std::runtime_error("Engine executable not found: " + exe_rel.string());
+        const fs::path exe = fs::canonical(exe_rel);
         const auto& args = mf.args;
 
         // Log exact command line so it can be reproduced manually.

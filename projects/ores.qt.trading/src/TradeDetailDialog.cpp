@@ -435,13 +435,13 @@ void TradeDetailDialog::updateUiFromTrade() {
         QString::fromStdString(trade_.activity_type_code));
     ui_->nettingSetIdEdit->setText(
         QString::fromStdString(trade_.netting_set_id));
-    ui_->tradeDateEdit->setText(QString::fromStdString(trade_.trade_date));
+    ui_->tradeDateEdit->setText(QString::fromStdString(trade_.trade_date.value_or("")));
     ui_->effectiveDateEdit->setText(
-        QString::fromStdString(trade_.effective_date));
+        QString::fromStdString(trade_.effective_date.value_or("")));
     ui_->terminationDateEdit->setText(
-        QString::fromStdString(trade_.termination_date));
+        QString::fromStdString(trade_.termination_date.value_or("")));
     ui_->executionTimestampEdit->setText(
-        QString::fromStdString(trade_.execution_timestamp));
+        QString::fromStdString(trade_.execution_timestamp.value_or("")));
 
     populateProvenance(trade_.version, trade_.modified_by, trade_.performed_by,
                        trade_.recorded_at, trade_.change_reason_code,

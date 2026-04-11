@@ -84,11 +84,11 @@ QVariant ClientTradeModel::data(
         case LifecycleEvent:
             return QString::fromStdString(trade.activity_type_code);
         case TradeDate:
-            return QString::fromStdString(trade.trade_date);
+            return QString::fromStdString(trade.trade_date.value_or(""));
         case EffectiveDate:
-            return QString::fromStdString(trade.effective_date);
+            return QString::fromStdString(trade.effective_date.value_or(""));
         case TerminationDate:
-            return QString::fromStdString(trade.termination_date);
+            return QString::fromStdString(trade.termination_date.value_or(""));
         case NettingSetId:
             return QString::fromStdString(trade.netting_set_id);
         case Version:

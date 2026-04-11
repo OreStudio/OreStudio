@@ -276,26 +276,26 @@ void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
 
     if (current.trade_date != previous.trade_date) {
         addChange("Trade Date",
-                  QString::fromStdString(previous.trade_date),
-                  QString::fromStdString(current.trade_date));
+                  QString::fromStdString(previous.trade_date.value_or("")),
+                  QString::fromStdString(current.trade_date.value_or("")));
     }
 
     if (current.effective_date != previous.effective_date) {
         addChange("Effective Date",
-                  QString::fromStdString(previous.effective_date),
-                  QString::fromStdString(current.effective_date));
+                  QString::fromStdString(previous.effective_date.value_or("")),
+                  QString::fromStdString(current.effective_date.value_or("")));
     }
 
     if (current.termination_date != previous.termination_date) {
         addChange("Termination Date",
-                  QString::fromStdString(previous.termination_date),
-                  QString::fromStdString(current.termination_date));
+                  QString::fromStdString(previous.termination_date.value_or("")),
+                  QString::fromStdString(current.termination_date.value_or("")));
     }
 
     if (current.execution_timestamp != previous.execution_timestamp) {
         addChange("Execution Timestamp",
-                  QString::fromStdString(previous.execution_timestamp),
-                  QString::fromStdString(current.execution_timestamp));
+                  QString::fromStdString(previous.execution_timestamp.value_or("")),
+                  QString::fromStdString(current.execution_timestamp.value_or("")));
     }
 
 
@@ -320,10 +320,10 @@ void TradeHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->tradeTypeValue->setText(QString::fromStdString(version.trade_type));
     ui_->lifecycleEventValue->setText(QString::fromStdString(version.activity_type_code));
     ui_->nettingSetIdValue->setText(QString::fromStdString(version.netting_set_id));
-    ui_->tradeDateValue->setText(QString::fromStdString(version.trade_date));
-    ui_->effectiveDateValue->setText(QString::fromStdString(version.effective_date));
-    ui_->terminationDateValue->setText(QString::fromStdString(version.termination_date));
-    ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp));
+    ui_->tradeDateValue->setText(QString::fromStdString(version.trade_date.value_or("")));
+    ui_->effectiveDateValue->setText(QString::fromStdString(version.effective_date.value_or("")));
+    ui_->terminationDateValue->setText(QString::fromStdString(version.termination_date.value_or("")));
+    ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp.value_or("")));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

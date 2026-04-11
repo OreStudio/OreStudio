@@ -154,30 +154,30 @@ struct trade final {
     /**
      * @brief Date the trade was agreed.
      *
-     * ISO 8601 date: YYYY-MM-DD.
+     * ISO 8601 date: YYYY-MM-DD. Empty when not provided by the source.
      */
-    std::string trade_date;
+    std::optional<std::string> trade_date;
 
     /**
      * @brief Timestamp when the trade was executed (with timezone).
      *
-     * ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.
+     * ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ. Empty when not provided.
      */
-    std::string execution_timestamp;
+    std::optional<std::string> execution_timestamp;
 
     /**
      * @brief Date from which the trade is effective.
      *
-     * ISO 8601 date: YYYY-MM-DD.
+     * ISO 8601 date: YYYY-MM-DD. Empty when not provided.
      */
-    std::string effective_date;
+    std::optional<std::string> effective_date;
 
     /**
      * @brief Date on which the trade matures or terminates.
      *
-     * ISO 8601 date: YYYY-MM-DD.
+     * ISO 8601 date: YYYY-MM-DD. Empty when not provided.
      */
-    std::string termination_date;
+    std::optional<std::string> termination_date;
 
     /**
      * @brief Username of the person who last modified this trade.

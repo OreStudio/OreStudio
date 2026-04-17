@@ -120,11 +120,16 @@ NATS_TLS_CA="${ORES_NATS_TLS_CA:-}"
 KEYS_DIR="$PROJECT_DIR/build/keys/nats"
 
 # Port bases match ores-prodigy.el ores/port-bases.
-declare -A PORT_BASES=(
-    [remote]=50000 [local1]=51000 [local2]=52000
-    [local3]=53000 [local4]=54000 [local5]=55000
-)
-BASE_PORT="${PORT_BASES[$CHECKOUT_LABEL]:-51000}"
+# case statement (not associative array) — bash 3.2 on macOS has no declare -A.
+case "$CHECKOUT_LABEL" in
+    remote) BASE_PORT=50000 ;;
+    local1) BASE_PORT=51000 ;;
+    local2) BASE_PORT=52000 ;;
+    local3) BASE_PORT=53000 ;;
+    local4) BASE_PORT=54000 ;;
+    local5) BASE_PORT=55000 ;;
+    *)      BASE_PORT=51000 ;;
+esac
 
 # debug: offsets 0 (http) and 2 (wt); release: offsets 1 and 3.
 if [[ "$PRESET" == *release* ]]; then

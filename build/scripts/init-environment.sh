@@ -128,9 +128,16 @@ NATS_MONITOR_URL="http://localhost:${NATS_MONITOR_PORT}"
 
 # HTTP / WT ports: same base-port scheme as ores-prodigy.el ores/port-bases.
 # local1→51000, local2→52000, …  remote→50000.
-declare -A PORT_BASES=([remote]=50000 [local1]=51000 [local2]=52000
-    [local3]=53000 [local4]=54000 [local5]=55000)
-BASE_PORT="${PORT_BASES[$LABEL]:-51000}"
+# case statement (not associative array) — bash 3.2 on macOS has no declare -A.
+case "${LABEL}" in
+    remote) BASE_PORT=50000 ;;
+    local1) BASE_PORT=51000 ;;
+    local2) BASE_PORT=52000 ;;
+    local3) BASE_PORT=53000 ;;
+    local4) BASE_PORT=54000 ;;
+    local5) BASE_PORT=55000 ;;
+    *)      BASE_PORT=51000 ;;
+esac
 # Debug preset: HTTP=base+0, WT=base+2.  Release: HTTP=base+1, WT=base+3.
 if [[ "${PRESET}" == *release* ]]; then
     HTTP_PORT=$((BASE_PORT + 1))

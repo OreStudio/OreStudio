@@ -173,14 +173,14 @@ jobs:
 
       - name: Upload WiX log on failure
         if: failure() && matrix.compiler == 'msvc'
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: wix-log-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/_CPack_Packages/win64/WIX/wix.log
           if-no-files-found: ignore
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.16-win64.*

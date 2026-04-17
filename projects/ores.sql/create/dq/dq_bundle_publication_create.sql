@@ -283,6 +283,31 @@ begin
         raise exception 'Bundle not found: %', p_bundle_code;
     end if;
 
+    -- Validate that every opted_in_datasets entry is actually a member of
+    -- this bundle. Without this check, a misconfigured or typo'd opt-in (e.g.
+    -- 'gleif.lei_counterparties.large' when only '.small' is a member) would
+    -- silently produce a successful no-op.
+    if p_params ? 'opted_in_datasets' then
+        declare
+            v_unknown_datasets text;
+        begin
+            select string_agg(oid, ', ')
+            into v_unknown_datasets
+            from jsonb_array_elements_text(p_params->'opted_in_datasets') oid
+            where not exists (
+                select 1 from ores_dq_dataset_bundle_members_tbl m
+                where m.bundle_code = p_bundle_code
+                  and m.dataset_code = oid
+                  and m.valid_to = ores_utility_infinity_timestamp_fn()
+            );
+            if v_unknown_datasets is not null then
+                raise exception
+                    'opted_in_datasets contains entries that are not members of bundle %: %',
+                    p_bundle_code, v_unknown_datasets;
+            end if;
+        end;
+    end if;
+
     -- Create bundle publication audit record
     insert into ores_dq_bundle_publications_tbl (
         tenant_id, bundle_code, bundle_name, mode, atomic, published_by

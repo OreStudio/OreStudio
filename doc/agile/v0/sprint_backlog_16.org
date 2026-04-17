@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- TBD.
+- Work on ORE import.
 
 * Stories
 
@@ -17,21 +17,120 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-30 Mon 18:01], for Monday, March 30, 2026.
-|      | <75>                                      |        |      |      |       |
-| Tags | Headline                                  | Time   |      |      |     % |
-|------+-------------------------------------------+--------+------+------+-------|
-|      | *Total time*                              | *0:00* |      |      | 100.0 |
+#+CAPTION: Clock summary at [2026-04-17 Fri 20:50], for Friday, April 17, 2026.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-30 Mon 18:01]
-|       | <75>                                                     |         |       |      |       |
-| Tags  | Headline                                                 | Time    |       |      |     % |
-|-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                             | *0:00*  |       |      | 100.0 |
+#+CAPTION: Clock summary at [2026-04-17 Fri 20:50]
+|       | <75>                                                                      |          |        |      |       |
+| Tags  | Headline                                                                  | Time     |        |      |     % |
+|-------+---------------------------------------------------------------------------+----------+--------+------+-------|
+|       | *Total time*                                                              | *157:39* |        |      | 100.0 |
+|-------+---------------------------------------------------------------------------+----------+--------+------+-------|
+|       | Stories                                                                   | 157:39   |        |      | 100.0 |
+|       | Active                                                                    |          | 157:39 |      | 100.0 |
+| code  | Add missing party isolation RLS policies                                  |          |        | 0:30 |   0.3 |
+| infra | Replace clock_cast with portable file time conversion                     |          |        | 0:20 |   0.2 |
+| code  | Add ores.workflow SQL schema and C++ component scaffold                   |          |        | 1:04 |   0.7 |
+| code  | Add Commodity and BondOption golden roundtrip tests                       |          |        | 0:20 |   0.2 |
+| code  | Add Credit and Equity golden roundtrip tests                              |          |        | 0:20 |   0.2 |
+| code  | Add Exotic, Hybrid, and Scripted instruments golden roundtrip tests       |          |        | 1:02 |   0.7 |
+| infra | Fix MSYS2 path mangling of openssl -subj on Windows                       |          |        | 0:20 |   0.2 |
+| code  | Add provision_parties_workflow executor                                   |          |        | 2:12 |   1.4 |
+| infra | Per-party status trigger, correlation IDs, PartyProvisionPage             |          |        | 1:34 |   1.0 |
+| code  | Add ORE instrument dispatch pipeline                                      |          |        | 2:35 |   1.6 |
+| code  | Add ORE market data file types                                            |          |        | 1:48 |   1.1 |
+| code  | Display provision correlation ID on tenant  summary                       |          |        | 0:20 |   0.2 |
+| code  | Add equity and FX exotic instrument mappers                               |          |        | 1:20 |   0.8 |
+| code  | Add commodity, scripted and composite instrument mappers                  |          |        | 1:28 |   0.9 |
+| code  | ORE market data domain model — DB schema and C++ CDM                      |          |        | 1:46 |   1.1 |
+| code  | ORE key decomposition and database repository                             |          |        | 1:56 |   1.2 |
+| code  | Add remaining instrument mappers and roundtrip tests                      |          |        | 2:43 |   1.7 |
+| infra | Fix NATS cert generation on Windows                                       |          |        | 0:28 |   0.3 |
+| code  | Persist instrument data on ORE trade import                               |          |        | 0:20 |   0.2 |
+| code  | Add workflow service, correlation IDs and  PartyProvisionPage UX fixes    |          |        | 7:16 |   4.6 |
+| code  | Fix NATS cert SAN generation on Windows                                   |          |        | 0:54 |   0.6 |
+| code  | Add Nats-Session-Id header for per-session correlation                    |          |        | 0:50 |   0.5 |
+| code  | Market data Service layer (ores.marketdata.service)                       |          |        | 1:02 |   0.7 |
+| code  | Instrument-trade model refactor and portfolio export                      |          |        | 1:58 |   1.2 |
+| code  | Fix nodiscard warnings in ImportTradeDialog instrument saves              |          |        | 0:20 |   0.2 |
+| code  | Replace ad-hoc status strings with FSM state UUIDs                        |          |        | 0:40 |   0.4 |
+| code  | ORE portfolio export: exporter + Qt Open Instrument + Export XML          |          |        | 0:55 |   0.6 |
+| infra | Windows: replace strptime with portable std::get_time                     |          |        | 0:40 |   0.4 |
+| code  | Market Data MDI UI                                                        |          |        | 2:05 |   1.3 |
+| code  | Asset class unification: product_type vs asset_class                      |          |        | 0:30 |   0.3 |
+| code  | Source report definitions from DQ artefact table                          |          |        | 1:42 |   1.1 |
+| code  | Source report definitions from DQ and improve party picker                |          |        | 1:00 |   0.6 |
+| code  | Move Compute and Market Data menus into MainWindow.ui                     |          |        | 0:20 |   0.2 |
+| code  | Import market.txt and fixings.txt in ORE import                           |          |        | 1:08 |   0.7 |
+| code  | Merge FX instrument into TradeDetailDialog                                |          |        | 7:09 |   4.5 |
+| code  | Add generic object storage API and HTTP routes                            |          |        | 0:40 |   0.4 |
+| code  | Add calendar adjustment and market convention imports                     |          |        | 2:14 |   1.4 |
+| code  | Merge swap/rates instrument into TradeDetailDialog                        |          |        | 0:40 |   0.4 |
+| code  | Migrate compute grid to generic storage API                               |          |        | 0:40 |   0.4 |
+| code  | Merge bond + credit instruments into TradeDetailDialog                    |          |        | 1:30 |   1.0 |
+| code  | Unify asset class modelling                                               |          |        | 3:12 |   2.0 |
+| code  | Add server-side ORE import via ores.ore.service                           |          |        | 3:22 |   2.1 |
+| infra | Fix Windows CI packaging and stack overflow failures                      |          |        | 0:20 |   0.2 |
+| code  | Merge equity + commodity instruments into TradeDetailDialog               |          |        | 2:05 |   1.3 |
+| code  | Merge composite instrument family into TradeDetailDialog                  |          |        | 0:25 |   0.3 |
+| code  | Fix Windows build error in http_client path conversion                    |          |        | 0:20 |   0.2 |
+| code  | Merge scripted instrument family into TradeDetailDialog                   |          |        | 0:46 |   0.5 |
+| infra | Windows: Fix stack flag syntax for Clang and WiX 2GB lib limit            |          |        | 0:40 |   0.4 |
+| code  | Add service lifecycle controller and dashboard enhancements               |          |        | 7:24 |   4.7 |
+| code  | Remove unused unistd.h include breaking Windows builds                    |          |        | 0:20 |   0.2 |
+| code  | Generalise workflow engine and migrate existing sagas                     |          |        | 2:43 |   1.7 |
+| code  | Add report execution workflow pipeline                                    |          |        | 8:00 |   5.1 |
+| code  | Add analytics pricing engine configuration                                |          |        | 5:17 |   3.4 |
+| code  | Data-driven trade type metadata                                           |          |        | 1:03 |   0.7 |
+| code  | Add split-component codegen profiles and fix skill docs                   |          |        | 0:57 |   0.6 |
+| code  | Add Analytics CRUD UI and restructure DQ project layout                   |          |        | 1:46 |   1.1 |
+| code  | IInstrumentForm registry + per-family form widgets                        |          |        | 2:33 |   1.6 |
+| code  | Add repository integration tests for all analytics entities               |          |        | 1:03 |   0.7 |
+| code  | Form map, trade type flags, and create-mode instrument                    |          |        | 0:52 |   0.5 |
+| code  | Extract ores.qt.api as shared framework library                           |          |        | 2:52 |   1.8 |
+| code  | Fix startup races, terminal bleed, and analytics service setup            |          |        | 0:33 |   0.3 |
+| code  | Extract domain-specific plugin libraries                                  |          |        | 6:47 |   4.3 |
+| infra | Add shutdown_signals abstraction; fix Windows SIGQUIT build               |          |        | 1:07 |   0.7 |
+| code  | Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget |          |        | 0:20 |   0.2 |
+| code  | Enforce UTC-everywhere timestamp policy                                   |          |        | 4:03 |   2.6 |
+| code  | Fix Windows linker error on PasswordMatchIndicator                        |          |        | 0:20 |   0.2 |
+| code  | Move PasswordMatchIndicator::connectFields out of header                  |          |        | 0:20 |   0.2 |
+| code  | Normalise all services to NATS-based hosting with unified heartbeat       |          |        | 1:36 |   1.0 |
+| code  | Service dashboard, shutdown fixes and DB timezone                         |          |        | 3:09 |   2.0 |
+| code  | Move DataLibrarianWindow and publish dialogs from mktdata to refdata      |          |        | 0:51 |   0.5 |
+| code  | SQL: Add missing party isolation RLS policies                             |          |        | 0:40 |   0.4 |
+| infra | Fix uninitialised member UB and GLib dl-init suppression                  |          |        | 1:09 |   0.7 |
+| code  | Move App/AppVersion/ClientApp/ClientHost classes to compute               |          |        | 0:20 |   0.2 |
+| code  | Fix xsd::vector to use alias for non-bool to support incomplete types     |          |        | 0:51 |   0.5 |
+| code  | Replace generic instrument with per-type rates domain objects             |          |        | 5:58 |   3.8 |
+| code  | Service lifecycle, menu restructure, GCC 15 fix, and Qt plugin split      |          |        | 7:57 |   5.0 |
+| infra | Replace _wfopen with _wfopen_s to fix Windows Clang build                 |          |        | 0:20 |   0.2 |
+| code  | Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals   |          |        | 0:20 |   0.2 |
+| code  | Add typed FX instrument domain model, tables, and repository layer        |          |        | 1:37 |   1.0 |
+| infra | Add /FS to serialise MSVC PDB writes under parallel Ninja builds          |          |        | 0:20 |   0.2 |
+| code  | Build as static library on Windows to avoid DLL export limit              |          |        | 0:20 |   0.2 |
+| code  | Add equity typed instrument support                                       |          |        | 3:24 |   2.2 |
+| code  | Qt: Move OreImport* from compute to trading plugin                        |          |        | 0:40 |   0.4 |
+| infra | cmake: Switch MSVC debug info to Embedded (/Z7) to fix PDB contention     |          |        | 0:20 |   0.2 |
+| code  | Complete Scheduler UI: Job Instances and Monitor                          |          |        | 3:45 |   2.4 |
+| code  | Split registrar.cpp to fix MSVC C1202 constexpr depth limit               |          |        | 1:36 |   1.0 |
+| code  | Workflow monitor, compute fixes, and ORE import improvements              |          |        | 6:17 |   4.0 |
 #+end:
+
+*** COMPLETED Sprint and product backlog refinement                   :agile:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
 
 #+name: pie-stories-chart
 #+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_16_stories_pie_sorted.png :width 1920 :height 1080
@@ -168,355 +267,7 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_16_tags.png]]
 
-*** TODO Distributed tracing: OpenTelemetry identifiers across Qt and NATS :analysis:
-
-*Background*
-
-OreStudio currently uses a single =Nats-Correlation-Id= header (UUID v4) that
-is generated at the workflow service entry point and propagated to downstream
-NATS calls. This lets you grep logs for a single workflow invocation, but it
-does not answer two important questions:
-
-1. *Which user session originated this request?* A single session may trigger
-   dozens of top-level requests (bundle list, bundle install, party provision,
-   bootstrap clear); there is no way to group them under one session identity.
-2. *Which specific operation within the session is this?* Each Qt wizard step
-   is a distinct user action; the current ID is generated server-side so the
-   client cannot know it before the response arrives.
-
-Furthermore, the relationship between the Qt client subsystem and the NATS
-microservices subsystem is opaque: a log line in =ores.refdata= has no link
-back to the Qt button click that ultimately caused it.
-
-*OpenTelemetry trace model*
-
-The W3C =traceparent= standard defines four fields carried in every call:
-
-| Field       | Size     | Generated by       | Meaning                                          |
-|-------------+----------+--------------------+--------------------------------------------------|
-| version     | 1 byte   | fixed =00=         | Format version                                   |
-| trace-id    | 16 bytes | originating client | One UUID for the entire top-level user action    |
-| parent-id   | 8 bytes  | caller of this hop | The span ID of the *caller*, linking parent↔child|
-| span-id     | 8 bytes  | this service       | Unique ID for this service's handling of the call|
-| flags       | 1 byte   | originating client | Sampling decision                                |
-
-Wire format: =traceparent: 00-<trace-id>-<parent-id>-<flags>=
-
-Example call tree for =workflow.v1.parties.provision=:
-
-#+begin_example
-Qt client           trace=aabbcc  span=0001  parent=0000  (root span, generated by Qt)
-  → workflow        trace=aabbcc  span=0002  parent=0001
-    → refdata.save  trace=aabbcc  span=0003  parent=0002
-    → iam.save      trace=aabbcc  span=0004  parent=0002
-    → iam.add-party trace=aabbcc  span=0005  parent=0002
-#+end_example
-
-This allows reconstruction of the exact call tree from logs alone.
-
-*What needs to change*
-
-Two subsystems need to be joined:
-
-1. *Qt client* — generates the root =trace-id= and the first =span-id= at the
-   point of user action (button click / wizard Next). Passes both in every
-   outgoing NATS message. Currently generates nothing.
-
-2. *NATS microservices* — each handler extracts =traceparent=, records the
-   =parent-id= (caller's span), generates a new =span-id= for itself, and
-   forwards an updated =traceparent= (same =trace-id=, its own =span-id= as
-   new =parent-id=) on every outbound NATS call.
-
-In addition, a *session ID* (separate from trace/span) should be generated
-once on login and attached to every request for the lifetime of that session,
-enabling queries like "show all requests from user alice during session X".
-
-Proposed NATS header set:
-
-| Header              | Meaning                                         | Generated by         |
-|---------------------+-------------------------------------------------+----------------------|
-| =Nats-Correlation-Id= | Current per-operation ID (keep for compat)      | First handler        |
-| =traceparent=         | W3C OpenTelemetry trace-id + span-id + parent   | Qt client / handler  |
-| =Nats-Session-Id=     | UUID for the user's login session               | Qt client on login   |
-
-*Scope of this story*
-
-This story covers *analysis and design only*. Output: a plan document under
-=doc/plans/= that specifies:
-
-- Which headers to carry on every NATS message.
-- How the Qt =ClientManager= generates and propagates =traceparent= and
-  =Nats-Session-Id=.
-- How =handler_helpers.hpp= is extended so =log_handler_entry= extracts,
-  logs, and forwards all three headers in one call.
-- Whether to retain =Nats-Correlation-Id= (backward compat) or replace it.
-- What a =Nats-Session-Id= should be tied to (login token? UI session UUID?).
-- The migration path: handlers currently log =correlation_id=; how to move to
-  =traceparent= without breaking existing log grep patterns.
-- Whether to integrate with an external OpenTelemetry collector (Jaeger /
-  Tempo) or keep tracing in-process via log aggregation.
-
-Implementation can follow as a separate story once the design is agreed.
-
-***** Tasks
-
-- [ ] Research W3C =traceparent= / =tracestate= spec and NATS header limits
-- [ ] Identify all Qt entry points that should generate a root span (wizard
-      steps, dialog confirms, background refresh calls)
-- [ ] Identify all NATS handler hops that need span generation and forwarding
-- [ ] Define the session ID lifecycle: created on login, invalidated on logout,
-      stored in =ClientManager=
-- [ ] Decide: replace =Nats-Correlation-Id= or keep alongside =traceparent=
-- [ ] Decide: structured log fields vs free-text grep-friendly format
-- [ ] Write =doc/plans/= document with the agreed design and migration steps
-
-*** TODO Three-level provisioning: end-to-end testing                  :code:
-
-End-to-end test of the complete three-level provisioning flow implemented
-across PRs #582, #611, #614, #619, and the correlation ID / summary page
-work on =feature/three-level-provisioning-e2e=. Branch:
-=feature/three-level-provisioning-e2e=.
-
-***** Tasks
-
-- [ ] Provision a fresh tenant from scratch (recreate DB, start services)
-- [ ] Log in as system admin; verify =TenantProvisioningWizard= fires
-- [ ] Step through bundle selection and install; verify DQ bundle published
-- [ ] Step through =PartyProvisionPage=; verify party + account created in DB
-      with =status='Inactive'=
-- [ ] Verify correlation ID appears on the summary page and matches
-      =ores_workflow_workflow_instances_tbl.correlation_id=
-- [ ] Verify bootstrap flag cleared; wizard does not reappear on next login
-- [ ] Log in as the provisioned party admin; verify =PartyProvisioningWizard= fires
-- [ ] Complete party wizard; verify party =status= set to =Active= in DB
-- [ ] Verify =PartyProvisioningWizard= does not reappear on subsequent logins
-- [ ] Verify compensation: force failure in each of the 3 workflow steps and
-      confirm rolled-back state in DB for party, account, account_party
-- [ ] Verify =Nats-Correlation-Id= header propagated to =refdata.v1.parties.save=
-      and =iam.v1.accounts.save= (check server logs)
-
-*** TODO Provisioned accounts: force password reset on first login       :code:
-
-When =workflow.v1.parties.provision= creates an account it should set
-=password_reset_required = true= so the party admin is forced to change the
-initial password on first login. See Phase 4 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Add =password_reset_required= column to =ores_iam_accounts_tbl= (or reuse
-      existing field if present)
-- [ ] =provision_parties_workflow=: set flag when creating account
-- [ ] =auth_handler.hpp=: return =password_reset_required= in =login_response=
-      if account flag is set, and reject login with a specific error code
-- [ ] Qt: show password-change dialog on login when flag is set
-- [ ] Clear flag on successful password change
-
-*** TODO Multi-select LEI picker for PartyProvisionPage                  :code:
-
-=LeiEntityPicker= currently supports single selection. Extend to multi-select
-so the tenant admin can pick the full GLEIF hierarchy (root + subsidiaries)
-in one pass, creating one =provision_party_input= entry per selected LEI.
-See Phase 4 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Extend =LeiEntityPicker= to support multi-select mode
-- [ ] =PartyProvisionPage=: iterate selected LEIs, build one input row per LEI
-- [ ] Derive =principal= per party (=username_base + "_" + short_code=)
-- [ ] Show per-party rows in the page with optional credential override fields
-- [ ] Summary page: list all provisioned usernames and their party names
-
-*** TODO Async workflow progress for large party hierarchies             :code:
-
-For tenants with more than ~20 parties the synchronous =provision-parties=
-endpoint will time out. Add an async path: return =workflow_id= immediately
-and poll =workflow.v1.status= from a progress page. See Phase 4 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Add =workflow.v1.status= NATS subject + request/response types
-- [ ] =workflow_handler=: implement status query by workflow ID
-- [ ] Add async variant of =provision_parties_response= (returns =workflow_id= only)
-- [ ] Qt: add =BundleInstallPage=-style async progress page in
-      =TenantProvisioningWizard= with polling timer
-- [ ] Threshold: use async path when =parties.size() > 5= (configurable)
-
-*** TODO IAM/Refdata service boundary cleanup                            :code:
-
-=ores.iam.core= currently crosses the service boundary in two places. These
-are pre-existing violations noted in the plan and must be fixed to ensure
-correct RLS enforcement and clean service ownership. See "Known pre-existing
-violations" in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] =bootstrap_handler.hpp=: replace direct =ores_refdata_parties_tbl= write
-      with =refdata.v1.parties.save= NATS call
-- [ ] =auth_handler.hpp=: replace direct =ores_refdata_parties_tbl= query
-      (=auth_lookup_party=) with =refdata.v1.parties.get-by-principal= NATS call
-      (add endpoint to =ores.refdata= if missing)
-- [ ] Verify RLS policies still enforced end-to-end after refactor
-- [ ] Remove cross-schema table includes from =ores.iam.core= CMake deps
-
-*** TODO DQ/Refdata service boundary cleanup                             :code:
-
-DQ bundle publication currently writes directly to =ores_refdata_*= tables.
-This must be routed via =refdata.v1.*= NATS endpoints. See "Open Questions"
-in [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Identify all direct =ores_refdata_*= writes inside =ores.dq= publication
-      pipeline
-- [ ] Add any missing =refdata.v1.*= NATS endpoints needed by DQ
-- [ ] Rewrite DQ publication to use NATS calls instead of direct DB writes
-- [ ] Verify bundle publish end-to-end after refactor
-- [ ] Remove cross-schema table includes from =ores.dq= CMake deps
-
-*** TODO Extend ores.workflow: trade-expiry workflow                     :code:
-
-First financial workflow in =ores.workflow=: expire a trade and cascade to
-positions, P&L reporting and scheduler cleanup. See Phase 5 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Add =workflow.v1.trade-expiry= NATS subject + request/response types
-- [ ] Implement =trade_expiry_workflow= executor (4 steps + compensation)
-      - Step 1: =trading.v1.trades.expire=
-      - Step 2: =risk.v1.positions.update=
-      - Step 3: =reporting.v1.runs.trigger-pnl=
-      - Step 4: =scheduler.v1.jobs.remove=
-- [ ] Register in =workflow_handler= and =registrar.cpp=
-- [ ] Qt: trigger from trade blotter context menu ("Expire trade")
-- [ ] Integration test: verify all 4 steps and compensation
-
-*** TODO Extend ores.workflow: barrier-event workflow                    :code:
-
-Second financial workflow: apply a knock-in/out barrier event to a trade and
-cascade to Greeks recomputation and reporting. See Phase 5 in
-[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
-
-***** Tasks
-
-- [ ] Add =workflow.v1.barrier-event= NATS subject + request/response types
-- [ ] Implement =barrier_event_workflow= executor (3 steps + compensation)
-      - Step 1: =trading.v1.trades.apply-barrier-event=
-      - Step 2: =risk.v1.greeks.recompute=
-      - Step 3: =reporting.v1.runs.trigger=
-- [ ] Register in =workflow_handler= and =registrar.cpp=
-- [ ] Qt: trigger from trade detail dialog when barrier condition is met
-- [ ] Integration test: verify all 3 steps and compensation
-
-*** TODO Positions domain model                                        :code:
-
-Implement the positions domain model. A position aggregates the net exposure
-for a given instrument and book combination, derived from the trade blotter.
-See [[file:../../plans/2026-03-31-ore-trading-instrument-support.org][plan]] for context.
-
-Covers long/short positions across all instrument families, backed by one new
-temporal table: =ores_trading_positions_tbl= (book_id, instrument_id,
-trade_type_code, quantity, notional, currency, as_of_date, and standard
-temporal/audit fields).
-
-***** Tasks
-
-- [ ] SQL: =ores_trading_positions_tbl= + notify trigger + drop files
-- [ ] SQL: Register in =trading_create.sql=, =drop_trading.sql=
-- [ ] Domain: =position= struct, JSON I/O, table I/O, protocol messages
-- [ ] Repository: =position= entity, mapper, repository
-- [ ] Service: =position_service=
-- [ ] Server: messaging handler + registrar registration
-- [ ] Qt UI: =ClientPositionModel=, =PositionMdiWindow=, =PositionDetailDialog=,
-  =PositionHistoryDialog=, =PositionController=, =MainWindow= integration
-- [ ] Database: recreate to pick up new table
-
-*** TODO Source report definitions from DQ instead of hardcoded C++   :code:
-
-*Background*
-
-Report definitions in =PartyProvisioningWizard= are currently hardcoded as a
-=constexpr std::array= in C++ (=PartyProvisioningWizard.cpp=, ~line 427). This
-is architecturally inconsistent with how all other seedable reference data is
-handled in OreStudio, which uses the DQ artefact pipeline:
-
-- A staging table (=dq_*_artefact_tbl=) holds the source data
-- An artefact type entry in =ores_dq_artefact_types_tbl= maps staging → target
-  + publish function
-- A dataset (e.g. =ore.report_definitions=) references the staging table
-- Bundles (=organisation=, or a new =ore_analytics= bundle) group datasets
-- The publish function copies approved rows into the target table
-
-Business units, portfolios, and books already follow this pattern. Report
-definitions do not, causing two problems:
-
-1. *Off-by-one fragility*: the array was declared =std::array<ReportEntry, 28>=
-   with only 27 entries, producing a zero-initialised trailing entry with
-   =name = ""=. This triggered a DB check constraint violation during party
-   provisioning (fixed as a stopgap by changing the array size to 27).
-2. *Non-evolvable*: adding, renaming, or adjusting a report definition requires
-   a C++ recompile and new release. There is no way to update defaults via data
-   tooling or deliver them as part of a bundle update.
-
-*Target architecture*
-
-#+begin_example
-SQL seed data (populate script)
-  → ores_dq_report_definitions_artefact_tbl   (staging)
-    → ores_dq_report_definitions_publish_fn   (publish function)
-      → ores_reporting_report_definitions_tbl (target, party-scoped)
-#+end_example
-
-The =PartyProvisioningWizard= loads candidate definitions by querying the DQ
-artefact table for the selected bundle, presents them with checkboxes (same UX
-as today), and on confirmation calls the existing
-=reporting.v1.report-definitions.save= endpoint for each selected entry. The
-hardcoded =k_default_reports= array is deleted.
-
-*Scope*
-
-This story covers the full stack end-to-end: SQL schema, DQ pipeline, seed
-data, and Qt wizard refactor.
-
-***** Tasks
-
-- [ ] SQL: create =ores_dq_report_definitions_artefact_tbl= with columns
-      =name=, =description=, =report_type=, =schedule_expression=,
-      =concurrency_policy=, =display_order= plus standard DQ audit/temporal
-      fields; add to =dq_create.sql= and =drop_dq.sql=
-- [ ] SQL: write =ores_dq_report_definitions_publish_fn= that inserts approved
-      artefact rows into =ores_reporting_report_definitions_tbl= scoped to the
-      calling party (mirrors =ores_dq_books_publish_fn= pattern)
-- [ ] SQL: register the new artefact type =report_definitions= in
-      =dq_artefact_types_populate.sql= pointing at the staging table, target
-      table, and publish function
-- [ ] SQL: create seed populate script
-      =populate/reporting/reporting_report_definitions_populate.sql= with the
-      27 standard ORE analytics definitions (migrate from =k_default_reports=)
-      and wire it into the reporting populate orchestrator
-- [ ] SQL: add a new bundle =ore_analytics= (or extend =organisation=) in
-      =dq_dataset_bundle_populate.sql= and register the
-      =ore.report_definitions= dataset as a member
-- [ ] API: add =get_report_definition_templates_request/response= to
-      =ores.reporting.api= (or reuse the DQ artefact list endpoint) so the Qt
-      client can fetch candidates without a direct DB query
-- [ ] Qt: refactor =PartyReportSetupPage= to load report definition candidates
-      from the API call above on =initializePage()= instead of iterating
-      =k_default_reports=; remove the =constexpr= array entirely
-- [ ] Qt: handle async load in =PartyReportSetupPage=: show a spinner while
-      fetching, populate the list widget on success, show an error label on
-      failure
-- [ ] SQL: recreate database to pick up new tables and seed data; verify
-      27 artefact rows present in staging table after =populate= run
-- [ ] End-to-end test: run party provisioning wizard, confirm report
-      definitions created in =ores_reporting_report_definitions_tbl= match the
-      selected artefacts, confirm no check constraint violations
-
-*** DONE Rename =instrument_family= to =product_type= across trading domain :code:
+*** COMPLETED Rename =instrument_family= to =product_type=             :code:
 
 The field =instrument_family= in =ores_trading_trades_tbl= is a DB routing
 discriminator — it tells the system which product-specific extension table to
@@ -552,7 +303,7 @@ repository mapper, Qt trade window.
       =importer.cpp=, =xml_trade_import_tests.cpp=
 - [X] Update plan document and sprint backlog to reflect =product_type= decision
 
-*** IN-PROGRESS Unify asset class modelling across trading and market data :analysis:
+*** STARTED Unify asset class modelling                            :analysis:
 
 *Background*
 
@@ -736,7 +487,6 @@ NATS: refdata.v1.asset-classes.list
 - [ ] Phase 5: =refdata.v1.asset-classes.list= NATS endpoint + Qt data-driven combo
 
 *** BLOCKED Add missing party isolation RLS policies                   :code:
-CLOSED: [2026-04-07 Mon 10:30]
     :LOGBOOK:
     CLOCK: [2026-04-07 Mon 10:00]--[2026-04-07 Mon 10:30] =>  0:30
     :END:
@@ -780,332 +530,2541 @@ queries bypass it).
       ignore entry from =utility/validation_ignore.txt=
 - [X] Run =validate_schemas.sh= and confirm zero warnings (0 warnings)
 
-*** TODO Automate new service registration                             :infra:
+*** COMPLETED Replace clock_cast with portable file time conversion   :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 610
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/610
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-30T22:26:11Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 20:45]--[2026-03-30 Mon 21:05] =>  0:20
+    :END:
 
-*Background*
-
-When =ores.marketdata.service= was added to the running system, the following
-manual steps were required across multiple files, with no single checklist and
-no tooling to enforce completeness. Several were discovered only at runtime
-(missing NATS cert, missing DB user, missing IAM role, missing IAM
-permissions), requiring iterative =recreate_database= runs.
-
-*Manual steps identified (in discovery order)*
-
-1. =build/scripts/generate_nats_certs.sh= — add service name to =SERVICES=
-   array so that an mTLS client certificate is generated. Without this the
-   service crashes immediately on NATS connect with =Connection Closed=.
-
-2. =projects/ores.codegen/models/services/ores_services_service_registry.json=
-   — add service entry (name, psql_var, env_key, iam_role, dml_prefixes,
-   select_tables). Then re-run the =service-registry= code-gen profile to
-   regenerate five files:
-   - =projects/ores.sql/service_vars.sh=
-   - =projects/ores.sql/create/iam/service_users_create.sql=
-   - =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
-   - =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=
-   - =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=
-
-3. =projects/ores.sql/teardown_all.sql= — add =drop role if exists
-   <env>_<service>_service;= entry (not covered by code-gen).
-
-4. =projects/ores.sql/populate/iam/iam_permissions_populate.sql= — register
-   all domain permissions (=<service>::<resource>:<action>= and
-   =<service>::*=). These must exist before any role can reference them.
-
-5. =projects/ores.sql/populate/iam/iam_roles_populate.sql= — create the IAM
-   role and assign permissions. Fails at runtime if permissions from step 4
-   are absent.
-
-6. =.env= — add =ORES_<SERVICE>_SERVICE_DB_USER= and
-   =ORES_<SERVICE>_SERVICE_DB_PASSWORD= variables (currently done by
-   =init-environment.sh=, but only if the service is known to that script).
-
-*Proposed improvements*
-
-- Extend =generate_nats_certs.sh= to derive its service list from
-  =service_vars.sh= (=SERVICE_NAMES= array) rather than a hard-coded
-  =SERVICES= array, so adding to the registry automatically covers cert
-  generation.
-
-- Extend the =service-registry= code-gen profile (or add a new template) to
-  also emit the IAM permissions and IAM role seed SQL for each service, driven
-  by the =dml_prefixes= and =select_prefixes= fields already in the registry.
-  This would cover steps 4 and 5 automatically.
-
-- Extend the =service-registry= code-gen profile to emit the
-  =teardown_all.sql= fragment for each service (or generate a separate
-  =teardown_services.sql= that is included), covering step 3.
-
-- Add a =new-service checklist= to =CLAUDE.md= or a dedicated
-  =doc/how-to/add-a-new-service.md= covering all manual steps, so that until
-  full automation is in place nothing is missed.
-
-- Add a validation step to =recreate_database.sh= (or =validate_schemas.sh=)
-  that cross-checks: every service in =service_vars.sh= has a NATS cert, an
-  IAM role, and at least one registered permission.
+This pull request replaces the use of std::chrono::clock_cast with a manual time
+conversion when calculating the executable's build time. This change improves
+portability, specifically for platforms like Apple libc++ that do not support
+clock_cast. I have no feedback to provide.
 
 ***** Tasks
 
-- [ ] Drive =generate_nats_certs.sh= from =SERVICE_NAMES= in =service_vars.sh=
-      instead of a hard-coded array
-- [ ] Add service-registry code-gen template for IAM permissions seed SQL
-- [ ] Add service-registry code-gen template for IAM role seed SQL
-- [ ] Add service-registry code-gen template (or include fragment) for
-      =teardown_all.sql= service role drops
-- [ ] Add cross-check to =recreate_database.sh= / =validate_schemas.sh=:
-      every service has NATS cert + IAM role + ≥1 permission
-- [ ] Document the remaining manual steps in =doc/how-to/add-a-new-service.md=
-      as an interim checklist
+- [X] [platform] Replace clock_cast with portable now()-based file time conversion
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/610][PR #610]]
 
-*** TODO Party wizard UX improvements                                  :code:
+*** COMPLETED Add ores.workflow SQL schema and C++ component scaffold :code:
+    :PROPERTIES:
+    :PR_NUMBER: 611
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/611
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-30T22:36:44Z
+    :TIME_ESTIMATE: 1h 04m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 22:06]--[2026-03-30 Mon 23:10] =>  1:04
+    :END:
 
-Follow-on UX polish for the three-level provisioning wizard, deferred from
-the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 4).
-
-***** Tasks
-
-- [ ] Force password reset: add =password_reset_required = true= flag to
-      accounts created by =provision-parties=; =auth_handler.hpp= already
-      handles this flag
-- [ ] Multi-select LEI picker: extend =LeiEntityPicker= from single- to
-      multi-select so =PartyProvisionPage= can select a full GLEIF hierarchy
-      in one pass
-- [ ] Per-party credential override: allow each =PartyProvisionPage= entry to
-      override the shared username/password with per-party credentials
-- [ ] Async wizard progress: switch =provision-parties= to async for hierarchies
-      > 20 parties — return =workflow_id= immediately and poll
-      =workflow.v1.status= from the wizard progress page
-
-*** TODO Financial workflows: trade-expiry and barrier-event             :code:
-
-Extend =ores.workflow= with the first two financial workflow types, deferred
-from the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 5).
+This pull request introduces the ores.workflow component, providing the
+foundational infrastructure for saga-pattern workflow orchestration. Changes
+include SQL schema definitions for tracking workflow instances and steps,
+Row-Level Security policies, and the initial C++ implementation of domain
+entities and repositories. Review feedback highlights critical compilation
+errors in the mapper logic due to timestamp type mismatches. Improvements were
+also suggested to enhance type safety by utilizing the workflow_status enum and
+to strengthen database queries by explicitly incorporating tenant filtering.
 
 ***** Tasks
 
-- [ ] Implement =trade-expiry= workflow executor:
-      - Step 1: =trading.v1.trades.expire= ={ trade_id }=
-      - Step 2: =risk.v1.positions.update= ={ trade_id }=
-      - Step 3: =reporting.v1.runs.trigger-pnl= ={ party_id, date }=
-      - Step 4: =scheduler.v1.jobs.remove= ={ trade_id }=
-      - Compensation: =trading.v1.trades.reinstate= on Step 1 failure
-- [ ] Implement =barrier-event= workflow executor:
-      - Step 1: =trading.v1.trades.apply-barrier-event= ={ trade_id, event_type }=
-      - Step 2: =risk.v1.greeks.recompute= ={ trade_id }=
-      - Step 3: =reporting.v1.runs.trigger= ={ party_id }=
-- [ ] Register both executors in workflow service wiring
-- [ ] Integration tests for both workflows (happy path + compensation)
-*** TODO Qt: instrument creation in TradeDetailDialog                  :code:
+- [X] [workflow] Add ores.workflow SQL schema and C++ component scaffold
+- [X] [workflow,sql] Fix FK constraint syntax: ADD CONSTRAINT has no IF NOT EXISTS
+- [X] [workflow,codegen] Fix timestamptz handling in non-temporal entity/mapper/repo templates
+- [X] [workflow,codegen] Remove non-existent ores.comms.lib from component scaffold
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/611][PR #611]]
 
-When a trade is created in =TradeDetailDialog=, the instrument tabs are hidden
-and no instrument can be entered. This is because instruments are currently only
-loaded asynchronously from an existing server record. The standalone per-family
-instrument dialogs (which previously allowed direct instrument creation) have
-been removed as part of the unified-dialog plan.
+*** COMPLETED Add Commodity and BondOption golden roundtrip tests      :code:
+    :PROPERTIES:
+    :PR_NUMBER: 612
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/612
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-30T22:26:24Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 22:20]--[2026-03-30 Mon 22:40] =>  0:20
+    :END:
 
-The fix is to reveal the instrument tabs in create mode once the user selects a
-=product_type= (via the trade type field or a new family selector combo), and to
-send a =save_*_instrument_request= for the new instrument before the
-=save_trade_request= on first save.
-
-Affects all instrument families: FX (PR 1), Swap/Rates (PR 2), Bond + Credit
-(PR 3), Equity + Commodity (PR 4), Composite (PR 5), Scripted (PR 6).
+This pull request introduces a suite of golden file roundtrip tests for
+BondOption and various Commodity instruments, including Swaps, Forwards,
+Options, Average Price Options, Option Strips, Swaptions, and Variance Swaps. It
+adds several XML golden data files and two new C++ test files that utilize the
+Catch2 framework to verify XSD serialization fidelity by comparing canonical
+saved data against the provided golden files. I have no feedback to provide.
 
 ***** Tasks
 
-- [ ] Add a "Product Type" selector (QComboBox) to the General tab that maps to
-      =trade.product_type=; pre-populate with all known families
-- [ ] In create mode: show the relevant instrument tabs when a product type is
-      selected (hide them when none is selected)
-- [ ] On save in create mode: if instrument tabs are visible, send the
-      appropriate =save_*_instrument_request= first, then use the returned
-      instrument ID to populate =trade.instrument_id= before sending
-      =save_trade_request=
-- [ ] Handle save failure for the new instrument (surface error, do not save
-      the trade)
-- [ ] Apply to all six instrument families as each PR is merged
+- [X] [ore] Add Commodity and BondOption golden roundtrip tests (Phase 14)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/612][PR #612]]
 
-*** TODO NATS-based health for all services: HTTP, WT and compute wrapper :code:
+*** COMPLETED Add Credit and Equity golden roundtrip tests             :code:
+    :PROPERTIES:
+    :PR_NUMBER: 613
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/613
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-30T23:04:58Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 23:15]--[2026-03-30 Mon 23:35] =>  0:20
+    :END:
 
-Currently =ores.http.server=, =ores.wt.service=, and =ores.compute.wrapper=
-do not publish NATS heartbeats, so the Service Dashboard can only show them
-as "Running" (process-alive via the controller) rather than "Online"
-(confirmed healthy via NATS telemetry). All services should be first-class
-NATS participants so that a single, uniform health signal is used across the
-board.
-
-***** Background
-
-The three services that are not NATS-based:
-
-- =ores.http.server= — REST gateway; no NATS messaging today.
-- =ores.wt.service= — Wt web-UI server; no NATS messaging today.
-- =ores.compute.wrapper= — Grid worker node; communicates directly with the
-  compute service over NATS work/result subjects, but does not publish a
-  standard heartbeat and has no service identity in the NATS namespace.
-
-***** Scope
-
-- =ores.http.server=: add NATS connectivity and publish a standard
-  =service_heartbeat_message= every 15 s via =heartbeat_publisher=. Register
-  the service in the NATS subject namespace under =ores.http.server=.
-
-- =ores.wt.service=: same as above — connect to NATS and publish heartbeats.
-
-- =ores.compute.wrapper=: register each replica as a named NATS participant.
-  Publish heartbeats including the replica index so the controller can track
-  each worker individually. The existing compute work/result subjects are
-  unaffected.
+This pull request introduces a comprehensive suite of golden file roundtrip
+tests for Credit and Equity financial instruments. It includes a large
+collection of XML data files representing various trade types—such as Credit
+Default Swaps, Equity Options, and Risk Participation Agreements—alongside two
+new C++ test files. These tests verify the fidelity of XSD serialization by
+loading example trades into a portfolio object and comparing the resulting
+canonicalized XML against the established golden datasets. I have no feedback to
+provide.
 
 ***** Tasks
 
-- [ ] =ores.http.server=: add NATS client + heartbeat_publisher (mirrors
-      pattern in all domain services)
-- [ ] =ores.wt.service=: same
-- [ ] =ores.compute.wrapper=: add NATS heartbeat per replica; include
-      replica index and host-id in heartbeat payload
-- [ ] Update Service Dashboard: remove "Running" fallback path once all
-      services send heartbeats; "Online" becomes the single source of truth
-- [ ] Update =controller_service_definitions_populate.sql=: remove custom
-      args_templates for http/wt/wrapper once they no longer need to diverge
-      from the default
+- [X] [ore] Add Credit and Equity golden roundtrip tests (Phase 15+16)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/613][PR #613]]
 
-*** TODO Trade-aware market data filtering for report execution        :code:
+*** COMPLETED Add Exotic, Hybrid, and Scripted instruments golden roundtrip tests :code:
+    :PROPERTIES:
+    :PR_NUMBER: 615
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/615
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T00:25:31Z
+    :TIME_ESTIMATE: 1h 02m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 23:58]--[2026-03-31 Tue 01:00] =>  1:02
+    :END:
 
-#+begin_quote
-The report execution workflow currently fetches all market data series for the
-tenant when gathering market data (Phase 3.5). This is correct but wasteful:
-a portfolio of interest rate swaps only needs yield curves and fixings, not
-FX vol surfaces or commodity curves.
-
-Implement trade-aware market data derivation: given the trade portfolio
-gathered in step 0, determine which market data series are actually required
-for the ORE computation. This requires inspecting trade types, currencies,
-underliers, and the analytics flags in risk_report_config to build a
-precise list of required series types, currencies, and tenors.
-#+end_quote
-
-***** Background
-
-The report execution pipeline gathers data in stages. Step 0 (gather_trades)
-produces a MsgPack blob in object storage containing all trades and
-instruments in scope. Step 1 (gather_market_data) currently fetches all
-tenant market data because we lack the logic to derive requirements from
-the trade portfolio.
-
-ORE (Open Source Risk Engine) requires specific market data for each trade
-type:
-- Interest rate swaps: discount curves, forecast curves, fixings
-- FX forwards/options: FX spot rates, FX vol surfaces
-- Credit default swaps: default probability curves, recovery rates
-- Equity options: equity spot prices, equity vol surfaces
-- Commodities: commodity price curves
-
-The mapping from trade type → required market data is ORE-domain knowledge
-that belongs in =ores.ore= (not in =ores.reporting=).
+This pull request introduces a comprehensive suite of golden file roundtrip
+tests for exotic, hybrid, and scripted financial instruments, along with the
+corresponding reference XML datasets. The tests validate XSD serialization
+fidelity by comparing canonicalized output against stored golden files. Feedback
+was provided regarding the automatic bootstrapping mechanism in the test logic;
+it is recommended to make the creation of missing golden files an explicit
+opt-in to prevent accidental data generation or silent failures in CI/CD
+environments.
 
 ***** Tasks
 
-- [ ] Design a =market_data_requirements= struct that captures the set of
-      required series types, currency pairs, and tenors
-- [ ] Implement =derive_market_data_requirements(trades, risk_report_config)=
-      in =ores.ore= that inspects the trade portfolio and analytics flags
-- [ ] Add a NATS request/reply API for market data derivation so the
-      reporting service can call it without pulling in ORE domain logic
-- [ ] Update =gather_market_data= step to use derived requirements instead
-      of fetching everything
-- [ ] Add unit tests with representative trade portfolios (IR swaps, FX,
-      credit, equity, commodity) verifying correct market data derivation
+- [X] [ore] Add golden roundtrip tests for Exotic, Hybrid, and Scripted instruments (Phase 17 Final)
+- [X] [ore] Remove automatic golden file bootstrapping from all golden tests
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/615][PR #615]]
 
-*** TODO Scheduler: complete Qt UI and promote to top-level menu          :code:
+*** COMPLETED Fix MSYS2 path mangling of openssl -subj on Windows     :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 616
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/616
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T01:06:20Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 01:10]--[2026-03-31 Tue 01:30] =>  0:20
+    :END:
 
-*Background*
-
-The scheduler backend (=ores.scheduler.*=) is fully implemented: =job_definition=,
-=job_instance=, =job_status=, =cron_expression=, =cron_scheduler=, and
-=scheduler_loop= are all present. On the Qt side only =JobDefinitionController=
-exists, and it is wired into =Reporting > &Job Definitions=.
-
-This is architecturally wrong on two counts:
-
-1. *Wrong menu placement*: scheduling is a cross-domain concern. It will drive
-   report runs, trade expiry, housekeeping jobs, data archival, cache
-   invalidation, and any future scheduled workflow. Placing it under Reporting
-   implies it only exists to schedule reports.
-
-2. *Missing UI*: =job_instance= (the execution record) has no Qt controller,
-   window, or detail dialog. Users can define schedules but cannot see what ran,
-   when, whether it succeeded, or inspect its output.
-
-*Target state*
-
-A dedicated top-level =&Scheduler= menu replaces the =Reporting > &Job Definitions=
-entry:
-
-#+begin_example
-&Scheduler
-├── &Job Definitions        ← move from Reporting > Job Definitions
-├── &Job Instances          ← new: execution history per job
-├── ─────
-└── &Monitor                ← new: live view of running/queued jobs and
-                                   next-fire times (analogous to Service Dashboard)
-#+end_example
-
-=Job Definitions= and =Job Instances= follow the same controller/MDI window/detail
-dialog/history dialog pattern used throughout the application.
-
-=Scheduler Monitor= is a singleton MDI window (similar to =ServiceDashboardMdiWindow=)
-showing: currently running jobs, queue depth, next scheduled fire time per job,
-and last execution status per job. Auto-refreshes on a configurable timer.
-
-*What already exists*
-
-| Layer                | Exists                                               | Missing                             |
-|----------------------+------------------------------------------------------+-------------------------------------|
-| Backend API          | =job_definition=, =job_instance=, =job_status=,      |                                     |
-|                      | =cron_expression= domain types + JSON/table I/O      |                                     |
-| Backend service      | =cron_scheduler=, =scheduler_loop=,                  |                                     |
-|                      | =job_definition_service=,                            |                                     |
-|                      | =job_definition_handler=,                            |                                     |
-|                      | =job_instance_repository=                            |                                     |
-| NATS protocol        | =scheduler_protocol.hpp=                             | =list_job_instances= endpoint        |
-|                      |                                                      | =get_scheduler_status= endpoint      |
-| Qt                   | =JobDefinitionController=,                           | =JobInstanceController=              |
-|                      | =JobDefinitionMdiWindow=,                            | =JobInstanceMdiWindow=               |
-|                      | =JobDefinitionDetailDialog=,                         | =JobInstanceDetailDialog=            |
-|                      | =JobDefinitionHistoryDialog=                         | =SchedulerMonitorMdiWindow=          |
-|                      |                                                      | =SchedulerPlugin= (new plugin)       |
-
-*Scope*
-
-This story covers the full stack: any missing NATS endpoints, all missing Qt
-widgets, relocation of =JobDefinitionController= from =ComputePlugin= to the new
-=SchedulerPlugin=, and the new =&Scheduler= top-level menu.
+This pull request modifies build/scripts/generate_nats_certs.sh to prevent path
+conversion issues in MSYS2/Git Bash on Windows by exporting MSYS_NO_PATHCONV and
+MSYS2_ARG_CONV_EXCL. Feedback suggests that these global exports might interfere
+with other path conversions required for native Windows binaries and recommends
+using more targeted approaches, such as prefixing specific commands or using
+escape sequences.
 
 ***** Tasks
 
-- [ ] NATS: add =scheduler.v1.job-instances.list= request/response to
-      =ores.scheduler.api/messaging/scheduler_protocol.hpp=; implement handler
-      in =ores.scheduler.core=
-- [ ] NATS: add =scheduler.v1.status= request/response (queue depth, running
-      count, next-fire map per job); implement handler
-- [ ] Qt: =ClientJobInstanceModel= — table model wrapping =job_instance= list
-- [ ] Qt: =JobInstanceMdiWindow= — list view of instances with status badges,
-      start time, duration, exit code
-- [ ] Qt: =JobInstanceDetailDialog= — detail view of a single instance
-      (cron expression, trigger time, log excerpt if available)
-- [ ] Qt: =SchedulerMonitorMdiWindow= — singleton live view; auto-refresh
-      timer; shows per-job: last run status, next fire time, running count
-- [ ] Qt: =SchedulerPlugin= — new plugin in =ores.qt.compute=; owns
-      =JobDefinitionController=, =JobInstanceController=,
-      =SchedulerMonitorController=; creates =&Scheduler= menu; contributes
-      no toolbar actions (scheduler is not a daily-ops toolbar item)
-- [ ] Qt: remove =Job Definitions= from =ComputePlugin::create_menus=
-      (=Reporting= menu); delete the entry from =Reporting=
-- [ ] Qt: register =SchedulerPlugin= in =PluginRegistry= in the correct
-      position so =&Scheduler= appears between =&Reporting= and =&System=
-- [ ] Update =doc/analysis/qt-menu-analysis.org= to reflect the new structure
+- [X] [build] Fix MSYS2 path mangling of openssl -subj on Windows
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/616][PR #616]]
+
+*** COMPLETED Add provision_parties_workflow executor                  :code:
+    :PROPERTIES:
+    :PR_NUMBER: 614
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/614
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T01:39:06Z
+    :TIME_ESTIMATE: 2h 12m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-30 Mon 23:53]--[2026-03-31 Tue 02:05] =>  2:12
+    :END:
+
+This pull request introduces a saga-based workflow system for provisioning
+parties and their associated IAM accounts. It includes the NATS messaging
+infrastructure, repository updates for tracking workflow instances and steps,
+and a concrete implementation of the provision_parties_workflow. Feedback
+focuses on improving robustness by adding exception handling in the NATS handler
+and UUID parsing, optimizing the random generator usage, and adhering to
+established database transaction patterns.
+
+***** Tasks
+
+- [X] [workflow] Add provision_parties_workflow executor
+- [X] [workflow] Address review comments on provision_parties_workflow
+- [X] [workflow] Fix missing using namespace ores::logging in workflow_handler
+- [X] [workflow] Fix warning -> warn severity level in workflow_handler
+- [X] [workflow] Fix logging namespace scope in provision_parties_workflow
+- [X] [workflow] Qualify ores::logging::error to avoid shadowing by error()
+- [X] [workflow] Rename error() to failure_reason(); fix rfl serialization
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/614][PR #614]]
+
+*** COMPLETED Per-party status trigger, correlation IDs, PartyProvisionPage :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 619
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/619
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T08:53:17Z
+    :TIME_ESTIMATE: 1h 34m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 02:56]--[2026-03-31 Tue 04:30] =>  1:34
+    :END:
+
+This pull request replaces the global party_setup_mode flag with a per-party
+Inactive status to trigger the provisioning wizard and introduces a
+Nats-Correlation-Id header for distributed tracing across services. Feedback was
+provided regarding the markPartyActive implementation in the Qt client,
+specifically concerning the hardcoded limit on party fetching, synchronous UI
+blocking, and lack of error propagation. Additionally, the principal derivation
+logic in the tenant provisioning wizard was noted as fragile due to potential
+undefined behavior in character conversion and insufficient sanitization of
+special characters.
+
+***** Tasks
+
+- [X] [iam,qt] Replace party_setup_mode flag with per-party status check
+- [X] [nats,workflow] Add correlation ID infrastructure
+- [X] [qt,workflow] Replace AccountSetupPage with PartyProvisionPage
+- [X] [qt] Address review comments on provisioning wizards
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/619][PR #619]]
+
+*** COMPLETED Add ORE instrument dispatch pipeline                     :code:
+    :PROPERTIES:
+    :PR_NUMBER: 618
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/618
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T08:53:30Z
+    :TIME_ESTIMATE: 2h 35m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 01:50]--[2026-03-31 Tue 04:25] =>  2:35
+    :END:
+
+This pull request implements the foundational import pipeline wire-up and the
+credit instrument mapper as part of the ORE Trading Instrument Support plan. It
+introduces a unified `map_instrument` dispatch mechanism using a `std::variant`
+and extends the bond mapper to include options and total return swaps. Feedback
+focuses on enhancing the robustness of the import process by adding exception
+handling for data conversions and ensuring higher fidelity in reverse mappers
+for `CreditLinkedSwap` and `BondTRS` by correctly reconstructing legs from
+domain data.
+
+***** Tasks
+
+- [X] [doc] Add ORE trading instrument support plan and sprint backlog updates
+- [X] [ore] Phase 1: wire instrument dispatch into import pipeline
+- [X] [ore] Phase 2: add credit instrument mapper and Thing 3 tests
+- [X] [trading,ore] Add BondOption and BondTRS mapper support (Phase 3)
+- [X] [ore] Address PR review comments
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/618][PR #618]]
+
+*** COMPLETED Add ORE market data file types                           :code:
+    :PROPERTIES:
+    :PR_NUMBER: 617
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/617
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T11:13:46Z
+    :TIME_ESTIMATE: 1h 48m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 08:07]--[2026-03-31 Tue 09:55] =>  1:48
+    :END:
+
+This pull request introduces Phase 1 of the ORE market data file support, adding
+lightweight structs, a parser, a serializer, and comprehensive round-trip tests,
+while also fixing a timestamp conversion in the database repository. Feedback
+focuses on improving code quality and performance by adding missing standard
+library headers, utilizing std::from_chars for allocation-free parsing, removing
+redundant line numbers from exception messages, and simplifying date formatting
+with C++20 chrono format specifiers.
+
+***** Tasks
+
+- [X] [doc] Add plan for ORE market data file types (Phase 1 ores.ore)
+- [X] [doc] Update market data plan: both file types use both date formats; full fixture inventory
+- [X] [ores.ore] Phase 1: add market_datum and fixing structs
+- [X] [ores.ore] Phase 2: add market data parser
+- [X] [ores.ore] Phase 3: add market data serializer
+- [X] [ores.ore] Phase 4: add market data parser unit tests and roundtrip tests
+- [X] [ores.database] Fix rfl::Timestamp API change: .get() → .tm()
+- [X] [ores.ore] Address review comments on market data parser and serializer
+- [X] [ores.platform,ores.ore] Move date parsing/formatting into ores.platform
+- [X] [ores.ore] Handle comma-delimited market data files; add Example_61 fixtures
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/617][PR #617]]
+
+*** COMPLETED Display provision correlation ID on tenant  summary      :code:
+    :PROPERTIES:
+    :PR_NUMBER: 621
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/621
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T11:56:55Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 09:35]--[2026-03-31 Tue 09:55] =>  0:20
+    :END:
+
+This pull request updates the project roadmap documentation to reflect the
+completion of Phase 2, Phase 3, and the Correlation ID infrastructure, while
+deferring Phases 4 and 5. It also implements the display of the Correlation ID
+in the TenantProvisioningWizard UI by capturing it from the provisioning
+response and showing it on the summary page for cross-referencing logs. I have
+no feedback to provide.
+
+***** Tasks
+
+- [X] [qt] Display provision correlation ID on tenant setup summary page
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/621][PR #621]]
+
+*** COMPLETED Add equity and FX exotic instrument mappers              :code:
+    :PROPERTIES:
+    :PR_NUMBER: 620
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/620
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T12:12:06Z
+    :TIME_ESTIMATE: 1h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 11:00]--[2026-03-31 Tue 12:20] =>  1:20
+    :END:
+
+This pull request implements mapping support for equity instruments and expands
+FX instrument mapping to include exotic types such as barriers, digitals, and
+accumulators. It introduces the equity_instrument_mapper and updates the unified
+trade dispatch logic, supported by new round-trip fidelity tests. Review
+feedback highlights several areas for improvement, including the need to handle
+character escaping in manual JSON construction, the requirement to throw
+exceptions instead of using silent defaults for unrecognized mapping types, and
+the correction of reverse mapping logic for basket-based equity products to
+prevent data loss.
+
+***** Tasks
+
+- [X] [trading,ore] Add equity instrument mapper (Phases 4 and 5)
+- [X] [trading,ore] Add FX exotic and equity instrument domain model (Phases 4-6)
+- [X] [trading,ore] Address PR review comments on equity and FX mapper
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/620][PR #620]]
+
+*** COMPLETED Add commodity, scripted and composite instrument mappers :code:
+    :PROPERTIES:
+    :PR_NUMBER: 624
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/624
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T15:19:14Z
+    :TIME_ESTIMATE: 1h 28m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 14:02]--[2026-03-31 Tue 15:30] =>  1:28
+    :END:
+
+This pull request introduces instrument mappers for commodity, composite, and
+scripted trades to facilitate mapping between ORE XML and ORES domain types,
+including corresponding round-trip tests and updates to the unified trade
+mapper. Feedback highlights several issues with reverse mapping implementations,
+including lossy data reconstruction in scripted trades, hardcoded currency
+values in composite trades, and stubbed methods for multi-leg options.
+
+***** Tasks
+
+- [X] [trading,ore] Add commodity, scripted and composite instrument mappers (Phases 7-8)
+- [X] [ore] Address PR #624 review comments on composite/scripted reverse mappers
+- [X] [ore] Fix unmapped_type_is_monostate test for Phase 8
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/624][PR #624]]
+
+*** COMPLETED ORE market data domain model — DB schema and C++ CDM     :code:
+    :PROPERTIES:
+    :PR_NUMBER: 623
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/623
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T15:20:49Z
+    :TIME_ESTIMATE: 1h 46m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 13:04]--[2026-03-31 Tue 14:50] =>  1:46
+    :END:
+
+This pull request implements the ORE Market Data Domain Model, introducing a new
+C++ API project for domain entities and a corresponding database schema using
+PostgreSQL and TimescaleDB. The changes include the definition of market series,
+observations, and fixings with bitemporal history and multi-tenancy isolation.
+Review feedback identifies a discrepancy where the "performed_by" field in the
+C++ model is missing from the database schema and suggests improving the
+robustness of the "std::chrono::year_month_day" date parsing logic with better
+validation and locale handling.
+
+***** Tasks
+
+- [X] [sql,codegen] Add ores.marketdata database schema (Phase 1)
+- [X] [marketdata] Add ores.marketdata.api C++ CDM (Phase 2)
+- [X] [sql] Fix hypertable soft-delete: replace rules with BEFORE DELETE triggers
+- [X] [sql,utility] Address PR review comments
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/623][PR #623]]
+
+*** COMPLETED ORE key decomposition and database repository            :code:
+    :PROPERTIES:
+    :PR_NUMBER: 627
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/627
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T22:11:36Z
+    :TIME_ESTIMATE: 1h 56m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 18:49]--[2026-03-31 Tue 20:45] =>  1:56
+    :END:
+
+This pull request implements the core infrastructure for market data storage and
+ORE key decomposition. It introduces the ores.marketdata.core project, providing
+database entities, mappers, and repositories for market series, observations,
+and fixings, along with synthetic data generators in ores.marketdata.api. The
+ores.ore library is updated with a series_key_registry to structure ORE keys
+during parsing and ensure lossless reconstruction during serialization. I have
+no feedback to provide.
+
+***** Tasks
+
+- [X] [ore] Add series key registry and key decomposition (Phase 3)
+- [X] [marketdata] Add Phase 4 database repository (ores.marketdata.core)
+- [X] [marketdata] Fix rfl year_month_day reflector visibility in core tests
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/627][PR #627]]
+
+*** COMPLETED Add remaining instrument mappers and roundtrip tests     :code:
+    :PROPERTIES:
+    :PR_NUMBER: 625
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/625
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T20:29:38Z
+    :TIME_ESTIMATE: 2h 43m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 17:27]--[2026-03-31 Tue 20:10] =>  2:43
+    :END:
+
+This pull request implements forward and reverse mapping for several instrument
+types, including BondRepo, TotalReturnSwap, ContractForDifference, and various
+barrier and scripted options, supported by a new round-trip test suite. The
+review feedback identifies issues in the reverse mapping implementations for
+EquityDoubleBarrierOption, EquityEuropeanBarrierOption, and DoubleDigitalOption,
+where fields such as upper barriers and underlyings are not being correctly
+reconstructed.
+
+***** Tasks
+
+- [X] [ore] Add remaining instrument mappers and roundtrip tests (Phase 10)
+- [X] [ore] Address PR #625 review comments
+- [X] [ore] Fix underlying_name → underlying_code in roundtrip test
+- [X] [ore] Add KnockOut/KnockIn barrier types to equity reverse mappers
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/625][PR #625]]
+
+*** COMPLETED Fix NATS cert generation on Windows                     :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 626
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/626
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T19:15:20Z
+    :TIME_ESTIMATE: 0h 28m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 18:27]--[2026-03-31 Tue 18:55] =>  0:28
+    :END:
+
+This pull request modifies the certificate generation script to handle MSYS2
+path conversion by using a double-slash prefix for OpenSSL subject strings.
+Feedback suggests replacing this workaround with the MSYS2_ARG_CONV_EXCL
+environment variable to ensure cross-platform consistency and avoid potentially
+malformed subject strings on non-Windows systems.
+
+***** Tasks
+
+- [X] [build] Fix NATS cert generation on Windows (MSYS path conversion)
+- [X] [build] Use MSYS2_ARG_CONV_EXCL instead of // subject prefix
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/626][PR #626]]
+
+*** COMPLETED Persist instrument data on ORE trade import              :code:
+    :PROPERTIES:
+    :PR_NUMBER: 628
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/628
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T21:43:50Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 21:40]--[2026-03-31 Tue 22:00] =>  0:20
+    :END:
+
+This pull request implements instrument data persistence during trade imports by
+updating the import structure and dispatching type-specific save requests.
+Feedback indicates that these requests lack error handling, potentially causing
+silent failures and UI inconsistencies. It is also suggested to replace generic
+`requires` expressions with type-specific `if constexpr` logic for patching
+instrument legs to maintain codebase consistency and compatibility.
+
+***** Tasks
+
+- [X] [qt] Persist instrument data on ORE trade import
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/628][PR #628]]
+
+*** COMPLETED Add workflow service, correlation IDs and  PartyProvisionPage UX fixes :code:
+    :PROPERTIES:
+    :PR_NUMBER: 622
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/622
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-03-31T22:03:48Z
+    :TIME_ESTIMATE: 7h 16m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 14:29]--[2026-03-31 Tue 21:45] =>  7:16
+    :END:
+
+This pull request introduces the `ores.workflow.service` microservice and
+standardizes correlation ID logging across IAM and Refdata handlers using a new
+`log_handler_entry` helper. It also updates the sprint backlog and enhances the
+`PartyProvisionPage` in the Qt client with auto-derived short codes and improved
+password UI. Feedback highlights critical syntax errors in namespace
+declarations within the new service, the need to avoid `using namespace`
+directives in headers to prevent namespace pollution, and a recommendation to
+sanitize user-provided strings when generating usernames in the client.
+
+***** Tasks
+
+- [X] [agile] Add three-level provisioning follow-on stories to sprint 16
+- [X] [agile] Close three-level provisioning plan
+- [X] [service,iam,refdata] Add correlation ID logging to all NATS handlers
+- [X] [iam,refdata] Fix missing using declaration for log_handler_entry
+- [X] [iam] Fix missing logging namespace in handler files
+- [X] [agile] Add distributed tracing / OpenTelemetry design story to sprint 16
+- [X] [qt] Fix PartyProvisionPage UX issues
+- [X] [workflow] Add ores.workflow.service scaffold and DB provisioning
+- [X] [sql] Pass workflow_service_user to setup_schema via setup_database.sh
+- [X] [workflow,codegen] Fix nats_configuration::make_options_description call
+- [X] [sql] Add workflow_service_user creation to recreate_database.sql
+- [X] [workflow,codegen] Fix service stub test to not reference missing domain/stub.hpp
+- [X] [nats,sql,codegen,workflow] Step 2f: service registry, ORES_DB_HOST, workflow NATS cert
+- [X] [qt] Replace PartyProvisionPage with GLEIF-based party structure setup
+- [X] [qt] Fix party organisation page using wrong bundle code
+- [X] [qt] Move counterparty/org setup out of tenant wizard; fix bundle code
+- [X] [sql] Create GLEIF-imported parties as Inactive to trigger party setup wizard
+- [X] [qt] Trigger party setup wizard after party picker dialog
+- [X] [qt] Skip party setup in provisioner when parties already exist from tenant wizard
+- [X] [qt] Rewrite PartyProvisioningWizard - remove all party creation logic
+- [X] [qt] Match counterparty dataset size labels to tenant provisioner
+- [X] [sql] Scope report definition name uniqueness to party, not tenant
+- [X] [sql] Add RLS validation to schema checker; wire reporting RLS into setup
+- [X] [assets] Add screenshot for v0.0.15
+- [X] [workflow] Fix invalid namespace syntax in ores.workflow.service.hpp
+- [X] [sql] Add null-bypass to reporting party isolation RLS policies
+- [X] [sql] Scope DQ publish idempotency checks to party, not tenant
+- [X] [qt] Pass party_id when publishing organisation bundle; fix party name display
+- [X] [agile] Add sprint 16 story: source report definitions from DQ
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/622][PR #622]]
+
+*** COMPLETED Fix NATS cert SAN generation on Windows                  :code:
+    :PROPERTIES:
+    :PR_NUMBER: 632
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/632
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T00:36:41Z
+    :TIME_ESTIMATE: 0h 54m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 00:36]--[2026-04-01 Wed 01:30] =>  0:54
+    :END:
+
+This pull request updates the `generate_nats_certs.sh` script to replace process
+substitution with a temporary file for the OpenSSL SAN extension, ensuring
+compatibility with Windows environments like MSYS2 and Git Bash. A review
+comment suggests adding error handling for the OpenSSL command to ensure that
+temporary files are cleaned up and failures are correctly propagated to the
+caller.
+
+***** Tasks
+
+- [X] [build] Fix NATS cert SAN on Windows (avoid process substitution)
+- [X] [build] Clean up SAN temp file on openssl failure
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/632][PR #632]]
+
+*** COMPLETED Add Nats-Session-Id header for per-session correlation   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 629
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/629
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T03:43:35Z
+    :TIME_ESTIMATE: 0h 50m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-03-31 Tue 23:25]--[2026-03-31 Tue 23:45] =>  0:20
+    CLOCK: [2026-04-01 Wed 01:20]--[2026-04-01 Wed 01:50] =>  0:30
+:END:
+
+This pull request introduces a session-level trace ID (Nats-Session-Id) to
+enable log aggregation of all requests within a single user session. The changes
+involve defining the new header, updating the nats_client to support and
+propagate the session ID, and modifying the Qt ClientManager to generate this ID
+upon login. Feedback suggests refactoring the with_session_id method to use the
+copy constructor for better maintainability and to ensure all internal state is
+correctly preserved.
+
+***** Tasks
+
+- [X] [nats/qt] Add Nats-Session-Id header for per-session log correlation
+- [X] [nats] Use copy constructor in with_* methods instead of manual field copy
+- [X] [iam/qt] Source Nats-Session-Id from IAM session record, not local UUID
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/629][PR #629]]
+
+*** COMPLETED Market data Service layer (ores.marketdata.service)      :code:
+    :PROPERTIES:
+    :PR_NUMBER: 631
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/631
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T03:43:45Z
+    :TIME_ESTIMATE: 1h 02m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 00:38]--[2026-04-01 Wed 01:40] =>  1:02
+    :END:
+
+This pull request implements the service layer for market data management,
+introducing the `ores.marketdata.service` component. It includes NATS messaging
+protocols, handlers, and service logic for managing market series, observations,
+and fixings, along with an import service for ORE-formatted data files. The
+review feedback identifies that several NATS handlers currently ignore filtering
+and pagination parameters (such as dates, offsets, and limits) defined in the
+messaging protocol. Additionally, there are recommendations to improve the
+import service by throwing exceptions for unknown series types instead of using
+silent defaults and optimizing UUID generation by reusing the generator on the
+stack.
+
+***** Tasks
+
+- [X] [marketdata] Add Phase 5 service layer (ores.marketdata.service)
+- [X] [marketdata] Address PR #631 review comments
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/631][PR #631]]
+
+*** COMPLETED Instrument-trade model refactor and portfolio export     :code:
+    :PROPERTIES:
+    :PR_NUMBER: 630
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/630
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T03:50:20Z
+    :TIME_ESTIMATE: 1h 58m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 02:47]--[2026-04-01 Wed 04:45] =>  1:58
+    :END:
+
+This pull request implements a new routing mechanism to link trades with their
+product-specific instrument extension tables using an `instrument_family`
+discriminator and `instrument_id` UUIDs. The changes span the database schema,
+domain models, and messaging protocols, including new endpoints for portfolio
+export and instrument retrieval. Feedback focuses on critical out-of-bounds
+access bugs in the trade repository's manual row parsing, thread-safety issues
+with a static UUID generator in the importer, and a significant performance
+concern regarding N+1 queries in the new portfolio export logic.
+
+***** Tasks
+
+- [X] [sql] Phase 1: add instrument_family routing to trades and instrument tables
+- [X] [trading] Phase 2: add instrument_family/instrument_id to domain + repository
+- [X] [ore][qt] Phase 3: generate independent instrument UUIDs in import pipeline
+- [X] [trading] Phase 4: add get_instrument_for_trade NATS endpoint
+- [X] [trading] Phase 5: add export_portfolio NATS endpoint
+- [X] [trading][ore] Fix review issues: row size guard and thread-safe UUID gen
+- [X] [ore] Update import tests for independent instrument identity
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/630][PR #630]]
+
+*** COMPLETED Fix nodiscard warnings in ImportTradeDialog instrument saves :code:
+    :PROPERTIES:
+    :PR_NUMBER: 633
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/633
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T03:50:42Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 04:25]--[2026-04-01 Wed 04:45] =>  0:20
+    :END:
+
+This pull request modifies ImportTradeDialog.cpp to silence nodiscard warnings
+by casting the return values of process_authenticated_request to void. The
+review feedback correctly identifies that this approach leads to silent failures
+for critical operations, as the success_count is incremented regardless of
+whether the request actually succeeded. It is recommended to check these return
+values to ensure the UI accurately reflects the outcome of the trade imports.
+
+***** Tasks
+
+- [X] [qt] Fix nodiscard warnings in ImportTradeDialog instrument saves
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/633][PR #633]]
+
+*** COMPLETED Replace ad-hoc status strings with FSM state UUIDs       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 636
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/636
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T11:55:27Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 09:55]--[2026-04-01 Wed 10:35] =>  0:40
+    :END:
+
+This pull request migrates the workflow status management from hardcoded strings
+and enums to a database-driven Finite State Machine (FSM). Key changes include
+the introduction of NATS protocols and services for querying FSM transitions,
+and the update of workflow instance and step database schemas to replace the
+status field with a state_id foreign key. A new fsm_state_map utility was also
+added to allow workflow services to resolve state names to UUIDs dynamically. I
+have no feedback to provide.
+
+***** Tasks
+
+- [X] [workflow] Replace ad-hoc status strings with FSM state UUIDs
+- [X] [marketdata] Fix flaky test: use sequential dates in market fixing generator
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/636][PR #636]]
+
+*** COMPLETED ORE portfolio export: exporter + Qt Open Instrument + Export XML :code:
+    :PROPERTIES:
+    :PR_NUMBER: 634
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/634
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T11:55:45Z
+    :TIME_ESTIMATE: 0h 55m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 09:50]--[2026-04-01 Wed 10:45] =>  0:55
+    :END:
+
+This pull request implements portfolio export functionality to ORE XML and
+enables opening linked instrument details directly from the trade list. Key
+changes include the addition of an export_portfolio method in the exporter
+class, corresponding unit tests, and UI integration in BookMdiWindow and
+TradeController. Feedback highlights the need to move XML serialization to a
+background thread to prevent UI freezes and to verify window existence after
+modal dialogs to avoid crashes. Furthermore, suggestions were made to optimize
+file writing by avoiding unnecessary string copies and to utilize complete
+instrument data from server responses to prevent redundant network requests.
+
+***** Tasks
+
+- [X] [ore] Add export_portfolio to ores.ore exporter (Phase 6)
+- [X] [qt] Add Open Instrument and Export to ORE XML actions (Phases 7+8)
+- [X] [ore] Fix missing using namespace for instrument mappers in exporter
+- [X] [qt] Address PR review comments for phases 7+8
+- [X] [build] Make ORE coverage check mandatory (--strict)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/634][PR #634]]
+
+*** COMPLETED Windows: replace strptime with portable std::get_time   :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 637
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/637
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T11:56:07Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 12:10]--[2026-04-01 Wed 12:50] =>  0:40
+    :END:
+
+This pull request replaces the POSIX-specific `strptime` function with a
+portable `parse_time` helper using `std::get_time` to improve cross-platform
+compatibility in tests. A review comment suggested enhancing this helper by
+explicitly setting the 'C' locale and adding a check to ensure the parsing
+operation succeeds, preventing silent failures during test execution.
+
+***** Tasks
+
+- [X] [platform] Fix Windows build: replace strptime with portable std::get_time
+- [X] [platform] Address review: explicit locale and REQUIRE in parse_time
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/637][PR #637]]
+
+*** COMPLETED Market Data MDI UI                                       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 635
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/635
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T13:02:53Z
+    :TIME_ESTIMATE: 2h 05m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 09:50]--[2026-04-01 Wed 11:55] =>  2:05
+    :END:
+
+This pull request implements the market data browsing UI, including list views
+for market series and index fixings, as well as detailed time-series views for
+observations and fixing history. It introduces several new Qt models and MDI
+window components, integrated via a new MarketDataController. Feedback focuses
+on correcting a case-sensitivity mismatch in the asset class filter and
+improving memory management by parenting item delegates to their respective
+table views.
+
+***** Tasks
+
+- [X] [qt] Phase 6: add Market Data MDI UI (series, observations, fixings)
+- [X] [qt] Fix incomplete QSize type in market model headers
+- [X] [qt] Fix incomplete QSize type in ClientMarketSeriesModel header
+- [X] [qt] Address PR #635 review comments
+- [X] [agile] Sprint 16: add asset class unification story with full reconciliation
+- [X] [qt] Fix CI build errors in market data windows
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/635][PR #635]]
+
+*** COMPLETED Asset class unification: product_type vs asset_class     :code:
+    :PROPERTIES:
+    :PR_NUMBER: 640
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/640
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T15:47:03Z
+    :TIME_ESTIMATE: 0h 30m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 14:20]--[2026-04-01 Wed 14:50] =>  0:30
+    :END:
+
+This pull request implements a wide-ranging rename of "instrument_family" to
+"product_type" across the trading domain, including SQL schemas, C++ domain
+models, NATS messaging, and the Qt client. This change clarifies the field's
+role as a structural routing discriminator, distinct from the asset class risk
+taxonomy, and aligns the system with FpML and ISDA CDM standards. A detailed
+design plan for asset class unification is also introduced. Review feedback
+suggests refining the trade mapper logic by adopting more idiomatic patterns for
+handling optional strings and reducing verbosity in type conversions.
+
+***** Tasks
+
+- [X] [doc] Asset class unification: design and conceptual model
+- [X] [trading] Rename instrument_family to product_type (FpML alignment)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/640][PR #640]]
+
+*** COMPLETED Source report definitions from DQ artefact table         :code:
+    :PROPERTIES:
+    :PR_NUMBER: 638
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/638
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-01T16:04:16Z
+    :TIME_ESTIMATE: 1h 42m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 12:53]--[2026-04-01 Wed 14:35] =>  1:42
+    :END:
+
+This pull request replaces the hardcoded report definitions in the party
+provisioning wizard with a dynamic, service-driven template system. It
+introduces a new report_definition_template domain model, a NATS-based messaging
+protocol for retrieving templates, and a backend service that queries these
+templates from a new database artefact table. The UI has been updated to
+asynchronously load and populate the report list from the reporting service.
+Additionally, the PR includes SQL schema definitions, publication functions, and
+seed data for 28 standard ORE analytics report definitions. I have no feedback
+to provide.
+
+***** Tasks
+
+- [X] [sql] Add ores_dq_report_definitions_artefact_tbl staging table
+- [X] [sql] Add ores_dq_report_definitions_publish_fn
+- [X] [sql] Register report_definitions artefact type in DQ pipeline
+- [X] [sql] Seed ore.report_definitions dataset with 28 ORE analytics artefacts
+- [X] [reporting.api] Add report_definition_template type and templates list protocol
+- [X] [reporting] Add NATS handler for report definition templates from DQ
+- [X] [qt] Load report definition templates from DQ API in provisioning wizard
+- [X] [sql] Register ORE Analytics catalog before dataset upsert
+- [X] [sql] Fix subject_area for ore.report_definitions dataset
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/638][PR #638]]
+
+*** COMPLETED Source report definitions from DQ and improve party picker :code:
+    :PROPERTIES:
+    :PR_NUMBER: 641
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/641
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-02T01:06:56Z
+    :TIME_ESTIMATE: 1h 00m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 21:35]--[2026-04-01 Wed 22:35] =>  1:00
+    :END:
+
+This pull request enhances the login and party selection process by introducing
+business center codes and party categories. The `PartyPickerDialog` has been
+significantly refactored to provide a more sophisticated interface that
+separates system and operational parties, adds filtering capabilities, and
+displays flag icons using an image cache. Review feedback highlights
+opportunities to optimize icon refresh logic, improve UI flexibility by removing
+fixed widths, increase sorting efficiency, and replace magic numbers with enums
+for better maintainability.
+
+***** Tasks
+
+- [X] [qt] Improve party picker: filter, system-party section, business centre + flags
+- [X] [qt] Redesign party picker: native radio buttons, two-column tree, robust flag icons
+- [X] [qt] Address PR review comments on PartyPickerDialog
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/641][PR #641]]
+
+*** COMPLETED Move Compute and Market Data menus into MainWindow.ui :code:
+    :PROPERTIES:
+    :PR_NUMBER: 642
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/642
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-02T23:50:35Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-02 Thu 23:30]--[2026-04-02 Thu 23:50] =>  0:20
+    :END:
+
+This pull request refactors the "Compute" and "Market Data" menus by moving
+their structural definitions and action properties from the MainWindow.cpp
+source file to the MainWindow.ui file. The C++ code has been updated to
+reference these UI-defined actions for icon assignment and signal-slot
+connections, which simplifies the programmatic menu setup. I have no feedback to
+provide.
+
+***** Tasks
+
+- [X] [qt] Move Compute and Market Data menus into MainWindow.ui
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/642][PR #642]]
+
+*** COMPLETED Import market.txt and fixings.txt in ORE import          :code:
+    :PROPERTIES:
+    :PR_NUMBER: 643
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/643
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T08:46:56Z
+    :TIME_ESTIMATE: 1h 08m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-02 Thu 23:47]--[2026-04-03 Fri 00:55] =>  1:08
+    :END:
+
+This pull request enables the automatic import of market data and fixings files
+located in the same directory as the trade XML file. The TradeController reads
+market.txt and fixings.txt and passes their contents to ImportTradeDialog, which
+now handles the market data import request in a background thread prior to
+importing trades. Review feedback suggests wrapping UI strings for translation,
+using std::move to optimize string transfers, providing UI feedback if the
+market data import fails, and moving file reading operations off the UI thread
+to maintain application responsiveness.
+
+***** Tasks
+
+- [X] [qt] Import market.txt and fixings.txt alongside ORE portfolio XML
+- [X] [qt] Fix ImportTradeDialog constructor call in BookMdiWindow
+- [X] [qt] Address review comments on market data import
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/643][PR #643]]
+
+*** COMPLETED Merge FX instrument into TradeDetailDialog               :code:
+    :PROPERTIES:
+    :PR_NUMBER: 639
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/639
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T08:47:44Z
+    :TIME_ESTIMATE: 7h 09m
+    :END:
+
+    :LOGBOOK:
+    CLOCK: [2026-04-01 Wed 13:00]--[2026-04-01 Wed 16:55] =>  3:55
+    CLOCK: [2026-04-02 Thu 23:20]--[2026-04-02 Thu 23:40] =>  0:20
+    CLOCK: [2026-04-02 Thu 23:41]--[2026-04-03 Fri 02:35] =>  2:54
+:END:
+
+This pull request refactors the instrument-trade data model to establish
+independent identities for instruments and initiates the unification of trade
+and instrument detail dialogs in the Qt client, starting with FX instruments.
+The changes involve schema refactoring, domain model updates, and the
+integration of FX-specific fields into the trade dialog while removing redundant
+standalone UI components. Review feedback suggests optimizing UUID generation in
+the import pipeline by reusing the generator and updating the design
+documentation to consistently reflect the more efficient instrument fetch
+protocol implemented in the code.
+
+***** Tasks
+
+- [X] [doc] Add plan for unified trade+instrument detail dialog
+- [X] [qt] Merge FX instrument into TradeDetailDialog (PR 1)
+- [X] [doc] Add completed instrument trade model and export plan
+- [X] [doc] Fix plan doc to match actual implementation
+- [X] [sql] Check environment roles exist before recreate_env proceeds
+- [X] [sql] Register ores.marketdata.service and harden DB scripts
+- [X] [qt] Redesign ORE import wizard to target books instead of portfolios
+- [X] [trading] Make fx_instrument.value_date nullable
+- [X] [ore] Extract import execution into OreImporter; report instrument errors
+- [X] [qt] Fix missing trade_protocol include in OreImportWizard
+- [X] [qt] Restore currency_protocol include in OreImportWizard
+- [X] [qt] Fix instrument_family -> product_type in TradeDetailDialog
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/639][PR #639]]
+
+*** COMPLETED Add generic object storage API and HTTP routes           :code:
+    :PROPERTIES:
+    :PR_NUMBER: 644
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/644
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T10:33:14Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 09:25]--[2026-04-03 Fri 10:05] =>  0:40
+    :END:
+
+This pull request replaces compute-specific storage endpoints with a generic
+S3-like object storage API, introducing the ores.storage component and
+implementing PUT, GET, and DELETE routes. A critical path traversal
+vulnerability was identified in the path resolution logic, where the object key
+is used to construct filesystem paths without validation.
+
+***** Tasks
+
+- [X] [storage] Add generic object storage API and replace compute-specific HTTP routes
+- [X] [storage] Fix path traversal vulnerability in resolve_path
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/644][PR #644]]
+
+*** COMPLETED Add calendar adjustment and market convention imports    :code:
+    :PROPERTIES:
+    :PR_NUMBER: 645
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/645
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T13:07:33Z
+    :TIME_ESTIMATE: 2h 14m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 10:41]--[2026-04-03 Fri 12:55] =>  2:14
+    :END:
+
+This pull request introduces mappers and domain models to support importing ORE
+XML calendar adjustments and various financial conventions (Zero, Deposit, Swap,
+OIS, FRA, IBOR, Overnight, FX, and CDS) into the ORES refdata domain. It
+includes normalization logic for business day conventions, day counters, and
+frequencies. Feedback focuses on ensuring that data mapping lookups throw
+exceptions for unknown values rather than using silent defaults, and improving
+consistency by using constants for audit fields across mappers.
+
+***** Tasks
+
+- [X] [ore,refdata] Add calendar adjustment import from ORE XML
+- [X] [ore,refdata] Add market conventions import from ORE XML
+- [X] [ore] Fix currencyCode conversion in conventions_mapper
+- [X] [ore] Address review comments on conventions and calendar mappers
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/645][PR #645]]
+
+*** COMPLETED Merge swap/rates instrument into TradeDetailDialog       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 647
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/647
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T15:47:52Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 15:35]--[2026-04-03 Fri 16:15] =>  0:40
+    :END:
+
+This pull request removes the standalone instrument management
+components—including the model, controller, and dedicated dialogs—and integrates
+swap and rates instrument support directly into the TradeDetailDialog. The
+updates include new UI tabs for swap core and rates extensions, as well as logic
+for asynchronous loading and saving of instrument data associated with trades.
+Review feedback identifies potential thread-safety issues in
+TradeDetailDialog.cpp where clientManager_ is accessed within background tasks,
+posing a risk of race conditions or use-after-free errors if the dialog is
+destroyed during execution.
+
+***** Tasks
+
+- [X] [qt] Merge swap/rates instrument into TradeDetailDialog (PR 2 of 6)
+- [X] [qt] Fix thread-safety in swap instrument background lambdas
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/647][PR #647]]
+
+*** COMPLETED Migrate compute grid to generic storage API              :code:
+    :PROPERTIES:
+    :PR_NUMBER: 646
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/646
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T15:48:12Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 15:35]--[2026-04-03 Fri 16:15] =>  0:40
+    :END:
+
+This pull request introduces a centralized compute_storage helper class to
+manage storage bucket names and keys for compute artifacts, replacing the
+previous buckets.hpp constants. The changes update the messaging layer and
+Qt-based UI components to use the new storage path structure and transition HTTP
+upload operations from POST to PUT. Review feedback suggests further adoption of
+the compute_storage helpers in the Qt UI code to replace manual string
+concatenation and recommends using QUrl::setPath for safer URL construction.
+
+***** Tasks
+
+- [X] [compute] Migrate compute grid to generic storage API
+- [X] [qt] Use compute_storage helpers in Qt dialogs for storage paths
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/646][PR #646]]
+
+*** COMPLETED Merge bond + credit instruments into TradeDetailDialog   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 649
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/649
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T23:02:51Z
+    :TIME_ESTIMATE: 1h 30m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 16:40]--[2026-04-03 Fri 18:10] =>  1:30
+    :END:
+
+This pull request refactors the management of bond and credit instruments by
+removing standalone controllers and dialogs, integrating their functionality
+directly into the TradeDetailDialog. While this consolidates the user interface,
+the current implementation introduces several critical bugs and regressions.
+Most notably, the workflow for creating new trades is broken because instrument
+tabs are hidden and data capture is bypassed for new instruments. Additionally,
+the logic incorrectly handles zero values for CDO tranche points, and there are
+significant usability regressions where combo boxes were replaced with line
+edits and helpful UI indicators were removed.
+
+***** Tasks
+
+- [X] [qt] Merge bond + credit instruments into TradeDetailDialog (PR 3 of 6)
+- [X] [qt] Address review comments on PR 649
+- [X] [agile] Add story: instrument creation in TradeDetailDialog
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/649][PR #649]]
+
+*** COMPLETED Unify asset class modelling                              :code:
+    :PROPERTIES:
+    :PR_NUMBER: 648
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/648
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-03T23:04:02Z
+    :TIME_ESTIMATE: 3h 12m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 16:13]--[2026-04-03 Fri 19:05] =>  2:52
+    CLOCK: [2026-04-03 Fri 23:40]--[2026-04-04 Sat 00:00] =>  0:20
+    :END:
+
+This pull request introduces dynamic asset class management by replacing
+hardcoded UI values with a data-driven approach. It implements a new reference
+data service, repository, and NATS protocol for fetching asset classes, and
+updates the Qt client to load this data asynchronously. Additionally, the
+trading domain and database schema have been extended to include an asset class
+field for trades, including necessary validation and indexing. One review
+comment suggests replacing a magic number in the trade repository with a named
+constant to improve code maintainability.
+
+***** Tasks
+
+- [X] [sql,trading,refdata,qt] Unify asset class modelling (phases 2-5)
+- [X] [agile,plans] Mark asset class Phase 1 done; close provisioning Phases 4-5
+- [X] [sql,trading] Replace raw-row trade queries with book-ID helpers + sqlgen
+- [X] [trading] Fix context type visibility in anonymous namespace helpers
+- [X] [qt] Fix AssetClassFetchResult to match wrap_async_fetch contract
+- [X] [sql] Fix asset class bootstrap bypass to be per-tenant
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/648][PR #648]]
+
+*** COMPLETED Add server-side ORE import via ores.ore.service          :code:
+    :PROPERTIES:
+    :PR_NUMBER: 650
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/650
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T08:50:53Z
+    :TIME_ESTIMATE: 3h 22m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-03 Fri 17:35]--[2026-04-03 Fri 18:20] =>  0:45
+    CLOCK: [2026-04-03 Fri 23:43]--[2026-04-04 Sat 02:20] =>  2:37
+    :END:
+
+This pull request transitions ORE import logic from the Qt client to a new
+server-side microservice, ores.ore.service, utilizing NATS for orchestration and
+a new ores.storage component for file management. The review identifies a
+critical path traversal vulnerability regarding request_id validation and
+high-severity memory concerns in the HTTP client when handling large tarballs.
+Additional recommendations include improving error checking in the archiver,
+replacing magic numbers with named constants in the workflow, and optimizing the
+performance and thread safety of UUID generation.
+
+***** Tasks
+
+- [X] [doc] Add server-side ORE import design plan
+- [X] [storage] Add storage_transfer, http_client and archiver helpers
+- [X] [ore.api] Add ores.ore.api component with protocol types and ore_storage helper
+- [X] [ore.service] Add ores.ore.service microservice (Phase 3)
+- [X] [qt] Switch OreImportWizard to server-side import via ores.ore.service (Phase 4)
+- [X] [ore.api,ore.service] Fix invalid namespace in codegen stub tests
+- [X] [storage][ore.service] Address PR review comments
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/650][PR #650]]
+
+*** COMPLETED Fix Windows CI packaging and stack overflow failures    :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 652
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/652
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T08:51:37Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 02:10]--[2026-04-04 Sat 02:30] =>  0:20
+    :END:
+
+This pull request modifies Windows build configurations to handle large cabinet
+files in WiX and increases the stack size for test executables to 8MB to prevent
+stack overflows during deep recursion in XML parsing. A review comment suggests
+refining the stack size flag application by using an MSVC-specific check instead
+of a generic Windows check to ensure compatibility with toolchains like MinGW.
+
+***** Tasks
+
+- [X] [windows] Fix Windows CI packaging and stack overflow failures
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/652][PR #652]]
+
+*** COMPLETED Merge equity + commodity instruments into TradeDetailDialog :code:
+    :PROPERTIES:
+    :PR_NUMBER: 651
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/651
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T10:43:12Z
+    :TIME_ESTIMATE: 2h 05m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 09:10]--[2026-04-04 Sat 11:15] =>  2:05
+    :END:
+
+This pull request refactors the management of equity and commodity instruments
+by removing standalone controllers and dialogs and integrating their
+functionality directly into the TradeDetailDialog. While this consolidation
+streamlines the trade entry process, several critical issues were identified.
+The current implementation fails to link the instrument_id to the trade when
+saving new instruments and prevents data entry for new trades due to incorrect
+tab visibility logic. Furthermore, the UI reactivity is hindered by the use of
+stale member variables in visibility checks, and the use of 0.0 as a sentinel
+value for optional fields poses a risk to data integrity.
+
+***** Tasks
+
+- [X] [qt] Merge equity + commodity instruments into TradeDetailDialog (PR 4 of 6)
+- [X] [qt] Fix stray }); in MainWindow.cpp after equity/commodity removal
+- [X] [qt] Fix equity/commodity extension tab visibility to read from widgets
+- [X] [iam] Fix flaky account generator duplicate username in tests
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/651][PR #651]]
+
+*** COMPLETED Merge composite instrument family into TradeDetailDialog :code:
+    :PROPERTIES:
+    :PR_NUMBER: 653
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/653
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T11:47:53Z
+    :TIME_ESTIMATE: 0h 25m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 11:30]--[2026-04-04 Sat 11:55] =>  0:25
+    :END:
+
+This pull request refactors the management of composite instruments by removing
+the standalone CompositeInstrumentController and its associated windows,
+integrating this functionality directly into the TradeDetailDialog. This allows
+for viewing and editing composite instrument details and legs within the trade
+interface. Feedback was provided regarding the need to trim whitespace from the
+trade type code and ensuring that instrument updates only occur for records
+already loaded from the server.
+
+***** Tasks
+
+- [X] [qt] Merge composite instrument family into TradeDetailDialog (PR5)
+- [X] [qt] Trim trade type code in updateCompositeInstrumentFromUi
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/653][PR #653]]
+
+*** COMPLETED Fix Windows build error in http_client path conversion   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 655
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/655
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T12:22:24Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 12:30]--[2026-04-04 Sat 12:50] =>  0:20
+    :END:
+
+This pull request updates the =http_client.cpp= file to use
+=path::string().c_str()= instead of =path::c_str()= when opening files for HTTP
+GET and PUT operations. This change ensures that the filesystem path is
+correctly converted to a standard string representation before being passed to
+the file opening method. I have no feedback to provide.
+
+***** Tasks
+
+- [X] [storage] Fix Windows build error in http_client path conversion
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/655][PR #655]]
+
+*** COMPLETED Merge scripted instrument family into TradeDetailDialog :code:
+    :PROPERTIES:
+    :PR_NUMBER: 654
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/654
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T13:01:13Z
+    :TIME_ESTIMATE: 0h 46m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 12:34]--[2026-04-04 Sat 13:20] =>  0:46
+    :END:
+
+This pull request refactors the management of scripted instruments by removing
+standalone controllers and MDI windows, integrating the functionality directly
+into the TradeDetailDialog. The changes include adding UI tabs for script
+definition and body, and implementing logic to load and save scripted
+instruments within the trade context. Feedback suggests improving error
+visibility in the UI when a scripted instrument fails to load and replacing a
+QComboBox with a QLineEdit for trade type codes to ensure consistency with
+existing UI patterns.
+
+***** Tasks
+
+- [X] [qt] Merge scripted instrument family into TradeDetailDialog (PR6)
+- [X] [qt] Address PR654 review comments: QLineEdit for script trade type, emit errorMessage on load failure
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/654][PR #654]]
+
+*** COMPLETED Windows: Fix stack flag syntax for Clang and WiX 2GB lib limit :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 656
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/656
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-04T19:52:04Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 19:15]--[2026-04-04 Sat 19:55] =>  0:40
+    :END:
+
+This pull request updates CMake configurations to handle linker stack sizes on
+Windows across different compiler drivers and restricts the installation of an
+internal static library to non-Windows platforms to avoid size limitations. The
+review feedback suggests using the idiomatic LINKER: prefix for stack size
+options to simplify the logic and recommends removing the installation rule for
+the internal library entirely for all platforms to maintain a cleaner build
+configuration.
+
+***** Tasks
+
+- [X] [windows] Fix stack flag syntax for Clang and WiX 2GB lib limit
+- [X] [windows] Switch MSVC debug info to ProgramDatabase (/Zi + /FS)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/656][PR #656]]
+
+*** COMPLETED Add service lifecycle controller and dashboard enhancements :code:
+    :PROPERTIES:
+    :PR_NUMBER: 657
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/657
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-05T13:00:47Z
+    :TIME_ESTIMATE: 7h 24m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-04 Sat 17:48]--[2026-04-04 Sat 20:50] =>  3:02
+    CLOCK: [2026-04-05 Sun 08:23]--[2026-04-05 Sun 12:45] =>  4:22
+    :END:
+
+This pull request introduces a new service controller component for ORE Studio,
+including database entities, repository layers, and NATS messaging handlers for
+managing service definitions, instances, and lifecycle events. It also updates
+the logging configuration to support replica-specific log files and adds a new
+dashboard UI in the Qt client. My feedback highlights concerns regarding the use
+of non-thread-safe time formatting, the necessity of explicit transaction
+management for single SQL statements, and the robustness of batch processing
+loops.
+
+***** Tasks
+
+- [X] [e2e] Register ores.ore.service in infrastructure
+- [X] [telemetry] Fix service heartbeat dashboard showing all Offline
+- [X] [controller] Add SQL schema for ores.controller service lifecycle management
+- [X] [controller] Scaffold ores.controller.api/core/service components
+- [X] [controller] Implement ores.controller.api, core, and service
+- [X] [logging,qt] Add replica index support and service detail panel
+- [X] [controller] Implement process supervisor with dependency-ordered service launch
+- [X] [controller] Fix process_entry build error: optional proc + boost fs path conversion
+- [X] [sql] Fix controller service definitions insert trigger: pass system tenant to change reason validator
+- [X] [controller] Manage all services: certs, TLS propagation, HTTP/WT/wrapper defs
+- [X] [qt,sql,controller] Service Dashboard UX overhaul: badge status, descriptions, Stop/Restart controls
+- [X] [qt,controller] Fix service dashboard badge rendering and status for non-telemetry services
+- [X] [controller] Gracefully stop all child processes on controller shutdown
+- [X] [scheduler] Fix job_instance insert for system jobs with null tenant/party
+- [X] [controller,sql] Unify replica/log args across all services
+- [X] [sql] Fix scheduler job instances RLS: add write policy and fix status constraint
+- [X] [database] Add DB reconnection to listener service and connection pool
+- [X] [telemetry,sql] Fix NATS monitor port and reduce poll failure log noise
+- [X] [agile] Add story: NATS-based health for HTTP, WT, and compute wrapper
+- [X] [review] Address PR #657 review comments and fix CI
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/657][PR #657]]
+
+*** COMPLETED Remove unused unistd.h include breaking Windows builds   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 658
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/658
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-05T21:31:04Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-05 Sun 19:25]--[2026-04-05 Sun 19:45] =>  0:20
+    :END:
+
+This pull request removes the unused #include <unistd.h> header from the
+process_supervisor.cpp file. There are no review comments to address, and I have
+no further feedback to provide.
+
+***** Tasks
+
+- [X] [controller] Remove unused unistd.h include breaking Windows builds
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/658][PR #658]]
+
+*** COMPLETED Generalise workflow engine and migrate existing sagas    :code:
+    :PROPERTIES:
+    :PR_NUMBER: 659
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/659
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-06T09:00:58Z
+    :TIME_ESTIMATE: 2h 43m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-05 Sun 19:22]--[2026-04-05 Sun 21:25] =>  2:03
+    CLOCK: [2026-04-06 Mon 08:15]--[2026-04-06 Mon 08:55] =>  0:40
+    :END:
+
+This pull request implements a generalized, event-driven workflow engine to
+orchestrate cross-service sagas, replacing synchronous implementations for party
+provisioning and ORE imports. The engine provides durability by persisting state
+and supporting startup recovery. Feedback identifies several critical logic
+errors, including compensation steps incorrectly triggering forward progress,
+missing tenant headers in compensation commands, and incomplete recovery logic.
+Additionally, a subject mismatch in report dispatching and a lack of JSON
+escaping for error messages were noted as significant issues requiring
+correction.
+
+***** Tasks
+
+- [X] [reporting,workflow] Add report pipeline plans and interim workflow sketch
+- [X] [workflow] Phase 1.1: DB schema additions + revert interim sync saga code
+- [X] [workflow] Phase 1.2-1.4: event-driven engine, definition registry, startup recovery
+- [X] [service] Phase 1.5: add publish_step_completion helper
+- [X] [workflow] Phase 2.1: event-driven provision_parties via workflow engine
+- [X] [workflow,ore] Phase 2.2: migrate ore_import saga to event-driven workflow engine
+- [X] [workflow,iam,service] Address PR #659 review findings
+- [X] [workflow] Create ores.workflow.api and move shared messaging types there
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/659][PR #659]]
+
+*** COMPLETED Add report execution workflow pipeline                   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 662
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/662
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-06T20:46:07Z
+    :TIME_ESTIMATE: 8h 00m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-06 Mon 11:15]--[2026-04-06 Mon 19:15] =>  8:00
+    :END:
+
+This pull request implements the initial phases of the Report Execution
+Workflow, introducing the workflow definition, messaging protocol, and the
+report_execution_handler for trade gathering and finalization. It also adds
+concurrency checks to the report trigger and establishes the risk_report_config
+domain model and repository. Feedback highlights several improvement
+opportunities in report_execution_handler.cpp, including optimizing trade
+fetching to avoid redundant NATS calls, addressing potential NATS message size
+limits when serializing large portfolios, ensuring robust error responses in
+NATS handlers, and refining the logic for cases where no explicit book or
+portfolio scope is defined.
+
+***** Tasks
+
+- [X] [doc] Add report execution workflow implementation plan
+- [X] [workflow,reporting] Phase 3.2: report execution protocol and workflow definition
+- [X] [reporting] Phase 3.1: fix trigger() with concurrency check and workflow dispatch
+- [X] [reporting] Phase 3.3: risk_report_config domain model and repository
+- [X] [reporting] Phase 3.4+3.7: report execution step handlers
+- [X] [storage,reporting] Use MsgPack + object storage for inter-step data
+- [X] [reporting] Address PR review: scope resolution and error handling
+- [X] [utility,storage] Add gzip compression primitives and use in blob transfer
+- [X] [sql,trading,reporting] Scope resolution via SQL functions, trade export to storage
+- [X] [reporting,sql] Empty scope fails report with clear error message
+- [X] [marketdata,reporting,workflow] Phase 3.5: gather market data step
+- [X] [reporting] Phase 3.6: persist report_input_bundle in assemble_bundle step
+- [X] [reporting,ore] Phase 3.8: prepare_ore_package step with stub body
+- [X] [reporting,compute] Phase 3.9: submit_compute step creates batch + workunits
+- [X] [compute] Phase 3.10: async batch-to-workflow bridge
+- [X] [reporting,workflow] Phase 3.11: collect_compute_results stub step
+- [X] [sql] Add missing drop scripts for report_input_bundles and workflow_batch_links
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/662][PR #662]]
+
+*** COMPLETED Add analytics pricing engine configuration               :code:
+    :PROPERTIES:
+    :PR_NUMBER: 663
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/663
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-06T23:59:45Z
+    :TIME_ESTIMATE: 5h 17m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-06 Mon 17:13]--[2026-04-06 Mon 22:30] =>  5:17
+    :END:
+
+This pull request introduces the 'analytics' component, which provides domain
+entities, repositories, and services for managing ORE pricing model
+configurations, products, and parameters. It also includes the necessary SQL
+schema definitions and NATS messaging protocols. My review identified several
+issues: NATS message handlers in the analytics component fail silently when
+decoding fails, which can lead to client timeouts; the 'find_config_by_name'
+service method performs inefficient in-memory filtering instead of leveraging
+database indexes; and the documentation contains a broken local file path
+reference.
+
+***** Tasks
+
+- [X] [analytics] Add pricing engine configuration database tables (Layer 1)
+- [X] [skills] Update component-creator skill with api/core/service split pattern
+- [X] [analytics] Add RLS policies and register analytics component in schema validator
+- [X] [analytics] Add ores.analytics.api component scaffold
+- [X] [analytics] Add ores.analytics.core component scaffold
+- [X] [analytics] Add ores.analytics.service component scaffold
+- [X] [analytics] Add domain types to ores.analytics.api
+- [X] [analytics] Add repositories and services to ores.analytics.core
+- [X] [analytics] Add messaging registrar and ores.analytics.service
+- [X] [analytics] Add eventing types, NATS protocols, handlers and wire service
+- [X] [codegen] Replace comms protocol templates with NATS-based templates
+- [X] [codegen] Add component_include/core support; update analytics models and regen
+- [X] [analytics] Add get_product_history and get_parameter_history to services
+- [X] [analytics] Address PR663 review comments
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/663][PR #663]]
+
+*** COMPLETED Data-driven trade type metadata                          :code:
+    :PROPERTIES:
+    :PR_NUMBER: 665
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/665
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T10:19:43Z
+    :TIME_ESTIMATE: 1h 03m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 09:37]--[2026-04-07 Tue 10:40] =>  1:03
+    :END:
+
+This pull request implements the initial phases of the data-driven refactor for
+the trade detail dialog by replacing string-based product type discriminators
+with a typed C++ enum. The changes include schema updates to the trade types
+table, the introduction of a NATS protocol for trade types, and the migration of
+domain models and mappers to use the new enum. Review feedback highlights
+concerns regarding the use of silent defaults for the product type in protocol
+structs and UI logic, which could mask bugs or violate mapping consistency
+rules.
+
+***** Tasks
+
+- [X] [trading,sql] Phase 1: data-driven trade type metadata
+- [X] [trading] Phase 2: NATS protocol for trade types
+- [X] [trading,ore,qt] Phase 3: codify product_type as a C++ enum
+- [X] [trading,qt] Replace product_type silent defaults with unknown sentinel
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/665][PR #665]]
+
+*** COMPLETED Add split-component codegen profiles and fix skill docs  :code:
+    :PROPERTIES:
+    :PR_NUMBER: 666
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/666
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T11:39:35Z
+    :TIME_ESTIMATE: 0h 57m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 10:53]--[2026-04-07 Tue 11:50] =>  0:57
+    :END:
+
+This pull request refactors the code generation workflow to support
+split-component architectures (api, core, and service) and automates file
+placement directly into the project tree, eliminating the previous manual copy
+step. It introduces new generation profiles, specialized CMake templates for
+each component type, and updates the generator logic to derive
+component-specific names. Feedback was provided regarding the fragility of the
+name derivation logic in the generator, specifically concerning nested component
+names and hardcoded prefixes.
+
+***** Tasks
+
+- [X] [codegen] Add split-component profiles for api/core/service scaffold
+- [X] [codegen] Update component-creator skill for new split profiles
+- [X] [codegen] Update skills to reflect profile-based generation behaviour
+- [X] [codegen] Fix fragile base_name derivation for split-component names
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/666][PR #666]]
+
+*** COMPLETED Add Analytics CRUD UI and restructure DQ project layout  :code:
+    :PROPERTIES:
+    :PR_NUMBER: 664
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/664
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T11:39:56Z
+    :TIME_ESTIMATE: 1h 46m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 09:24]--[2026-04-07 Tue 11:10] =>  1:46
+    :END:
+
+This pull request introduces a new Analytics module with associated domain
+models, repository entities, and Qt UI components for managing pricing engines
+and model configurations. It also refactors the Data Quality module and enhances
+the code generator to support combo box widgets in detail dialogs. Feedback
+highlights critical compilation errors in generated code where `setReadOnly` is
+incorrectly called on `QComboBox` widgets, and logic issues where primary key
+fields are not updated from the UI during record creation. Additionally, the
+reviewer recommends restoring detailed error messages for better diagnostics and
+extending the generator's validation logic to include static combo boxes.
+
+***** Tasks
+
+- [X] [analytics][qt] Add Analytics CRUD UI and fix performed_by in domain structs
+- [X] [dq] Eliminate ores.dq; merge badge/code_domain types into api and core
+- [X] [qt] Fix CI: stale comms protocol, UUID types, optional fields in analytics UI
+- [X] [qt] Address PR664 review: combo key fields, error messages, generator validation
+- [X] [qt] Fix CI: use QString::fromStdString for error_message in FetchResult
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/664][PR #664]]
+
+*** COMPLETED IInstrumentForm registry + per-family form widgets       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 668
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/668
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T14:08:58Z
+    :TIME_ESTIMATE: 2h 33m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 11:32]--[2026-04-07 Tue 14:05] =>  2:33
+    :END:
+
+This pull request refactors the instrument form handling in the
+TradeDetailDialog by introducing an IInstrumentForm interface and an
+InstrumentFormRegistry. This replaces the previous hardcoded, family-specific UI
+tabs with a dynamic, registry-based approach, significantly simplifying the
+dialog's maintenance and extensibility. I have no feedback to provide as this is
+a clean architectural improvement.
+
+***** Tasks
+
+- [X] [qt] Phase 4: IInstrumentForm interface + InstrumentFormRegistry
+- [X] [qt] Phase 4: extract FX into FxInstrumentForm
+- [X] [qt] Phase 4: extract Swap into SwapInstrumentForm
+- [X] [qt] Phase 4: extract Bond into BondInstrumentForm
+- [X] [qt] Phase 4: extract Credit into CreditInstrumentForm
+- [X] [qt] Phase 4: extract Equity into EquityInstrumentForm
+- [X] [qt] Phase 4: extract Commodity into CommodityInstrumentForm
+- [X] [qt] Phase 4: extract Composite and Scripted into IInstrumentForm subclasses
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/668][PR #668]]
+
+*** COMPLETED Add repository integration tests for all analytics entities :code:
+    :PROPERTIES:
+    :PR_NUMBER: 667
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/667
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T15:20:47Z
+    :TIME_ESTIMATE: 1h 03m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 14:32]--[2026-04-07 Tue 15:35] =>  1:03
+    :END:
+
+This pull request replaces legacy stub code with a comprehensive set of
+fictional data generators and repository tests for pricing engine types, model
+configurations, products, and parameters. The feedback identifies an opportunity
+to improve the test suite's robustness by using more specific assertions,
+specifically recommending an exact size check for retrieved product parameters
+to better validate repository filtering logic.
+
+***** Tasks
+
+- [X] [analytics] Add repository integration tests for all four analytics entities
+- [X] [analytics] Strengthen read_latest_for_product assertion to exact count
+- [X] [analytics] Fix CI failures: unique config names and real ORE engine type codes
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/667][PR #667]]
+
+*** COMPLETED Form map, trade type flags, and create-mode instrument   :code:
+    :PROPERTIES:
+    :PR_NUMBER: 669
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/669
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T16:10:03Z
+    :TIME_ESTIMATE: 0h 52m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 15:33]--[2026-04-07 Tue 16:25] =>  0:52
+    :END:
+
+This pull request introduces a mechanism to cache trade types and dynamically
+update the instrument form based on the selected trade type in the
+TradeDetailDialog. Key changes include the addition of a trade type cache, a new
+`activateForm` helper, and logic to handle instrument form visibility during
+trade creation. Feedback highlights concerns regarding thread safety when
+accessing `clientManager_` in background threads, the need to coalesce rapid UI
+updates using a timer, the use of a magic number for fetch limits, and the
+importance of explicit error handling for failed data requests.
+
+***** Tasks
+
+- [X] [qt] Phase 5+6: form map, trade type flags, and create-mode instrument
+- [X] [qt] Address review comments on Phase 5+6
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/669][PR #669]]
+
+*** COMPLETED Extract ores.qt.api as shared framework library          :code:
+    :PROPERTIES:
+    :PR_NUMBER: 670
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/670
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-07T18:17:41Z
+    :TIME_ESTIMATE: 2h 52m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 14:33]--[2026-04-07 Tue 17:25] =>  2:52
+    :END:
+
+This pull request initiates the refactoring of the ores.qt monolith into a
+plugin-based architecture by extracting core framework components into a new
+shared library, ores.qt.api. The changes include the introduction of
+cross-platform visibility macros, the reorganization of project files, and
+updates to the CMake build system to handle the new library dependency. Feedback
+focuses on improving the robustness and maintainability of the CMake
+configuration, specifically regarding path definitions, source file enumeration,
+and include directory management.
+
+***** Tasks
+
+- [X] [analysis] Add Qt plugin architecture analysis for ores.qt split
+- [X] [analysis] Update Qt architecture to use QPluginLoader dynamic plugins
+- [X] [analysis] Use boost/config.hpp for cross-platform export macros
+- [X] [analysis] Add Qt plugin refactor implementation plan
+- [X] [qt.api] Extract ores.qt.api as shared framework library (Step 1)
+- [X] [qt.api] Address review comments on CMakeLists
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/670][PR #670]]
+
+*** COMPLETED Fix startup races, terminal bleed, and analytics service setup :code:
+    :PROPERTIES:
+    :PR_NUMBER: 673
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/673
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T01:54:34Z
+    :TIME_ESTIMATE: 0h 33m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 00:52]--[2026-04-08 Wed 01:25] =>  0:33
+    :END:
+
+This pull request introduces the ores.analytics.service and implements several
+infrastructure improvements, including a multi-phase process shutdown sequence
+(SIGTERM, SIGQUIT, SIGKILL) and enhanced log monitoring in the process
+supervisor. It also adds exponential backoff for service authentication and TLS
+certificate validation for NATS connections. Feedback focuses on portability
+issues regarding the use of POSIX-specific functions like timegm, ::kill, and
+SIGQUIT, which may break Windows builds. Additionally, there are concerns about
+blocking the execution thread with std::this_thread::sleep_for in potentially
+asynchronous contexts and a regression in timestamp handling where UTC
+formatting was replaced by local time.
+
+***** Tasks
+
+- [X] [service] Fix startup races, terminal bleed, and analytics service setup
+- [X] [utility] Use ores.platform time wrappers in rfl reflectors
+- [X] [platform] Add get_hostname(); remove POSIX-only calls from process_supervisor
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/673][PR #673]]
+
+*** COMPLETED Extract domain-specific plugin libraries                 :code:
+    :PROPERTIES:
+    :PR_NUMBER: 672
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/672
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T10:48:55Z
+    :TIME_ESTIMATE: 6h 47m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-07 Tue 20:13]--[2026-04-07 Tue 23:55] =>  3:42
+    CLOCK: [2026-04-08 Wed 06:30]--[2026-04-08 Wed 09:35] =>  3:05
+    :END:
+
+This pull request implements a significant refactor of the Qt application by
+introducing a plugin-based architecture. It adds several new projects, including
+ores.qt.admin, ores.qt.compute, and ores.qt.mktdata, each implementing the new
+IPlugin interface to encapsulate domain-specific controllers and menus. Feedback
+focuses on improving the consistency of the codebase by modernizing Qt
+signal/slot connections to the functor-based syntax and ensuring all user-facing
+strings are properly localized using tr() instead of QStringLiteral.
+
+***** Tasks
+
+- [X] [qt] Add IPlugin/PluginRegistry/plugin_context and LegacyPlugin (Step 2a)
+- [X] [qt] Rewire MainWindow to drive LegacyPlugin lifecycle (Step 2b)
+- [X] [qt] Extract ores.qt.admin plugin (Step 3)
+- [X] [qt.compute] Extract ores.qt.compute as compute/reporting plugin (Step 4)
+- [X] [qt.refdata] Extract ores.qt.refdata as reference data plugin (Step 5)
+- [X] [qt.party] Extract ores.qt.party as party/organisation plugin (Step 6)
+- [X] [qt.mktdata] Extract ores.qt.mktdata as market data plugin (Step 7)
+- [X] [qt.trading] Extract ores.qt.trading as trading plugin (Step 8)
+- [X] [qt.admin] Use tr() for all user-facing strings in AdminPlugin
+- [X] [qt] Migrate plugins to QPluginLoader + shared libraries
+- [X] [qt] Add transient include paths for cross-plugin headers in ores.qt
+- [X] [qt] Fix build errors from QPluginLoader plugin decoupling
+- [X] [qt] Fix plugin runtime symbol resolution and improve plugin load logging
+- [X] [qt] Fix duplicate plugin menus and add menus at startup disabled
+- [X] [qt] Restore menus and toolbar from pre-refactor inventory
+- [X] [qt] Add setup_menus() so plugins contribute to existing menus
+- [X] [qt] Restore pre-refactor menu/toolbar structure across plugins
+- [X] [qt] Restructure menus for better UX and discoverability
+- [X] [qt] Fix PartyPlugin: remove orphaned setup_menus definition
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/672][PR #672]]
+
+*** COMPLETED Add shutdown_signals abstraction; fix Windows SIGQUIT build :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 674
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/674
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T13:12:13Z
+    :TIME_ESTIMATE: 1h 07m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 13:03]--[2026-04-08 Wed 14:10] =>  1:07
+    :END:
+
+This pull request introduces a platform-specific signal configuration for
+graceful shutdowns. A new header file, signals.hpp, defines a list of shutdown
+signals that excludes SIGQUIT on Windows to ensure cross-platform compatibility.
+The domain_service_runner_impl.hpp has been updated to utilize this centralized
+signal list instead of hardcoded values. I have no feedback to provide.
+
+***** Tasks
+
+- [X] [platform] Add shutdown_signals abstraction; fix Windows SIGQUIT build
+- [X] [qt.refdata] Fix Windows MOC dllimport conflict on ChangeReasonItemDelegate
+- [X] [qt] Add missing ores.qt.lib link to all plugin projects
+- [X] [valgrind] Suppress GLib/Qt process-lifetime singleton leaks
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/674][PR #674]]
+
+*** COMPLETED Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget :code:
+    :PROPERTIES:
+    :PR_NUMBER: 676
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/676
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T15:40:25Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 15:20]--[2026-04-08 Wed 15:40] =>  0:20
+    :END:
+
+This pull request removes the ORES_QT_API export macro from the AddItemDialog
+and TagSelectorWidget classes, along with their corresponding header includes. I
+have no further feedback to provide.
+
+***** Tasks
+
+- [X] [qt] Fix Windows MOC dllimport conflict on AddItemDialog and TagSelectorWidget
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/676][PR #676]]
+
+*** COMPLETED Enforce UTC-everywhere timestamp policy                                  :code:
+    :PROPERTIES:
+    :PR_NUMBER: 675
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/675
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T18:06:26Z
+    :TIME_ESTIMATE: 4h 03m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 12:07]--[2026-04-08 Wed 16:10] =>  4:03
+    :END:
+
+This pull request implements a comprehensive 'UTC-Everywhere' policy to resolve
+timezone-related bugs in service heartbeats and data serialization. It
+introduces a canonical UTC API in the platform layer, enforces UTC sessions in
+the database, updates wire protocols to use ISO 8601 UTC timestamps, and
+clarifies display-only time formatting. My feedback highlights an opportunity to
+optimize the database timestamp conversion by avoiding unnecessary string
+round-trips and suggests explicitly imbuing the log parser stream with the 'C'
+locale to ensure consistent month name parsing.
+
+***** Tasks
+
+- [X] [nats,qt] Improve login error messages and NATS connection diagnostics
+- [X] [platform/time] Phase 1: Redesign datetime API for UTC-everywhere enforcement
+- [X] [ore] Fix ore_log_parser to inline Boost.Log timestamp parsing
+- [X] [platform/time] Phase 8: Add unit tests for datetime API
+- [X] [ore] Fix most-vexing parse in ore_log_parser timestamp parsing
+- [X] [ore] Extract ore_log_timestamp_format constant to header
+- [X] [platform/utility] Phase 2: Move time_point_parser.hpp to ores.utility
+- [X] [utility] Phase 3: Remove competing Reflector<time_point> from reflectors.hpp
+- [X] [database] Phase 4: Force UTC timezone on every DB session
+- [X] [plans] Mark all UTC enforcement phases as DONE
+- [X] [utility] Include time_point_parser.hpp from reflectors.hpp
+- [X] [utility] Fix rfl error() dereference in time_point_parser.hpp
+- [X] [utility] Add to_schema to time_point Parser specialisation
+- [X] [database/ore] Address PR review comments
+- [X] [database] Introduce db_timestamp alias and address review comments
+- [X] [platform/database] Migrate all timestamps to db_timestamp alias
+- [X] [telemetry] Fix missing using db_timestamp in 4-part namespace entity
+- [X] [lisp] Add recreate-db-at-point, clarify recreate menu
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/675][PR #675]]
+
+*** COMPLETED Fix Windows linker error on PasswordMatchIndicator       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 678
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/678
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T20:08:07Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 18:50]--[2026-04-08 Wed 19:10] =>  0:20
+    :END:
+
+This pull request removes the ORES_QT_API export macro and the associated
+ores.qt/export.hpp include from the PasswordMatchIndicator struct. These changes
+simplify the header, likely because the struct consists entirely of static
+inline members and does not require explicit exportation. I have no feedback to
+provide as no review comments were submitted.
+
+***** Tasks
+
+- [X] [qt.api] Fix Windows linker error on PasswordMatchIndicator
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/678][PR #678]]
+
+*** COMPLETED Move PasswordMatchIndicator::connectFields out of header :code:
+    :PROPERTIES:
+    :PR_NUMBER: 680
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/680
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T20:44:53Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 21:20]--[2026-04-08 Wed 21:40] =>  0:20
+    :END:
+
+This pull request refactors the PasswordMatchIndicator class by moving the
+implementation of the connectFields method from the header file to a new source
+file. Additionally, it adds the ORES_QT_API macro to the struct definition to
+ensure proper symbol visibility. I have no further feedback to provide.
+
+***** Tasks
+
+- [X] [qt.api] Move PasswordMatchIndicator::connectFields out of header
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/680][PR #680]]
+
+*** COMPLETED Normalise all services to NATS-based hosting with unified heartbeat :code:
+    :PROPERTIES:
+    :PR_NUMBER: 679
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/679
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T21:22:23Z
+    :TIME_ESTIMATE: 1h 36m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 19:34]--[2026-04-08 Wed 21:10] =>  1:36
+    :END:
+
+This pull request normalizes service hosting across ORE Studio by migrating the
+IAM service, HTTP server, Wt service, and compute wrapper to a unified
+infrastructure provided by ores.service. It introduces specialized runners for
+signing and Wt-based services, adds support for shutdown callbacks, and
+implements standard NATS telemetry heartbeats for all components. The service
+dashboard was updated to use these heartbeats as the sole source of truth for
+service health. Additionally, the PR includes necessary SQL updates for service
+account roles and environment configuration changes. Feedback was provided
+regarding a redundant database context initialization in the Wt service that
+should be consolidated to save resources.
+
+***** Tasks
+
+- [X] [service] Add signing runner, no-DB overload, on_shutdown callback, and wt runner
+- [X] [iam] Migrate to signing_service_runner; add heartbeat
+- [X] [http] Migrate to domain_service_runner; add JWKS fetch and heartbeat
+- [X] [compute] Migrate wrapper to domain_service_runner; add service heartbeat
+- [X] [wt] Add NATS client and wt_service_runner; add heartbeat
+- [X] [qt] Remove controller-phase fallback from service dashboard
+- [X] [sql] Add IAM roles and service accounts for http, wt, and compute wrapper
+- [X] [wt] Eliminate redundant DB pool; add no-DB run_wt overload
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/679][PR #679]]
+
+*** COMPLETED Service dashboard, shutdown fixes and DB timezone        :code:
+    :PROPERTIES:
+    :PR_NUMBER: 677
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/677
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-08T22:56:27Z
+    :TIME_ESTIMATE: 3h 09m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 19:01]--[2026-04-08 Wed 22:10] =>  3:09
+    :END:
+
+This pull request enhances service failure diagnostics by implementing
+standardized exit codes, capturing the last 20 lines of logs upon service
+failure, and displaying these details in the Qt dashboard. It also addresses
+several lifecycle and resource management issues in the Qt client and ensures
+consistent UTC timestamp handling in the database. Feedback focuses on improving
+the efficiency of the log tailing implementation, avoiding silent exception
+handling in the supervisor, and optimizing database connection configuration to
+reduce unnecessary network roundtrips.
+
+***** Tasks
+
+- [X] [controller] Add exit codes enum, last_error on instance, failed event with log tail
+- [X] [qt] Fix double-disconnect crash; show Starting/Restarting/Failed in dashboard
+- [X] [qt.api] Use QPointer<ClientManager> in EntityController
+- [X] [controller] Write PID files for supervised services
+- [X] [database] Set TimeZone=UTC on raw libpq connections
+- [X] [qt.compute] Show concise last-error in dashboard; full text on double-click
+- [X] [qt.compute] Replace QMessageBox with QDialog+QPlainTextEdit for error details
+- [X] [database] Add db_connection_exception; services return db_connection_failed exit code
+- [X] [qt] Fix shutdown crash: move PluginRegistry off static storage onto stack
+- [X] [compute.wrapper] Add ores.service.lib and ores.database.lib dependencies
+- [X] [iam,wt] Add ores.service.lib dependency for exit_codes.hpp
+- [X] [qt.api] Make PluginRegistry constructor/destructor public
+- [X] [qt.compute] Restore QMessageBox include removed by accident
+- [X] [qt.compute] Remove tooltip from Last Error cell; use UserRole for full text
+- [X] [controller] Add retry_strategy utility and address PR review comments
+- [X] [controller] Fix streampos/int type mismatch in tail_log
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/677][PR #677]]
+
+*** COMPLETED Move DataLibrarianWindow and publish dialogs from mktdata to refdata :code:
+    :PROPERTIES:
+    :PR_NUMBER: 682
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/682
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T00:46:12Z
+    :TIME_ESTIMATE: 0h 51m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 00:09]--[2026-04-09 Thu 01:00] =>  0:51
+    :END:
+
+This pull request moves the Data Librarian functionality from the Mktdata plugin
+to the Refdata plugin, including its window management, menu actions, and
+lifecycle cleanup. The review feedback correctly identifies missing header
+inclusions for QMdiArea and QMainWindow in the Refdata plugin and points out a
+logic error in the window activation code where the sub-window instance should
+be passed directly to the MDI area.
+
+***** Tasks
+
+- [X] [qt] Move DataLibrarianWindow and publish dialogs from mktdata to refdata
+- [X] [qt.refdata] Fix RefdataPlugin: add missing Qt includes and setActiveSubWindow call
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/682][PR #682]]
+
+*** COMPLETED SQL: Add missing party isolation RLS policies            :code:
+    :PROPERTIES:
+    :PR_NUMBER: 681
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/681
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T01:27:23Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-08 Wed 22:05]--[2026-04-08 Wed 22:25] =>  0:20
+    CLOCK: [2026-04-09 Thu 01:05]--[2026-04-09 Thu 01:25] =>  0:20
+    :END:
+
+This pull request implements missing Row Level Security (RLS) party isolation
+policies across the IAM, Refdata, Scheduler, and Trading modules, while updating
+the sprint backlog and validation ignore list. The review identifies a logical
+inconsistency in the documentation's task status and recommends enhancing the
+security of trading instrument subtables by enforcing party isolation through
+joins with the parent table.
+
+***** Tasks
+
+- [X] [sql] Add missing party isolation RLS policies
+- [X] [agile] Mark party isolation RLS story as BLOCKED awaiting review
+- [X] [database,testing,sql] Add party context service and fix party isolation
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/681][PR #681]]
+
+*** COMPLETED Fix uninitialised member UB and GLib dl-init suppression :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 683
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/683
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T11:42:32Z
+    :TIME_ESTIMATE: 1h 09m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 10:11]--[2026-04-09 Thu 11:20] =>  1:09
+    :END:
+
+This pull request updates the Valgrind suppression file
+`build/valgrind/custom.supp` to broaden the `call_init` suppression rule,
+allowing for intermediate stack frames and variations in the function name. I
+have no feedback to provide as there are no review comments.
+
+***** Tasks
+
+- [X] [valgrind] Add suppressions for glib dl-init and xsdcpp bool serialisation
+- [X] [ore] Regenerate domain files: value-init mandatory fields, pick up xs:any attrs
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/683][PR #683]]
+
+*** COMPLETED Move App/AppVersion/ClientApp/ClientHost classes to compute :code:
+    :PROPERTIES:
+    :PR_NUMBER: 684
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/684
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T13:23:58Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 13:15]--[2026-04-09 Thu 13:35] =>  0:20
+    :END:
+
+This pull request removes the dependency on the ores.qt.admin library and its
+associated include directories from the ores.qt.compute project's build
+configuration. I have no feedback to provide.
+
+***** Tasks
+
+- [X] [qt.compute] Move App/AppVersion/ClientApp/ClientHost classes from admin to compute
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/684][PR #684]]
+
+*** COMPLETED Fix xsd::vector to use alias for non-bool to support incomplete types :code:
+    :PROPERTIES:
+    :PR_NUMBER: 685
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/685
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T15:04:41Z
+    :TIME_ESTIMATE: 0h 51m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 14:14]--[2026-04-09 Thu 15:05] =>  0:51
+    :END:
+
+This pull request refactors the xsd::vector<T> implementation by replacing the
+previous wrapper class with a template alias and a type trait selector. This
+approach allows the library to use std::vector<T> directly for most types while
+providing a custom char-backed bool_vector for bool to avoid proxy issues.
+Feedback indicates that the new bool_vector implementation is missing a using
+declaration for the base class assignment operator, which may cause compilation
+errors during assignment operations.
+
+***** Tasks
+
+- [X] [ore] Fix xsd::vector to use alias for non-bool to support incomplete types
+- [X] [ore] Re-regenerate domain files: remove spurious other_attributes from trade
+- [X] Revert "[ore] Re-regenerate domain files: remove spurious other_attributes from trade"
+- [X] Reapply "[ore] Re-regenerate domain files: remove spurious other_attributes from trade"
+- [X] [ore] Regenerate domain files: add missing operator= to bool_vector
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/685][PR #685]]
+
+*** COMPLETED Replace generic instrument with per-type rates domain objects :code:
+    :PROPERTIES:
+    :PR_NUMBER: 687
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/687
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T22:18:49Z
+    :TIME_ESTIMATE: 5h 58m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 16:32]--[2026-04-09 Thu 22:30] =>  5:58
+    :END:
+
+This pull request implements a major redesign of the instrument data model,
+transitioning from a shared parent table to standalone, asset-class-specific
+tables for rates instruments. The changes span SQL schema definitions, C++
+domain and repository layers, and Qt-based UI forms. The review identifies
+several critical issues, including missing leg data in messaging protocols,
+naming mismatches for primary keys between SQL and C++, and a security
+vulnerability in the soft-delete rules. Additionally, feedback highlights the
+need for orphaned leg validation, migration scripts for existing tables, and the
+correct placement of leg-fetching logic within the service layer.
+
+***** Tasks
+
+- [X] [git] Ignore shell and Claude configuration dotfiles
+- [X] [agile] Add instrument tables redesign plan
+- [X] [sql,trading] Remove common instruments table (Phase 0)
+- [X] [sql,trading] Add rates instrument tables (Phase 1)
+- [X] [codegen,trading] Add rates instrument domain types and fix codegen component routing
+- [X] [sql,trading] Add party_id to existing instrument tables and RLS policies
+- [X] [sql,trading] Add drop scripts for 9 new rates instrument tables
+- [X] [trading,ore,qt] Replace generic instrument with per-type rates domain objects
+- [X] [trading,sql] Remove legacy generic instrument infrastructure
+- [X] [trading,sql] Update stale comments referencing deleted instruments table
+- [X] [agile] Mark Phase 0 and Phase 1 complete in instrument tables redesign plan
+- [X] [ore] Fix missing instrument_id/trade_id wiring for non-swap types in importer
+- [X] [trading,sql,qt] Address review: fix SQL PK names, DELETE party isolation, legs in save requests, lockout_days wiring
+- [X] [sql] Fix CI: move party_id check out of rates instrument DELETE rules
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/687][PR #687]]
+
+*** COMPLETED Service lifecycle, menu restructure, GCC 15 fix, and Qt plugin split :code:
+    :PROPERTIES:
+    :PR_NUMBER: 686
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/686
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-09T23:34:07Z
+    :TIME_ESTIMATE: 7h 57m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 15:13]--[2026-04-09 Thu 23:10] =>  7:57
+    :END:
+
+This pull request introduces significant refactoring and new features across the
+build scripts, Qt application menu structure, and service monitoring. Key
+changes include updating build scripts for consistency and improved service
+management, a comprehensive overhaul of the Qt application's menu bar and plugin
+architecture to introduce new top-level menus like 'Identity', 'Pricing',
+'Scheduler', and 'Data Transfer', and enhancing service instance error reporting
+in the UI with detailed log and command-line snippets. Additionally, the
+`xsd::vector` implementation was refactored for robustness, and some logging
+levels were adjusted. The review comments highlight several important issues,
+including a potential crash in `account_handler.hpp` due to unvalidated UUID
+input, an exception safety bug in `xsd::vector`'s copy assignment, a Windows
+portability issue with `std::fopen` in `process_supervisor.cpp`, misleading
+command-line diagnostics, a security concern regarding the removal of a party
+isolation policy, and a maintainability issue with `Qt::UserRole` usage in the
+Service Dashboard.
+
+***** Tasks
+
+- [X] [controller/qt] Improve service diagnostics and add analytics plugin
+- [X] [controller/qt/scripts] Service lifecycle improvements
+- [X] [database] Log Postgres notice messages at debug level
+- [X] [sql] Remove party isolation RLS policy from account_parties table
+- [X] [iam] Fix select_party rejecting valid tokens and add diagnostics
+- [X] [qt/compute] Fix service dashboard geometry not persisting
+- [X] [qt] Fix report definitions list not filling wizard page
+- [X] [qt] Restructure menu system per UX analysis
+- [X] [ore,qt] Fix GCC 15 incomplete type errors and split Qt plugins
+- [X] [ore] Regen domain_xsd.hpp from fixed xsdcpp
+- [X] [ore] Regen domain.hpp/cpp — fix trade any-element capture
+- [X] [sql] Suppress RLS_002 warning for account_parties table
+- [X] [ci] Add free disk space step to canary workflow
+- [X] [ci] Add free disk space step to codeql workflow
+- [X] [ore] Regen domain_xsd.hpp — restore <cstdint> include
+- [X] [ci] Tell dpkg-shlibdeps about lib/plugins/ for bundled Qt plugins
+- [X] [iam,ore,qt] Address Gemini review comments
+- [X] [controller] Fix cross-platform stderr file open in process_supervisor
+- [X] [platform,controller] Add file::open_c_file for cross-platform FILE* open
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/686][PR #686]]
+
+*** COMPLETED Replace _wfopen with _wfopen_s to fix Windows Clang build :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 689
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/689
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T01:27:03Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 02:05]--[2026-04-10 Fri 02:25] =>  0:20
+    :END:
+
+This pull request updates the Windows implementation of open_c_file to use
+_wfopen_s instead of the deprecated _wfopen. Feedback was provided to explicitly
+check the return value of _wfopen_s to ensure that potential file opening
+failures are properly handled.
+
+***** Tasks
+
+- [X] [platform] Replace _wfopen with _wfopen_s to fix Windows Clang deprecation error
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/689][PR #689]]
+
+*** COMPLETED Fix Windows Clang build: replace SIGQUIT with platform shutdown_signals :code:
+    :PROPERTIES:
+    :PR_NUMBER: 690
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/690
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T09:09:43Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 09:45]--[2026-04-10 Fri 10:05] =>  0:20
+    :END:
+
+This pull request refactors signal handling in =domain_service_runner_impl.hpp=
+and =signing_service_runner_impl.hpp= to use a centralized
+=ores::platform::process::shutdown_signals= list. Feedback indicates that
+=domain_service_runner_impl.hpp= is missing the necessary include for the new
+signal header, which will result in a compilation error, and that the
+=<csignal>= include may now be redundant.
+
+***** Tasks
+
+- [X] [service] Fix Windows Clang build: use platform shutdown_signals instead of SIGQUIT
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/690][PR #690]]
+
+*** COMPLETED Add typed FX instrument domain model, tables, and repository layer :code:
+    :PROPERTIES:
+    :PR_NUMBER: 688
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/688
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T10:35:03Z
+    :TIME_ESTIMATE: 1h 37m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-09 Thu 23:30]--[2026-04-09 Thu 23:50] =>  0:20
+    CLOCK: [2026-04-10 Fri 08:48]--[2026-04-10 Fri 10:05] =>  1:17
+    :END:
+
+This pull request expands the FX instrument domain model by introducing specific
+types for various FX products (e.g., barrier options, digital options, variance
+swaps, and accumulators) using std::variant, and updates the corresponding
+database schemas, repositories, and mappers to support these types. The review
+identified two issues: a missing mapping for the settlement field in the reverse
+mapper for vanilla options, and an inconsistency in the payoff currency mapping
+for digital options in the exporter adapter.
+
+***** Tasks
+
+- [X] [trading,sql,ore] Add per-type FX instrument tables and typed domain model
+- [X] [trading] Add typed FX instrument repository layer and tests
+- [X] [ore] Fix accumulatorData_Barriers_t type in reverse_fx_accumulator
+- [X] [ore] Fix vanilla option settlement round-trip and digital option payoff_currency
+- [X] [ore] Validate LongShort and OptionType in FX reverse mappers
+- [X] [trading,ore,qt] Wire typed FX instrument services, handlers, and dispatch
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/688][PR #688]]
+
+*** COMPLETED Add /FS to serialise MSVC PDB writes under parallel Ninja builds :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 691
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/691
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T10:37:46Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 11:15]--[2026-04-10 Fri 11:35] =>  0:20
+    :END:
+
+This pull request adds the /FS compiler option to the Windows build
+configuration in CMakeLists.txt to prevent C1041 errors during parallel builds
+with Ninja. The feedback suggests generalizing the accompanying comment to avoid
+referencing a specific Visual Studio version's PDB filename, ensuring the
+documentation remains accurate across different compiler versions.
+
+***** Tasks
+
+- [X] [cmake] Add /FS to serialise MSVC PDB writes under parallel Ninja builds
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/691][PR #691]]
+
+*** COMPLETED Build as static library on Windows to avoid DLL export limit :code:
+    :PROPERTIES:
+    :PR_NUMBER: 693
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/693
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T13:10:14Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 13:15]--[2026-04-10 Fri 13:35] =>  0:20
+    :END:
+
+This pull request modifies the CMake configuration to build the library as a
+static library on Windows, addressing the 65535 symbol limit for DLLs. It also
+updates the installation command to handle static archives. The review feedback
+suggests improving the logic for applying versioning properties by checking the
+target type directly rather than relying on platform-specific checks, ensuring
+better compatibility across different build configurations.
+
+***** Tasks
+
+- [X] [trading.core] Build as static library on Windows to avoid DLL export limit
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/693][PR #693]]
+
+*** COMPLETED Add equity typed instrument support                      :code:
+    :PROPERTIES:
+    :PR_NUMBER: 692
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/692
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T17:04:21Z
+    :TIME_ESTIMATE: 3h 24m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 14:16]--[2026-04-10 Fri 17:40] =>  3:24
+    :END:
+
+This pull request introduces support for several new equity instrument types,
+including options, forwards, swaps, and positions, by adding the necessary
+database schemas, repository layers, and NATS messaging handlers. The review
+feedback highlights the need for more robust error handling in the NATS message
+handlers and suggests adding manual SQL check constraints to enforce data
+integrity for specific product types, rather than relying on code generation.
+
+***** Tasks
+
+- [X] [sql] Add per-type equity instrument tables (Phase 3)
+- [X] [trading] Add equity typed instrument domain structs
+- [X] [trading] Add equity typed instrument JSON I/O
+- [X] [trading] Add equity typed instrument entity/mapper/repository layer
+- [X] [trading] Add equity typed instrument service/handler/protocol/registrar
+- [X] [trading] Add repository tests for equity typed instruments
+- [X] [trading] Add test data snapshots and update equity repository tests to use XML values
+- [X] [qt] Move plugins to bin/, fix Windows path, add plugin lifecycle logging
+- [X] [sql,trading] Address PR review comments: add per-type check constraints and typed error reply
+- [X] [qt] Add plugin load error UI notification and fix shell monospace font
+- [X] [qt] Make ORE import workflow/correlation IDs selectable and copyable
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/692][PR #692]]
+
+*** COMPLETED Qt: Move OreImport* from compute to trading plugin       :code:
+    :PROPERTIES:
+    :PR_NUMBER: 695
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/695
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T20:34:44Z
+    :TIME_ESTIMATE: 0h 40m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 19:35]--[2026-04-10 Fri 20:15] =>  0:40
+    :END:
+
+This pull request updates the ores.qt.trading build configuration by removing
+the ores.qt.compute dependency and adding ores.ore.api.lib. Feedback indicates
+that the moved source files must be included in the build target using
+file(GLOB_RECURSE) to maintain repository consistency, and they should be
+removed from the previous project's configuration to prevent build failures.
+
+***** Tasks
+
+- [X] [qt.trading] Move OreImport* from compute to trading plugin
+- [X] [qt] Fix MainWindow: replace u-string literal with QStringLiteral for bullet
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/695][PR #695]]
+
+*** COMPLETED cmake: Switch MSVC debug info to Embedded (/Z7) to fix PDB contention :infra:
+    :PROPERTIES:
+    :PR_NUMBER: 696
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/696
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-10T23:44:42Z
+    :TIME_ESTIMATE: 0h 20m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-11 Sat 00:05]--[2026-04-11 Sat 00:25] =>  0:20
+    :END:
+
+This pull request updates the Windows build configuration by switching the MSVC
+debug information format from external Program Database files to embedded debug
+information in CMakePresets.json. Consequently, the /FS compiler flag, which was
+previously required to serialize PDB writes during parallel builds, has been
+removed from CMakeLists.txt. I have no feedback to provide.
+
+***** Tasks
+
+- [X] [cmake] Switch MSVC debug info from ProgramDatabase to Embedded (/Z7)
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/696][PR #696]]
+
+*** COMPLETED Complete Scheduler UI: Job Instances and Monitor        :code:
+    :PROPERTIES:
+    :PR_NUMBER: 694
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/694
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-11T01:26:37Z
+    :TIME_ESTIMATE: 3h 45m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 17:35]--[2026-04-10 Fri 21:20] =>  3:45
+    :END:
+
+This pull request implements the "Job Instances" execution history and
+"Scheduler Monitor" live status features, introducing new Qt UI components, NATS
+protocol definitions, and backend handlers. The review feedback highlights
+critical improvements needed for error handling in NATS message handlers to
+prevent silent failures and client timeouts. Additionally, it suggests ensuring
+UI operations propagate error statuses to the user and adopting type-safe
+database access patterns in the repository layer to enhance robustness against
+schema changes.
+
+***** Tasks
+
+- [X] [scheduler/qt] Complete Scheduler UI with Job Instances and Monitor views
+- [X] [scheduler] Add real-time job lifecycle events and reactive UI
+- [X] [qt/compute] Add missing QColor include in ClientJobInstanceModel
+- [X] [scheduler] Address review comments on PR #694
+- [X] [scheduler/core] Add ores.eventing dependency for entity_change_event
+- [X] ci: retrigger after CMakeLists fix
+- [X] [scheduler/core] Include rfl reflectors for time_point serialization
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/694][PR #694]]
+
+*** COMPLETED Split registrar.cpp to fix MSVC C1202 constexpr depth limit :code:
+    :PROPERTIES:
+    :PR_NUMBER: 698
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/698
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-11T20:13:27Z
+    :TIME_ESTIMATE: 1h 36m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-11 Sat 13:44]--[2026-04-11 Sat 15:20] =>  1:36
+    :END:
+
+This pull request refactors the NATS handler registration logic by splitting it into multiple translation units to prevent MSVC compiler errors (C1202) caused by excessive template instantiations. The feedback provided suggests centralizing the duplicated NATS queue name into a shared constant, passing string parameters by reference to avoid unnecessary copies, and using reserve() on the subscription vector to optimize memory allocations.
+
+***** Tasks
+
+- [X] [trading.core] Split registrar.cpp to fix MSVC C1202 constexpr depth limit
+- [X] [trading.core] Address review: shared queue constant, const ref, reserve
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/698][PR #698]]
+
+*** COMPLETED Workflow monitor, compute fixes, and ORE import improvements :code:
+    :PROPERTIES:
+    :PR_NUMBER: 697
+    :PR_URL: https://github.com/OreStudio/OreStudio/pull/697
+    :PR_AUTHOR: mcraveiro
+    :PR_MERGED: 2026-04-11T20:13:45Z
+    :TIME_ESTIMATE: 6h 17m
+    :END:
+    :LOGBOOK:
+    CLOCK: [2026-04-10 Fri 19:22]--[2026-04-10 Fri 23:25] =>  4:03
+    CLOCK: [2026-04-11 Sat 00:21]--[2026-04-11 Sat 02:35] =>  2:14
+    :END:
+
+This pull request implements a new Workflow Monitor system, including a
+dedicated Qt plugin and server-side NATS query handlers for monitoring workflow
+execution. Significant updates include transitioning JetStream stream
+provisioning to an idempotent self-service model, modifying the trade repository
+to handle optional date fields, and refining the compute wrapper's task
+execution logic. Review feedback identifies several improvement opportunities:
+centralizing the hardcoded system tenant UUID to improve maintainability, adding
+error handling for path canonicalization in the compute wrapper to prevent
+crashes, and moving workflow instance filtering from application memory to the
+database level to ensure scalability.
+
+***** Tasks
+
+- [X] [workflow] Add workflow monitor design plan and improve engine logging
+- [X] [workflow] Add server-side workflow monitor infrastructure
+- [X] [qt] Add ores.qt.workflow plugin with workflow monitor
+- [X] [workflow,qt] Fix build errors: uuid hash type and QFrame
+- [X] [workflow,nats] Implement JetStream durability and fix SIGSEGV in workflow engine
+- [X] [sql] Fix workflow RLS policies to allow system-tenant cross-tenant access
+- [X] [qt,workflow] Redesign WorkflowMdiWindow with master-detail layout
+- [X] [qt,workflow,ore] Workflow definitions dialog, UI refinements, work-dir fix
+- [X] [compute,qt] Fix app visibility for tenant admins, fix MOC build
+- [X] [http] Fix router to support multi-segment path parameters
+- [X] [sql] Fix ORE app version package_uri to use storage path
+- [X] [qt,compute] Rename Logs button to Details with error message display
+- [X] [controller,sql] Add {http_port}/{wt_port} template variables from config
+- [X] [compute,qt,sql] Standardise package storage key as <uuid>.tar.gz
+- [X] [compute,qt,sql] Store package as bare UUID without extension
+- [X] [compute] Use absolute path for engine executable
+- [X] [sql] Add --http-base-url to ore-service args template
+- [X] [trading] Make trade date fields optional
+- [X] [sql] Make trade date columns nullable
+- [X] [ore] Save instruments during ORE import via NATS
+- [X] [compute] Check engine executable exists before fs::canonical
+- [X] Merged in [[https://github.com/OreStudio/OreStudio/pull/697][PR #697]]
+
+
+
+
+
+* Unprocessed Stories
+
+Auto-generated from merged pull requests. Titles, descriptions, tags,
+tasks, and clock estimates are heuristic and need manual review before
+the sprint is closed.
 
 * Footer
 

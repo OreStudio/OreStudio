@@ -20,8 +20,9 @@ set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 set(ORES_QT_SCHEDULER_DIR ${CMAKE_SOURCE_DIR}/projects/ores.qt.scheduler)
 
-# Qt code generation (MOC for Q_OBJECT)
+# Qt code generation (MOC for Q_OBJECT, UIC for .ui forms)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
@@ -29,11 +30,14 @@ file(GLOB_RECURSE files RELATIVE
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 file(GLOB_RECURSE HEADERS "${ORES_QT_SCHEDULER_DIR}/include/*.hpp")
+# UI forms for AUTOUIC.
+file(GLOB FORMS "${ORES_QT_SCHEDULER_DIR}/ui/*.ui")
 
-add_library(${lib_target_name} SHARED ${files} ${HEADERS})
+add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
 
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
+    AUTOUIC_SEARCH_PATHS "${ORES_QT_SCHEDULER_DIR}/ui;${ORES_QT_API_UI_DIR}"
     VERSION   ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
     LIBRARY_OUTPUT_DIRECTORY "${ORES_PLUGIN_OUTPUT_DIRECTORY}"
@@ -51,6 +55,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.compute.lib
+        ores.scheduler.api.lib
     PRIVATE
         ores.qt.lib)
 

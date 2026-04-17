@@ -67,6 +67,684 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Automate new service registration                                 :infra:
+
+*Background*
+
+When =ores.marketdata.service= was added to the running system, the following
+manual steps were required across multiple files, with no single checklist and
+no tooling to enforce completeness. Several were discovered only at runtime
+(missing NATS cert, missing DB user, missing IAM role, missing IAM
+permissions), requiring iterative =recreate_database= runs.
+
+*Manual steps identified (in discovery order)*
+
+1. =build/scripts/generate_nats_certs.sh= — add service name to =SERVICES=
+   array so that an mTLS client certificate is generated. Without this the
+   service crashes immediately on NATS connect with =Connection Closed=.
+
+2. =projects/ores.codegen/models/services/ores_services_service_registry.json=
+   — add service entry (name, psql_var, env_key, iam_role, dml_prefixes,
+   select_tables). Then re-run the =service-registry= code-gen profile to
+   regenerate five files:
+   - =projects/ores.sql/service_vars.sh=
+   - =projects/ores.sql/create/iam/service_users_create.sql=
+   - =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
+   - =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=
+   - =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=
+
+3. =projects/ores.sql/teardown_all.sql= — add =drop role if exists
+   <env>_<service>_service;= entry (not covered by code-gen).
+
+4. =projects/ores.sql/populate/iam/iam_permissions_populate.sql= — register
+   all domain permissions (=<service>::<resource>:<action>= and
+   =<service>::*=). These must exist before any role can reference them.
+
+5. =projects/ores.sql/populate/iam/iam_roles_populate.sql= — create the IAM
+   role and assign permissions. Fails at runtime if permissions from step 4
+   are absent.
+
+6. =.env= — add =ORES_<SERVICE>_SERVICE_DB_USER= and
+   =ORES_<SERVICE>_SERVICE_DB_PASSWORD= variables (currently done by
+   =init-environment.sh=, but only if the service is known to that script).
+
+*Proposed improvements*
+
+- Extend =generate_nats_certs.sh= to derive its service list from
+  =service_vars.sh= (=SERVICE_NAMES= array) rather than a hard-coded
+  =SERVICES= array, so adding to the registry automatically covers cert
+  generation.
+
+- Extend the =service-registry= code-gen profile (or add a new template) to
+  also emit the IAM permissions and IAM role seed SQL for each service, driven
+  by the =dml_prefixes= and =select_prefixes= fields already in the registry.
+  This would cover steps 4 and 5 automatically.
+
+- Extend the =service-registry= code-gen profile to emit the
+  =teardown_all.sql= fragment for each service (or generate a separate
+  =teardown_services.sql= that is included), covering step 3.
+
+- Add a =new-service checklist= to =CLAUDE.md= or a dedicated
+  =doc/how-to/add-a-new-service.md= covering all manual steps, so that until
+  full automation is in place nothing is missed.
+
+- Add a validation step to =recreate_database.sh= (or =validate_schemas.sh=)
+  that cross-checks: every service in =service_vars.sh= has a NATS cert, an
+  IAM role, and at least one registered permission.
+
+***** Tasks
+
+- [ ] Drive =generate_nats_certs.sh= from =SERVICE_NAMES= in =service_vars.sh=
+      instead of a hard-coded array
+- [ ] Add service-registry code-gen template for IAM permissions seed SQL
+- [ ] Add service-registry code-gen template for IAM role seed SQL
+- [ ] Add service-registry code-gen template (or include fragment) for
+      =teardown_all.sql= service role drops
+- [ ] Add cross-check to =recreate_database.sh= / =validate_schemas.sh=:
+      every service has NATS cert + IAM role + ≥1 permission
+- [ ] Document the remaining manual steps in =doc/how-to/add-a-new-service.md=
+      as an interim checklist
+
+*** Party wizard UX improvements                                       :code:
+
+Follow-on UX polish for the three-level provisioning wizard, deferred from
+the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 4).
+
+***** Tasks
+
+- [ ] Force password reset: add =password_reset_required = true= flag to
+      accounts created by =provision-parties=; =auth_handler.hpp= already
+      handles this flag
+- [ ] Multi-select LEI picker: extend =LeiEntityPicker= from single- to
+      multi-select so =PartyProvisionPage= can select a full GLEIF hierarchy
+      in one pass
+- [ ] Per-party credential override: allow each =PartyProvisionPage= entry to
+      override the shared username/password with per-party credentials
+- [ ] Async wizard progress: switch =provision-parties= to async for hierarchies
+      > 20 parties — return =workflow_id= immediately and poll
+      =workflow.v1.status= from the wizard progress page
+
+*** Financial workflows: trade-expiry and barrier-event                :code:
+
+Extend =ores.workflow= with the first two financial workflow types, deferred
+from the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 5).
+
+***** Tasks
+
+- [ ] Implement =trade-expiry= workflow executor:
+      - Step 1: =trading.v1.trades.expire= ={ trade_id }=
+      - Step 2: =risk.v1.positions.update= ={ trade_id }=
+      - Step 3: =reporting.v1.runs.trigger-pnl= ={ party_id, date }=
+      - Step 4: =scheduler.v1.jobs.remove= ={ trade_id }=
+      - Compensation: =trading.v1.trades.reinstate= on Step 1 failure
+- [ ] Implement =barrier-event= workflow executor:
+      - Step 1: =trading.v1.trades.apply-barrier-event= ={ trade_id, event_type }=
+      - Step 2: =risk.v1.greeks.recompute= ={ trade_id }=
+      - Step 3: =reporting.v1.runs.trigger= ={ party_id }=
+- [ ] Register both executors in workflow service wiring
+- [ ] Integration tests for both workflows (happy path + compensation)
+*** Qt: instrument creation in TradeDetailDialog                       :code:
+
+When a trade is created in =TradeDetailDialog=, the instrument tabs are hidden
+and no instrument can be entered. This is because instruments are currently only
+loaded asynchronously from an existing server record. The standalone per-family
+instrument dialogs (which previously allowed direct instrument creation) have
+been removed as part of the unified-dialog plan.
+
+The fix is to reveal the instrument tabs in create mode once the user selects a
+=product_type= (via the trade type field or a new family selector combo), and to
+send a =save_*_instrument_request= for the new instrument before the
+=save_trade_request= on first save.
+
+Affects all instrument families: FX (PR 1), Swap/Rates (PR 2), Bond + Credit
+(PR 3), Equity + Commodity (PR 4), Composite (PR 5), Scripted (PR 6).
+
+***** Tasks
+
+- [ ] Add a "Product Type" selector (QComboBox) to the General tab that maps to
+      =trade.product_type=; pre-populate with all known families
+- [ ] In create mode: show the relevant instrument tabs when a product type is
+      selected (hide them when none is selected)
+- [ ] On save in create mode: if instrument tabs are visible, send the
+      appropriate =save_*_instrument_request= first, then use the returned
+      instrument ID to populate =trade.instrument_id= before sending
+      =save_trade_request=
+- [ ] Handle save failure for the new instrument (surface error, do not save
+      the trade)
+- [ ] Apply to all six instrument families as each PR is merged
+
+*** NATS-based health for all services: HTTP, WT and compute wrapper   :code:
+
+Currently =ores.http.server=, =ores.wt.service=, and =ores.compute.wrapper=
+do not publish NATS heartbeats, so the Service Dashboard can only show them
+as "Running" (process-alive via the controller) rather than "Online"
+(confirmed healthy via NATS telemetry). All services should be first-class
+NATS participants so that a single, uniform health signal is used across the
+board.
+
+***** Background
+
+The three services that are not NATS-based:
+
+- =ores.http.server= — REST gateway; no NATS messaging today.
+- =ores.wt.service= — Wt web-UI server; no NATS messaging today.
+- =ores.compute.wrapper= — Grid worker node; communicates directly with the
+  compute service over NATS work/result subjects, but does not publish a
+  standard heartbeat and has no service identity in the NATS namespace.
+
+***** Scope
+
+- =ores.http.server=: add NATS connectivity and publish a standard
+  =service_heartbeat_message= every 15 s via =heartbeat_publisher=. Register
+  the service in the NATS subject namespace under =ores.http.server=.
+
+- =ores.wt.service=: same as above — connect to NATS and publish heartbeats.
+
+- =ores.compute.wrapper=: register each replica as a named NATS participant.
+  Publish heartbeats including the replica index so the controller can track
+  each worker individually. The existing compute work/result subjects are
+  unaffected.
+
+***** Tasks
+
+- [ ] =ores.http.server=: add NATS client + heartbeat_publisher (mirrors
+      pattern in all domain services)
+- [ ] =ores.wt.service=: same
+- [ ] =ores.compute.wrapper=: add NATS heartbeat per replica; include
+      replica index and host-id in heartbeat payload
+- [ ] Update Service Dashboard: remove "Running" fallback path once all
+      services send heartbeats; "Online" becomes the single source of truth
+- [ ] Update =controller_service_definitions_populate.sql=: remove custom
+      args_templates for http/wt/wrapper once they no longer need to diverge
+      from the default
+
+*** Trade-aware market data filtering for report execution             :code:
+
+#+begin_quote
+The report execution workflow currently fetches all market data series for the
+tenant when gathering market data (Phase 3.5). This is correct but wasteful:
+a portfolio of interest rate swaps only needs yield curves and fixings, not
+FX vol surfaces or commodity curves.
+
+Implement trade-aware market data derivation: given the trade portfolio
+gathered in step 0, determine which market data series are actually required
+for the ORE computation. This requires inspecting trade types, currencies,
+underliers, and the analytics flags in risk_report_config to build a
+precise list of required series types, currencies, and tenors.
+#+end_quote
+
+***** Background
+
+The report execution pipeline gathers data in stages. Step 0 (gather_trades)
+produces a MsgPack blob in object storage containing all trades and
+instruments in scope. Step 1 (gather_market_data) currently fetches all
+tenant market data because we lack the logic to derive requirements from
+the trade portfolio.
+
+ORE (Open Source Risk Engine) requires specific market data for each trade
+type:
+- Interest rate swaps: discount curves, forecast curves, fixings
+- FX forwards/options: FX spot rates, FX vol surfaces
+- Credit default swaps: default probability curves, recovery rates
+- Equity options: equity spot prices, equity vol surfaces
+- Commodities: commodity price curves
+
+The mapping from trade type → required market data is ORE-domain knowledge
+that belongs in =ores.ore= (not in =ores.reporting=).
+
+***** Tasks
+
+- [ ] Design a =market_data_requirements= struct that captures the set of
+      required series types, currency pairs, and tenors
+- [ ] Implement =derive_market_data_requirements(trades, risk_report_config)=
+      in =ores.ore= that inspects the trade portfolio and analytics flags
+- [ ] Add a NATS request/reply API for market data derivation so the
+      reporting service can call it without pulling in ORE domain logic
+- [ ] Update =gather_market_data= step to use derived requirements instead
+      of fetching everything
+- [ ] Add unit tests with representative trade portfolios (IR swaps, FX,
+      credit, equity, commodity) verifying correct market data derivation
+
+*** Scheduler: complete Qt UI and promote to top-level menu            :code:
+
+*Background*
+
+The scheduler backend (=ores.scheduler.*=) is fully implemented: =job_definition=,
+=job_instance=, =job_status=, =cron_expression=, =cron_scheduler=, and
+=scheduler_loop= are all present. On the Qt side only =JobDefinitionController=
+exists, and it is wired into =Reporting > &Job Definitions=.
+
+This is architecturally wrong on two counts:
+
+1. *Wrong menu placement*: scheduling is a cross-domain concern. It will drive
+   report runs, trade expiry, housekeeping jobs, data archival, cache
+   invalidation, and any future scheduled workflow. Placing it under Reporting
+   implies it only exists to schedule reports.
+
+2. *Missing UI*: =job_instance= (the execution record) has no Qt controller,
+   window, or detail dialog. Users can define schedules but cannot see what ran,
+   when, whether it succeeded, or inspect its output.
+
+*Target state*
+
+A dedicated top-level =&Scheduler= menu replaces the =Reporting > &Job Definitions=
+entry:
+
+#+begin_example
+&Scheduler
+├── &Job Definitions        ← move from Reporting > Job Definitions
+├── &Job Instances          ← new: execution history per job
+├── ─────
+└── &Monitor                ← new: live view of running/queued jobs and
+                                   next-fire times (analogous to Service Dashboard)
+#+end_example
+
+=Job Definitions= and =Job Instances= follow the same controller/MDI window/detail
+dialog/history dialog pattern used throughout the application.
+
+=Scheduler Monitor= is a singleton MDI window (similar to =ServiceDashboardMdiWindow=)
+showing: currently running jobs, queue depth, next scheduled fire time per job,
+and last execution status per job. Auto-refreshes on a configurable timer.
+
+*What already exists*
+
+| Layer                | Exists                                               | Missing                             |
+|----------------------+------------------------------------------------------+-------------------------------------|
+| Backend API          | =job_definition=, =job_instance=, =job_status=,      |                                     |
+|                      | =cron_expression= domain types + JSON/table I/O      |                                     |
+| Backend service      | =cron_scheduler=, =scheduler_loop=,                  |                                     |
+|                      | =job_definition_service=,                            |                                     |
+|                      | =job_definition_handler=,                            |                                     |
+|                      | =job_instance_repository=                            |                                     |
+| NATS protocol        | =scheduler_protocol.hpp=                             | =list_job_instances= endpoint        |
+|                      |                                                      | =get_scheduler_status= endpoint      |
+| Qt                   | =JobDefinitionController=,                           | =JobInstanceController=              |
+|                      | =JobDefinitionMdiWindow=,                            | =JobInstanceMdiWindow=               |
+|                      | =JobDefinitionDetailDialog=,                         | =JobInstanceDetailDialog=            |
+|                      | =JobDefinitionHistoryDialog=                         | =SchedulerMonitorMdiWindow=          |
+|                      |                                                      | =SchedulerPlugin= (new plugin)       |
+
+*Scope*
+
+This story covers the full stack: any missing NATS endpoints, all missing Qt
+widgets, relocation of =JobDefinitionController= from =ComputePlugin= to the new
+=SchedulerPlugin=, and the new =&Scheduler= top-level menu.
+
+***** Tasks
+
+- [ ] NATS: add =scheduler.v1.job-instances.list= request/response to
+      =ores.scheduler.api/messaging/scheduler_protocol.hpp=; implement handler
+      in =ores.scheduler.core=
+- [ ] NATS: add =scheduler.v1.status= request/response (queue depth, running
+      count, next-fire map per job); implement handler
+- [ ] Qt: =ClientJobInstanceModel= — table model wrapping =job_instance= list
+- [ ] Qt: =JobInstanceMdiWindow= — list view of instances with status badges,
+      start time, duration, exit code
+- [ ] Qt: =JobInstanceDetailDialog= — detail view of a single instance
+      (cron expression, trigger time, log excerpt if available)
+- [ ] Qt: =SchedulerMonitorMdiWindow= — singleton live view; auto-refresh
+      timer; shows per-job: last run status, next fire time, running count
+- [ ] Qt: =SchedulerPlugin= — new plugin in =ores.qt.compute=; owns
+      =JobDefinitionController=, =JobInstanceController=,
+      =SchedulerMonitorController=; creates =&Scheduler= menu; contributes
+      no toolbar actions (scheduler is not a daily-ops toolbar item)
+- [ ] Qt: remove =Job Definitions= from =ComputePlugin::create_menus=
+      (=Reporting= menu); delete the entry from =Reporting=
+- [ ] Qt: register =SchedulerPlugin= in =PluginRegistry= in the correct
+      position so =&Scheduler= appears between =&Reporting= and =&System=
+- [ ] Update =doc/analysis/qt-menu-analysis.org= to reflect the new structure
+
+
+
+*** Tracing: OpenTelemetry identifiers across Qt and NATS          :analysis:
+
+*Background*
+
+OreStudio currently uses a single =Nats-Correlation-Id= header (UUID v4) that
+is generated at the workflow service entry point and propagated to downstream
+NATS calls. This lets you grep logs for a single workflow invocation, but it
+does not answer two important questions:
+
+1. *Which user session originated this request?* A single session may trigger
+   dozens of top-level requests (bundle list, bundle install, party provision,
+   bootstrap clear); there is no way to group them under one session identity.
+2. *Which specific operation within the session is this?* Each Qt wizard step
+   is a distinct user action; the current ID is generated server-side so the
+   client cannot know it before the response arrives.
+
+Furthermore, the relationship between the Qt client subsystem and the NATS
+microservices subsystem is opaque: a log line in =ores.refdata= has no link
+back to the Qt button click that ultimately caused it.
+
+*OpenTelemetry trace model*
+
+The W3C =traceparent= standard defines four fields carried in every call:
+
+| Field       | Size     | Generated by       | Meaning                                          |
+|-------------+----------+--------------------+--------------------------------------------------|
+| version     | 1 byte   | fixed =00=         | Format version                                   |
+| trace-id    | 16 bytes | originating client | One UUID for the entire top-level user action    |
+| parent-id   | 8 bytes  | caller of this hop | The span ID of the *caller*, linking parent↔child|
+| span-id     | 8 bytes  | this service       | Unique ID for this service's handling of the call|
+| flags       | 1 byte   | originating client | Sampling decision                                |
+
+Wire format: =traceparent: 00-<trace-id>-<parent-id>-<flags>=
+
+Example call tree for =workflow.v1.parties.provision=:
+
+#+begin_example
+Qt client           trace=aabbcc  span=0001  parent=0000  (root span, generated by Qt)
+  → workflow        trace=aabbcc  span=0002  parent=0001
+    → refdata.save  trace=aabbcc  span=0003  parent=0002
+    → iam.save      trace=aabbcc  span=0004  parent=0002
+    → iam.add-party trace=aabbcc  span=0005  parent=0002
+#+end_example
+
+This allows reconstruction of the exact call tree from logs alone.
+
+*What needs to change*
+
+Two subsystems need to be joined:
+
+1. *Qt client* — generates the root =trace-id= and the first =span-id= at the
+   point of user action (button click / wizard Next). Passes both in every
+   outgoing NATS message. Currently generates nothing.
+
+2. *NATS microservices* — each handler extracts =traceparent=, records the
+   =parent-id= (caller's span), generates a new =span-id= for itself, and
+   forwards an updated =traceparent= (same =trace-id=, its own =span-id= as
+   new =parent-id=) on every outbound NATS call.
+
+In addition, a *session ID* (separate from trace/span) should be generated
+once on login and attached to every request for the lifetime of that session,
+enabling queries like "show all requests from user alice during session X".
+
+Proposed NATS header set:
+
+| Header              | Meaning                                         | Generated by         |
+|---------------------+-------------------------------------------------+----------------------|
+| =Nats-Correlation-Id= | Current per-operation ID (keep for compat)      | First handler        |
+| =traceparent=         | W3C OpenTelemetry trace-id + span-id + parent   | Qt client / handler  |
+| =Nats-Session-Id=     | UUID for the user's login session               | Qt client on login   |
+
+*Scope of this story*
+
+This story covers *analysis and design only*. Output: a plan document under
+=doc/plans/= that specifies:
+
+- Which headers to carry on every NATS message.
+- How the Qt =ClientManager= generates and propagates =traceparent= and
+  =Nats-Session-Id=.
+- How =handler_helpers.hpp= is extended so =log_handler_entry= extracts,
+  logs, and forwards all three headers in one call.
+- Whether to retain =Nats-Correlation-Id= (backward compat) or replace it.
+- What a =Nats-Session-Id= should be tied to (login token? UI session UUID?).
+- The migration path: handlers currently log =correlation_id=; how to move to
+  =traceparent= without breaking existing log grep patterns.
+- Whether to integrate with an external OpenTelemetry collector (Jaeger /
+  Tempo) or keep tracing in-process via log aggregation.
+
+Implementation can follow as a separate story once the design is agreed.
+
+***** Tasks
+
+- [ ] Research W3C =traceparent= / =tracestate= spec and NATS header limits
+- [ ] Identify all Qt entry points that should generate a root span (wizard
+      steps, dialog confirms, background refresh calls)
+- [ ] Identify all NATS handler hops that need span generation and forwarding
+- [ ] Define the session ID lifecycle: created on login, invalidated on logout,
+      stored in =ClientManager=
+- [ ] Decide: replace =Nats-Correlation-Id= or keep alongside =traceparent=
+- [ ] Decide: structured log fields vs free-text grep-friendly format
+- [ ] Write =doc/plans/= document with the agreed design and migration steps
+
+*** Three-level provisioning: end-to-end testing                       :code:
+
+End-to-end test of the complete three-level provisioning flow implemented
+across PRs #582, #611, #614, #619, and the correlation ID / summary page
+work on =feature/three-level-provisioning-e2e=. Branch:
+=feature/three-level-provisioning-e2e=.
+
+***** Tasks
+
+- [ ] Provision a fresh tenant from scratch (recreate DB, start services)
+- [ ] Log in as system admin; verify =TenantProvisioningWizard= fires
+- [ ] Step through bundle selection and install; verify DQ bundle published
+- [ ] Step through =PartyProvisionPage=; verify party + account created in DB
+      with =status='Inactive'=
+- [ ] Verify correlation ID appears on the summary page and matches
+      =ores_workflow_workflow_instances_tbl.correlation_id=
+- [ ] Verify bootstrap flag cleared; wizard does not reappear on next login
+- [ ] Log in as the provisioned party admin; verify =PartyProvisioningWizard= fires
+- [ ] Complete party wizard; verify party =status= set to =Active= in DB
+- [ ] Verify =PartyProvisioningWizard= does not reappear on subsequent logins
+- [ ] Verify compensation: force failure in each of the 3 workflow steps and
+      confirm rolled-back state in DB for party, account, account_party
+- [ ] Verify =Nats-Correlation-Id= header propagated to =refdata.v1.parties.save=
+      and =iam.v1.accounts.save= (check server logs)
+
+*** Provisioned accounts: force password reset on first login          :code:
+
+When =workflow.v1.parties.provision= creates an account it should set
+=password_reset_required = true= so the party admin is forced to change the
+initial password on first login. See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =password_reset_required= column to =ores_iam_accounts_tbl= (or reuse
+      existing field if present)
+- [ ] =provision_parties_workflow=: set flag when creating account
+- [ ] =auth_handler.hpp=: return =password_reset_required= in =login_response=
+      if account flag is set, and reject login with a specific error code
+- [ ] Qt: show password-change dialog on login when flag is set
+- [ ] Clear flag on successful password change
+
+*** Multi-select LEI picker for PartyProvisionPage                     :code:
+
+=LeiEntityPicker= currently supports single selection. Extend to multi-select
+so the tenant admin can pick the full GLEIF hierarchy (root + subsidiaries)
+in one pass, creating one =provision_party_input= entry per selected LEI.
+See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Extend =LeiEntityPicker= to support multi-select mode
+- [ ] =PartyProvisionPage=: iterate selected LEIs, build one input row per LEI
+- [ ] Derive =principal= per party (=username_base + "_" + short_code=)
+- [ ] Show per-party rows in the page with optional credential override fields
+- [ ] Summary page: list all provisioned usernames and their party names
+
+*** Async workflow progress for large party hierarchies                :code:
+
+For tenants with more than ~20 parties the synchronous =provision-parties=
+endpoint will time out. Add an async path: return =workflow_id= immediately
+and poll =workflow.v1.status= from a progress page. See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.status= NATS subject + request/response types
+- [ ] =workflow_handler=: implement status query by workflow ID
+- [ ] Add async variant of =provision_parties_response= (returns =workflow_id= only)
+- [ ] Qt: add =BundleInstallPage=-style async progress page in
+      =TenantProvisioningWizard= with polling timer
+- [ ] Threshold: use async path when =parties.size() > 5= (configurable)
+
+*** IAM/Refdata service boundary cleanup                               :code:
+
+=ores.iam.core= currently crosses the service boundary in two places. These
+are pre-existing violations noted in the plan and must be fixed to ensure
+correct RLS enforcement and clean service ownership. See "Known pre-existing
+violations" in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] =bootstrap_handler.hpp=: replace direct =ores_refdata_parties_tbl= write
+      with =refdata.v1.parties.save= NATS call
+- [ ] =auth_handler.hpp=: replace direct =ores_refdata_parties_tbl= query
+      (=auth_lookup_party=) with =refdata.v1.parties.get-by-principal= NATS call
+      (add endpoint to =ores.refdata= if missing)
+- [ ] Verify RLS policies still enforced end-to-end after refactor
+- [ ] Remove cross-schema table includes from =ores.iam.core= CMake deps
+
+*** DQ/Refdata service boundary cleanup                                :code:
+
+DQ bundle publication currently writes directly to =ores_refdata_*= tables.
+This must be routed via =refdata.v1.*= NATS endpoints. See "Open Questions"
+in [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Identify all direct =ores_refdata_*= writes inside =ores.dq= publication
+      pipeline
+- [ ] Add any missing =refdata.v1.*= NATS endpoints needed by DQ
+- [ ] Rewrite DQ publication to use NATS calls instead of direct DB writes
+- [ ] Verify bundle publish end-to-end after refactor
+- [ ] Remove cross-schema table includes from =ores.dq= CMake deps
+
+*** Extend ores.workflow: trade-expiry workflow                        :code:
+
+First financial workflow in =ores.workflow=: expire a trade and cascade to
+positions, P&L reporting and scheduler cleanup. See Phase 5 in [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.trade-expiry= NATS subject + request/response types
+- [ ] Implement =trade_expiry_workflow= executor (4 steps + compensation)
+      - Step 1: =trading.v1.trades.expire=
+      - Step 2: =risk.v1.positions.update=
+      - Step 3: =reporting.v1.runs.trigger-pnl=
+      - Step 4: =scheduler.v1.jobs.remove=
+- [ ] Register in =workflow_handler= and =registrar.cpp=
+- [ ] Qt: trigger from trade blotter context menu ("Expire trade")
+- [ ] Integration test: verify all 4 steps and compensation
+
+*** Extend ores.workflow: barrier-event workflow                       :code:
+
+Second financial workflow: apply a knock-in/out barrier event to a trade and
+cascade to Greeks recomputation and reporting. See Phase 5 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.barrier-event= NATS subject + request/response types
+- [ ] Implement =barrier_event_workflow= executor (3 steps + compensation)
+      - Step 1: =trading.v1.trades.apply-barrier-event=
+      - Step 2: =risk.v1.greeks.recompute=
+      - Step 3: =reporting.v1.runs.trigger=
+- [ ] Register in =workflow_handler= and =registrar.cpp=
+- [ ] Qt: trigger from trade detail dialog when barrier condition is met
+- [ ] Integration test: verify all 3 steps and compensation
+
+*** Positions domain model                                             :code:
+
+Implement the positions domain model. A position aggregates the net exposure
+for a given instrument and book combination, derived from the trade blotter.
+See [[file:../../plans/2026-03-31-ore-trading-instrument-support.org][plan]] for context.
+
+Covers long/short positions across all instrument families, backed by one new
+temporal table: =ores_trading_positions_tbl= (book_id, instrument_id,
+trade_type_code, quantity, notional, currency, as_of_date, and standard
+temporal/audit fields).
+
+***** Tasks
+
+- [ ] SQL: =ores_trading_positions_tbl= + notify trigger + drop files
+- [ ] SQL: Register in =trading_create.sql=, =drop_trading.sql=
+- [ ] Domain: =position= struct, JSON I/O, table I/O, protocol messages
+- [ ] Repository: =position= entity, mapper, repository
+- [ ] Service: =position_service=
+- [ ] Server: messaging handler + registrar registration
+- [ ] Qt UI: =ClientPositionModel=, =PositionMdiWindow=, =PositionDetailDialog=,
+  =PositionHistoryDialog=, =PositionController=, =MainWindow= integration
+- [ ] Database: recreate to pick up new table
+
+*** Source report definitions from DQ instead of hardcoded C++         :code:
+
+*Background*
+
+Report definitions in =PartyProvisioningWizard= are currently hardcoded as a
+=constexpr std::array= in C++ (=PartyProvisioningWizard.cpp=, ~line 427). This
+is architecturally inconsistent with how all other seedable reference data is
+handled in OreStudio, which uses the DQ artefact pipeline:
+
+- A staging table (=dq_*_artefact_tbl=) holds the source data
+- An artefact type entry in =ores_dq_artefact_types_tbl= maps staging → target
+  + publish function
+- A dataset (e.g. =ore.report_definitions=) references the staging table
+- Bundles (=organisation=, or a new =ore_analytics= bundle) group datasets
+- The publish function copies approved rows into the target table
+
+Business units, portfolios, and books already follow this pattern. Report
+definitions do not, causing two problems:
+
+1. *Off-by-one fragility*: the array was declared =std::array<ReportEntry, 28>=
+   with only 27 entries, producing a zero-initialised trailing entry with
+   =name = ""=. This triggered a DB check constraint violation during party
+   provisioning (fixed as a stopgap by changing the array size to 27).
+2. *Non-evolvable*: adding, renaming, or adjusting a report definition requires
+   a C++ recompile and new release. There is no way to update defaults via data
+   tooling or deliver them as part of a bundle update.
+
+*Target architecture*
+
+#+begin_example
+SQL seed data (populate script)
+  → ores_dq_report_definitions_artefact_tbl   (staging)
+    → ores_dq_report_definitions_publish_fn   (publish function)
+      → ores_reporting_report_definitions_tbl (target, party-scoped)
+#+end_example
+
+The =PartyProvisioningWizard= loads candidate definitions by querying the DQ
+artefact table for the selected bundle, presents them with checkboxes (same UX
+as today), and on confirmation calls the existing
+=reporting.v1.report-definitions.save= endpoint for each selected entry. The
+hardcoded =k_default_reports= array is deleted.
+
+*Scope*
+
+This story covers the full stack end-to-end: SQL schema, DQ pipeline, seed
+data, and Qt wizard refactor.
+
+***** Tasks
+
+- [ ] SQL: create =ores_dq_report_definitions_artefact_tbl= with columns
+      =name=, =description=, =report_type=, =schedule_expression=,
+      =concurrency_policy=, =display_order= plus standard DQ audit/temporal
+      fields; add to =dq_create.sql= and =drop_dq.sql=
+- [ ] SQL: write =ores_dq_report_definitions_publish_fn= that inserts approved
+      artefact rows into =ores_reporting_report_definitions_tbl= scoped to the
+      calling party (mirrors =ores_dq_books_publish_fn= pattern)
+- [ ] SQL: register the new artefact type =report_definitions= in
+      =dq_artefact_types_populate.sql= pointing at the staging table, target
+      table, and publish function
+- [ ] SQL: create seed populate script
+      =populate/reporting/reporting_report_definitions_populate.sql= with the
+      27 standard ORE analytics definitions (migrate from =k_default_reports=)
+      and wire it into the reporting populate orchestrator
+- [ ] SQL: add a new bundle =ore_analytics= (or extend =organisation=) in
+      =dq_dataset_bundle_populate.sql= and register the
+      =ore.report_definitions= dataset as a member
+- [ ] API: add =get_report_definition_templates_request/response= to
+      =ores.reporting.api= (or reuse the DQ artefact list endpoint) so the Qt
+      client can fetch candidates without a direct DB query
+- [ ] Qt: refactor =PartyReportSetupPage= to load report definition candidates
+      from the API call above on =initializePage()= instead of iterating
+      =k_default_reports=; remove the =constexpr= array entirely
+- [ ] Qt: handle async load in =PartyReportSetupPage=: show a spinner while
+      fetching, populate the list widget on success, show an error label on
+      failure
+- [ ] SQL: recreate database to pick up new tables and seed data; verify
+      27 artefact rows present in staging table after =populate= run
+- [ ] End-to-end test: run party provisioning wizard, confirm report
+      definitions created in =ores_reporting_report_definitions_tbl= match the
+      selected artefacts, confirm no check constraint violations
+
+
+
 *** Refactor trading reference type boilerplate into shared templates  :code:
 
 The five new trading instrument reference data types (DayCountFractionType,

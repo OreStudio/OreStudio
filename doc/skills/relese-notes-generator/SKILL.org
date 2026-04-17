@@ -15,29 +15,102 @@ license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
-This skill generates release notes from a ORE Sprint Backlog file.
+This skill generates release notes for ORE Studio by combining the sprint
+backlog with every pull request merged since the previous release tag, then
+drives the tagging and draft GitHub-release publication.
 
 * When to Use This Skill
 
-Use this skill whenever the user requests the generation of release notes for a
-given sprint backlog.
+Use this skill whenever the user asks to close a sprint / cut a release — i.e.
+to produce release notes for the latest sprint under =doc/agile/v0/= and push
+a draft GitHub release.
 
-* How to Use This Skill
+* End-to-End Process
 
-1. Locate the sprint backlog for which to generate release notes. These are in
-   folder =doc/agile/v0/=. The latest backlog is the one with the highest sprint
-   number.
-2. Read the sprint backlog and generate a summary following the instructions in
-   section Detailed Instructions.
-3. Generate the notes in markdown format and place them in a org-mode markdown
-   block.
-4. Place the resulting summary in a new section called "AI Generated Sprint
-   Summary".
+The full flow has five steps; each one is described in its own section below.
 
-* Detailed Instructions
+1. *Prepare a feature branch* from =origin/main=, e.g.
+   =feature/release-automation=.
+2. *Collect PR data* for every PR merged since the previous =v*= tag using
+   =build/scripts/collect_release_pr_data.py=. Output goes to
+   =tmp/release_pr_data/= (gitignored).
+3. *Read the sprint backlog* at =doc/agile/v0/sprint_backlog_<N>.org=.
+4. *Generate the release notes* by combining the PR overviews with the sprint
+   backlog's DONE / IN-PROGRESS / BLOCKED / POSTPONED stories, following the
+   template in /Release Notes Template/. Save to
+   =doc/agile/v0/sprint_backlog_<N>_release_notes.md=.
+5. *Tag main and open a draft GitHub release* (see /Tag and Release/ below).
+   The release is always created in /draft/ state so a human can review and
+   amend before publishing.
+
+* Collecting PR Data
+
+Script: =build/scripts/collect_release_pr_data.py=.
+
+- Finds the most recent =v*= tag via =git tag --sort=-v:refname= (can be
+  overridden with =--since-tag v0.0.N=).
+- Uses the tag's commit ISO date as the lower bound for
+  =gh pr list --search "is:pr is:merged base:main merged:>=<date>"=.
+- For each PR it calls =gh pr view --json
+  number,title,author,mergedAt,url,body,labels,baseRefName,comments,reviews=
+  and extracts "overviews" from bot-authored comments/reviews. Recognised
+  authors include =gemini-code-assist=, =claude[bot]=, =claude-code[bot]=,
+  =anthropic-claude[bot]= (see =OVERVIEW_AUTHORS= in the script). It also
+  falls back to heuristic markers (=## Summary of Changes=, =## Code Review=,
+  =Claude's review=, etc.) so new review bots will still be picked up.
+- Writes =tmp/release_pr_data/pr_<NNNNN>.json= per PR plus a =summary.json=
+  index with counts and metadata.
+
+Run it from the project root:
+
+#+begin_src bash
+python3 build/scripts/collect_release_pr_data.py
+#+end_src
+
+Requires =gh= CLI to be authenticated. Add =--since-tag v0.0.N= to override
+the detected previous release.
+
+* Combining PR Data with the Sprint Backlog
+
+When drafting notes:
+
+- The *sprint backlog* is the source of truth for the sprint mission,
+  =DONE=/=IN-PROGRESS=/=BLOCKED=/=POSTPONED= stories, and the
+  =sprint_summary= clocktable (time breakdown).
+- The *PR overviews* are the source of truth for what actually shipped.
+  In practice backlogs may be sparser than the merged work; the PRs cover
+  the rest.
+- Group related PRs thematically (workflow, ORE integration, market data,
+  trading/instruments, Qt, services, build/portability, etc.). Each theme
+  should become a sub-section under /Key Improvements/.
+- Clock totals: if =sprint_summary= reads =0:00= it has not been refreshed —
+  flag this explicitly in the /Time Summary/ section rather than inventing
+  numbers. Always include the PR count and dominant components as a
+  fallback.
+
+* Tag and Release
+
+After the notes file is committed to =main= (via PR), perform:
+
+#+begin_src bash
+# 1. Create a signed tag on the release commit
+git tag -s v0.0.<N> -m "Sprint <N>"
+git push origin v0.0.<N>
+
+# 2. Open a draft GitHub release with the generated notes
+gh release create v0.0.<N> \
+    --draft \
+    --title "Sprint <N>" \
+    --notes-file doc/agile/v0/sprint_backlog_<N>_release_notes.md
+#+end_src
+
+The release remains in draft state so a human can review, add screenshots or
+binaries, and publish it.
+
+* Release Notes Template
 
 Follow the following template for the release notes, replacing with actual
-content from sprint backlog.
+content from sprint backlog and PR overviews.
 
 #+begin_src markdown
 # **ProjectName Sprint N – Release Notes**

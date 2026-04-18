@@ -190,4 +190,4 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/orestudio_0.0.16_amd64.deb
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/orestudio_0.0.17_amd64.deb

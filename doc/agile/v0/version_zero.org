@@ -196,6 +196,13 @@ Backlogs]]. The last entry is the active sprint.
 
 - [[id:9CE4BE1F-0D57-4927-8344-E66CBC72D882][Sprint Backlog 16]] | TBD.
 
+** Sprint 17
+   :PROPERTIES:
+   :resource_id: s17
+   :END:
+
+- [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint Backlog 17]] | TBD.
+
 * Footer
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

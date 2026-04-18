@@ -67,6 +67,11 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
+    BOOST_LOG_SEV(lg(), info)
+        << "on_login ctx http_base_url='"
+        << (ctx_.http_base_url.empty() ? "(empty)" : ctx_.http_base_url)
+        << "'";
+
     appController_ = std::make_unique<AppController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);

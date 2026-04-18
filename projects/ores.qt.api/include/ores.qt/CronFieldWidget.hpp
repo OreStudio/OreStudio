@@ -25,6 +25,7 @@
 #include <QVector>
 #include <QString>
 #include <QStringList>
+#include "ores.qt/export.hpp"
 
 class QRadioButton;
 class QComboBox;
@@ -51,7 +52,7 @@ struct FieldConfig {
  *   - Range:     a min-max span
  *   - Choice:    individually ticked values
  */
-class CronFieldWidget : public QWidget {
+class ORES_QT_API CronFieldWidget : public QWidget {
     Q_OBJECT
 
 public:

@@ -42,4 +42,30 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib)
 
+# libpq on Windows is distributed as a static archive that depends on the
+# PostgreSQL portability libraries libpgport and libpgcommon. vcpkg's
+# libpq find-module wrapper only attaches them when the triplet linkage is
+# "static"; the x64-windows dynamic triplet skips them and we get undefined
+# references to pg_tolower/pg_vsnprintf/gettimeofday/... when linking any
+# DLL that pulls libpq in transitively (e.g. via sqlgen). Attach them
+# explicitly on Windows so the symbols resolve.
+if(WIN32)
+    find_library(ORES_PGPORT_LIBRARY
+        NAMES pgport libpgport
+        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+        NO_DEFAULT_PATH)
+    find_library(ORES_PGCOMMON_LIBRARY
+        NAMES pgcommon libpgcommon
+        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+        NO_DEFAULT_PATH)
+    if(ORES_PGPORT_LIBRARY AND ORES_PGCOMMON_LIBRARY)
+        target_link_libraries(${lib_target_name}
+            PRIVATE
+                ${ORES_PGPORT_LIBRARY}
+                ${ORES_PGCOMMON_LIBRARY}
+                Secur32
+                Wldap32)
+    endif()
+endif()
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

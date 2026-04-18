@@ -33,6 +33,10 @@ DB_ROLE="postgres"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -u|--user)
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
+                echo "Error: -u/--user requires a valid argument" >&2
+                exit 1
+            fi
             DB_ROLE="$2"
             shift 2
             ;;

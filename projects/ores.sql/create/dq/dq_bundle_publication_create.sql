@@ -288,6 +288,15 @@ begin
     -- 'gleif.lei_counterparties.large' when only '.small' is a member) would
     -- silently produce a successful no-op.
     if p_params ? 'opted_in_datasets' then
+        -- Reject non-array opted_in_datasets explicitly rather than letting
+        -- jsonb_array_elements_text raise a generic "cannot extract elements"
+        -- error that is hard to correlate to the caller's payload.
+        if jsonb_typeof(p_params->'opted_in_datasets') <> 'array' then
+            raise exception
+                'opted_in_datasets must be a JSON array, got %',
+                jsonb_typeof(p_params->'opted_in_datasets');
+        end if;
+
         declare
             v_unknown_datasets text;
         begin

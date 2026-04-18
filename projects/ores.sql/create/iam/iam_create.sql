@@ -56,6 +56,7 @@
 \ir ./iam_system_provisioner_create.sql
 \ir ./iam_tenant_provisioner_create.sql
 \ir ./iam_tenant_deprovisioner_create.sql
+\ir ./iam_tenant_reset_create.sql
 \ir ./iam_tenant_terminator_create.sql
 
 -- Admin utilities (helper functions for administrative tasks)

@@ -91,6 +91,9 @@ void ComputeConsoleController::showConsole() {
 }
 
 void ComputeConsoleController::setHttpBaseUrl(const std::string& url) {
+    BOOST_LOG_SEV(lg(), info)
+        << "setHttpBaseUrl url='" << (url.empty() ? "(empty)" : url)
+        << "', console_window=" << (consoleWindow_ ? "present" : "null");
     http_base_url_ = url;
     if (consoleWindow_)
         consoleWindow_->setHttpBaseUrl(url);

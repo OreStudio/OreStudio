@@ -60,6 +60,15 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+auto& page_lg() {
+    static auto instance = make_logger("ores.qt.app_provisioner_page");
+    return instance;
+}
+
+}
+
 // ── Page 1: Application identity ─────────────────────────────────────────────
 
 class AppIdentityPage : public QWizardPage {
@@ -309,6 +318,10 @@ public:
         : QWizardPage(parent),
           http_base_url_(httpBaseUrl),
           app_version_id_(app_version_id) {
+        BOOST_LOG_SEV(page_lg(), info)
+            << "PackageUploadPage constructed with http_base_url='"
+            << (http_base_url_.empty() ? "(empty)" : http_base_url_)
+            << "'";
         setTitle(tr("Package"));
         setSubTitle(tr("Upload the wrapper+engine bundle for this version."));
 
@@ -389,8 +402,15 @@ private slots:
     void on_upload() {
         if (file_path_edit_->text().isEmpty()) return;
 
+        BOOST_LOG_SEV(page_lg(), info)
+            << "on_upload invoked; http_base_url='"
+            << (http_base_url_.empty() ? "(empty)" : http_base_url_)
+            << "', file='" << file_path_edit_->text().toStdString() << "'";
+
         const QString http_base = QString::fromStdString(http_base_url_);
         if (http_base.isEmpty()) {
+            BOOST_LOG_SEV(page_lg(), error)
+                << "HTTP base URL not configured; aborting package upload";
             MessageBoxHelper::warning(this, tr("No Server URL"),
                 tr("HTTP base URL is not configured. Cannot upload package."));
             return;
@@ -611,6 +631,11 @@ AppProvisionerWizard::AppProvisionerWizard(ClientManager* clientManager,
       http_base_url_(httpBaseUrl),
       app_id_(boost::uuids::random_generator()()),
       app_version_id_(boost::uuids::random_generator()()) {
+
+    BOOST_LOG_SEV(lg(), info)
+        << "AppProvisionerWizard constructed with http_base_url='"
+        << (http_base_url_.empty() ? "(empty)" : http_base_url_)
+        << "'";
 
     setWindowTitle(tr("New Application"));
     setWizardStyle(QWizard::ModernStyle);

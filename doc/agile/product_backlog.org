@@ -1421,6 +1421,87 @@ publication. These datasets are dependencies that load into staging tables and
 don't publish to production directly — this is working as designed. Suppress or
 reclassify these log messages to avoid confusion.
 
+*** Long-running bundle publishes need progress reporting and async execution :code:
+
+Large bundle publishes (notably =gleif.lei_counterparties.large=, ~15k
+counterparties + ~30k identifiers) take more than 5 minutes server-side, which
+exceeds the client's NATS request timeout hard-coded to =std::chrono::minutes(5)=
+at =PartyProvisioningWizard.cpp:378= (=PartyOrganisationSetupPage::startPublish=).
+The request fails with "Failed to communicate with server" even though the
+server is still working — the user has no feedback during the wait, and the
+publish continues running after the client gives up. Any future long-running
+publish or import will hit the same wall.
+
+This is two problems that should be tackled together:
+
+1. The publish runs server-side in one big transaction, with no intermediate
+   progress visible. Even with a longer client timeout, the user stares at an
+   indeterminate spinner for tens of minutes.
+2. The request/response RPC shape assumes the operation completes within a
+   single NATS timeout window. That assumption will not hold for any
+   production-sized import.
+
+**** Part A: Wrap the publish in a workflow saga
+
+Run the publish via =ores.workflow.service= (per its component description it
+already hosts long-running distributed saga handlers — this is what it is
+for). The wizard sends a =start_publish= request that returns a
+=publication_id= immediately; the saga runs the publish in the background and
+emits progress events on NATS (e.g. =ores.dq.publication_progress= keyed by
+=publication_id=). The wizard subscribes until it sees =completed= or
+=failed=.
+
+The existing =ores_dq_bundle_publications_tbl= audit table is the natural
+place to persist progress, so reconnecting clients can pick up where they
+left off and admins can see history.
+
+Note: "background" here does not mean "hidden from the user" — wizard flows
+like =PartyProvisioningWizard= should keep the user on-screen until the saga
+completes. The saga enables progress reporting and survives client
+reconnects; it does not move the operation off the critical path. Non-wizard
+admin imports could opt to dismiss the dialog and reconnect later.
+
+**** Part B: Chunk the SQL publish function
+
+=ores_dq_lei_counterparties_publish_fn= currently inserts all counterparties
+level-by-level in one transaction (see
+=projects/ores.sql/create/dq/dq_lei_counterparties_publish_create.sql=).
+Break the inserts into batches (say, 500 rows), and have the saga advance
+the publication state between batches. This gives the progress reporting in
+Part A something meaningful to say ("counterparties 3500/12959 inserted"
+rather than "started"/"done"), and keeps individual transactions small
+enough to avoid lock escalation and long replication catch-up.
+
+The same pattern applies to any other publish function that may generate
+thousands of rows (=ores_dq_lei_parties_publish_fn=, future report/pricing
+publishes, etc.). Consider a general =publish_in_batches= helper that
+populate functions can call back into.
+
+**** Acceptance Criteria
+
+- =PartyProvisioningWizard='s large-counterparty publish completes without a
+  client timeout even on a slow machine.
+- The wizard shows progress updates (records inserted / total, current step)
+  throughout the publish, not just "working…".
+- Closing the wizard mid-publish does not cancel the server-side work;
+  re-opening reconnects to the in-flight saga.
+- Long-running publishes survive client network blips (re-subscribe to the
+  progress channel on reconnect).
+- =ores_dq_bundle_publications_tbl= has intermediate progress rows visible
+  during the publish, not just start/end.
+
+**** Notes
+
+- Both parts are required. Part A without Part B gives a saga that emits
+  only "started"/"finished". Part B without Part A still dies at the client
+  timeout.
+- Interim workaround if an import is needed before this lands: bump the
+  =std::chrono::minutes(5)= at =PartyProvisioningWizard.cpp:378= to
+  =minutes(30)=. Stop-gap only; does not fix the lack of feedback.
+- See also the per-dataset NOTICE output already emitted by
+  =ores_dq_bundles_publish_fn= — that is the natural progress signal source
+  for Part A before Part B is done.
+
 *** Allow creating new connections from login dialog                   :code:
 
 The login dialog should have a button or link to create a new server connection,

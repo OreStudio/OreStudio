@@ -60,11 +60,11 @@ if(WIN32)
         NO_DEFAULT_PATH)
     if(ORES_PGPORT_LIBRARY AND ORES_PGCOMMON_LIBRARY)
         target_link_libraries(${lib_target_name}
-            PUBLIC
+            PRIVATE
                 ${ORES_PGPORT_LIBRARY}
                 ${ORES_PGCOMMON_LIBRARY}
-                Secur32.lib
-                Wldap32.lib)
+                Secur32
+                Wldap32)
     endif()
 endif()
 

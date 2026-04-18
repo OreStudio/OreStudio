@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.refdata.api.lib
         ores.compute.api.lib
+        ores.scheduler.api.lib
         ores.dq.api.lib
         ores.http.api.lib
         ores.assets.api.lib

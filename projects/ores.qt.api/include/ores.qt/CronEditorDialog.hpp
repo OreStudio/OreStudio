@@ -23,6 +23,7 @@
 #include <QDialog>
 #include <QString>
 #include "ores.qt/CronFieldWidget.hpp"
+#include "ores.qt/export.hpp"
 
 class QLabel;
 class QTabWidget;
@@ -36,7 +37,7 @@ namespace ores::qt {
  * Frequency, Range, and Choice modes for the corresponding cron field.
  * A description label at the top summarises the schedule in plain English.
  */
-class CronEditorDialog : public QDialog {
+class ORES_QT_API CronEditorDialog : public QDialog {
     Q_OBJECT
 
 public:

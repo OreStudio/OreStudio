@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QString>
+#include "ores.qt/export.hpp"
 
 class QPushButton;
 
@@ -36,7 +37,7 @@ namespace ores::qt {
  * The public API is identical to the old widget so all dialogs that
  * embed it as a custom widget require no changes.
  */
-class CronExpressionWidget : public QWidget {
+class ORES_QT_API CronExpressionWidget : public QWidget {
     Q_OBJECT
 
 public:

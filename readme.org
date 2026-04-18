@@ -19,7 +19,7 @@
 #+html: <a href="https://orestudio.github.io/OreStudio/doxygen/html/index.html"><img alt="Doxygen" src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/doxygen_badge.svg"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/doc/agile/v0/sprint_backlog_17.html"><img alt="Agile Sprint" src="https://img.shields.io/badge/Sprint-17-blue.svg"/></a>
 #+html: <a href="https://www.gnu.org/software/emacs/"><img alt="GNU Emacs" src="https://img.shields.io/static/v1?logo=gnuemacs&logoColor=fafafa&label=Made%20with&message=GNU%20Emacs&color=7F5AB6&style=flat"/></a>
-#+html: <a href="https://discord.gg/gcrYsjW3pd"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
+#+html: <a href="https://discord.gg/ztAaxmsnUJ"><img alt="Discord" src="https://img.shields.io/discord/1254062142626332732?color=5865F2&amp;logo=discord&amp;logoColor=white"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse"><img alt="Commit Activity" src="https://img.shields.io/github/commit-activity/m/OreStudio/OreStudio"/></a>
 #+html: <a href="https://orestudio.github.io/OreStudio/"><img alt="Website" src="https://img.shields.io/badge/Website-orestudio.github.io-green.svg"/></a>
 #+html: <a href="https://github.com/OreStudio/OreStudio/pulse/monthly"><img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen.svg"/></a>
@@ -126,10 +126,10 @@ teaching perspective as they obscure considerably the underlying domain concepts
 they purport to implement.
 
 In stark contrast, ORE Studio will only ever have three layers: the /client/,
-the /server/ and the [[https://www.postgresql.org/][Postgres]] relational database. This simple architecture has
-several implications:
+the /service layer/ and the [[https://www.postgresql.org/][Postgres]] relational database. This simple
+architecture has several implications:
 
-- [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between the server and database layers, as
+- [[https://en.wikipedia.org/wiki/Business_logic][business logic]] will be divided between the service and database layers, as
   required; it is to be located wherever the implementation can be done with the
   least amount of complexity and the highest amount of clarity.
 - unlike with enterprise-grade software, performance and scalability come
@@ -144,9 +144,9 @@ several implications:
   quant logic as possible, making it more accessible to regular developers. Our
   focus is on [[https://en.wikipedia.org/wiki/Create,_read,_update_and_delete][CRUD]] infrastructure and graphical presentation.
 
-You may think this architecture is far too simple, and you are probably right.
-We prefer to align ourselves with others such as Schmidt, and heed his call for
-[[https://www.radicalsimpli.city/]["Radical Simplicity in Technology"]]:
+We did start with a monolithic architecture first, but then it became too
+complex. At any rate, our ultimate objective is to align ourselves with others
+such as Schmidt, and heed his call for [[https://www.radicalsimpli.city/]["Radical Simplicity in Technology"]]:
 
 #+begin_quote
 As developers we love complexity. We create complexity with SPAs, Vue/React,

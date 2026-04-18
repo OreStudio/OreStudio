@@ -64,8 +64,7 @@ df <- data.frame(
   # 2. Convert 'stories' to a factor, setting the levels based on the sorted order.
   # This makes the order of the slices explicit for ggplot.
   mutate(
-    stories = factor(stories, levels = stories),
-    lab.pos = cumsum(percent) - 0.5 * percent
+    stories = factor(stories, levels = stories)
   )
 
 # Manually selected colors to resemble the screenshot
@@ -116,15 +115,14 @@ library(tidyverse)
 library(tibble)
 
 # Filter to only rows with actual story data (non-empty Tags column)
-clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 names <- unlist(clean_sprint_summary[2])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
 # Create a data frame.
 df <- data.frame(
   cost = values,
-  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
-  y = seq(length(names)) * 0.9
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)])
 )
 
 # Setup the colors
@@ -151,19 +149,19 @@ library(tidyverse)
 library(tibble)
 
 # Filter to only rows with actual story data (non-empty Tags column)
-clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 names <- unlist(clean_sprint_summary[1])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
 # Create a data frame.
 df <- data.frame(
   cost = values,
-  tags = names,
-  y = seq(length(names)) * 0.9
+  tags = names
 )
-# factor(names, levels = names[order(values, decreasing = FALSE)])
 
-df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+df2 <- df %>%
+  group_by(tags) %>%
+  summarize(cost = sum(cost), .groups = "drop")
 # Setup the colors
 blue <- "#076fa2"
 

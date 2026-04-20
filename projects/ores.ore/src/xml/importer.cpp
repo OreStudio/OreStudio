@@ -232,6 +232,22 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     return r;
 }
 
+void importer::rewire_instrument_trade_id(trade_import_item& item) {
+    std::visit([&](auto& result) {
+        using T = std::decay_t<decltype(result)>;
+        if constexpr (std::is_same_v<T, std::monostate>) {
+            // No instrument for this trade type.
+        } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
+                             std::is_same_v<T, domain::fx_mapping_result>) {
+            std::visit([&](auto& instr) {
+                instr.trade_id = item.trade.id;
+            }, result.instrument);
+        } else {
+            result.instrument.trade_id = item.trade.id;
+        }
+    }, item.instrument);
+}
+
 domain::mapped_conventions
 importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();

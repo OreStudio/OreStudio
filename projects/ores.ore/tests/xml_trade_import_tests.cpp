@@ -299,7 +299,12 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     const auto& r = std::get<fx_mapping_result>(item.instrument);
     const auto& instr = std::get<fx_forward_instrument>(r.instrument);
     CHECK(instr.instrument_id != item.trade.id);
-    CHECK(instr.trade_id == item.trade.id);
+    // trade.id is nil at this stage (planner mints later). The back-reference
+    // must still be wired to the current trade.id value so
+    // importer::rewire_instrument_trade_id can propagate the minted UUID
+    // through item.instrument without having to reconstruct the optional.
+    REQUIRE(instr.trade_id.has_value());
+    CHECK(*instr.trade_id == item.trade.id);
     CHECK(item.trade.instrument_id == instr.instrument_id);
     CHECK(item.trade.product_type == ores::trading::domain::product_type::fx);
     CHECK(!instr.bought_currency.empty());

@@ -20,9 +20,20 @@
 #include "ores.ore/planner/ore_import_planner.hpp"
 
 #include <set>
+#include <variant>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.ore/domain/swap_instrument_mapper.hpp"
+#include "ores.ore/domain/fx_instrument_mapper.hpp"
+#include "ores.ore/domain/bond_instrument_mapper.hpp"
+#include "ores.ore/domain/credit_instrument_mapper.hpp"
+#include "ores.ore/domain/equity_instrument_mapper.hpp"
+#include "ores.ore/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore/domain/composite_instrument_mapper.hpp"
 
 namespace {
 
@@ -260,6 +271,65 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", tags) {
 
     BOOST_LOG_SEV(lg, info) << "All " << plan.trades.size()
                             << " trades have valid book/portfolio IDs";
+}
+
+TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = ore_path("examples/Legacy/Example_1");
+    auto sr = make_scan_result(root);
+    sr.root = root;
+
+    if (sr.portfolio_files.empty()) {
+        SUCCEED("No portfolio files — skipping");
+        return;
+    }
+
+    auto choices = default_choices(root);
+    ores::ore::planner::ore_import_planner planner(sr, {}, choices);
+    const auto plan = planner.plan();
+
+    if (plan.trades.empty()) {
+        SUCCEED("No trades in plan — skipping");
+        return;
+    }
+
+    // The planner mints a fresh trade UUID per item so repeated imports do not
+    // collide. The soft back-reference instrument.trade_id must be re-wired to
+    // that UUID — otherwise the UI join from instrument → trade fails and the
+    // economics render blank.
+    const boost::uuids::uuid nil{};
+    int checked = 0;
+    for (const auto& item : plan.trades) {
+        INFO("Trade external_id: " << item.trade.external_id);
+        REQUIRE(item.trade.id != nil);
+
+        std::visit([&](const auto& r) {
+            using namespace ores::ore::domain;
+            using T = std::decay_t<decltype(r)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                // No instrument mapping for this trade type — skip.
+            } else if constexpr (std::is_same_v<T, swap_mapping_result> ||
+                                 std::is_same_v<T, fx_mapping_result>) {
+                std::visit([&](const auto& instr) {
+                    INFO("Instrument variant index checked");
+                    REQUIRE(instr.trade_id.has_value());
+                    CHECK(*instr.trade_id == item.trade.id);
+                    ++checked;
+                }, r.instrument);
+            } else {
+                // bond/credit/equity/commodity/scripted/composite all hold the
+                // instrument directly with a trade_id member.
+                REQUIRE(r.instrument.trade_id.has_value());
+                CHECK(*r.instrument.trade_id == item.trade.id);
+                ++checked;
+            }
+        }, item.instrument);
+    }
+
+    CHECK(checked > 0);
+    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id back-reference for "
+                            << checked << " trade(s)";
 }
 
 TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {

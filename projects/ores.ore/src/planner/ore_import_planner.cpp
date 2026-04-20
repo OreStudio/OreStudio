@@ -97,6 +97,7 @@ ore_import_plan ore_import_planner::plan() {
                 auto items = xml::importer::import_portfolio_with_context(source_file);
                 for (auto& item : items) {
                     item.trade.id           = uuid_gen();
+                    xml::importer::rewire_instrument_trade_id(item);
                     item.trade.book_id      = target_book_id;
                     item.trade.portfolio_id = target_portfolio_id;
                     item.trade.party_id     = choices_.party_id;
@@ -213,6 +214,7 @@ ore_import_plan ore_import_planner::plan() {
 
             for (auto& item : items) {
                 item.trade.id = uuid_gen();
+                xml::importer::rewire_instrument_trade_id(item);
                 item.trade.book_id = b.id;
                 item.trade.portfolio_id = book_parent_id;
                 item.trade.party_id = choices_.party_id;

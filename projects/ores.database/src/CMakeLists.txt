@@ -42,34 +42,4 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib)
 
-# libpq on Windows is distributed as a static archive that depends on the
-# PostgreSQL portability libraries libpgport and libpgcommon plus OpenSSL
-# for the SSL connection paths. vcpkg's libpq find-module wrapper only
-# attaches these when the triplet linkage is "static"; the x64-windows
-# dynamic triplet skips them and we get undefined references to
-# pg_tolower/pg_vsnprintf/RAND_bytes/BIO_new/OPENSSL_sk_num/... when
-# linking any DLL that pulls libpq in transitively (e.g. via sqlgen).
-# Attach them explicitly on Windows so the symbols resolve.
-if(WIN32)
-    find_library(ORES_PGPORT_LIBRARY
-        NAMES pgport libpgport
-        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
-        NO_DEFAULT_PATH)
-    find_library(ORES_PGCOMMON_LIBRARY
-        NAMES pgcommon libpgcommon
-        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
-        NO_DEFAULT_PATH)
-    find_package(OpenSSL REQUIRED)
-    if(ORES_PGPORT_LIBRARY AND ORES_PGCOMMON_LIBRARY)
-        target_link_libraries(${lib_target_name}
-            PRIVATE
-                ${ORES_PGPORT_LIBRARY}
-                ${ORES_PGCOMMON_LIBRARY}
-                OpenSSL::SSL
-                OpenSSL::Crypto
-                Secur32
-                Wldap32)
-    endif()
-endif()
-
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

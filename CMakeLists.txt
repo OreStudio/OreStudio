@@ -209,6 +209,40 @@ find_package(reflectcpp CONFIG REQUIRED)
 # SQLGen
 find_package(sqlgen REQUIRED)
 
+# libpq on Windows is distributed as a static archive whose symbols depend on
+# the PostgreSQL portability libraries (libpgport, libpgcommon), OpenSSL for
+# the SSL connection paths, and a few Windows system libraries. vcpkg's
+# libpq find-module wrapper only attaches these when the triplet linkage is
+# "static"; the x64-windows dynamic triplet skips them, leaving undefined
+# references to pg_tolower / pg_vsnprintf / pg_strong_random / RAND_bytes /
+# BIO_new / OPENSSL_sk_num / ... in every DLL that pulls libpq in
+# transitively (via sqlgen). Attach them directly onto the
+# PostgreSQL::PostgreSQL imported target so that every consumer — not just
+# ores.database — inherits the fix through normal CMake transitivity.
+if(WIN32)
+    find_package(PostgreSQL REQUIRED)
+    find_library(ORES_PGPORT_LIBRARY
+        NAMES pgport libpgport
+        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+        NO_DEFAULT_PATH)
+    find_library(ORES_PGCOMMON_LIBRARY
+        NAMES pgcommon libpgcommon
+        PATHS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib"
+        NO_DEFAULT_PATH)
+    if(TARGET PostgreSQL::PostgreSQL
+       AND ORES_PGPORT_LIBRARY
+       AND ORES_PGCOMMON_LIBRARY)
+        set_property(TARGET PostgreSQL::PostgreSQL APPEND PROPERTY
+            INTERFACE_LINK_LIBRARIES
+                ${ORES_PGPORT_LIBRARY}
+                ${ORES_PGCOMMON_LIBRARY}
+                OpenSSL::SSL
+                OpenSSL::Crypto
+                Secur32
+                Wldap32)
+    endif()
+endif()
+
 # Magic enum
 find_package(magic_enum CONFIG REQUIRED)
 

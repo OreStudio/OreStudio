@@ -62,6 +62,12 @@ target_link_libraries(${lib_target_name}
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
-install(TARGETS ${lib_target_name}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
+# On Windows ores.trading.core is a static archive (see above) whose Debug
+# build exceeds 2 GB — the WiX v3 single-file cabinet offset limit. The
+# archive is only consumed by our own executables at link time, so nothing
+# downstream needs to find it in the installer. Skip install on Windows.
+if(NOT WIN32)
+    install(TARGETS ${lib_target_name}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+endif()

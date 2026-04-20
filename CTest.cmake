@@ -306,7 +306,15 @@ endif()
 # Only attempt build if configuration succeeded.
 set(build_result 0)
 if(configure_result EQUAL 0)
-    set(CTEST_BUILD_TARGET "package")
+    # On Windows Debug the static ores.trading.core.lib exceeds the WiX v3
+    # 2 GB single-file limit and cpack has no chance of succeeding. Release
+    # is the only Windows deliverable, so on Debug build the default target
+    # (everything + tests) without invoking the package step.
+    if(operative_system STREQUAL "windows" AND configuration STREQUAL "debug")
+        set(CTEST_BUILD_TARGET "all")
+    else()
+        set(CTEST_BUILD_TARGET "package")
+    endif()
     ctest_build(PARALLEL_LEVEL ${nproc} RETURN_VALUE build_result)
     if(NOT build_result EQUAL 0)
         message(WARNING "Build failed with error code: ${build_result}")

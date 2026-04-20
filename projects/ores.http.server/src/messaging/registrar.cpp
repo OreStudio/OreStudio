@@ -36,8 +36,10 @@ using namespace ores::logging;
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
+                              ores::security::jwt::jwt_authenticator verifier,
                               const std::string& base_url) {
-    auto handler = std::make_shared<http_info_handler>(nats, base_url);
+    auto handler = std::make_shared<http_info_handler>(
+        nats, std::move(verifier), base_url);
 
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.subscribe(

@@ -22,8 +22,12 @@
 
 #include <string>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_error.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.http.api/messaging/http_info_protocol.hpp"
 
@@ -38,24 +42,47 @@ inline auto& http_info_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
-using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 /**
  * @brief Handles service discovery requests for the HTTP server's base URL.
  *
- * No authentication is required — clients need this URL before they can
- * make authenticated HTTP calls.
+ * Requires a valid JWT. The base URL is internal infrastructure information
+ * and is not exposed to unauthenticated callers.
  */
 class http_info_handler {
 public:
-    explicit http_info_handler(ores::nats::service::client& nats,
-                               std::string base_url)
-        : nats_(nats), base_url_(std::move(base_url)) {}
+    http_info_handler(ores::nats::service::client& nats,
+                      ores::security::jwt::jwt_authenticator verifier,
+                      std::string base_url)
+        : nats_(nats)
+        , verifier_(std::move(verifier))
+        , base_url_(std::move(base_url)) {}
 
     void get(ores::nats::message msg) {
         BOOST_LOG_SEV(http_info_handler_lg(), debug)
             << "Handling " << msg.subject;
+
+        const auto auth_it = msg.headers.find(
+            std::string(ores::nats::headers::authorization));
+        if (auth_it == msg.headers.end()
+            || !auth_it->second.starts_with(ores::nats::headers::bearer_prefix)) {
+            error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            return;
+        }
+
+        const auto token = auth_it->second.substr(
+            ores::nats::headers::bearer_prefix.size());
+        auto claims = verifier_.validate(token);
+        if (!claims) {
+            const auto code = (claims.error()
+                == ores::security::jwt::jwt_error::expired_token)
+                ? ores::service::error_code::token_expired
+                : ores::service::error_code::unauthorized;
+            error_reply(nats_, msg, code);
+            return;
+        }
 
         http::messaging::get_http_info_response resp;
         resp.base_url = base_url_;
@@ -68,6 +95,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    ores::security::jwt::jwt_authenticator verifier_;
     std::string base_url_;
 };
 

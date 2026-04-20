@@ -303,24 +303,33 @@ LoginResult ClientManager::login(const std::string& username,
         }
 
         arm_refresh_timer(response.access_lifetime_s);
-        emit loggedIn();
 
-        // Discover HTTP base URL via NATS service discovery
-        std::string discovered_base_url;
-        try {
-            auto http_info = process_request(http::messaging::get_http_info_request{});
-            if (http_info) {
-                discovered_base_url = http_info->base_url;
-                BOOST_LOG_SEV(lg(), info) << "Discovered HTTP base URL: "
-                                          << discovered_base_url;
-            } else {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "HTTP service discovery failed: " << http_info.error();
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "HTTP service discovery unavailable: " << e.what();
+        // Discover HTTP base URL via authenticated NATS service discovery.
+        // The URL is internal infrastructure information and must not be served
+        // to unauthenticated callers. Failure here fails the login so the user
+        // is not left in a half-configured state where HTTP-dependent features
+        // silently break (e.g. compute package upload, report downloads).
+        auto http_info = process_authenticated_request(
+            http::messaging::get_http_info_request{});
+        if (!http_info || http_info->base_url.empty()) {
+            const std::string err = http_info
+                ? std::string("empty base URL")
+                : http_info.error();
+            BOOST_LOG_SEV(lg(), error)
+                << "HTTP service discovery failed: " << err;
+            logout();
+            return {.success = false,
+                    .error_message = QString(
+                        "Authenticated with IAM but the HTTP server did not "
+                        "respond to service discovery.\n\n"
+                        "Please ensure ores.http.server is running "
+                        "(details: %1).").arg(QString::fromStdString(err))};
         }
+        http_base_url_ = http_info->base_url;
+        BOOST_LOG_SEV(lg(), info) << "Discovered HTTP base URL: "
+                                  << http_base_url_;
+
+        emit loggedIn();
 
         return {
             .success = true,
@@ -329,8 +338,7 @@ LoginResult ClientManager::login(const std::string& username,
             .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
             .party_setup_required = response.party_setup_required,
             .selected_party_id = selected_party_id,
-            .available_parties = std::move(available_parties),
-            .http_base_url = std::move(discovered_base_url)
+            .available_parties = std::move(available_parties)
         };
 
     } catch (const std::exception& e) {
@@ -536,6 +544,7 @@ void ClientManager::disconnect() {
     session_id_.clear();
     stored_username_.clear();
     stored_password_.clear();
+    http_base_url_.clear();
     disconnected_since_ = std::chrono::steady_clock::now();
     QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
 }
@@ -549,10 +558,12 @@ bool ClientManager::logout() {
     try {
         auto result = process_authenticated_request(iam::messaging::logout_request{});
         session_.clear_auth();
+        http_base_url_.clear();
         return result && result->success;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Logout failed: " << e.what();
         session_.clear_auth();
+        http_base_url_.clear();
         return false;
     }
 }

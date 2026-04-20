@@ -24,6 +24,7 @@
 #include <vector>
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::http_server::messaging {
 
@@ -33,12 +34,14 @@ public:
      * @brief Registers all NATS message handlers for the HTTP server.
      *
      * @param nats Connected NATS client.
+     * @param verifier JWT verifier used to authenticate inbound requests.
      * @param base_url The HTTP server's externally accessible base URL.
      * @return Subscription handles that must be kept alive for the lifetime
      *         of the server.
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
+                      ores::security::jwt::jwt_authenticator verifier,
                       const std::string& base_url);
 };
 

@@ -84,11 +84,6 @@ struct LoginResult {
     bool party_setup_required = false;
     boost::uuids::uuid selected_party_id;
     std::vector<PartyInfo> available_parties;
-    /**
-     * @brief HTTP base URL discovered from the HTTP server via NATS.
-     * Empty if discovery failed or the HTTP server has no NATS support.
-     */
-    std::string http_base_url;
 };
 
 /**
@@ -303,6 +298,14 @@ public:
      * @brief Whether the last selectParty call indicated the party needs setup.
      */
     bool lastPartySetupRequired() const { return last_party_setup_required_; }
+
+    /**
+     * @brief HTTP base URL discovered during login via NATS service discovery.
+     *
+     * Populated by login() on success. Empty between disconnect() and the next
+     * successful login.
+     */
+    const std::string& httpBaseUrl() const { return http_base_url_; }
 
     /**
      * @brief Select a party for the current session.
@@ -528,6 +531,9 @@ private:
     QString current_party_name_;
     QString current_party_category_;
     bool last_party_setup_required_ = false;
+
+    // HTTP server base URL discovered post-login via NATS.
+    std::string http_base_url_;
 
     // Active NATS event subscriptions keyed by subject
     std::unordered_map<std::string, nats::service::subscription> nats_subscriptions_;

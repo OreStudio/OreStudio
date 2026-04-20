@@ -178,8 +178,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     co_await ores::service::service::run(
         io_ctx, nats, service_name,
-        [&http_base_url](auto& n, auto /*verifier*/) {
-            return http_server::messaging::registrar::register_handlers(n, http_base_url);
+        [&http_base_url](auto& n, auto verifier) {
+            if (!verifier)
+                throw std::runtime_error(
+                    "JWT verifier is required to register HTTP server handlers.");
+            return http_server::messaging::registrar::register_handlers(
+                n, std::move(*verifier), http_base_url);
         },
         [&](asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

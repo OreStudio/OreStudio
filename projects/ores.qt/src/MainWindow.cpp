@@ -1584,7 +1584,13 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.badge_cache         = badgeCache_;
     ctx.event_bus           = eventBus_;
     ctx.username            = username;
-    ctx.http_base_url       = httpBaseUrl_;
+    // CLI override (--http-base-url) wins; otherwise use the URL discovered
+    // post-login via NATS. Sourcing from ClientManager means every login path
+    // (normal, bootstrap, tenant provisioning) surfaces the URL uniformly
+    // without routing it through a dedicated signal.
+    ctx.http_base_url = httpBaseUrl_.empty() && clientManager_
+        ? clientManager_->httpBaseUrl()
+        : httpBaseUrl_;
 
     // Drive plugin lifecycle in load_order sequence.
     // Menus were already created in the constructor; on_login() wires up controllers.
@@ -1772,12 +1778,6 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
 
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
-
-    // Connect HTTP base URL discovery signal (from NATS service discovery)
-    connect(loginWidget, &LoginDialog::httpBaseUrlDiscovered,
-            this, [this](const QString& url) {
-        setHttpBaseUrl(url.toStdString());
-    });
 
     // Connect login success signal
     connect(loginWidget, &LoginDialog::loginSucceeded,

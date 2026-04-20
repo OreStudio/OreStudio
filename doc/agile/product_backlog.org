@@ -5715,6 +5715,160 @@ correct parent in the UI when many portfolios exist). Investigate and fix:
 - Consider whether virtual portfolios should be allowed to cross legal entity
   boundaries.
 
+*** Windows WiX installer: break through the v3 size and file-count limits :analysis:
+
+*Background*
+
+Two WiX Toolset v3 errors still block the Windows =cpack= step on both MSVC
+debug and release, even after the previous packaging work:
+
+- =LGHT0263= (msvc-debug): =OreStudio-0.0.17-win64/lib/ores.trading.core.lib=
+  is larger than 2,147,483,648 bytes. WiX v3 cannot embed a /single file/
+  whose size exceeds the 32-bit CAB offset limit, regardless of how we split
+  CABs.
+- =LGHT0306= (msvc-release): a CAB ends up with more than 65,535 files.
+  CAB's file-table index is 16-bit, so once a CAB accumulates that many
+  entries =makecab.exe= aborts with =E_FAIL=.
+
+*What has already been tried*
+
+1. PR #693 ([[https://github.com/OreStudio/OreStudio/pull/693][trading.core static on Windows]]) switched =ores.trading.core=
+   from =SHARED= to =STATIC= on Windows to work around the 65,535-exported-symbol
+   PE DLL limit. The move solved the link-time symbol cap, but all of the
+   rfl/Boost template bloat from 156 =.cpp= files now lives in a single
+   static archive. In Debug =x64-windows= that archive is >2 GB — the
+   direct trigger for =LGHT0263=.
+
+2. Commit =0e810380d= ([[https://github.com/OreStudio/OreStudio/commit/0e810380d67f458ce8e2540d193dc6355e2f5f4c][Fix Windows CI packaging]]) set
+   =CPACK_WIX_SIZEOF_CABINET_SPLIT_SIZE= to 200 MB in
+   =build/cpack/CMakeLists.txt:75= and started uploading =wix.log= as a CI
+   artifact. The split helped keep /total/ CAB size tractable but cannot
+   break a single oversized file across CABs, and it triggers on /bytes/
+   rather than /file count/ — so a flood of small duplicate DLLs can still
+   pile up above 65,535 entries per CAB.
+
+3. Each service executable (18 of them) gets its own applocal copy of the
+   vcpkg runtime DLL closure via =applocal.ps1= (see comment in
+   =build/cpack/CMakeLists.txt:71-75=). That per-exe duplication is the
+   main driver of the file count: one copy of ~40 DLLs × 18 services =
+   720 files before we count the app's own binaries, tests, or Qt plugins.
+
+*Why the previous fixes are not enough*
+
+=LGHT0263= is a /file-size/ limit, not a /CAB-size/ limit. WiX v3 stores
+file offsets inside a CAB as 32-bit integers, so any individual file over
+2 GB is fundamentally unpackageable by light.exe v3 — =SIZEOF_CABINET_SPLIT_SIZE=
+does nothing for it.
+
+=LGHT0306= is a /file-count/ limit per CAB. A 200 MB split is only enforced
+on compressed size, so large numbers of small files (the applocal DLL
+duplication) can collectively exceed 65,535 entries before the 200 MB
+threshold triggers.
+
+*Options to fix =LGHT0263= (single-file 2 GB limit)*
+
+A. /Exclude static archives from the installer on Windows./ =.lib= files
+   have no runtime purpose for end users — they're developer artefacts.
+   =ores.trading.core.lib= is only consumed by our own executables at link
+   time and those executables are already statically linked against it, so
+   the archive is already baked in. Adding =if(NOT WIN32)= around
+   =install(TARGETS ores.trading.core.lib ARCHIVE DESTINATION lib)= (or a
+   global component filter for =.lib= on Windows) makes the archive
+   disappear from the MSI without any semantic loss. Low risk, single
+   commit.
+
+B. /Skip packaging on Debug./ Only Release builds are ever shipped; Debug
+   packaging exists only for CI symmetry. Guarding the =cpack= step in
+   =.github/workflows/continuous-windows.yml= on =CMAKE_BUILD_TYPE == Release=
+   removes the Debug-only =LGHT0263= (Release =.lib= sizes are far smaller
+   because of template COMDAT folding and dead-code elimination). Pairs
+   well with A. Low risk, no CMake changes.
+
+C. /Split =ores.trading.core= into sub-libraries./ 156 =.cpp= files
+   covering reporting, workflow, domain, repository, etc. could be
+   partitioned into a handful of focused static libs (e.g.
+   =ores.trading.reporting=, =ores.trading.workflow=). Addresses the root
+   cause — the library is too big because it owns too many concerns — but
+   is a multi-sprint refactor touching dependency graphs across the
+   codebase.
+
+D. /Migrate to WiX Toolset v4./ WiX v4 drops the 32-bit CAB offsets and
+   supports much larger files. Medium effort: the CMake WiX generator
+   supports v4, but the toolchain is .NET-based with a different tool
+   layout, so the CI image and =PATH= need adjusting. Would also remove
+   some of the LGHT0306 pressure (v4 still caps files per CAB but the
+   =WixMediaFilesPerCab= and modern Media authoring give finer control).
+
+*Options to fix =LGHT0306= (>65,535 files per CAB)*
+
+E. /Consolidate the vcpkg runtime DLL closure into a single =bin/= copy./
+   Rather than having each of the 18 service exes import its own private
+   applocal closure, copy the vcpkg DLLs /once/ into the install =bin/=
+   directory and let Windows' default DLL search resolve them for every
+   exe in that directory. Typically achieved by running =applocal.ps1= on a
+   single "seed" target (e.g. =ores.qt= or =ores.cli=) and dropping it from
+   the others via =set_property(TARGET <svc>.exe PROPERTY VS_USER_PROPS ...)=
+   or by replacing the bundled POST_BUILD step with a manual
+   =install(FILES $<TARGET_RUNTIME_DLLS:ores.qt.exe>)= at CPack time. Biggest
+   single lever: dropping per-exe duplication removes most of the file count
+   and probably resolves =LGHT0306= on its own.
+
+F. /Lower =CPACK_WIX_SIZEOF_CABINET_SPLIT_SIZE=./ Forces more CABs with
+   fewer files each. Band-aid — the math depends on average compressed
+   file size, so this only works until the install set grows again.
+
+G. /Exclude tests and dev-only artefacts from the installer./ The current
+   install set includes test executables (=*.tests.exe=), their applocal
+   DLLs, autogenerated headers from =_autogen=, and similar noise. Moving
+   them to a non-default CPack component (or dropping them from =install()=
+   altogether) shrinks the installer meaningfully. Pairs well with E.
+
+H. /Use WiX Media elements with =MaximumUncompressedMediaSize=./ Declare
+   an explicit multi-media authoring that caps files /and/ bytes per CAB.
+   Requires a WiX patch template; CPack's generator doesn't expose this by
+   default, so would need either a custom =CPACK_WIX_TEMPLATE= or a manual
+   =*.wxs= fragment. Medium effort.
+
+*Recommendation*
+
+Short-term hotfix (days):
+
+- Apply *A* (exclude static archives from Windows installer) and *B* (skip
+  CPack on Debug) to clear =LGHT0263= with the minimum possible surface
+  area. Both are localised changes with no runtime implications.
+- Apply *E* (single applocal copy) and *G* (exclude tests) to clear
+  =LGHT0306= and also shrink the Release MSI. This is a larger change but
+  both are things the installer arguably should have been doing anyway.
+
+Medium-term (sprint+):
+
+- Consider *C* (split =ores.trading.core=) on its own merits, independent
+  of the installer. A 2 GB Debug archive is a symptom of a library with
+  too many concerns — splitting would also speed up incremental Debug
+  builds, not just shrink the installer.
+- Defer *D* (WiX v4) unless we hit limits that A + E + G cannot dodge.
+
+***** Tasks
+
+- [ ] Confirm the hypothesis: build once locally on Windows Debug and
+      measure =ores.trading.core.lib=; confirm it is >2 GB and that Release
+      is comfortably below.
+- [ ] Implement *A*: guard the =install(... ARCHIVE DESTINATION lib)= on
+      Windows for =ores.trading.core.lib= (and ideally any other Windows
+      static library). Verify the MSI no longer contains =.lib= files.
+- [ ] Implement *B*: skip =cpack= in the Debug matrix leg of
+      =continuous-windows.yml= (or guard on =CMAKE_BUILD_TYPE=).
+- [ ] Measure file count in the install tree before and after attempting
+      *E*; pick the simplest mechanism (single-seed applocal or
+      =$<TARGET_RUNTIME_DLLS:...>=).
+- [ ] Implement *G*: exclude =*.tests.exe=, their applocal closures, and
+      =_autogen/= output from the install set.
+- [ ] Add a CI check (or CMake guard) that fails fast if any single staged
+      file exceeds 2 GB or if the install tree exceeds ~60,000 files, so
+      future regressions trip at configure time, not in WiX.
+- [ ] Revisit *C* (split =ores.trading.core=) as a separate design story if
+      Debug incremental build speed becomes a pain point.
+
 
 * Footer
 

@@ -341,3 +341,24 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/build)
 add_subdirectory(${CMAKE_SOURCE_DIR}/assets)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)
 add_subdirectory(${CMAKE_SOURCE_DIR}/doc/skills/modeling)
+
+# On Windows we disable vcpkg's per-target X_VCPKG_APPLOCAL_DEPS_INSTALL hook
+# (set in CMakePresets.json) because it registers one install(CODE ...) block
+# per installed executable. With ~80 installed targets each pulling the
+# transitive Qt+OpenSSL+libpq+Boost closure, WiX accumulates more than 65,535
+# files per cabinet (LGHT0306). The build-time VCPKG_APPLOCAL_DEPS (still ON
+# by default) already populates publish/bin/ with every DLL and Qt plugin
+# exactly once, so we install that directory in one shot — excluding our own
+# binaries (installed individually via install(TARGETS)), test executables
+# (not meant for the installer), and build byproducts.
+if(WIN32)
+    install(DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
+        DESTINATION bin
+        USE_SOURCE_PERMISSIONS
+        REGEX "/ores\\." EXCLUDE
+        REGEX "\\.tests\\." EXCLUDE
+        REGEX "\\.pdb$" EXCLUDE
+        REGEX "\\.ilk$" EXCLUDE
+        REGEX "\\.exp$" EXCLUDE
+        REGEX "\\.lib$" EXCLUDE)
+endif()

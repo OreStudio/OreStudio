@@ -69,7 +69,7 @@ where not exists (
 );
 
 -- -------------------------------------------------------------------------
--- ORE App Version 1.8.15.0 (linux-x86_64)
+-- ORE App Version 1.8.15.0
 -- -------------------------------------------------------------------------
 with ore_app as (
     select id from ores_compute_apps_tbl
@@ -88,7 +88,6 @@ inserted_version as (
         app_id,
         wrapper_version,
         engine_version,
-        package_uri,
         min_ram_mb,
         modified_by,
         performed_by,
@@ -104,7 +103,6 @@ inserted_version as (
         ore_app.id,
         '1.0.0',
         '1.8.15.0',
-        '/api/v1/storage/compute/packages/' || new_version_id.uuid::text,
         512,
         current_user,
         current_user,
@@ -137,12 +135,13 @@ app_version_id as (
     limit 1
 )
 -- -------------------------------------------------------------------------
--- ORE App Version Platform (x86_64-unknown-linux-gnu)
+-- ORE App Version Platform Package (x64-linux)
 -- -------------------------------------------------------------------------
 insert into ores_compute_app_version_platforms_tbl (
     tenant_id,
     app_version_id,
     platform_id,
+    package_uri,
     modified_by,
     performed_by,
     change_reason_code,
@@ -154,6 +153,7 @@ select
     ores_iam_system_tenant_id_fn(),
     app_version_id.id,
     p.id,
+    '/api/v1/storage/compute/packages/ore/1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz',
     current_user,
     current_user,
     'system.new_record',
@@ -162,13 +162,13 @@ select
     ores_utility_infinity_timestamp_fn()
 from app_version_id
 join ores_compute_platforms_tbl p
-    on p.code = 'x86_64-unknown-linux-gnu'
+    on p.code = 'x64-linux'
    and p.valid_to = ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_app_version_platforms_tbl avp
     join ores_compute_platforms_tbl pl
         on pl.id = avp.platform_id
-       and pl.code = 'x86_64-unknown-linux-gnu'
+       and pl.code = 'x64-linux'
        and pl.valid_to = ores_utility_infinity_timestamp_fn()
     where avp.app_version_id = app_version_id.id
       and avp.tenant_id = ores_iam_system_tenant_id_fn()

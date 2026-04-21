@@ -8,7 +8,7 @@
     "entity_title": "App Version",
     "has_tenant_id": true,
     "brief": "A versioned wrapper+engine bundle for a compute grid application.",
-    "description": "Combines a specific wrapper version with a specific engine version for a given\nplatform. The BOINC equivalent of 'app_version'. Nodes download the package_uri\nbundle and launch the wrapper to run the engine.",
+    "description": "Combines a specific wrapper version with a specific engine version. The BOINC\nequivalent of 'app_version'. Per-platform package artefacts are tracked in\nores_compute_app_version_platforms_tbl — each (app_version, platform) row owns\nthe URI of its own packaged bundle.",
 
     "primary_key": {
       "column": "id",
@@ -38,20 +38,6 @@
         "cpp_type": "std::string",
         "nullable": false,
         "description": "Version of the underlying engine, e.g. 'ORE-Studio-7.1'."
-      },
-      {
-        "name": "package_uri",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "URI pointing to the zipped wrapper+engine bundle in object storage."
-      },
-      {
-        "name": "platform",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Target platform identifier, e.g. 'linux_x86_64', 'win_x64'."
       },
       {
         "name": "min_ram_mb",
@@ -107,9 +93,7 @@
         {"enum_name": "AppId",          "field": "app_id",          "header": "App ID",          "is_uuid": true,   "width": 160},
         {"enum_name": "WrapperVersion", "field": "wrapper_version", "header": "Wrapper Version", "is_string": true, "width": 120},
         {"enum_name": "EngineVersion",  "field": "engine_version",  "header": "Engine Version",  "is_string": true, "width": 120},
-        {"enum_name": "Platform",       "field": "platform",        "header": "Platform",        "is_string": true, "width": 100},
         {"enum_name": "MinRamMb",       "field": "min_ram_mb",      "header": "Min RAM (MB)",    "is_int": true,    "width": 90},
-        {"enum_name": "PackageUri",     "field": "package_uri",     "header": "Package URI",     "is_string": true, "width": 200},
         {"enum_name": "Version",        "field": "version",         "header": "Version",         "is_int": true,    "width": 60},
         {"enum_name": "ModifiedBy",     "field": "modified_by",     "header": "Modified By",     "is_string": true, "width": 120}
       ],

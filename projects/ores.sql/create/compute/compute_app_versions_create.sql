@@ -24,9 +24,10 @@
  *
  *  Table
  *
- * Combines a specific wrapper version with a specific engine version for a given
- * platform. The BOINC equivalent of 'app_version'. Nodes download the package_uri
- * bundle and launch the wrapper to run the engine.
+ * Combines a specific wrapper version with a specific engine version. The BOINC
+ * equivalent of 'app_version'. Per-platform package artefacts are tracked in
+ * ores_compute_app_version_platforms_tbl — each (app_version, platform) row
+ * owns the URI of its own packaged bundle.
  */
 
 create table if not exists "ores_compute_app_versions_tbl" (
@@ -36,7 +37,6 @@ create table if not exists "ores_compute_app_versions_tbl" (
     "app_id" uuid not null,
     "wrapper_version" text not null,
     "engine_version" text not null,
-    "package_uri" text not null,
     "min_ram_mb" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

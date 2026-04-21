@@ -21,14 +21,17 @@
 -- =============================================================================
 -- Compute App Version Platforms (bitemporal junction table)
 -- =============================================================================
--- Associates app versions with the platforms they support. Tenant-scoped:
--- each tenant manages which platform associations are active for their app
--- versions. Supports re-enabling a previously removed platform association.
+-- Associates app versions with the platforms they support, and carries the URI
+-- of the per-platform packaged bundle (a .tar.gz containing the wrapper+engine
+-- binaries built for that target triplet). Tenant-scoped: each tenant manages
+-- which platform associations are active for their app versions. Supports
+-- re-enabling a previously removed platform association.
 
 create table if not exists "ores_compute_app_version_platforms_tbl" (
     "tenant_id"           uuid not null,
     "app_version_id"      uuid not null,
     "platform_id"         uuid not null,
+    "package_uri"         text not null,
     "modified_by"         text not null,
     "performed_by"        text not null,
     "change_reason_code"  text not null,

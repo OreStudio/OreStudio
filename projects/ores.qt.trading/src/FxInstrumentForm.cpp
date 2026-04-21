@@ -24,7 +24,6 @@
 #include <QFutureWatcher>
 #include "ui_FxInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
 
@@ -131,69 +130,34 @@ void FxInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void FxInstrumentForm::loadInstrument(const std::string& id) {
-    if (!clientManager_) return;
+void FxInstrumentForm::setInstrument(
+    const trading::messaging::instrument_export_result& instrument) {
 
-    struct LoadResult {
-        bool success;
-        std::string message;
-        trading::domain::fx_forward_instrument instrument;
-    };
+    const auto* ex =
+        std::get_if<trading::messaging::fx_export_result>(&instrument);
+    if (!ex) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Non-FX instrument pushed to FxInstrumentForm";
+        emit loadFailed(QStringLiteral(
+            "Unexpected instrument type for FX form"));
+        return;
+    }
+    const auto* fwd =
+        std::get_if<trading::domain::fx_forward_instrument>(&ex->instrument);
+    if (!fwd) {
+        const auto ttc = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
+        emit loadFailed(QString::fromStdString(
+            "Non-forward FX type not yet supported in this "
+            "dialog (trade_type_code=" + ttc + ")"));
+        return;
+    }
 
-    const auto tradeTypeCode =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
-
-    QPointer<FxInstrumentForm> self = this;
-    auto* watcher = new QFutureWatcher<LoadResult>(self);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load FX instrument: " << result.message;
-            emit self->loadFailed(QString::fromStdString(result.message));
-            return;
-        }
-
-        self->instrument_ = std::move(result.instrument);
-        self->loaded_ = true;
-        self->dirty_ = false;
-        self->populateFromInstrument();
-        self->emitProvenance();
-        emit self->instrumentLoaded();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, id, tradeTypeCode]() -> LoadResult {
-        if (!cm)
-            return {false, "Dialog closed", {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = trading::domain::product_type::fx;
-        req.instrument_id = id;
-        req.trade_type_code = tradeTypeCode;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}};
-        if (!r->success)
-            return {false, r->message, {}};
-
-        const auto* ex =
-            std::get_if<trading::messaging::fx_export_result>(&r->instrument);
-        if (!ex)
-            return {false, "Unexpected instrument type in response", {}};
-        const auto* fwd =
-            std::get_if<trading::domain::fx_forward_instrument>(&ex->instrument);
-        if (!fwd) {
-            return {false, "Non-forward FX type not yet supported in this "
-                           "dialog (trade_type_code=" + tradeTypeCode + ")", {}};
-        }
-        return {true, {}, *fwd};
-    }));
+    instrument_ = *fwd;
+    loaded_ = true;
+    dirty_ = false;
+    populateFromInstrument();
+    emitProvenance();
+    emit instrumentLoaded();
 }
 
 void FxInstrumentForm::populateFromInstrument() {

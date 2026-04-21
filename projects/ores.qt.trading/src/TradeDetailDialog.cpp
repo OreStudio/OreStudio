@@ -74,7 +74,7 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     });
 
     // Build a stack page per registered IInstrumentForm. formMap_ is
-    // populated here so setTrade() can reach any form in O(1).
+    // populated here so setTradeBundle() can reach any form in O(1).
     register_default_forms(instrumentFormRegistry_);
     for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
         IInstrumentForm* form =
@@ -362,8 +362,9 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
                        has_options, has_extension);
 }
 
-void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
-    trade_ = trade;
+void TradeDetailDialog::setTradeBundle(
+    const trading::messaging::trade_export_item& bundle) {
+    trade_ = bundle.trade;
     updateUiFromTrade();
     selectCurrentBook();
     selectCurrentCounterparty();
@@ -371,11 +372,10 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
     auto it = formMap_.find(trade_.product_type);
     if (it != formMap_.end()) {
         activateForm(it->second, trade_.trade_type);
-        if (trade_.instrument_id.has_value()) {
-            activeForm_->loadInstrument(
-                boost::uuids::to_string(*trade_.instrument_id));
-        } else {
+        if (std::holds_alternative<std::monostate>(bundle.instrument)) {
             activeForm_->clear();
+        } else {
+            activeForm_->setInstrument(bundle.instrument);
         }
     }
 }

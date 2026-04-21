@@ -109,59 +109,25 @@ void ScriptedInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void ScriptedInstrumentForm::loadInstrument(const std::string& id) {
-    if (!clientManager_) return;
+void ScriptedInstrumentForm::setInstrument(
+    const trading::messaging::instrument_export_result& instrument) {
 
-    struct LoadResult {
-        bool success;
-        std::string message;
-        trading::domain::scripted_instrument instrument;
-    };
+    const auto* inst =
+        std::get_if<trading::domain::scripted_instrument>(&instrument);
+    if (!inst) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Non-scripted instrument pushed to ScriptedInstrumentForm";
+        emit loadFailed(QStringLiteral(
+            "Unexpected instrument type for scripted form"));
+        return;
+    }
 
-    QPointer<ScriptedInstrumentForm> self = this;
-    auto* watcher = new QFutureWatcher<LoadResult>(self);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load scripted instrument: " << result.message;
-            emit self->loadFailed(QString::fromStdString(result.message));
-            return;
-        }
-
-        self->instrument_ = std::move(result.instrument);
-        self->loaded_ = true;
-        self->dirty_ = false;
-        self->populateFromInstrument();
-        self->emitProvenance();
-        emit self->instrumentLoaded();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, id]() -> LoadResult {
-        if (!cm)
-            return {false, "Dialog closed", {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = trading::domain::product_type::scripted;
-        req.instrument_id = id;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}};
-        if (!r->success)
-            return {false, r->message, {}};
-
-        const auto* inst =
-            std::get_if<trading::domain::scripted_instrument>(&r->instrument);
-        if (!inst)
-            return {false, "Unexpected instrument type in response", {}};
-
-        return {true, {}, *inst};
-    }));
+    instrument_ = *inst;
+    loaded_ = true;
+    dirty_ = false;
+    populateFromInstrument();
+    emitProvenance();
+    emit instrumentLoaded();
 }
 
 void ScriptedInstrumentForm::populateFromInstrument() {

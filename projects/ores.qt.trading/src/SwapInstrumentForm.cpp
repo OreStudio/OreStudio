@@ -427,67 +427,28 @@ void SwapInstrumentForm::writeUiToInstrument() {
     state_.performed_by = username_;
 }
 
-void SwapInstrumentForm::loadInstrument(const std::string& id) {
-    if (!clientManager_) return;
+void SwapInstrumentForm::setInstrument(
+    const trading::messaging::instrument_export_result& instrument) {
 
-    struct LoadResult {
-        bool success;
-        std::string message;
-        SwapFormState state;
-        std::vector<trading::domain::swap_leg> legs;
-    };
+    const auto* swap =
+        std::get_if<trading::messaging::swap_export_result>(&instrument);
+    if (!swap) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Non-swap instrument pushed to SwapInstrumentForm";
+        emit loadFailed(QStringLiteral(
+            "Unexpected instrument type for swap form"));
+        return;
+    }
 
-    // Capture trade_type_code before launching async work.
     const std::string ttc = state_.trade_type_code;
-
-    QPointer<SwapInstrumentForm> self = this;
-    auto* watcher = new QFutureWatcher<LoadResult>(self);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load swap instrument: " << result.message;
-            emit self->loadFailed(QString::fromStdString(result.message));
-            return;
-        }
-
-        self->state_ = std::move(result.state);
-        self->legs_ = std::move(result.legs);
-        self->loaded_ = true;
-        self->dirty_ = false;
-        self->populateFromState();
-        self->emitProvenance();
-        emit self->instrumentLoaded();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, id, ttc]() -> LoadResult {
-        if (!cm)
-            return {false, "Dialog closed", {}, {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = trading::domain::product_type::swap;
-        req.instrument_id = id;
-        req.trade_type_code = ttc;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}, {}};
-        if (!r->success)
-            return {false, r->message, {}, {}};
-
-        const auto* swap =
-            std::get_if<trading::messaging::swap_export_result>(&r->instrument);
-        if (!swap)
-            return {false, "Unexpected instrument type in response", {}, {}};
-
-        auto state = extract_state(*swap);
-        state.trade_type_code = ttc; // not carried by domain objects
-        return {true, {}, std::move(state), swap->legs};
-    }));
+    state_ = extract_state(*swap);
+    state_.trade_type_code = ttc;
+    legs_ = swap->legs;
+    loaded_ = true;
+    dirty_ = false;
+    populateFromState();
+    emitProvenance();
+    emit instrumentLoaded();
 }
 
 void SwapInstrumentForm::populateFromState() {

@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
@@ -66,7 +67,7 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
-    void openEdit(const trading::domain::trade& trade);
+    void openEdit(const trading::messaging::trade_export_item& bundle);
 
 signals:
     void statusMessage(const QString& message);
@@ -76,7 +77,7 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const trading::domain::trade& trade);
+    void onShowDetails(const trading::messaging::trade_export_item& bundle);
     void onAddNewRequested();
     void onShowHistory(const trading::domain::trade& trade);
     void onImportTradesRequested();
@@ -86,7 +87,7 @@ private slots:
 
 private:
     void showAddWindow();
-    void showDetailWindow(const trading::domain::trade& trade);
+    void showDetailWindow(const trading::messaging::trade_export_item& bundle);
     void showHistoryWindow(const trading::domain::trade& trade);
 
     ChangeReasonCache* changeReasonCache_{nullptr};

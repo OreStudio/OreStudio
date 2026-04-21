@@ -32,6 +32,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_type.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -73,7 +74,17 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setTrade(const trading::domain::trade& trade);
+
+    /**
+     * @brief Populate the dialog with a trade bundle (trade + instrument).
+     *
+     * The caller must provide the resolved instrument variant alongside the
+     * trade. When the trade has no linked instrument (create mode, or a
+     * version with no instrument reference) pass a @c trade_export_item
+     * whose @c instrument is monostate; the dialog then routes to
+     * @c IInstrumentForm::clear() instead of @c setInstrument().
+     */
+    void setTradeBundle(const trading::messaging::trade_export_item& bundle);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 

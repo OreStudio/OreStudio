@@ -194,59 +194,25 @@ void EquityInstrumentForm::writeUiToInstrument() {
     instrument_.performed_by = username_;
 }
 
-void EquityInstrumentForm::loadInstrument(const std::string& id) {
-    if (!clientManager_) return;
+void EquityInstrumentForm::setInstrument(
+    const trading::messaging::instrument_export_result& instrument) {
 
-    struct LoadResult {
-        bool success;
-        std::string message;
-        trading::domain::equity_instrument instrument;
-    };
+    const auto* equity =
+        std::get_if<trading::domain::equity_instrument>(&instrument);
+    if (!equity) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Non-equity instrument pushed to EquityInstrumentForm";
+        emit loadFailed(QStringLiteral(
+            "Unexpected instrument type for equity form"));
+        return;
+    }
 
-    QPointer<EquityInstrumentForm> self = this;
-    auto* watcher = new QFutureWatcher<LoadResult>(self);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished,
-            self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to load equity instrument: " << result.message;
-            emit self->loadFailed(QString::fromStdString(result.message));
-            return;
-        }
-
-        self->instrument_ = std::move(result.instrument);
-        self->loaded_ = true;
-        self->dirty_ = false;
-        self->populateFromInstrument();
-        self->emitProvenance();
-        emit self->instrumentLoaded();
-    });
-
-    auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, id]() -> LoadResult {
-        if (!cm)
-            return {false, "Dialog closed", {}};
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = trading::domain::product_type::equity;
-        req.instrument_id = id;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r)
-            return {false, "Failed to communicate with server", {}};
-        if (!r->success)
-            return {false, r->message, {}};
-
-        const auto* equity =
-            std::get_if<trading::domain::equity_instrument>(&r->instrument);
-        if (!equity)
-            return {false, "Unexpected instrument type in response", {}};
-
-        return {true, {}, *equity};
-    }));
+    instrument_ = *equity;
+    loaded_ = true;
+    dirty_ = false;
+    populateFromInstrument();
+    emitProvenance();
+    emit instrumentLoaded();
 }
 
 void EquityInstrumentForm::populateFromInstrument() {

@@ -30,8 +30,13 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    std::string trade_key_extractor(const trading::domain::trade& e) {
-        return e.external_id;
+    std::string trade_key_extractor(
+        const trading::messaging::trade_export_item& item) {
+        return item.trade.external_id;
+    }
+    std::chrono::system_clock::time_point trade_timestamp_extractor(
+        const trading::messaging::trade_export_item& item) {
+        return item.trade.recorded_at;
     }
 }
 
@@ -40,7 +45,7 @@ ClientTradeModel::ClientTradeModel(
     : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(trade_key_extractor),
+      recencyTracker_(trade_key_extractor, trade_timestamp_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
@@ -55,7 +60,7 @@ ClientTradeModel::ClientTradeModel(
 int ClientTradeModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(trades_.size());
+    return static_cast<int>(items_.size());
 }
 
 int ClientTradeModel::columnCount(const QModelIndex& parent) const {
@@ -70,10 +75,10 @@ QVariant ClientTradeModel::data(
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= trades_.size())
+    if (row >= items_.size())
         return {};
 
-    const auto& trade = trades_[row];
+    const auto& trade = items_[row].trade;
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -154,9 +159,9 @@ void ClientTradeModel::refresh() {
         return;
     }
 
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         beginResetModel();
-        trades_.clear();
+        items_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
@@ -180,9 +185,9 @@ void ClientTradeModel::load_page(std::uint32_t offset,
         return;
     }
 
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         beginResetModel();
-        trades_.clear();
+        items_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
@@ -202,7 +207,7 @@ void ClientTradeModel::fetch_trades(
                 BOOST_LOG_SEV(lg(), debug) << "Making trades request with offset="
                                            << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .trades = {},
+                    return {.success = false, .items = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -212,7 +217,7 @@ void ClientTradeModel::fetch_trades(
                     std::nullopt, offset, limit);
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades";
-                    return {.success = false, .trades = {},
+                    return {.success = false, .items = {},
                             .total_available_count = 0,
                             .error_message = "Failed to fetch trades",
                             .error_details = {}};
@@ -221,12 +226,8 @@ void ClientTradeModel::fetch_trades(
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->items.size()
                                            << " trades, total available: "
                                            << result->total_count;
-                std::vector<ores::trading::domain::trade> trades;
-                trades.reserve(result->items.size());
-                for (auto& item : result->items)
-                    trades.push_back(std::move(item.trade));
                 return {.success = true,
-                        .trades = std::move(trades),
+                        .items = std::move(result->items),
                         .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "trades");
@@ -249,14 +250,14 @@ void ClientTradeModel::onTradesLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result.trades.size());
+    const int new_count = static_cast<int>(result.items.size());
 
     if (new_count > 0) {
         beginResetModel();
-        trades_ = std::move(result.trades);
+        items_ = std::move(result.items);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(trades_);
+        const bool has_recent = recencyTracker_.update(items_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
@@ -284,9 +285,17 @@ void ClientTradeModel::set_page_size(std::uint32_t size) {
 const trading::domain::trade*
 ClientTradeModel::getTrade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= trades_.size())
+    if (idx >= items_.size())
         return nullptr;
-    return &trades_[idx];
+    return &items_[idx].trade;
+}
+
+const trading::messaging::trade_export_item*
+ClientTradeModel::getTradeBundle(int row) const {
+    const auto idx = static_cast<std::size_t>(row);
+    if (idx >= items_.size())
+        return nullptr;
+    return &items_[idx];
 }
 
 QVariant ClientTradeModel::recency_foreground_color(
@@ -298,7 +307,7 @@ QVariant ClientTradeModel::recency_foreground_color(
 }
 
 void ClientTradeModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }

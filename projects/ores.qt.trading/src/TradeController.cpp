@@ -147,12 +147,15 @@ void TradeController::reloadListWindow() {
     }
 }
 
-void TradeController::openEdit(const trading::domain::trade& t) { showDetailWindow(t); }
+void TradeController::openEdit(
+    const trading::messaging::trade_export_item& bundle) {
+    showDetailWindow(bundle);
+}
 
 void TradeController::onShowDetails(
-    const trading::domain::trade& trade) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;
-    showDetailWindow(trade);
+    const trading::messaging::trade_export_item& bundle) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << bundle.trade.external_id;
+    showDetailWindow(bundle);
 }
 
 void TradeController::onAddNewRequested() {
@@ -340,9 +343,9 @@ void TradeController::showAddWindow() {
 }
 
 void TradeController::showDetailWindow(
-    const trading::domain::trade& trade) {
+    const trading::messaging::trade_export_item& bundle) {
 
-    const QString identifier = QString::fromStdString(trade.external_id);
+    const QString identifier = QString::fromStdString(bundle.trade.external_id);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -350,7 +353,8 @@ void TradeController::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << trade.external_id;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: "
+                               << bundle.trade.external_id;
 
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -358,7 +362,7 @@ void TradeController::showDetailWindow(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
-    detailDialog->setTrade(trade);
+    detailDialog->setTradeBundle(bundle);
 
     connect(detailDialog, &TradeDetailDialog::statusMessage,
             this, &TradeController::statusMessage);
@@ -481,7 +485,12 @@ void TradeController::onOpenVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setTrade(trade);
+    // Historical versions don't carry an instrument bundle: the history
+    // endpoint returns bare trades, and point-in-time instrument retrieval
+    // is a separate concern. Pass monostate so the form clears rather than
+    // showing stale current-instrument data.
+    trading::messaging::trade_export_item bundle{.trade = trade, .instrument = {}};
+    detailDialog->setTradeBundle(bundle);
     detailDialog->setReadOnly(true);
 
     connect(detailDialog, &TradeDetailDialog::statusMessage,
@@ -529,7 +538,8 @@ void TradeController::onRevertVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setTrade(trade);
+    trading::messaging::trade_export_item bundle{.trade = trade, .instrument = {}};
+    detailDialog->setTradeBundle(bundle);
     detailDialog->setCreateMode(false);
 
     connect(detailDialog, &TradeDetailDialog::statusMessage,

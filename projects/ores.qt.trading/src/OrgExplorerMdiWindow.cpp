@@ -613,11 +613,11 @@ void OrgExplorerMdiWindow::onTradeDoubleClicked(const QModelIndex& index) {
         return;
 
     const auto sourceIndex = tradeProxyModel_->mapToSource(index);
-    const auto* trade = tradeModel_->get_trade(sourceIndex.row());
-    if (!trade)
+    const auto* bundle = tradeModel_->get_trade_bundle(sourceIndex.row());
+    if (!bundle)
         return;
 
-    tradeController_->openEdit(*trade);
+    tradeController_->openEdit(*bundle);
 }
 
 }

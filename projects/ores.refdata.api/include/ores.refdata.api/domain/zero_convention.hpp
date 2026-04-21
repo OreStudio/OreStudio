@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_ZERO_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_ZERO_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_ZERO_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_ZERO_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -30,11 +30,9 @@ namespace ores::refdata::domain {
 /**
  * @brief Conventions for a zero-coupon yield curve.
  *
- * Specifies the day count fraction and compounding method used when
- * bootstrapping a discount or zero-rate curve in ORE. Corresponds to the
- * @c <Zero> element in @c conventions.xml.
- *
- * The @c id field is the natural key (ORE @c <Id> element).
+ * Specifies the day count fraction and compounding method used when bootstrapping
+ * a discount or zero-rate curve in ORE. Corresponds to the <Zero> element in
+ * ORE conventions.xml. The id field is the natural key (ORE <Id> element).
  */
 struct zero_convention final {
     /**
@@ -48,35 +46,34 @@ struct zero_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "EUR-ZERO-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'EUR-ZERO-CONVENTIONS', 'USD-ZERO-CONVENTIONS'.
      */
     std::string id;
 
     /**
-     * @brief Whether the curve is defined on a tenor grid (@c true) or on
-     *        absolute dates (@c false).
+     * @brief Whether the curve is defined on a tenor grid (true) or on absolute dates (false).
      */
-    bool tenor_based = false;
+    bool tenor_based;
 
     /**
-     * @brief Day count fraction code (canonical FpML, e.g. "ACT/365.FIXED").
+     * @brief Day count fraction code (canonical FpML, e.g. 'ACT/365.FIXED').
      */
     std::string day_count_fraction;
 
     /**
-     * @brief Compounding method (canonical CDM, e.g. "Continuous").
-     * Present only when @c tenor_based is @c true.
+     * @brief Compounding method (canonical CDM, e.g. 'Continuous'). Present only when tenor_based is true.
      */
     std::optional<std::string> compounding;
 
     /**
-     * @brief Frequency at which the rate is compounded (canonical CDM).
-     * Present only when @c compounding is "Compounded".
+     * @brief Frequency at which the rate is compounded (canonical CDM). Present only when compounding is 'Compounded'.
      */
     std::optional<std::string> compounding_frequency;
 
     /**
-     * @brief Calendar used to determine tenor dates (e.g. "TARGET").
+     * @brief Calendar used to determine tenor dates (e.g. 'TARGET').
      */
     std::optional<std::string> tenor_calendar;
 
@@ -101,12 +98,19 @@ struct zero_convention final {
     std::optional<bool> end_of_month;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this zero convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -114,11 +118,6 @@ struct zero_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

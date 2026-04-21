@@ -91,6 +91,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_app_version_history_request::nats_subject, "ores.compute.service",
         [avh](ores::nats::message msg) { avh->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_app_version_platforms_request::nats_subject,
+        "ores.compute.service",
+        [avh](ores::nats::message msg) { avh->list_platforms(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Batches

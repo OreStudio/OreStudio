@@ -268,12 +268,55 @@ void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
 void AppVersionDetailDialog::setVersion(
     const compute::domain::app_version& app_version) {
     app_version_ = app_version;
-    // Platform rows are intentionally not preloaded from app_version; the
-    // server-side list uses a separate junction fetch that is not yet wired
-    // here. Edit mode therefore treats the platform set as empty until the
-    // user re-assigns rows explicitly.
+    // Start from an empty set; populatePlatformsTab will re-run once the
+    // junction fetch returns and fills platform_rows_. In create mode there
+    // is nothing to load because the id has just been generated.
     platform_rows_.clear();
     updateUiFromVersion();
+
+    if (!createMode_ && !app_version_.id.is_nil())
+        loadAssignedPlatforms(boost::uuids::to_string(app_version_.id));
+}
+
+void AppVersionDetailDialog::loadAssignedPlatforms(
+    const std::string& app_version_id) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<AppVersionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<compute::domain::app_version_platform> rows;
+    };
+
+    auto task = [self, app_version_id]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
+
+        compute::messaging::list_app_version_platforms_request request;
+        request.app_version_id = app_version_id;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result || !result->success) return {false, {}};
+        return {true, std::move(result->platforms)};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self || !result.success) return;
+        self->platform_rows_ = std::move(result.rows);
+        self->populatePlatformsTab();
+        // Re-populating the assigned list flags the dialog as dirty via the
+        // selection-changed signal; reset since the fetch is not a user edit.
+        self->hasChanges_ = false;
+        self->updateSaveButtonState();
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void AppVersionDetailDialog::setCreateMode(bool createMode) {

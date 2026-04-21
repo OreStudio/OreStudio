@@ -151,6 +151,32 @@ public:
             << "Completed " << msg.subject;
     }
 
+    void list_platforms(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        list_app_version_platforms_response resp;
+        try {
+            if (auto req = decode<list_app_version_platforms_request>(msg)) {
+                repository::app_version_platform_repository avp_repo;
+                resp.platforms = avp_repo.list_for_version(
+                    ctx, req->app_version_id);
+            }
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

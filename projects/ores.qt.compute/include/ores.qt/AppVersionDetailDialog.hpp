@@ -104,6 +104,7 @@ private:
     void setupConnections();
     void loadApps();
     void loadPlatforms();
+    void loadAssignedPlatforms(const std::string& app_version_id);
     void populateAppCombo();
     void populatePlatformsTab();
     void updateUiFromVersion();

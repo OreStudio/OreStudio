@@ -53,6 +53,19 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Zero Conventions
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_zero_conventions_tbl enable row level security;
+
+create policy ores_refdata_zero_conventions_tenant_isolation_policy on ores_refdata_zero_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currencies
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currencies_tbl enable row level security;

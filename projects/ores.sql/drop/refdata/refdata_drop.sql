@@ -18,6 +18,10 @@
  *
  */
 
+-- ORE conventions (no dependants, drop first)
+\ir ./refdata_zero_conventions_notify_trigger_drop.sql
+\ir ./refdata_zero_conventions_drop.sql
+
 -- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
 \ir ./refdata_books_notify_trigger_drop.sql
 \ir ./refdata_books_drop.sql

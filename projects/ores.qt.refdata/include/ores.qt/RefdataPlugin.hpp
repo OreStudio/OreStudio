@@ -45,6 +45,7 @@ class LegTypeController;
 class MonetaryNatureController;
 class RoundingTypeController;
 class PurposeTypeController;
+class ZeroConventionController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -105,6 +106,7 @@ private:
     std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
     std::unique_ptr<RoundingTypeController>                roundingTypeController_;
     std::unique_ptr<PurposeTypeController>                 purposeTypeController_;
+    std::unique_ptr<ZeroConventionController>              zeroConventionController_;
 };
 
 }

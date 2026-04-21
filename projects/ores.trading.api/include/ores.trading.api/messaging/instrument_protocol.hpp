@@ -1154,8 +1154,8 @@ struct composite_export_result {
  * @brief Discriminated union of all possible instrument representations.
  *
  * std::monostate indicates the trade has no linked instrument (or the family
- * is not recognised). Used in get_instrument_for_trade_response and
- * export_portfolio_response.
+ * is not recognised). Populated per-trade inside get_trades_response /
+ * export_portfolio_response bundles.
  */
 using instrument_export_result = std::variant<
     std::monostate,
@@ -1168,34 +1168,6 @@ using instrument_export_result = std::variant<
     composite_export_result,
     ores::trading::domain::scripted_instrument
 >;
-
-/**
- * @brief Fetch the instrument linked to a specific trade.
- *
- * The caller supplies product_type and instrument_id taken directly from
- * the trade record. The server routes to the correct extension table and
- * returns the populated instrument_export_result variant.
- */
-struct get_instrument_for_trade_request {
-    using response_type = struct get_instrument_for_trade_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.trades.instrument.get";
-    /// Caller MUST set this to one of the eight real product families. The
-    /// default is @c unknown so that an unset value is rejected explicitly
-    /// by the server instead of silently mis-routing to an arbitrary table.
-    ores::trading::domain::product_type product_type =
-        ores::trading::domain::product_type::unknown;
-    std::string instrument_id;
-    /// Required when product_type is swap or fx to identify the specific
-    /// per-type table (e.g. FxForward → fx_forward_instruments_tbl).
-    std::string trade_type_code;
-};
-
-struct get_instrument_for_trade_response {
-    bool success = false;
-    std::string message;
-    instrument_export_result instrument;
-};
 
 }
 

@@ -20,7 +20,6 @@
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/trade_handler.hpp"
 #include "ores.trading.core/messaging/instrument_ref_handler.hpp"
-#include "ores.trading.core/messaging/instrument_handler.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -253,14 +252,6 @@ register_trade_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             instrument_ref_handler h(nats, ctx, verifier);
             h.history_trade_type(std::move(msg));
-        }));
-
-    // Instrument-for-trade lookup (routes by product_type + trade_type_code)
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_instrument_for_trade_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            instrument_handler h(nats, ctx, verifier);
-            h.get_instrument_for_trade(std::move(msg));
         }));
 
     return subs;

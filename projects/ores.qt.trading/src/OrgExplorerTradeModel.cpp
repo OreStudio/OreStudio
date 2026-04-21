@@ -207,21 +207,12 @@ void OrgExplorerTradeModel::fetch_trades(
                             .error_details = {}};
                 }
 
-                trading::messaging::get_trades_request request;
-                request.offset = static_cast<int>(offset);
-                request.limit = static_cast<int>(limit);
-                if (node_id)
-                    request.node_id = boost::uuids::to_string(*node_id);
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
+                auto result = self->clientManager_->listTrades(
+                    node_id, offset, limit);
                 if (!result) {
                     return {.success = false, .trades = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch trades: " +
-                                result.error()),
+                            .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
@@ -232,7 +223,7 @@ void OrgExplorerTradeModel::fetch_trades(
 
                 return {.success = true,
                         .trades = std::move(trades),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
+                        .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "org trades");
         });

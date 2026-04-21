@@ -490,13 +490,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_message = "Destroyed",
                                 .error_details = {}};
 
-                    trading::messaging::get_trades_request req;
-                    req.node_id = boost::uuids::to_string(bid);
-                    req.limit = 0;
-                    req.offset = 0;
-
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
+                    auto result = self->clientManager_->listTrades(bid, 0, 0);
                     if (!result)
                         return {.book_id = bid, .count = 0,
                                 .success = false,
@@ -504,7 +498,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     return {.book_id = bid,
-                            .count = static_cast<std::uint32_t>(result->total_available_count),
+                            .count = result->total_count,
                             .success = true,
                             .error_message = {},
                             .error_details = {}};

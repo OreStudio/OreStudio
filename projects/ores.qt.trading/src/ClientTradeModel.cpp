@@ -208,33 +208,26 @@ void ClientTradeModel::fetch_trades(
                             .error_details = {}};
                 }
 
-                trading::messaging::get_trades_request request;
-                request.offset = offset;
-                request.limit = limit;
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
+                auto result = self->clientManager_->listTrades(
+                    std::nullopt, offset, limit);
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades: "
-                                               << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades";
                     return {.success = false, .trades = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch trades: " + result.error()),
+                            .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->items.size()
                                            << " trades, total available: "
-                                           << result->total_available_count;
+                                           << result->total_count;
                 std::vector<ores::trading::domain::trade> trades;
                 trades.reserve(result->items.size());
                 for (auto& item : result->items)
                     trades.push_back(std::move(item.trade));
                 return {.success = true,
                         .trades = std::move(trades),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
+                        .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "trades");
         });

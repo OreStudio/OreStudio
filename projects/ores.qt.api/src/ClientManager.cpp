@@ -638,6 +638,36 @@ std::optional<SessionListResult> ClientManager::listSessions(
     }
 }
 
+std::optional<TradeListResult> ClientManager::listTrades(
+    std::optional<boost::uuids::uuid> node_id,
+    std::uint32_t offset,
+    std::uint32_t limit) {
+
+    try {
+        trading::messaging::get_trades_request request;
+        request.offset = static_cast<int>(offset);
+        request.limit = static_cast<int>(limit);
+        if (node_id)
+            request.node_id = boost::uuids::to_string(*node_id);
+
+        auto result = process_authenticated_request(std::move(request));
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error)
+                << "listTrades failed: " << result.error();
+            return std::nullopt;
+        }
+
+        return TradeListResult{
+            .items = std::move(result->items),
+            .total_count = static_cast<std::uint32_t>(
+                result->total_available_count)
+        };
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "listTrades failed: " << e.what();
+        return std::nullopt;
+    }
+}
+
 std::optional<std::vector<iam::domain::session>>
 ClientManager::getActiveSessions() {
     try {

@@ -22,51 +22,51 @@
       "templates": [
         {
           "template": "cpp_qt_client_model.hpp.mustache",
-          "output": "projects/ores.qt/include/ores.qt/Client{EntityPascal}Model.hpp"
+          "output": "projects/ores.qt.{component}/include/ores.qt/Client{EntityPascal}Model.hpp"
         },
         {
           "template": "cpp_qt_client_model.cpp.mustache",
-          "output": "projects/ores.qt/src/Client{EntityPascal}Model.cpp"
+          "output": "projects/ores.qt.{component}/src/Client{EntityPascal}Model.cpp"
         },
         {
           "template": "cpp_qt_mdi_window.hpp.mustache",
-          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}MdiWindow.hpp"
+          "output": "projects/ores.qt.{component}/include/ores.qt/{EntityPascal}MdiWindow.hpp"
         },
         {
           "template": "cpp_qt_mdi_window.cpp.mustache",
-          "output": "projects/ores.qt/src/{EntityPascal}MdiWindow.cpp"
+          "output": "projects/ores.qt.{component}/src/{EntityPascal}MdiWindow.cpp"
         },
         {
           "template": "cpp_qt_detail_dialog.hpp.mustache",
-          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}DetailDialog.hpp"
+          "output": "projects/ores.qt.{component}/include/ores.qt/{EntityPascal}DetailDialog.hpp"
         },
         {
           "template": "cpp_qt_detail_dialog.cpp.mustache",
-          "output": "projects/ores.qt/src/{EntityPascal}DetailDialog.cpp"
+          "output": "projects/ores.qt.{component}/src/{EntityPascal}DetailDialog.cpp"
         },
         {
           "template": "cpp_qt_history_dialog.hpp.mustache",
-          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}HistoryDialog.hpp"
+          "output": "projects/ores.qt.{component}/include/ores.qt/{EntityPascal}HistoryDialog.hpp"
         },
         {
           "template": "cpp_qt_history_dialog.cpp.mustache",
-          "output": "projects/ores.qt/src/{EntityPascal}HistoryDialog.cpp"
+          "output": "projects/ores.qt.{component}/src/{EntityPascal}HistoryDialog.cpp"
         },
         {
           "template": "cpp_qt_controller.hpp.mustache",
-          "output": "projects/ores.qt/include/ores.qt/{EntityPascal}Controller.hpp"
+          "output": "projects/ores.qt.{component}/include/ores.qt/{EntityPascal}Controller.hpp"
         },
         {
           "template": "cpp_qt_controller.cpp.mustache",
-          "output": "projects/ores.qt/src/{EntityPascal}Controller.cpp"
+          "output": "projects/ores.qt.{component}/src/{EntityPascal}Controller.cpp"
         },
         {
           "template": "qt_detail_dialog_ui.mustache",
-          "output": "projects/ores.qt/ui/{EntityPascal}DetailDialog.ui"
+          "output": "projects/ores.qt.{component}/ui/{EntityPascal}DetailDialog.ui"
         },
         {
           "template": "qt_history_dialog_ui.mustache",
-          "output": "projects/ores.qt/ui/{EntityPascal}HistoryDialog.ui"
+          "output": "projects/ores.qt.{component}/ui/{EntityPascal}HistoryDialog.ui"
         }
       ]
     },
@@ -184,11 +184,11 @@
       "templates": [
         {
           "template": "cpp_service.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/service/{entity}_service.hpp"
+          "output": "projects/ores.{component_core}/include/ores.{component_core}/service/{entity}_service.hpp"
         },
         {
           "template": "cpp_service.cpp.mustache",
-          "output": "projects/ores.{component}/src/service/{entity}_service.cpp"
+          "output": "projects/ores.{component_core}/src/service/{entity}_service.cpp"
         }
       ]
     },
@@ -282,7 +282,7 @@
       "templates": [
         {
           "template": "cpp_enum.hpp.mustache",
-          "output": "projects/ores.{component}/include/ores.{component}/messaging/{enum_name}.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/messaging/{enum_name}.hpp"
         }
       ]
     },

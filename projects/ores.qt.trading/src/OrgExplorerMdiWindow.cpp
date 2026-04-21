@@ -452,7 +452,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     trading::messaging::get_trades_request req;
-                    req.book_id = boost::uuids::to_string(bid);
+                    req.node_id = boost::uuids::to_string(bid);
                     req.limit = 0;
                     req.offset = 0;
 

@@ -225,11 +225,15 @@ void ClientTradeModel::fetch_trades(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->trades.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->items.size()
                                            << " trades, total available: "
                                            << result->total_available_count;
+                std::vector<ores::trading::domain::trade> trades;
+                trades.reserve(result->items.size());
+                for (auto& item : result->items)
+                    trades.push_back(std::move(item.trade));
                 return {.success = true,
-                        .trades = std::move(result->trades),
+                        .trades = std::move(trades),
                         .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "trades");

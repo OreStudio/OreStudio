@@ -55,18 +55,21 @@ public:
     std::vector<domain::trade>
     list_trades(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief List trades under a taxonomy node.
+     *
+     * @p node_id may be a book, portfolio, or business unit id; the database
+     * resolves it to the book-id set. An absent @p node_id lists all trades
+     * in the tenant.
+     */
     std::vector<domain::trade>
-    list_trades_filtered(std::uint32_t offset, std::uint32_t limit,
-        std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id,
-        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
+    list_trades_by_node(std::uint32_t offset, std::uint32_t limit,
+        std::optional<boost::uuids::uuid> node_id);
 
     std::uint32_t count_trades();
 
-    std::uint32_t count_trades_filtered(
-        std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id,
-        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
+    std::uint32_t count_trades_by_node(
+        std::optional<boost::uuids::uuid> node_id);
 
     std::optional<domain::trade>
     find_trade(const std::string& id);

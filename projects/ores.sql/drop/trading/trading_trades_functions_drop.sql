@@ -23,3 +23,4 @@
 -- =============================================================================
 
 drop function if exists ores_trading_get_book_ids_by_portfolio_fn(uuid, uuid);
+drop function if exists ores_trading_get_book_ids_for_node_fn(uuid, uuid);

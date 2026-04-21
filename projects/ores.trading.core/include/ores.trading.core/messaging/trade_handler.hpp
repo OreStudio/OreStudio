@@ -332,22 +332,21 @@ public:
                     static_cast<std::uint32_t>(req->offset);
                 const auto limit =
                     static_cast<std::uint32_t>(req->limit);
-                if (!req->book_id.empty()) {
+                std::optional<boost::uuids::uuid> node;
+                if (!req->node_id.empty()) {
                     boost::uuids::string_generator gen;
-                    const auto book_uuid = gen(req->book_id);
-                    resp.trades = svc.list_trades_filtered(
-                        offset, limit,
-                        std::optional<boost::uuids::uuid>(book_uuid),
-                        std::nullopt);
-                    resp.total_available_count =
-                        static_cast<int>(svc.count_trades_filtered(
-                            std::optional<boost::uuids::uuid>(book_uuid),
-                            std::nullopt));
-                } else {
-                    resp.trades = svc.list_trades(offset, limit);
-                    resp.total_available_count =
-                        static_cast<int>(svc.count_trades());
+                    node = gen(req->node_id);
                 }
+                auto trades = svc.list_trades_by_node(offset, limit, node);
+                resp.items.reserve(trades.size());
+                for (auto& t : trades) {
+                    trade_export_item item;
+                    item.trade = t;
+                    populate_instrument_for_trade(ctx, t, item);
+                    resp.items.push_back(std::move(item));
+                }
+                resp.total_available_count =
+                    static_cast<int>(svc.count_trades_by_node(node));
             }
         } catch (...) {}
         BOOST_LOG_SEV(trade_handler_lg(), debug)
@@ -472,18 +471,12 @@ public:
                 const auto limit =
                     static_cast<std::uint32_t>(req->limit);
 
-                std::vector<domain::trade> trades;
-                if (!req->book_id.empty()) {
+                std::optional<boost::uuids::uuid> node;
+                if (!req->node_id.empty()) {
                     boost::uuids::string_generator gen;
-                    trades = svc.list_trades_filtered(offset, limit,
-                        std::optional<boost::uuids::uuid>(gen(req->book_id)),
-                        std::nullopt);
-                } else if (!req->portfolio_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    trades = svc.list_trades_filtered(offset, limit,
-                        std::nullopt,
-                        std::optional<boost::uuids::uuid>(gen(req->portfolio_id)));
+                    node = gen(req->node_id);
                 }
+                auto trades = svc.list_trades_by_node(offset, limit, node);
 
                 resp.items.reserve(trades.size());
                 for (auto& t : trades) {
@@ -530,9 +523,8 @@ public:
             for (const auto& bid : req->book_ids) {
                 try {
                     boost::uuids::string_generator gen;
-                    auto trades = svc.list_trades_filtered(0, 100000,
-                        std::optional<boost::uuids::uuid>(gen(bid)),
-                        std::nullopt);
+                    auto trades = svc.list_trades_by_node(0, 100000,
+                        std::optional<boost::uuids::uuid>(gen(bid)));
                     for (auto& t : trades) {
                         trade_export_item item;
                         item.trade = t;

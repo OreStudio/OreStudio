@@ -207,95 +207,36 @@ trade_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::vector<domain::trade>
-trade_repository::read_latest_filtered(context ctx,
+trade_repository::read_latest_for_node(context ctx,
     std::uint32_t offset, std::uint32_t limit,
-    std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id,
-    std::optional<boost::uuids::uuid> business_unit_id) {
+    std::optional<boost::uuids::uuid> node_id) {
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    if (!node_id.has_value())
+        return read_latest(ctx, offset, limit);
+
     const auto tid = ctx.tenant_id().to_string();
-
-    if (book_id.has_value()) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Reading trades filtered by book: " << *book_id;
-        const auto bid = boost::uuids::to_string(*book_id);
-        const auto query = sqlgen::read<std::vector<trade_entity>> |
-            where("tenant_id"_c == tid && "valid_to"_c == max.value()
-                  && "book_id"_c == bid) |
-            order_by("id"_c) |
-            sqlgen::offset(offset) |
-            sqlgen::limit(limit);
-
-        return execute_read_query<trade_entity, domain::trade>(
-            ctx, query,
-            [](const auto& entities) { return trade_mapper::map(entities); },
-            lg(), "Reading trades filtered by book_id");
-    }
-
-    if (business_unit_id.has_value()) {
-        const auto buid = boost::uuids::to_string(*business_unit_id);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Reading trades filtered by business unit subtree: " << buid;
-        const auto book_ids = fetch_book_ids(ctx,
-            "ores_trading_get_book_ids_by_business_unit_fn",
-            tid, buid, lg(), "Fetching book IDs for business unit subtree");
-        return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
-    }
-
-    // portfolio_id case
-    const auto pid = boost::uuids::to_string(*portfolio_id);
+    const auto nid = boost::uuids::to_string(*node_id);
     BOOST_LOG_SEV(lg(), debug)
-        << "Reading trades filtered by portfolio subtree: " << pid;
+        << "Reading trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
-        "ores_trading_get_book_ids_by_portfolio_fn",
-        tid, pid, lg(), "Fetching book IDs for portfolio subtree");
+        "ores_trading_get_book_ids_for_node_fn",
+        tid, nid, lg(), "Fetching book IDs for node subtree");
     return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
 }
 
 std::uint32_t
-trade_repository::count_latest_filtered(context ctx,
-    std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id,
-    std::optional<boost::uuids::uuid> business_unit_id) {
+trade_repository::count_latest_for_node(context ctx,
+    std::optional<boost::uuids::uuid> node_id) {
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    if (!node_id.has_value())
+        return count_latest(ctx);
+
     const auto tid = ctx.tenant_id().to_string();
-
-    if (book_id.has_value()) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Counting trades filtered by book: " << *book_id;
-        const auto bid = boost::uuids::to_string(*book_id);
-
-        struct count_result { long long count; };
-        const auto query = sqlgen::select_from<trade_entity>(
-            sqlgen::count().as<"count">()) |
-            where("tenant_id"_c == tid && "valid_to"_c == max.value()
-                  && "book_id"_c == bid) |
-            sqlgen::to<count_result>;
-
-        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-        ensure_success(r, lg());
-        return static_cast<std::uint32_t>(r->count);
-    }
-
-    if (business_unit_id.has_value()) {
-        const auto buid = boost::uuids::to_string(*business_unit_id);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Counting trades for business unit subtree: " << buid;
-        const auto book_ids = fetch_book_ids(ctx,
-            "ores_trading_get_book_ids_by_business_unit_fn",
-            tid, buid, lg(), "Fetching book IDs for business unit subtree");
-        return count_trades_for_books(ctx, book_ids, tid, lg());
-    }
-
-    // portfolio_id case
-    const auto pid = boost::uuids::to_string(*portfolio_id);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Counting trades for portfolio subtree: " << pid;
+    const auto nid = boost::uuids::to_string(*node_id);
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
-        "ores_trading_get_book_ids_by_portfolio_fn",
-        tid, pid, lg(), "Fetching book IDs for portfolio subtree");
+        "ores_trading_get_book_ids_for_node_fn",
+        tid, nid, lg(), "Fetching book IDs for node subtree");
     return count_trades_for_books(ctx, book_ids, tid, lg());
 }
 

@@ -469,7 +469,7 @@ void BookMdiWindow::exportToXml() {
         if (!self) return result;
 
         trading::messaging::export_portfolio_request req;
-        req.book_id = book_id;
+        req.node_id = book_id;
 
         auto r = self->clientManager_->process_authenticated_request(
             std::move(req));

@@ -194,11 +194,11 @@ void PortfolioExplorerTradeModel::fetch_trades(
     is_fetching_ = true;
     QPointer<PortfolioExplorerTradeModel> self = this;
 
-    const auto book_id = filter_book_id_;
-    const auto portfolio_id = filter_portfolio_id_;
+    const auto node_id = filter_portfolio_id_.has_value()
+        ? filter_portfolio_id_ : filter_book_id_;
 
     QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit, book_id, portfolio_id]() -> FetchResult {
+        QtConcurrent::run([self, offset, limit, node_id]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
                     return {.success = false, .trades = {},
@@ -210,8 +210,8 @@ void PortfolioExplorerTradeModel::fetch_trades(
                 trading::messaging::get_trades_request request;
                 request.offset = static_cast<int>(offset);
                 request.limit = static_cast<int>(limit);
-                if (book_id) {
-                    request.book_id = boost::uuids::to_string(*book_id);
+                if (node_id) {
+                    request.node_id = boost::uuids::to_string(*node_id);
                 }
 
                 auto result = self->clientManager_->
@@ -226,8 +226,13 @@ void PortfolioExplorerTradeModel::fetch_trades(
                             .error_details = {}};
                 }
 
+                std::vector<ores::trading::domain::trade> trades;
+                trades.reserve(result->items.size());
+                for (auto& item : result->items)
+                    trades.push_back(std::move(item.trade));
+
                 return {.success = true,
-                        .trades = std::move(result->trades),
+                        .trades = std::move(trades),
                         .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "portfolio trades");

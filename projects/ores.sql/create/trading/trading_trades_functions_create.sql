@@ -90,3 +90,67 @@ $$ language plpgsql stable security definer;
 comment on function ores_trading_get_trade_ids_by_books_fn(uuid, uuid[]) is
 'Returns the UUIDs of all active trades belonging to any of the supplied book
  IDs. Filtered by tenant_id and ordered by book_id, trade_id.';
+
+-- =============================================================================
+-- Resolve Node to Book IDs
+-- =============================================================================
+
+/**
+ * Resolves p_node_id to the set of book UUIDs in scope.
+ *
+ *   - If the node is a book, returns just that book.
+ *   - If the node is a portfolio, returns all books in its subtree.
+ *   - If the node is a business unit, returns all books owned by any
+ *     business unit in its subtree.
+ *   - If the node is unknown, returns an empty set.
+ *
+ * The client-facing trade listing API carries a single node_id and leaves
+ * the book/portfolio/business-unit discrimination to this function.
+ */
+create or replace function ores_trading_get_book_ids_for_node_fn(
+    p_tenant_id uuid,
+    p_node_id   uuid
+)
+returns setof uuid as $$
+begin
+    if exists (
+        select 1 from ores_refdata_books_tbl
+        where id = p_node_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return query select p_node_id;
+        return;
+    end if;
+
+    if exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where id = p_node_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return query
+            select bk.id
+            from ores_trading_get_book_ids_by_portfolio_fn(
+                p_tenant_id, p_node_id) as bk(id);
+        return;
+    end if;
+
+    if exists (
+        select 1 from ores_refdata_business_units_tbl
+        where id = p_node_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return query
+            select bk.id
+            from ores_trading_get_book_ids_by_business_unit_fn(
+                p_tenant_id, p_node_id) as bk(id);
+        return;
+    end if;
+
+    return;
+end;
+$$ language plpgsql stable security definer;
+
+comment on function ores_trading_get_book_ids_for_node_fn(uuid, uuid) is
+'Resolves a node_id (book, portfolio, or business unit) to the set of book
+ UUIDs in scope. For books returns the book itself; for portfolios and
+ business units expands to the subtree. Unknown ids return an empty set.';

@@ -164,181 +164,139 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="tenor_basedLabel">
-                 <property name="text">
-                  <string>Tenor Based:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLabel" name="tenorBasedValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
                 <widget class="QLabel" name="day_count_fractionLabel">
                  <property name="text">
                   <string>Day Count Fraction:</string>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
+               <item row="1" column="1">
                 <widget class="QLabel" name="dayCountFractionValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
+               <item row="2" column="0">
                 <widget class="QLabel" name="compoundingLabel">
                  <property name="text">
                   <string>Compounding:</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="2" column="1">
                 <widget class="QLabel" name="compoundingValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="3" column="0">
                 <widget class="QLabel" name="compounding_frequencyLabel">
                  <property name="text">
                   <string>Compounding Frequency:</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="3" column="1">
                 <widget class="QLabel" name="compoundingFrequencyValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="tenor_calendarLabel">
                  <property name="text">
                   <string>Tenor Calendar:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="4" column="1">
                 <widget class="QLabel" name="tenorCalendarValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="spot_lagLabel">
-                 <property name="text">
-                  <string>Spot Lag:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QLabel" name="spotLagValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="spot_calendarLabel">
                  <property name="text">
                   <string>Spot Calendar:</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="spotCalendarValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="roll_conventionLabel">
                  <property name="text">
                   <string>Roll Convention:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="rollConventionValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="end_of_monthLabel">
-                 <property name="text">
-                  <string>End Of Month:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QLabel" name="endOfMonthValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
                   <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="1">
+               <item row="8" column="1">
                 <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="0">
+               <item row="9" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
+               <item row="9" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0">
+               <item row="10" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="1">
+               <item row="10" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

@@ -70,9 +70,9 @@ public:
         service::zero_convention_service svc(req_ctx);
         get_zero_conventions_response resp;
         try {
-            resp.cnvs = svc.list_cnvs();
+            resp.zero_conventions = svc.list_zero_conventions();
             resp.total_available_count =
-                static_cast<int>(resp.cnvs.size());
+                static_cast<int>(resp.zero_conventions.size());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(zero_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -101,7 +101,7 @@ public:
         service::zero_convention_service svc(req_ctx);
         if (auto req = decode<save_zero_convention_request>(msg)) {
             try {
-                svc.save_cnv(req->data);
+                svc.save_zero_convention(req->data);
                 BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,
@@ -132,11 +132,11 @@ public:
         service::zero_convention_service svc(req_ctx);
         if (auto req = decode<get_zero_convention_history_request>(msg)) {
             try {
-                auto hist = svc.get_cnv_history(req->id);
+                auto hist = svc.get_zero_convention_history(req->id);
                 BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_zero_convention_history_response{
-                    .cnvs = std::move(hist), .success = true});
+                    .zero_conventions = std::move(hist), .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(zero_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
@@ -168,7 +168,7 @@ public:
         if (auto req = decode<delete_zero_convention_request>(msg)) {
             try {
                 for (const auto& code : req->codes)
-                    svc.remove_cnv(code);
+                    svc.remove_zero_convention(code);
                 BOOST_LOG_SEV(zero_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg,

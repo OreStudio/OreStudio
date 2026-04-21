@@ -39,6 +39,9 @@ struct {{entity_singular}}_entity {
 {{#is_nullable_string}}
     std::optional<{{{cpp_type}}}> {{name}};
 {{/is_nullable_string}}
+{{#is_already_optional}}
+    {{{cpp_type}}} {{name}};
+{{/is_already_optional}}
 {{#is_simple}}
     {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
 {{/is_simple}}

@@ -75,7 +75,7 @@ void ZeroConventionController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Zero Conventions");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Curve, IconUtils::DefaultIconColor));
+        Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void ZeroConventionController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Zero Convention");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Curve, IconUtils::DefaultIconColor));
+        Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void ZeroConventionController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Zero Convention: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Curve, IconUtils::DefaultIconColor));
+        Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

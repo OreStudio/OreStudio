@@ -33,7 +33,7 @@ struct get_zero_conventions_request {
 };
 
 struct get_zero_conventions_response {
-    std::vector<ores::refdata::domain::zero_convention> cnvs;
+    std::vector<ores::refdata::domain::zero_convention> zero_conventions;
     int total_available_count = 0;
     bool success = true;
     std::string message;
@@ -71,7 +71,7 @@ struct get_zero_convention_history_request {
 };
 
 struct get_zero_convention_history_response {
-    std::vector<ores::refdata::domain::zero_convention> cnvs;
+    std::vector<ores::refdata::domain::zero_convention> zero_conventions;
     bool success = false;
     std::string message;
 };

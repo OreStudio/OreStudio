@@ -68,6 +68,11 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{field}});
 {{/is_string}}
+{{#is_optional_string}}
+            return {{domain_entity.qt.item_var}}.{{field}}
+                ? QString::fromStdString(*{{domain_entity.qt.item_var}}.{{field}})
+                : QString{};
+{{/is_optional_string}}
 {{#is_uuid}}
             return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{field}}));
 {{/is_uuid}}

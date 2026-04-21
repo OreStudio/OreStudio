@@ -53,115 +53,88 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelTenorBased">
-            <property name="text">
-             <string>Tenor Based:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-          </item>
-          <item row="2" column="0">
            <widget class="QLabel" name="labelDayCountFraction">
             <property name="text">
              <string>Day Count Fraction:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="dayCountFractionEdit">
             <property name="placeholderText">
              <string>e.g. ACT/365.FIXED</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="labelCompounding">
             <property name="text">
              <string>Compounding:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="compoundingEdit">
             <property name="placeholderText">
              <string>e.g. Continuous</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelCompoundingFrequency">
             <property name="text">
              <string>Compounding Frequency:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="compoundingFrequencyEdit">
             <property name="placeholderText">
              <string>e.g. Annual</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelTenorCalendar">
             <property name="text">
              <string>Tenor Calendar:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="tenorCalendarEdit">
             <property name="placeholderText">
              <string>e.g. TARGET</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="labelSpotLag">
-            <property name="text">
-             <string>Spot Lag:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-          </item>
-          <item row="7" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelSpotCalendar">
             <property name="text">
              <string>Spot Calendar:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="spotCalendarEdit">
             <property name="placeholderText">
              <string></string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelRollConvention">
             <property name="text">
              <string>Roll Convention:</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="6" column="1">
            <widget class="QLineEdit" name="rollConventionEdit">
             <property name="placeholderText">
              <string></string>
             </property>
            </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="labelEndOfMonth">
-            <property name="text">
-             <string>End Of Month:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="1">
           </item>
          </layout>
         </widget>

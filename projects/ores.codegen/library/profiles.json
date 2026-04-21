@@ -140,11 +140,11 @@
       "templates": [
         {
           "template": "cpp_domain_type_generator.hpp.mustache",
-          "output": "projects/ores.{component_include}/include/ores.{component_include}/generator/{entity}_generator.hpp"
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/{generator_facet_name}/{entity}_generator.hpp"
         },
         {
           "template": "cpp_domain_type_generator.cpp.mustache",
-          "output": "projects/ores.{component_include}/src/generator/{entity}_generator.cpp"
+          "output": "projects/ores.{component_include}/src/{generator_facet_name}/{entity}_generator.cpp"
         }
       ]
     },

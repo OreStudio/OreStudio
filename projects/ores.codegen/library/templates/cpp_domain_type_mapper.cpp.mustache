@@ -45,6 +45,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.{{name}};
+{{/is_already_optional}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}
@@ -92,6 +95,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
 {{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.{{name}};
+{{/is_already_optional}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}

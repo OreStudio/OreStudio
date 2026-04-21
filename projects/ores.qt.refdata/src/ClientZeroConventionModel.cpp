@@ -83,9 +83,13 @@ QVariant ClientZeroConventionModel::data(
         case DayCountFraction:
             return QString::fromStdString(zc.day_count_fraction);
         case Compounding:
-            return QString::fromStdString(zc.compounding);
+            return zc.compounding
+                ? QString::fromStdString(*zc.compounding)
+                : QString{};
         case TenorCalendar:
-            return QString::fromStdString(zc.tenor_calendar);
+            return zc.tenor_calendar
+                ? QString::fromStdString(*zc.tenor_calendar)
+                : QString{};
         case Version:
             return static_cast<qlonglong>(zc.version);
         case ModifiedBy:

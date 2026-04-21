@@ -244,12 +244,6 @@ void ZeroConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.id));
     }
 
-    if (current.tenor_based != previous.tenor_based) {
-        addChange("Tenor Based",
-                  QString::fromStdString(previous.tenor_based),
-                  QString::fromStdString(current.tenor_based));
-    }
-
     if (current.day_count_fraction != previous.day_count_fraction) {
         addChange("Day Count Fraction",
                   QString::fromStdString(previous.day_count_fraction),
@@ -258,44 +252,32 @@ void ZeroConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
 
     if (current.compounding != previous.compounding) {
         addChange("Compounding",
-                  QString::fromStdString(previous.compounding),
-                  QString::fromStdString(current.compounding));
+                  previous.compounding ? QString::fromStdString(*previous.compounding) : QString{},
+                  current.compounding ? QString::fromStdString(*current.compounding) : QString{});
     }
 
     if (current.compounding_frequency != previous.compounding_frequency) {
         addChange("Compounding Frequency",
-                  QString::fromStdString(previous.compounding_frequency),
-                  QString::fromStdString(current.compounding_frequency));
+                  previous.compounding_frequency ? QString::fromStdString(*previous.compounding_frequency) : QString{},
+                  current.compounding_frequency ? QString::fromStdString(*current.compounding_frequency) : QString{});
     }
 
     if (current.tenor_calendar != previous.tenor_calendar) {
         addChange("Tenor Calendar",
-                  QString::fromStdString(previous.tenor_calendar),
-                  QString::fromStdString(current.tenor_calendar));
-    }
-
-    if (current.spot_lag != previous.spot_lag) {
-        addChange("Spot Lag",
-                  QString::fromStdString(previous.spot_lag),
-                  QString::fromStdString(current.spot_lag));
+                  previous.tenor_calendar ? QString::fromStdString(*previous.tenor_calendar) : QString{},
+                  current.tenor_calendar ? QString::fromStdString(*current.tenor_calendar) : QString{});
     }
 
     if (current.spot_calendar != previous.spot_calendar) {
         addChange("Spot Calendar",
-                  QString::fromStdString(previous.spot_calendar),
-                  QString::fromStdString(current.spot_calendar));
+                  previous.spot_calendar ? QString::fromStdString(*previous.spot_calendar) : QString{},
+                  current.spot_calendar ? QString::fromStdString(*current.spot_calendar) : QString{});
     }
 
     if (current.roll_convention != previous.roll_convention) {
         addChange("Roll Convention",
-                  QString::fromStdString(previous.roll_convention),
-                  QString::fromStdString(current.roll_convention));
-    }
-
-    if (current.end_of_month != previous.end_of_month) {
-        addChange("End Of Month",
-                  QString::fromStdString(previous.end_of_month),
-                  QString::fromStdString(current.end_of_month));
+                  previous.roll_convention ? QString::fromStdString(*previous.roll_convention) : QString{},
+                  current.roll_convention ? QString::fromStdString(*current.roll_convention) : QString{});
     }
 
 
@@ -317,15 +299,22 @@ void ZeroConventionHistoryDialog::updateFullDetails(int versionIndex) {
     const auto& version = versions_[versionIndex];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
-    ui_->tenorBasedValue->setText(QString::fromStdString(version.tenor_based));
     ui_->dayCountFractionValue->setText(QString::fromStdString(version.day_count_fraction));
-    ui_->compoundingValue->setText(QString::fromStdString(version.compounding));
-    ui_->compoundingFrequencyValue->setText(QString::fromStdString(version.compounding_frequency));
-    ui_->tenorCalendarValue->setText(QString::fromStdString(version.tenor_calendar));
-    ui_->spotLagValue->setText(QString::fromStdString(version.spot_lag));
-    ui_->spotCalendarValue->setText(QString::fromStdString(version.spot_calendar));
-    ui_->rollConventionValue->setText(QString::fromStdString(version.roll_convention));
-    ui_->endOfMonthValue->setText(QString::fromStdString(version.end_of_month));
+    ui_->compoundingValue->setText(version.compounding
+        ? QString::fromStdString(*version.compounding)
+        : QString{});
+    ui_->compoundingFrequencyValue->setText(version.compounding_frequency
+        ? QString::fromStdString(*version.compounding_frequency)
+        : QString{});
+    ui_->tenorCalendarValue->setText(version.tenor_calendar
+        ? QString::fromStdString(*version.tenor_calendar)
+        : QString{});
+    ui_->spotCalendarValue->setText(version.spot_calendar
+        ? QString::fromStdString(*version.spot_calendar)
+        : QString{});
+    ui_->rollConventionValue->setText(version.roll_convention
+        ? QString::fromStdString(*version.roll_convention)
+        : QString{});
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

@@ -38,6 +38,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
+{{#is_already_optional}}
+    r.{{name}} = v.{{name}};
+{{/is_already_optional}}
 {{#is_optional_timestamp}}
     if (v.{{name}})
         r.{{name}} = timestamp_to_timepoint(*v.{{name}});

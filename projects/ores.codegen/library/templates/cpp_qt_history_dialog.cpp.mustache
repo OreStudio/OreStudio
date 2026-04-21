@@ -260,9 +260,16 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
 
 {{#domain_entity.qt.detail_fields}}
     if (current.{{field}} != previous.{{field}}) {
+{{#is_optional_string}}
+        addChange("{{label}}",
+                  previous.{{field}} ? QString::fromStdString(*previous.{{field}}) : QString{},
+                  current.{{field}} ? QString::fromStdString(*current.{{field}}) : QString{});
+{{/is_optional_string}}
+{{^is_optional_string}}
         addChange("{{label}}",
                   QString::fromStdString(previous.{{field}}),
                   QString::fromStdString(current.{{field}}));
+{{/is_optional_string}}
     }
 
 {{/domain_entity.qt.detail_fields}}
@@ -285,7 +292,14 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
     const auto& version = versions_[versionIndex];
 
 {{#domain_entity.qt.detail_fields}}
+{{#is_optional_string}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::fromStdString(*version.{{field}})
+        : QString{});
+{{/is_optional_string}}
+{{^is_optional_string}}
     ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/is_optional_string}}
 {{/domain_entity.qt.detail_fields}}
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));

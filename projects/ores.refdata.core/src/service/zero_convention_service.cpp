@@ -28,20 +28,20 @@ using namespace ores::logging;
 zero_convention_service::zero_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::zero_convention> zero_convention_service::list_cnvs() {
+std::vector<domain::zero_convention> zero_convention_service::list_zero_conventions() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all zero conventions";
     return repo_.read_latest(ctx_);
 }
 
 std::optional<domain::zero_convention>
-zero_convention_service::find_cnv(const std::string& id) {
+zero_convention_service::find_zero_convention(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding zero convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();
 }
 
-void zero_convention_service::save_cnv(const domain::zero_convention& v) {
+void zero_convention_service::save_zero_convention(const domain::zero_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Zero Convention id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving zero convention: " << v.id;
@@ -49,14 +49,14 @@ void zero_convention_service::save_cnv(const domain::zero_convention& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved zero convention: " << v.id;
 }
 
-void zero_convention_service::remove_cnv(const std::string& id) {
+void zero_convention_service::remove_zero_convention(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing zero convention: " << id;
     repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed zero convention: " << id;
 }
 
 std::vector<domain::zero_convention>
-zero_convention_service::get_cnv_history(const std::string& id) {
+zero_convention_service::get_zero_convention_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for zero convention: " << id;
     return repo_.read_all(ctx_, id);
 }

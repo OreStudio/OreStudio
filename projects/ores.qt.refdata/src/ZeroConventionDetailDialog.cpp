@@ -132,11 +132,21 @@ void ZeroConventionDetailDialog::setReadOnly(bool readOnly) {
 void ZeroConventionDetailDialog::updateUiFromConvention() {
     ui_->idEdit->setText(QString::fromStdString(zc_.id));
     ui_->dayCountFractionEdit->setText(QString::fromStdString(zc_.day_count_fraction));
-    ui_->compoundingEdit->setText(QString::fromStdString(zc_.compounding));
-    ui_->compoundingFrequencyEdit->setText(QString::fromStdString(zc_.compounding_frequency));
-    ui_->tenorCalendarEdit->setText(QString::fromStdString(zc_.tenor_calendar));
-    ui_->spotCalendarEdit->setText(QString::fromStdString(zc_.spot_calendar));
-    ui_->rollConventionEdit->setText(QString::fromStdString(zc_.roll_convention));
+    ui_->compoundingEdit->setText(zc_.compounding
+        ? QString::fromStdString(*zc_.compounding)
+        : QString{});
+    ui_->compoundingFrequencyEdit->setText(zc_.compounding_frequency
+        ? QString::fromStdString(*zc_.compounding_frequency)
+        : QString{});
+    ui_->tenorCalendarEdit->setText(zc_.tenor_calendar
+        ? QString::fromStdString(*zc_.tenor_calendar)
+        : QString{});
+    ui_->spotCalendarEdit->setText(zc_.spot_calendar
+        ? QString::fromStdString(*zc_.spot_calendar)
+        : QString{});
+    ui_->rollConventionEdit->setText(zc_.roll_convention
+        ? QString::fromStdString(*zc_.roll_convention)
+        : QString{});
 
     populateProvenance(zc_.version,
                        zc_.modified_by,
@@ -154,11 +164,31 @@ void ZeroConventionDetailDialog::updateConventionFromUi() {
         zc_.id = ui_->idEdit->text().trimmed().toStdString();
     }
     zc_.day_count_fraction = ui_->dayCountFractionEdit->text().trimmed().toStdString();
-    zc_.compounding = ui_->compoundingEdit->text().trimmed().toStdString();
-    zc_.compounding_frequency = ui_->compoundingFrequencyEdit->text().trimmed().toStdString();
-    zc_.tenor_calendar = ui_->tenorCalendarEdit->text().trimmed().toStdString();
-    zc_.spot_calendar = ui_->spotCalendarEdit->text().trimmed().toStdString();
-    zc_.roll_convention = ui_->rollConventionEdit->text().trimmed().toStdString();
+    {
+        const auto compounding_str = ui_->compoundingEdit->text().trimmed().toStdString();
+        zc_.compounding =
+            compounding_str.empty() ? std::nullopt : std::optional<std::string>(compounding_str);
+    }
+    {
+        const auto compounding_frequency_str = ui_->compoundingFrequencyEdit->text().trimmed().toStdString();
+        zc_.compounding_frequency =
+            compounding_frequency_str.empty() ? std::nullopt : std::optional<std::string>(compounding_frequency_str);
+    }
+    {
+        const auto tenor_calendar_str = ui_->tenorCalendarEdit->text().trimmed().toStdString();
+        zc_.tenor_calendar =
+            tenor_calendar_str.empty() ? std::nullopt : std::optional<std::string>(tenor_calendar_str);
+    }
+    {
+        const auto spot_calendar_str = ui_->spotCalendarEdit->text().trimmed().toStdString();
+        zc_.spot_calendar =
+            spot_calendar_str.empty() ? std::nullopt : std::optional<std::string>(spot_calendar_str);
+    }
+    {
+        const auto roll_convention_str = ui_->rollConventionEdit->text().trimmed().toStdString();
+        zc_.roll_convention =
+            roll_convention_str.empty() ? std::nullopt : std::optional<std::string>(roll_convention_str);
+    }
     zc_.modified_by = username_;
 }
 

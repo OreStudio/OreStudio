@@ -103,8 +103,8 @@
     },
 
     "repository": {
-      "entity_singular_short": "cnv",
-      "entity_plural_short": "cnvs",
+      "entity_singular_short": "zero_convention",
+      "entity_plural_short": "zero_conventions",
       "entity_singular_words": "zero convention",
       "entity_plural_words": "zero conventions"
     },
@@ -149,7 +149,6 @@
       "detail_fields": [
         {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
          "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
-        {"field": "tenor_based", "label": "Tenor Based", "widget": "tenorBasedEdit", "type": "check_box"},
         {"field": "day_count_fraction", "label": "Day Count Fraction", "widget": "dayCountFractionEdit",
          "type": "line_edit", "is_required": true, "placeholder": "e.g. ACT/365.FIXED"},
         {"field": "compounding", "label": "Compounding", "widget": "compoundingEdit",
@@ -158,12 +157,10 @@
          "type": "line_edit", "placeholder": "e.g. Annual"},
         {"field": "tenor_calendar", "label": "Tenor Calendar", "widget": "tenorCalendarEdit",
          "type": "line_edit", "placeholder": "e.g. TARGET"},
-        {"field": "spot_lag", "label": "Spot Lag", "widget": "spotLagEdit", "type": "spin_box"},
         {"field": "spot_calendar", "label": "Spot Calendar", "widget": "spotCalendarEdit",
          "type": "line_edit"},
         {"field": "roll_convention", "label": "Roll Convention", "widget": "rollConventionEdit",
-         "type": "line_edit"},
-        {"field": "end_of_month", "label": "End Of Month", "widget": "endOfMonthEdit", "type": "check_box"}
+         "type": "line_edit"}
       ],
 
       "columns": [
@@ -179,7 +176,7 @@
 
       "settings_group": "ZeroConventionListWindow",
       "window_title": "Zero Conventions",
-      "icon": "Curve"
+      "icon": "Chart"
     }
   }
 }

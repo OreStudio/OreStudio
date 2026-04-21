@@ -49,17 +49,17 @@ public:
 
     explicit zero_convention_service(context ctx);
 
-    std::vector<domain::zero_convention> list_cnvs();
+    std::vector<domain::zero_convention> list_zero_conventions();
 
     std::optional<domain::zero_convention>
-    find_cnv(const std::string& id);
+    find_zero_convention(const std::string& id);
 
-    void save_cnv(const domain::zero_convention& v);
+    void save_zero_convention(const domain::zero_convention& v);
 
-    void remove_cnv(const std::string& id);
+    void remove_zero_convention(const std::string& id);
 
     std::vector<domain::zero_convention>
-    get_cnv_history(const std::string& id);
+    get_zero_convention_history(const std::string& id);
 
 private:
     context ctx_;

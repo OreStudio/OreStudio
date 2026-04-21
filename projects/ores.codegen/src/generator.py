@@ -1311,6 +1311,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Process Qt-specific fields
         if 'qt' in domain_entity:
             qt = domain_entity['qt']
+            # Auto-derive include paths and domain class from the domain entity
+            # so models don't need to spell them out. Models may still override
+            # by setting these fields explicitly.
+            entity_singular = domain_entity.get('entity_singular', '')
+            component_include = domain_entity.get(
+                'component_include', domain_entity.get('component', ''))
+            component = domain_entity.get('component', '')
+            if 'domain_include' not in qt and entity_singular and component_include:
+                qt['domain_include'] = (
+                    f'ores.{component_include}/domain/{entity_singular}.hpp')
+            if 'protocol_include' not in qt and entity_singular and component_include:
+                qt['protocol_include'] = (
+                    f'ores.{component_include}/messaging/{entity_singular}_protocol.hpp')
+            if 'domain_class' not in qt and entity_singular and component:
+                qt['domain_class'] = f'{component}::domain::{entity_singular}'
             # Mark last item in columns for template iteration
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])

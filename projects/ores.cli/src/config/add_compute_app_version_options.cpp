@@ -28,12 +28,17 @@ std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options&
     s << "{ app_id: " << v.app_id
       << ", wrapper_version: " << v.wrapper_version
       << ", engine_version: " << v.engine_version
-      << ", platforms: [" << std::accumulate(v.platforms.begin(), v.platforms.end(),
-             std::string{}, [](const std::string& a, const std::string& b) {
-                 return a.empty() ? b : a + ", " + b; }) << "]"
+      << ", platform_packages: ["
+      << std::accumulate(v.platform_packages.begin(), v.platform_packages.end(),
+             std::string{},
+             [](const std::string& a,
+                 const add_compute_app_version_options::platform_package& b) {
+                 const auto item = b.platform_code + "=" + b.package_uri;
+                 return a.empty() ? item : a + ", " + item;
+             })
+      << "]"
       << ", modified_by: " << v.modified_by;
 
-    if (v.package_uri) s << ", package_uri: " << *v.package_uri;
     if (v.min_ram_mb) s << ", min_ram_mb: " << *v.min_ram_mb;
 
     s << " }";

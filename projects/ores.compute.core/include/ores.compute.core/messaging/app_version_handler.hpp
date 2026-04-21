@@ -23,6 +23,7 @@
 #include <optional>
 #include <stdexcept>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -32,6 +33,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.core/service/app_version_service.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
 
 namespace ores::compute::messaging {
 
@@ -98,6 +100,18 @@ public:
             try {
                 service::app_version_service svc(ctx);
                 svc.save(req->app_version);
+
+                // Sync the per-platform junction rows in the same request so
+                // Qt / CLI callers only need to make one round-trip.
+                repository::app_version_platform_repository avp_repo;
+                avp_repo.replace_for_version(ctx,
+                    boost::uuids::to_string(req->app_version.id),
+                    req->platforms,
+                    req->app_version.modified_by,
+                    req->app_version.performed_by,
+                    req->app_version.change_reason_code,
+                    req->app_version.change_commentary);
+
                 reply(nats_, msg,
                     save_app_version_response{.success = true});
             } catch (const std::exception& e) {

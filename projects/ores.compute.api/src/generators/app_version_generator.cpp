@@ -44,8 +44,6 @@ domain::app_version generate_synthetic_app_version(
     r.app_id = app_id;
     r.wrapper_version = std::string("v1.0.") + std::to_string(idx);
     r.engine_version = std::string("engine-7.") + std::to_string(idx);
-    r.package_uri = std::string("s3://packages/app-v1.0.") + std::to_string(idx) + ".zip";
-    r.platforms = {"linux-x86_64"};
     r.min_ram_mb = 4096;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

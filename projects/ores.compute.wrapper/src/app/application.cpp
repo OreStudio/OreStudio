@@ -718,12 +718,19 @@ application::run(boost::asio::io_context& io_ctx,
     }
     node_stats_reporter* raw_reporter = reporter.get();
 
-    // Durable consumer name scoped to this environment to avoid collisions.
+    // Subject routing is per-triplet: the compute orchestrator publishes each
+    // assignment on compute.v1.work.assignments.{tenant_id}.{platform_code}
+    // with the package URI already resolved for that platform. Wrappers
+    // subscribe only to their own triplet so they never see assignments they
+    // couldn't run.
     std::string sanitised_tenant = cfg.tenant_id;
     std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
-    const std::string work_subject = "compute.v1.work.assignments.>";
-    const std::string durable_name = "compute_wrapper_" + sanitised_tenant;
-    const std::string queue_group  = "ores.compute.wrapper";
+    const std::string my_triplet(ores::utility::version::platform_triplet());
+    const std::string work_subject =
+        "compute.v1.work.assignments." + cfg.tenant_id + "." + my_triplet;
+    const std::string durable_name =
+        "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
+    const std::string queue_group = "ores.compute.wrapper." + my_triplet;
 
     co_await ores::service::service::run(
         io_ctx, nats, service_name,

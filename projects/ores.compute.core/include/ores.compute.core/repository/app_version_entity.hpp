@@ -43,7 +43,6 @@ struct app_version_entity {
     std::string app_id;
     std::string wrapper_version;
     std::string engine_version;
-    std::string package_uri;
     int min_ram_mb;
     std::string modified_by;
     std::string performed_by;

@@ -39,7 +39,7 @@
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/result_service.hpp"
-#include "ores.compute.core/service/app_version_service.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
 
 namespace ores::compute::messaging {
 
@@ -120,17 +120,27 @@ public:
                 const auto tenant_id_str = ctx.tenant_id().to_string();
                 const auto redundancy = req->workunit.target_redundancy;
 
-                // Look up app_version once to get the package_uri.
-                service::app_version_service av_svc(ctx);
-                const auto av = av_svc.find(av_id_str);
-                const auto package_uri = av ? av->package_uri : std::string{};
-                if (!av) {
+                // Look up the per-platform packages for this app_version.
+                // Each assignment is published on the triplet-specific subject
+                // so only wrappers with a matching ORES_PLATFORM_TRIPLET pick
+                // it up. If no packages are available, no dispatch is possible.
+                repository::app_version_platform_repository avp_repo;
+                const auto avps = avp_repo.list_for_version(ctx, av_id_str);
+                if (avps.empty()) {
                     BOOST_LOG_SEV(workunit_handler_lg(), warn)
-                        << "app_version not found: " << av_id_str
-                        << " — package_uri will be empty in assignment event";
+                        << "No platform packages for app_version "
+                        << av_id_str
+                        << " — workunit " << wu_id_str
+                        << " cannot be dispatched.";
+                    reply(nats_, msg, save_workunit_response{.success = true});
+                    return;
                 }
 
+                // Round-robin across available platforms so redundancy copies
+                // spread evenly across compatible host pools.
                 for (int i = 0; i < redundancy; ++i) {
+                    const auto& avp = avps[i % avps.size()];
+
                     domain::result r;
                     r.id = boost::uuids::random_generator()();
                     r.workunit_id = req->workunit.id;
@@ -145,7 +155,7 @@ public:
                         .result_id      = result_id_str,
                         .workunit_id    = wu_id_str,
                         .app_version_id = av_id_str,
-                        .package_uri    = package_uri,
+                        .package_uri    = avp.package_uri,
                         .input_uri      = req->workunit.input_uri,
                         .config_uri     = req->workunit.config_uri,
                         .output_uri     = ores::compute::net::compute_storage::output_path(
@@ -154,11 +164,13 @@ public:
                     const auto* p =
                         reinterpret_cast<const std::byte*>(json.data());
                     nats_.js_publish(
-                        "compute.v1.work.assignments." + tenant_id_str,
+                        "compute.v1.work.assignments." + tenant_id_str
+                            + "." + avp.platform_code,
                         std::span<const std::byte>(p, json.size()));
                     BOOST_LOG_SEV(workunit_handler_lg(), debug)
                         << "Dispatched result " << result_id_str
-                        << " for workunit " << wu_id_str;
+                        << " for workunit " << wu_id_str
+                        << " on platform " << avp.platform_code;
                 }
 
                 reply(nats_, msg, save_workunit_response{.success = true});

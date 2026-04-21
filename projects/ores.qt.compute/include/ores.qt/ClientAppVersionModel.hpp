@@ -59,9 +59,7 @@ public:
         AppId,
         WrapperVersion,
         EngineVersion,
-        Platform,
         MinRamMb,
-        PackageUri,
         Version,
         ModifiedBy,
         ColumnCount

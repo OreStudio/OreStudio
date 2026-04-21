@@ -40,7 +40,6 @@ app_version_mapper::map(const app_version_entity& v) {
     r.app_id = boost::lexical_cast<boost::uuids::uuid>(v.app_id);
     r.wrapper_version = v.wrapper_version;
     r.engine_version = v.engine_version;
-    r.package_uri = v.package_uri;
     r.min_ram_mb = v.min_ram_mb;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -65,7 +64,6 @@ app_version_mapper::map(const domain::app_version& v) {
     r.app_id = boost::uuids::to_string(v.app_id);
     r.wrapper_version = v.wrapper_version;
     r.engine_version = v.engine_version;
-    r.package_uri = v.package_uri;
     r.min_ram_mb = v.min_ram_mb;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -42,29 +42,6 @@ void app_version_repository::write(context ctx, const domain::app_version& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version: " << v.id;
     execute_write_query(ctx, app_version_mapper::map(v),
         lg(), "Writing app version to database.");
-
-    // Sync junction table: replace all platform rows for this id
-    const std::string id_str = boost::uuids::to_string(v.id);
-    const std::string tenant_id_str = ctx.tenant_id().to_string();
-    execute_parameterized_command(ctx,
-        "DELETE FROM ores_compute_app_version_platforms_tbl"
-        " WHERE tenant_id = $1::uuid AND app_version_id = $2::uuid"
-        " AND valid_to = ores_utility_infinity_timestamp_fn()",
-        {tenant_id_str, id_str},
-        lg(), "Removing old platform entries for app version.");
-
-    for (const auto& platform : v.platforms) {
-        execute_parameterized_command(ctx,
-            "INSERT INTO ores_compute_app_version_platforms_tbl"
-            " (tenant_id, app_version_id, platform_id, modified_by, performed_by,"
-            " change_reason_code, change_commentary, valid_from, valid_to)"
-            " VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5, $6, $7,"
-            " now(), ores_utility_infinity_timestamp_fn())",
-            {tenant_id_str, id_str, platform,
-             v.modified_by, v.performed_by,
-             v.change_reason_code, v.change_commentary},
-            lg(), "Inserting platform entry for app version.");
-    }
 }
 
 void app_version_repository::write(
@@ -72,26 +49,6 @@ void app_version_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing app versions. Count: " << v.size();
     execute_write_query(ctx, app_version_mapper::map(v),
         lg(), "Writing app versions to database.");
-}
-
-static void attach_platforms(database::context ctx,
-    std::vector<domain::app_version>& app_versions,
-    logging::logger_t& lg) {
-
-    if (app_versions.empty())
-        return;
-
-    const auto platform_map = execute_raw_grouped_query(ctx,
-        "SELECT avp.app_version_id::text, avp.platform_id::text"
-        " FROM ores_compute_app_version_platforms_tbl avp"
-        " WHERE avp.valid_to = ores_utility_infinity_timestamp_fn()",
-        lg, "Reading app version platforms");
-
-    for (auto& av : app_versions) {
-        const auto id_str = boost::uuids::to_string(av.id);
-        if (auto it = platform_map.find(id_str); it != platform_map.end())
-            av.platforms = it->second;
-    }
 }
 
 std::vector<domain::app_version>
@@ -104,13 +61,10 @@ app_version_repository::read_latest(context ctx) {
               && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
-    auto r = execute_read_query<app_version_entity, domain::app_version>(
+    return execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading latest app versions");
-
-    attach_platforms(ctx, r, lg());
-    return r;
 }
 
 std::vector<domain::app_version>
@@ -123,13 +77,10 @@ app_version_repository::read_latest(context ctx, const std::string& id) {
         where(("tenant_id"_c == tid || "tenant_id"_c == sys)
               && "id"_c == id && "valid_to"_c == max.value());
 
-    auto r = execute_read_query<app_version_entity, domain::app_version>(
+    return execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading latest app version by id.");
-
-    attach_platforms(ctx, r, lg());
-    return r;
 }
 
 std::vector<domain::app_version>
@@ -142,13 +93,10 @@ app_version_repository::read_all(context ctx, const std::string& id) {
               && "id"_c == id) |
         order_by("version"_c.desc());
 
-    auto r = execute_read_query<app_version_entity, domain::app_version>(
+    return execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading all app version versions by id.");
-
-    attach_platforms(ctx, r, lg());
-    return r;
 }
 
 void app_version_repository::remove(context ctx, const std::string& id) {

@@ -51,6 +51,7 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/domain/compute_platform.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
@@ -711,15 +712,31 @@ bool AppProvisionerWizard::submit() {
         ver.wrapper_version    = version_details_page_->wrapper_version().toStdString();
         ver.engine_version     = version_details_page_->engine_version().toStdString();
         ver.min_ram_mb         = version_details_page_->min_ram_mb();
-        ver.platforms          = platforms_page_->selected_platform_ids();
-        ver.package_uri        = package_upload_page_->package_uri().toStdString();
         ver.modified_by        = username;
         ver.performed_by       = username;
         ver.change_reason_code = reason_code;
         ver.change_commentary  = commentary;
 
+        // Build junction rows from the selected platforms. The wizard carries
+        // a single uploaded package URI; apply it to every platform for now.
+        // Per-platform uploads are planned as a follow-up once the detail
+        // dialog grows a per-triplet upload row.
+        const auto package_uri =
+            package_upload_page_->package_uri().toStdString();
+        std::vector<compute::domain::app_version_platform> platform_rows;
+        for (const auto& pid : platforms_page_->selected_platform_ids()) {
+            compute::domain::app_version_platform row;
+            row.app_version_id = app_version_id_;
+            try {
+                row.platform_id = boost::lexical_cast<boost::uuids::uuid>(pid);
+            } catch (...) { continue; }
+            row.package_uri = package_uri;
+            platform_rows.push_back(std::move(row));
+        }
+
         compute::messaging::save_app_version_request ver_req;
         ver_req.app_version        = std::move(ver);
+        ver_req.platforms          = std::move(platform_rows);
         ver_req.change_reason_code = reason_code;
         ver_req.change_commentary  = commentary;
 

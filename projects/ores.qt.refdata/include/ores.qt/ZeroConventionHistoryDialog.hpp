@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/zero_convention.hpp"
+#include "ores.refdata.api/domain/zero_convention.hpp"
 
 namespace Ui {
 class ZeroConventionHistoryDialog;

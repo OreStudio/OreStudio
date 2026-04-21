@@ -20,7 +20,7 @@
 #include "ores.qt/ClientZeroConventionModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/zero_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

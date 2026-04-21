@@ -127,9 +127,9 @@
     },
 
     "qt": {
-      "domain_include": "ores.refdata/domain/zero_convention.hpp",
+      "domain_include": "ores.refdata.api/domain/zero_convention.hpp",
       "domain_class": "refdata::domain::zero_convention",
-      "protocol_include": "ores.refdata/messaging/zero_convention_protocol.hpp",
+      "protocol_include": "ores.refdata.api/messaging/zero_convention_protocol.hpp",
       "collection_name": "zero_conventions",
       "item_var": "zc",
       "key_field": "id",

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientZeroConventionModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/zero_convention.hpp"
+#include "ores.refdata.api/domain/zero_convention.hpp"
 
 namespace ores::qt {
 

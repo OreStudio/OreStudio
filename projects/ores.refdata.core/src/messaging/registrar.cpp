@@ -98,7 +98,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_country_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_country_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -117,7 +117,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_currency_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_currency_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -137,7 +137,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_currency_market_tier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_currency_market_tier_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -176,7 +176,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_party_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -195,7 +195,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_party_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -214,7 +214,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_party_status_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -234,7 +234,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -251,7 +251,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_id_scheme_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_party_id_scheme_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -270,7 +270,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_party_contact_information_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -286,7 +286,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_counterparty_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_counterparty_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -306,7 +306,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_counterparty_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -326,7 +326,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             delete_counterparty_contact_information_request::nats_subject,
             queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -342,7 +342,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_book_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_book_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -361,7 +361,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_book_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_book_status_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -380,7 +380,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_portfolio_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_portfolio_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -399,7 +399,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_business_unit_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_business_unit_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -419,7 +419,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_business_unit_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_business_unit_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -439,7 +439,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_business_centre_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_business_centre_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -458,7 +458,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_contact_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_contact_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -478,7 +478,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_monetary_nature_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_monetary_nature_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -497,7 +497,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_rounding_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_rounding_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
@@ -516,7 +516,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->save(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             delete_purpose_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->del(std::move(msg)); }));
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_purpose_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));

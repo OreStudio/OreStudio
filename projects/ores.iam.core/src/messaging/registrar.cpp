@@ -109,7 +109,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [acth](ores::nats::message msg) { acth->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_account_request::nats_subject, qg,
-        [acth](ores::nats::message msg) { acth->del(std::move(msg)); }));
+        [acth](ores::nats::message msg) { acth->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         lock_account_request::nats_subject, qg,
         [acth](ores::nats::message msg) { acth->lock(std::move(msg)); }));
@@ -151,7 +151,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [aph](ores::nats::message msg) { aph->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_account_party_request::nats_subject, qg,
-        [aph](ores::nats::message msg) { aph->del(std::move(msg)); }));
+        [aph](ores::nats::message msg) { aph->remove(std::move(msg)); }));
 
     // --- Sessions ---
     auto sh = std::make_shared<session_handler>(nats, ctx, signer);
@@ -199,7 +199,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [th](ores::nats::message msg) { th->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_tenant_request::nats_subject, qg,
-        [th](ores::nats::message msg) { th->del(std::move(msg)); }));
+        [th](ores::nats::message msg) { th->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_tenant_history_request::nats_subject, qg,
         [th](ores::nats::message msg) { th->history(std::move(msg)); }));
@@ -214,7 +214,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [tsh](ores::nats::message msg) { tsh->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_tenant_status_request::nats_subject, qg,
-        [tsh](ores::nats::message msg) { tsh->del(std::move(msg)); }));
+        [tsh](ores::nats::message msg) { tsh->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_tenant_status_history_request::nats_subject, qg,
         [tsh](ores::nats::message msg) { tsh->history(std::move(msg)); }));
@@ -229,7 +229,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [tth](ores::nats::message msg) { tth->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_tenant_type_request::nats_subject, qg,
-        [tth](ores::nats::message msg) { tth->del(std::move(msg)); }));
+        [tth](ores::nats::message msg) { tth->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_tenant_type_history_request::nats_subject, qg,
         [tth](ores::nats::message msg) { tth->history(std::move(msg)); }));

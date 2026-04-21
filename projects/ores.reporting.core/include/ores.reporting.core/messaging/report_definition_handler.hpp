@@ -116,7 +116,7 @@ public:
             << "Completed " << msg.subject;
     }
 
-    void del(ores::nats::message msg) {
+    void remove(ores::nats::message msg) {
         BOOST_LOG_SEV(report_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(

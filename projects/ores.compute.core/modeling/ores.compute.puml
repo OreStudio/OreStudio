@@ -49,10 +49,22 @@ namespace ores #F2F2F2 {
                 + app_id: uuid
                 + wrapper_version: string
                 + engine_version: string
-                + package_uri: string
-                + platform: string
                 + min_ram_mb: int
                 + modified_by: string
+            }
+            class app_version_platform {
+                + app_version_id: uuid
+                + platform_id: uuid
+                + platform_code: string
+                + package_uri: string
+            }
+            class compute_platform {
+                + id: uuid
+                + code: string
+                + display_name: string
+                + os_family: string
+                + cpu_arch: string
+                + is_active: bool
             }
             class batch {
                 + id: uuid
@@ -82,6 +94,8 @@ namespace ores #F2F2F2 {
             }
 
             app_version --> app : app_id
+            app_version_platform --> app_version : app_version_id
+            app_version_platform --> compute_platform : platform_id
             workunit --> batch : batch_id
             workunit --> app_version : app_version_id
             result --> workunit : workunit_id

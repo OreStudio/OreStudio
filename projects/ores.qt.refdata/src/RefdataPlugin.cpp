@@ -217,8 +217,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (legTypeController_) legTypeController_->showListWindow();
         });
 
-        // ORE Conventions submenu (curve-building conventions from conventions.xml)
-        auto* menuOreConventions = ref->addMenu(tr("&ORE Conventions"));
+        // Conventions submenu (curve-building conventions from conventions.xml)
+        auto* menuOreConventions = ref->addMenu(tr("Con&ventions"));
         auto* actZeroConventions = menuOreConventions->addAction(
             ico(Icon::Tag), tr("&Zero Conventions"));
         connect(actZeroConventions, &QAction::triggered, this, [this]() {

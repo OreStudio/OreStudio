@@ -1,0 +1,340 @@
+#+title: FX Forward ORE Import End-to-End Wiring
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+Importing an FX trade via the ORE import flow produced a trade that
+appeared in the Portfolio Explorer but had *blank instrument economics*
+in =TradeDetailDialog=. Two distinct defects combined to hide the
+problem from every existing test:
+
+1. *Read path bug*: the importer saved FX forwards into the per-type
+   table =ores_trading_fx_forward_instruments_tbl= (and six sibling
+   variants), while the UI was reading from the legacy generic
+   =ores_trading_fx_instruments_tbl=, empty since the per-type
+   migration. The generic table and its service/repository/handler
+   still existed as a shadow path.
+2. *Soft FK ordering bug*: =trade_mapper::map()= emits =trade.id= as
+   the nil UUID at parse time and copies that nil into the
+   =instrument.trade_id= back-reference. The planner later mints a
+   real UUID for =trade.id= (so re-imports don't collide) but forgot
+   to propagate it into the instrument, leaving the instrument
+   orphaned. The =trade_import= test was vacuously green because both
+   sides were nil at comparison time.
+
+This plan captures the branch =feature/fx-forward-import-e2e-tests=:
+what has already landed, and the refactor sequence still outstanding
+to complete the end-to-end wiring and converge on the target client
+API for trade lookup.
+
+* Goals
+
+1. Make FX forward imports render correctly in =TradeDetailDialog=
+   end-to-end, from XML through domain into the per-type tables and
+   back out through a single client RPC.
+2. Replace the =loadInstrument(id)= callback-style form API with a
+   =setInstrument(variant)= push-style API where the dialog already
+   holds the instrument and hands it to the form.
+3. Evolve =get_trades_request= into a bundle-returning RPC: one round
+   trip yields =(trade, instrument)= pairs scoped to a single node
+   (portfolio or book), making a separate instrument fetch unnecessary.
+4. Delete the intermediate =instrument_handler= +
+   =get_instrument_for_trade_request= plumbing once bundles carry the
+   instrument inline.
+5. Establish the target API shape so the remaining six FX variants and
+   the non-FX product families can adopt it uniformly in follow-up PRs.
+
+* Non-goals
+
+- This PR only wires =FxForward= on the client form side. The other
+  six FX variants (=fx_accumulator=, =fx_asian_forward=,
+  =fx_barrier_option=, =fx_digital_option=, =fx_vanilla_option=,
+  =fx_variance_swap=) and the non-FX families ride the new API shape
+  but keep their existing per-family forms. Their migration is
+  follow-up work.
+- No legacy / generic FX infrastructure is preserved for
+  backwards compatibility. When the new path replaces the old, the
+  old is deleted in the same commit.
+- No forwarding headers, deprecation shims, or compatibility flags at
+  any phase boundary.
+- The subtree-semantics of portfolio filtering are handled by the
+  database: the wire request carries a single node identifier, not an
+  =include_subtree= flag.
+
+* Constraints and decisions
+
+- *Single branch, ordered commits*: work lands on
+  =feature/fx-forward-import-e2e-tests=, one commit per phase, in
+  sequence. Each commit builds clean.
+- *=get_=, not =find_=*: every service method and wire message uses
+  the =get_= prefix. The prior mix of =find_*_instrument= /
+  =get_*_request= has been unified as part of Phase 0.
+- *One node field on =get_trades_request=*: no separate
+  =portfolio_id= / =book_id= pair, no =include_subtree= flag. The
+  database resolves the node to its subtree closure; the client
+  doesn't care whether the node is a portfolio or a book.
+- *Bundles over round trips*: =get_trades_response= carries both the
+  trade and its instrument variant. The dialog never issues a second
+  RPC to hydrate the instrument.
+- *Variant symmetry*: =fx_export_result= mirrors =swap_export_result=
+  as a discriminated union over the seven per-type FX instruments.
+  Clients pattern-match on it the same way for every family.
+
+* What is already done
+
+Two commits on =feature/fx-forward-import-e2e-tests=:
+
+** 5a186e0f4 =[ore] Rewire instrument.trade_id after planner mints trade UUID=
+
+- Adds =importer::rewire_instrument_trade_id()= which walks the
+  mapping-result variant and reassigns the soft FK to the real
+  =item.trade.id=.
+- Calls it from both planner mint sites (existing-book path and
+  create-portfolio path).
+- Adds a planner test asserting every planned trade has a non-nil
+  UUID and every instrument's =trade_id= matches.
+- Replaces the vacuous =trade_import= assertion with
+  =REQUIRE(instr.trade_id.has_value())= plus equality on the
+  dereferenced value, and documents the provisional-nil parse stage
+  in a comment.
+
+** 5f64df94d =[trading,ore,qt,sql,codegen] Delete legacy FX generic table; route reads by trade_type_code=
+
+- Deletes the legacy single-table FX infrastructure in full: domain
+  struct, SQL table + trigger + policy, entity, mapper, repository,
+  service, handler, JSON I/O, table I/O, the four legacy messaging
+  types (=save= / =delete= / =list= / =history=), and their registrar
+  entries.
+- Wires the read path through the per-type services, mirroring the
+  swap pattern. =instrument_handler= and =trade_handler= route
+  =product_type::fx= by =trade_type_code= to the right per-type
+  service.
+- Adds =get_<type>_instrument= methods to the seven per-type FX
+  services (repositories already exposed =read_latest=).
+- Swaps =fx_instrument= (legacy) for =fx_export_result= in the
+  =instrument_export_result= variant — a discriminated union over the
+  seven per-type FX instruments, symmetric with =swap_export_result=.
+- Requires =trade_type_code= on =get_instrument_for_trade_request=
+  when =product_type= is =fx= (previously required only for =swap=).
+- Renames =find_*_instrument= to =get_*_instrument= across the
+  seventeen instrument services, and updates the codegen template
+  =cpp_service.cpp/.hpp.mustache= in lockstep so generated services
+  follow the convention.
+- =FxInstrumentForm= now holds =fx_forward_instrument= directly,
+  sends the new request with =trade_type_code=, extracts
+  =fx_forward_instrument= from =fx_export_result=, and saves via
+  =save_fx_forward_instrument_request=. Scoped to =FxForward= for
+  now.
+
+* What is left — phase plan
+
+Five phases remain. Tasks refer to the in-session task list.
+
+** Phase 1 — Evolve =get_trades_request= to return bundles [task #17]
+
+Replace the trade-only response with a bundle response that carries
+the instrument inline.
+
+*** Wire protocol changes (=trading_protocol.hpp=)
+
+- =get_trades_request= keeps =offset= / =limit= but replaces =book_id=
+  with a single =node_id= (=std::string=). The database is responsible
+  for resolving the node to its subtree. No =include_subtree= flag.
+- New =trade_bundle= struct containing =trade= + =instrument_export_result=.
+- =get_trades_response= carries =std::vector<trade_bundle>= and
+  =total_available_count=.
+
+*** Server routing (=trade_handler=)
+
+- After fetching the page of trades, call the per-type instrument
+  services (keyed on =(product_type, trade_type_code)=) to populate
+  the instrument side of each bundle.
+- Reuse the routing added in 5f64df94d; no new decision tables.
+- Missing / not-yet-imported instruments surface as an empty variant
+  alternative, not as an error.
+
+*** Database
+
+- =ores_trading_trade_repository= gains a =list_by_node= path (or
+  equivalent) that accepts a single portfolio-or-book node id and
+  expands it to the subtree closure server-side.
+
+** Phase 2 — =ClientManager::listTrades= helper [task #19]
+
+Add a helper to =ClientManager= that wraps =get_trades_request= and
+returns the bundles. Callers stop hand-rolling the request / response
+dance.
+
+- Signature: =std::vector<trade_bundle> listTrades(node_id, offset, limit)=.
+- Returns already-extracted bundles; surfaces total count via a
+  second out-param or a small result struct. Match the existing
+  helper idioms in =ClientManager=.
+- Logs request / response timing at debug under the ClientManager
+  logger.
+
+** Phase 3 — =IInstrumentForm::setInstrument= replaces =loadInstrument= [task #20]
+
+The form becomes a pure renderer. It no longer triggers an RPC on its
+own.
+
+*** Interface change
+
+- Remove =IInstrumentForm::loadInstrument(const std::string& id)=.
+- Add =IInstrumentForm::setInstrument(const instrument_export_result&)=
+  (or the family-specific variant; settle on one push signature).
+- =clear()= stays for the create-mode empty path.
+
+*** =FxInstrumentForm=
+
+- Remove the =get_instrument_for_trade_request= call.
+- =setInstrument= pattern-matches the =fx_export_result= alternative,
+  stores =fx_forward_instrument=, and populates the widgets.
+
+*** Seven sibling form implementations
+
+- Mechanically update each =XxxInstrumentForm::loadInstrument= to
+  =setInstrument=, stubbing the unimplemented ones uniformly so the
+  build stays clean. (Full content-parity for non-FX families is
+  follow-up.)
+
+** Phase 4 — =PortfolioExplorerTradeModel= caches bundles; =TradeDetailDialog= takes =(trade, instrument)= [task #21]
+
+*** =PortfolioExplorerTradeModel=
+
+- Call =ClientManager::listTrades= instead of the raw
+  =get_trades_request= today.
+- Cache the full =trade_bundle= per row (not just the trade). Model
+  rows still expose trade fields for table display; the instrument
+  side is retained for downstream dialog use.
+
+*** =TradeDetailDialog=
+
+- Constructor / entry point takes =(trade, instrument_export_result)=
+  rather than =trade= alone.
+- The code path at =TradeDetailDialog.cpp:374-376= that currently
+  calls =activeForm_->loadInstrument(uuid)= becomes
+  =activeForm_->setInstrument(instrument)= — no UUID, no RPC.
+- The create-mode branch still calls =activeForm_->clear()=.
+
+*** =OrgExplorerTradeModel= / =ClientTradeModel=
+
+- Both also use =get_trades_request= today. Either migrate them to
+  the bundle shape in the same commit, or gate them on a later phase
+  if scope creeps. The default is migrate-now: the old shape is gone.
+
+** Phase 5 — Delete =instrument_handler= + =get_instrument_for_trade_request= [task #18]
+
+With bundles carrying the instrument, the entire separate
+instrument-for-trade round trip is dead code.
+
+- Delete =instrument_handler.hpp= / =.cpp= and its registrar entry.
+- Delete =get_instrument_for_trade_request= /
+  =get_instrument_for_trade_response= from =instrument_protocol.hpp=.
+- Sweep call sites: the seven=XxxInstrumentForm= files under
+  =projects/ores.qt.trading/src/= all reference the request today
+  (see =grep= for =get_instrument_for_trade_request=).
+- =trade_handler= retains the product-type → trade-type-code routing
+  introduced in 5f64df94d — that now lives inside =get_trades_request=
+  fulfilment rather than in a standalone handler.
+
+** Phase 6 — Build and smoke-test [task #22]
+
+- =make -C build/output/linux-clang-debug-make -j$(nproc) all=
+- =cmake --build --preset linux-clang-release-ninja --target rat=
+- End-to-end smoke: import the =XvaRisk/Input= sample XML, open the
+  imported FX Forward in =TradeDetailDialog=, confirm economics render.
+- Verify the =trade_import= and planner tests added in 5a186e0f4
+  still pass.
+
+* Broader context: this PR is #1 of a product-family migration series
+
+The FX Forward defect that motivated this branch is a specific
+instance of a *systemic* divergence between legacy single-generic-
+table infrastructure and per-type-table infrastructure, present
+across every product family except rates/swap. The pre-branch
+analysis catalogued the entire surface:
+
+** Inventory across product families
+
+| Family        | Legacy generic table          | Per-type tables                                   | Per-type services                     | Per-type handlers          |
+|---------------+-------------------------------+---------------------------------------------------+---------------------------------------+----------------------------|
+| FX            | was =fx_instruments_tbl= (deleted in 5f64df94d) | 7 (forward, vanilla_opt, barrier_opt, digital_opt, asian_fwd, accumulator, var_swap) | 7 save + 7 get (get added in 5f64df94d) | =typed_fx_instrument_handler= |
+| Equity        | =equity_instruments_tbl=      | 9 (option, digital_opt, barrier_opt, asian_opt, forward, var_swap, swap, accumulator, position) | 9 save only                            | =typed_equity_instrument_handler= |
+| Bond          | =bond_instruments_tbl=        | —                                                 | —                                     | —                          |
+| Credit        | =credit_instruments_tbl=      | —                                                 | —                                     | —                          |
+| Commodity     | =commodity_instruments_tbl=   | —                                                 | —                                     | —                          |
+| Composite     | =composite_instruments_tbl=   | —                                                 | —                                     | —                          |
+| Scripted      | =scripted_instruments_tbl=    | —                                                 | —                                     | —                          |
+| Swap (rates)  | *none (per-type only, by design)* | 9 (FRA, vanilla, cap_floor, swaption, balance_guaranteed, callable, knock_out, inflation, rpa) | 9 save + 9 get              | routed in =rates_instrument_handler= via =trade_type_code= |
+
+Every family with a legacy generic table shares the same underlying
+bug pattern: writes increasingly flow to per-type tables (via the
+importer or per-type save requests), while reads still go through the
+legacy generic service, which points at an empty-or-stale table. The
+UI shows blanks or stale data silently.
+
+** Target API shape (applies to every family)
+
+The shape settled on for FX is the target for every family:
+
+- *Per-type save*: =save_<family>_<type>_instrument_request= →
+  typed-family handler → per-type service → per-type table. (Already
+  implemented for FX and Equity; missing for Bond/Credit/Commodity/
+  Composite/Scripted where only generic save exists.)
+- *Per-type get*: =get_<family>_<type>_instrument= methods on the
+  per-type services. (Added for FX in 5f64df94d; to be added for the
+  others as each family migrates.)
+- *Discriminated export variant*: =<family>_export_result= is a
+  union over that family's per-type instruments, symmetric with
+  =swap_export_result=. The top-level =instrument_export_result=
+  variant carries =<family>_export_result=, not the legacy generic
+  type.
+- *Single wire request fanning out server-side*: the client sends
+  =get_instrument_for_trade_request= with =product_type= +
+  =trade_type_code=; the server routes to the right per-type
+  service. (After Phase 5 of this PR, bundles carry the instrument
+  inline and the standalone request is deleted entirely.)
+
+** PR sequencing for the migration series
+
+- *PR #1 (this branch, =feature/fx-forward-import-e2e-tests=)*:
+  Delete legacy FX generic infrastructure; add per-type FX get
+  methods; establish target client API (bundle-returning
+  =get_trades_request=, =setInstrument=, no standalone
+  instrument fetch). =FxInstrumentForm= scoped to =FxForward= only.
+- *PR #2 — Equity*: same shape as FX. Nine per-type get methods,
+  =equity_export_result= variant, delete =equity_instruments_tbl= and
+  the generic domain/service/repository/mapper/handler. Update the
+  three-to-four equity forms. Largest follow-up, same pattern.
+- *PR #3 — Bond / Credit / Commodity / Composite / Scripted*: these
+  five families have *no* per-type infrastructure today, so the
+  decision is whether to (a) stand up per-type infrastructure to
+  match FX/Equity/Swap, or (b) keep them single-type but rename
+  =save_<family>_instrument_request= → =save_<family>_<type>_request=
+  so the shape is uniform. Default is (b) for the single-type
+  families — deferring (a) until a real second sub-type appears.
+  Deletes each legacy generic table and domain.
+- *PR #4 — Retire the standalone instrument fetch path*: remove
+  =get_instrument_for_trade_request= entirely (already deleted
+  inside this branch in Phase 5), clean up =instrument_handler= and
+  registrar entries across all families, and converge on
+  =get_trades_request= as the sole read path.
+- *Remaining client forms*: the other six FX variants
+  (=fx_accumulator=, =fx_asian_forward=, =fx_barrier_option=,
+  =fx_digital_option=, =fx_vanilla_option=, =fx_variance_swap=) need
+  a form story — per-variant forms or a variant-dispatching shell.
+  Decide in PR #2 or later, not here.
+
+** Cross-PR invariants
+
+- *=get_= naming, never =find_=*: enforced by the codegen template
+  update in 5f64df94d. Any new service generated picks up the
+  convention automatically.
+- *No backwards-compatibility shims between PRs*: each PR deletes
+  the legacy path it replaces in the same commit. Intermediate
+  states are never shipped.
+- *Subtree resolution lives in the database*: the single-node
+  filter on =get_trades_request= (Phase 1 above) is family-agnostic;
+  later PRs inherit it for free. If a second family needs the
+  subtree-expansion SQL, factor it into a reusable helper at that
+  point — not now.

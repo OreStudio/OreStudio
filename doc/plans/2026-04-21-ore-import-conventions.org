@@ -1,0 +1,254 @@
+:PROPERTIES:
+:ID: 7D4E1A08-1F3E-11F2-B4B1-40B0768014EB
+:END:
+#+title: ORE Import: Conventions Persistence & Full Import Pipeline
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+#+status: IN PROGRESS
+
+* Overview
+
+Analysis of the current ORE import pipeline (market data, fixings, conventions)
+found a gap that blocks end-to-end import: conventions can be parsed from ORE
+XML but have no persistent home, no UI, and no place in the import pipeline.
+Market data and fixings have full persistence but are not wired into the CLI
+~import_data()~ entry point. Only currencies are wired today.
+
+This plan delivers parity between the nine ORE convention types and the
+~currency~ reference-data stack, and then wires conventions, market data, and
+fixings into the CLI ORE import workflow alongside the existing currencies
+path.
+
+* Current State (from analysis)
+
+| Concept     | Domain types        | XML parser | Persistence                | CLI import | Workflow call    |
+|-------------+---------------------+------------+----------------------------+------------+------------------|
+| Currencies  | Full                | Full       | Full (refdata DB)          | Yes        | Wired            |
+| Market data | Full                | Text       | Full (TimescaleDB)         | No         | Orphan service   |
+| Fixings     | Full                | Text       | Full (TimescaleDB)         | No         | Orphan service   |
+| Conventions | Full (9 types)      | Full       | *None*                     | No         | Parser orphaned  |
+
+Specific orphans discovered:
+
+- ~projects/ores.marketdata.core/.../service/import_service~ and NATS subject
+  ~marketdata.v1.import~ exist and work, but nothing in
+  ~projects/ores.cli/src/app/application.cpp::import_data()~ invokes them.
+- ~projects/ores.ore/src/xml/importer.cpp::importer::import_conventions()~ reads
+  ~conventions.xml~, normalises enums to FpML/CDM canonical codes, and returns
+  a ~mapped_conventions~ struct with nine vectors — but is only called from
+  tests.
+- Unmapped ORE convention subtypes (~AverageOIS~, ~TenorBasisSwap~,
+  ~CrossCurrencyBasis~, ~InflationSwap~, …) are silently dropped in
+  ~conventions_mapper.cpp~. Out of scope for this plan; captured below as a
+  follow-up.
+
+* Goal
+
+Reach currency-parity for the nine ORE convention types (schema, repository,
+service, NATS handler, Qt views) and wire conventions, market data, and
+fixings into the CLI import pipeline so an ORE directory can be imported
+end-to-end without the wizard.
+
+* Design Principles
+
+1. *Full parity with currency*, not a minimal shim. One commit per layer so
+   each step is reviewable.
+2. *Use ~ores.codegen~ where possible.* All nine types are codegen-driven via
+   the ~*_domain_entity.json~ model format (not the older ~*_entity.json~).
+   Modern codegen provides history via repository + generated ~HistoryDialog~,
+   so legacy version/history wrapper types are not generated.
+3. *No backwards-compatibility shims.* Update all consumers directly when
+   interfaces change (e.g. ~del~ → ~remove~, see Open Questions).
+4. *Tests deferred* for conventions and market-data import wiring until the
+   pattern is stable. Follow-up commits will add them.
+
+* Status
+
+| Phase | Item                                                   | Status    | Commits        |
+|-------+--------------------------------------------------------+-----------+----------------|
+|     1 | Codegen profile fixes (service / qt / enum routing)    | Done      | 754764219      |
+|     1 | zero_convention domain type (end-to-end via codegen)   | Done      | 69f74e32a      |
+|     1 | zero_conventions SQL + notify trigger                  | Done      | 5b5d4f048      |
+|     1 | zero_convention NATS handler registration              | Done      | 64723e289      |
+|     1 | Qt include paths point at refdata.api                  | Done      | b92b123b2      |
+|     1 | ZeroConventionController registered in refdata plugin  | Done      | 08cc8eefc      |
+|     1 | Codegen auto-derives qt include paths + domain class   | Done      | fab932c0f      |
+|     1 | Qt menu renamed "ORE Conventions" → "Conventions"      | Done      | 9603bd13e      |
+|     2 | deposit_convention                                     | Pending   | —              |
+|     2 | swap_convention                                        | Pending   | —              |
+|     2 | ois_convention                                         | Pending   | —              |
+|     2 | fra_convention                                         | Pending   | —              |
+|     2 | ibor_index_convention                                  | Pending   | —              |
+|     2 | overnight_index_convention                             | Pending   | —              |
+|     2 | fx_convention                                          | Pending   | —              |
+|     2 | cds_convention                                         | Pending   | —              |
+|     2 | ~del~ → ~remove~ migration across handlers (34 sites)  | Done      | uncommitted    |
+|     3 | CLI: ~market_data~ entity + import handler            | Pending   | —              |
+|     3 | CLI: ~conventions~ entity + import handler             | Pending   | —              |
+|     3 | CLI: single ORE import entrypoint (sequenced saga)     | Pending   | —              |
+|     - | Commit ~scripts/validate_ore_examples.sh~ (XSD gate)   | Pending   | —              |
+
+* Phase 1 — zero_convention Pilot (COMPLETED)
+
+Establishes the end-to-end pattern on a single, simple convention type, and
+shakes out infrastructure bugs in codegen.
+
+** Codegen bugs discovered and fixed (~projects/ores.codegen/library/profiles.json~)
+
+Root cause: the April 9 commit that introduced api/core split routing
+(~3fa682bec~) missed several template paths. Fixed in ~754764219~:
+
+- ~service~ profile: ~{component}~ → ~{component_core}~ (lines 187, 191)
+- ~enum~ profile: ~{component}~ → ~{component_include}~ (line 285)
+- ~qt~ profile: ~projects/ores.qt/…~ → ~projects/ores.qt.{component}/…~
+  (all 12 template entries)
+
+Later, Qt include paths and the domain class name were made auto-derivable
+(~fab932c0f~) so Phase 2 models don't need to repeat the boilerplate.
+
+** Files produced by the pilot
+
+- SQL: ~projects/ores.sql/create/refdata/refdata_zero_conventions_create.sql~
+  (+ notify trigger) wired into schema setup.
+- Domain / JSON I/O / table I/O / generator / protocol:
+  ~projects/ores.refdata.api/…/domain/zero_convention*~,
+  ~…/generator/zero_convention_generator~,
+  ~…/messaging/zero_convention_protocol~.
+- Entity / mapper / repository / service:
+  ~projects/ores.refdata.core/…/repository/zero_convention_*~,
+  ~…/service/zero_convention_service~.
+- NATS: handler registered in refdata NATS registrar
+  (~projects/ores.refdata.core/…/messaging/zero_convention_handler~).
+- Qt: model / MDI window / detail dialog / history dialog / controller / .ui
+  under ~projects/ores.qt.refdata/~, controller registered in
+  ~RefdataPlugin~, menu entry placed under the "Conventions" submenu.
+
+Model file: ~projects/ores.codegen/models/refdata/zero_convention_domain_entity.json~.
+This is the template for the eight Phase 2 models.
+
+* Phase 2 — Remaining Eight Conventions (PENDING)
+
+Each type gets the same stack produced for ~zero_convention~. One commit per
+layer per type (≈5 commits per type), so each type lands as a reviewable
+batch.
+
+** The nine convention types
+
+XML element names taken from ~projects/ores.ore/src/domain/conventions_mapper.cpp~.
+Field shapes taken from the existing ~projects/ores.refdata.api/…/domain/~
+headers.
+
+| # | snake_case type               | XML element      | Shape                      | Status  |
+|---+-------------------------------+------------------+----------------------------+---------|
+| 1 | ~zero_convention~             | ~Zero~           | Tenor-based                | Done    |
+| 2 | ~deposit_convention~          | ~Deposit~        | Index-based, simple        | Pending |
+| 3 | ~swap_convention~             | ~Swap~           | Fixed + float legs         | Pending |
+| 4 | ~ois_convention~              | ~OIS~            | Richest field set          | Pending |
+| 5 | ~fra_convention~              | ~FRA~            | Minimal (index only)       | Pending |
+| 6 | ~ibor_index_convention~       | ~IborIndex~      | Index metadata             | Pending |
+| 7 | ~overnight_index_convention~  | ~OvernightIndex~ | Index metadata             | Pending |
+| 8 | ~fx_convention~               | ~FX~             | FX-specific                | Pending |
+| 9 | ~cds_convention~              | ~CDS~            | CDS-specific               | Pending |
+
+Recommended ordering: ~deposit_convention~ first (simplest non-pilot), then
+~swap_convention~, then the remaining six.
+
+** The pattern rolled out per type
+
+1. Write ~<type>_domain_entity.json~ under ~projects/ores.codegen/models/refdata/~.
+2. Run the codegen wrapper scripts to regenerate domain + repository + service
+   + Qt files.
+3. Add the SQL create script and wire it into ~projects/ores.sql/~ schema
+   setup.
+4. Register the NATS handler in the refdata NATS registrar.
+5. Register the Qt controller in ~RefdataPlugin~; entry appears under the
+   "Conventions" submenu.
+6. (Cross-cutting per batch, not per type) rebuild and smoke-test Qt.
+
+* Phase 3 — CLI ORE Import Wiring (PENDING)
+
+Adds the missing CLI import handlers and a single ORE directory entrypoint.
+
+** Deliverables
+
+- ~[cli]~ Add ~market_data~ entity + import handler that calls the existing
+  ~ores::marketdata::service::import_service~.
+- ~[cli]~ Add ~conventions~ entity + import handler that calls
+  ~ores::ore::xml::importer::import_conventions~ plus the new refdata
+  convention services produced in Phase 2.
+- ~[cli]~ Single ORE import entrypoint that sequences:
+  ~currencies → conventions → market data → fixings~.
+
+** File touchpoints
+
+- ~projects/ores.cli/include/ores.cli/config/entity.hpp~ — add ~market_data~,
+  ~conventions~ entries to the entity enum.
+- ~projects/ores.cli/src/app/application.cpp~ — add case handlers in
+  ~import_data()~ alongside the existing currencies case (around the
+  existing handler).
+- ~projects/ores.cli/src/config/import_options.cpp~ — parser updates.
+
+** Sequencing rationale
+
+~currencies → conventions → market data → fixings~ reflects the observed
+reference order in ORE example directories. Currencies and conventions are
+both refdata and have no inter-dependency between themselves; market data
+series are scoped by currency and (via ~index_name~ qualifier) by the market
+series catalog rather than by conventions directly. The sequence is
+conservative — each step lands refdata the later steps might reference.
+
+* Supporting Work
+
+** ~scripts/validate_ore_examples.sh~ (untracked)
+
+An ~xmllint~-based script that walks ~external/ore/examples~ and validates
+every XML against ~external/ore/xsd/input.xsd~. Predates this plan (dated
+2026-04-09) but belongs to this effort as the ground-truth gate for the ORE
+example corpus the importer must consume. Commit under ~[scripts]~ or
+~[tools]~ before Phase 3.
+
+* Relationship to Neighbouring Plans
+
+- ~doc/plans/2026-02-27-ore-import-wizard-design.org~ — the original
+  client-side wizard. Conceptually superseded by server-side import; this
+  plan's Phase 3 CLI path is an alternative driver on the same persistence
+  layer the wizard uses.
+- ~doc/plans/2026-04-03-server-side-ore-import.org~ — the server-side saga.
+  *This plan is a prerequisite for its convention persistence step*: the
+  saga cannot land parsed conventions until Phases 1 and 2 give them a
+  home. Once the refdata convention services exist, the saga's
+  ~ores.ore.service~ phase can call into them.
+- ~doc/plans/2026-03-29-ore-instrument-mappers-phase9.org~ — trade /
+  instrument mapper correctness. Orthogonal.
+- ~doc/analysis/ore_xsd_schema_gaps.md~ — XSD schema gaps. Adjacent analysis,
+  not a blocker.
+
+* Open Questions
+
+- *~del~ vs ~remove~ naming.* Resolved: canonical name is ~remove~. Migration
+  completed on 2026-04-21, covering 34 sites across ~ores.refdata.core~ (22),
+  ~ores.iam.core~ (5), ~ores.reporting.core~ (4), and ~ores.marketdata.core~
+  (3). Codegen templates already emit ~remove~, so this is strictly a
+  legacy-code fix.
+
+- *Tests for market data and conventions import.* Explicitly wanted but
+  deferred from the initial rollout. Needs a dedicated follow-up sprint
+  item.
+
+- *Unmapped ORE convention subtypes.* ~AverageOIS~, ~TenorBasisSwap~,
+  ~CrossCurrencyBasis~, ~InflationSwap~, etc. are dropped in
+  ~conventions_mapper.cpp~. Out of scope here; likely a Phase 4 once the
+  base nine are in place.
+
+- *Fixings-on-conventions dependency.* The Phase 3 sequence assumes fixings
+  come after conventions, but fixings are keyed by ~index_name~ against the
+  market-series catalog, not by convention. The sequence is safe either
+  way; revisit if reordering simplifies saga compensation on the server
+  side.
+
+- *Full-parity file count.* Original estimate was ≈380 files for all nine
+  types at full parity. Because modern codegen provides history via
+  repository + ~HistoryDialog~ rather than legacy version/history wrappers,
+  the actual Phase 2 output is closer to ≈200 files without loss of
+  functionality.

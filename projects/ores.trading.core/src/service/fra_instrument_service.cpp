@@ -55,8 +55,8 @@ std::uint32_t fra_instrument_service::count_fra_instruments() {
 }
 
 std::optional<domain::fra_instrument>
-fra_instrument_service::find_fra_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding fra_instrument: " << id;
+fra_instrument_service::get_fra_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting fra_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

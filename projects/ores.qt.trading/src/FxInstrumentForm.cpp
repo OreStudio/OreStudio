@@ -30,19 +30,9 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-trading::domain::fx_instrument default_fx_instrument() {
-    trading::domain::fx_instrument fx;
-    return fx;
-}
-
-} // namespace
-
 FxInstrumentForm::FxInstrumentForm(QWidget* parent)
     : IInstrumentForm(parent),
-      ui_(new Ui::FxInstrumentForm),
-      instrument_(default_fx_instrument()) {
+      ui_(new Ui::FxInstrumentForm) {
     ui_->setupUi(this);
     // Options sub-tab is hidden until setTradeType() reveals it.
     ui_->subTabWidget->setTabVisible(
@@ -64,19 +54,12 @@ void FxInstrumentForm::setupConnections() {
             this, markChanged);
     connect(ui_->settlementEdit, &QLineEdit::textChanged,
             this, markChanged);
-    connect(ui_->optionTypeEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->expiryDateEdit, &QLineEdit::textChanged,
-            this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged,
             this, markChanged);
     connect(ui_->boughtAmountSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, markChanged);
     connect(ui_->soldAmountSpinBox,
-            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
-    connect(ui_->strikePriceSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, markChanged);
 }
@@ -90,7 +73,7 @@ void FxInstrumentForm::setUsername(const std::string& username) {
 }
 
 void FxInstrumentForm::clear() {
-    instrument_ = default_fx_instrument();
+    instrument_ = trading::domain::fx_forward_instrument{};
     loaded_ = false;
     dirty_ = false;
     populateFromInstrument();
@@ -112,9 +95,6 @@ void FxInstrumentForm::setReadOnly(bool readOnly) {
     ui_->soldAmountSpinBox->setReadOnly(readOnly);
     ui_->valueDateEdit->setReadOnly(readOnly);
     ui_->settlementEdit->setReadOnly(readOnly);
-    ui_->optionTypeEdit->setReadOnly(readOnly);
-    ui_->strikePriceSpinBox->setReadOnly(readOnly);
-    ui_->expiryDateEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 }
 
@@ -141,17 +121,10 @@ void FxInstrumentForm::writeUiToInstrument() {
     instrument_.sold_currency =
         ui_->soldCurrencyEdit->text().trimmed().toStdString();
     instrument_.sold_amount = ui_->soldAmountSpinBox->value();
-    {
-        const auto vd = ui_->valueDateEdit->text().trimmed().toStdString();
-        instrument_.value_date = vd.empty() ? std::nullopt : std::optional(vd);
-    }
+    instrument_.value_date =
+        ui_->valueDateEdit->text().trimmed().toStdString();
     instrument_.settlement =
         ui_->settlementEdit->text().trimmed().toStdString();
-    instrument_.option_type =
-        ui_->optionTypeEdit->text().trimmed().toStdString();
-    instrument_.strike_price = ui_->strikePriceSpinBox->value();
-    instrument_.expiry_date =
-        ui_->expiryDateEdit->text().trimmed().toStdString();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
@@ -164,8 +137,11 @@ void FxInstrumentForm::loadInstrument(const std::string& id) {
     struct LoadResult {
         bool success;
         std::string message;
-        trading::domain::fx_instrument instrument;
+        trading::domain::fx_forward_instrument instrument;
     };
+
+    const auto tradeTypeCode =
+        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
 
     QPointer<FxInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<LoadResult>(self);
@@ -191,25 +167,32 @@ void FxInstrumentForm::loadInstrument(const std::string& id) {
     });
 
     auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm, id]() -> LoadResult {
+    watcher->setFuture(QtConcurrent::run(
+        [cm, id, tradeTypeCode]() -> LoadResult {
         if (!cm)
             return {false, "Dialog closed", {}};
 
         trading::messaging::get_instrument_for_trade_request req;
         req.product_type = trading::domain::product_type::fx;
         req.instrument_id = id;
+        req.trade_type_code = tradeTypeCode;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r)
             return {false, "Failed to communicate with server", {}};
         if (!r->success)
             return {false, r->message, {}};
 
-        const auto* fx =
-            std::get_if<trading::domain::fx_instrument>(&r->instrument);
-        if (!fx)
+        const auto* ex =
+            std::get_if<trading::messaging::fx_export_result>(&r->instrument);
+        if (!ex)
             return {false, "Unexpected instrument type in response", {}};
-
-        return {true, {}, *fx};
+        const auto* fwd =
+            std::get_if<trading::domain::fx_forward_instrument>(&ex->instrument);
+        if (!fwd) {
+            return {false, "Non-forward FX type not yet supported in this "
+                           "dialog (trade_type_code=" + tradeTypeCode + ")", {}};
+        }
+        return {true, {}, *fwd};
     }));
 }
 
@@ -223,9 +206,6 @@ void FxInstrumentForm::populateFromInstrument() {
         ui_->soldAmountSpinBox->blockSignals(b);
         ui_->valueDateEdit->blockSignals(b);
         ui_->settlementEdit->blockSignals(b);
-        ui_->optionTypeEdit->blockSignals(b);
-        ui_->strikePriceSpinBox->blockSignals(b);
-        ui_->expiryDateEdit->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
     };
 
@@ -239,14 +219,9 @@ void FxInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.sold_currency));
     ui_->soldAmountSpinBox->setValue(instrument_.sold_amount);
     ui_->valueDateEdit->setText(
-        QString::fromStdString(instrument_.value_date.value_or("")));
+        QString::fromStdString(instrument_.value_date));
     ui_->settlementEdit->setText(
         QString::fromStdString(instrument_.settlement));
-    ui_->optionTypeEdit->setText(
-        QString::fromStdString(instrument_.option_type));
-    ui_->strikePriceSpinBox->setValue(instrument_.strike_price);
-    ui_->expiryDateEdit->setText(
-        QString::fromStdString(instrument_.expiry_date));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
     block(false);
@@ -300,7 +275,7 @@ void FxInstrumentForm::saveInstrument(
         BOOST_LOG_SEV(lg(), info) << "FX instrument saved";
         self->dirty_ = false;
         self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.id));
+        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
     });
 
     auto* cm = clientManager_;
@@ -309,7 +284,7 @@ void FxInstrumentForm::saveInstrument(
         [cm, instrument = std::move(instrument)]() -> SaveResult {
         if (!cm)
             return {false, "Dialog closed"};
-        trading::messaging::save_fx_instrument_request req;
+        trading::messaging::save_fx_forward_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};

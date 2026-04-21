@@ -51,8 +51,8 @@ std::uint32_t credit_instrument_service::count_credit_instruments() {
 }
 
 std::optional<domain::credit_instrument>
-credit_instrument_service::find_credit_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding credit_instrument: " << id;
+credit_instrument_service::get_credit_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting credit_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

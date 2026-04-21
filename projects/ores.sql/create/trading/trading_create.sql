@@ -92,11 +92,7 @@
 \ir ./trading_risk_participation_agreement_instruments_create.sql
 \ir ./trading_risk_participation_agreement_instruments_notify_trigger_create.sql
 
--- FX instruments (depends on reference data above)
-\ir ./trading_fx_instruments_create.sql
-\ir ./trading_fx_instruments_notify_trigger_create.sql
-
--- Per-type FX instrument tables (Phase 2)
+-- Per-type FX instrument tables (depends on reference data above)
 \ir ./trading_fx_forward_instruments_create.sql
 \ir ./trading_fx_forward_instruments_notify_trigger_create.sql
 

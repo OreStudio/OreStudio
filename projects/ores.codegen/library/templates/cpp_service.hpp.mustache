@@ -35,7 +35,7 @@ public:
     std::vector<domain::{{entity_singular}}> list_{{entity_plural_short}}();
 
     std::optional<domain::{{entity_singular}}>
-    find_{{entity_singular_short}}(const std::string& {{primary_key.column}});
+    get_{{entity_singular_short}}(const std::string& {{primary_key.column}});
 
     void save_{{entity_singular_short}}(const domain::{{entity_singular}}& v);
 

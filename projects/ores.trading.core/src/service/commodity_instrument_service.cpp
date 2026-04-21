@@ -51,8 +51,8 @@ std::uint32_t commodity_instrument_service::count_commodity_instruments() {
 }
 
 std::optional<domain::commodity_instrument>
-commodity_instrument_service::find_commodity_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding commodity_instrument: " << id;
+commodity_instrument_service::get_commodity_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting commodity_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

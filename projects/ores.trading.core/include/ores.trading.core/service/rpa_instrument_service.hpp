@@ -57,7 +57,7 @@ public:
     std::uint32_t count_rpa_instruments();
 
     std::optional<domain::rpa_instrument>
-    find_rpa_instrument(const std::string& id);
+    get_rpa_instrument(const std::string& id);
 
     void save_rpa_instrument(const domain::rpa_instrument& v);
 

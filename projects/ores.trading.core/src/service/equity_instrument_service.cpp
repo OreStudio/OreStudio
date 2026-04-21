@@ -51,8 +51,8 @@ std::uint32_t equity_instrument_service::count_equity_instruments() {
 }
 
 std::optional<domain::equity_instrument>
-equity_instrument_service::find_equity_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding equity_instrument: " << id;
+equity_instrument_service::get_equity_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting equity_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

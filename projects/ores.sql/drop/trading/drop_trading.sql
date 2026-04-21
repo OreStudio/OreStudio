@@ -59,10 +59,6 @@
 \ir ./trading_fx_vanilla_option_instruments_drop.sql
 \ir ./trading_fx_forward_instruments_drop.sql
 
--- FX instruments (generic table, depend on reference data, drop before reference data)
-\ir ./trading_fx_instruments_notify_trigger_drop.sql
-\ir ./trading_fx_instruments_drop.sql
-
 -- Bond instruments (depend on reference data, drop before reference data)
 \ir ./trading_bond_instruments_notify_trigger_drop.sql
 \ir ./trading_bond_instruments_drop.sql

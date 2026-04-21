@@ -57,7 +57,7 @@ public:
     std::uint32_t count_cap_floor_instruments();
 
     std::optional<domain::cap_floor_instrument>
-    find_cap_floor_instrument(const std::string& id);
+    get_cap_floor_instrument(const std::string& id);
 
     void save_cap_floor_instrument(const domain::cap_floor_instrument& v);
 

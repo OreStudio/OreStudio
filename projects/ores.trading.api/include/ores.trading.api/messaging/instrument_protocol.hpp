@@ -25,7 +25,6 @@
 #include <vector>
 #include "ores.trading.api/domain/product_type.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.api/domain/fx_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
@@ -60,61 +59,6 @@
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 
 namespace ores::trading::messaging {
-
-// ---- FX instrument protocol ----
-
-struct get_fx_instruments_request {
-    using response_type = struct get_fx_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_instruments.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_fx_instruments_response {
-    std::vector<ores::trading::domain::fx_instrument> instruments;
-    int total_available_count = 0;
-    bool success = true;
-    std::string message;
-};
-
-struct save_fx_instrument_request {
-    using response_type = struct save_fx_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_instruments.save";
-    ores::trading::domain::fx_instrument data;
-};
-
-struct save_fx_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_fx_instrument_request {
-    using response_type = struct delete_fx_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_instruments.delete";
-    std::vector<std::string> ids;
-};
-
-struct delete_fx_instrument_response {
-    bool success = false;
-    std::string message;
-    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
-};
-
-struct get_fx_instrument_history_request {
-    using response_type = struct get_fx_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_instruments.history";
-    std::string id;
-};
-
-struct get_fx_instrument_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::trading::domain::fx_instrument> history;
-};
 
 // ---- Typed FX instrument protocol ----
 
@@ -1182,6 +1126,23 @@ struct swap_export_result {
 };
 
 /**
+ * @brief FX instrument, used in export/fetch results.
+ *
+ * The instrument field is a variant over all supported FX instrument types.
+ */
+struct fx_export_result {
+    std::variant<
+        ores::trading::domain::fx_forward_instrument,
+        ores::trading::domain::fx_vanilla_option_instrument,
+        ores::trading::domain::fx_barrier_option_instrument,
+        ores::trading::domain::fx_digital_option_instrument,
+        ores::trading::domain::fx_asian_forward_instrument,
+        ores::trading::domain::fx_accumulator_instrument,
+        ores::trading::domain::fx_variance_swap_instrument
+    > instrument;
+};
+
+/**
  * @brief Composite instrument with its constituent legs.
  */
 struct composite_export_result {
@@ -1199,7 +1160,7 @@ struct composite_export_result {
 using instrument_export_result = std::variant<
     std::monostate,
     swap_export_result,
-    ores::trading::domain::fx_instrument,
+    fx_export_result,
     ores::trading::domain::bond_instrument,
     ores::trading::domain::credit_instrument,
     ores::trading::domain::equity_instrument,
@@ -1225,7 +1186,8 @@ struct get_instrument_for_trade_request {
     ores::trading::domain::product_type product_type =
         ores::trading::domain::product_type::unknown;
     std::string instrument_id;
-    /// Required when product_type == swap to identify the specific rates table
+    /// Required when product_type is swap or fx to identify the specific
+    /// per-type table (e.g. FxForward → fx_forward_instruments_tbl).
     std::string trade_type_code;
 };
 

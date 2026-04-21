@@ -56,9 +56,9 @@ callable_swap_instrument_service::count_callable_swap_instruments() {
 }
 
 std::optional<domain::callable_swap_instrument>
-callable_swap_instrument_service::find_callable_swap_instrument(
+callable_swap_instrument_service::get_callable_swap_instrument(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding callable_swap_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting callable_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

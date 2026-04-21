@@ -59,7 +59,7 @@ public:
     std::uint32_t count_fra_instruments();
 
     std::optional<domain::fra_instrument>
-    find_fra_instrument(const std::string& id);
+    get_fra_instrument(const std::string& id);
 
     void save_fra_instrument(const domain::fra_instrument& v);
 

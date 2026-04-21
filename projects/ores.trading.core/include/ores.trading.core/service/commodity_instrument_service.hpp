@@ -57,7 +57,7 @@ public:
     std::uint32_t count_commodity_instruments();
 
     std::optional<domain::commodity_instrument>
-    find_commodity_instrument(const std::string& id);
+    get_commodity_instrument(const std::string& id);
 
     void save_commodity_instrument(const domain::commodity_instrument& v);
 

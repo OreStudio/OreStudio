@@ -58,7 +58,7 @@ public:
     std::uint32_t count_knock_out_swap_instruments();
 
     std::optional<domain::knock_out_swap_instrument>
-    find_knock_out_swap_instrument(const std::string& id);
+    get_knock_out_swap_instrument(const std::string& id);
 
     void save_knock_out_swap_instrument(
         const domain::knock_out_swap_instrument& v);

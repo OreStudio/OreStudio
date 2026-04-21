@@ -56,9 +56,9 @@ vanilla_swap_instrument_service::count_vanilla_swap_instruments() {
 }
 
 std::optional<domain::vanilla_swap_instrument>
-vanilla_swap_instrument_service::find_vanilla_swap_instrument(
+vanilla_swap_instrument_service::get_vanilla_swap_instrument(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding vanilla_swap_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting vanilla_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

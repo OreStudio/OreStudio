@@ -297,19 +297,23 @@ equity_mapping_result equity_instrument_mapper::forward_equity_option(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOption: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityOption");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityOptionData) return result;
     const auto& d = *t.EquityOptionData;
 
-    flat.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    flat.currency = std::string(d.Currency);
-    flat.quantity = static_cast<double>(d.Quantity);
-    flat.option_type = extract_option_type(d.OptionData);
-    flat.exercise_type = extract_exercise_style(d.OptionData);
-    flat.maturity_date = first_exercise_date(d.OptionData);
-    flat.strike_price = extract_strike(d.strikeGroup);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = std::string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.exercise_type = extract_exercise_style(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
     return result;
 }
 
@@ -322,17 +326,21 @@ equity_mapping_result equity_instrument_mapper::forward_equity_forward(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityForward: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityForward");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_forward_instrument>();
+    inst.trade_type_code = "EquityForward";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityForwardData) return result;
     const auto& d = *t.EquityForwardData;
 
-    flat.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    flat.currency = std::string(d.Currency);
-    flat.quantity = static_cast<double>(d.Quantity);
-    flat.strike_price = static_cast<double>(d.Strike);
-    flat.maturity_date = std::string(d.Maturity);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = std::string(d.Currency);
+    inst.quantity = static_cast<double>(d.Quantity);
+    inst.forward_price = static_cast<double>(d.Strike);
+    inst.expiry_date = std::string(d.Maturity);
     return result;
 }
 

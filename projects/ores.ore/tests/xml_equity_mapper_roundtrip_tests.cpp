@@ -66,12 +66,42 @@ equity_mapping_result load_and_map(const std::string& filename) {
     return *r;
 }
 
-// Transitional helper: extracts the legacy flat equity_instrument from the
-// mapping-result variant. Deleted in the final Phase 2 commit once every
-// test has migrated to per-type assertions via std::get<per_type>.
-const ores::trading::domain::equity_instrument& flat(
+// Transitional helper: returns the flat equity_instrument shape regardless
+// of which variant alternative the mapping result carries, so the legacy
+// flat-signature reverse_equity_* functions still work while forward_*
+// functions migrate one per-type at a time. Deleted in the final Phase 2
+// commit.
+ores::trading::domain::equity_instrument flat(
     const equity_mapping_result& r) {
-    return std::get<ores::trading::domain::equity_instrument>(r.instrument);
+    return std::visit([](const auto& inst)
+            -> ores::trading::domain::equity_instrument {
+        using T = std::decay_t<decltype(inst)>;
+        using namespace ores::trading::domain;
+        if constexpr (std::is_same_v<T, equity_instrument>) {
+            return inst;
+        } else if constexpr (std::is_same_v<T, equity_option_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.quantity        = inst.notional;
+            f.option_type     = inst.option_type;
+            f.exercise_type   = inst.exercise_type;
+            f.maturity_date   = inst.expiry_date;
+            f.strike_price    = inst.strike;
+            return f;
+        } else if constexpr (std::is_same_v<T, equity_forward_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.quantity        = inst.quantity;
+            f.maturity_date   = inst.expiry_date;
+            f.strike_price    = inst.forward_price.value_or(0.0);
+            return f;
+        }
+        return {};
+    }, r.instrument);
 }
 
 } // namespace
@@ -83,36 +113,40 @@ const ores::trading::domain::equity_instrument& flat(
 TEST_CASE("equity_mapper_roundtrip_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Option_European.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityOption");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(!flat(r).currency.empty());
-    CHECK(flat(r).quantity > 0.0);
-    CHECK(!flat(r).option_type.empty());
-    CHECK(!flat(r).maturity_date.empty());
+    CHECK(inst.trade_type_code == "EquityOption");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(!inst.currency.empty());
+    CHECK(inst.notional > 0.0);
+    CHECK(!inst.option_type.empty());
+    CHECK(!inst.expiry_date.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_option(flat(r));
     REQUIRE(rt.EquityOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityOption roundtrip passed. Underlying: "
-                            << flat(r).underlying_code;
+                            << inst.underlying_name;
 }
 
 TEST_CASE("equity_mapper_roundtrip_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Forward.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_forward_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityForward");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(!flat(r).currency.empty());
-    CHECK(flat(r).quantity > 0.0);
-    CHECK(!flat(r).maturity_date.empty());
+    CHECK(inst.trade_type_code == "EquityForward");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(!inst.currency.empty());
+    CHECK(inst.quantity > 0.0);
+    CHECK(!inst.expiry_date.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_forward(flat(r));
     REQUIRE(rt.EquityForwardData);
 
     BOOST_LOG_SEV(lg, info) << "EquityForward roundtrip passed. Maturity: "
-                            << flat(r).maturity_date;
+                            << inst.expiry_date;
 }
 
 TEST_CASE("equity_mapper_roundtrip_swap", tags) {

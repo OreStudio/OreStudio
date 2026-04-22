@@ -348,7 +348,14 @@ public:
                 resp.total_available_count =
                     static_cast<int>(svc.count_trades_by_node(node));
             }
-        } catch (...) {}
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+            resp.items.clear();
+            resp.total_available_count = 0;
+        }
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);

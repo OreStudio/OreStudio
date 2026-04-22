@@ -115,7 +115,8 @@ returns setof uuid as $$
 begin
     if exists (
         select 1 from ores_refdata_books_tbl
-        where id = p_node_id
+        where tenant_id = p_tenant_id
+          and id = p_node_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return query select p_node_id;
@@ -124,7 +125,8 @@ begin
 
     if exists (
         select 1 from ores_refdata_portfolios_tbl
-        where id = p_node_id
+        where tenant_id = p_tenant_id
+          and id = p_node_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return query
@@ -136,7 +138,8 @@ begin
 
     if exists (
         select 1 from ores_refdata_business_units_tbl
-        where id = p_node_id
+        where tenant_id = p_tenant_id
+          and id = p_node_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return query

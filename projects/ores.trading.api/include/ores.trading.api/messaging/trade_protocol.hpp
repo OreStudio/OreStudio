@@ -69,6 +69,8 @@ struct get_trades_request {
 };
 
 struct get_trades_response {
+    bool success = true;
+    std::string message;
     std::vector<trade_export_item> items;
     int total_available_count = 0;
 };

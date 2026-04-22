@@ -656,6 +656,11 @@ std::optional<TradeListResult> ClientManager::listTrades(
                 << "listTrades failed: " << result.error();
             return std::nullopt;
         }
+        if (!result->success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "listTrades server error: " << result->message;
+            return std::nullopt;
+        }
 
         return TradeListResult{
             .items = std::move(result->items),

@@ -45,6 +45,7 @@
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/ZeroConventionController.hpp"
+#include "ores.qt/DepositConventionController.hpp"
 
 namespace ores::qt {
 
@@ -162,6 +163,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.username, this);
     connectControllerSignals(zeroConventionController_.get());
+
+    depositConventionController_ = std::make_unique<DepositConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(depositConventionController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -223,6 +229,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             ico(Icon::Tag), tr("&Zero Conventions"));
         connect(actZeroConventions, &QAction::triggered, this, [this]() {
             if (zeroConventionController_) zeroConventionController_->showListWindow();
+        });
+        auto* actDepositConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&Deposit Conventions"));
+        connect(actDepositConventions, &QAction::triggered, this, [this]() {
+            if (depositConventionController_) depositConventionController_->showListWindow();
         });
 
         ref->addSeparator();

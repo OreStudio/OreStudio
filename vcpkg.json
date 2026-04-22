@@ -42,6 +42,10 @@
         "wt": {
             "description": "Build the Wt web interface",
             "dependencies": [ "wt" ]
+        },
+        "qt": {
+            "description": "Build Qt6 from vcpkg (slow — prefer an external Qt install if available)",
+            "dependencies": [ "qtbase", "qtsvg", "qtcharts" ]
         }
     }
 }

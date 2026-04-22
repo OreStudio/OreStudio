@@ -122,3 +122,5 @@
 -- ORE conventions (curve-building conventions imported from conventions.xml)
 \ir ./refdata_zero_conventions_create.sql
 \ir ./refdata_zero_conventions_notify_trigger_create.sql
+\ir ./refdata_deposit_conventions_create.sql
+\ir ./refdata_deposit_conventions_notify_trigger_create.sql

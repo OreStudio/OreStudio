@@ -454,9 +454,53 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
             } else if constexpr (std::is_same_v<T, equity_mapping_result>) {
-                save_equity_instrument_request req; req.data = r.instrument;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
+                return std::visit([&](const auto& instr) -> bool {
+                    using InstrT = std::decay_t<decltype(instr)>;
+                    using namespace ores::trading::domain;
+                    if constexpr (std::is_same_v<InstrT, equity_instrument>) {
+                        save_equity_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
+                        save_equity_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_digital_option_instrument>) {
+                        save_equity_digital_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_barrier_option_instrument>) {
+                        save_equity_barrier_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_asian_option_instrument>) {
+                        save_equity_asian_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_forward_instrument>) {
+                        save_equity_forward_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_variance_swap_instrument>) {
+                        save_equity_variance_swap_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
+                        save_equity_swap_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_accumulator_instrument>) {
+                        save_equity_accumulator_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_position_instrument>) {
+                        save_equity_position_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else {
+                        return true;
+                    }
+                }, r.instrument);
             } else if constexpr (std::is_same_v<T, commodity_mapping_result>) {
                 save_commodity_instrument_request req; req.data = r.instrument;
                 auto resp = nats_call(delegated_nats, req, instr_error);

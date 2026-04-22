@@ -298,17 +298,18 @@ equity_mapping_result equity_instrument_mapper::forward_equity_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityOptionData) return result;
     const auto& d = *t.EquityOptionData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    flat.currency = std::string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.exercise_type = extract_exercise_style(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = extract_strike(d.strikeGroup);
     return result;
 }
 
@@ -322,15 +323,16 @@ equity_mapping_result equity_instrument_mapper::forward_equity_forward(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityForward");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityForwardData) return result;
     const auto& d = *t.EquityForwardData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.maturity_date = std::string(d.Maturity);
+    flat.currency = std::string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.strike_price = static_cast<double>(d.Strike);
+    flat.maturity_date = std::string(d.Maturity);
     return result;
 }
 
@@ -344,35 +346,36 @@ equity_mapping_result equity_instrument_mapper::forward_equity_swap(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquitySwap");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquitySwapData) return result;
     const auto& d = *t.EquitySwapData;
 
     for (const auto& ld : d.LegData) {
         if (ld.legDataType && ld.legDataType->EquityLegData) {
             const auto& el = *ld.legDataType->EquityLegData;
-            result.instrument.underlying_code =
+            flat.underlying_code =
                 extract_underlying_name(el.underlyingTypes);
-            result.instrument.return_type = std::string(el.ReturnType);
+            flat.return_type = std::string(el.ReturnType);
             if (el.Quantity)
-                result.instrument.quantity =
+                flat.quantity =
                     static_cast<double>(*el.Quantity);
         } else {
             // Non-equity leg provides currency/notional/schedule
             if (ld.Currency)
-                result.instrument.currency = std::string(*ld.Currency);
+                flat.currency = std::string(*ld.Currency);
             if (ld.Notionals && !ld.Notionals->Notional.empty())
-                result.instrument.notional =
+                flat.notional =
                     static_cast<double>(ld.Notionals->Notional.front());
             if (ld.DayCounter)
-                result.instrument.day_count_code =
+                flat.day_count_code =
                     to_string(*ld.DayCounter);
             if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
                 const auto& rule = ld.ScheduleData->Rules.front();
-                result.instrument.start_date = std::string(rule.StartDate);
+                flat.start_date = std::string(rule.StartDate);
                 if (rule.EndDate)
-                    result.instrument.maturity_date =
+                    flat.maturity_date =
                         std::string(*rule.EndDate);
-                result.instrument.payment_frequency_code =
+                flat.payment_frequency_code =
                     std::string(rule.Tenor);
             }
         }
@@ -390,16 +393,17 @@ equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityVarianceSwap");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityVarianceSwapData) return result;
     const auto& d = *t.EquityVarianceSwapData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.variance_strike = static_cast<double>(d.Strike);
-    result.instrument.start_date = std::string(d.StartDate);
-    result.instrument.maturity_date = std::string(d.EndDate);
+    flat.currency = to_string(d.Currency);
+    flat.notional = static_cast<double>(d.Notional);
+    flat.variance_strike = static_cast<double>(d.Strike);
+    flat.start_date = std::string(d.StartDate);
+    flat.maturity_date = std::string(d.EndDate);
     return result;
 }
 
@@ -413,22 +417,23 @@ equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityBarrierOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityBarrierOptionData) return result;
     const auto& d = *t.EquityBarrierOptionData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    flat.currency = to_string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.exercise_type = extract_exercise_style(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = extract_strike(d.strikeGroup);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+        flat.start_date = std::string(*d.StartDate);
+    flat.barrier_type = barrier_type_str(d.BarrierData);
+    flat.lower_barrier = first_barrier_level(d.BarrierData);
+    flat.upper_barrier = second_barrier_level(d.BarrierData);
     return result;
 }
 
@@ -442,18 +447,19 @@ equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityAsianOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityAsianOptionData) return result;
     const auto& d = *t.EquityAsianOptionData;
 
     if (d.Underlying)
-        result.instrument.underlying_code = std::string(d.Underlying->Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+        flat.underlying_code = std::string(d.Underlying->Name);
+    flat.currency = to_string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = extract_strike(d.strikeGroup);
     if (d.ObservationDates && !d.ObservationDates->Rules.empty())
-        result.instrument.averaging_start_date =
+        flat.averaging_start_date =
             std::string(d.ObservationDates->Rules.front().StartDate);
     return result;
 }
@@ -468,18 +474,19 @@ equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityDigitalOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityDigitalOptionData) return result;
     const auto& d = *t.EquityDigitalOptionData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.notional = static_cast<double>(d.PayoffAmount);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = static_cast<double>(d.Strike);
+    flat.notional = static_cast<double>(d.PayoffAmount);
     if (d.PayoffCurrency)
-        result.instrument.currency = to_string(*d.PayoffCurrency);
+        flat.currency = to_string(*d.PayoffCurrency);
     return result;
 }
 
@@ -493,19 +500,20 @@ equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityTouchOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityTouchOptionData) return result;
     const auto& d = *t.EquityTouchOptionData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.PayoffCurrency);
-    result.instrument.notional = static_cast<double>(d.PayoffAmount);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
+    flat.currency = to_string(d.PayoffCurrency);
+    flat.notional = static_cast<double>(d.PayoffAmount);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
+        flat.start_date = std::string(*d.StartDate);
+    flat.barrier_type = barrier_type_str(d.BarrierData);
+    flat.lower_barrier = first_barrier_level(d.BarrierData);
     return result;
 }
 
@@ -520,21 +528,22 @@ equity_instrument_mapper::forward_equity_outperformance_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityOutperformanceOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityOutperformanceOptionData) return result;
     const auto& d = *t.EquityOutperformanceOptionData;
 
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = static_cast<double>(d.StrikeReturn);
+    flat.currency = to_string(d.Currency);
+    flat.notional = static_cast<double>(d.Notional);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = static_cast<double>(d.StrikeReturn);
 
     // Store both underlyings as a JSON array
     const std::string n1 = std::string(d.Underlying1.Name);
     const std::string n2 = std::string(d.Underlying2.Name);
-    result.instrument.basket_json =
+    flat.basket_json =
         "[\"" + json_escape(n1) + "\",\"" + json_escape(n2) + "\"]";
-    result.instrument.underlying_code = n1;
+    flat.underlying_code = n1;
     return result;
 }
 
@@ -548,17 +557,18 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityAccumulator");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityAccumulatorData) return result;
     const auto& d = *t.EquityAccumulatorData;
 
-    result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.accumulation_amount =
+    flat.underlying_code = std::string(d.Underlying.Name);
+    flat.currency = to_string(d.Currency);
+    flat.accumulation_amount =
         static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
+        flat.strike_price = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
+        flat.start_date = std::string(*d.StartDate);
 
     // Capture first knock-out barrier
     if (d.Barriers) {
@@ -566,7 +576,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
             const auto btype = to_string(bd.Type);
             if ((btype == "DownAndOut" || btype == "UpAndOut") &&
                     !bd.Levels.Level.empty()) {
-                result.instrument.knock_out_barrier =
+                flat.knock_out_barrier =
                     static_cast<double>(bd.Levels.Level.front());
                 break;
             }
@@ -585,20 +595,21 @@ equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityTaRF");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityTaRFData) return result;
     const auto& d = *t.EquityTaRFData;
 
-    result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.accumulation_amount =
+    flat.underlying_code = std::string(d.Underlying.Name);
+    flat.currency = to_string(d.Currency);
+    flat.accumulation_amount =
         static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
+        flat.strike_price = static_cast<double>(*d.Strike);
 
     // Capture FixingCap barrier level as knock_out
     for (const auto& bd : d.Barriers.BarrierData) {
         if (to_string(bd.Type) == "FixingCap" && !bd.Levels.Level.empty()) {
-            result.instrument.knock_out_barrier =
+            flat.knock_out_barrier =
                 static_cast<double>(bd.Levels.Level.front());
             break;
         }
@@ -616,23 +627,24 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityCliquetOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityCliquetOptionData) return result;
     const auto& d = *t.EquityCliquetOptionData;
 
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.option_type = to_string(d.OptionType);
+    flat.currency = to_string(d.Currency);
+    flat.notional = static_cast<double>(d.Notional);
+    flat.option_type = to_string(d.OptionType);
 
     // Extract tenor from schedule rules if available
     if (!d.ScheduleData.Rules.empty())
-        result.instrument.cliquet_frequency_code =
+        flat.cliquet_frequency_code =
             std::string(d.ScheduleData.Rules.front().Tenor);
     else if (!d.ScheduleData.Dates.empty() &&
              d.ScheduleData.Dates.front().Dates.Date.size() >= 2) {
         // For date-based schedules store the maturity date
-        result.instrument.maturity_date = std::string(
+        flat.maturity_date = std::string(
             d.ScheduleData.Dates.front().Dates.Date.back());
     }
     return result;
@@ -649,14 +661,15 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityWorstOfBasketSwap");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityWorstOfBasketSwapData) return result;
     const auto& d = *t.EquityWorstOfBasketSwapData;
 
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.basket_json = underlyings_to_json(d.Underlyings);
+    flat.currency = to_string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.basket_json = underlyings_to_json(d.Underlyings);
     if (!d.Underlyings.Underlying.empty())
-        result.instrument.underlying_code =
+        flat.underlying_code =
             std::string(d.Underlyings.Underlying.front().Name);
     return result;
 }
@@ -1057,21 +1070,22 @@ equity_instrument_mapper::forward_equity_double_barrier_option(
                                << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityDoubleBarrierOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityDoubleBarrierOptionData) return result;
     const auto& d = *t.EquityDoubleBarrierOptionData;
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    flat.currency = to_string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.exercise_type = extract_exercise_style(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = extract_strike(d.strikeGroup);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+        flat.start_date = std::string(*d.StartDate);
+    flat.barrier_type = barrier_type_str(d.BarrierData);
+    flat.lower_barrier = first_barrier_level(d.BarrierData);
+    flat.upper_barrier = second_barrier_level(d.BarrierData);
     return result;
 }
 
@@ -1087,21 +1101,22 @@ equity_instrument_mapper::forward_equity_european_barrier_option(
         << std::string(t.id);
     equity_mapping_result result;
     result.instrument = make_base("EquityEuropeanBarrierOption");
+    auto& flat = std::get<equity_instrument>(result.instrument);
     if (!t.EquityEuropeanBarrierOptionData) return result;
     const auto& d = *t.EquityEuropeanBarrierOptionData;
-    result.instrument.underlying_code =
+    flat.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    flat.currency = to_string(d.Currency);
+    flat.quantity = static_cast<double>(d.Quantity);
+    flat.option_type = extract_option_type(d.OptionData);
+    flat.exercise_type = extract_exercise_style(d.OptionData);
+    flat.maturity_date = first_exercise_date(d.OptionData);
+    flat.strike_price = extract_strike(d.strikeGroup);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+        flat.start_date = std::string(*d.StartDate);
+    flat.barrier_type = barrier_type_str(d.BarrierData);
+    flat.lower_barrier = first_barrier_level(d.BarrierData);
+    flat.upper_barrier = second_barrier_level(d.BarrierData);
     return result;
 }
 

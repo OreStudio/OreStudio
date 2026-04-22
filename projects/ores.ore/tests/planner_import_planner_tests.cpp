@@ -310,7 +310,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
             if constexpr (std::is_same_v<T, std::monostate>) {
                 // No instrument mapping for this trade type — skip.
             } else if constexpr (std::is_same_v<T, swap_mapping_result> ||
-                                 std::is_same_v<T, fx_mapping_result>) {
+                                 std::is_same_v<T, fx_mapping_result> ||
+                                 std::is_same_v<T, equity_mapping_result>) {
                 std::visit([&](const auto& instr) {
                     INFO("Instrument variant index checked");
                     REQUIRE(instr.trade_id.has_value());
@@ -318,7 +319,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     ++checked;
                 }, r.instrument);
             } else {
-                // bond/credit/equity/commodity/scripted/composite all hold the
+                // bond/credit/commodity/scripted/composite all hold the
                 // instrument directly with a trade_id member.
                 REQUIRE(r.instrument.trade_id.has_value());
                 CHECK(*r.instrument.trade_id == item.trade.id);

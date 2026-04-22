@@ -20,17 +20,51 @@
 #ifndef ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 
+#include <variant>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/equity_position_instrument.hpp"
 
 namespace ores::ore::domain {
+
+/**
+ * @brief Variant holding one of the nine per-type equity instrument domain
+ *        objects, or — during the Phase 2 migration from the legacy flat
+ *        equity_instrument — the flat type itself.
+ *
+ * The flat equity_instrument alternative is a migration bridge. Each
+ * forward_equity_* / reverse_equity_* pair in this file gets rewritten to
+ * produce and consume its corresponding per-type alternative instead; when
+ * all 15 ORE-side trade types have migrated, the flat alternative is
+ * removed from this variant in the final Phase 2 commit.
+ */
+using equity_instrument_variant = std::variant<
+    ores::trading::domain::equity_instrument,
+    ores::trading::domain::equity_option_instrument,
+    ores::trading::domain::equity_digital_option_instrument,
+    ores::trading::domain::equity_barrier_option_instrument,
+    ores::trading::domain::equity_asian_option_instrument,
+    ores::trading::domain::equity_forward_instrument,
+    ores::trading::domain::equity_variance_swap_instrument,
+    ores::trading::domain::equity_swap_instrument,
+    ores::trading::domain::equity_accumulator_instrument,
+    ores::trading::domain::equity_position_instrument
+>;
 
 /**
  * @brief Result of a forward mapping from ORE XSD to the ORES equity domain type.
  */
 struct equity_mapping_result {
-    ores::trading::domain::equity_instrument instrument;
+    equity_instrument_variant instrument;
 };
 
 /**
@@ -139,6 +173,7 @@ public:
     static trade reverse_equity_worst_of_basket_swap(
         const ores::trading::domain::equity_instrument& instr);
 };
+
 
 }
 

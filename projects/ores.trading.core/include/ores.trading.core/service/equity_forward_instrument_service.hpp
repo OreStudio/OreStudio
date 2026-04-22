@@ -21,6 +21,7 @@
 #define ORES_TRADING_SERVICE_EQUITY_FORWARD_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
@@ -43,6 +44,9 @@ public:
     using context = ores::database::context;
 
     explicit equity_forward_instrument_service(context ctx);
+
+    std::optional<domain::equity_forward_instrument>
+    get_equity_forward_instrument(const std::string& id);
 
     void save_equity_forward_instrument(const domain::equity_forward_instrument& v);
 

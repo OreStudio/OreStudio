@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_DEPOSIT_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_DEPOSIT_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -31,10 +31,9 @@ namespace ores::refdata::domain {
  * @brief Conventions for a money-market deposit or IBOR index fixing.
  *
  * Specifies the settlement lag, calendar, and day count for short-term
- * deposits used as the near-end instruments when bootstrapping a yield curve.
- * Corresponds to the @c <Deposit> element in @c conventions.xml.
- *
- * When @c index_based is @c true the remaining fields may be omitted and are
+ * deposits used as the near-end instruments when bootstrapping a yield
+ * curve. Corresponds to the <Deposit> element in ORE conventions.xml.
+ * When index_based is true the remaining fields may be omitted and are
  * instead inherited from the referenced IBOR index convention.
  */
 struct deposit_convention final {
@@ -49,24 +48,24 @@ struct deposit_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "USD-LIBOR-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'USD-LIBOR-CONVENTIONS', 'EUR-EURIBOR-CONVENTIONS'.
      */
     std::string id;
 
     /**
-     * @brief Whether the deposit conventions are derived from an IBOR index.
-     *
-     * When @c true, @c index must be set and the remaining fields are optional.
+     * @brief Whether the deposit conventions are derived from an IBOR index. When true, index must be set and the remaining fields are optional.
      */
-    bool index_based = false;
+    bool index_based;
 
     /**
-     * @brief IBOR index identifier (e.g. "USD-LIBOR") used when @c index_based.
+     * @brief IBOR index identifier (e.g. 'USD-LIBOR') used when index_based.
      */
     std::optional<std::string> index;
 
     /**
-     * @brief Settlement calendar (e.g. "TARGET", "US-FED").
+     * @brief Settlement calendar (e.g. 'TARGET', 'US-FED').
      */
     std::optional<std::string> calendar;
 
@@ -81,7 +80,7 @@ struct deposit_convention final {
     std::optional<bool> end_of_month;
 
     /**
-     * @brief Day count fraction code (canonical FpML, e.g. "ACT/360").
+     * @brief Day count fraction code (canonical FpML, e.g. 'ACT/360').
      */
     std::optional<std::string> day_count_fraction;
 
@@ -91,12 +90,19 @@ struct deposit_convention final {
     std::optional<int> settlement_days;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this deposit convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -104,11 +110,6 @@ struct deposit_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

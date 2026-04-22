@@ -1,0 +1,162 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
+    "has_tenant_id": true,
+    "entity_singular": "deposit_convention",
+    "entity_plural": "deposit_conventions",
+    "entity_title": "Deposit Convention",
+    "brief": "Conventions for a money-market deposit or IBOR index fixing.",
+    "description": "Specifies the settlement lag, calendar, and day count for short-term\ndeposits used as the near-end instruments when bootstrapping a yield\ncurve. Corresponds to the <Deposit> element in ORE conventions.xml.\nWhen index_based is true the remaining fields may be omitted and are\ninstead inherited from the referenced IBOR index convention.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique convention identifier.",
+      "detail": "Examples: 'USD-LIBOR-CONVENTIONS', 'EUR-EURIBOR-CONVENTIONS'.",
+      "generator_expr": "std::string(\"USD-LIBOR-CONVENTIONS\")"
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "index_based",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "description": "Whether the deposit conventions are derived from an IBOR index. When true, index must be set and the remaining fields are optional.",
+        "generator_expr": "true"
+      },
+      {
+        "name": "index",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "IBOR index identifier (e.g. 'USD-LIBOR') used when index_based.",
+        "generator_expr": "std::string(\"USD-LIBOR\")"
+      },
+      {
+        "name": "calendar",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Settlement calendar (e.g. 'TARGET', 'US-FED').",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "convention",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Business day convention applied to settlement dates (canonical FpML).",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "end_of_month",
+        "type": "boolean",
+        "cpp_type": "std::optional<bool>",
+        "nullable": true,
+        "description": "Whether end-of-month convention applies.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "day_count_fraction",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Day count fraction code (canonical FpML, e.g. 'ACT/360').",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "settlement_days",
+        "type": "integer",
+        "cpp_type": "std::optional<int>",
+        "nullable": true,
+        "description": "Number of business days from trade date to settlement.",
+        "generator_expr": "std::nullopt"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_deposit_conventions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "deposit_convention",
+      "entity_plural_short": "deposit_conventions",
+      "entity_singular_words": "deposit convention",
+      "entity_plural_words": "deposit conventions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<optional>"],
+        "entity": ["<string>", "<optional>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "dc",
+      "table_display": [
+        {"column": "id", "header": "Id"},
+        {"column": "index_based", "header": "Index Based"},
+        {"column": "index", "header": "Index"},
+        {"column": "calendar", "header": "Calendar"},
+        {"column": "day_count_fraction", "header": "DCF"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "collection_name": "deposit_conventions",
+      "item_var": "dc",
+      "key_field": "id",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_deposit_conventions_request",
+      "get_response_class": "refdata::messaging::get_deposit_conventions_response",
+      "get_message_type": "get_deposit_conventions_request",
+      "save_request_class": "refdata::messaging::save_deposit_convention_request",
+      "save_response_class": "refdata::messaging::save_deposit_convention_response",
+      "save_message_type": "save_deposit_convention_request",
+      "save_request_item_field": "deposit_convention",
+      "delete_request_class": "refdata::messaging::delete_deposit_convention_request",
+      "delete_response_class": "refdata::messaging::delete_deposit_convention_response",
+      "delete_message_type": "delete_deposit_convention_request",
+      "history_request_class": "refdata::messaging::get_deposit_convention_history_request",
+      "history_response_class": "refdata::messaging::get_deposit_convention_history_response",
+      "history_message_type": "get_deposit_convention_history_request",
+
+      "detail_fields": [
+        {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
+        {"field": "index", "label": "Index", "widget": "indexEdit",
+         "type": "line_edit", "placeholder": "e.g. USD-LIBOR"},
+        {"field": "calendar", "label": "Calendar", "widget": "calendarEdit",
+         "type": "line_edit", "placeholder": "e.g. TARGET"},
+        {"field": "convention", "label": "Convention", "widget": "conventionEdit",
+         "type": "line_edit", "placeholder": "e.g. Following"},
+        {"field": "day_count_fraction", "label": "Day Count Fraction", "widget": "dayCountFractionEdit",
+         "type": "line_edit", "placeholder": "e.g. ACT/360"}
+      ],
+
+      "columns": [
+        {"enum_name": "Id", "field": "id", "header": "Id", "is_string": true, "width": 200},
+        {"enum_name": "IndexBased", "field": "index_based", "header": "Index Based", "is_bool": true, "width": 100},
+        {"enum_name": "Index", "field": "index", "header": "Index", "is_string": true, "width": 140},
+        {"enum_name": "Calendar", "field": "calendar", "header": "Calendar", "is_string": true, "width": 120},
+        {"enum_name": "DayCountFraction", "field": "day_count_fraction", "header": "DCF", "is_string": true, "width": 100},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "DepositConventionListWindow",
+      "window_title": "Deposit Conventions",
+      "icon": "Chart"
+    }
+  }
+}

@@ -30,6 +30,8 @@ template <typename T>
 std::string opt_str(const std::optional<T>& o) {
     if (!o) return {};
     std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
     s << *o;
     return s.str();
 }

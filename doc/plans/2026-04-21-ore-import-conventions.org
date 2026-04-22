@@ -83,7 +83,7 @@ end-to-end without the wizard.
 |     2 | overnight_index_convention                             | Pending   | —              |
 |     2 | fx_convention                                          | Pending   | —              |
 |     2 | cds_convention                                         | Pending   | —              |
-|     2 | ~del~ → ~remove~ migration across handlers (34 sites)  | Done      | uncommitted    |
+|     2 | ~del~ → ~remove~ migration across handlers (34 sites)  | Done      | 465eb4d91      |
 |     3 | CLI: ~market_data~ entity + import handler            | Pending   | —              |
 |     3 | CLI: ~conventions~ entity + import handler             | Pending   | —              |
 |     3 | CLI: single ORE import entrypoint (sequenced saga)     | Pending   | —              |

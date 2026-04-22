@@ -376,12 +376,15 @@ def resolve_output_path(output_pattern, model_data, model_type):
         entity_plural = entity.get('entity_plural', entity_singular + 's')
         entity_pascal = snake_to_pascal(entity_singular)
 
+        generator_facet_name = entity.get('generator_facet_name', 'generators')
+
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component_core}', component_core)
         result = result.replace('{component}', component)
         result = result.replace('{entity_plural}', entity_plural)
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
+        result = result.replace('{generator_facet_name}', generator_facet_name)
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
@@ -813,30 +816,39 @@ def _format_description_as_comment(description):
     return '\n'.join(formatted_lines)
 
 
-def _prepare_table_display(cpp_section, uuid_columns=None):
+def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None):
     """
     Prepare table_display items by adding iterator_var and is_uuid to each item.
 
     Mustache can't access parent context variables from within a loop,
     so we add the iterator_var to each table_display item. We also flag
-    UUID columns so the table template can wrap them with to_string().
+    UUID columns so the table template can wrap them with to_string(), and
+    optional columns so the template can unwrap them before streaming to
+    libfort (which has no operator<< for std::optional).
 
     Args:
         cpp_section (dict): The 'cpp' section of the model
         uuid_columns (set): Set of column names that are UUID type
+        optional_columns (set): Set of column names that are std::optional<T>
     """
     if 'table_display' not in cpp_section:
         return
 
     uuid_columns = uuid_columns or set()
+    optional_columns = optional_columns or set()
     iter_var = cpp_section.get('iterator_var', 'e')
     has_uuid = False
+    has_optional = False
     for item in cpp_section['table_display']:
         item['iter_var'] = iter_var
         item['is_uuid'] = item['column'] in uuid_columns
+        item['is_optional'] = item['column'] in optional_columns
         if item['is_uuid']:
             has_uuid = True
+        if item['is_optional']:
+            has_optional = True
     cpp_section['has_uuid_table_display'] = has_uuid
+    cpp_section['has_optional_table_display'] = has_optional
 
 
 def _format_detail_for_doxygen(detail):
@@ -1223,11 +1235,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')
+                is_already_optional = col.get('cpp_type', '').startswith('std::optional<')
+                col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
-                col['is_nullable_string'] = col.get('nullable', False) and not is_uuid_type and not is_timestamp_type
-                col['is_simple'] = not col.get('nullable', False) and not is_uuid_type
+                col['is_nullable_string'] = (
+                    col.get('nullable', False)
+                    and not is_uuid_type
+                    and not is_timestamp_type
+                    and not is_already_optional
+                )
+                col['is_simple'] = (
+                    not col.get('nullable', False)
+                    and not is_uuid_type
+                    and not is_already_optional
+                )
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
@@ -1281,6 +1304,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'cpp' in domain_entity:
             # Collect UUID column names for table display
             uuid_columns = set()
+            optional_columns = set()
             if 'primary_key' in domain_entity and domain_entity['primary_key'].get('is_uuid'):
                 uuid_columns.add(domain_entity['primary_key']['column'])
             if 'natural_keys' in domain_entity:
@@ -1291,7 +1315,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 for col in domain_entity['columns']:
                     if col.get('is_uuid') or col.get('is_optional_uuid'):
                         uuid_columns.add(col['name'])
-            _prepare_table_display(domain_entity['cpp'], uuid_columns)
+                    if col.get('nullable', False) and not col.get('is_uuid'):
+                        optional_columns.add(col['name'])
+            _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns)
         # Copy repository section fields to top level for template access
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
@@ -1311,6 +1337,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Process Qt-specific fields
         if 'qt' in domain_entity:
             qt = domain_entity['qt']
+            # Auto-derive include paths and domain class from the domain entity
+            # so models don't need to spell them out. Models may still override
+            # by setting these fields explicitly.
+            entity_singular = domain_entity.get('entity_singular', '')
+            component_include = domain_entity.get(
+                'component_include', domain_entity.get('component', ''))
+            component = domain_entity.get('component', '')
+            if 'domain_include' not in qt and entity_singular and component_include:
+                qt['domain_include'] = (
+                    f'ores.{component_include}/domain/{entity_singular}.hpp')
+            if 'protocol_include' not in qt and entity_singular and component_include:
+                qt['protocol_include'] = (
+                    f'ores.{component_include}/messaging/{entity_singular}_protocol.hpp')
+            if 'domain_class' not in qt and entity_singular and component:
+                qt['domain_class'] = f'{component}::domain::{entity_singular}'
             # Mark last item in columns for template iteration
             if 'columns' in qt:
                 _mark_last_item(qt['columns'])
@@ -1319,6 +1360,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     c.get('enum_name') == 'Description'
                     for c in qt['columns']
                 )
+                # Cross-reference qt columns with domain columns to flag optionals:
+                # when the underlying domain column is std::optional<std::string>, the
+                # Qt model needs to unwrap before QString::fromStdString.
+                domain_col_types = {
+                    c.get('name'): c.get('cpp_type', '')
+                    for c in domain_entity.get('columns', [])
+                }
+                for qt_col in qt['columns']:
+                    field = qt_col.get('field')
+                    cpp_type = domain_col_types.get(field, '')
+                    if qt_col.get('is_string') and cpp_type.startswith('std::optional<'):
+                        qt_col['is_optional_string'] = True
+                        qt_col['is_string'] = False
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided
@@ -1340,11 +1394,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             detail_fields = qt['detail_fields']
             required_fields = []
             required_dynamic_combo_fields = []
+            domain_col_types = {
+                c.get('name'): c.get('cpp_type', '')
+                for c in domain_entity.get('columns', [])
+            }
             for i, f in enumerate(detail_fields):
                 f['is_line_edit'] = f.get('type') == 'line_edit'
                 f['is_text_edit'] = f.get('type') == 'text_edit'
                 f['is_static_combo'] = f.get('type') == 'static_combo'
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
+                field_cpp = domain_col_types.get(f.get('field'), '')
+                f['is_optional_string'] = (
+                    field_cpp.startswith('std::optional<std::string>')
+                    and (f['is_line_edit'] or f['is_text_edit'])
+                )
                 f['_is_first'] = (i == 0)
                 f['_is_last'] = (i == len(detail_fields) - 1)
                 f['_row_index'] = i

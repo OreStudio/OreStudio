@@ -44,6 +44,7 @@
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/ZeroConventionController.hpp"
 
 namespace ores::qt {
 
@@ -156,6 +157,11 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(purposeTypeController_.get());
+
+    zeroConventionController_ = std::make_unique<ZeroConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(zeroConventionController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -209,6 +215,14 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         auto* actLegTypes = menuConventions->addAction(ico(Icon::Tag), tr("&Leg Types"));
         connect(actLegTypes, &QAction::triggered, this, [this]() {
             if (legTypeController_) legTypeController_->showListWindow();
+        });
+
+        // Conventions submenu (curve-building conventions from conventions.xml)
+        auto* menuOreConventions = ref->addMenu(tr("Con&ventions"));
+        auto* actZeroConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&Zero Conventions"));
+        connect(actZeroConventions, &QAction::triggered, this, [this]() {
+            if (zeroConventionController_) zeroConventionController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -336,6 +350,7 @@ void RefdataPlugin::on_logout() {
         data_librarian_window_ = nullptr;
     }
 
+    zeroConventionController_.reset();
     purposeTypeController_.reset();
     monetaryNatureController_.reset();
     roundingTypeController_.reset();

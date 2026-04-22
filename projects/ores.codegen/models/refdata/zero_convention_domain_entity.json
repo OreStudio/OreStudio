@@ -1,0 +1,182 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
+    "has_tenant_id": true,
+    "entity_singular": "zero_convention",
+    "entity_plural": "zero_conventions",
+    "entity_title": "Zero Convention",
+    "brief": "Conventions for a zero-coupon yield curve.",
+    "description": "Specifies the day count fraction and compounding method used when bootstrapping\na discount or zero-rate curve in ORE. Corresponds to the <Zero> element in\nORE conventions.xml. The id field is the natural key (ORE <Id> element).",
+
+    "primary_key": {
+      "column": "id",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique convention identifier.",
+      "detail": "Examples: 'EUR-ZERO-CONVENTIONS', 'USD-ZERO-CONVENTIONS'.",
+      "generator_expr": "std::string(\"EUR-ZERO-CONVENTIONS\")"
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "tenor_based",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "description": "Whether the curve is defined on a tenor grid (true) or on absolute dates (false).",
+        "generator_expr": "true"
+      },
+      {
+        "name": "day_count_fraction",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Day count fraction code (canonical FpML, e.g. 'ACT/365.FIXED').",
+        "generator_expr": "std::string(\"ACT/365.FIXED\")"
+      },
+      {
+        "name": "compounding",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Compounding method (canonical CDM, e.g. 'Continuous'). Present only when tenor_based is true.",
+        "generator_expr": "std::string(\"Continuous\")"
+      },
+      {
+        "name": "compounding_frequency",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Frequency at which the rate is compounded (canonical CDM). Present only when compounding is 'Compounded'.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "tenor_calendar",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Calendar used to determine tenor dates (e.g. 'TARGET').",
+        "generator_expr": "std::string(\"TARGET\")"
+      },
+      {
+        "name": "spot_lag",
+        "type": "integer",
+        "cpp_type": "std::optional<int>",
+        "nullable": true,
+        "description": "Number of business days from today to the spot date.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "spot_calendar",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Calendar used to compute the spot date.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "roll_convention",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Business day convention applied to tenor dates (canonical FpML).",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "end_of_month",
+        "type": "boolean",
+        "cpp_type": "std::optional<bool>",
+        "nullable": true,
+        "description": "Whether end-of-month convention applies.",
+        "generator_expr": "std::nullopt"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_zero_conventions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "zero_convention",
+      "entity_plural_short": "zero_conventions",
+      "entity_singular_words": "zero convention",
+      "entity_plural_words": "zero conventions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<optional>"],
+        "entity": ["<string>", "<optional>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "zc",
+      "table_display": [
+        {"column": "id", "header": "Id"},
+        {"column": "tenor_based", "header": "Tenor Based"},
+        {"column": "day_count_fraction", "header": "DCF"},
+        {"column": "compounding", "header": "Compounding"},
+        {"column": "tenor_calendar", "header": "Tenor Calendar"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "collection_name": "zero_conventions",
+      "item_var": "zc",
+      "key_field": "id",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_zero_conventions_request",
+      "get_response_class": "refdata::messaging::get_zero_conventions_response",
+      "get_message_type": "get_zero_conventions_request",
+      "save_request_class": "refdata::messaging::save_zero_convention_request",
+      "save_response_class": "refdata::messaging::save_zero_convention_response",
+      "save_message_type": "save_zero_convention_request",
+      "save_request_item_field": "zero_convention",
+      "delete_request_class": "refdata::messaging::delete_zero_convention_request",
+      "delete_response_class": "refdata::messaging::delete_zero_convention_response",
+      "delete_message_type": "delete_zero_convention_request",
+      "history_request_class": "refdata::messaging::get_zero_convention_history_request",
+      "history_response_class": "refdata::messaging::get_zero_convention_history_response",
+      "history_message_type": "get_zero_convention_history_request",
+
+      "detail_fields": [
+        {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
+        {"field": "day_count_fraction", "label": "Day Count Fraction", "widget": "dayCountFractionEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. ACT/365.FIXED"},
+        {"field": "compounding", "label": "Compounding", "widget": "compoundingEdit",
+         "type": "line_edit", "placeholder": "e.g. Continuous"},
+        {"field": "compounding_frequency", "label": "Compounding Frequency", "widget": "compoundingFrequencyEdit",
+         "type": "line_edit", "placeholder": "e.g. Annual"},
+        {"field": "tenor_calendar", "label": "Tenor Calendar", "widget": "tenorCalendarEdit",
+         "type": "line_edit", "placeholder": "e.g. TARGET"},
+        {"field": "spot_calendar", "label": "Spot Calendar", "widget": "spotCalendarEdit",
+         "type": "line_edit"},
+        {"field": "roll_convention", "label": "Roll Convention", "widget": "rollConventionEdit",
+         "type": "line_edit"}
+      ],
+
+      "columns": [
+        {"enum_name": "Id", "field": "id", "header": "Id", "is_string": true, "width": 200},
+        {"enum_name": "TenorBased", "field": "tenor_based", "header": "Tenor Based", "is_bool": true, "width": 100},
+        {"enum_name": "DayCountFraction", "field": "day_count_fraction", "header": "DCF", "is_string": true, "width": 140},
+        {"enum_name": "Compounding", "field": "compounding", "header": "Compounding", "is_string": true, "width": 120},
+        {"enum_name": "TenorCalendar", "field": "tenor_calendar", "header": "Tenor Calendar", "is_string": true, "width": 130},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "ZeroConventionListWindow",
+      "window_title": "Zero Conventions",
+      "icon": "Chart"
+    }
+  }
+}

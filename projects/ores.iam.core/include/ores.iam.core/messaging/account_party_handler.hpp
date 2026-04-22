@@ -186,7 +186,7 @@ public:
         }
     }
 
-    void del(ores::nats::message msg) {
+    void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<delete_account_party_request>(msg);

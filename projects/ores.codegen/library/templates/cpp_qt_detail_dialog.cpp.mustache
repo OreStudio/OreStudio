@@ -207,10 +207,24 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
 void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.entity_pascal_short}}() {
 {{#domain_entity.qt.detail_fields}}
 {{#is_line_edit}}
+{{#is_optional_string}}
+    ui_->{{widget}}->setText({{domain_entity.qt.item_var}}_.{{field}}
+        ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{field}})
+        : QString{});
+{{/is_optional_string}}
+{{^is_optional_string}}
     ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
+{{/is_optional_string}}
 {{/is_line_edit}}
 {{#is_text_edit}}
+{{#is_optional_string}}
+    ui_->{{widget}}->setPlainText({{domain_entity.qt.item_var}}_.{{field}}
+        ? QString::fromStdString(*{{domain_entity.qt.item_var}}_.{{field}})
+        : QString{});
+{{/is_optional_string}}
+{{^is_optional_string}}
     ui_->{{widget}}->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
+{{/is_optional_string}}
 {{/is_text_edit}}
 {{#is_static_combo}}
     {
@@ -256,10 +270,28 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
 {{/is_key}}
 {{^is_key}}
 {{#is_line_edit}}
+{{#is_optional_string}}
+    {
+        const auto {{field}}_str = ui_->{{widget}}->text().trimmed().toStdString();
+        {{domain_entity.qt.item_var}}_.{{field}} =
+            {{field}}_str.empty() ? std::nullopt : std::optional<std::string>({{field}}_str);
+    }
+{{/is_optional_string}}
+{{^is_optional_string}}
     {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->text().trimmed().toStdString();
+{{/is_optional_string}}
 {{/is_line_edit}}
 {{#is_text_edit}}
+{{#is_optional_string}}
+    {
+        const auto {{field}}_str = ui_->{{widget}}->toPlainText().trimmed().toStdString();
+        {{domain_entity.qt.item_var}}_.{{field}} =
+            {{field}}_str.empty() ? std::nullopt : std::optional<std::string>({{field}}_str);
+    }
+{{/is_optional_string}}
+{{^is_optional_string}}
     {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->toPlainText().trimmed().toStdString();
+{{/is_optional_string}}
 {{/is_text_edit}}
 {{#is_static_combo}}
     {{domain_entity.qt.item_var}}_.{{field}} =

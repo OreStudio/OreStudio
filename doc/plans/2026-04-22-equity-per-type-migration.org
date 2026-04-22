@@ -1,0 +1,250 @@
+#+title: Equity Per-Type Instrument Migration
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+PR #2 of the four-PR migration series outlined in
+=doc/plans/2026-04-21-fx-forward-import-e2e.org=. The FX pattern —
+delete the legacy generic table, wire reads through per-type services,
+introduce a discriminated export variant, update the client form —
+repeats for *equity*, which is the largest remaining family: nine
+per-type tables and fourteen trade types mapping into them.
+
+Unlike FX, equity does *not* currently exhibit the FX-forward symptom
+(blank economics in =TradeDetailDialog=) because the ORE importer
+path for equity still writes to the legacy generic
+=ores_trading_equity_instruments_tbl=. The defect is therefore
+*latent*, not active: as soon as the importer flips to the per-type
+tables (parallel work in the ORE mapper), the UI would go blank
+exactly as FX did. This PR removes the latency by converging the
+read and write paths on per-type infrastructure *before* that flip.
+
+* Goals
+
+1. Delete the legacy single-table equity infrastructure
+   (=ores_trading_equity_instruments_tbl=, =equity_instrument= domain,
+   =equity_instrument_service= / repository / mapper / handler, and
+   the four legacy =save_= / =delete_= / =list_= / =history_= wire
+   messages).
+2. Add =get_<type>_instrument= methods to the nine per-type equity
+   services (mirroring FX and swap).
+3. Introduce =equity_export_result=, a discriminated union over the
+   nine per-type equity instruments, and slot it into
+   =instrument_export_result= in place of the bare
+   =equity_instrument=.
+4. Route =product_type::equity= in =trade_handler::populate_instrument_for_trade=
+   by =trade_type_code= to the correct per-type service, mirroring
+   the FX block.
+5. Rewire =EquityInstrumentForm= to pattern-match on
+   =equity_export_result=, scoped to a single variant for this PR
+   (matching how PR #1 scoped =FxInstrumentForm= to =fx_forward_instrument=).
+
+* Non-goals
+
+- Full multi-variant =EquityInstrumentForm=: scoping to one variant
+  is deliberate. Extending the form to cover all nine variants needs
+  a UI story (per-variant forms or a dispatching shell) that is best
+  decided alongside the analogous follow-up for FX.
+- Changing the ORE import mapper (=equity_instrument_mapper=) to
+  route into per-type tables: that work is parallel and
+  out of scope here. This PR only changes the read side; the
+  importer continues to write to per-type tables (where it already
+  does) or the legacy table (where applicable) without visible
+  change.
+- Touching Bond / Credit / Commodity / Composite / Scripted: PR #3.
+
+* Constraints and decisions
+
+- *Single branch, ordered commits*: work lands on
+  =feature/equity-per-type-migration= in FX-style phases. Each
+  commit builds cleanly. No backwards-compatibility shims.
+- *=get_= naming*: all new service methods use =get_<type>_instrument=,
+  matching the codegen template updated in 5f64df94d.
+- *One variant shape*: =equity_export_result= is symmetric with
+  =fx_export_result= — a struct with an =instrument= variant field.
+  No legs (equity does not have swap-style legs; if a future equity
+  variant needs sub-rows, it can evolve independently).
+- *Trade-type → per-type routing is data-driven only in the mapper*:
+  the handler uses the same string-match style as FX
+  (=populate_instrument_for_trade=). Driving the routing from
+  =ores_trading_trade_types_tbl= is a cross-cutting improvement
+  deferred to a dedicated PR.
+
+* Current state
+
+** Per-type assets already in place
+
+Nine per-type tables, domain structs, repositories, and services exist
+(all save-only on the service side, matching pre-migration FX):
+
+- =equity_option=
+- =equity_digital_option=
+- =equity_barrier_option=
+- =equity_asian_option=
+- =equity_forward=
+- =equity_variance_swap=
+- =equity_swap=
+- =equity_accumulator=
+- =equity_position=
+
+Save-side wire protocol also exists
+(=save_equity_<type>_instrument_request=) for all nine and is wired
+through =typed_equity_instrument_handler= +
+=registrar_other_instruments.cpp=.
+
+** Legacy generic assets to delete
+
+- =ores_trading_equity_instruments_tbl= (SQL table + notify trigger +
+  policy).
+- =trading::domain::equity_instrument= + JSON / table I/O helpers.
+- =equity_instrument_entity= / mapper / repository.
+- =equity_instrument_service= (both save and =get_equity_instrument=).
+- =equity_instrument_handler= (wire handler for the four generic
+  save / delete / list / history messages).
+- =save_equity_instrument_request= / response, plus the three sibling
+  legacy messages, from =instrument_protocol.hpp=.
+- Registrar entries for those four wire subjects.
+
+** Trade types that must route through the new variant
+
+From =ores.ore/src/domain/trade_mapper.cpp::map_equity_instrument=:
+
+| Trade type (ORE)           | Per-type domain                    |
+|----------------------------+------------------------------------|
+| EquityOption               | equity_option_instrument           |
+| EquityForward              | equity_forward_instrument          |
+| EquitySwap                 | equity_swap_instrument             |
+| EquityVarianceSwap         | equity_variance_swap_instrument    |
+| EquityBarrierOption        | equity_barrier_option_instrument   |
+| EquityAsianOption          | equity_asian_option_instrument     |
+| EquityDigitalOption        | equity_digital_option_instrument   |
+| EquityTouchOption          | equity_digital_option_instrument   |
+| EquityOutperformanceOption | equity_option_instrument           |
+| EquityAccumulator          | equity_accumulator_instrument      |
+| EquityTaRF                 | equity_accumulator_instrument      |
+| EquityCliquetOption        | equity_option_instrument           |
+| EquityWorstOfBasketSwap    | equity_swap_instrument             |
+| EquityDoubleBarrierOption  | equity_barrier_option_instrument   |
+
+(Verify against the current state of =equity_instrument_mapper= when
+writing the handler routing — this table is a snapshot.)
+
+Fifteen ORE trade-type names collapsing onto nine per-type tables.
+
+** Client form
+
+=EquityInstrumentForm= holds =trading::domain::equity_instrument=
+directly — the legacy generic type. Same shape as =FxInstrumentForm=
+pre-PR-1. Needs migration to the new variant, scoped to one concrete
+per-type (recommend =equity_option_instrument= as it has the largest
+trade-type fan-in).
+
+* Phase plan
+
+Five phases. One commit per phase. Each builds clean.
+
+** Phase 1 — Add =get_<type>_instrument= methods to per-type services
+
+Mechanical: for each of the nine equity per-type services, add a
+=get_<type>_instrument(id)= method (service header + cpp), calling
+the repository's existing =read_latest(ctx, id)= and returning
+=std::optional<domain::<type>_instrument>=. No wire changes, no
+routing changes — just the plumbing the handler and form will need
+in later phases.
+
+*** Files
+
+Nine service header + cpp pairs under
+=projects/ores.trading.core/include/ores.trading.core/service/= and
+=projects/ores.trading.core/src/service/=.
+
+** Phase 2 — Introduce =equity_export_result= and reshape =instrument_export_result=
+
+Wire protocol change only.
+
+*** =instrument_protocol.hpp=
+
+- Add =equity_export_result= as a struct with a single
+  =instrument= variant field over the nine per-type equity types,
+  symmetric with =fx_export_result=.
+- Replace =equity_instrument= with =equity_export_result= in
+  =instrument_export_result=.
+
+*** Handler
+
+Update =trade_handler::populate_instrument_for_trade= to route
+=product_type::equity= by =trade_type_code= into the right per-type
+service (exactly parallel to the FX block). Uses the methods added
+in Phase 1.
+
+*** Client form
+
+Update =EquityInstrumentForm::setInstrument= to pattern-match
+=equity_export_result= → chosen per-type variant, mirroring
+=FxInstrumentForm::setInstrument=.
+
+At this point, reads flow through the per-type path end-to-end. The
+legacy generic table is still alive (save path still writes to it)
+but the read path no longer touches it.
+
+** Phase 3 — Delete legacy generic wire messages and handlers
+
+Removes the generic save / delete / list / history quad.
+
+- Drop =save_equity_instrument_request= /
+  =delete_equity_instrument_request= /
+  =get_equity_instruments_request= /
+  =get_equity_instrument_history_request= and their response pairs
+  from =instrument_protocol.hpp=.
+- Delete =equity_instrument_handler.hpp=.
+- Remove the four =nats.queue_subscribe= entries from
+  =registrar_other_instruments.cpp=.
+- Sweep any remaining call sites (shell? cli? HTTP? CSV import?) —
+  the legacy generic save message is the one most likely to have
+  non-UI callers.
+
+** Phase 4 — Delete legacy generic C++ infrastructure
+
+- =equity_instrument_service= (header + cpp).
+- =equity_instrument_repository=, =equity_instrument_mapper=,
+  =equity_instrument_entity=.
+- =trading::domain::equity_instrument= + =equity_instrument_json_io=
+  + =equity_instrument_table= + =equity_instrument_table_io=.
+- CMakeLists.txt entries for any file-level sources removed.
+
+** Phase 5 — Delete legacy generic SQL
+
+- =projects/ores.sql/create/trading/trading_equity_instruments_create.sql=
+  and its =_notify_trigger_create.sql=.
+- The matching drop scripts.
+- The =\ir= includes in =trading_create.sql=.
+- If any IAM policy references the table, drop the policy in the
+  same commit.
+- Any seed / populate scripts that touch the legacy table.
+
+* Verification
+
+- Trading core + Qt trading targets build clean.
+- =ores.trading.core.tests= and =ores.ore.tests= pass.
+- End-to-end smoke: import an equity trade via ORE XML, open it in
+  =TradeDetailDialog=, confirm the equity tab renders the correct
+  per-type economics. (Scoped to the one variant =EquityInstrumentForm=
+  handles after Phase 2; other variants will display a controlled
+  "not yet supported" message via the existing form machinery.)
+
+* Cross-PR invariants retained
+
+- =get_= naming across all new service methods.
+- No backwards-compatibility shims: each phase deletes the legacy
+  path it replaces in the same commit.
+- Variant shape symmetric with FX and Swap; single
+  =instrument_export_result= discriminated union is the sole
+  response carrier.
+
+* Follow-up (PR #3)
+
+Bond, Credit, Commodity, Composite, Scripted — the five single-type
+families with no per-type infrastructure. Either stand up per-type
+tables (unnecessary until a second sub-type appears) or rename
+=save_<family>_instrument_request= → =save_<family>_<type>_request=
+for shape uniformity. The default per the parent plan is the latter.

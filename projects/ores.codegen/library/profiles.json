@@ -10,6 +10,11 @@
           "model_types": ["domain_entity"]
         },
         {
+          "template": "sql_schema_notify_trigger.mustache",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity_plural}_notify_trigger_create.sql",
+          "model_types": ["domain_entity"]
+        },
+        {
           "template": "sql_schema_junction_create.mustache",
           "output": "projects/ores.sql/create/{component}/{component}_{entity}_create.sql",
           "model_types": ["junction"]

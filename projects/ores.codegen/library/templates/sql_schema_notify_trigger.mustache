@@ -1,41 +1,43 @@
 {{! Template to generate SQL notification trigger for entity changes }}
 {{{sql_license}}}
+{{#domain_entity}}
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Template: sql_schema_notify_trigger.mustache
  * To modify, update the template and regenerate.
  */
 
-create or replace function {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_fn()
+create or replace function {{product}}_{{component}}_{{entity_plural}}_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := '{{entity.product}}.{{entity.component}}.{{entity.entity_singular}}';
+    entity_name text := '{{product}}.{{component}}.{{entity_singular}}';
     change_timestamp timestamptz := NOW();
-    changed_{{entity.primary_key.column}} {{entity.primary_key.type}};
+    changed_{{primary_key.column}} {{primary_key.type}};
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_{{entity.primary_key.column}} := OLD.{{entity.primary_key.column}};
+        changed_{{primary_key.column}} := OLD.{{primary_key.column}};
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_{{entity.primary_key.column}} := NEW.{{entity.primary_key.column}};
+        changed_{{primary_key.column}} := NEW.{{primary_key.column}};
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_{{entity.primary_key.column}}),
+        'entity_ids', jsonb_build_array(changed_{{primary_key.column}}),
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('{{entity.product}}_{{entity.entity_plural}}', notification_payload::text);
+    perform pg_notify('{{product}}_{{entity_plural}}', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_trg
-after insert or update or delete on {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
-for each row execute function {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_notify_fn();
+create or replace trigger {{product}}_{{component}}_{{entity_plural}}_notify_trg
+after insert or update or delete on {{product}}_{{component}}_{{entity_plural}}_tbl
+for each row execute function {{product}}_{{component}}_{{entity_plural}}_notify_fn();
+{{/domain_entity}}

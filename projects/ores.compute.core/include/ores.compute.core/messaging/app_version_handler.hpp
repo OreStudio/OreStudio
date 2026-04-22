@@ -161,13 +161,18 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        auto req = decode<list_app_version_platforms_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(app_version_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
         list_app_version_platforms_response resp;
         try {
-            if (auto req = decode<list_app_version_platforms_request>(msg)) {
-                repository::app_version_platform_repository avp_repo;
-                resp.platforms = avp_repo.list_for_version(
-                    ctx, req->app_version_id);
-            }
+            repository::app_version_platform_repository avp_repo;
+            resp.platforms = avp_repo.list_for_version(
+                ctx, req->app_version_id);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = e.what();

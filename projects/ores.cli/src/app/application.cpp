@@ -24,6 +24,7 @@
 #include <chrono>
 #include <optional>
 #include <type_traits>
+#include <unordered_map>
 #include "ores.utility/version/version.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
@@ -1562,13 +1563,16 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
     // the orchestrator can match incoming workunits against the host triplet.
     compute::repository::platform_repository plat_repo;
     const auto platforms = plat_repo.read_active(context_);
+    std::unordered_map<std::string, boost::uuids::uuid> plat_by_code;
+    plat_by_code.reserve(platforms.size());
+    for (const auto& p : platforms)
+        plat_by_code.emplace(p.code, p.id);
 
     std::vector<compute::domain::app_version_platform> junction_rows;
     junction_rows.reserve(cfg.platform_packages.size());
     for (const auto& pp : cfg.platform_packages) {
-        const auto it = std::find_if(platforms.begin(), platforms.end(),
-            [&](const auto& p) { return p.code == pp.platform_code; });
-        if (it == platforms.end()) {
+        const auto it = plat_by_code.find(pp.platform_code);
+        if (it == plat_by_code.end()) {
             BOOST_THROW_EXCEPTION(application_exception(std::format(
                 "Unknown platform code: {}", pp.platform_code)));
         }
@@ -1576,8 +1580,8 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
         compute::domain::app_version_platform avp;
         avp.tenant_id = context_.tenant_id();
         avp.app_version_id = record.id;
-        avp.platform_id = it->id;
-        avp.platform_code = it->code;
+        avp.platform_id = it->second;
+        avp.platform_code = it->first;
         avp.package_uri = pp.package_uri;
         junction_rows.push_back(std::move(avp));
     }

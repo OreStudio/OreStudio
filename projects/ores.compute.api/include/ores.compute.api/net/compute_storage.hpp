@@ -32,10 +32,11 @@ namespace ores::compute::net {
  * All compute artifacts live under a single "compute" bucket with
  * hierarchical keys:
  *
- *   packages/{app_version_id}[.ext]   — application package binary
- *   input/{workunit_id}[.ext]         — workunit input archive
- *   config/{workunit_id}[.ext]        — workunit configuration file
- *   output/{result_id}.tar.gz         — result output archive
+ *   packages/{app_version_id}[.ext]                   — single-platform bundle
+ *   packages/{app_version_id}/{platform_code}[.ext]   — per-triplet bundle
+ *   input/{workunit_id}[.ext]                         — workunit input archive
+ *   config/{workunit_id}[.ext]                        — workunit configuration file
+ *   output/{result_id}.tar.gz                         — result output archive
  *
  * Use @c storage_paths::make_object_path / @c make_object_url to build
  * the full HTTP path or URL from the helpers below.
@@ -56,6 +57,27 @@ struct compute_storage {
         std::string_view ext = "") {
         std::string k = "packages/";
         k += id;
+        k += ext;
+        return k;
+    }
+
+    /**
+     * @brief Key for a per-platform application package binary.
+     *
+     * @param id             App version UUID as string.
+     * @param platform_code  vcpkg triplet code (e.g. "x64-linux").
+     * @param ext            File extension including the leading dot.
+     *
+     * Per-platform bundles live one level deeper than the single-platform
+     * key so both layouts can coexist during migration.
+     */
+    static std::string package_key(std::string_view id,
+        std::string_view platform_code,
+        std::string_view ext) {
+        std::string k = "packages/";
+        k += id;
+        k += '/';
+        k += platform_code;
         k += ext;
         return k;
     }
@@ -106,6 +128,20 @@ struct compute_storage {
         std::string_view ext = "") {
         return ores::storage::net::storage_paths::make_object_path(
             bucket, package_key(id, ext));
+    }
+
+    /**
+     * @brief HTTP path for a per-platform package binary.
+     *
+     * Canonical location for the (app_version, platform_code) bundle used
+     * when populating ores_compute_app_version_platforms_tbl.package_uri so
+     * clients don't have to synthesise the path inline.
+     */
+    static std::string package_path(std::string_view id,
+        std::string_view platform_code,
+        std::string_view ext) {
+        return ores::storage::net::storage_paths::make_object_path(
+            bucket, package_key(id, platform_code, ext));
     }
 
     static std::string input_path(std::string_view workunit_id,

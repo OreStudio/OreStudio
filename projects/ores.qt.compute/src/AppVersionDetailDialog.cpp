@@ -40,6 +40,7 @@
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 
 namespace ores::qt {
 
@@ -394,9 +395,9 @@ void AppVersionDetailDialog::updateVersionFromUi() {
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
 
-    // Rebuild platform rows from the assigned list. Each platform gets a
-    // triplet-specific package URI; the upload UI PUTs the same pattern so
-    // the orchestrator dispatch and the upload target agree on the blob key.
+    // Rebuild platform rows from the assigned list. Delegate URI layout to
+    // compute_storage::package_path so the canonical per-triplet key lives
+    // with the rest of the bucket convention, not inline in the UI.
     platform_rows_.clear();
     const auto av_id_str = boost::uuids::to_string(app_version_.id);
     for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
@@ -416,8 +417,8 @@ void AppVersionDetailDialog::updateVersionFromUi() {
                 boost::lexical_cast<boost::uuids::uuid>(avail->id);
         } catch (...) { continue; }
         row.platform_code = avail->code;
-        row.package_uri = "api/v1/storage/compute/packages/" + av_id_str
-            + "/" + avail->code + "/package.tar.gz";
+        row.package_uri = ores::compute::net::compute_storage::package_path(
+            av_id_str, avail->code, ".tar.gz");
         platform_rows_.push_back(std::move(row));
     }
 }

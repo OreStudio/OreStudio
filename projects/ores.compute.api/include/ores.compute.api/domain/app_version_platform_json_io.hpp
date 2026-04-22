@@ -17,33 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.compute.api/domain/app_version_table.hpp"
+#ifndef ORES_COMPUTE_DOMAIN_APP_VERSION_PLATFORM_JSON_IO_HPP
+#define ORES_COMPUTE_DOMAIN_APP_VERSION_PLATFORM_JSON_IO_HPP
 
-#include <sstream>
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#include <iosfwd>
+#include "ores.compute.api/domain/app_version_platform.hpp"
 
 namespace ores::compute::domain {
 
-std::string convert_to_table(const std::vector<app_version>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header
-          << "ID" << "App ID" << "Wrapper Version" << "Engine Version"
-          << "Min RAM (MB)" << "Modified By" << "Recorded At" << fort::endr;
-
-    for (const auto& av : v) {
-        table << boost::uuids::to_string(av.id)
-              << boost::uuids::to_string(av.app_id)
-              << av.wrapper_version << av.engine_version
-              << av.min_ram_mb
-              << av.modified_by << av.recorded_at << fort::endr;
-    }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
-}
+/**
+ * @brief Dumps the app_version_platform to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const app_version_platform& v);
 
 }
+
+#endif

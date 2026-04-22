@@ -31,12 +31,20 @@ namespace ores::cli::config {
  * @brief Configuration for adding a compute app_version entity via command-line arguments.
  */
 struct add_compute_app_version_options final {
+    /**
+     * @brief One (platform_code, package_uri) pair per supported target
+     * triplet, e.g. {"x64-linux", "s3://.../ore-1.8.15.0-x64-linux.tar.gz"}.
+     */
+    struct platform_package {
+        std::string platform_code;
+        std::string package_uri;
+    };
+
     std::string app_id;
     std::string wrapper_version;
     std::string engine_version;
-    std::vector<std::string> platforms;
+    std::vector<platform_package> platform_packages;
     std::string modified_by;
-    std::optional<std::string> package_uri;
     std::optional<int> min_ram_mb;
 };
 

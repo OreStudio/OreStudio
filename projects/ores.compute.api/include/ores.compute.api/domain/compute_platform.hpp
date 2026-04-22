@@ -27,15 +27,17 @@
 namespace ores::compute::domain {
 
 /**
- * @brief A known compute platform, identified by its Rust target triple code.
+ * @brief A known compute platform, identified by its vcpkg target triplet.
  *
  * System-owned data: owned by the system tenant and visible read-only to all
- * tenants via RLS.
+ * tenants via RLS. The @c code matches VCPKG_TARGET_TRIPLET used at build
+ * time and ORES_PLATFORM_TRIPLET stamped into each binary at runtime, so a
+ * single identifier links build output, runtime host and DB row.
  */
 struct compute_platform final {
     boost::uuids::uuid id;
-    std::string code;          // e.g. "x86_64-unknown-linux-gnu"
-    std::string display_name;  // e.g. "Linux x86-64 (GNU libc)"
+    std::string code;          // e.g. "x64-linux"
+    std::string display_name;  // e.g. "Linux x86-64"
     std::string description;
     std::string os_family;     // linux / macos / windows
     std::string cpu_arch;      // x86_64 / aarch64

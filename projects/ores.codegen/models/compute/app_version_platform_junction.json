@@ -1,0 +1,77 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "has_tenant_id": true,
+    "name": "app_version_platforms",
+    "name_singular": "app_version_platform",
+    "name_title": "App Version Platform",
+    "name_singular_words": "app version platform association",
+    "brief": "Links an app version to a supported platform and its package URI.",
+    "description": "Associates app versions with the platforms they support, and carries the URI\nof the per-platform packaged bundle (a .tar.gz containing the wrapper+engine\nbinaries built for that target triplet). Each (app_version, platform) row\nowns its own package_uri, so the orchestrator can dispatch per-triplet\nassignments without the wrapper needing to negotiate package selection.",
+
+    "left": {
+      "column": "app_version_id",
+      "column_short": "app_version",
+      "column_title": "App Version",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for looking up platforms for an app version",
+      "description": "FK reference to ores_compute_app_versions_tbl.",
+      "detail": "References ores_compute_app_versions_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+
+    "right": {
+      "column": "platform_id",
+      "column_short": "platform",
+      "column_title": "Platform",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "index_comment": "Index for finding app versions supporting a platform",
+      "description": "FK reference to ores_compute_platforms_tbl.",
+      "detail": "References ores_compute_platforms_tbl.id (soft FK).",
+      "generator_expr": "ctx.generate_uuid()"
+    },
+
+    "columns": [
+      {
+        "name": "package_uri",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "URI of the per-platform packaged bundle in object storage.",
+        "detail": "One .tar.gz per (app_version, platform). Wrappers download the URI\nmatching their own ORES_PLATFORM_TRIPLET at dispatch time.",
+        "generator_expr": "std::string(faker::internet::url())"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_app_version_platforms_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "app_version_platform",
+      "name_short": "app_version_platforms",
+      "name_singular_words": "app version platform",
+      "name_words": "app version platforms",
+      "order_column": "platform_id"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "avp",
+      "table_display": [
+        {"column": "app_version_id", "header": "App Version"},
+        {"column": "platform_id", "header": "Platform"},
+        {"column": "package_uri", "header": "Package URI"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

@@ -21,7 +21,6 @@
 #define ORES_COMPUTE_DOMAIN_APP_VERSION_HPP
 
 #include <string>
-#include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -30,9 +29,10 @@ namespace ores::compute::domain {
 /**
  * @brief A versioned wrapper+engine bundle for a compute grid application.
  *
- * Combines a specific wrapper version with a specific engine version for a given
- * platform. The BOINC equivalent of 'app_version'. Nodes download the package_uri
- * bundle and launch the wrapper to run the engine.
+ * Combines a specific wrapper version with a specific engine version. The BOINC
+ * equivalent of 'app_version'. Per-platform package artefacts are tracked via
+ * ores_compute_app_version_platforms_tbl — each (app_version, platform) row
+ * owns the URI of its own packaged bundle.
  */
 struct app_version final {
     /**
@@ -64,16 +64,6 @@ struct app_version final {
      * @brief Version of the underlying engine, e.g. 'ORE-Studio-7.1'.
      */
     std::string engine_version;
-
-    /**
-     * @brief URI pointing to the zipped wrapper+engine bundle in object storage.
-     */
-    std::string package_uri;
-
-    /**
-     * @brief Supported platform identifiers, e.g. 'linux-x86_64', 'linux-arm64'.
-     */
-    std::vector<std::string> platforms;
 
     /**
      * @brief Minimum RAM in MB required by the node to run this app version.

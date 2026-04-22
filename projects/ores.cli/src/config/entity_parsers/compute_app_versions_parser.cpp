@@ -71,12 +71,11 @@ options_description make_add_compute_app_version_options_description() {
         ("engine-version",
             value<std::string>(),
             "Engine version, e.g. 'ORE-Studio-7.1' (required)")
-        ("platform",
+        ("platform-package",
             value<std::vector<std::string>>()->multitoken(),
-            "Supported platforms, e.g. 'linux-x86_64' (required; repeatable)")
-        ("package-uri",
-            value<std::string>()->default_value(""),
-            "URI to the zipped bundle in object storage")
+            "Per-platform package as '<platform-code>=<package-uri>' "
+            "(required; repeatable). Platform codes match vcpkg triplets "
+            "(x64-linux, arm64-osx, x64-windows, ...).")
         ("min-ram-mb",
             value<int>()->default_value(0),
             "Minimum RAM in MB required")
@@ -115,14 +114,22 @@ read_add_compute_app_version_options(const variables_map& vm) {
     }
     r.engine_version = vm["engine-version"].as<std::string>();
 
-    if (vm.count("platform") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --platform for add app-version command."));
+    if (vm.count("platform-package") == 0) {
+        BOOST_THROW_EXCEPTION(parser_exception(
+            "Must supply at least one --platform-package "
+            "'<platform-code>=<package-uri>' for add app-version command."));
     }
-    r.platforms = vm["platform"].as<std::vector<std::string>>();
+    for (const auto& raw : vm["platform-package"].as<std::vector<std::string>>()) {
+        const auto eq = raw.find('=');
+        if (eq == std::string::npos || eq == 0 || eq == raw.size() - 1) {
+            BOOST_THROW_EXCEPTION(parser_exception(
+                "--platform-package must be '<platform-code>=<package-uri>': "
+                + raw));
+        }
+        r.platform_packages.push_back(
+            {raw.substr(0, eq), raw.substr(eq + 1)});
+    }
 
-    if (vm.count("package-uri") != 0)
-        r.package_uri = vm["package-uri"].as<std::string>();
     if (vm.count("min-ram-mb") != 0)
         r.min_ram_mb = vm["min-ram-mb"].as<int>();
 

@@ -40,6 +40,7 @@
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 
 namespace ores::qt {
 
@@ -242,10 +243,10 @@ void AppVersionDetailDialog::populatePlatformsTab() {
     ui_->assignedPlatformsList->clear();
 
     for (const auto& p : availablePlatforms_) {
-        const bool assigned = std::find(
-            app_version_.platforms.begin(),
-            app_version_.platforms.end(),
-            p.id) != app_version_.platforms.end();
+        const bool assigned = std::find_if(platform_rows_.begin(),
+            platform_rows_.end(), [&](const auto& row) {
+                return boost::uuids::to_string(row.platform_id) == p.id;
+            }) != platform_rows_.end();
 
         auto* item = new QListWidgetItem(QString::fromStdString(p.display_name));
         item->setData(Qt::UserRole, QString::fromStdString(p.id));
@@ -268,7 +269,55 @@ void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
 void AppVersionDetailDialog::setVersion(
     const compute::domain::app_version& app_version) {
     app_version_ = app_version;
+    // Start from an empty set; populatePlatformsTab will re-run once the
+    // junction fetch returns and fills platform_rows_. In create mode there
+    // is nothing to load because the id has just been generated.
+    platform_rows_.clear();
     updateUiFromVersion();
+
+    if (!createMode_ && !app_version_.id.is_nil())
+        loadAssignedPlatforms(boost::uuids::to_string(app_version_.id));
+}
+
+void AppVersionDetailDialog::loadAssignedPlatforms(
+    const std::string& app_version_id) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<AppVersionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<compute::domain::app_version_platform> rows;
+    };
+
+    auto task = [self, app_version_id]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
+
+        compute::messaging::list_app_version_platforms_request request;
+        request.app_version_id = app_version_id;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result || !result->success) return {false, {}};
+        return {true, std::move(result->platforms)};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self || !result.success) return;
+        self->platform_rows_ = std::move(result.rows);
+        self->populatePlatformsTab();
+        // Re-populating the assigned list flags the dialog as dirty via the
+        // selection-changed signal; reset since the fetch is not a user edit.
+        self->hasChanges_ = false;
+        self->updateSaveButtonState();
+    });
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void AppVersionDetailDialog::setCreateMode(bool createMode) {
@@ -315,7 +364,7 @@ void AppVersionDetailDialog::updateUiFromVersion() {
     ui_->nameEdit->setText(QString::fromStdString(app_version_.engine_version));
     populatePlatformsTab();
     ui_->minRamSpinBox->setValue(app_version_.min_ram_mb);
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.package_uri));
+    ui_->descriptionEdit->setPlainText({});
 
     populateProvenance(app_version_.version,
                        app_version_.modified_by,
@@ -342,25 +391,36 @@ void AppVersionDetailDialog::updateVersionFromUi() {
         app_version_.wrapper_version = ui_->codeEdit->text().trimmed().toStdString();
     }
     app_version_.engine_version = ui_->nameEdit->text().trimmed().toStdString();
-    app_version_.platforms.clear();
-    for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
-        const auto* item = ui_->assignedPlatformsList->item(i);
-        if (item)
-            app_version_.platforms.push_back(
-                item->data(Qt::UserRole).toString().toStdString());
-    }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
-    {
-        // Package URI: always <uuid>.tar.gz — the wrapper assumes tar.gz
-        // format when extracting, so the extension is fixed rather than
-        // derived from the original filename.
-        const std::string base_uri = "api/v1/storage/compute/packages/" +
-            boost::uuids::to_string(app_version_.id) ;
-        if (!selectedPackageFilePath_.isEmpty() || app_version_.package_uri.empty())
-            app_version_.package_uri = base_uri;
-    }
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
+
+    // Rebuild platform rows from the assigned list. Delegate URI layout to
+    // compute_storage::package_path so the canonical per-triplet key lives
+    // with the rest of the bucket convention, not inline in the UI.
+    platform_rows_.clear();
+    const auto av_id_str = boost::uuids::to_string(app_version_.id);
+    for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
+        const auto* item = ui_->assignedPlatformsList->item(i);
+        if (!item) continue;
+        const auto id_str = item->data(Qt::UserRole).toString().toStdString();
+        const auto avail = std::find_if(availablePlatforms_.begin(),
+            availablePlatforms_.end(),
+            [&](const auto& p) { return p.id == id_str; });
+        if (avail == availablePlatforms_.end()) continue;
+
+        compute::domain::app_version_platform row;
+        row.tenant_id = app_version_.tenant_id;
+        row.app_version_id = app_version_.id;
+        try {
+            row.platform_id =
+                boost::lexical_cast<boost::uuids::uuid>(avail->id);
+        } catch (...) { continue; }
+        row.platform_code = avail->code;
+        row.package_uri = ores::compute::net::compute_storage::package_path(
+            av_id_str, avail->code, ".tar.gz");
+        platform_rows_.push_back(std::move(row));
+    }
 }
 
 void AppVersionDetailDialog::onAddPlatformClicked() {
@@ -497,12 +557,6 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
         BOOST_LOG_SEV(lg(), info) << "Package uploaded successfully for app_version: "
                                   << boost::uuids::to_string(self->app_version_.id);
 
-        // Update in-memory package_uri so any subsequent save persists it.
-        const std::string new_uri = "api/v1/storage/compute/packages/"
-            + boost::uuids::to_string(self->app_version_.id) ;
-        self->app_version_.package_uri = new_uri;
-        BOOST_LOG_SEV(lg(), info) << "Updated in-memory package_uri: " << new_uri;
-
         emit self->statusMessage(tr("Package uploaded successfully"));
         MessageBoxHelper::information(self, tr("Upload Complete"),
             tr("Package uploaded successfully."));
@@ -538,13 +592,15 @@ void AppVersionDetailDialog::onSaveClicked() {
     using FutureResult = std::pair<bool, std::string>;
     QPointer<AppVersionDetailDialog> self = this;
     const compute::domain::app_version versionToSave = app_version_;
+    const auto platformsToSave = platform_rows_;
 
     QFuture<FutureResult> future =
-        QtConcurrent::run([self, versionToSave]() -> FutureResult {
+        QtConcurrent::run([self, versionToSave, platformsToSave]() -> FutureResult {
             if (!self) return {false, ""};
 
             compute::messaging::save_app_version_request request;
             request.app_version = versionToSave;
+            request.platforms = platformsToSave;
 
             auto result =
                 self->clientManager_->process_authenticated_request(

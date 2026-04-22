@@ -27,6 +27,17 @@
 #define ORES_VERSION_PATCH @OreStudio_VERSION_PATCH@
 #define ORES_VERSION "@OreStudio_VERSION_MAJOR@.@OreStudio_VERSION_MINOR@.@OreStudio_VERSION_PATCH@"
 
+/**
+ * @brief The target triplet this binary was built for.
+ *
+ * Stamped at configure time. Sourced from CMake's @c VCPKG_TARGET_TRIPLET
+ * when vcpkg is in use (e.g. @c x64-linux, @c x64-windows, @c arm64-osx);
+ * otherwise synthesized from @c CMAKE_SYSTEM_NAME / @c CMAKE_SYSTEM_PROCESSOR
+ * as a best-effort fallback. Identifies the architecture/OS combination the
+ * binary is compatible with.
+ */
+#define ORES_PLATFORM_TRIPLET "@ORES_PLATFORM_TRIPLET@"
+
 namespace ores::utility::version {
 
 /**
@@ -37,6 +48,15 @@ namespace ores::utility::version {
  * Implemented in a generated .cpp so only that one TU recompiles per build.
  */
 const char* build_info();
+
+/**
+ * @brief Returns the vcpkg target triplet this binary was built for.
+ *
+ * Thin accessor over the @c ORES_PLATFORM_TRIPLET macro for use at
+ * runtime (e.g. when the triplet needs to be included in a heartbeat
+ * payload sent to a service).
+ */
+const char* platform_triplet();
 
 /**
  * @brief Formats a startup message with version and build info.

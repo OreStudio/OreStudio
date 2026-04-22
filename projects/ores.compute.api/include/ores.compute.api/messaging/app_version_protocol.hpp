@@ -24,6 +24,7 @@
 #include <string_view>
 #include <vector>
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/domain/app_version_platform.hpp"
 
 namespace ores::compute::messaging {
 
@@ -45,6 +46,7 @@ struct save_app_version_request {
     static constexpr std::string_view nats_subject =
         "compute.v1.app-versions.save";
     ores::compute::domain::app_version app_version;
+    std::vector<ores::compute::domain::app_version_platform> platforms;
     std::string change_reason_code;
     std::string change_commentary;
 };
@@ -65,6 +67,19 @@ struct get_app_version_history_response {
     bool success = true;
     std::string message;
     std::vector<ores::compute::domain::app_version> versions;
+};
+
+struct list_app_version_platforms_request {
+    using response_type = struct list_app_version_platforms_response;
+    static constexpr std::string_view nats_subject =
+        "compute.v1.app-versions.platforms.list";
+    std::string app_version_id;
+};
+
+struct list_app_version_platforms_response {
+    bool success = true;
+    std::string message;
+    std::vector<ores::compute::domain::app_version_platform> platforms;
 };
 
 }

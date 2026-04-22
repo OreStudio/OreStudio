@@ -48,8 +48,6 @@ TEST_CASE("create_app_version_with_valid_fields", tags) {
     sut.app_id = boost::uuids::random_generator()();
     sut.wrapper_version = "v1.2.0";
     sut.engine_version = "ORE-Studio-7.1";
-    sut.package_uri = "s3://bucket/ore-studio-v1.2.0-linux-x86_64.tar.gz";
-    sut.platforms = {"linux-x86_64", "linux-arm64"};
     sut.min_ram_mb = 4096;
 
     BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;
@@ -59,7 +57,6 @@ TEST_CASE("create_app_version_with_valid_fields", tags) {
     CHECK(sut.wrapper_version == "v1.2.0");
     CHECK(sut.engine_version == "ORE-Studio-7.1");
     CHECK(sut.min_ram_mb == 4096);
-    CHECK(sut.platforms.size() == 2);
 }
 
 TEST_CASE("create_app_version_with_specific_uuid", tags) {
@@ -76,8 +73,6 @@ TEST_CASE("create_app_version_with_specific_uuid", tags) {
     sut.app_id = specific_app_id;
     sut.wrapper_version = "v2.0.0";
     sut.engine_version = "ORE-Studio-8.0";
-    sut.package_uri = "s3://bucket/ore-studio-v2.0.0.tar.gz";
-    sut.platforms = {"linux-x86_64"};
     sut.min_ram_mb = 8192;
 
     BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;
@@ -96,8 +91,6 @@ TEST_CASE("app_version_insertion_operator", tags) {
     sut.app_id = boost::uuids::random_generator()();
     sut.wrapper_version = "v1.0.0";
     sut.engine_version = "ORE-7.0";
-    sut.package_uri = "s3://bucket/package.tar.gz";
-    sut.platforms = {"linux-x86_64"};
     sut.min_ram_mb = 2048;
 
     std::ostringstream os;
@@ -120,8 +113,6 @@ TEST_CASE("app_version_convert_single_to_table", tags) {
     av.app_id = boost::uuids::random_generator()();
     av.wrapper_version = "v1.2.0";
     av.engine_version = "ORE-Studio-7.1";
-    av.package_uri = "s3://bucket/package.tar.gz";
-    av.platforms = {"linux-x86_64"};
     av.min_ram_mb = 4096;
 
     std::vector<app_version> versions = {av};
@@ -145,8 +136,6 @@ TEST_CASE("app_version_convert_multiple_to_table", tags) {
         av.app_id = boost::uuids::random_generator()();
         av.wrapper_version = "v1." + std::to_string(i) + ".0";
         av.engine_version = "ORE-" + std::to_string(i);
-        av.package_uri = "s3://bucket/package-" + std::to_string(i) + ".tar.gz";
-        av.platforms = {"linux-x86_64"};
         av.min_ram_mb = 2048 * (i + 1);
         versions.push_back(av);
     }
@@ -182,8 +171,6 @@ TEST_CASE("create_app_version_with_faker", tags) {
     sut.app_id = boost::uuids::random_generator()();
     sut.wrapper_version = "v" + std::to_string(faker::number::integer(1, 5)) + ".0.0";
     sut.engine_version = "ORE-" + std::to_string(faker::number::integer(7, 9));
-    sut.package_uri = "s3://bucket/" + std::string(faker::word::noun()) + ".tar.gz";
-    sut.platforms = {"linux-x86_64"};
     sut.min_ram_mb = faker::number::integer(1024, 32768);
 
     BOOST_LOG_SEV(lg, info) << "AppVersion: " << sut;

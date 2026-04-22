@@ -21,15 +21,17 @@
 /**
  * Compute Platforms Seed Script
  *
- * Seeds the known compute platforms using Rust target triple codes. The system
- * tenant owns all records, making them visible to all tenants through RLS.
- * Idempotent: guarded by code lookups so it is safe to run on every database
- * recreation.
+ * Seeds the known compute platforms using vcpkg target triplet codes so that
+ * the same identifier is used across the build system (VCPKG_TARGET_TRIPLET),
+ * runtime (ORES_PLATFORM_TRIPLET stamped into each binary) and the database.
+ * The system tenant owns all records, making them visible to all tenants
+ * through RLS. Idempotent: guarded by code lookups so it is safe to run on
+ * every database recreation.
  */
 
 \echo '--- Compute Platforms Seed ---'
 
--- Linux x86-64 (GNU libc)
+-- Linux x86-64
 insert into ores_compute_platforms_tbl (
     id, tenant_id, version, code, display_name, description,
     os_family, cpu_arch, abi, is_active,
@@ -40,11 +42,11 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'x86_64-unknown-linux-gnu',
-    'Linux x86-64 (GNU libc)',
-    '64-bit x86 Linux using the GNU C Library (glibc). The standard platform '
-    'for most Linux server and desktop installations. Compatible with Debian, '
-    'Ubuntu, RHEL, and most mainstream distributions.',
+    'x64-linux',
+    'Linux x86-64',
+    '64-bit x86 Linux. The standard platform for most Linux server and '
+    'desktop installations. Compatible with Debian, Ubuntu, RHEL, and most '
+    'mainstream distributions.',
     'linux',
     'x86_64',
     'gnu',
@@ -57,11 +59,11 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'x86_64-unknown-linux-gnu'
+    where code = 'x64-linux'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
--- Linux ARM64 (GNU libc)
+-- Linux ARM64
 insert into ores_compute_platforms_tbl (
     id, tenant_id, version, code, display_name, description,
     os_family, cpu_arch, abi, is_active,
@@ -72,10 +74,10 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'aarch64-unknown-linux-gnu',
-    'Linux ARM64 (GNU libc)',
-    '64-bit ARM (ARMv8-A) Linux using the GNU C Library. Used on AWS Graviton '
-    '2/3/4 instances, Ampere Altra servers, and ARM-based developer boards.',
+    'arm64-linux',
+    'Linux ARM64',
+    '64-bit ARM (ARMv8-A) Linux. Used on AWS Graviton 2/3/4 instances, '
+    'Ampere Altra servers, and ARM-based developer boards.',
     'linux',
     'aarch64',
     'gnu',
@@ -88,70 +90,7 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'aarch64-unknown-linux-gnu'
-      and valid_to = ores_utility_infinity_timestamp_fn()
-);
-
--- Linux x86-64 (musl libc)
-insert into ores_compute_platforms_tbl (
-    id, tenant_id, version, code, display_name, description,
-    os_family, cpu_arch, abi, is_active,
-    modified_by, performed_by, change_reason_code, change_commentary,
-    valid_from, valid_to
-)
-select
-    gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
-    1,
-    'x86_64-unknown-linux-musl',
-    'Linux x86-64 (musl libc)',
-    '64-bit x86 Linux using musl libc. Produces fully statically-linked '
-    'binaries with no external libc dependency, suitable for minimal container '
-    'images such as Alpine Linux.',
-    'linux',
-    'x86_64',
-    'musl',
-    true,
-    current_user,
-    current_user,
-    'system.initial_load',
-    '',
-    current_timestamp,
-    ores_utility_infinity_timestamp_fn()
-where not exists (
-    select 1 from ores_compute_platforms_tbl
-    where code = 'x86_64-unknown-linux-musl'
-      and valid_to = ores_utility_infinity_timestamp_fn()
-);
-
--- Linux ARM64 (musl libc)
-insert into ores_compute_platforms_tbl (
-    id, tenant_id, version, code, display_name, description,
-    os_family, cpu_arch, abi, is_active,
-    modified_by, performed_by, change_reason_code, change_commentary,
-    valid_from, valid_to
-)
-select
-    gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
-    1,
-    'aarch64-unknown-linux-musl',
-    'Linux ARM64 (musl libc)',
-    '64-bit ARM Linux using musl libc. Statically-linked binaries for ARM, '
-    'suitable for Alpine Linux containers and embedded ARM deployments.',
-    'linux',
-    'aarch64',
-    'musl',
-    true,
-    current_user,
-    current_user,
-    'system.initial_load',
-    '',
-    current_timestamp,
-    ores_utility_infinity_timestamp_fn()
-where not exists (
-    select 1 from ores_compute_platforms_tbl
-    where code = 'aarch64-unknown-linux-musl'
+    where code = 'arm64-linux'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
@@ -166,7 +105,7 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'x86_64-apple-darwin',
+    'x64-osx',
     'macOS Intel',
     '64-bit x86 macOS for Intel processors. Covers all Intel Mac hardware '
     'produced between 2006 and 2023. Requires macOS 10.12 Sierra or later '
@@ -183,7 +122,7 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'x86_64-apple-darwin'
+    where code = 'x64-osx'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
@@ -198,7 +137,7 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'aarch64-apple-darwin',
+    'arm64-osx',
     'macOS Apple Silicon (M-series)',
     '64-bit ARM macOS for Apple Silicon (M1, M2, M3 and later). All new Mac '
     'hardware since November 2020. Native ARM execution with no Rosetta 2 '
@@ -215,11 +154,11 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'aarch64-apple-darwin'
+    where code = 'arm64-osx'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
--- Windows x86-64 (MSVC)
+-- Windows x86-64
 insert into ores_compute_platforms_tbl (
     id, tenant_id, version, code, display_name, description,
     os_family, cpu_arch, abi, is_active,
@@ -230,8 +169,8 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'x86_64-pc-windows-msvc',
-    'Windows x86-64 (MSVC)',
+    'x64-windows',
+    'Windows x86-64',
     '64-bit x86 Windows using the Microsoft Visual C++ runtime (MSVC ABI). '
     'Standard for native Windows applications and the recommended target for '
     'Windows deployment. Requires the MSVC redistributable at runtime.',
@@ -247,11 +186,11 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'x86_64-pc-windows-msvc'
+    where code = 'x64-windows'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
--- Windows x86-64 (MinGW)
+-- Windows ARM64
 insert into ores_compute_platforms_tbl (
     id, tenant_id, version, code, display_name, description,
     os_family, cpu_arch, abi, is_active,
@@ -262,40 +201,8 @@ select
     gen_random_uuid(),
     ores_iam_system_tenant_id_fn(),
     1,
-    'x86_64-pc-windows-gnu',
-    'Windows x86-64 (MinGW)',
-    '64-bit x86 Windows using the GNU toolchain (MinGW-w64). Produces Windows '
-    'executables built with GCC without requiring the MSVC runtime. Compatible '
-    'with MSYS2 and Cygwin environments.',
-    'windows',
-    'x86_64',
-    'mingw',
-    true,
-    current_user,
-    current_user,
-    'system.initial_load',
-    '',
-    current_timestamp,
-    ores_utility_infinity_timestamp_fn()
-where not exists (
-    select 1 from ores_compute_platforms_tbl
-    where code = 'x86_64-pc-windows-gnu'
-      and valid_to = ores_utility_infinity_timestamp_fn()
-);
-
--- Windows ARM64 (MSVC)
-insert into ores_compute_platforms_tbl (
-    id, tenant_id, version, code, display_name, description,
-    os_family, cpu_arch, abi, is_active,
-    modified_by, performed_by, change_reason_code, change_commentary,
-    valid_from, valid_to
-)
-select
-    gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
-    1,
-    'aarch64-pc-windows-msvc',
-    'Windows ARM64 (MSVC)',
+    'arm64-windows',
+    'Windows ARM64',
     '64-bit ARM Windows using the MSVC runtime. Targets ARM-based Windows '
     'devices including Microsoft Surface Pro X, Surface Pro 11, and Qualcomm '
     'Snapdragon X Elite laptops.',
@@ -311,7 +218,7 @@ select
     ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_compute_platforms_tbl
-    where code = 'aarch64-pc-windows-msvc'
+    where code = 'arm64-windows'
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 

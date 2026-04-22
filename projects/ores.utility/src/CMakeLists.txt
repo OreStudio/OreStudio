@@ -24,9 +24,35 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# version.hpp: stable between builds — only contains version number macros
-# and function declarations. Generated once at configure time via
-# configure_file(); never touched again unless the version changes.
+# version.hpp: stable between builds — only contains version number macros,
+# the platform triplet, and function declarations. Generated once at configure
+# time via configure_file(); never touched again unless the inputs change.
+#
+# Platform triplet: prefer vcpkg's canonical value when available; otherwise
+# synthesize a best-effort <arch>-<os> string from CMake's own probes so
+# non-vcpkg builds still produce a usable identifier. A warning is emitted
+# in the fallback path because the synthesized value is unlikely to match a
+# compute platforms table entry verbatim.
+if(VCPKG_TARGET_TRIPLET)
+    set(ORES_PLATFORM_TRIPLET "${VCPKG_TARGET_TRIPLET}")
+else()
+    string(TOLOWER "${CMAKE_SYSTEM_NAME}" _ores_triplet_os)
+    if(_ores_triplet_os STREQUAL "darwin")
+        set(_ores_triplet_os "osx")
+    endif()
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _ores_triplet_arch)
+    if(_ores_triplet_arch MATCHES "^(x86_64|amd64)$")
+        set(_ores_triplet_arch "x64")
+    elseif(_ores_triplet_arch MATCHES "^(aarch64|arm64)$")
+        set(_ores_triplet_arch "arm64")
+    endif()
+    set(ORES_PLATFORM_TRIPLET "${_ores_triplet_arch}-${_ores_triplet_os}")
+    message(WARNING
+        "VCPKG_TARGET_TRIPLET is not set; synthesized platform triplet "
+        "'${ORES_PLATFORM_TRIPLET}' from CMAKE_SYSTEM_* variables. This "
+        "value may not match an entry in the compute platforms table; "
+        "set VCPKG_TARGET_TRIPLET explicitly to silence this warning.")
+endif()
 set(generated_include_dir "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(generated_version_dir "${generated_include_dir}/ores.utility/version")
 set(version_hpp_in  "${CMAKE_SOURCE_DIR}/projects/ores.utility/include/ores.utility/version/version.hpp.in")

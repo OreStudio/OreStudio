@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 
 namespace Ui {
@@ -103,6 +104,7 @@ private:
     void setupConnections();
     void loadApps();
     void loadPlatforms();
+    void loadAssignedPlatforms(const std::string& app_version_id);
     void populateAppCombo();
     void populatePlatformsTab();
     void updateUiFromVersion();
@@ -115,6 +117,7 @@ private:
     std::string username_;
     QUrl httpBaseUrl_;
     compute::domain::app_version app_version_;
+    std::vector<compute::domain::app_version_platform> platform_rows_;
     std::vector<AppEntry> appEntries_;
     std::vector<PlatformEntry> availablePlatforms_;
     QString selectedPackageFilePath_;

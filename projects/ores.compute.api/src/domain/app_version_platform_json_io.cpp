@@ -17,33 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.compute.api/domain/app_version_table.hpp"
+#include "ores.compute.api/domain/app_version_platform_json_io.hpp"
 
-#include <sstream>
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::compute::domain {
 
-std::string convert_to_table(const std::vector<app_version>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header
-          << "ID" << "App ID" << "Wrapper Version" << "Engine Version"
-          << "Min RAM (MB)" << "Modified By" << "Recorded At" << fort::endr;
-
-    for (const auto& av : v) {
-        table << boost::uuids::to_string(av.id)
-              << boost::uuids::to_string(av.app_id)
-              << av.wrapper_version << av.engine_version
-              << av.min_ram_mb
-              << av.modified_by << av.recorded_at << fort::endr;
-    }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+std::ostream& operator<<(std::ostream& s, const app_version_platform& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
 }

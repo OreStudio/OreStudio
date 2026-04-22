@@ -20,9 +20,11 @@
  */
 #include "ores.cli/app/application.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <optional>
 #include <type_traits>
+#include <unordered_map>
 #include "ores.utility/version/version.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
@@ -99,6 +101,8 @@
 #include "ores.compute.core/repository/host_repository.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
+#include "ores.compute.core/repository/platform_repository.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
 #include "ores.compute.core/repository/workunit_repository.hpp"
 #include "ores.compute.core/repository/result_repository.hpp"
@@ -1547,14 +1551,46 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
     record.app_id = app_id;
     record.wrapper_version = cfg.wrapper_version;
     record.engine_version = cfg.engine_version;
-    record.platforms = cfg.platforms;
-    record.package_uri = cfg.package_uri.value_or("");
     record.min_ram_mb = cfg.min_ram_mb.value_or(0);
     record.modified_by = cfg.modified_by;
     record.performed_by = cfg.modified_by;
+    record.change_reason_code = "system.new_record";
 
     compute::repository::app_version_repository repo;
     repo.write(context_, record);
+
+    // Resolve platform codes to IDs and insert one junction row per pair so
+    // the orchestrator can match incoming workunits against the host triplet.
+    compute::repository::platform_repository plat_repo;
+    const auto platforms = plat_repo.read_active(context_);
+    std::unordered_map<std::string, boost::uuids::uuid> plat_by_code;
+    plat_by_code.reserve(platforms.size());
+    for (const auto& p : platforms)
+        plat_by_code.emplace(p.code, p.id);
+
+    std::vector<compute::domain::app_version_platform> junction_rows;
+    junction_rows.reserve(cfg.platform_packages.size());
+    for (const auto& pp : cfg.platform_packages) {
+        const auto it = plat_by_code.find(pp.platform_code);
+        if (it == plat_by_code.end()) {
+            BOOST_THROW_EXCEPTION(application_exception(std::format(
+                "Unknown platform code: {}", pp.platform_code)));
+        }
+
+        compute::domain::app_version_platform avp;
+        avp.tenant_id = context_.tenant_id();
+        avp.app_version_id = record.id;
+        avp.platform_id = it->second;
+        avp.platform_code = it->first;
+        avp.package_uri = pp.package_uri;
+        junction_rows.push_back(std::move(avp));
+    }
+
+    compute::repository::app_version_platform_repository avp_repo;
+    avp_repo.replace_for_version(context_,
+        boost::uuids::to_string(record.id), junction_rows,
+        cfg.modified_by, cfg.modified_by,
+        record.change_reason_code, "Initial import");
 
     output_stream_ << "Successfully added compute app version: "
                    << record.wrapper_version << "/" << record.engine_version << std::endl;

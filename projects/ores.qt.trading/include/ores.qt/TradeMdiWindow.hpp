@@ -29,6 +29,7 @@
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 
@@ -64,7 +65,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showTradeDetails(const trading::domain::trade& trade);
+    void showTradeDetails(const trading::messaging::trade_export_item& bundle);
     void addNewRequested();
     void tradeDeleted(const QString& code);
     void showTradeHistory(const trading::domain::trade& trade);

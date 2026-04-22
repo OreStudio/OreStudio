@@ -58,9 +58,9 @@ knock_out_swap_instrument_service::count_knock_out_swap_instruments() {
 }
 
 std::optional<domain::knock_out_swap_instrument>
-knock_out_swap_instrument_service::find_knock_out_swap_instrument(
+knock_out_swap_instrument_service::get_knock_out_swap_instrument(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding knock_out_swap_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting knock_out_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

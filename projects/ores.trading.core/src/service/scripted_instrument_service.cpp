@@ -51,8 +51,8 @@ std::uint32_t scripted_instrument_service::count_scripted_instruments() {
 }
 
 std::optional<domain::scripted_instrument>
-scripted_instrument_service::find_scripted_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding scripted_instrument: " << id;
+scripted_instrument_service::get_scripted_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting scripted_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

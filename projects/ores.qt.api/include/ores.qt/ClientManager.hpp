@@ -45,6 +45,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/export.hpp"
 
 namespace ores::qt {
@@ -100,6 +101,16 @@ struct SignupResult {
  */
 struct SessionListResult {
     std::vector<iam::domain::session> sessions;
+    std::uint32_t total_count = 0;
+};
+
+/**
+ * @brief Result of a trade list request.
+ *
+ * Each item bundles the trade with its resolved per-family instrument.
+ */
+struct TradeListResult {
+    std::vector<trading::messaging::trade_export_item> items;
     std::uint32_t total_count = 0;
 };
 
@@ -402,6 +413,18 @@ public:
         const boost::uuids::uuid& accountId,
         std::uint32_t limit = 100,
         std::uint32_t offset = 0);
+
+    /**
+     * @brief List trades under a taxonomy node.
+     *
+     * @p node_id may be a book, portfolio, or business unit id; the server
+     * resolves it to the book-id subtree. Omit @p node_id to list all trades
+     * visible to the tenant.
+     */
+    std::optional<TradeListResult> listTrades(
+        std::optional<boost::uuids::uuid> node_id = std::nullopt,
+        std::uint32_t offset = 0,
+        std::uint32_t limit = 100);
 
     /**
      * @brief Get active sessions for the current user.

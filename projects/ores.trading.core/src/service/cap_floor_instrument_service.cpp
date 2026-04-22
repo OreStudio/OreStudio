@@ -55,9 +55,9 @@ std::uint32_t cap_floor_instrument_service::count_cap_floor_instruments() {
 }
 
 std::optional<domain::cap_floor_instrument>
-cap_floor_instrument_service::find_cap_floor_instrument(
+cap_floor_instrument_service::get_cap_floor_instrument(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding cap_floor_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting cap_floor_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

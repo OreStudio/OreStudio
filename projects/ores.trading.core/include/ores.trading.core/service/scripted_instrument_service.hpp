@@ -57,7 +57,7 @@ public:
     std::uint32_t count_scripted_instruments();
 
     std::optional<domain::scripted_instrument>
-    find_scripted_instrument(const std::string& id);
+    get_scripted_instrument(const std::string& id);
 
     void save_scripted_instrument(const domain::scripted_instrument& v);
 

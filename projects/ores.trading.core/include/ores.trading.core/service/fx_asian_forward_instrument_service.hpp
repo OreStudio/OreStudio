@@ -21,6 +21,7 @@
 #define ORES_TRADING_SERVICE_FX_ASIAN_FORWARD_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
@@ -43,6 +44,9 @@ public:
     using context = ores::database::context;
 
     explicit fx_asian_forward_instrument_service(context ctx);
+
+    std::optional<domain::fx_asian_forward_instrument>
+    get_fx_asian_forward_instrument(const std::string& id);
 
     void save_fx_asian_forward_instrument(
         const domain::fx_asian_forward_instrument& v);

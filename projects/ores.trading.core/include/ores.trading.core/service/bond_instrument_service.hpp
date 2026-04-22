@@ -57,7 +57,7 @@ public:
     std::uint32_t count_bond_instruments();
 
     std::optional<domain::bond_instrument>
-    find_bond_instrument(const std::string& id);
+    get_bond_instrument(const std::string& id);
 
     void save_bond_instrument(const domain::bond_instrument& v);
 

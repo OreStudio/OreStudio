@@ -55,8 +55,8 @@ std::uint32_t swaption_instrument_service::count_swaption_instruments() {
 }
 
 std::optional<domain::swaption_instrument>
-swaption_instrument_service::find_swaption_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding swaption_instrument: " << id;
+swaption_instrument_service::get_swaption_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting swaption_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

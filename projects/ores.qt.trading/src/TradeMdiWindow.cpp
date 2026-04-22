@@ -225,8 +225,8 @@ void TradeMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* trade = model_->getTrade(sourceIndex.row())) {
-        emit showTradeDetails(*trade);
+    if (auto* bundle = model_->getTradeBundle(sourceIndex.row())) {
+        emit showTradeDetails(*bundle);
     }
 }
 
@@ -250,8 +250,8 @@ void TradeMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* trade = model_->getTrade(sourceIndex.row())) {
-        emit showTradeDetails(*trade);
+    if (auto* bundle = model_->getTradeBundle(sourceIndex.row())) {
+        emit showTradeDetails(*bundle);
     }
 }
 

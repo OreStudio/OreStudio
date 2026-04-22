@@ -42,7 +42,7 @@ PortfolioExplorerTradeModel::PortfolioExplorerTradeModel(
 int PortfolioExplorerTradeModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(trades_.size());
+    return static_cast<int>(items_.size());
 }
 
 int PortfolioExplorerTradeModel::columnCount(const QModelIndex& parent) const {
@@ -57,10 +57,10 @@ QVariant PortfolioExplorerTradeModel::data(
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= trades_.size())
+    if (row >= items_.size())
         return {};
 
-    const auto& trade = trades_[row];
+    const auto& trade = items_[row].trade;
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -139,7 +139,7 @@ void PortfolioExplorerTradeModel::set_filter(
 void PortfolioExplorerTradeModel::set_counterparty_map(
     std::unordered_map<std::string, CounterpartyInfo> cpty_map) {
     cpty_map_ = std::move(cpty_map);
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         emit dataChanged(index(0, CounterpartyShortCode),
                          index(rowCount() - 1, CounterpartyName),
                          {Qt::DisplayRole});
@@ -158,9 +158,9 @@ void PortfolioExplorerTradeModel::refresh() {
         return;
     }
 
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         beginResetModel();
-        trades_.clear();
+        items_.clear();
         total_available_count_ = 0;
         endResetModel();
     }
@@ -180,9 +180,9 @@ void PortfolioExplorerTradeModel::load_page(
         return;
     }
 
-    if (!trades_.empty()) {
+    if (!items_.empty()) {
         beginResetModel();
-        trades_.clear();
+        items_.clear();
         endResetModel();
     }
 
@@ -194,41 +194,31 @@ void PortfolioExplorerTradeModel::fetch_trades(
     is_fetching_ = true;
     QPointer<PortfolioExplorerTradeModel> self = this;
 
-    const auto book_id = filter_book_id_;
-    const auto portfolio_id = filter_portfolio_id_;
+    const auto node_id = filter_portfolio_id_.has_value()
+        ? filter_portfolio_id_ : filter_book_id_;
 
     QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit, book_id, portfolio_id]() -> FetchResult {
+        QtConcurrent::run([self, offset, limit, node_id]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .trades = {},
+                    return {.success = false, .items = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                trading::messaging::get_trades_request request;
-                request.offset = static_cast<int>(offset);
-                request.limit = static_cast<int>(limit);
-                if (book_id) {
-                    request.book_id = boost::uuids::to_string(*book_id);
-                }
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
+                auto result = self->clientManager_->listTrades(
+                    node_id, offset, limit);
                 if (!result) {
-                    return {.success = false, .trades = {},
+                    return {.success = false, .items = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch trades: " +
-                                result.error()),
+                            .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
                 return {.success = true,
-                        .trades = std::move(result->trades),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
+                        .items = std::move(result->items),
+                        .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "portfolio trades");
         });
@@ -250,10 +240,10 @@ void PortfolioExplorerTradeModel::onTradesLoaded() {
     total_available_count_ = result.total_available_count;
 
     beginResetModel();
-    trades_ = std::move(result.trades);
+    items_ = std::move(result.items);
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << trades_.size()
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << items_.size()
                               << " trades, total available: "
                               << total_available_count_;
     emit dataLoaded();
@@ -262,9 +252,17 @@ void PortfolioExplorerTradeModel::onTradesLoaded() {
 const trading::domain::trade*
 PortfolioExplorerTradeModel::get_trade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= trades_.size())
+    if (idx >= items_.size())
         return nullptr;
-    return &trades_[idx];
+    return &items_[idx].trade;
+}
+
+const trading::messaging::trade_export_item*
+PortfolioExplorerTradeModel::get_trade_bundle(int row) const {
+    const auto idx = static_cast<std::size_t>(row);
+    if (idx >= items_.size())
+        return nullptr;
+    return &items_[idx];
 }
 
 }

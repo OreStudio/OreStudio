@@ -52,8 +52,8 @@ std::uint32_t composite_instrument_service::count_composite_instruments() {
 }
 
 std::optional<domain::composite_instrument>
-composite_instrument_service::find_composite_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding composite_instrument: " << id;
+composite_instrument_service::get_composite_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting composite_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

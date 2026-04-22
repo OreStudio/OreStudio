@@ -55,8 +55,8 @@ std::uint32_t rpa_instrument_service::count_rpa_instruments() {
 }
 
 std::optional<domain::rpa_instrument>
-rpa_instrument_service::find_rpa_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding rpa_instrument: " << id;
+rpa_instrument_service::get_rpa_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting rpa_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

@@ -31,6 +31,14 @@ using namespace ores::logging;
 fx_asian_forward_instrument_service::fx_asian_forward_instrument_service(
     context ctx) : ctx_(std::move(ctx)) {}
 
+std::optional<domain::fx_asian_forward_instrument>
+fx_asian_forward_instrument_service::get_fx_asian_forward_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting fx_asian_forward_instrument: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty()) return std::nullopt;
+    return results.front();
+}
+
 void fx_asian_forward_instrument_service::save_fx_asian_forward_instrument(
     const domain::fx_asian_forward_instrument& v) {
     if (v.instrument_id.is_nil())

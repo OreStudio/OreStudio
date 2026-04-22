@@ -58,7 +58,7 @@ public:
     std::uint32_t count_inflation_swap_instruments();
 
     std::optional<domain::inflation_swap_instrument>
-    find_inflation_swap_instrument(const std::string& id);
+    get_inflation_swap_instrument(const std::string& id);
 
     void save_inflation_swap_instrument(
         const domain::inflation_swap_instrument& v);

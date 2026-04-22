@@ -57,7 +57,7 @@ public:
     std::uint32_t count_credit_instruments();
 
     std::optional<domain::credit_instrument>
-    find_credit_instrument(const std::string& id);
+    get_credit_instrument(const std::string& id);
 
     void save_credit_instrument(const domain::credit_instrument& v);
 

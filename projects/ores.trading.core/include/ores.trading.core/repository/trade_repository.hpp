@@ -63,18 +63,21 @@ public:
 
     std::uint32_t count_latest(context ctx);
 
-    std::vector<domain::trade> read_latest_filtered(
+    /**
+     * @brief List trades under a taxonomy node.
+     *
+     * @p node_id may be a book, portfolio, or business unit id; the database
+     * expands it to the book-id set and the query joins against it. An empty
+     * @p node_id lists all active trades in the tenant.
+     */
+    std::vector<domain::trade> read_latest_for_node(
         context ctx,
         std::uint32_t offset, std::uint32_t limit,
-        std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id,
-        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
+        std::optional<boost::uuids::uuid> node_id);
 
-    std::uint32_t count_latest_filtered(
+    std::uint32_t count_latest_for_node(
         context ctx,
-        std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id,
-        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
+        std::optional<boost::uuids::uuid> node_id);
 
     void remove(context ctx, const std::string& id);
 };

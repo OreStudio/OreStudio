@@ -57,7 +57,7 @@ public:
     std::uint32_t count_equity_instruments();
 
     std::optional<domain::equity_instrument>
-    find_equity_instrument(const std::string& id);
+    get_equity_instrument(const std::string& id);
 
     void save_equity_instrument(const domain::equity_instrument& v);
 

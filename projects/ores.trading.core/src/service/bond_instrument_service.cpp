@@ -51,8 +51,8 @@ std::uint32_t bond_instrument_service::count_bond_instruments() {
 }
 
 std::optional<domain::bond_instrument>
-bond_instrument_service::find_bond_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding bond_instrument: " << id;
+bond_instrument_service::get_bond_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting bond_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

@@ -155,6 +155,20 @@ public:
      */
     static std::vector<trade_import_item>
     import_portfolio_with_context(const std::filesystem::path& path);
+
+    /**
+     * @brief Rewires the soft back-reference instrument.trade_id on @p item
+     *        to match the current value of item.trade.id.
+     *
+     * import_portfolio_with_context() stamps a provisional (nil) trade.id into
+     * the instrument at parse time. Callers that later mint a real trade.id
+     * (e.g. ore_import_planner) must rewire the back-reference so downstream
+     * persistence keeps trade ↔ instrument in sync. Without this, UI joins
+     * from instrument to trade fail and economics render blank.
+     *
+     * No-op for items whose trade type has no instrument mapping (monostate).
+     */
+    static void rewire_instrument_trade_id(trade_import_item& item);
 };
 
 }

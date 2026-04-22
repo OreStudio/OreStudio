@@ -38,16 +38,40 @@ struct get_activity_types_response {
     std::vector<ores::trading::domain::activity_type> activity_types;
 };
 
+/**
+ * @brief One trade plus its resolved instrument data.
+ *
+ * The instrument field is monostate when the trade has no linked instrument
+ * or the product_type is unrecognised.
+ */
+struct trade_export_item {
+    ores::trading::domain::trade trade;
+    instrument_export_result instrument;
+};
+
+/**
+ * @brief Paginated list of trades under a taxonomy node.
+ *
+ * @p node_id may be a book, portfolio, or business unit UUID; the server
+ * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
+ * An empty @p node_id lists all trades visible to the tenant.
+ *
+ * The response carries trade_export_item bundles: each bundle has the
+ * trade plus its resolved per-family instrument, so clients never need a
+ * second round trip to display the trade detail.
+ */
 struct get_trades_request {
     using response_type = struct get_trades_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.list";
     int offset = 0;
     int limit = 100;
-    std::string book_id;
+    std::string node_id;
 };
 
 struct get_trades_response {
-    std::vector<ores::trading::domain::trade> trades;
+    bool success = true;
+    std::string message;
+    std::vector<trade_export_item> items;
     int total_available_count = 0;
 };
 
@@ -92,27 +116,17 @@ struct get_trade_history_response {
 // ---- Portfolio export ----
 
 /**
- * @brief One trade plus its resolved instrument data for export.
+ * @brief Request to export all trades (and instruments) under a taxonomy node.
  *
- * The instrument field is monostate when the trade has no linked instrument
- * or the product_type is unrecognised.
- */
-struct trade_export_item {
-    ores::trading::domain::trade trade;
-    instrument_export_result instrument;
-};
-
-/**
- * @brief Request to export all trades (and instruments) for a portfolio.
- *
- * Supply exactly one of portfolio_id or book_id.
+ * @p node_id is resolved by the server to the book-id set just like
+ * get_trades_request; typical callers supply a portfolio id (to export the
+ * whole portfolio subtree) or a book id (to export a single book).
  */
 struct export_portfolio_request {
     using response_type = struct export_portfolio_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.trades.portfolio.export";
-    std::string portfolio_id;
-    std::string book_id;
+    std::string node_id;
     int offset = 0;
     int limit = 10000;
 };

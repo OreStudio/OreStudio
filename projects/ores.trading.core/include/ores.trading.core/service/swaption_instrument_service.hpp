@@ -57,7 +57,7 @@ public:
     std::uint32_t count_swaption_instruments();
 
     std::optional<domain::swaption_instrument>
-    find_swaption_instrument(const std::string& id);
+    get_swaption_instrument(const std::string& id);
 
     void save_swaption_instrument(const domain::swaption_instrument& v);
 

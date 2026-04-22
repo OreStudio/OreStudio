@@ -43,7 +43,13 @@
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/rpa_instrument_service.hpp"
-#include "ores.trading.core/service/fx_instrument_service.hpp"
+#include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
 #include "ores.trading.core/service/equity_instrument_service.hpp"
@@ -100,7 +106,7 @@ private:
             const auto& ttc = t.trade_type;
             std::optional<swap_export_result> ex_opt;
             if (ttc == "ForwardRateAgreement") {
-                if (auto r = fra_svc.find_fra_instrument(id)) {
+                if (auto r = fra_svc.get_fra_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -109,7 +115,7 @@ private:
             } else if (ttc == "Swap" || ttc == "CrossCurrencySwap"
                        || ttc == "FlexiSwap") {
                 service::vanilla_swap_instrument_service svc(ctx);
-                if (auto r = svc.find_vanilla_swap_instrument(id)) {
+                if (auto r = svc.get_vanilla_swap_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -117,7 +123,7 @@ private:
                 }
             } else if (ttc == "CapFloor") {
                 service::cap_floor_instrument_service svc(ctx);
-                if (auto r = svc.find_cap_floor_instrument(id)) {
+                if (auto r = svc.get_cap_floor_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -125,7 +131,7 @@ private:
                 }
             } else if (ttc == "Swaption") {
                 service::swaption_instrument_service svc(ctx);
-                if (auto r = svc.find_swaption_instrument(id)) {
+                if (auto r = svc.get_swaption_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -133,7 +139,7 @@ private:
                 }
             } else if (ttc == "BalanceGuaranteedSwap") {
                 service::balance_guaranteed_swap_instrument_service svc(ctx);
-                if (auto r = svc.find_balance_guaranteed_swap_instrument(id)) {
+                if (auto r = svc.get_balance_guaranteed_swap_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -141,7 +147,7 @@ private:
                 }
             } else if (ttc == "CallableSwap") {
                 service::callable_swap_instrument_service svc(ctx);
-                if (auto r = svc.find_callable_swap_instrument(id)) {
+                if (auto r = svc.get_callable_swap_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -149,7 +155,7 @@ private:
                 }
             } else if (ttc == "KnockOutSwap") {
                 service::knock_out_swap_instrument_service svc(ctx);
-                if (auto r = svc.find_knock_out_swap_instrument(id)) {
+                if (auto r = svc.get_knock_out_swap_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -157,7 +163,7 @@ private:
                 }
             } else if (ttc == "InflationSwap") {
                 service::inflation_swap_instrument_service svc(ctx);
-                if (auto r = svc.find_inflation_swap_instrument(id)) {
+                if (auto r = svc.get_inflation_swap_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -165,7 +171,7 @@ private:
                 }
             } else if (ttc == "RiskParticipationAgreement") {
                 service::rpa_instrument_service svc(ctx);
-                if (auto r = svc.find_rpa_instrument(id)) {
+                if (auto r = svc.get_rpa_instrument(id)) {
                     swap_export_result ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
@@ -176,38 +182,96 @@ private:
             break;
         }
         case product_type::fx: {
-            service::fx_instrument_service isvc(ctx);
-            if (auto r = isvc.find_fx_instrument(id))
-                item.instrument = std::move(*r);
+            const auto& ttc = t.trade_type;
+            std::optional<fx_export_result> ex_opt;
+            // Routing mirrors trade_mapper::map_fx_instrument; keep in sync.
+            if (ttc == "FxForward" || ttc == "FxSwap") {
+                service::fx_forward_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_forward_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxOption") {
+                service::fx_vanilla_option_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_vanilla_option_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxBarrierOption" ||
+                       ttc == "FxGenericBarrierOption" ||
+                       ttc == "FxDoubleBarrierOption" ||
+                       ttc == "FxEuropeanBarrierOption" ||
+                       ttc == "FxKIKOBarrierOption") {
+                service::fx_barrier_option_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_barrier_option_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxDigitalOption" ||
+                       ttc == "FxDigitalBarrierOption" ||
+                       ttc == "FxTouchOption" ||
+                       ttc == "FxDoubleTouchOption") {
+                service::fx_digital_option_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_digital_option_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxAverageForward") {
+                service::fx_asian_forward_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_asian_forward_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxAccumulator" || ttc == "FxTaRF") {
+                service::fx_accumulator_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_accumulator_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "FxVarianceSwap") {
+                service::fx_variance_swap_instrument_service svc(ctx);
+                if (auto r = svc.get_fx_variance_swap_instrument(id)) {
+                    fx_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            }
+            if (ex_opt) item.instrument = std::move(*ex_opt);
             break;
         }
         case product_type::bond: {
             service::bond_instrument_service isvc(ctx);
-            if (auto r = isvc.find_bond_instrument(id))
+            if (auto r = isvc.get_bond_instrument(id))
                 item.instrument = std::move(*r);
             break;
         }
         case product_type::credit: {
             service::credit_instrument_service isvc(ctx);
-            if (auto r = isvc.find_credit_instrument(id))
+            if (auto r = isvc.get_credit_instrument(id))
                 item.instrument = std::move(*r);
             break;
         }
         case product_type::equity: {
             service::equity_instrument_service isvc(ctx);
-            if (auto r = isvc.find_equity_instrument(id))
+            if (auto r = isvc.get_equity_instrument(id))
                 item.instrument = std::move(*r);
             break;
         }
         case product_type::commodity: {
             service::commodity_instrument_service isvc(ctx);
-            if (auto r = isvc.find_commodity_instrument(id))
+            if (auto r = isvc.get_commodity_instrument(id))
                 item.instrument = std::move(*r);
             break;
         }
         case product_type::composite: {
             service::composite_instrument_service isvc(ctx);
-            if (auto r = isvc.find_composite_instrument(id)) {
+            if (auto r = isvc.get_composite_instrument(id)) {
                 composite_export_result ex;
                 ex.instrument = std::move(*r);
                 ex.legs = isvc.get_legs(id);
@@ -217,7 +281,7 @@ private:
         }
         case product_type::scripted: {
             service::scripted_instrument_service isvc(ctx);
-            if (auto r = isvc.find_scripted_instrument(id))
+            if (auto r = isvc.get_scripted_instrument(id))
                 item.instrument = std::move(*r);
             break;
         }
@@ -268,24 +332,30 @@ public:
                     static_cast<std::uint32_t>(req->offset);
                 const auto limit =
                     static_cast<std::uint32_t>(req->limit);
-                if (!req->book_id.empty()) {
+                std::optional<boost::uuids::uuid> node;
+                if (!req->node_id.empty()) {
                     boost::uuids::string_generator gen;
-                    const auto book_uuid = gen(req->book_id);
-                    resp.trades = svc.list_trades_filtered(
-                        offset, limit,
-                        std::optional<boost::uuids::uuid>(book_uuid),
-                        std::nullopt);
-                    resp.total_available_count =
-                        static_cast<int>(svc.count_trades_filtered(
-                            std::optional<boost::uuids::uuid>(book_uuid),
-                            std::nullopt));
-                } else {
-                    resp.trades = svc.list_trades(offset, limit);
-                    resp.total_available_count =
-                        static_cast<int>(svc.count_trades());
+                    node = gen(req->node_id);
                 }
+                auto trades = svc.list_trades_by_node(offset, limit, node);
+                resp.items.reserve(trades.size());
+                for (auto& t : trades) {
+                    trade_export_item item;
+                    item.trade = t;
+                    populate_instrument_for_trade(ctx, t, item);
+                    resp.items.push_back(std::move(item));
+                }
+                resp.total_available_count =
+                    static_cast<int>(svc.count_trades_by_node(node));
             }
-        } catch (...) {}
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+            resp.items.clear();
+            resp.total_available_count = 0;
+        }
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -408,18 +478,12 @@ public:
                 const auto limit =
                     static_cast<std::uint32_t>(req->limit);
 
-                std::vector<domain::trade> trades;
-                if (!req->book_id.empty()) {
+                std::optional<boost::uuids::uuid> node;
+                if (!req->node_id.empty()) {
                     boost::uuids::string_generator gen;
-                    trades = svc.list_trades_filtered(offset, limit,
-                        std::optional<boost::uuids::uuid>(gen(req->book_id)),
-                        std::nullopt);
-                } else if (!req->portfolio_id.empty()) {
-                    boost::uuids::string_generator gen;
-                    trades = svc.list_trades_filtered(offset, limit,
-                        std::nullopt,
-                        std::optional<boost::uuids::uuid>(gen(req->portfolio_id)));
+                    node = gen(req->node_id);
                 }
+                auto trades = svc.list_trades_by_node(offset, limit, node);
 
                 resp.items.reserve(trades.size());
                 for (auto& t : trades) {
@@ -466,9 +530,8 @@ public:
             for (const auto& bid : req->book_ids) {
                 try {
                     boost::uuids::string_generator gen;
-                    auto trades = svc.list_trades_filtered(0, 100000,
-                        std::optional<boost::uuids::uuid>(gen(bid)),
-                        std::nullopt);
+                    auto trades = svc.list_trades_by_node(0, 100000,
+                        std::optional<boost::uuids::uuid>(gen(bid)));
                     for (auto& t : trades) {
                         trade_export_item item;
                         item.trade = t;

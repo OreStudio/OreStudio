@@ -22,7 +22,7 @@
 
 #include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/fx_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
 
 namespace Ui {
 class FxInstrumentForm;
@@ -56,7 +56,8 @@ public:
     void setClientManager(ClientManager* cm) override;
     void setUsername(const std::string& username) override;
 
-    void loadInstrument(const std::string& id) override;
+    void setInstrument(
+        const trading::messaging::instrument_export_result& instrument) override;
     void clear() override;
 
     void setTradeType(const QString& code,
@@ -83,7 +84,10 @@ private:
     Ui::FxInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
     std::string username_;
-    trading::domain::fx_instrument instrument_;
+    /// Per-type instrument state. Scoped to FxForward for now; extending
+    /// to other FX variants is follow-up work tracked in the per-type
+    /// migration plan.
+    trading::domain::fx_forward_instrument instrument_;
     bool dirty_ = false;
     bool loaded_ = false;
 };

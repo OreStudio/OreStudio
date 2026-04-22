@@ -58,9 +58,9 @@ inflation_swap_instrument_service::count_inflation_swap_instruments() {
 }
 
 std::optional<domain::inflation_swap_instrument>
-inflation_swap_instrument_service::find_inflation_swap_instrument(
+inflation_swap_instrument_service::get_inflation_swap_instrument(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding inflation_swap_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting inflation_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

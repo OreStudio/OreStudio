@@ -490,13 +490,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_message = "Destroyed",
                                 .error_details = {}};
 
-                    trading::messaging::get_trades_request req;
-                    req.book_id = boost::uuids::to_string(bid);
-                    req.limit = 0;
-                    req.offset = 0;
-
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
+                    auto result = self->clientManager_->listTrades(bid, 0, 0);
                     if (!result)
                         return {.book_id = bid, .count = 0,
                                 .success = false,
@@ -504,7 +498,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     return {.book_id = bid,
-                            .count = static_cast<std::uint32_t>(result->total_available_count),
+                            .count = result->total_count,
                             .success = true,
                             .error_message = {},
                             .error_details = {}};
@@ -744,11 +738,11 @@ void PortfolioExplorerMdiWindow::onTradeDoubleClicked(const QModelIndex& index) 
         return;
 
     const auto sourceIndex = tradeProxyModel_->mapToSource(index);
-    const auto* trade = tradeModel_->get_trade(sourceIndex.row());
-    if (!trade)
+    const auto* bundle = tradeModel_->get_trade_bundle(sourceIndex.row());
+    if (!bundle)
         return;
 
-    tradeController_->openEdit(*trade);
+    tradeController_->openEdit(*bundle);
 }
 
 bool PortfolioExplorerMdiWindow::eventFilter(QObject* obj, QEvent* event) {

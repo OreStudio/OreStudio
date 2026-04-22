@@ -59,7 +59,7 @@ public:
     std::uint32_t count_composite_instruments();
 
     std::optional<domain::composite_instrument>
-    find_composite_instrument(const std::string& id);
+    get_composite_instrument(const std::string& id);
 
     std::vector<domain::composite_leg>
     get_legs(const std::string& instrument_id);

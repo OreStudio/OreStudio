@@ -498,7 +498,12 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         auto resp = nats_call(delegated_nats, req, instr_error);
                         return resp && resp->success;
                     } else {
-                        return true;
+                        // Unknown per-type alternative — fail loudly so a new
+                        // variant added without updating this dispatch surfaces
+                        // at import time instead of silently skipping saves.
+                        instr_error = "equity variant alternative not handled "
+                                      "by import dispatch";
+                        return false;
                     }
                 }, r.instrument);
             } else if constexpr (std::is_same_v<T, commodity_mapping_result>) {

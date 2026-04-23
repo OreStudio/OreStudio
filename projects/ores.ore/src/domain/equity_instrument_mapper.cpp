@@ -368,7 +368,13 @@ equity_mapping_result equity_instrument_mapper::forward_equity_swap(
             const auto& el = *ld.legDataType->EquityLegData;
             inst.underlying_name = extract_underlying_name(el.underlyingTypes);
             inst.return_type = std::string(el.ReturnType);
-            if (el.Quantity && inst.notional == 0.0)
+            // The per-type struct has a single notional field that conflates
+            // the equity leg's share Quantity with the funding leg's
+            // dollar Notional. Non-equity leg still overwrites below —
+            // intentional: dollar-notional semantics dominate when both are
+            // present. Adding a separate quantity field on the per-type
+            // schema is future schema work.
+            if (el.Quantity)
                 inst.notional = static_cast<double>(*el.Quantity);
         } else {
             // Non-equity leg provides currency/notional/schedule.

@@ -50,7 +50,7 @@ std::vector<compute_platform> seeded_platforms(database_helper& h) {
     return platforms;
 }
 
-app_version_platform make_row(const database_helper& h,
+app_version_platform make_row(database_helper& h,
     const boost::uuids::uuid& av_id, const compute_platform& p,
     const std::string& uri_suffix) {
     app_version_platform r;

@@ -216,15 +216,39 @@ TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
 // EquityDoubleBarrierOption
 // =============================================================================
 
+// The following helper mirrors the one in xml_equity_mapper_roundtrip_tests.cpp
+// but is duplicated here because it's test-local and the original helper
+// lives in an anonymous namespace. Deleted once every reverse_equity_* has
+// migrated to take per-type.
+namespace {
+ores::trading::domain::equity_instrument eq_flatten_barrier(
+    const ores::trading::domain::equity_barrier_option_instrument& inst) {
+    ores::trading::domain::equity_instrument f;
+    f.trade_type_code   = inst.trade_type_code;
+    f.underlying_code   = inst.underlying_name;
+    f.currency          = inst.currency;
+    f.quantity          = inst.notional;
+    f.option_type       = inst.option_type;
+    f.exercise_type     = inst.exercise_type;
+    f.maturity_date     = inst.expiry_date;
+    f.strike_price      = inst.strike;
+    f.barrier_type      = inst.lower_barrier_type;
+    f.lower_barrier     = inst.lower_barrier;
+    f.upper_barrier     = inst.upper_barrier.value_or(0.0);
+    return f;
+}
+}
+
 TEST_CASE("equity_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
     const auto& instr =
-        std::get<ores::trading::domain::equity_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(
+            r.instrument);
 
     CHECK(instr.trade_type_code == "EquityDoubleBarrierOption");
     CHECK(!instr.option_type.empty());
-    CHECK(!instr.underlying_code.empty());
+    CHECK(!instr.underlying_name.empty());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption forward test passed";
 }
@@ -233,10 +257,11 @@ TEST_CASE("equity_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
     const auto& instr =
-        std::get<ores::trading::domain::equity_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(
+            r.instrument);
 
     const auto rt = equity_instrument_mapper::reverse_equity_double_barrier_option(
-        instr);
+        eq_flatten_barrier(instr));
     REQUIRE(rt.EquityDoubleBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption reverse test passed";
@@ -251,7 +276,8 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
     // Reuse EquityBarrierOption file (same structure, different trade type)
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
     const auto& instr =
-        std::get<ores::trading::domain::equity_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(
+            r.instrument);
 
     CHECK(instr.trade_type_code == "EquityEuropeanBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -263,10 +289,11 @@ TEST_CASE("equity_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
     const auto& instr =
-        std::get<ores::trading::domain::equity_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(
+            r.instrument);
 
     const auto rt = equity_instrument_mapper::reverse_equity_european_barrier_option(
-        instr);
+        eq_flatten_barrier(instr));
     REQUIRE(rt.EquityEuropeanBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityEuropeanBarrierOption reverse test passed";

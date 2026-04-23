@@ -119,6 +119,47 @@ ores::trading::domain::equity_instrument flat(
             f.start_date      = inst.start_date;
             f.maturity_date   = inst.maturity_date;
             return f;
+        } else if constexpr (std::is_same_v<T,
+                equity_barrier_option_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.quantity        = inst.notional;
+            f.option_type     = inst.option_type;
+            f.exercise_type   = inst.exercise_type;
+            f.maturity_date   = inst.expiry_date;
+            f.strike_price    = inst.strike;
+            f.barrier_type    = inst.lower_barrier_type;
+            f.lower_barrier   = inst.lower_barrier;
+            f.upper_barrier   = inst.upper_barrier.value_or(0.0);
+            return f;
+        } else if constexpr (std::is_same_v<T,
+                equity_asian_option_instrument>) {
+            equity_instrument f;
+            f.trade_type_code       = inst.trade_type_code;
+            f.underlying_code       = inst.underlying_name;
+            f.currency              = inst.currency;
+            f.quantity              = inst.notional;
+            f.option_type           = inst.option_type;
+            f.exercise_type         = inst.exercise_type;
+            f.maturity_date         = inst.expiry_date;
+            f.strike_price          = inst.strike;
+            f.averaging_start_date  = inst.averaging_start_date;
+            return f;
+        } else if constexpr (std::is_same_v<T,
+                equity_digital_option_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.notional        = inst.notional;
+            f.option_type     = inst.option_type;
+            f.maturity_date   = inst.expiry_date;
+            f.strike_price    = inst.strike.value_or(0.0);
+            f.barrier_type    = inst.barrier_type;
+            f.lower_barrier   = inst.barrier_level.value_or(0.0);
+            return f;
         }
         return {};
     }, r.instrument);
@@ -212,64 +253,80 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
 TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Barrier_Option.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityBarrierOption");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(!flat(r).barrier_type.empty());
-    CHECK(flat(r).lower_barrier > 0.0);
+    CHECK(inst.trade_type_code == "EquityBarrierOption");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(!inst.lower_barrier_type.empty());
+    CHECK(inst.lower_barrier > 0.0);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_barrier_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_barrier_option(
+        flat(r));
     REQUIRE(rt.EquityBarrierOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityBarrierOption roundtrip passed. Barrier: "
-                            << flat(r).barrier_type;
+                            << inst.lower_barrier_type;
 }
 
 TEST_CASE("equity_mapper_roundtrip_asian_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Asian_Option.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_asian_option_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityAsianOption");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).strike_price > 0.0);
-    CHECK(!flat(r).averaging_start_date.empty());
+    CHECK(inst.trade_type_code == "EquityAsianOption");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.strike > 0.0);
+    CHECK(!inst.averaging_start_date.empty());
 
-    const auto rt = equity_instrument_mapper::reverse_equity_asian_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_asian_option(
+        flat(r));
     REQUIRE(rt.EquityAsianOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityAsianOption roundtrip passed. Averaging from: "
-                            << flat(r).averaging_start_date;
+                            << inst.averaging_start_date;
 }
 
 TEST_CASE("equity_mapper_roundtrip_digital_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Digital_Option.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_digital_option_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityDigitalOption");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).strike_price > 0.0);
-    CHECK(!flat(r).option_type.empty());
+    CHECK(inst.trade_type_code == "EquityDigitalOption");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.strike.value_or(0.0) > 0.0);
+    CHECK(!inst.option_type.empty());
 
-    const auto rt = equity_instrument_mapper::reverse_equity_digital_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_digital_option(
+        flat(r));
     REQUIRE(rt.EquityDigitalOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityDigitalOption roundtrip passed. Strike: "
-                            << flat(r).strike_price;
+                            << inst.strike.value_or(0.0);
 }
 
 TEST_CASE("equity_mapper_roundtrip_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_OneTouch_Option.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_digital_option_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityTouchOption");
-    CHECK(!flat(r).barrier_type.empty());
-    CHECK(flat(r).lower_barrier > 0.0);
+    CHECK(inst.trade_type_code == "EquityTouchOption");
+    CHECK(!inst.barrier_type.empty());
+    CHECK(inst.barrier_level.value_or(0.0) > 0.0);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_touch_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_touch_option(
+        flat(r));
     REQUIRE(rt.EquityTouchOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityTouchOption roundtrip passed. Barrier: "
-                            << flat(r).lower_barrier;
+                            << inst.barrier_level.value_or(0.0);
 }
 
 TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {

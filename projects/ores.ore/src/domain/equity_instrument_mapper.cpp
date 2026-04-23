@@ -353,38 +353,36 @@ equity_mapping_result equity_instrument_mapper::forward_equity_swap(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquitySwap: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquitySwap");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_swap_instrument>();
+    inst.trade_type_code = "EquitySwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquitySwapData) return result;
     const auto& d = *t.EquitySwapData;
 
     for (const auto& ld : d.LegData) {
         if (ld.legDataType && ld.legDataType->EquityLegData) {
             const auto& el = *ld.legDataType->EquityLegData;
-            flat.underlying_code =
-                extract_underlying_name(el.underlyingTypes);
-            flat.return_type = std::string(el.ReturnType);
-            if (el.Quantity)
-                flat.quantity =
-                    static_cast<double>(*el.Quantity);
+            inst.underlying_name = extract_underlying_name(el.underlyingTypes);
+            inst.return_type = std::string(el.ReturnType);
+            if (el.Quantity && inst.notional == 0.0)
+                inst.notional = static_cast<double>(*el.Quantity);
         } else {
-            // Non-equity leg provides currency/notional/schedule
+            // Non-equity leg provides currency/notional/schedule.
             if (ld.Currency)
-                flat.currency = std::string(*ld.Currency);
+                inst.currency = std::string(*ld.Currency);
             if (ld.Notionals && !ld.Notionals->Notional.empty())
-                flat.notional =
+                inst.notional =
                     static_cast<double>(ld.Notionals->Notional.front());
-            if (ld.DayCounter)
-                flat.day_count_code =
-                    to_string(*ld.DayCounter);
             if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
                 const auto& rule = ld.ScheduleData->Rules.front();
-                flat.start_date = std::string(rule.StartDate);
+                inst.start_date = std::string(rule.StartDate);
                 if (rule.EndDate)
-                    flat.maturity_date =
-                        std::string(*rule.EndDate);
-                flat.payment_frequency_code =
-                    std::string(rule.Tenor);
+                    inst.maturity_date = std::string(*rule.EndDate);
+                inst.payment_frequency = std::string(rule.Tenor);
             }
         }
     }
@@ -400,18 +398,22 @@ equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityVarianceSwap: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityVarianceSwap");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_variance_swap_instrument>();
+    inst.trade_type_code = "EquityVarianceSwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityVarianceSwapData) return result;
     const auto& d = *t.EquityVarianceSwapData;
 
-    flat.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    flat.currency = to_string(d.Currency);
-    flat.notional = static_cast<double>(d.Notional);
-    flat.variance_strike = static_cast<double>(d.Strike);
-    flat.start_date = std::string(d.StartDate);
-    flat.maturity_date = std::string(d.EndDate);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.variance_strike = static_cast<double>(d.Strike);
+    inst.start_date = std::string(d.StartDate);
+    inst.maturity_date = std::string(d.EndDate);
     return result;
 }
 

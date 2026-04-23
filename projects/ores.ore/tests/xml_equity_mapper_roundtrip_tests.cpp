@@ -99,6 +99,26 @@ ores::trading::domain::equity_instrument flat(
             f.maturity_date   = inst.expiry_date;
             f.strike_price    = inst.forward_price.value_or(0.0);
             return f;
+        } else if constexpr (std::is_same_v<T, equity_swap_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.notional        = inst.notional;
+            f.return_type     = inst.return_type;
+            f.start_date      = inst.start_date;
+            f.maturity_date   = inst.maturity_date;
+            return f;
+        } else if constexpr (std::is_same_v<T, equity_variance_swap_instrument>) {
+            equity_instrument f;
+            f.trade_type_code = inst.trade_type_code;
+            f.underlying_code = inst.underlying_name;
+            f.currency        = inst.currency;
+            f.notional        = inst.notional;
+            f.variance_strike = inst.variance_strike;
+            f.start_date      = inst.start_date;
+            f.maturity_date   = inst.maturity_date;
+            return f;
         }
         return {};
     }, r.instrument);
@@ -152,11 +172,13 @@ TEST_CASE("equity_mapper_roundtrip_forward", tags) {
 TEST_CASE("equity_mapper_roundtrip_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Swap.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_swap_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquitySwap");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(!flat(r).currency.empty());
-    CHECK(!flat(r).return_type.empty());
+    CHECK(inst.trade_type_code == "EquitySwap");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(!inst.currency.empty());
+    CHECK(!inst.return_type.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_swap(flat(r));
     REQUIRE(rt.EquitySwapData);
@@ -164,24 +186,27 @@ TEST_CASE("equity_mapper_roundtrip_swap", tags) {
     CHECK(has_legs);
 
     BOOST_LOG_SEV(lg, info) << "EquitySwap roundtrip passed. Return type: "
-                            << flat(r).return_type;
+                            << inst.return_type;
 }
 
 TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Variance_Swap.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_variance_swap_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityVarianceSwap");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).variance_strike > 0.0);
-    CHECK(!flat(r).start_date.empty());
-    CHECK(!flat(r).maturity_date.empty());
+    CHECK(inst.trade_type_code == "EquityVarianceSwap");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.variance_strike > 0.0);
+    CHECK(!inst.start_date.empty());
+    CHECK(!inst.maturity_date.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_variance_swap(flat(r));
     REQUIRE(rt.EquityVarianceSwapData);
 
     BOOST_LOG_SEV(lg, info) << "EquityVarianceSwap roundtrip passed. Strike: "
-                            << flat(r).variance_strike;
+                            << inst.variance_strike;
 }
 
 TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {

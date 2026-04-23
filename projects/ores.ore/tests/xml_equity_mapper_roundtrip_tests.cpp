@@ -85,10 +85,22 @@ ores::trading::domain::equity_instrument flat(
             f.underlying_code = inst.underlying_name;
             f.currency        = inst.currency;
             f.quantity        = inst.notional;
+            f.notional        = inst.notional;
             f.option_type     = inst.option_type;
             f.exercise_type   = inst.exercise_type;
             f.maturity_date   = inst.expiry_date;
             f.strike_price    = inst.strike;
+            f.cliquet_frequency_code = inst.cliquet_frequency;
+            // Outperformance carries its two underlyings as "n1/n2" in
+            // underlying_name; restore the JSON array shape expected by
+            // reverse_equity_outperformance_option.
+            if (const auto sep = inst.underlying_name.find('/');
+                    sep != std::string::npos) {
+                f.basket_json =
+                    "[\"" + inst.underlying_name.substr(0, sep) +
+                    "\",\"" + inst.underlying_name.substr(sep + 1) +
+                    "\"]";
+            }
             return f;
         } else if constexpr (std::is_same_v<T, equity_forward_instrument>) {
             equity_instrument f;
@@ -105,9 +117,11 @@ ores::trading::domain::equity_instrument flat(
             f.underlying_code = inst.underlying_name;
             f.currency        = inst.currency;
             f.notional        = inst.notional;
+            f.quantity        = inst.notional;
             f.return_type     = inst.return_type;
             f.start_date      = inst.start_date;
             f.maturity_date   = inst.maturity_date;
+            f.basket_json     = inst.basket_json;
             return f;
         } else if constexpr (std::is_same_v<T, equity_variance_swap_instrument>) {
             equity_instrument f;
@@ -159,6 +173,17 @@ ores::trading::domain::equity_instrument flat(
             f.strike_price    = inst.strike.value_or(0.0);
             f.barrier_type    = inst.barrier_type;
             f.lower_barrier   = inst.barrier_level.value_or(0.0);
+            return f;
+        } else if constexpr (std::is_same_v<T,
+                equity_accumulator_instrument>) {
+            equity_instrument f;
+            f.trade_type_code      = inst.trade_type_code;
+            f.underlying_code      = inst.underlying_name;
+            f.currency             = inst.currency;
+            f.accumulation_amount  = inst.fixing_amount;
+            f.strike_price         = inst.strike;
+            f.start_date           = inst.start_date;
+            f.knock_out_barrier    = inst.knock_out_level.value_or(0.0);
             return f;
         }
         return {};
@@ -332,17 +357,22 @@ TEST_CASE("equity_mapper_roundtrip_touch_option", tags) {
 TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_OutperformanceOption.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityOutperformanceOption");
-    CHECK(!flat(r).currency.empty());
-    CHECK(flat(r).notional > 0.0);
-    CHECK(!flat(r).basket_json.empty());
+    CHECK(inst.trade_type_code == "EquityOutperformanceOption");
+    CHECK(!inst.currency.empty());
+    CHECK(inst.notional > 0.0);
+    // Outperformance joins two underlyings as "n1/n2" in underlying_name
+    // because the per-type option struct has no basket field.
+    CHECK(inst.underlying_name.find('/') != std::string::npos);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_outperformance_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_outperformance_option(
+        flat(r));
     REQUIRE(rt.EquityOutperformanceOptionData);
 
-    BOOST_LOG_SEV(lg, info) << "EquityOutperformanceOption roundtrip passed. Basket: "
-                            << flat(r).basket_json;
+    BOOST_LOG_SEV(lg, info) << "EquityOutperformanceOption roundtrip passed. Pair: "
+                            << inst.underlying_name;
 }
 
 // ---------------------------------------------------------------------------
@@ -352,43 +382,53 @@ TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {
 TEST_CASE("equity_mapper_roundtrip_accumulator", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_EquityAccumulator_single_name.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_accumulator_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityAccumulator");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).accumulation_amount > 0.0);
-    CHECK(flat(r).knock_out_barrier > 0.0);
+    CHECK(inst.trade_type_code == "EquityAccumulator");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.fixing_amount > 0.0);
+    CHECK(inst.knock_out_level.value_or(0.0) > 0.0);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_accumulator(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_accumulator(
+        flat(r));
     REQUIRE(rt.EquityAccumulatorData);
 
     BOOST_LOG_SEV(lg, info) << "EquityAccumulator roundtrip passed. Amount: "
-                            << flat(r).accumulation_amount;
+                            << inst.fixing_amount;
 }
 
 TEST_CASE("equity_mapper_roundtrip_tarf", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_EquityTaRF.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_accumulator_instrument>(
+            r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityTaRF");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).accumulation_amount > 0.0);
+    CHECK(inst.trade_type_code == "EquityTaRF");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.fixing_amount > 0.0);
 
     const auto rt = equity_instrument_mapper::reverse_equity_tarf(flat(r));
     REQUIRE(rt.EquityTaRFData);
 
     BOOST_LOG_SEV(lg, info) << "EquityTaRF roundtrip passed. Amount: "
-                            << flat(r).accumulation_amount;
+                            << inst.fixing_amount;
 }
 
 TEST_CASE("equity_mapper_roundtrip_cliquet_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_Equity_Cliquet_Option.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityCliquetOption");
-    CHECK(!flat(r).underlying_code.empty());
-    CHECK(flat(r).notional > 0.0);
+    CHECK(inst.trade_type_code == "EquityCliquetOption");
+    CHECK(!inst.underlying_name.empty());
+    CHECK(inst.notional > 0.0);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_cliquet_option(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_cliquet_option(
+        flat(r));
     REQUIRE(rt.EquityCliquetOptionData);
 
     BOOST_LOG_SEV(lg, info) << "EquityCliquetOption roundtrip passed.";
@@ -397,15 +437,18 @@ TEST_CASE("equity_mapper_roundtrip_cliquet_option", tags) {
 TEST_CASE("equity_mapper_roundtrip_worst_of_basket_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_EquityWorstOfBasketSwap.xml");
+    const auto& inst =
+        std::get<ores::trading::domain::equity_swap_instrument>(r.instrument);
 
-    CHECK(flat(r).trade_type_code == "EquityWorstOfBasketSwap");
-    CHECK(!flat(r).currency.empty());
-    CHECK(flat(r).quantity > 0.0);
-    CHECK(!flat(r).basket_json.empty());
+    CHECK(inst.trade_type_code == "EquityWorstOfBasketSwap");
+    CHECK(!inst.currency.empty());
+    CHECK(inst.notional > 0.0);
+    CHECK(!inst.basket_json.empty());
 
-    const auto rt = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(flat(r));
+    const auto rt = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
+        flat(r));
     REQUIRE(rt.EquityWorstOfBasketSwapData);
 
     BOOST_LOG_SEV(lg, info) << "EquityWorstOfBasketSwap roundtrip passed. Basket: "
-                            << flat(r).basket_json;
+                            << inst.basket_json;
 }

@@ -553,23 +553,28 @@ equity_instrument_mapper::forward_equity_outperformance_option(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOutperformanceOption: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityOutperformanceOption");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityOutperformanceOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityOutperformanceOptionData) return result;
     const auto& d = *t.EquityOutperformanceOptionData;
 
-    flat.currency = to_string(d.Currency);
-    flat.notional = static_cast<double>(d.Notional);
-    flat.option_type = extract_option_type(d.OptionData);
-    flat.maturity_date = first_exercise_date(d.OptionData);
-    flat.strike_price = static_cast<double>(d.StrikeReturn);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = static_cast<double>(d.StrikeReturn);
 
-    // Store both underlyings as a JSON array
+    // Both underlyings join as a slash-separated name since the per-type
+    // option struct has no basket field. Preserves round-trip visibility
+    // of the pair; lossless basket support lives on equity_swap_instrument.
     const std::string n1 = std::string(d.Underlying1.Name);
     const std::string n2 = std::string(d.Underlying2.Name);
-    flat.basket_json =
-        "[\"" + json_escape(n1) + "\",\"" + json_escape(n2) + "\"]";
-    flat.underlying_code = n1;
+    inst.underlying_name = n1 + "/" + n2;
     return result;
 }
 
@@ -582,19 +587,23 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAccumulator: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityAccumulator");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_accumulator_instrument>();
+    inst.trade_type_code = "EquityAccumulator";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityAccumulatorData) return result;
     const auto& d = *t.EquityAccumulatorData;
 
-    flat.underlying_code = std::string(d.Underlying.Name);
-    flat.currency = to_string(d.Currency);
-    flat.accumulation_amount =
-        static_cast<double>(d.FixingAmount);
+    inst.underlying_name = std::string(d.Underlying.Name);
+    inst.currency = to_string(d.Currency);
+    inst.fixing_amount = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        flat.strike_price = static_cast<double>(*d.Strike);
+        inst.strike = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        flat.start_date = std::string(*d.StartDate);
+        inst.start_date = std::string(*d.StartDate);
 
     // Capture first knock-out barrier
     if (d.Barriers) {
@@ -602,7 +611,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
             const auto btype = to_string(bd.Type);
             if ((btype == "DownAndOut" || btype == "UpAndOut") &&
                     !bd.Levels.Level.empty()) {
-                flat.knock_out_barrier =
+                inst.knock_out_level =
                     static_cast<double>(bd.Levels.Level.front());
                 break;
             }
@@ -620,22 +629,26 @@ equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTaRF: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityTaRF");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_accumulator_instrument>();
+    inst.trade_type_code = "EquityTaRF";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityTaRFData) return result;
     const auto& d = *t.EquityTaRFData;
 
-    flat.underlying_code = std::string(d.Underlying.Name);
-    flat.currency = to_string(d.Currency);
-    flat.accumulation_amount =
-        static_cast<double>(d.FixingAmount);
+    inst.underlying_name = std::string(d.Underlying.Name);
+    inst.currency = to_string(d.Currency);
+    inst.fixing_amount = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        flat.strike_price = static_cast<double>(*d.Strike);
+        inst.strike = static_cast<double>(*d.Strike);
 
     // Capture FixingCap barrier level as knock_out
     for (const auto& bd : d.Barriers.BarrierData) {
         if (to_string(bd.Type) == "FixingCap" && !bd.Levels.Level.empty()) {
-            flat.knock_out_barrier =
+            inst.knock_out_level =
                 static_cast<double>(bd.Levels.Level.front());
             break;
         }
@@ -652,25 +665,29 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityCliquetOption: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityCliquetOption");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityCliquetOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityCliquetOptionData) return result;
     const auto& d = *t.EquityCliquetOptionData;
 
-    flat.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    flat.currency = to_string(d.Currency);
-    flat.notional = static_cast<double>(d.Notional);
-    flat.option_type = to_string(d.OptionType);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.option_type = to_string(d.OptionType);
 
     // Extract tenor from schedule rules if available
     if (!d.ScheduleData.Rules.empty())
-        flat.cliquet_frequency_code =
+        inst.cliquet_frequency =
             std::string(d.ScheduleData.Rules.front().Tenor);
     else if (!d.ScheduleData.Dates.empty() &&
              d.ScheduleData.Dates.front().Dates.Date.size() >= 2) {
         // For date-based schedules store the maturity date
-        flat.maturity_date = std::string(
+        inst.expiry_date = std::string(
             d.ScheduleData.Dates.front().Dates.Date.back());
     }
     return result;
@@ -686,17 +703,21 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityWorstOfBasketSwap: "
                                << std::string(t.id);
     equity_mapping_result result;
-    result.instrument = make_base("EquityWorstOfBasketSwap");
-    auto& flat = std::get<equity_instrument>(result.instrument);
+    auto& inst = result.instrument.emplace<
+        ores::trading::domain::equity_swap_instrument>();
+    inst.trade_type_code = "EquityWorstOfBasketSwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityWorstOfBasketSwapData) return result;
     const auto& d = *t.EquityWorstOfBasketSwapData;
 
-    flat.currency = to_string(d.Currency);
-    flat.quantity = static_cast<double>(d.Quantity);
-    flat.basket_json = underlyings_to_json(d.Underlyings);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.basket_json = underlyings_to_json(d.Underlyings);
     if (!d.Underlyings.Underlying.empty())
-        flat.underlying_code =
-            std::string(d.Underlyings.Underlying.front().Name);
+        inst.underlying_name = std::string(d.Underlyings.Underlying.front().Name);
     return result;
 }
 

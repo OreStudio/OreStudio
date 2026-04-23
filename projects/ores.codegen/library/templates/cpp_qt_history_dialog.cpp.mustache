@@ -265,10 +265,38 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
                   previous.{{field}} ? QString::fromStdString(*previous.{{field}}) : QString{},
                   current.{{field}} ? QString::fromStdString(*current.{{field}}) : QString{});
 {{/is_optional_string}}
+{{#is_tristate}}
+        addChange("{{label}}",
+                  previous.{{field}} ? (*previous.{{field}} ? tr("true") : tr("false")) : tr("(unset)"),
+                  current.{{field}} ? (*current.{{field}} ? tr("true") : tr("false")) : tr("(unset)"));
+{{/is_tristate}}
+{{#is_check_box}}
+{{^is_tristate}}
+        addChange("{{label}}",
+                  previous.{{field}} ? tr("true") : tr("false"),
+                  current.{{field}} ? tr("true") : tr("false"));
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_nullable_int}}
+        addChange("{{label}}",
+                  previous.{{field}} ? QString::number(*previous.{{field}}) : tr("(unset)"),
+                  current.{{field}} ? QString::number(*current.{{field}}) : tr("(unset)"));
+{{/is_nullable_int}}
+{{#is_spin_box}}
+{{^is_nullable_int}}
+        addChange("{{label}}",
+                  QString::number(previous.{{field}}),
+                  QString::number(current.{{field}}));
+{{/is_nullable_int}}
+{{/is_spin_box}}
 {{^is_optional_string}}
+{{^is_check_box}}
+{{^is_spin_box}}
         addChange("{{label}}",
                   QString::fromStdString(previous.{{field}}),
                   QString::fromStdString(current.{{field}}));
+{{/is_spin_box}}
+{{/is_check_box}}
 {{/is_optional_string}}
     }
 
@@ -297,8 +325,32 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
         ? QString::fromStdString(*version.{{field}})
         : QString{});
 {{/is_optional_string}}
+{{#is_tristate}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? (*version.{{field}} ? tr("true") : tr("false"))
+        : tr("(unset)"));
+{{/is_tristate}}
+{{#is_check_box}}
+{{^is_tristate}}
+    ui_->{{value_widget}}->setText(version.{{field}} ? tr("true") : tr("false"));
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_nullable_int}}
+    ui_->{{value_widget}}->setText(version.{{field}}
+        ? QString::number(*version.{{field}})
+        : tr("(unset)"));
+{{/is_nullable_int}}
+{{#is_spin_box}}
+{{^is_nullable_int}}
+    ui_->{{value_widget}}->setText(QString::number(version.{{field}}));
+{{/is_nullable_int}}
+{{/is_spin_box}}
 {{^is_optional_string}}
+{{^is_check_box}}
+{{^is_spin_box}}
     ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
+{{/is_spin_box}}
+{{/is_check_box}}
 {{/is_optional_string}}
 {{/domain_entity.qt.detail_fields}}
     ui_->versionNumberValue->setText(QString::number(version.version));

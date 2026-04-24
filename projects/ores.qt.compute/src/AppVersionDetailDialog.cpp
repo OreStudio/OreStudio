@@ -338,14 +338,23 @@ void AppVersionDetailDialog::updatePackagesTableRow(int row) {
     if (!pr.error.isEmpty()) status_item->setToolTip(pr.error);
     ui_->packagesTable->setItem(row, 2, status_item);
 
-    // Dedicated cell widget so we can attach a row-scoped Browse button with
-    // a dynamic property pointing at our row index; a simple onClick mapper
-    // keeps state consistent when table rows are rebuilt.
-    auto* btn = new QPushButton(tr("Browse…"), ui_->packagesTable);
-    btn->setProperty("package_row", row);
+    // Dedicated cell widget so we can attach a row-scoped Browse / Retry
+    // button with a dynamic property pointing at the platform_id; lookups
+    // at click time keep state consistent even when rows churn.
+    const bool show_retry = (pr.state == PackageRow::State::Failed);
+    auto* btn = new QPushButton(
+        show_retry ? tr("Retry") : tr("Browse…"),
+        ui_->packagesTable);
+    btn->setProperty("platform_id", QString::fromStdString(pr.platform_id));
     btn->setEnabled(!readOnly_ && !saveInProgress_);
-    connect(btn, &QPushButton::clicked, this,
-            &AppVersionDetailDialog::onBrowsePackageRowClicked);
+    if (show_retry) {
+        btn->setToolTip(tr("Re-upload the previously selected file"));
+        connect(btn, &QPushButton::clicked, this,
+                &AppVersionDetailDialog::onRetryPackageRowClicked);
+    } else {
+        connect(btn, &QPushButton::clicked, this,
+                &AppVersionDetailDialog::onBrowsePackageRowClicked);
+    }
     ui_->packagesTable->setCellWidget(row, 3, btn);
 }
 
@@ -578,8 +587,11 @@ bool AppVersionDetailDialog::validateInput() {
 void AppVersionDetailDialog::onBrowsePackageRowClicked() {
     auto* btn = qobject_cast<QPushButton*>(sender());
     if (!btn) return;
-    const int row = btn->property("package_row").toInt();
-    if (row < 0 || row >= static_cast<int>(package_rows_.size())) return;
+    const auto pid = btn->property("platform_id").toString().toStdString();
+    const auto it = std::find_if(package_rows_.begin(), package_rows_.end(),
+        [&](const auto& r) { return r.platform_id == pid; });
+    if (it == package_rows_.end()) return;
+    const int row = static_cast<int>(it - package_rows_.begin());
 
     const QString path = QFileDialog::getOpenFileName(
         this, tr("Select Package for %1").arg(
@@ -595,6 +607,53 @@ void AppVersionDetailDialog::onBrowsePackageRowClicked() {
 
     hasChanges_ = true;
     updateSaveButtonState();
+}
+
+void AppVersionDetailDialog::onRetryPackageRowClicked() {
+    auto* btn = qobject_cast<QPushButton*>(sender());
+    if (!btn) return;
+    const auto pid = btn->property("platform_id").toString().toStdString();
+    const auto it = std::find_if(package_rows_.begin(), package_rows_.end(),
+        [&](const auto& r) { return r.platform_id == pid; });
+    if (it == package_rows_.end()) return;
+    const int row = static_cast<int>(it - package_rows_.begin());
+
+    // Nothing to retry without a local file.
+    if (package_rows_[row].local_file.isEmpty()) return;
+    if (saveInProgress_) return; // Save is already retrying this row.
+
+    // Flip Failed → Selected so uploadPendingPackages picks up just this
+    // row (it skips Uploaded rows, so any previously-successful siblings
+    // aren't re-PUT). Disable the mutation buttons for the same reason as
+    // during a full Save.
+    package_rows_[row].error.clear();
+    setPackageRowState(row, PackageRow::State::Selected);
+
+    QPointer<AppVersionDetailDialog> self = this;
+    saveInProgress_ = true;
+    ui_->addPlatformButton->setEnabled(false);
+    ui_->removePlatformButton->setEnabled(false);
+    ui_->saveButton->setEnabled(false);
+    ui_->packagesProgressBar->setVisible(true);
+    ui_->packagesProgressBar->setValue(0);
+
+    uploadPendingPackages([self](bool ok, QString err) {
+        if (!self) return;
+        self->ui_->packagesProgressBar->setVisible(false);
+        self->saveInProgress_ = false;
+        if (!self->readOnly_) {
+            self->ui_->addPlatformButton->setEnabled(true);
+            self->ui_->removePlatformButton->setEnabled(true);
+        }
+        if (!ok) {
+            BOOST_LOG_SEV(lg(), error) << "Retry upload failed: "
+                                       << err.toStdString();
+            MessageBoxHelper::critical(self, tr("Upload Failed"), err);
+        } else {
+            emit self->statusMessage(tr("Package uploaded successfully"));
+        }
+        self->updateSaveButtonState();
+    });
 }
 
 void AppVersionDetailDialog::onSaveClicked() {

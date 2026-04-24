@@ -22,6 +22,7 @@
 
 #include <QUrl>
 #include <QString>
+#include <functional>
 #include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
@@ -30,6 +31,8 @@
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
+
+class QNetworkAccessManager;
 
 namespace Ui {
 class AppVersionDetailDialog;
@@ -77,10 +80,9 @@ private slots:
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
-    void onBrowsePackageClicked();
-    void onUploadPackageClicked();
     void onAddPlatformClicked();
     void onRemovePlatformClicked();
+    void onBrowsePackageRowClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -100,6 +102,26 @@ private:
         std::string display_name;
     };
 
+    /**
+     * @brief Per-row state on the Packages tab.
+     *
+     * Each PackageRow tracks a single (app_version, platform) binding and
+     * the associated .tar.gz file's lifecycle through Save: a user-selected
+     * local file that still needs to be PUT to storage, or an already-
+     * uploaded URI that can be submitted as-is.
+     */
+    struct PackageRow {
+        enum class State { NoFile, Selected, Uploading, Uploaded, Failed };
+
+        std::string platform_id;
+        std::string platform_code;
+        std::string platform_name;
+        QString local_file;       // selected local path, empty until Browse
+        QString remote_uri;       // set after successful PUT or on preload
+        State state = State::NoFile;
+        QString error;
+    };
+
     void setupUi();
     void setupConnections();
     void loadApps();
@@ -107,23 +129,31 @@ private:
     void loadAssignedPlatforms(const std::string& app_version_id);
     void populateAppCombo();
     void populatePlatformsTab();
+    void syncPackagesTab();
+    void updatePackagesTableRow(int row);
+    void setPackageRowState(int row, PackageRow::State state,
+        const QString& error = {});
     void updateUiFromVersion();
     void updateVersionFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
+    void uploadPendingPackages(std::function<void(bool, QString)> done);
+    void submitSave();
+
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
+    QNetworkAccessManager* networkManager_;
     std::string username_;
     QUrl httpBaseUrl_;
     compute::domain::app_version app_version_;
-    std::vector<compute::domain::app_version_platform> platform_rows_;
+    std::vector<PackageRow> package_rows_;
     std::vector<AppEntry> appEntries_;
     std::vector<PlatformEntry> availablePlatforms_;
-    QString selectedPackageFilePath_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+    bool saveInProgress_{false};
 };
 
 }

@@ -21,8 +21,11 @@
 
 #include <QFile>
 #include <QFileInfo>
+#include <QHeaderView>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QProgressBar>
+#include <QPushButton>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
@@ -30,6 +33,8 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <QTableWidgetItem>
+#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -49,7 +54,11 @@ using namespace ores::logging;
 AppVersionDetailDialog::AppVersionDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
       ui_(new Ui::AppVersionDetailDialog),
-      clientManager_(nullptr) {
+      clientManager_(nullptr),
+      // Single QNetworkAccessManager shared across all per-row PUTs so we
+      // reuse its connection pool / HTTP keep-alive instead of standing up
+      // a fresh manager per upload. Parented to the dialog for cleanup.
+      networkManager_(new QNetworkAccessManager(this)) {
 
     ui_->setupUi(this);
     setupUi();
@@ -83,10 +92,10 @@ void AppVersionDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
-    ui_->uploadPackageButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
-    ui_->uploadPackageButton->setToolTip(
-        tr("Upload the selected package file to the server"));
+    ui_->packagesTable->setColumnWidth(0, 200);
+    ui_->packagesTable->setColumnWidth(1, 220);
+    ui_->packagesTable->setColumnWidth(2, 100);
+    ui_->packagesTable->horizontalHeader()->setStretchLastSection(false);
 }
 
 void AppVersionDetailDialog::setupConnections() {
@@ -96,10 +105,6 @@ void AppVersionDetailDialog::setupConnections() {
             &AppVersionDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this,
             &AppVersionDetailDialog::onCloseClicked);
-    connect(ui_->browsePackageButton, &QPushButton::clicked, this,
-            &AppVersionDetailDialog::onBrowsePackageClicked);
-    connect(ui_->uploadPackageButton, &QPushButton::clicked, this,
-            &AppVersionDetailDialog::onUploadPackageClicked);
 
     connect(ui_->addPlatformButton, &QPushButton::clicked, this,
             &AppVersionDetailDialog::onAddPlatformClicked);
@@ -243,10 +248,10 @@ void AppVersionDetailDialog::populatePlatformsTab() {
     ui_->assignedPlatformsList->clear();
 
     for (const auto& p : availablePlatforms_) {
-        const bool assigned = std::find_if(platform_rows_.begin(),
-            platform_rows_.end(), [&](const auto& row) {
-                return boost::uuids::to_string(row.platform_id) == p.id;
-            }) != platform_rows_.end();
+        const bool assigned = std::find_if(package_rows_.begin(),
+            package_rows_.end(), [&](const auto& row) {
+                return row.platform_id == p.id;
+            }) != package_rows_.end();
 
         auto* item = new QListWidgetItem(QString::fromStdString(p.display_name));
         item->setData(Qt::UserRole, QString::fromStdString(p.id));
@@ -256,6 +261,100 @@ void AppVersionDetailDialog::populatePlatformsTab() {
         else
             ui_->availablePlatformsList->addItem(item);
     }
+    syncPackagesTab();
+}
+
+void AppVersionDetailDialog::syncPackagesTab() {
+    // Rebuild package_rows_ to mirror the assigned list, preserving existing
+    // state (uploaded URIs, selected files) for platforms still present.
+    std::vector<PackageRow> rebuilt;
+    rebuilt.reserve(ui_->assignedPlatformsList->count());
+    for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
+        const auto* item = ui_->assignedPlatformsList->item(i);
+        if (!item) continue;
+        const auto pid = item->data(Qt::UserRole).toString().toStdString();
+        const auto avail = std::find_if(availablePlatforms_.begin(),
+            availablePlatforms_.end(),
+            [&](const auto& p) { return p.id == pid; });
+        if (avail == availablePlatforms_.end()) continue;
+
+        PackageRow row;
+        row.platform_id = avail->id;
+        row.platform_code = avail->code;
+        row.platform_name = avail->display_name;
+
+        // Preserve state from the previous rows_ if we already tracked this
+        // platform — keeps selected files / upload status through add/remove
+        // churn and across the async junction-fetch completion.
+        const auto prev = std::find_if(package_rows_.begin(),
+            package_rows_.end(),
+            [&](const auto& r) { return r.platform_id == pid; });
+        if (prev != package_rows_.end()) {
+            row.local_file = prev->local_file;
+            row.remote_uri = prev->remote_uri;
+            row.state = prev->state;
+            row.error = prev->error;
+        }
+        rebuilt.push_back(std::move(row));
+    }
+    package_rows_ = std::move(rebuilt);
+
+    ui_->packagesTable->setRowCount(static_cast<int>(package_rows_.size()));
+    for (int i = 0; i < static_cast<int>(package_rows_.size()); ++i)
+        updatePackagesTableRow(i);
+}
+
+void AppVersionDetailDialog::updatePackagesTableRow(int row) {
+    if (row < 0 || row >= static_cast<int>(package_rows_.size())) return;
+    const auto& pr = package_rows_[row];
+
+    auto* name_item = new QTableWidgetItem(
+        QString::fromStdString(pr.platform_name.empty()
+            ? pr.platform_code : pr.platform_name));
+    name_item->setToolTip(QString::fromStdString(pr.platform_code));
+    ui_->packagesTable->setItem(row, 0, name_item);
+
+    QString file_text;
+    if (!pr.local_file.isEmpty())
+        file_text = QFileInfo(pr.local_file).fileName();
+    else if (!pr.remote_uri.isEmpty())
+        file_text = tr("(on server)");
+    else
+        file_text = tr("— no file —");
+    auto* file_item = new QTableWidgetItem(file_text);
+    file_item->setToolTip(pr.local_file.isEmpty()
+        ? pr.remote_uri : pr.local_file);
+    ui_->packagesTable->setItem(row, 1, file_item);
+
+    QString status;
+    switch (pr.state) {
+    case PackageRow::State::NoFile:    status = tr("No file");  break;
+    case PackageRow::State::Selected:  status = tr("Selected"); break;
+    case PackageRow::State::Uploading: status = tr("Uploading…"); break;
+    case PackageRow::State::Uploaded:  status = tr("Uploaded"); break;
+    case PackageRow::State::Failed:    status = tr("Failed");   break;
+    }
+    auto* status_item = new QTableWidgetItem(status);
+    if (!pr.error.isEmpty()) status_item->setToolTip(pr.error);
+    ui_->packagesTable->setItem(row, 2, status_item);
+
+    // Dedicated cell widget so we can attach a row-scoped Browse button with
+    // a dynamic property pointing at our row index; a simple onClick mapper
+    // keeps state consistent when table rows are rebuilt.
+    auto* btn = new QPushButton(tr("Browse…"), ui_->packagesTable);
+    btn->setProperty("package_row", row);
+    btn->setEnabled(!readOnly_ && !saveInProgress_);
+    connect(btn, &QPushButton::clicked, this,
+            &AppVersionDetailDialog::onBrowsePackageRowClicked);
+    ui_->packagesTable->setCellWidget(row, 3, btn);
+}
+
+void AppVersionDetailDialog::setPackageRowState(int row,
+    PackageRow::State state, const QString& error) {
+    if (row < 0 || row >= static_cast<int>(package_rows_.size())) return;
+    package_rows_[row].state = state;
+    package_rows_[row].error = error;
+    updatePackagesTableRow(row);
 }
 
 void AppVersionDetailDialog::setUsername(const std::string& username) {
@@ -270,9 +369,9 @@ void AppVersionDetailDialog::setVersion(
     const compute::domain::app_version& app_version) {
     app_version_ = app_version;
     // Start from an empty set; populatePlatformsTab will re-run once the
-    // junction fetch returns and fills platform_rows_. In create mode there
-    // is nothing to load because the id has just been generated.
-    platform_rows_.clear();
+    // junction fetch returns. In create mode there is nothing to load
+    // because the id has just been generated.
+    package_rows_.clear();
     updateUiFromVersion();
 
     if (!createMode_ && !app_version_.id.is_nil())
@@ -310,10 +409,24 @@ void AppVersionDetailDialog::loadAssignedPlatforms(
         auto result = watcher->result();
         watcher->deleteLater();
         if (!self || !result.success) return;
-        self->platform_rows_ = std::move(result.rows);
+
+        // Seed package_rows_ from the junction so populatePlatformsTab sees
+        // these platforms as already-assigned. Every loaded row starts as
+        // Uploaded — its URI is whatever the server handed back, and the
+        // user only has to re-upload if they explicitly pick a new file.
+        self->package_rows_.clear();
+        self->package_rows_.reserve(result.rows.size());
+        for (const auto& r : result.rows) {
+            PackageRow pr;
+            pr.platform_id = boost::uuids::to_string(r.platform_id);
+            pr.platform_code = r.platform_code;
+            pr.remote_uri = QString::fromStdString(r.package_uri);
+            pr.state = PackageRow::State::Uploaded;
+            self->package_rows_.push_back(std::move(pr));
+        }
         self->populatePlatformsTab();
-        // Re-populating the assigned list flags the dialog as dirty via the
-        // selection-changed signal; reset since the fetch is not a user edit.
+        // populatePlatformsTab flips hasChanges_ via selection-changed; reset
+        // because this was a server-driven refresh, not a user edit.
         self->hasChanges_ = false;
         self->updateSaveButtonState();
     });
@@ -344,7 +457,10 @@ void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     ui_->minRamSpinBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
-    ui_->browsePackageButton->setEnabled(!readOnly);
+    // Re-emit row updates so the per-row Browse buttons pick up the new
+    // enabled state.
+    for (int i = 0; i < static_cast<int>(package_rows_.size()); ++i)
+        updatePackagesTableRow(i);
 }
 
 void AppVersionDetailDialog::updateUiFromVersion() {
@@ -394,33 +510,6 @@ void AppVersionDetailDialog::updateVersionFromUi() {
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
-
-    // Rebuild platform rows from the assigned list. Delegate URI layout to
-    // compute_storage::package_path so the canonical per-triplet key lives
-    // with the rest of the bucket convention, not inline in the UI.
-    platform_rows_.clear();
-    const auto av_id_str = boost::uuids::to_string(app_version_.id);
-    for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
-        const auto* item = ui_->assignedPlatformsList->item(i);
-        if (!item) continue;
-        const auto id_str = item->data(Qt::UserRole).toString().toStdString();
-        const auto avail = std::find_if(availablePlatforms_.begin(),
-            availablePlatforms_.end(),
-            [&](const auto& p) { return p.id == id_str; });
-        if (avail == availablePlatforms_.end()) continue;
-
-        compute::domain::app_version_platform row;
-        row.tenant_id = app_version_.tenant_id;
-        row.app_version_id = app_version_.id;
-        try {
-            row.platform_id =
-                boost::lexical_cast<boost::uuids::uuid>(avail->id);
-        } catch (...) { continue; }
-        row.platform_code = avail->code;
-        row.package_uri = ores::compute::net::compute_storage::package_path(
-            av_id_str, avail->code, ".tar.gz");
-        platform_rows_.push_back(std::move(row));
-    }
 }
 
 void AppVersionDetailDialog::onAddPlatformClicked() {
@@ -433,6 +522,7 @@ void AppVersionDetailDialog::onAddPlatformClicked() {
             ui_->availablePlatformsList->row(item));
         ui_->assignedPlatformsList->addItem(item);
     }
+    syncPackagesTab();
     hasChanges_ = true;
     updateSaveButtonState();
 }
@@ -447,6 +537,7 @@ void AppVersionDetailDialog::onRemovePlatformClicked() {
             ui_->assignedPlatformsList->row(item));
         ui_->availablePlatformsList->addItem(item);
     }
+    syncPackagesTab();
     hasChanges_ = true;
     updateSaveButtonState();
 }
@@ -473,94 +564,37 @@ bool AppVersionDetailDialog::validateInput() {
     if (wrapper_version.isEmpty() || engine_version.isEmpty() || app_id.isEmpty())
         return false;
 
-    // Require at least one platform to be assigned
-    return ui_->assignedPlatformsList->count() > 0;
+    // Require at least one platform assigned and a file (or already-uploaded
+    // URI) for every assigned row — otherwise save would write junction rows
+    // pointing at blobs that don't exist.
+    if (package_rows_.empty()) return false;
+    for (const auto& r : package_rows_) {
+        if (r.local_file.isEmpty() && r.remote_uri.isEmpty())
+            return false;
+    }
+    return true;
 }
 
-void AppVersionDetailDialog::onBrowsePackageClicked() {
+void AppVersionDetailDialog::onBrowsePackageRowClicked() {
+    auto* btn = qobject_cast<QPushButton*>(sender());
+    if (!btn) return;
+    const int row = btn->property("package_row").toInt();
+    if (row < 0 || row >= static_cast<int>(package_rows_.size())) return;
+
     const QString path = QFileDialog::getOpenFileName(
-        this, tr("Select Engine Package"),
+        this, tr("Select Package for %1").arg(
+            QString::fromStdString(package_rows_[row].platform_code)),
         QString(),
         tr("Package Files (*.tar.gz);;All Files (*)"));
+    if (path.isEmpty()) return;
 
-    if (!path.isEmpty()) {
-        selectedPackageFilePath_ = path;
-        ui_->packageFilePathEdit->setText(path);
-        ui_->uploadPackageButton->setEnabled(true);
-    }
-}
+    package_rows_[row].local_file = path;
+    package_rows_[row].state = PackageRow::State::Selected;
+    package_rows_[row].error.clear();
+    updatePackagesTableRow(row);
 
-void AppVersionDetailDialog::onUploadPackageClicked() {
-    if (selectedPackageFilePath_.isEmpty()) {
-        MessageBoxHelper::warning(this, "No File Selected",
-            "Please browse for a package file first.");
-        return;
-    }
-
-    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
-        MessageBoxHelper::warning(this, "No Server URL",
-            "HTTP base URL is not configured. Cannot upload package.");
-        return;
-    }
-
-    const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const QString path = "/api/v1/storage/compute/packages/"
-        + QString::fromStdString(id_str) ;
-    QUrl uploadUrl = httpBaseUrl_;
-    uploadUrl.setPath(path);
-
-    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << uploadUrl.toString().toStdString()
-                              << " file: " << selectedPackageFilePath_.toStdString();
-
-    auto* file = new QFile(selectedPackageFilePath_, this);
-    if (!file->open(QIODevice::ReadOnly)) {
-        MessageBoxHelper::critical(this, "File Error",
-            tr("Cannot open file: %1").arg(selectedPackageFilePath_));
-        file->deleteLater();
-        return;
-    }
-
-    ui_->uploadPackageButton->setEnabled(false);
-    ui_->uploadPackageButton->setText(tr("Uploading..."));
-
-    auto* networkManager = new QNetworkAccessManager(this);
-    QNetworkRequest request{uploadUrl};
-    request.setHeader(QNetworkRequest::ContentTypeHeader,
-                      QByteArray("application/octet-stream"));
-
-    QPointer<AppVersionDetailDialog> self = this;
-    auto* reply = networkManager->put(request, file);
-
-    connect(reply, &QNetworkReply::finished, this,
-            [self, reply, file, networkManager]() {
-        if (!self) { reply->deleteLater(); file->deleteLater();
-                     networkManager->deleteLater(); return; }
-
-        reply->deleteLater();
-        file->deleteLater();
-        networkManager->deleteLater();
-
-        self->ui_->uploadPackageButton->setEnabled(true);
-        self->ui_->uploadPackageButton->setText(tr("Upload Package"));
-
-        if (reply->error() != QNetworkReply::NoError) {
-            const auto body = reply->readAll();
-            const auto detail = body.isEmpty()
-                ? reply->errorString()
-                : reply->errorString() + "\n" + QString::fromUtf8(body);
-            BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
-                                       << detail.toStdString();
-            MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Package uploaded successfully for app_version: "
-                                  << boost::uuids::to_string(self->app_version_.id);
-
-        emit self->statusMessage(tr("Package uploaded successfully"));
-        MessageBoxHelper::information(self, tr("Upload Complete"),
-            tr("Package uploaded successfully."));
-    });
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void AppVersionDetailDialog::onSaveClicked() {
@@ -572,7 +606,8 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (wrapper version, engine version).");
+            "Please fill in all required fields and select a package file "
+            "for every assigned platform.");
         return;
     }
 
@@ -589,10 +624,172 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     BOOST_LOG_SEV(lg(), info) << "Saving app version: " << app_version_.wrapper_version;
 
+    QPointer<AppVersionDetailDialog> self = this;
+    saveInProgress_ = true;
+    ui_->saveButton->setEnabled(false);
+    // Freeze the assigned-platform list while uploads are in flight. If the
+    // user were allowed to add/remove rows mid-save, syncPackagesTab would
+    // rebuild package_rows_ and the callbacks below (which find rows by
+    // platform_id) could end up racing against the new state.
+    ui_->addPlatformButton->setEnabled(false);
+    ui_->removePlatformButton->setEnabled(false);
+    ui_->packagesProgressBar->setVisible(true);
+    ui_->packagesProgressBar->setValue(0);
+
+    uploadPendingPackages([self](bool ok, QString err) {
+        if (!self) return;
+        self->ui_->packagesProgressBar->setVisible(false);
+        self->saveInProgress_ = false;
+        if (!self->readOnly_) {
+            self->ui_->addPlatformButton->setEnabled(true);
+            self->ui_->removePlatformButton->setEnabled(true);
+        }
+        if (!ok) {
+            BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
+                                       << err.toStdString();
+            MessageBoxHelper::critical(self, tr("Upload Failed"),
+                tr("One or more packages could not be uploaded:\n%1").arg(err));
+            self->updateSaveButtonState();
+            return;
+        }
+        self->submitSave();
+    });
+}
+
+void AppVersionDetailDialog::uploadPendingPackages(
+    std::function<void(bool, QString)> done) {
+    // Collect rows that still need a PUT: those with a local file selected
+    // that haven't been uploaded (or whose previous upload failed).
+    std::vector<int> pending;
+    for (int i = 0; i < static_cast<int>(package_rows_.size()); ++i) {
+        const auto& r = package_rows_[i];
+        if (!r.local_file.isEmpty() &&
+            r.state != PackageRow::State::Uploaded) {
+            pending.push_back(i);
+        }
+    }
+
+    if (pending.empty()) { done(true, {}); return; }
+
+    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
+        done(false, tr("HTTP base URL is not configured; cannot upload."));
+        return;
+    }
+
+    // Shared counter / error state across parallel PUTs. Completes the outer
+    // callback when every pending request has finished, successfully or not.
+    struct Ctx {
+        int remaining;
+        bool ok = true;
+        QString err;
+    };
+    auto ctx = std::make_shared<Ctx>();
+    ctx->remaining = static_cast<int>(pending.size());
+
+    const auto av_id = boost::uuids::to_string(app_version_.id);
+    QPointer<AppVersionDetailDialog> self = this;
+
+    for (int row : pending) {
+        auto& pr = package_rows_[row];
+        setPackageRowState(row, PackageRow::State::Uploading);
+
+        const std::string uri_path =
+            ores::compute::net::compute_storage::package_path(
+                av_id, pr.platform_code, ".tar.gz");
+        QUrl uploadUrl = httpBaseUrl_;
+        uploadUrl.setPath(QString::fromStdString(uri_path));
+
+        auto* file = new QFile(pr.local_file, this);
+        if (!file->open(QIODevice::ReadOnly)) {
+            const auto msg = tr("Cannot open %1").arg(pr.local_file);
+            setPackageRowState(row, PackageRow::State::Failed, msg);
+            file->deleteLater();
+            ctx->ok = false;
+            if (ctx->err.isEmpty()) ctx->err = msg;
+            if (--ctx->remaining == 0) done(ctx->ok, ctx->err);
+            continue;
+        }
+
+        QNetworkRequest req{uploadUrl};
+        req.setHeader(QNetworkRequest::ContentTypeHeader,
+                      QByteArray("application/octet-stream"));
+        auto* reply = networkManager_->put(req, file);
+
+        // Capture platform_id, not row index: syncPackagesTab may reorder
+        // package_rows_ between the PUT kicking off and finished() firing,
+        // so resolve the row at callback time by id. Platform buttons are
+        // disabled while saveInProgress_, so under normal use the row is
+        // still present — but the defensive lookup makes it correct even
+        // if a concurrent mutation slipped through.
+        const std::string platform_id = pr.platform_id;
+        const QString stored_uri = QString::fromStdString(uri_path);
+        connect(reply, &QNetworkReply::finished, this,
+                [self, reply, file, ctx, done, platform_id, stored_uri]() {
+            reply->deleteLater();
+            file->deleteLater();
+            if (!self) return;
+
+            auto& rows = self->package_rows_;
+            const auto it = std::find_if(rows.begin(), rows.end(),
+                [&](const auto& r) { return r.platform_id == platform_id; });
+            const int resolved_row = (it == rows.end())
+                ? -1 : static_cast<int>(it - rows.begin());
+
+            if (reply->error() != QNetworkReply::NoError) {
+                const auto detail = reply->errorString();
+                if (resolved_row >= 0) {
+                    self->setPackageRowState(resolved_row,
+                        PackageRow::State::Failed, detail);
+                }
+                ctx->ok = false;
+                if (ctx->err.isEmpty())
+                    ctx->err = tr("%1: %2").arg(
+                        resolved_row >= 0
+                            ? QString::fromStdString(rows[resolved_row].platform_code)
+                            : tr("(removed)"),
+                        detail);
+            } else if (resolved_row >= 0) {
+                rows[resolved_row].remote_uri = stored_uri;
+                self->setPackageRowState(resolved_row,
+                    PackageRow::State::Uploaded);
+            }
+
+            // Progress is coarse: increments by completed row rather than by
+            // bytes so we don't have to plumb uploadProgress signals per file.
+            const int total = static_cast<int>(rows.size());
+            int waiting = 0;
+            for (const auto& p : rows)
+                if (p.state == PackageRow::State::Uploading) ++waiting;
+            const int completed = total - waiting;
+            if (total > 0)
+                self->ui_->packagesProgressBar->setValue(
+                    completed * 100 / total);
+
+            if (--ctx->remaining == 0) done(ctx->ok, ctx->err);
+        });
+    }
+}
+
+void AppVersionDetailDialog::submitSave() {
     using FutureResult = std::pair<bool, std::string>;
     QPointer<AppVersionDetailDialog> self = this;
     const compute::domain::app_version versionToSave = app_version_;
-    const auto platformsToSave = platform_rows_;
+
+    // Translate package_rows_ into junction entries for the RPC payload.
+    std::vector<compute::domain::app_version_platform> platformsToSave;
+    platformsToSave.reserve(package_rows_.size());
+    for (const auto& r : package_rows_) {
+        compute::domain::app_version_platform avp;
+        avp.tenant_id = app_version_.tenant_id;
+        avp.app_version_id = app_version_.id;
+        try {
+            avp.platform_id = boost::lexical_cast<boost::uuids::uuid>(
+                r.platform_id);
+        } catch (...) { continue; }
+        avp.platform_code = r.platform_code;
+        avp.package_uri = r.remote_uri.toStdString();
+        platformsToSave.push_back(std::move(avp));
+    }
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, versionToSave, platformsToSave]() -> FutureResult {

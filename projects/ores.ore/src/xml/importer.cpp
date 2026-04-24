@@ -202,13 +202,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                     } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
                         item.trade.product_type = product_type::equity;
                         std::visit([&](auto& instr) {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            if constexpr (std::is_same_v<InstrT,
-                                    ores::trading::domain::equity_instrument>) {
-                                instr.id = instr_id;
-                            } else {
-                                instr.instrument_id = instr_id;
-                            }
+                            instr.instrument_id = instr_id;
                             instr.trade_id = item.trade.id;
                         }, result.instrument);
                     } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {

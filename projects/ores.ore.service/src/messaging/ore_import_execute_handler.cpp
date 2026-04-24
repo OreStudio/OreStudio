@@ -457,11 +457,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 return std::visit([&](const auto& instr) -> bool {
                     using InstrT = std::decay_t<decltype(instr)>;
                     using namespace ores::trading::domain;
-                    if constexpr (std::is_same_v<InstrT, equity_instrument>) {
-                        save_equity_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
+                    if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
                         save_equity_option_instrument_request req; req.data = instr;
                         auto resp = nats_call(delegated_nats, req, instr_error);
                         return resp && resp->success;

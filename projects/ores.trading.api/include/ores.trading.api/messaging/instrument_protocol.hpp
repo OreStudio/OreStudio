@@ -1143,6 +1143,26 @@ struct fx_export_result {
 };
 
 /**
+ * @brief Equity instrument, used in export/fetch results.
+ *
+ * The instrument field is a variant over all supported equity instrument
+ * types.
+ */
+struct equity_export_result {
+    std::variant<
+        ores::trading::domain::equity_option_instrument,
+        ores::trading::domain::equity_digital_option_instrument,
+        ores::trading::domain::equity_barrier_option_instrument,
+        ores::trading::domain::equity_asian_option_instrument,
+        ores::trading::domain::equity_forward_instrument,
+        ores::trading::domain::equity_variance_swap_instrument,
+        ores::trading::domain::equity_swap_instrument,
+        ores::trading::domain::equity_accumulator_instrument,
+        ores::trading::domain::equity_position_instrument
+    > instrument;
+};
+
+/**
  * @brief Composite instrument with its constituent legs.
  */
 struct composite_export_result {
@@ -1163,7 +1183,7 @@ using instrument_export_result = std::variant<
     fx_export_result,
     ores::trading::domain::bond_instrument,
     ores::trading::domain::credit_instrument,
-    ores::trading::domain::equity_instrument,
+    equity_export_result,
     ores::trading::domain::commodity_instrument,
     composite_export_result,
     ores::trading::domain::scripted_instrument

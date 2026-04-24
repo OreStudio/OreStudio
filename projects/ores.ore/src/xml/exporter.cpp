@@ -38,6 +38,7 @@ using namespace ores::logging;
 using namespace ores::ore::domain;
 using trading::messaging::swap_export_result;
 using trading::messaging::fx_export_result;
+using trading::messaging::equity_export_result;
 using trading::messaging::composite_export_result;
 using trading::domain::bond_instrument;
 using trading::domain::credit_instrument;
@@ -234,38 +235,78 @@ std::string exporter::export_portfolio(
                         << "No reverse mapper for credit type: " << tt;
                     return;
                 }
-            } else if constexpr (std::is_same_v<T, equity_instrument>) {
-                if (tt == "EquityOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_option(r);
-                else if (tt == "EquityForward")
-                    xsd_t = equity_instrument_mapper::reverse_equity_forward(r);
-                else if (tt == "EquitySwap")
-                    xsd_t = equity_instrument_mapper::reverse_equity_swap(r);
-                else if (tt == "EquityVarianceSwap")
-                    xsd_t = equity_instrument_mapper::reverse_equity_variance_swap(r);
-                else if (tt == "EquityBarrierOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_barrier_option(r);
-                else if (tt == "EquityAsianOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_asian_option(r);
-                else if (tt == "EquityDigitalOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_digital_option(r);
-                else if (tt == "EquityTouchOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_touch_option(r);
-                else if (tt == "EquityOutperformanceOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_outperformance_option(r);
-                else if (tt == "EquityAccumulator")
-                    xsd_t = equity_instrument_mapper::reverse_equity_accumulator(r);
-                else if (tt == "EquityTaRF")
-                    xsd_t = equity_instrument_mapper::reverse_equity_tarf(r);
-                else if (tt == "EquityCliquetOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_cliquet_option(r);
-                else if (tt == "EquityWorstOfBasketSwap")
-                    xsd_t = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(r);
-                else if (tt == "EquityDoubleBarrierOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_double_barrier_option(r);
-                else if (tt == "EquityEuropeanBarrierOption")
-                    xsd_t = equity_instrument_mapper::reverse_equity_european_barrier_option(r);
-                else {
+            } else if constexpr (std::is_same_v<T, equity_export_result>) {
+                // Equity reverse mappers are per-type; routing by trade_type_code
+                // mirrors trade_mapper::map_equity_instrument. Keep in sync.
+                bool matched = false;
+                std::visit([&](const auto& instr) {
+                    using I = std::decay_t<decltype(instr)>;
+                    using namespace trading::domain;
+                    if constexpr (std::is_same_v<I, equity_option_instrument>) {
+                        if (tt == "EquityOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_option(instr);
+                            matched = true;
+                        } else if (tt == "EquityCliquetOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_cliquet_option(instr);
+                            matched = true;
+                        } else if (tt == "EquityOutperformanceOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_outperformance_option(instr);
+                            matched = true;
+                        }
+                    } else if constexpr (std::is_same_v<I, equity_forward_instrument>) {
+                        if (tt == "EquityForward") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_forward(instr);
+                            matched = true;
+                        }
+                    } else if constexpr (std::is_same_v<I, equity_swap_instrument>) {
+                        if (tt == "EquitySwap") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_swap(instr);
+                            matched = true;
+                        } else if (tt == "EquityWorstOfBasketSwap") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(instr);
+                            matched = true;
+                        }
+                    } else if constexpr (std::is_same_v<I,
+                            equity_variance_swap_instrument>) {
+                        xsd_t = equity_instrument_mapper::reverse_equity_variance_swap(instr);
+                        matched = true;
+                    } else if constexpr (std::is_same_v<I,
+                            equity_barrier_option_instrument>) {
+                        if (tt == "EquityBarrierOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_barrier_option(instr);
+                            matched = true;
+                        } else if (tt == "EquityDoubleBarrierOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_double_barrier_option(instr);
+                            matched = true;
+                        } else if (tt == "EquityEuropeanBarrierOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_european_barrier_option(instr);
+                            matched = true;
+                        }
+                    } else if constexpr (std::is_same_v<I,
+                            equity_asian_option_instrument>) {
+                        xsd_t = equity_instrument_mapper::reverse_equity_asian_option(instr);
+                        matched = true;
+                    } else if constexpr (std::is_same_v<I,
+                            equity_digital_option_instrument>) {
+                        if (tt == "EquityDigitalOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_digital_option(instr);
+                            matched = true;
+                        } else if (tt == "EquityTouchOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_touch_option(instr);
+                            matched = true;
+                        }
+                    } else if constexpr (std::is_same_v<I,
+                            equity_accumulator_instrument>) {
+                        if (tt == "EquityAccumulator") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_accumulator(instr);
+                            matched = true;
+                        } else if (tt == "EquityTaRF") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_tarf(instr);
+                            matched = true;
+                        }
+                    }
+                }, r.instrument);
+                if (!matched) {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for equity type: " << tt;
                     return;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/service/zero_convention_service.hpp"
+#include "ores.refdata.core/service/deposit_convention_service.hpp"
 
 #include <stdexcept>
 
@@ -25,39 +25,39 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-zero_convention_service::zero_convention_service(context ctx)
+deposit_convention_service::deposit_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::zero_convention> zero_convention_service::list_zero_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all zero conventions";
+std::vector<domain::deposit_convention> deposit_convention_service::list_deposit_conventions() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all deposit conventions";
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::zero_convention>
-zero_convention_service::get_zero_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting zero convention: " << id;
+std::optional<domain::deposit_convention>
+deposit_convention_service::get_deposit_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting deposit convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();
 }
 
-void zero_convention_service::save_zero_convention(const domain::zero_convention& v) {
+void deposit_convention_service::save_deposit_convention(const domain::deposit_convention& v) {
     if (v.id.empty())
-        throw std::invalid_argument("Zero Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving zero convention: " << v.id;
+        throw std::invalid_argument("Deposit Convention id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving deposit convention: " << v.id;
     repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved zero convention: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved deposit convention: " << v.id;
 }
 
-void zero_convention_service::remove_zero_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing zero convention: " << id;
+void deposit_convention_service::remove_deposit_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing deposit convention: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed zero convention: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed deposit convention: " << id;
 }
 
-std::vector<domain::zero_convention>
-zero_convention_service::get_zero_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for zero convention: " << id;
+std::vector<domain::deposit_convention>
+deposit_convention_service::get_deposit_convention_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for deposit convention: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
+#define ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
 
 #include <string>
 #include <vector>
 #include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/zero_convention.hpp"
-#include "ores.refdata.core/repository/zero_convention_repository.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 
 namespace ores::refdata::service {
 
 /**
- * @brief Service for managing zero conventions.
+ * @brief Service for managing deposit conventions.
  */
-class zero_convention_service {
+class deposit_convention_service {
 private:
     inline static std::string_view logger_name =
-        "ores.refdata.service.zero_convention_service";
+        "ores.refdata.service.deposit_convention_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,23 +47,23 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit zero_convention_service(context ctx);
+    explicit deposit_convention_service(context ctx);
 
-    std::vector<domain::zero_convention> list_zero_conventions();
+    std::vector<domain::deposit_convention> list_deposit_conventions();
 
-    std::optional<domain::zero_convention>
-    get_zero_convention(const std::string& id);
+    std::optional<domain::deposit_convention>
+    get_deposit_convention(const std::string& id);
 
-    void save_zero_convention(const domain::zero_convention& v);
+    void save_deposit_convention(const domain::deposit_convention& v);
 
-    void remove_zero_convention(const std::string& id);
+    void remove_deposit_convention(const std::string& id);
 
-    std::vector<domain::zero_convention>
-    get_zero_convention_history(const std::string& id);
+    std::vector<domain::deposit_convention>
+    get_deposit_convention_history(const std::string& id);
 
 private:
     context ctx_;
-    repository::zero_convention_repository repo_;
+    repository::deposit_convention_repository repo_;
 };
 
 }

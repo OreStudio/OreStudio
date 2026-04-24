@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.api/generators/zero_convention_generator.hpp"
+#include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 
 #include <atomic>
 #include <string>
@@ -28,25 +28,23 @@ namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::zero_convention generate_synthetic_zero_convention(
+domain::deposit_convention generate_synthetic_deposit_convention(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 
-    domain::zero_convention r;
+    domain::deposit_convention r;
     r.version = 1;
-    r.id = std::string("EUR-ZERO-CONVENTIONS") + "-"
+    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
-    r.tenor_based = true;
-    r.day_count_fraction = std::string("ACT/365.FIXED");
-    r.compounding = std::string("Continuous");
-    r.compounding_frequency = std::nullopt;
-    r.tenor_calendar = std::string("TARGET");
-    r.spot_lag = std::nullopt;
-    r.spot_calendar = std::nullopt;
-    r.roll_convention = std::nullopt;
+    r.index_based = true;
+    r.index = std::string("USD-LIBOR");
+    r.calendar = std::nullopt;
+    r.convention = std::nullopt;
     r.end_of_month = std::nullopt;
+    r.day_count_fraction = std::nullopt;
+    r.settlement_days = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";
@@ -55,13 +53,13 @@ domain::zero_convention generate_synthetic_zero_convention(
     return r;
 }
 
-std::vector<domain::zero_convention>
-generate_synthetic_zero_conventions(std::size_t n,
+std::vector<domain::deposit_convention>
+generate_synthetic_deposit_conventions(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::zero_convention> r;
+    std::vector<domain::deposit_convention> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_zero_convention(ctx));
+        r.push_back(generate_synthetic_deposit_convention(ctx));
     return r;
 }
 

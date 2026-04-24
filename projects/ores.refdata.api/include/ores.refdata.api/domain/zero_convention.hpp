@@ -55,7 +55,7 @@ struct zero_convention final {
     /**
      * @brief Whether the curve is defined on a tenor grid (true) or on absolute dates (false).
      */
-    bool tenor_based;
+    bool tenor_based = false;
 
     /**
      * @brief Day count fraction code (canonical FpML, e.g. 'ACT/365.FIXED').

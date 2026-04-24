@@ -17,53 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_MAPPER_HPP
+#define ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_MAPPER_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
+#include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.core/repository/deposit_convention_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/zero_convention.hpp"
-#include "ores.refdata.core/repository/zero_convention_repository.hpp"
 
-namespace ores::refdata::service {
+namespace ores::refdata::repository {
 
 /**
- * @brief Service for managing zero conventions.
+ * @brief Maps deposit_convention domain entities to data storage layer and vice-versa.
  */
-class zero_convention_service {
+class deposit_convention_mapper {
 private:
     inline static std::string_view logger_name =
-        "ores.refdata.service.zero_convention_service";
+        "ores.refdata.repository.deposit_convention_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
-
 public:
-    using context = ores::database::context;
+    static domain::deposit_convention map(const deposit_convention_entity& v);
+    static deposit_convention_entity map(const domain::deposit_convention& v);
 
-    explicit zero_convention_service(context ctx);
-
-    std::vector<domain::zero_convention> list_zero_conventions();
-
-    std::optional<domain::zero_convention>
-    get_zero_convention(const std::string& id);
-
-    void save_zero_convention(const domain::zero_convention& v);
-
-    void remove_zero_convention(const std::string& id);
-
-    std::vector<domain::zero_convention>
-    get_zero_convention_history(const std::string& id);
-
-private:
-    context ctx_;
-    repository::zero_convention_repository repo_;
+    static std::vector<domain::deposit_convention>
+    map(const std::vector<deposit_convention_entity>& v);
+    static std::vector<deposit_convention_entity>
+    map(const std::vector<domain::deposit_convention>& v);
 };
 
 }

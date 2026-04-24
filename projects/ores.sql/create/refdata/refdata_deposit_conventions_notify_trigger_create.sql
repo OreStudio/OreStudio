@@ -23,11 +23,11 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_refdata_zero_conventions_notify_fn()
+create or replace function ores_refdata_deposit_conventions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.refdata.zero_convention';
+    entity_name text := 'ores.refdata.deposit_convention';
     change_timestamp timestamptz := NOW();
     changed_id text;
     changed_tenant_id text;
@@ -47,12 +47,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_zero_conventions', notification_payload::text);
+    perform pg_notify('ores_deposit_conventions', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_refdata_zero_conventions_notify_trg
-after insert or update or delete on ores_refdata_zero_conventions_tbl
-for each row execute function ores_refdata_zero_conventions_notify_fn();
+create or replace trigger ores_refdata_deposit_conventions_notify_trg
+after insert or update or delete on ores_refdata_deposit_conventions_tbl
+for each row execute function ores_refdata_deposit_conventions_notify_fn();

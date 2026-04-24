@@ -79,6 +79,9 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_int}}
             return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{field}});
 {{/is_int}}
+{{#is_bool}}
+            return {{domain_entity.qt.item_var}}.{{field}} ? tr("true") : tr("false");
+{{/is_bool}}
 {{#is_timestamp}}
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{field}});
 {{/is_timestamp}}

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_REPOSITORY_ZERO_CONVENTION_ENTITY_HPP
-#define ORES_REFDATA_REPOSITORY_ZERO_CONVENTION_ENTITY_HPP
+#ifndef ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_ENTITY_HPP
+#define ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_ENTITY_HPP
 
 #include <string>
 #include <optional>
@@ -29,24 +29,22 @@
 namespace ores::refdata::repository {
 
 /**
- * @brief Represents a zero convention in the database.
+ * @brief Represents a deposit convention in the database.
  */
-struct zero_convention_entity {
+struct deposit_convention_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_refdata_zero_conventions_tbl";
+    constexpr static const char* tablename = "ores_refdata_deposit_conventions_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
-    bool tenor_based = false;
-    std::string day_count_fraction;
-    std::optional<std::string> compounding;
-    std::optional<std::string> compounding_frequency;
-    std::optional<std::string> tenor_calendar;
-    std::optional<int> spot_lag;
-    std::optional<std::string> spot_calendar;
-    std::optional<std::string> roll_convention;
+    bool index_based = false;
+    std::optional<std::string> index;
+    std::optional<std::string> calendar;
+    std::optional<std::string> convention;
     std::optional<bool> end_of_month;
+    std::optional<std::string> day_count_fraction;
+    std::optional<int> settlement_days;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -55,7 +53,7 @@ struct zero_convention_entity {
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s, const zero_convention_entity& v);
+std::ostream& operator<<(std::ostream& s, const deposit_convention_entity& v);
 
 }
 

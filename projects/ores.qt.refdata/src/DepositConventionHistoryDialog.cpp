@@ -1,29 +1,43 @@
-{{! Template to generate Qt history dialog source for domain entities }}
-{{{cpp_license}}}
-#include "ores.qt/{{domain_entity.entity_pascal}}HistoryDialog.hpp"
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/DepositConventionHistoryDialog.hpp"
 
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ui_{{domain_entity.entity_pascal}}HistoryDialog.h"
+#include "ui_DepositConventionHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "{{domain_entity.qt.protocol_include}}"
+#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-{{#domain_entity.qt.has_uuid_primary_key}}
-{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
-    const boost::uuids::uuid& id,
+DepositConventionHistoryDialog::DepositConventionHistoryDialog(
     const QString& code,
     ClientManager* clientManager,
     QWidget* parent)
     : QWidget(parent),
-      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
-      id_(id),
+      ui_(new Ui::DepositConventionHistoryDialog),
       code_(code),
       clientManager_(clientManager),
       toolbar_(nullptr),
@@ -35,32 +49,12 @@ using namespace ores::logging;
     setupToolbar();
     setupConnections();
 }
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
-{{domain_entity.entity_pascal}}HistoryDialog::{{domain_entity.entity_pascal}}HistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::{{domain_entity.entity_pascal}}HistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
 
-    ui_->setupUi(this);
-    setupUi();
-    setupToolbar();
-    setupConnections();
-}
-{{/domain_entity.qt.has_uuid_primary_key}}
-
-{{domain_entity.entity_pascal}}HistoryDialog::~{{domain_entity.entity_pascal}}HistoryDialog() {
+DepositConventionHistoryDialog::~DepositConventionHistoryDialog() {
     delete ui_;
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
+void DepositConventionHistoryDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
@@ -81,7 +75,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupUi() {
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupToolbar() {
+void DepositConventionHistoryDialog::setupToolbar() {
     toolbar_ = new QToolBar(this);
     toolbar_->setMovable(false);
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -107,54 +101,40 @@ void {{domain_entity.entity_pascal}}HistoryDialog::setupToolbar() {
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::setupConnections() {
+void DepositConventionHistoryDialog::setupConnections() {
     connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected);
+            this, &DepositConventionHistoryDialog::onVersionSelected);
     connect(openVersionAction_, &QAction::triggered,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked);
+            this, &DepositConventionHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered,
-            this, &{{domain_entity.entity_pascal}}HistoryDialog::onRevertClicked);
+            this, &DepositConventionHistoryDialog::onRevertClicked);
     connect(ui_->closeButton, &QPushButton::clicked,
             this, [this]() { if (window()) window()->close(); });
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
+void DepositConventionHistoryDialog::loadHistory() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for {{domain_entity.entity_singular_words}}: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for deposit convention: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    QPointer<{{domain_entity.entity_pascal}}HistoryDialog> self = this;
+    QPointer<DepositConventionHistoryDialog> self = this;
 
-    using HistoryResult = std::expected<{{domain_entity.qt.history_response_class}}, std::string>;
+    using HistoryResult = std::expected<refdata::messaging::get_deposit_convention_history_response, std::string>;
 
-{{#domain_entity.qt.has_uuid_primary_key}}
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_)
-            return std::unexpected("Dialog closed");
-        {{domain_entity.qt.history_request_class}} request;
-        request.id = id;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!result) return std::unexpected(result.error());
-        return std::move(*result);
-    });
-{{/domain_entity.qt.has_uuid_primary_key}}
-{{^domain_entity.qt.has_uuid_primary_key}}
     QFuture<HistoryResult> future =
         QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
         if (!self || !self->clientManager_)
             return std::unexpected("Dialog closed");
-        {{domain_entity.qt.history_request_class}} request;
-        request.{{domain_entity.primary_key.column}} = code;
+        refdata::messaging::get_deposit_convention_history_request request;
+        request.id = code;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) return std::unexpected(result.error());
         return std::move(*result);
     });
-{{/domain_entity.qt.has_uuid_primary_key}}
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
     connect(watcher, &QFutureWatcher<HistoryResult>::finished,
@@ -171,7 +151,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
             emit self->errorOccurred(QString::fromStdString(result->message));
             return;
         }
-        self->versions_ = std::move(result->{{domain_entity.qt.collection_name}});
+        self->versions_ = std::move(result->deposit_conventions);
         self->updateVersionList();
         emit self->statusChanged(
             QString("Loaded %1 versions").arg(self->versions_.size()));
@@ -179,7 +159,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::loadHistory() {
     watcher->setFuture(future);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
+void DepositConventionHistoryDialog::updateVersionList() {
     ui_->versionListWidget->setRowCount(0);
 
     for (const auto& version : versions_) {
@@ -213,7 +193,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateVersionList() {
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected() {
+void DepositConventionHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) {
         updateActionStates();
@@ -226,7 +206,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::onVersionSelected() {
     updateActionStates();
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int currentVersionIndex) {
+void DepositConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
     if (currentVersionIndex < 0 ||
@@ -258,49 +238,54 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-{{#domain_entity.qt.detail_fields}}
-    if (current.{{field}} != previous.{{field}}) {
-{{#is_optional_string}}
-        addChange("{{label}}",
-                  previous.{{field}} ? QString::fromStdString(*previous.{{field}}) : QString{},
-                  current.{{field}} ? QString::fromStdString(*current.{{field}}) : QString{});
-{{/is_optional_string}}
-{{#is_tristate}}
-        addChange("{{label}}",
-                  previous.{{field}} ? (*previous.{{field}} ? tr("true") : tr("false")) : tr("(unset)"),
-                  current.{{field}} ? (*current.{{field}} ? tr("true") : tr("false")) : tr("(unset)"));
-{{/is_tristate}}
-{{#is_check_box}}
-{{^is_tristate}}
-        addChange("{{label}}",
-                  previous.{{field}} ? tr("true") : tr("false"),
-                  current.{{field}} ? tr("true") : tr("false"));
-{{/is_tristate}}
-{{/is_check_box}}
-{{#is_nullable_int}}
-        addChange("{{label}}",
-                  previous.{{field}} ? QString::number(*previous.{{field}}) : tr("(unset)"),
-                  current.{{field}} ? QString::number(*current.{{field}}) : tr("(unset)"));
-{{/is_nullable_int}}
-{{#is_spin_box}}
-{{^is_nullable_int}}
-        addChange("{{label}}",
-                  QString::number(previous.{{field}}),
-                  QString::number(current.{{field}}));
-{{/is_nullable_int}}
-{{/is_spin_box}}
-{{^is_optional_string}}
-{{^is_check_box}}
-{{^is_spin_box}}
-        addChange("{{label}}",
-                  QString::fromStdString(previous.{{field}}),
-                  QString::fromStdString(current.{{field}}));
-{{/is_spin_box}}
-{{/is_check_box}}
-{{/is_optional_string}}
+    if (current.id != previous.id) {
+        addChange("Id",
+                  QString::fromStdString(previous.id),
+                  QString::fromStdString(current.id));
     }
 
-{{/domain_entity.qt.detail_fields}}
+    if (current.index_based != previous.index_based) {
+        addChange("Index Based",
+                  previous.index_based ? tr("true") : tr("false"),
+                  current.index_based ? tr("true") : tr("false"));
+    }
+
+    if (current.index != previous.index) {
+        addChange("Index",
+                  previous.index ? QString::fromStdString(*previous.index) : QString{},
+                  current.index ? QString::fromStdString(*current.index) : QString{});
+    }
+
+    if (current.calendar != previous.calendar) {
+        addChange("Calendar",
+                  previous.calendar ? QString::fromStdString(*previous.calendar) : QString{},
+                  current.calendar ? QString::fromStdString(*current.calendar) : QString{});
+    }
+
+    if (current.convention != previous.convention) {
+        addChange("Convention",
+                  previous.convention ? QString::fromStdString(*previous.convention) : QString{},
+                  current.convention ? QString::fromStdString(*current.convention) : QString{});
+    }
+
+    if (current.day_count_fraction != previous.day_count_fraction) {
+        addChange("Day Count Fraction",
+                  previous.day_count_fraction ? QString::fromStdString(*previous.day_count_fraction) : QString{},
+                  current.day_count_fraction ? QString::fromStdString(*current.day_count_fraction) : QString{});
+    }
+
+    if (current.end_of_month != previous.end_of_month) {
+        addChange("End Of Month",
+                  previous.end_of_month ? (*previous.end_of_month ? tr("true") : tr("false")) : tr("(unset)"),
+                  current.end_of_month ? (*current.end_of_month ? tr("true") : tr("false")) : tr("(unset)"));
+    }
+
+    if (current.settlement_days != previous.settlement_days) {
+        addChange("Settlement Days",
+                  previous.settlement_days ? QString::number(*previous.settlement_days) : tr("(unset)"),
+                  current.settlement_days ? QString::number(*current.settlement_days) : tr("(unset)"));
+    }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -311,7 +296,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateChangesTable(int curren
     }
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int versionIndex) {
+void DepositConventionHistoryDialog::updateFullDetails(int versionIndex) {
     if (versionIndex < 0 ||
         static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
@@ -319,40 +304,26 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
 
     const auto& version = versions_[versionIndex];
 
-{{#domain_entity.qt.detail_fields}}
-{{#is_optional_string}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? QString::fromStdString(*version.{{field}})
+    ui_->idValue->setText(QString::fromStdString(version.id));
+    ui_->indexBasedValue->setText(version.index_based ? tr("true") : tr("false"));
+    ui_->indexValue->setText(version.index
+        ? QString::fromStdString(*version.index)
         : QString{});
-{{/is_optional_string}}
-{{#is_tristate}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? (*version.{{field}} ? tr("true") : tr("false"))
+    ui_->calendarValue->setText(version.calendar
+        ? QString::fromStdString(*version.calendar)
+        : QString{});
+    ui_->conventionValue->setText(version.convention
+        ? QString::fromStdString(*version.convention)
+        : QString{});
+    ui_->dayCountFractionValue->setText(version.day_count_fraction
+        ? QString::fromStdString(*version.day_count_fraction)
+        : QString{});
+    ui_->endOfMonthValue->setText(version.end_of_month
+        ? (*version.end_of_month ? tr("true") : tr("false"))
         : tr("(unset)"));
-{{/is_tristate}}
-{{#is_check_box}}
-{{^is_tristate}}
-    ui_->{{value_widget}}->setText(version.{{field}} ? tr("true") : tr("false"));
-{{/is_tristate}}
-{{/is_check_box}}
-{{#is_nullable_int}}
-    ui_->{{value_widget}}->setText(version.{{field}}
-        ? QString::number(*version.{{field}})
+    ui_->settlementDaysValue->setText(version.settlement_days
+        ? QString::number(*version.settlement_days)
         : tr("(unset)"));
-{{/is_nullable_int}}
-{{#is_spin_box}}
-{{^is_nullable_int}}
-    ui_->{{value_widget}}->setText(QString::number(version.{{field}}));
-{{/is_nullable_int}}
-{{/is_spin_box}}
-{{^is_optional_string}}
-{{^is_check_box}}
-{{^is_spin_box}}
-    ui_->{{value_widget}}->setText(QString::fromStdString(version.{{field}}));
-{{/is_spin_box}}
-{{/is_check_box}}
-{{/is_optional_string}}
-{{/domain_entity.qt.detail_fields}}
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
@@ -360,7 +331,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateFullDetails(int version
         QString::fromStdString(version.change_commentary));
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::updateActionStates() {
+void DepositConventionHistoryDialog::updateActionStates() {
     auto selected = ui_->versionListWidget->selectedItems();
     bool hasSelection = !selected.isEmpty();
     bool isNotLatest = hasSelection && selected.first()->row() > 0;
@@ -369,7 +340,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::updateActionStates() {
     revertAction_->setEnabled(isNotLatest);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked() {
+void DepositConventionHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 
@@ -379,7 +350,7 @@ void {{domain_entity.entity_pascal}}HistoryDialog::onOpenVersionClicked() {
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
-void {{domain_entity.entity_pascal}}HistoryDialog::onRevertClicked() {
+void DepositConventionHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
     if (selected.isEmpty()) return;
 

@@ -3,6 +3,7 @@
 #include "ores.{{component_include}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -19,7 +20,8 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     domain::{{entity_singular}} r;
     r.version = 1;
 {{#primary_key.is_text}}
-    r.{{primary_key.column}} = {{{primary_key.generator_expr}}};
+    r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
     r.{{primary_key.column}} = ctx.generate_uuid();

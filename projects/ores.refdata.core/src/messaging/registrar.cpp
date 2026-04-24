@@ -47,6 +47,7 @@
 #include "ores.refdata.core/messaging/purpose_type_handler.hpp"
 #include "ores.refdata.core/messaging/asset_class_handler.hpp"
 #include "ores.refdata.core/messaging/zero_convention_handler.hpp"
+#include "ores.refdata.core/messaging/deposit_convention_handler.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
@@ -72,6 +73,7 @@
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -160,6 +162,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_zero_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Deposit conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<deposit_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_deposit_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_deposit_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_deposit_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_deposit_convention_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 

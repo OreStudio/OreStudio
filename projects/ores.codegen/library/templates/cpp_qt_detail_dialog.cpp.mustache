@@ -226,6 +226,25 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
     ui_->{{widget}}->setPlainText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{field}}));
 {{/is_optional_string}}
 {{/is_text_edit}}
+{{#is_check_box}}
+{{#is_tristate}}
+    ui_->{{widget}}->setCheckState({{domain_entity.qt.item_var}}_.{{field}}
+        ? (*{{domain_entity.qt.item_var}}_.{{field}} ? Qt::Checked : Qt::Unchecked)
+        : Qt::PartiallyChecked);
+{{/is_tristate}}
+{{^is_tristate}}
+    ui_->{{widget}}->setChecked({{domain_entity.qt.item_var}}_.{{field}});
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_spin_box}}
+{{#is_nullable_int}}
+    ui_->{{widget}}->setValue({{domain_entity.qt.item_var}}_.{{field}}.value_or(
+        ui_->{{widget}}->minimum()));
+{{/is_nullable_int}}
+{{^is_nullable_int}}
+    ui_->{{widget}}->setValue({{domain_entity.qt.item_var}}_.{{field}});
+{{/is_nullable_int}}
+{{/is_spin_box}}
 {{#is_static_combo}}
     {
         const int idx = ui_->{{widget}}->findData(
@@ -293,6 +312,35 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->toPlainText().trimmed().toStdString();
 {{/is_optional_string}}
 {{/is_text_edit}}
+{{#is_check_box}}
+{{#is_tristate}}
+    switch (ui_->{{widget}}->checkState()) {
+    case Qt::Checked:
+        {{domain_entity.qt.item_var}}_.{{field}} = std::optional<bool>(true);
+        break;
+    case Qt::Unchecked:
+        {{domain_entity.qt.item_var}}_.{{field}} = std::optional<bool>(false);
+        break;
+    default:
+        {{domain_entity.qt.item_var}}_.{{field}} = std::nullopt;
+        break;
+    }
+{{/is_tristate}}
+{{^is_tristate}}
+    {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->isChecked();
+{{/is_tristate}}
+{{/is_check_box}}
+{{#is_spin_box}}
+{{#is_nullable_int}}
+    if (ui_->{{widget}}->value() == ui_->{{widget}}->minimum())
+        {{domain_entity.qt.item_var}}_.{{field}} = std::nullopt;
+    else
+        {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->value();
+{{/is_nullable_int}}
+{{^is_nullable_int}}
+    {{domain_entity.qt.item_var}}_.{{field}} = ui_->{{widget}}->value();
+{{/is_nullable_int}}
+{{/is_spin_box}}
 {{#is_static_combo}}
     {{domain_entity.qt.item_var}}_.{{field}} =
         ui_->{{widget}}->currentData().toString().toStdString();

@@ -1251,6 +1251,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_uuid_type
                     and not is_already_optional
                 )
+                # Supply a safe default for non-nullable scalar types that
+                # would otherwise leave the domain struct with an
+                # indeterminate value. Nullable fields wrap in optional so
+                # they default to nullopt; only bool/int need an explicit
+                # default. The model may override via default_value.
+                if not col.get('default_value') and col['is_simple']:
+                    cpp_type = col.get('cpp_type', '')
+                    if cpp_type == 'bool':
+                        col['default_value'] = 'false'
+                    elif cpp_type == 'int':
+                        col['default_value'] = '0'
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
@@ -1403,11 +1414,27 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_text_edit'] = f.get('type') == 'text_edit'
                 f['is_static_combo'] = f.get('type') == 'static_combo'
                 f['is_dynamic_combo'] = f.get('type') == 'dynamic_combo'
+                f['is_check_box'] = f.get('type') == 'check_box'
+                f['is_spin_box'] = f.get('type') == 'spin_box'
                 field_cpp = domain_col_types.get(f.get('field'), '')
                 f['is_optional_string'] = (
                     field_cpp.startswith('std::optional<std::string>')
                     and (f['is_line_edit'] or f['is_text_edit'])
                 )
+                # Tri-state checkbox for optional<bool>; normal two-state
+                # for plain bool. Nullable spin box uses minimum as sentinel.
+                f['is_tristate'] = (
+                    f['is_check_box']
+                    and field_cpp.startswith('std::optional<bool>')
+                )
+                f['is_nullable_int'] = (
+                    f['is_spin_box']
+                    and field_cpp.startswith('std::optional<int>')
+                )
+                # Default spin box range (overridable via model)
+                if f['is_spin_box']:
+                    f.setdefault('spin_min', -1 if f['is_nullable_int'] else 0)
+                    f.setdefault('spin_max', 9999)
                 f['_is_first'] = (i == 0)
                 f['_is_last'] = (i == len(detail_fields) - 1)
                 f['_row_index'] = i

@@ -17,26 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_REPOSITORY_HPP
+#define ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
-#include <optional>
+#include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/zero_convention.hpp"
-#include "ores.refdata.core/repository/zero_convention_repository.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
 
-namespace ores::refdata::service {
+namespace ores::refdata::repository {
 
 /**
- * @brief Service for managing zero conventions.
+ * @brief Reads and writes deposit conventions to data storage.
  */
-class zero_convention_service {
+class deposit_convention_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.refdata.service.zero_convention_service";
+        "ores.refdata.repository.deposit_convention_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,23 +46,18 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit zero_convention_service(context ctx);
+    std::string sql();
 
-    std::vector<domain::zero_convention> list_zero_conventions();
+    void write(context ctx, const domain::deposit_convention& v);
+    void write(context ctx, const std::vector<domain::deposit_convention>& v);
 
-    std::optional<domain::zero_convention>
-    get_zero_convention(const std::string& id);
+    std::vector<domain::deposit_convention> read_latest(context ctx);
+    std::vector<domain::deposit_convention>
+    read_latest(context ctx, const std::string& id);
+    std::vector<domain::deposit_convention>
+    read_all(context ctx, const std::string& id);
 
-    void save_zero_convention(const domain::zero_convention& v);
-
-    void remove_zero_convention(const std::string& id);
-
-    std::vector<domain::zero_convention>
-    get_zero_convention_history(const std::string& id);
-
-private:
-    context ctx_;
-    repository::zero_convention_repository repo_;
+    void remove(context ctx, const std::string& id);
 };
 
 }

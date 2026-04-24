@@ -35,7 +35,6 @@
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ui_MainWindow.h"
 
 namespace Ui {
 

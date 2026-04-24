@@ -23,6 +23,7 @@
 #include <QPixmap>
 #include <QTreeWidget>
 #include <QHeaderView>
+#include "ui_AboutDialog.h"
 #include "ores.utility/version/version.hpp"
 #include "ores.qt/ClientManager.hpp"
 
@@ -31,28 +32,32 @@ namespace ores::qt {
 using namespace ores::logging;
 
 AboutDialog::AboutDialog(ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), clientManager_(clientManager) {
+    : QWidget(parent),
+      ui_(std::make_unique<Ui::AboutDialog>()),
+      clientManager_(clientManager) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating about dialog.";
-    ui_.setupUi(this);
+    ui_->setupUi(this);
 
-    // Replace ui_.logoLabel with our custom LogoLabel in the layout
-    logoLabel_ = new LogoLabel(ui_.logoContainer);
-    logoLabel_->setAlignment(ui_.logoLabel->alignment());
-    logoLabel_->setScaledContents(ui_.logoLabel->hasScaledContents());
+    // Replace ui_->logoLabel with our custom LogoLabel in the layout
+    logoLabel_ = new LogoLabel(ui_->logoContainer);
+    logoLabel_->setAlignment(ui_->logoLabel->alignment());
+    logoLabel_->setScaledContents(ui_->logoLabel->hasScaledContents());
 
     // Replace the widget in the layout
-    QLayout* layout = ui_.logoLabel->parentWidget()->layout();
+    QLayout* layout = ui_->logoLabel->parentWidget()->layout();
     if (layout) {
-        layout->replaceWidget(ui_.logoLabel, logoLabel_);
-        ui_.logoLabel->deleteLater();
+        layout->replaceWidget(ui_->logoLabel, logoLabel_);
+        ui_->logoLabel->deleteLater();
     }
 
     // Component column auto-sizes; Version column takes the remaining space
-    ui_.systemInfoTree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui_.systemInfoTree->header()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui_->systemInfoTree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui_->systemInfoTree->header()->setSectionResizeMode(1, QHeaderView::Stretch);
 }
 
+// Out-of-line dtor so unique_ptr<Ui::AboutDialog> sees the full type when
+// destroying; the header only holds a forward declaration.
 AboutDialog::~AboutDialog() {
     BOOST_LOG_SEV(lg(), debug) << "Destroying about dialog.";
 }
@@ -86,18 +91,18 @@ void AboutDialog::showEvent(QShowEvent* e) {
 }
 
 void AboutDialog::populateSystemInfo() {
-    ui_.systemInfoTree->clear();
+    ui_->systemInfoTree->clear();
 
     // Database row
     {
-        auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
+        auto* item = new QTreeWidgetItem(ui_->systemInfoTree);
         item->setText(0, "Database");
         item->setText(1, "(not connected)");
     }
 
     // Server row
     {
-        auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
+        auto* item = new QTreeWidgetItem(ui_->systemInfoTree);
         item->setText(0, "Server");
         item->setText(1, clientManager_ && clientManager_->isConnected()
             ? QString::fromStdString(clientManager_->serverAddress())
@@ -106,7 +111,7 @@ void AboutDialog::populateSystemInfo() {
 
     // Client row — always available (compile-time constants)
     {
-        auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
+        auto* item = new QTreeWidgetItem(ui_->systemInfoTree);
         item->setText(0, "Client");
         item->setText(1, QString("v%1 (%2)")
             .arg(ORES_VERSION)
@@ -114,7 +119,7 @@ void AboutDialog::populateSystemInfo() {
     }
 
     // Shrink the Component column to its content; Version gets the rest
-    ui_.systemInfoTree->resizeColumnToContents(0);
+    ui_->systemInfoTree->resizeColumnToContents(0);
 }
 
 }

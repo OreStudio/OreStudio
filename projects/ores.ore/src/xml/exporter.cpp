@@ -42,7 +42,6 @@ using trading::messaging::equity_export_result;
 using trading::messaging::composite_export_result;
 using trading::domain::bond_instrument;
 using trading::domain::credit_instrument;
-using trading::domain::equity_instrument;
 using trading::domain::commodity_instrument;
 using trading::domain::scripted_instrument;
 

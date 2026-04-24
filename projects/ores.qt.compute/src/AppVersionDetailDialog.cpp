@@ -54,7 +54,11 @@ using namespace ores::logging;
 AppVersionDetailDialog::AppVersionDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
       ui_(new Ui::AppVersionDetailDialog),
-      clientManager_(nullptr) {
+      clientManager_(nullptr),
+      // Single QNetworkAccessManager shared across all per-row PUTs so we
+      // reuse its connection pool / HTTP keep-alive instead of standing up
+      // a fresh manager per upload. Parented to the dialog for cleanup.
+      networkManager_(new QNetworkAccessManager(this)) {
 
     ui_->setupUi(this);
     setupUi();
@@ -623,6 +627,12 @@ void AppVersionDetailDialog::onSaveClicked() {
     QPointer<AppVersionDetailDialog> self = this;
     saveInProgress_ = true;
     ui_->saveButton->setEnabled(false);
+    // Freeze the assigned-platform list while uploads are in flight. If the
+    // user were allowed to add/remove rows mid-save, syncPackagesTab would
+    // rebuild package_rows_ and the callbacks below (which find rows by
+    // platform_id) could end up racing against the new state.
+    ui_->addPlatformButton->setEnabled(false);
+    ui_->removePlatformButton->setEnabled(false);
     ui_->packagesProgressBar->setVisible(true);
     ui_->packagesProgressBar->setValue(0);
 
@@ -630,6 +640,10 @@ void AppVersionDetailDialog::onSaveClicked() {
         if (!self) return;
         self->ui_->packagesProgressBar->setVisible(false);
         self->saveInProgress_ = false;
+        if (!self->readOnly_) {
+            self->ui_->addPlatformButton->setEnabled(true);
+            self->ui_->removePlatformButton->setEnabled(true);
+        }
         if (!ok) {
             BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
                                        << err.toStdString();
@@ -696,43 +710,57 @@ void AppVersionDetailDialog::uploadPendingPackages(
             continue;
         }
 
-        auto* nam = new QNetworkAccessManager(this);
         QNetworkRequest req{uploadUrl};
         req.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
-        auto* reply = nam->put(req, file);
+        auto* reply = networkManager_->put(req, file);
 
+        // Capture platform_id, not row index: syncPackagesTab may reorder
+        // package_rows_ between the PUT kicking off and finished() firing,
+        // so resolve the row at callback time by id. Platform buttons are
+        // disabled while saveInProgress_, so under normal use the row is
+        // still present — but the defensive lookup makes it correct even
+        // if a concurrent mutation slipped through.
+        const std::string platform_id = pr.platform_id;
         const QString stored_uri = QString::fromStdString(uri_path);
         connect(reply, &QNetworkReply::finished, this,
-                [self, reply, file, nam, ctx, done, row, stored_uri]() {
+                [self, reply, file, ctx, done, platform_id, stored_uri]() {
             reply->deleteLater();
             file->deleteLater();
-            nam->deleteLater();
             if (!self) return;
+
+            auto& rows = self->package_rows_;
+            const auto it = std::find_if(rows.begin(), rows.end(),
+                [&](const auto& r) { return r.platform_id == platform_id; });
+            const int resolved_row = (it == rows.end())
+                ? -1 : static_cast<int>(it - rows.begin());
 
             if (reply->error() != QNetworkReply::NoError) {
                 const auto detail = reply->errorString();
-                self->setPackageRowState(row, PackageRow::State::Failed, detail);
+                if (resolved_row >= 0) {
+                    self->setPackageRowState(resolved_row,
+                        PackageRow::State::Failed, detail);
+                }
                 ctx->ok = false;
                 if (ctx->err.isEmpty())
                     ctx->err = tr("%1: %2").arg(
-                        QString::fromStdString(self->package_rows_[row].platform_code),
+                        resolved_row >= 0
+                            ? QString::fromStdString(rows[resolved_row].platform_code)
+                            : tr("(removed)"),
                         detail);
-            } else {
-                self->package_rows_[row].remote_uri = stored_uri;
-                self->setPackageRowState(row, PackageRow::State::Uploaded);
+            } else if (resolved_row >= 0) {
+                rows[resolved_row].remote_uri = stored_uri;
+                self->setPackageRowState(resolved_row,
+                    PackageRow::State::Uploaded);
             }
 
-            // Progress is coarse: increments by row rather than by bytes so we
-            // don't have to plumb uploadProgress signals per file.
-            const int total = static_cast<int>(self->package_rows_.size());
-            const int completed = total -
-                [&]() {
-                    int waiting = 0;
-                    for (const auto& p : self->package_rows_)
-                        if (p.state == PackageRow::State::Uploading) ++waiting;
-                    return waiting;
-                }();
+            // Progress is coarse: increments by completed row rather than by
+            // bytes so we don't have to plumb uploadProgress signals per file.
+            const int total = static_cast<int>(rows.size());
+            int waiting = 0;
+            for (const auto& p : rows)
+                if (p.state == PackageRow::State::Uploading) ++waiting;
+            const int completed = total - waiting;
             if (total > 0)
                 self->ui_->packagesProgressBar->setValue(
                     completed * 100 / total);

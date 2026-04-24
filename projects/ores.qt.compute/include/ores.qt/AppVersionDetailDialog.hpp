@@ -32,6 +32,8 @@
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 
+class QNetworkAccessManager;
+
 namespace Ui {
 class AppVersionDetailDialog;
 }
@@ -141,6 +143,7 @@ private:
 
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
+    QNetworkAccessManager* networkManager_;
     std::string username_;
     QUrl httpBaseUrl_;
     compute::domain::app_version app_version_;

@@ -2908,45 +2908,6 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
-    entity ores_trading_equity_instruments_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-          trade_id : uuid <<FK>>
-        * trade_type_code : text
-        * underlying_code : text
-        * currency : text
-        * notional : numeric(28, 10)
-          quantity : numeric(28, 10)
-          start_date : date
-          maturity_date : date
-          option_type : text
-          strike_price : numeric(28, 10)
-          exercise_type : text
-          barrier_type : text
-          lower_barrier : numeric(28, 10)
-          upper_barrier : numeric(28, 10)
-          average_type : text
-          averaging_start_date : date
-          variance_strike : numeric(28, 10)
-          cliquet_frequency_code : text
-          accumulation_amount : numeric(28, 10)
-          knock_out_barrier : numeric(28, 10)
-          basket_json : text
-          day_count_code : text
-          payment_frequency_code : text
-          return_type : text
-          description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
     entity ores_trading_equity_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * instrument_id : uuid <<PK, FK>>

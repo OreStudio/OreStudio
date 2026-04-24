@@ -124,10 +124,6 @@
 \ir ./trading_credit_instruments_notify_trigger_create.sql
 \ir ./trading_credit_instruments_extensions_create.sql
 
--- Equity instruments (depends on reference data above)
-\ir ./trading_equity_instruments_create.sql
-\ir ./trading_equity_instruments_notify_trigger_create.sql
-
 -- Per-type equity instruments
 \ir ./trading_equity_option_instruments_create.sql
 \ir ./trading_equity_option_instruments_notify_trigger_create.sql

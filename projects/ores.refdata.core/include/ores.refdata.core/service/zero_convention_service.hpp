@@ -52,7 +52,7 @@ public:
     std::vector<domain::zero_convention> list_zero_conventions();
 
     std::optional<domain::zero_convention>
-    find_zero_convention(const std::string& id);
+    get_zero_convention(const std::string& id);
 
     void save_zero_convention(const domain::zero_convention& v);
 

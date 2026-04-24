@@ -20,6 +20,7 @@
 #include "ores.refdata.api/generators/zero_convention_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -35,7 +36,8 @@ domain::zero_convention generate_synthetic_zero_convention(
 
     domain::zero_convention r;
     r.version = 1;
-    r.id = std::string("EUR-ZERO-CONVENTIONS");
+    r.id = std::string("EUR-ZERO-CONVENTIONS") + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.tenor_based = true;
     r.day_count_fraction = std::string("ACT/365.FIXED");
     r.compounding = std::string("Continuous");

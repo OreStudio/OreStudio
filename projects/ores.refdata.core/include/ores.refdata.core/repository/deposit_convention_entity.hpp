@@ -38,7 +38,7 @@ struct deposit_convention_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
-    bool index_based;
+    bool index_based = false;
     std::optional<std::string> index;
     std::optional<std::string> calendar;
     std::optional<std::string> convention;

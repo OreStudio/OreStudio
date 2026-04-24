@@ -57,7 +57,7 @@ struct deposit_convention final {
     /**
      * @brief Whether the deposit conventions are derived from an IBOR index. When true, index must be set and the remaining fields are optional.
      */
-    bool index_based;
+    bool index_based = false;
 
     /**
      * @brief IBOR index identifier (e.g. 'USD-LIBOR') used when index_based.

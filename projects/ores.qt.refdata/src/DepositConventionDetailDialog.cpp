@@ -125,6 +125,7 @@ void DepositConventionDetailDialog::setReadOnly(bool readOnly) {
 
 void DepositConventionDetailDialog::updateUiFromConvention() {
     ui_->idEdit->setText(QString::fromStdString(dc_.id));
+    ui_->indexBasedEdit->setChecked(dc_.index_based);
     ui_->indexEdit->setText(dc_.index
         ? QString::fromStdString(*dc_.index)
         : QString{});
@@ -137,6 +138,11 @@ void DepositConventionDetailDialog::updateUiFromConvention() {
     ui_->dayCountFractionEdit->setText(dc_.day_count_fraction
         ? QString::fromStdString(*dc_.day_count_fraction)
         : QString{});
+    ui_->endOfMonthEdit->setCheckState(dc_.end_of_month
+        ? (*dc_.end_of_month ? Qt::Checked : Qt::Unchecked)
+        : Qt::PartiallyChecked);
+    ui_->settlementDaysEdit->setValue(dc_.settlement_days.value_or(
+        ui_->settlementDaysEdit->minimum()));
 
     populateProvenance(dc_.version,
                        dc_.modified_by,
@@ -153,6 +159,7 @@ void DepositConventionDetailDialog::updateConventionFromUi() {
     if (createMode_) {
         dc_.id = ui_->idEdit->text().trimmed().toStdString();
     }
+    dc_.index_based = ui_->indexBasedEdit->isChecked();
     {
         const auto index_str = ui_->indexEdit->text().trimmed().toStdString();
         dc_.index =
@@ -173,6 +180,21 @@ void DepositConventionDetailDialog::updateConventionFromUi() {
         dc_.day_count_fraction =
             day_count_fraction_str.empty() ? std::nullopt : std::optional<std::string>(day_count_fraction_str);
     }
+    switch (ui_->endOfMonthEdit->checkState()) {
+    case Qt::Checked:
+        dc_.end_of_month = std::optional<bool>(true);
+        break;
+    case Qt::Unchecked:
+        dc_.end_of_month = std::optional<bool>(false);
+        break;
+    default:
+        dc_.end_of_month = std::nullopt;
+        break;
+    }
+    if (ui_->settlementDaysEdit->value() == ui_->settlementDaysEdit->minimum())
+        dc_.settlement_days = std::nullopt;
+    else
+        dc_.settlement_days = ui_->settlementDaysEdit->value();
     dc_.modified_by = username_;
 }
 

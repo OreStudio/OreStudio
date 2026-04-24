@@ -34,8 +34,8 @@ std::vector<domain::zero_convention> zero_convention_service::list_zero_conventi
 }
 
 std::optional<domain::zero_convention>
-zero_convention_service::find_zero_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding zero convention: " << id;
+zero_convention_service::get_zero_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting zero convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty()) return std::nullopt;
     return results.front();

@@ -244,6 +244,12 @@ void DepositConventionHistoryDialog::updateChangesTable(int currentVersionIndex)
                   QString::fromStdString(current.id));
     }
 
+    if (current.index_based != previous.index_based) {
+        addChange("Index Based",
+                  previous.index_based ? tr("true") : tr("false"),
+                  current.index_based ? tr("true") : tr("false"));
+    }
+
     if (current.index != previous.index) {
         addChange("Index",
                   previous.index ? QString::fromStdString(*previous.index) : QString{},
@@ -268,6 +274,18 @@ void DepositConventionHistoryDialog::updateChangesTable(int currentVersionIndex)
                   current.day_count_fraction ? QString::fromStdString(*current.day_count_fraction) : QString{});
     }
 
+    if (current.end_of_month != previous.end_of_month) {
+        addChange("End Of Month",
+                  previous.end_of_month ? (*previous.end_of_month ? tr("true") : tr("false")) : tr("(unset)"),
+                  current.end_of_month ? (*current.end_of_month ? tr("true") : tr("false")) : tr("(unset)"));
+    }
+
+    if (current.settlement_days != previous.settlement_days) {
+        addChange("Settlement Days",
+                  previous.settlement_days ? QString::number(*previous.settlement_days) : tr("(unset)"),
+                  current.settlement_days ? QString::number(*current.settlement_days) : tr("(unset)"));
+    }
+
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -287,6 +305,7 @@ void DepositConventionHistoryDialog::updateFullDetails(int versionIndex) {
     const auto& version = versions_[versionIndex];
 
     ui_->idValue->setText(QString::fromStdString(version.id));
+    ui_->indexBasedValue->setText(version.index_based ? tr("true") : tr("false"));
     ui_->indexValue->setText(version.index
         ? QString::fromStdString(*version.index)
         : QString{});
@@ -299,6 +318,12 @@ void DepositConventionHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->dayCountFractionValue->setText(version.day_count_fraction
         ? QString::fromStdString(*version.day_count_fraction)
         : QString{});
+    ui_->endOfMonthValue->setText(version.end_of_month
+        ? (*version.end_of_month ? tr("true") : tr("false"))
+        : tr("(unset)"));
+    ui_->settlementDaysValue->setText(version.settlement_days
+        ? QString::number(*version.settlement_days)
+        : tr("(unset)"));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));

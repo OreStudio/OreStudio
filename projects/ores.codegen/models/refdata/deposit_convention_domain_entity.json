@@ -133,6 +133,8 @@
       "detail_fields": [
         {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
          "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
+        {"field": "index_based", "label": "Index Based", "widget": "indexBasedEdit",
+         "type": "check_box"},
         {"field": "index", "label": "Index", "widget": "indexEdit",
          "type": "line_edit", "placeholder": "e.g. USD-LIBOR"},
         {"field": "calendar", "label": "Calendar", "widget": "calendarEdit",
@@ -140,7 +142,11 @@
         {"field": "convention", "label": "Convention", "widget": "conventionEdit",
          "type": "line_edit", "placeholder": "e.g. Following"},
         {"field": "day_count_fraction", "label": "Day Count Fraction", "widget": "dayCountFractionEdit",
-         "type": "line_edit", "placeholder": "e.g. ACT/360"}
+         "type": "line_edit", "placeholder": "e.g. ACT/360"},
+        {"field": "end_of_month", "label": "End Of Month", "widget": "endOfMonthEdit",
+         "type": "check_box"},
+        {"field": "settlement_days", "label": "Settlement Days", "widget": "settlementDaysEdit",
+         "type": "spin_box", "spin_min": -1, "spin_max": 30}
       ],
 
       "columns": [

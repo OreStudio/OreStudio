@@ -53,58 +53,109 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLabel" name="labelIndexBased">
+            <property name="text">
+             <string>Index Based:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="indexBasedEdit">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="labelIndex">
             <property name="text">
              <string>Index:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="indexEdit">
             <property name="placeholderText">
              <string>e.g. USD-LIBOR</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelCalendar">
             <property name="text">
              <string>Calendar:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="calendarEdit">
             <property name="placeholderText">
              <string>e.g. TARGET</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelConvention">
             <property name="text">
              <string>Convention:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="conventionEdit">
             <property name="placeholderText">
              <string>e.g. Following</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelDayCountFraction">
             <property name="text">
              <string>Day Count Fraction:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="dayCountFractionEdit">
             <property name="placeholderText">
              <string>e.g. ACT/360</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="labelEndOfMonth">
+            <property name="text">
+             <string>End Of Month:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QCheckBox" name="endOfMonthEdit">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="labelSettlementDays">
+            <property name="text">
+             <string>Settlement Days:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QSpinBox" name="settlementDaysEdit">
+            <property name="minimum">
+             <number>-1</number>
+            </property>
+            <property name="maximum">
+             <number>30</number>
+            </property>
+            <property name="specialValueText">
+             <string>(unset)</string>
             </property>
            </widget>
           </item>

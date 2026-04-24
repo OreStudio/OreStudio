@@ -20,6 +20,7 @@
 #include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -35,7 +36,8 @@ domain::deposit_convention generate_synthetic_deposit_convention(
 
     domain::deposit_convention r;
     r.version = 1;
-    r.id = std::string("USD-LIBOR-CONVENTIONS");
+    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.index_based = true;
     r.index = std::string("USD-LIBOR");
     r.calendar = std::nullopt;

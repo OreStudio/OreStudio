@@ -686,7 +686,20 @@ void AppVersionDetailDialog::uploadPendingPackages(
     auto ctx = std::make_shared<Ctx>();
     ctx->remaining = static_cast<int>(pending.size());
 
-    const auto av_id = boost::uuids::to_string(app_version_.id);
+    // Resolve app name + engine version once — both feed the canonical
+    // human-readable URI layout produced by compute_storage::package_path,
+    // which matches the SQL seed so hand-seeded and UI-uploaded packages
+    // share a single convention.
+    const auto app_id_str = boost::uuids::to_string(app_version_.app_id);
+    const auto app_it = std::find_if(appEntries_.begin(), appEntries_.end(),
+        [&](const auto& e) { return e.id == app_id_str; });
+    if (app_it == appEntries_.end()) {
+        done(false, tr("Parent app metadata not loaded; cannot construct "
+            "package URI."));
+        return;
+    }
+    const std::string& app_name = app_it->name;
+    const std::string& version = app_version_.engine_version;
     QPointer<AppVersionDetailDialog> self = this;
 
     for (int row : pending) {
@@ -695,7 +708,7 @@ void AppVersionDetailDialog::uploadPendingPackages(
 
         const std::string uri_path =
             ores::compute::net::compute_storage::package_path(
-                av_id, pr.platform_code, ".tar.gz");
+                app_name, version, pr.platform_code, ".tar.gz");
         QUrl uploadUrl = httpBaseUrl_;
         uploadUrl.setPath(QString::fromStdString(uri_path));
 

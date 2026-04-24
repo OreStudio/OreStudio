@@ -21,6 +21,7 @@
 #define ORES_TRADING_SERVICE_EQUITY_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
@@ -43,6 +44,9 @@ public:
     using context = ores::database::context;
 
     explicit equity_swap_instrument_service(context ctx);
+
+    std::optional<domain::equity_swap_instrument>
+    get_equity_swap_instrument(const std::string& id);
 
     void save_equity_swap_instrument(const domain::equity_swap_instrument& v);
 

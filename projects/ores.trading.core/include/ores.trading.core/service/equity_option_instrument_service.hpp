@@ -21,6 +21,7 @@
 #define ORES_TRADING_SERVICE_EQUITY_OPTION_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
@@ -43,6 +44,9 @@ public:
     using context = ores::database::context;
 
     explicit equity_option_instrument_service(context ctx);
+
+    std::optional<domain::equity_option_instrument>
+    get_equity_option_instrument(const std::string& id);
 
     void save_equity_option_instrument(const domain::equity_option_instrument& v);
 

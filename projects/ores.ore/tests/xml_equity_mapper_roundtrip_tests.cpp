@@ -33,7 +33,7 @@
  * Phases 4 and 5: vanilla and exotic equity types.
  * For each example file:
  *   1. Parse ORE XML into ores.ore domain types.
- *   2. Forward-map to equity_instrument via trade_mapper.
+ *   2. Forward-map to the per-type equity domain via trade_mapper.
  *   3. Assert key economic fields are populated.
  *   4. Reverse-map back to ORE XSD trade.
  *   5. Assert the round-tripped XSD type is structurally populated.

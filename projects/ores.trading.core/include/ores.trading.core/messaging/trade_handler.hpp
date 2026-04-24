@@ -52,7 +52,6 @@
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
-#include "ores.trading.core/service/equity_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"

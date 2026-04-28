@@ -83,6 +83,7 @@ private slots:
     void onAddPlatformClicked();
     void onRemovePlatformClicked();
     void onBrowsePackageRowClicked();
+    void onRetryPackageRowClicked();
 
 protected:
     QTabWidget* tabWidget() const override;

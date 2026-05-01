@@ -67,10 +67,6 @@
 \ir ./trading_credit_instruments_notify_trigger_drop.sql
 \ir ./trading_credit_instruments_drop.sql
 
--- Equity instruments
-\ir ./trading_equity_instruments_notify_trigger_drop.sql
-\ir ./trading_equity_instruments_drop.sql
-
 -- Commodity instruments
 \ir ./trading_commodity_instruments_notify_trigger_drop.sql
 \ir ./trading_commodity_instruments_drop.sql

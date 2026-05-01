@@ -98,7 +98,7 @@ void EquityInstrumentForm::setUsername(const std::string& username) {
 }
 
 void EquityInstrumentForm::clear() {
-    instrument_ = trading::domain::equity_instrument{};
+    instrument_ = trading::domain::equity_option_instrument{};
     loaded_ = false;
     dirty_ = false;
     populateFromInstrument();
@@ -150,17 +150,18 @@ void EquityInstrumentForm::setChangeReason(
 }
 
 void EquityInstrumentForm::writeUiToInstrument() {
+    // Scoped to equity_option_instrument. Widgets outside this struct's
+    // fields (barrier, averaging, variance, accumulation, return-type,
+    // day-count, basket) are left in place in the .ui for future variant
+    // coverage but are not read back here.
     instrument_.trade_type_code =
         ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
-    instrument_.underlying_code =
+    instrument_.underlying_name =
         ui_->underlyingCodeEdit->text().trimmed().toStdString();
     instrument_.currency =
         ui_->currencyEdit->text().trimmed().toStdString();
     instrument_.notional = ui_->notionalSpinBox->value();
-    instrument_.quantity = ui_->quantitySpinBox->value();
-    instrument_.start_date =
-        ui_->startDateEdit->text().trimmed().toStdString();
-    instrument_.maturity_date =
+    instrument_.expiry_date =
         ui_->maturityDateEdit->text().trimmed().toStdString();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
@@ -168,28 +169,9 @@ void EquityInstrumentForm::writeUiToInstrument() {
         ui_->optionTypeEdit->text().trimmed().toStdString();
     instrument_.exercise_type =
         ui_->exerciseTypeEdit->text().trimmed().toStdString();
-    instrument_.strike_price = ui_->strikePriceSpinBox->value();
-    instrument_.barrier_type =
-        ui_->barrierTypeEdit->text().trimmed().toStdString();
-    instrument_.lower_barrier = ui_->lowerBarrierSpinBox->value();
-    instrument_.upper_barrier = ui_->upperBarrierSpinBox->value();
-    instrument_.average_type =
-        ui_->averageTypeEdit->text().trimmed().toStdString();
-    instrument_.averaging_start_date =
-        ui_->averagingStartDateEdit->text().trimmed().toStdString();
-    instrument_.variance_strike = ui_->varianceStrikeSpinBox->value();
-    instrument_.cliquet_frequency_code =
+    instrument_.strike = ui_->strikePriceSpinBox->value();
+    instrument_.cliquet_frequency =
         ui_->cliquetFrequencyCodeEdit->text().trimmed().toStdString();
-    instrument_.accumulation_amount = ui_->accumulationAmountSpinBox->value();
-    instrument_.knock_out_barrier = ui_->knockOutBarrierSpinBox->value();
-    instrument_.day_count_code =
-        ui_->dayCountCodeEdit->text().trimmed().toStdString();
-    instrument_.payment_frequency_code =
-        ui_->paymentFrequencyCodeEdit->text().trimmed().toStdString();
-    instrument_.return_type =
-        ui_->returnTypeEdit->text().trimmed().toStdString();
-    instrument_.basket_json =
-        ui_->basketJsonEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
@@ -197,17 +179,24 @@ void EquityInstrumentForm::writeUiToInstrument() {
 void EquityInstrumentForm::setInstrument(
     const trading::messaging::instrument_export_result& instrument) {
 
-    const auto* equity =
-        std::get_if<trading::domain::equity_instrument>(&instrument);
-    if (!equity) {
+    const auto* ex =
+        std::get_if<trading::messaging::equity_export_result>(&instrument);
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-equity instrument pushed to EquityInstrumentForm";
         emit loadFailed(QStringLiteral(
             "Unexpected instrument type for equity form"));
         return;
     }
+    const auto* opt =
+        std::get_if<trading::domain::equity_option_instrument>(&ex->instrument);
+    if (!opt) {
+        emit loadFailed(QStringLiteral(
+            "Non-option equity type not yet supported in this dialog"));
+        return;
+    }
 
-    instrument_ = *equity;
+    instrument_ = *opt;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -247,43 +236,35 @@ void EquityInstrumentForm::populateFromInstrument() {
     ui_->tradeTypeCodeEdit->setText(
         QString::fromStdString(instrument_.trade_type_code));
     ui_->underlyingCodeEdit->setText(
-        QString::fromStdString(instrument_.underlying_code));
+        QString::fromStdString(instrument_.underlying_name));
     ui_->currencyEdit->setText(
         QString::fromStdString(instrument_.currency));
     ui_->notionalSpinBox->setValue(instrument_.notional);
-    ui_->quantitySpinBox->setValue(instrument_.quantity);
-    ui_->startDateEdit->setText(
-        QString::fromStdString(instrument_.start_date));
+    ui_->quantitySpinBox->setValue(0.0);
+    ui_->startDateEdit->clear();
     ui_->maturityDateEdit->setText(
-        QString::fromStdString(instrument_.maturity_date));
+        QString::fromStdString(instrument_.expiry_date));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
     ui_->optionTypeEdit->setText(
         QString::fromStdString(instrument_.option_type));
     ui_->exerciseTypeEdit->setText(
         QString::fromStdString(instrument_.exercise_type));
-    ui_->strikePriceSpinBox->setValue(instrument_.strike_price);
-    ui_->barrierTypeEdit->setText(
-        QString::fromStdString(instrument_.barrier_type));
-    ui_->lowerBarrierSpinBox->setValue(instrument_.lower_barrier);
-    ui_->upperBarrierSpinBox->setValue(instrument_.upper_barrier);
-    ui_->averageTypeEdit->setText(
-        QString::fromStdString(instrument_.average_type));
-    ui_->averagingStartDateEdit->setText(
-        QString::fromStdString(instrument_.averaging_start_date));
-    ui_->varianceStrikeSpinBox->setValue(instrument_.variance_strike);
+    ui_->strikePriceSpinBox->setValue(instrument_.strike);
+    ui_->barrierTypeEdit->clear();
+    ui_->lowerBarrierSpinBox->setValue(0.0);
+    ui_->upperBarrierSpinBox->setValue(0.0);
+    ui_->averageTypeEdit->clear();
+    ui_->averagingStartDateEdit->clear();
+    ui_->varianceStrikeSpinBox->setValue(0.0);
     ui_->cliquetFrequencyCodeEdit->setText(
-        QString::fromStdString(instrument_.cliquet_frequency_code));
-    ui_->accumulationAmountSpinBox->setValue(instrument_.accumulation_amount);
-    ui_->knockOutBarrierSpinBox->setValue(instrument_.knock_out_barrier);
-    ui_->dayCountCodeEdit->setText(
-        QString::fromStdString(instrument_.day_count_code));
-    ui_->paymentFrequencyCodeEdit->setText(
-        QString::fromStdString(instrument_.payment_frequency_code));
-    ui_->returnTypeEdit->setText(
-        QString::fromStdString(instrument_.return_type));
-    ui_->basketJsonEdit->setPlainText(
-        QString::fromStdString(instrument_.basket_json));
+        QString::fromStdString(instrument_.cliquet_frequency));
+    ui_->accumulationAmountSpinBox->setValue(0.0);
+    ui_->knockOutBarrierSpinBox->setValue(0.0);
+    ui_->dayCountCodeEdit->clear();
+    ui_->paymentFrequencyCodeEdit->clear();
+    ui_->returnTypeEdit->clear();
+    ui_->basketJsonEdit->clear();
     block(false);
 }
 
@@ -335,7 +316,7 @@ void EquityInstrumentForm::saveInstrument(
         BOOST_LOG_SEV(lg(), info) << "Equity instrument saved";
         self->dirty_ = false;
         self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.id));
+        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
     });
 
     auto* cm = clientManager_;
@@ -344,7 +325,7 @@ void EquityInstrumentForm::saveInstrument(
         [cm, instrument = std::move(instrument)]() -> SaveResult {
         if (!cm)
             return {false, "Dialog closed"};
-        trading::messaging::save_equity_instrument_request req;
+        trading::messaging::save_equity_option_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};

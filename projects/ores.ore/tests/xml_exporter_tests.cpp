@@ -66,15 +66,16 @@ ores::trading::messaging::instrument_export_result to_export_result(
             return v.instrument;
         else if constexpr (std::is_same_v<T, credit_mapping_result>)
             return v.instrument;
-        else if constexpr (std::is_same_v<T, equity_mapping_result>)
-            // equity_mapping_result carries an equity_instrument_variant during
-            // the Phase 2 migration; the legacy flat equity_instrument is
-            // currently the only alternative produced by every forward_*
-            // function. Per-type alternatives land as each forward_*/reverse_*
-            // pair migrates; the final Phase 2 commit removes the flat
-            // alternative and replaces instrument_export_result's
-            // equity_instrument alternative with equity_export_result.
-            return std::get<ores::trading::domain::equity_instrument>(v.instrument);
+        else if constexpr (std::is_same_v<T, equity_mapping_result>) {
+            // equity_mapping_result::instrument (import-side variant) has the
+            // same alternatives as equity_export_result::instrument; copy
+            // through.
+            equity_export_result ex;
+            std::visit([&](const auto& instr) {
+                ex.instrument = instr;
+            }, v.instrument);
+            return ex;
+        }
         else if constexpr (std::is_same_v<T, commodity_mapping_result>)
             return v.instrument;
         else if constexpr (std::is_same_v<T, scripted_mapping_result>)

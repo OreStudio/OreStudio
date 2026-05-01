@@ -535,13 +535,7 @@ ore_import_result OreImporter::execute(
                         std::visit([&](const auto& instr) {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
-                            if constexpr (std::is_same_v<InstrT, equity_instrument>) {
-                                save_equity_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
+                            if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
                                 save_equity_option_instrument_request req; req.data = instr;
                                 const auto resp =
                                     cm_->process_authenticated_request(std::move(req));

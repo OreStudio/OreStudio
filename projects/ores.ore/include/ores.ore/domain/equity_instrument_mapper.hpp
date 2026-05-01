@@ -23,7 +23,6 @@
 #include <variant>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
@@ -38,17 +37,9 @@ namespace ores::ore::domain {
 
 /**
  * @brief Variant holding one of the nine per-type equity instrument domain
- *        objects, or — during the Phase 2 migration from the legacy flat
- *        equity_instrument — the flat type itself.
- *
- * The flat equity_instrument alternative is a migration bridge. Each
- * forward_equity_* / reverse_equity_* pair in this file gets rewritten to
- * produce and consume its corresponding per-type alternative instead; when
- * all 15 ORE-side trade types have migrated, the flat alternative is
- * removed from this variant in the final Phase 2 commit.
+ *        objects.
  */
 using equity_instrument_variant = std::variant<
-    ores::trading::domain::equity_instrument,
     ores::trading::domain::equity_option_instrument,
     ores::trading::domain::equity_digital_option_instrument,
     ores::trading::domain::equity_barrier_option_instrument,
@@ -139,39 +130,39 @@ public:
 
     // Phase 4 — reverse
     static trade reverse_equity_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_option_instrument& instr);
     static trade reverse_equity_forward(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_forward_instrument& instr);
     static trade reverse_equity_swap(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_swap_instrument& instr);
     static trade reverse_equity_variance_swap(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_variance_swap_instrument& instr);
     static trade reverse_equity_barrier_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_barrier_option_instrument& instr);
     static trade reverse_equity_asian_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_asian_option_instrument& instr);
     static trade reverse_equity_digital_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_digital_option_instrument& instr);
     static trade reverse_equity_touch_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_digital_option_instrument& instr);
     static trade reverse_equity_outperformance_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_option_instrument& instr);
 
     // Phase 10 — reverse (barrier variant extensions)
     static trade reverse_equity_double_barrier_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_barrier_option_instrument& instr);
     static trade reverse_equity_european_barrier_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_barrier_option_instrument& instr);
 
     // Phase 5 — reverse
     static trade reverse_equity_accumulator(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_accumulator_instrument& instr);
     static trade reverse_equity_tarf(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_accumulator_instrument& instr);
     static trade reverse_equity_cliquet_option(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_option_instrument& instr);
     static trade reverse_equity_worst_of_basket_swap(
-        const ores::trading::domain::equity_instrument& instr);
+        const ores::trading::domain::equity_swap_instrument& instr);
 };
 
 

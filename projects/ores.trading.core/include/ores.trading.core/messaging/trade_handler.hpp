@@ -52,7 +52,15 @@
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include "ores.trading.core/service/credit_instrument_service.hpp"
-#include "ores.trading.core/service/equity_instrument_service.hpp"
+#include "ores.trading.core/service/equity_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_forward_instrument_service.hpp"
+#include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/equity_swap_instrument_service.hpp"
+#include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
@@ -258,9 +266,78 @@ private:
             break;
         }
         case product_type::equity: {
-            service::equity_instrument_service isvc(ctx);
-            if (auto r = isvc.get_equity_instrument(id))
-                item.instrument = std::move(*r);
+            const auto& ttc = t.trade_type;
+            std::optional<equity_export_result> ex_opt;
+            // Routing mirrors trade_mapper::map_equity_instrument; keep in sync.
+            if (ttc == "EquityOption" || ttc == "EquityCliquetOption" ||
+                ttc == "EquityOutperformanceOption") {
+                service::equity_option_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_option_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityForward") {
+                service::equity_forward_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_forward_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquitySwap" || ttc == "EquityWorstOfBasketSwap") {
+                service::equity_swap_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_swap_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityVarianceSwap") {
+                service::equity_variance_swap_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_variance_swap_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityBarrierOption" ||
+                       ttc == "EquityDoubleBarrierOption" ||
+                       ttc == "EquityEuropeanBarrierOption") {
+                service::equity_barrier_option_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_barrier_option_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityAsianOption") {
+                service::equity_asian_option_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_asian_option_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityDigitalOption" ||
+                       ttc == "EquityTouchOption") {
+                service::equity_digital_option_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_digital_option_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityAccumulator" || ttc == "EquityTaRF") {
+                service::equity_accumulator_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_accumulator_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            } else if (ttc == "EquityPosition") {
+                service::equity_position_instrument_service svc(ctx);
+                if (auto r = svc.get_equity_position_instrument(id)) {
+                    equity_export_result ex;
+                    ex.instrument = std::move(*r);
+                    ex_opt = std::move(ex);
+                }
+            }
+            if (ex_opt) item.instrument = std::move(*ex_opt);
             break;
         }
         case product_type::commodity: {

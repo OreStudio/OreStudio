@@ -22,7 +22,7 @@
 
 #include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
 
 namespace Ui {
 class EquityInstrumentForm;
@@ -86,7 +86,9 @@ private:
     Ui::EquityInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
     std::string username_;
-    trading::domain::equity_instrument instrument_;
+    /// Per-type instrument state. Scoped to EquityOption for now; extending
+    /// to other equity variants is follow-up work.
+    trading::domain::equity_option_instrument instrument_;
     bool dirty_ = false;
     bool loaded_ = false;
 };

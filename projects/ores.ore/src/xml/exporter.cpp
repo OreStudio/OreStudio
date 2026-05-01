@@ -267,8 +267,10 @@ std::string exporter::export_portfolio(
                         }
                     } else if constexpr (std::is_same_v<I,
                             equity_variance_swap_instrument>) {
-                        xsd_t = equity_instrument_mapper::reverse_equity_variance_swap(instr);
-                        matched = true;
+                        if (tt == "EquityVarianceSwap") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_variance_swap(instr);
+                            matched = true;
+                        }
                     } else if constexpr (std::is_same_v<I,
                             equity_barrier_option_instrument>) {
                         if (tt == "EquityBarrierOption") {
@@ -283,8 +285,10 @@ std::string exporter::export_portfolio(
                         }
                     } else if constexpr (std::is_same_v<I,
                             equity_asian_option_instrument>) {
-                        xsd_t = equity_instrument_mapper::reverse_equity_asian_option(instr);
-                        matched = true;
+                        if (tt == "EquityAsianOption") {
+                            xsd_t = equity_instrument_mapper::reverse_equity_asian_option(instr);
+                            matched = true;
+                        }
                     } else if constexpr (std::is_same_v<I,
                             equity_digital_option_instrument>) {
                         if (tt == "EquityDigitalOption") {

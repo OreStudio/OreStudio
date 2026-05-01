@@ -196,9 +196,9 @@ void CreditInstrumentForm::writeUiToInstrument() {
 void CreditInstrumentForm::setInstrument(
     const trading::messaging::instrument_export_result& instrument) {
 
-    const auto* credit =
-        std::get_if<trading::domain::credit_instrument>(&instrument);
-    if (!credit) {
+    const auto* ex =
+        std::get_if<trading::messaging::credit_export_result>(&instrument);
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-credit instrument pushed to CreditInstrumentForm";
         emit loadFailed(QStringLiteral(
@@ -206,7 +206,7 @@ void CreditInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = *credit;
+    instrument_ = ex->instrument;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

@@ -178,9 +178,9 @@ void BondInstrumentForm::writeUiToInstrument() {
 void BondInstrumentForm::setInstrument(
     const trading::messaging::instrument_export_result& instrument) {
 
-    const auto* bond =
-        std::get_if<trading::domain::bond_instrument>(&instrument);
-    if (!bond) {
+    const auto* ex =
+        std::get_if<trading::messaging::bond_export_result>(&instrument);
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-bond instrument pushed to BondInstrumentForm";
         emit loadFailed(QStringLiteral(
@@ -188,7 +188,7 @@ void BondInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = *bond;
+    instrument_ = ex->instrument;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

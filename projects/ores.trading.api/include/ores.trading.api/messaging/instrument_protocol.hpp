@@ -1107,11 +1107,39 @@ struct equity_export_result {
 };
 
 /**
+ * @brief Bond instrument, used in export/fetch results.
+ */
+struct bond_export_result {
+    ores::trading::domain::bond_instrument instrument;
+};
+
+/**
+ * @brief Credit instrument, used in export/fetch results.
+ */
+struct credit_export_result {
+    ores::trading::domain::credit_instrument instrument;
+};
+
+/**
+ * @brief Commodity instrument, used in export/fetch results.
+ */
+struct commodity_export_result {
+    ores::trading::domain::commodity_instrument instrument;
+};
+
+/**
  * @brief Composite instrument with its constituent legs.
  */
 struct composite_export_result {
     ores::trading::domain::composite_instrument instrument;
     std::vector<ores::trading::domain::composite_leg> legs;
+};
+
+/**
+ * @brief Scripted instrument, used in export/fetch results.
+ */
+struct scripted_export_result {
+    ores::trading::domain::scripted_instrument instrument;
 };
 
 /**
@@ -1125,12 +1153,12 @@ using instrument_export_result = std::variant<
     std::monostate,
     swap_export_result,
     fx_export_result,
-    ores::trading::domain::bond_instrument,
-    ores::trading::domain::credit_instrument,
+    bond_export_result,
+    credit_export_result,
     equity_export_result,
-    ores::trading::domain::commodity_instrument,
+    commodity_export_result,
     composite_export_result,
-    ores::trading::domain::scripted_instrument
+    scripted_export_result
 >;
 
 }

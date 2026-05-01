@@ -242,9 +242,9 @@ void CommodityInstrumentForm::writeUiToInstrument() {
 void CommodityInstrumentForm::setInstrument(
     const trading::messaging::instrument_export_result& instrument) {
 
-    const auto* commodity =
-        std::get_if<trading::domain::commodity_instrument>(&instrument);
-    if (!commodity) {
+    const auto* ex =
+        std::get_if<trading::messaging::commodity_export_result>(&instrument);
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-commodity instrument pushed to CommodityInstrumentForm";
         emit loadFailed(QStringLiteral(
@@ -252,7 +252,7 @@ void CommodityInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = *commodity;
+    instrument_ = ex->instrument;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

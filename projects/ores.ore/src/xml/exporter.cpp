@@ -38,12 +38,12 @@ using namespace ores::logging;
 using namespace ores::ore::domain;
 using trading::messaging::swap_export_result;
 using trading::messaging::fx_export_result;
+using trading::messaging::bond_export_result;
+using trading::messaging::credit_export_result;
 using trading::messaging::equity_export_result;
+using trading::messaging::commodity_export_result;
 using trading::messaging::composite_export_result;
-using trading::domain::bond_instrument;
-using trading::domain::credit_instrument;
-using trading::domain::commodity_instrument;
-using trading::domain::scripted_instrument;
+using trading::messaging::scripted_export_result;
 
 namespace {
 
@@ -196,39 +196,41 @@ std::string exporter::export_portfolio(
                         << "No reverse mapper for FX type: " << tt;
                     return;
                 }
-            } else if constexpr (std::is_same_v<T, bond_instrument>) {
+            } else if constexpr (std::is_same_v<T, bond_export_result>) {
+                const auto& instr = r.instrument;
                 if (tt == "Bond")
-                    xsd_t = bond_instrument_mapper::reverse_bond(r);
+                    xsd_t = bond_instrument_mapper::reverse_bond(instr);
                 else if (tt == "ForwardBond")
-                    xsd_t = bond_instrument_mapper::reverse_forward_bond(r);
+                    xsd_t = bond_instrument_mapper::reverse_forward_bond(instr);
                 else if (tt == "CallableBond")
-                    xsd_t = bond_instrument_mapper::reverse_callable_bond(r);
+                    xsd_t = bond_instrument_mapper::reverse_callable_bond(instr);
                 else if (tt == "ConvertibleBond")
-                    xsd_t = bond_instrument_mapper::reverse_convertible_bond(r);
+                    xsd_t = bond_instrument_mapper::reverse_convertible_bond(instr);
                 else if (tt == "BondOption")
-                    xsd_t = bond_instrument_mapper::reverse_bond_option(r);
+                    xsd_t = bond_instrument_mapper::reverse_bond_option(instr);
                 else if (tt == "BondTRS")
-                    xsd_t = bond_instrument_mapper::reverse_bond_trs(r);
+                    xsd_t = bond_instrument_mapper::reverse_bond_trs(instr);
                 else if (tt == "BondRepo")
-                    xsd_t = bond_instrument_mapper::reverse_bond_repo(r);
+                    xsd_t = bond_instrument_mapper::reverse_bond_repo(instr);
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for bond type: " << tt;
                     return;
                 }
-            } else if constexpr (std::is_same_v<T, credit_instrument>) {
+            } else if constexpr (std::is_same_v<T, credit_export_result>) {
+                const auto& instr = r.instrument;
                 if (tt == "CreditDefaultSwap")
-                    xsd_t = credit_instrument_mapper::reverse_cds(r);
+                    xsd_t = credit_instrument_mapper::reverse_cds(instr);
                 else if (tt == "IndexCreditDefaultSwap")
-                    xsd_t = credit_instrument_mapper::reverse_index_cds(r);
+                    xsd_t = credit_instrument_mapper::reverse_index_cds(instr);
                 else if (tt == "IndexCreditDefaultSwapOption")
-                    xsd_t = credit_instrument_mapper::reverse_index_cds_option(r);
+                    xsd_t = credit_instrument_mapper::reverse_index_cds_option(instr);
                 else if (tt == "CreditLinkedSwap")
-                    xsd_t = credit_instrument_mapper::reverse_credit_linked_swap(r);
+                    xsd_t = credit_instrument_mapper::reverse_credit_linked_swap(instr);
                 else if (tt == "SyntheticCDO")
-                    xsd_t = credit_instrument_mapper::reverse_synthetic_cdo(r);
+                    xsd_t = credit_instrument_mapper::reverse_synthetic_cdo(instr);
                 else if (tt == "RiskParticipationAgreement")
-                    xsd_t = credit_instrument_mapper::reverse_rpa(r);
+                    xsd_t = credit_instrument_mapper::reverse_rpa(instr);
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for credit type: " << tt;
@@ -314,35 +316,37 @@ std::string exporter::export_portfolio(
                         << "No reverse mapper for equity type: " << tt;
                     return;
                 }
-            } else if constexpr (std::is_same_v<T, commodity_instrument>) {
+            } else if constexpr (std::is_same_v<T, commodity_export_result>) {
+                const auto& instr = r.instrument;
                 if (tt == "CommodityForward")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_forward(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_forward(instr);
                 else if (tt == "CommodityOption")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_option(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_option(instr);
                 else if (tt == "CommoditySwap")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_swap(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_swap(instr);
                 else if (tt == "CommoditySwaption")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_swaption(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_swaption(instr);
                 else if (tt == "CommodityVarianceSwap")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_variance_swap(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_variance_swap(instr);
                 else if (tt == "CommodityAveragePriceOption")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_apo(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_apo(instr);
                 else if (tt == "CommodityOptionStrip")
-                    xsd_t = commodity_instrument_mapper::reverse_commodity_option_strip(r);
+                    xsd_t = commodity_instrument_mapper::reverse_commodity_option_strip(instr);
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for commodity type: " << tt;
                     return;
                 }
-            } else if constexpr (std::is_same_v<T, scripted_instrument>) {
+            } else if constexpr (std::is_same_v<T, scripted_export_result>) {
+                const auto& instr = r.instrument;
                 if (tt == "ScriptedTrade")
-                    xsd_t = scripted_instrument_mapper::reverse_scripted_trade(r);
+                    xsd_t = scripted_instrument_mapper::reverse_scripted_trade(instr);
                 else if (tt == "DoubleDigitalOption")
-                    xsd_t = scripted_instrument_mapper::reverse_double_digital_option(r);
+                    xsd_t = scripted_instrument_mapper::reverse_double_digital_option(instr);
                 else if (tt == "PerformanceOption_01")
-                    xsd_t = scripted_instrument_mapper::reverse_performance_option_01(r);
+                    xsd_t = scripted_instrument_mapper::reverse_performance_option_01(instr);
                 else if (tt == "KnockOutSwap")
-                    xsd_t = scripted_instrument_mapper::reverse_knock_out_swap(r);
+                    xsd_t = scripted_instrument_mapper::reverse_knock_out_swap(instr);
                 else {
                     BOOST_LOG_SEV(lg(), debug)
                         << "No reverse mapper for scripted type: " << tt;

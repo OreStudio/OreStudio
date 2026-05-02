@@ -23,7 +23,7 @@ namespace {
 
 Client{{domain_entity.entity_pascal}}Model::Client{{domain_entity.entity_pascal}}Model(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_({{domain_entity.entity_snake}}_key_extractor),

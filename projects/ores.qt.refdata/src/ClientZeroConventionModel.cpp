@@ -37,7 +37,7 @@ namespace {
 
 ClientZeroConventionModel::ClientZeroConventionModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(zero_convention_key_extractor),

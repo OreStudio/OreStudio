@@ -261,12 +261,18 @@ void importer::assign_instrument_id(
         } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
                              std::is_same_v<T, domain::fx_mapping_result> ||
                              std::is_same_v<T, domain::equity_mapping_result>) {
+            // Nested variant: each inner instrument uses instrument_id
             std::visit([&](auto& instr) {
                 instr.instrument_id = id;
             }, result.instrument);
             has_instrument = true;
-        } else {
-            result.instrument.instrument_id = id;
+        } else if constexpr (std::is_same_v<T, domain::bond_mapping_result> ||
+                             std::is_same_v<T, domain::credit_mapping_result> ||
+                             std::is_same_v<T, domain::commodity_mapping_result> ||
+                             std::is_same_v<T, domain::scripted_mapping_result> ||
+                             std::is_same_v<T, domain::composite_mapping_result>) {
+            // Direct instrument: these types use id rather than instrument_id
+            result.instrument.id = id;
             has_instrument = true;
         }
     }, item.instrument);

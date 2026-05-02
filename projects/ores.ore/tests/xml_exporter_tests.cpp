@@ -63,9 +63,9 @@ ores::trading::messaging::instrument_export_result to_export_result(
             return ex;
         }
         else if constexpr (std::is_same_v<T, bond_mapping_result>)
-            return v.instrument;
+            return bond_export_result{v.instrument};
         else if constexpr (std::is_same_v<T, credit_mapping_result>)
-            return v.instrument;
+            return credit_export_result{v.instrument};
         else if constexpr (std::is_same_v<T, equity_mapping_result>) {
             // equity_mapping_result::instrument (import-side variant) has the
             // same alternatives as equity_export_result::instrument; copy
@@ -77,9 +77,9 @@ ores::trading::messaging::instrument_export_result to_export_result(
             return ex;
         }
         else if constexpr (std::is_same_v<T, commodity_mapping_result>)
-            return v.instrument;
+            return commodity_export_result{v.instrument};
         else if constexpr (std::is_same_v<T, scripted_mapping_result>)
-            return v.instrument;
+            return scripted_export_result{v.instrument};
         else if constexpr (std::is_same_v<T, composite_mapping_result>)
             return composite_export_result{v.instrument, {}};
         return std::monostate{};

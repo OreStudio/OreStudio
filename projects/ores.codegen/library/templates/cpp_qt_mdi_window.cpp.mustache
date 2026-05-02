@@ -39,9 +39,7 @@ using namespace ores::logging;
 
     setupUi();
     setupConnections();
-
-    // Initial load
-    doReload();
+    reload();
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::setupUi() {
@@ -49,6 +47,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -68,7 +67,7 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &{{domain_entity.entity_pascal}}MdiWindow::doReload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -165,6 +164,8 @@ void {{domain_entity.entity_pascal}}MdiWindow::setupConnections() {
             this, [this](std::uint32_t offset, std::uint32_t limit) {
         model_->load_page(offset, limit);
     });
+
+    connectModel(model_);
 }
 
 void {{domain_entity.entity_pascal}}MdiWindow::doReload() {

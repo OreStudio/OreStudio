@@ -112,9 +112,9 @@ void ScriptedInstrumentForm::writeUiToInstrument() {
 void ScriptedInstrumentForm::setInstrument(
     const trading::messaging::instrument_export_result& instrument) {
 
-    const auto* inst =
-        std::get_if<trading::domain::scripted_instrument>(&instrument);
-    if (!inst) {
+    const auto* ex =
+        std::get_if<trading::messaging::scripted_export_result>(&instrument);
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-scripted instrument pushed to ScriptedInstrumentForm";
         emit loadFailed(QStringLiteral(
@@ -122,7 +122,7 @@ void ScriptedInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = *inst;
+    instrument_ = ex->instrument;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();

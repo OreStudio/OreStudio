@@ -169,6 +169,17 @@ public:
      * No-op for items whose trade type has no instrument mapping (monostate).
      */
     static void rewire_instrument_trade_id(trade_import_item& item);
+
+    /**
+     * @brief Assigns @p id as the instrument_id on both the instrument and
+     *        trade.instrument_id, establishing the forward FK from trade to
+     *        instrument so that populate_instrument_for_trade can find it.
+     *
+     * Call after rewire_instrument_trade_id once a stable UUID has been minted.
+     * No-op for items whose trade type has no instrument mapping (monostate).
+     */
+    static void assign_instrument_id(
+        trade_import_item& item, boost::uuids::uuid id);
 };
 
 }

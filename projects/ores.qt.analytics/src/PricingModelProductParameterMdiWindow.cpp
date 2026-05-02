@@ -56,7 +56,7 @@ PricingModelProductParameterMdiWindow::PricingModelProductParameterMdiWindow(
     setupConnections();
 
     // Initial load
-    doReload();
+    reload();
 }
 
 void PricingModelProductParameterMdiWindow::setupUi() {
@@ -83,7 +83,7 @@ void PricingModelProductParameterMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PricingModelProductParameterMdiWindow::doReload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -175,6 +175,8 @@ void PricingModelProductParameterMdiWindow::setupConnections() {
             this, [this](std::uint32_t offset, std::uint32_t limit) {
         model_->load_page(offset, limit);
     });
+
+    connectModel(model_);
 }
 
 void PricingModelProductParameterMdiWindow::doReload() {

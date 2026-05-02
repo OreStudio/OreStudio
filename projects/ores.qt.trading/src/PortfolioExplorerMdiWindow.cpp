@@ -230,10 +230,13 @@ void PortfolioExplorerMdiWindow::setupConnections() {
     // Trade model signals
     connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded,
             this, [this]() {
+        endLoading();
         paginationWidget_->update_state(
             static_cast<std::uint32_t>(tradeModel_->rowCount()),
             tradeModel_->total_available_count());
     });
+    connect(tradeModel_, &PortfolioExplorerTradeModel::loadError,
+            this, [this](const QString&, const QString&) { endLoading(); });
 
     // Pagination signals
     connect(paginationWidget_, &PaginationWidget::page_requested,
@@ -513,6 +516,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
     if (selected.isEmpty()) {
         tradeModel_->set_filter(std::nullopt, std::nullopt);
         updateBreadcrumb(nullptr);
+        beginLoading();
         tradeModel_->refresh();
         updateActionStates();
         return;
@@ -524,6 +528,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
 
     tradeModel_->set_filter(filter.book_id, filter.portfolio_id);
     updateBreadcrumb(node);
+    beginLoading();
     tradeModel_->refresh();
     updateActionStates();
 }

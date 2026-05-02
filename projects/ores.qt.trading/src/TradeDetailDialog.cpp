@@ -73,34 +73,22 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
         applyCreateTradeType();
     });
 
-    // Build a stack page per registered IInstrumentForm. formMap_ is
-    // populated here so setTradeBundle() can reach any form in O(1).
+    // Build a stack page per registered IInstrumentForm. formMap_ and
+    // typeFormMap_ are populated here so setTradeBundle() reaches any form O(1).
     register_default_forms(instrumentFormRegistry_);
     for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
         IInstrumentForm* form =
             instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
         ui_->instrumentStack->addWidget(form);
         formMap_[pt] = form;
-
-        connect(form, &IInstrumentForm::changed, this,
-                &TradeDetailDialog::onInstrumentFieldChanged);
-        connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
-            instrumentLoaded_ = true;
-            ui_->instrumentProvenanceGroup->setVisible(true);
-            updateSaveButtonState();
-        });
-        connect(form, &IInstrumentForm::loadFailed, this,
-                [](const QString& err) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Instrument load failed: " << err.toStdString();
-        });
-        connect(form, &IInstrumentForm::provenanceChanged, this,
-                [this](const InstrumentProvenance& p) {
-            ui_->instrumentProvenanceWidget->populate(
-                p.version, p.modified_by, p.performed_by,
-                p.recorded_at, p.change_reason_code, p.change_commentary);
-            ui_->instrumentProvenanceGroup->setVisible(true);
-        });
+        connectFormSignals(form);
+    }
+    for (const auto& code : instrumentFormRegistry_.registeredTypeCodes()) {
+        IInstrumentForm* form =
+            instrumentFormRegistry_.createTypeForm(code, ui_->instrumentStack);
+        ui_->instrumentStack->addWidget(form);
+        typeFormMap_[code.toStdString()] = form;
+        connectFormSignals(form);
     }
 }
 
@@ -339,6 +327,37 @@ void TradeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void TradeDetailDialog::connectFormSignals(IInstrumentForm* form) {
+    connect(form, &IInstrumentForm::changed, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
+        instrumentLoaded_ = true;
+        ui_->instrumentProvenanceGroup->setVisible(true);
+        updateSaveButtonState();
+    });
+    connect(form, &IInstrumentForm::loadFailed, this,
+            [](const QString& err) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Instrument load failed: " << err.toStdString();
+    });
+    connect(form, &IInstrumentForm::provenanceChanged, this,
+            [this](const InstrumentProvenance& p) {
+        ui_->instrumentProvenanceWidget->populate(
+            p.version, p.modified_by, p.performed_by,
+            p.recorded_at, p.change_reason_code, p.change_commentary);
+        ui_->instrumentProvenanceGroup->setVisible(true);
+    });
+}
+
+IInstrumentForm* TradeDetailDialog::findForm(
+    trading::domain::product_type pt, const std::string& trade_type_code) {
+    auto ttIt = typeFormMap_.find(trade_type_code);
+    if (ttIt != typeFormMap_.end()) return ttIt->second;
+    auto ptIt = formMap_.find(pt);
+    if (ptIt != formMap_.end()) return ptIt->second;
+    return nullptr;
+}
+
 // Selects @p form on the stack, sets client manager, username, and trade
 // type flags from the cache.  Does not trigger load or clear — caller does
 // that immediately after.
@@ -369,9 +388,9 @@ void TradeDetailDialog::setTradeBundle(
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    auto it = formMap_.find(trade_.product_type);
-    if (it != formMap_.end()) {
-        activateForm(it->second, trade_.trade_type);
+    auto* form = findForm(trade_.product_type, trade_.trade_type);
+    if (form) {
+        activateForm(form, trade_.trade_type);
         if (std::holds_alternative<std::monostate>(bundle.instrument)) {
             activeForm_->clear();
         } else {
@@ -525,17 +544,17 @@ void TradeDetailDialog::applyCreateTradeType() {
         return;
     }
 
-    auto formIt = formMap_.find(ttIt->second.product_type);
-    if (formIt == formMap_.end()) {
+    auto* form = findForm(ttIt->second.product_type, code);
+    if (!form) {
         ui_->tabWidget->setTabVisible(
             ui_->tabWidget->indexOf(ui_->instrumentTab), false);
         activeForm_ = nullptr;
         return;
     }
 
-    // Only reset the form when the product family changes.
-    if (activeForm_ != formIt->second) {
-        activateForm(formIt->second, code);
+    // Only reset the form when the active form changes.
+    if (activeForm_ != form) {
+        activateForm(form, code);
         activeForm_->clear();
     }
 }

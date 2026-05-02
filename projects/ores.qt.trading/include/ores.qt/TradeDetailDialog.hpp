@@ -120,7 +120,10 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void connectFormSignals(IInstrumentForm* form);
     void activateForm(IInstrumentForm* form, const std::string& tradeTypeCode);
+    IInstrumentForm* findForm(trading::domain::product_type pt,
+                              const std::string& trade_type_code);
     void applyCreateTradeType();
 
     void saveTrade(const trading::domain::trade& trade);
@@ -135,10 +138,13 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // All IInstrumentForm pages live in instrumentStack; formMap_ gives O(1)
-    // access by product_type without walking the stack at runtime.
+    // All IInstrumentForm pages live in instrumentStack. formMap_ gives O(1)
+    // access by product_type; typeFormMap_ gives O(1) access by trade_type_code
+    // for families that register dedicated per-sub-type forms.
+    // findForm() prefers typeFormMap_ over formMap_.
     InstrumentFormRegistry instrumentFormRegistry_;
     std::map<trading::domain::product_type, IInstrumentForm*> formMap_;
+    std::map<std::string, IInstrumentForm*> typeFormMap_;
     IInstrumentForm* activeForm_ = nullptr;
 
     // Trade-type reference data cached on connect for flag lookups.

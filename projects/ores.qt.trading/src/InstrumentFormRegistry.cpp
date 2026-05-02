@@ -26,6 +26,7 @@
 #include "ores.qt/CreditInstrumentForm.hpp"
 #include "ores.qt/EquityInstrumentForm.hpp"
 #include "ores.qt/FxInstrumentForm.hpp"
+#include "ores.qt/FxVanillaOptionInstrumentForm.hpp"
 #include "ores.qt/ScriptedInstrumentForm.hpp"
 #include "ores.qt/SwapInstrumentForm.hpp"
 
@@ -59,6 +60,29 @@ QString InstrumentFormRegistry::displayName(product_type pt) const {
 std::vector<InstrumentFormRegistry::product_type>
 InstrumentFormRegistry::registeredTypes() const {
     return order_;
+}
+
+void InstrumentFormRegistry::registerTypeForm(
+    const QString& trade_type_code, Factory factory) {
+    if (typeEntries_.find(trade_type_code) == typeEntries_.end())
+        typeOrder_.push_back(trade_type_code);
+    typeEntries_[trade_type_code] = TypeEntry{std::move(factory)};
+}
+
+bool InstrumentFormRegistry::containsTypeForm(
+    const QString& trade_type_code) const noexcept {
+    return typeEntries_.find(trade_type_code) != typeEntries_.end();
+}
+
+IInstrumentForm* InstrumentFormRegistry::createTypeForm(
+    const QString& trade_type_code, QWidget* parent) const {
+    auto it = typeEntries_.find(trade_type_code);
+    if (it == typeEntries_.end()) return nullptr;
+    return it->second.factory(parent);
+}
+
+std::vector<QString> InstrumentFormRegistry::registeredTypeCodes() const {
+    return typeOrder_;
 }
 
 void register_default_forms(InstrumentFormRegistry& registry) {
@@ -98,6 +122,14 @@ void register_default_forms(InstrumentFormRegistry& registry) {
     registry.registerForm(PT::fx, QStringLiteral("FX"),
         [](QWidget* parent) -> IInstrumentForm* {
             return new FxInstrumentForm(parent);
+        });
+
+    // Per-trade-type-code forms: each registered code gets its own dedicated
+    // form widget on the instrument stack. TradeDetailDialog prefers these
+    // over the family-level form when the trade_type_code matches.
+    registry.registerTypeForm(QStringLiteral("FxOption"),
+        [](QWidget* parent) -> IInstrumentForm* {
+            return new FxVanillaOptionInstrumentForm(parent);
         });
 }
 

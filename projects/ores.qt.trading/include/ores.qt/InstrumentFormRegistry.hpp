@@ -32,37 +32,45 @@ namespace ores::qt {
 class IInstrumentForm;
 
 /**
- * @brief Maps a @c product_type to its instrument form widget factory.
+ * @brief Maps instrument families and specific trade type codes to form
+ *        widget factories.
  *
- * Each registration carries the family's display name (used as the page
- * label in @c QStackedWidget bookkeeping and any future tab pickers) and
- * a factory closure that constructs a fresh form widget under the supplied
- * parent.
+ * Two registration tiers:
+ *  - Per product-family (product_type): one form handles all sub-types in
+ *    that family (e.g. BondInstrumentForm covers all bond variants).
+ *  - Per trade-type-code (QString): a dedicated form handles exactly one
+ *    sub-type (e.g. FxVanillaOptionInstrumentForm for "FxOption").
  *
- * Adding a ninth instrument family is one new @c IInstrumentForm subclass
- * plus one extra @ref registerForm call in @ref register_default_forms.
- * No file in @c TradeDetailDialog needs to change.
+ * @c TradeDetailDialog looks up by trade-type-code first, falling back to
+ * the family form when no type-specific registration exists.
  */
 class InstrumentFormRegistry final {
 public:
     using product_type = ores::trading::domain::product_type;
     using Factory = std::function<IInstrumentForm*(QWidget* parent)>;
 
+    // --- per-family registration ---
+
     void registerForm(product_type pt, QString displayName, Factory factory);
 
-    /// True when at least one form is registered for @p pt.
     [[nodiscard]] bool contains(product_type pt) const noexcept;
-
-    /// Construct a new form for @p pt parented at @p parent. Returns null
-    /// if no factory has been registered for that family.
     [[nodiscard]] IInstrumentForm* createForm(
         product_type pt, QWidget* parent) const;
-
-    /// Display name registered alongside the factory (for tab labels etc).
     [[nodiscard]] QString displayName(product_type pt) const;
-
-    /// All registered families, in registration order.
     [[nodiscard]] std::vector<product_type> registeredTypes() const;
+
+    // --- per-trade-type-code registration ---
+
+    /// Register a dedicated form for a single trade type code.
+    void registerTypeForm(const QString& trade_type_code, Factory factory);
+
+    [[nodiscard]] bool containsTypeForm(
+        const QString& trade_type_code) const noexcept;
+    [[nodiscard]] IInstrumentForm* createTypeForm(
+        const QString& trade_type_code, QWidget* parent) const;
+
+    /// All registered type codes, in registration order.
+    [[nodiscard]] std::vector<QString> registeredTypeCodes() const;
 
 private:
     struct Entry {
@@ -71,6 +79,10 @@ private:
     };
     std::vector<product_type> order_;
     std::map<product_type, Entry> entries_;
+
+    struct TypeEntry { Factory factory; };
+    std::vector<QString> typeOrder_;
+    std::map<QString, TypeEntry> typeEntries_;
 };
 
 /**

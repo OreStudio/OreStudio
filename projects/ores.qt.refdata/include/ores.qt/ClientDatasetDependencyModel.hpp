@@ -23,6 +23,7 @@
 #include <QAbstractTableModel>
 #include <vector>
 #include "ores.dq.api/domain/dataset_dependency.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -34,7 +35,7 @@ namespace ores::qt {
  * Provides async loading from server. This is a read-only model
  * for viewing dependencies between datasets.
  */
-class ClientDatasetDependencyModel : public QAbstractTableModel {
+class ClientDatasetDependencyModel : public AbstractClientModel {
     Q_OBJECT
 
 private:

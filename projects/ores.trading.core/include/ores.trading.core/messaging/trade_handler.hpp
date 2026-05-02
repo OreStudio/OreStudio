@@ -255,20 +255,14 @@ private:
         }
         case product_type::bond: {
             service::bond_instrument_service isvc(ctx);
-            if (auto r = isvc.get_bond_instrument(id)) {
-                bond_export_result ex;
-                ex.instrument = std::move(*r);
-                item.instrument = std::move(ex);
-            }
+            if (auto r = isvc.get_bond_instrument(id))
+                item.instrument = bond_export_result{std::move(*r)};
             break;
         }
         case product_type::credit: {
             service::credit_instrument_service isvc(ctx);
-            if (auto r = isvc.get_credit_instrument(id)) {
-                credit_export_result ex;
-                ex.instrument = std::move(*r);
-                item.instrument = std::move(ex);
-            }
+            if (auto r = isvc.get_credit_instrument(id))
+                item.instrument = credit_export_result{std::move(*r)};
             break;
         }
         case product_type::equity: {
@@ -348,11 +342,8 @@ private:
         }
         case product_type::commodity: {
             service::commodity_instrument_service isvc(ctx);
-            if (auto r = isvc.get_commodity_instrument(id)) {
-                commodity_export_result ex;
-                ex.instrument = std::move(*r);
-                item.instrument = std::move(ex);
-            }
+            if (auto r = isvc.get_commodity_instrument(id))
+                item.instrument = commodity_export_result{std::move(*r)};
             break;
         }
         case product_type::composite: {
@@ -367,11 +358,8 @@ private:
         }
         case product_type::scripted: {
             service::scripted_instrument_service isvc(ctx);
-            if (auto r = isvc.get_scripted_instrument(id)) {
-                scripted_export_result ex;
-                ex.instrument = std::move(*r);
-                item.instrument = std::move(ex);
-            }
+            if (auto r = isvc.get_scripted_instrument(id))
+                item.instrument = scripted_export_result{std::move(*r)};
             break;
         }
         }

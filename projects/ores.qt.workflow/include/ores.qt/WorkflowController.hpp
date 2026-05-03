@@ -19,6 +19,7 @@
 #ifndef ORES_QT_WORKFLOW_CONTROLLER_HPP
 #define ORES_QT_WORKFLOW_CONTROLLER_HPP
 
+#include <QEvent>
 #include <QObject>
 #include <QPointer>
 #include <QMdiArea>
@@ -61,6 +62,8 @@ public:
     void showListWindow();
     void showDefinitionsWindow();
     void closeAllWindows();
+
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 signals:
     void statusMessage(const QString& message);

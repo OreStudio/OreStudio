@@ -336,9 +336,11 @@ void TradeDetailDialog::connectFormSignals(IInstrumentForm* form) {
         updateSaveButtonState();
     });
     connect(form, &IInstrumentForm::loadFailed, this,
-            [](const QString& err) {
-        BOOST_LOG_SEV(lg(), warn)
+            [this](const QString& err) {
+        BOOST_LOG_SEV(lg(), error)
             << "Instrument load failed: " << err.toStdString();
+        MessageBoxHelper::warning(this, tr("Instrument Load Failed"), err);
+        emit errorMessage(err);
     });
     connect(form, &IInstrumentForm::provenanceChanged, this,
             [this](const InstrumentProvenance& p) {
@@ -384,18 +386,70 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
 void TradeDetailDialog::setTradeBundle(
     const trading::messaging::trade_export_item& bundle) {
     trade_ = bundle.trade;
+
+    const bool has_instrument = !std::holds_alternative<std::monostate>(bundle.instrument);
+    const std::string instrument_id_str = bundle.trade.instrument_id
+        ? boost::uuids::to_string(*bundle.trade.instrument_id) : "<none>";
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "setTradeBundle: trade=" << bundle.trade.external_id
+        << " product_type=" << std::string(
+            ores::trading::domain::to_string(bundle.trade.product_type))
+        << " trade_type=" << bundle.trade.trade_type
+        << " instrument_id=" << instrument_id_str
+        << " instrument=" << (has_instrument
+            ? ("present (index=" + std::to_string(bundle.instrument.index()) + ")")
+            : "monostate");
+
     updateUiFromTrade();
     selectCurrentBook();
     selectCurrentCounterparty();
 
     auto* form = findForm(trade_.product_type, trade_.trade_type);
-    if (form) {
-        activateForm(form, trade_.trade_type);
-        if (std::holds_alternative<std::monostate>(bundle.instrument)) {
-            activeForm_->clear();
+    if (!form) {
+        const QString msg = tr("No instrument form registered for trade '%1' "
+            "(product_type=%2, trade_type=%3). "
+            "Check that the instrument form plugin is loaded.")
+            .arg(QString::fromStdString(bundle.trade.external_id))
+            .arg(QString::fromStdString(std::string(
+                ores::trading::domain::to_string(bundle.trade.product_type))))
+            .arg(QString::fromStdString(bundle.trade.trade_type));
+        BOOST_LOG_SEV(lg(), warn)
+            << "setTradeBundle: " << msg.toStdString();
+        MessageBoxHelper::warning(this, tr("Instrument Form Missing"), msg);
+        emit errorMessage(msg);
+        return;
+    }
+
+    activateForm(form, trade_.trade_type);
+    if (!has_instrument) {
+        if (bundle.trade.instrument_id) {
+            // Server had an instrument_id but returned monostate — something
+            // went wrong during instrument lookup on the server side.
+            const QString msg = tr("Instrument data could not be loaded for trade '%1' "
+                "(instrument_id=%2, trade_type=%3). "
+                "The server returned no instrument data despite a linked instrument. "
+                "Check the trading service log for details.")
+                .arg(QString::fromStdString(bundle.trade.external_id))
+                .arg(QString::fromStdString(instrument_id_str))
+                .arg(QString::fromStdString(bundle.trade.trade_type));
+            BOOST_LOG_SEV(lg(), error)
+                << "setTradeBundle: instrument_id set but got monostate"
+                << " trade=" << bundle.trade.external_id
+                << " instrument_id=" << instrument_id_str;
+            MessageBoxHelper::warning(this, tr("Instrument Load Failed"), msg);
+            emit errorMessage(msg);
         } else {
-            activeForm_->setInstrument(bundle.instrument);
+            BOOST_LOG_SEV(lg(), debug)
+                << "setTradeBundle: no instrument linked, clearing form for trade="
+                << bundle.trade.external_id;
         }
+        activeForm_->clear();
+    } else {
+        BOOST_LOG_SEV(lg(), debug)
+            << "setTradeBundle: calling setInstrument for trade=" << bundle.trade.external_id
+            << " instrument_id=" << instrument_id_str;
+        activeForm_->setInstrument(bundle.instrument);
     }
 }
 

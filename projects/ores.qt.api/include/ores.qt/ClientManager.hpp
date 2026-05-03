@@ -32,6 +32,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <rfl/json.hpp>
+#include <rfl/AddTagsToVariants.hpp>
 #include <QObject>
 #include <QTimer>
 #include "ores.utility/rfl/reflectors.hpp"
@@ -343,7 +344,7 @@ public:
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
-            auto result = rfl::json::read<ResponseType>(data);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -387,7 +388,7 @@ public:
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
-            auto result = rfl::json::read<ResponseType>(data);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +

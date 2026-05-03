@@ -104,7 +104,19 @@ private:
         const ores::trading::domain::trade& t,
         trade_export_item& item) {
         using ores::trading::domain::product_type;
-        if (!t.instrument_id || t.product_type == product_type::unknown) return;
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "populate_instrument: trade=" << t.external_id
+            << " product_type=" << ores::trading::domain::to_string(t.product_type)
+            << " trade_type=" << t.trade_type
+            << " instrument_id=" << (t.instrument_id
+                ? boost::uuids::to_string(*t.instrument_id) : "<none>");
+        if (!t.instrument_id || t.product_type == product_type::unknown) {
+            BOOST_LOG_SEV(trade_handler_lg(), warn)
+                << "populate_instrument: skipping trade=" << t.external_id
+                << " reason=" << (!t.instrument_id
+                    ? "no_instrument_id" : "unknown_product_type");
+            return;
+        }
         const auto id = boost::uuids::to_string(*t.instrument_id);
         switch (t.product_type) {
         case product_type::unknown:
@@ -186,7 +198,16 @@ private:
                     ex_opt = std::move(ex);
                 }
             }
-            if (ex_opt) item.instrument = std::move(*ex_opt);
+            if (ex_opt) {
+                item.instrument = std::move(*ex_opt);
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated swap for trade=" << t.external_id
+                    << " trade_type=" << ttc;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: no swap instrument for trade=" << t.external_id
+                    << " trade_type=" << ttc << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::fx: {
@@ -250,19 +271,42 @@ private:
                     ex_opt = std::move(ex);
                 }
             }
-            if (ex_opt) item.instrument = std::move(*ex_opt);
+            if (ex_opt) {
+                item.instrument = std::move(*ex_opt);
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated fx for trade=" << t.external_id
+                    << " trade_type=" << ttc;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: no fx instrument for trade=" << t.external_id
+                    << " trade_type=" << ttc << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::bond: {
             service::bond_instrument_service isvc(ctx);
-            if (auto r = isvc.get_bond_instrument(id))
+            if (auto r = isvc.get_bond_instrument(id)) {
                 item.instrument = bond_export_result{std::move(*r)};
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated bond for trade=" << t.external_id;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: bond instrument not found for trade="
+                    << t.external_id << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::credit: {
             service::credit_instrument_service isvc(ctx);
-            if (auto r = isvc.get_credit_instrument(id))
+            if (auto r = isvc.get_credit_instrument(id)) {
                 item.instrument = credit_export_result{std::move(*r)};
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated credit for trade=" << t.external_id;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: credit instrument not found for trade="
+                    << t.external_id << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::equity: {
@@ -337,13 +381,29 @@ private:
                     ex_opt = std::move(ex);
                 }
             }
-            if (ex_opt) item.instrument = std::move(*ex_opt);
+            if (ex_opt) {
+                item.instrument = std::move(*ex_opt);
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated equity for trade=" << t.external_id
+                    << " trade_type=" << ttc;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: no equity instrument for trade=" << t.external_id
+                    << " trade_type=" << ttc << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::commodity: {
             service::commodity_instrument_service isvc(ctx);
-            if (auto r = isvc.get_commodity_instrument(id))
+            if (auto r = isvc.get_commodity_instrument(id)) {
                 item.instrument = commodity_export_result{std::move(*r)};
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated commodity for trade=" << t.external_id;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: commodity instrument not found for trade="
+                    << t.external_id << " instrument_id=" << id;
+            }
             break;
         }
         case product_type::composite: {
@@ -353,13 +413,26 @@ private:
                 ex.instrument = std::move(*r);
                 ex.legs = isvc.get_legs(id);
                 item.instrument = std::move(ex);
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated composite for trade=" << t.external_id;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: composite instrument not found for trade="
+                    << t.external_id << " instrument_id=" << id;
             }
             break;
         }
         case product_type::scripted: {
             service::scripted_instrument_service isvc(ctx);
-            if (auto r = isvc.get_scripted_instrument(id))
+            if (auto r = isvc.get_scripted_instrument(id)) {
                 item.instrument = scripted_export_result{std::move(*r)};
+                BOOST_LOG_SEV(trade_handler_lg(), debug)
+                    << "populate_instrument: populated scripted for trade=" << t.external_id;
+            } else {
+                BOOST_LOG_SEV(trade_handler_lg(), warn)
+                    << "populate_instrument: scripted instrument not found for trade="
+                    << t.external_id << " instrument_id=" << id;
+            }
             break;
         }
         }

@@ -153,6 +153,7 @@ QList<QMenu*> TradingPlugin::create_menus() {
             return;
         }
 
+        BOOST_LOG_SEV(lg(), info) << "DIAG: creating PortfolioExplorerMdiWindow";
         auto* window = new PortfolioExplorerMdiWindow(
             ctx_.client_manager,
             bookController_.get(),
@@ -161,15 +162,21 @@ QList<QMenu*> TradingPlugin::create_menus() {
             oreImportController_.get(),
             ctx_.username,
             ctx_.main_window);
+        BOOST_LOG_SEV(lg(), info) << "DIAG: PortfolioExplorerMdiWindow constructor returned";
 
         connect(window, &PortfolioExplorerMdiWindow::statusChanged,
                 this, [this](const QString& msg) { emit statusMessage(msg); });
 
+        BOOST_LOG_SEV(lg(), info) << "DIAG: new DetachableMdiSubWindow";
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
+        BOOST_LOG_SEV(lg(), info) << "DIAG: setWidget";
         subWindow->setWidget(window);
+        BOOST_LOG_SEV(lg(), info) << "DIAG: setWindowTitle";
         subWindow->setWindowTitle(tr("Portfolio Explorer"));
+        BOOST_LOG_SEV(lg(), info) << "DIAG: setWindowIcon";
         subWindow->setWindowIcon(
             IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
+        BOOST_LOG_SEV(lg(), info) << "DIAG: setAttribute";
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
         portfolio_explorer_sub_window_ = subWindow;
@@ -177,9 +184,15 @@ QList<QMenu*> TradingPlugin::create_menus() {
             portfolio_explorer_sub_window_ = nullptr;
         });
 
+        BOOST_LOG_SEV(lg(), info) << "DIAG: calling addSubWindow";
         ctx_.mdi_area->addSubWindow(subWindow);
-        subWindow->resize(window->sizeHint());
+        BOOST_LOG_SEV(lg(), info) << "DIAG: addSubWindow returned, calling sizeHint";
+        const auto hint = window->sizeHint();
+        BOOST_LOG_SEV(lg(), info) << "DIAG: sizeHint returned " << hint.width() << "x" << hint.height() << ", calling resize";
+        subWindow->resize(hint);
+        BOOST_LOG_SEV(lg(), info) << "DIAG: resize returned, calling show";
         subWindow->show();
+        BOOST_LOG_SEV(lg(), info) << "DIAG: subWindow->show() returned, action handler done";
     });
 
     act_org_explorer_ = menuTrading->addAction(ico(Icon::Organization), tr("&Org Explorer"));

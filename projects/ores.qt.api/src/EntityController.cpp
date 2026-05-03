@@ -159,9 +159,12 @@ void EntityController::untrack_window(const QString& key) {
 
 void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     DetachableMdiSubWindow* referenceWindow, QPoint offset) {
+    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window calling addSubWindow";
     mdiArea_->addSubWindow(window);
+    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window addSubWindow returned, calling adjustSize";
     window->setWindowFlags(window->windowFlags() & ~Qt::WindowMaximizeButtonHint);
     window->adjustSize();
+    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window adjustSize returned, calling show";
 
     if (referenceWindow && referenceWindow->isDetached()) {
         window->show();
@@ -171,6 +174,7 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     } else {
         window->show();
     }
+    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window show returned";
 
     if (referenceWindow) {
         QPointer<EntityController> self = this;

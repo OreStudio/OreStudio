@@ -19,11 +19,13 @@
  */
 #include "ores.qt/FxInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_FxInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 
 namespace ores::qt {
 
@@ -36,6 +38,8 @@ FxInstrumentForm::FxInstrumentForm(QWidget* parent)
     // Options sub-tab is hidden until setTradeType() reveals it.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->optionsTab), false);
+    InstrumentFormUtils::populateSettlement(ui_->settlementCombo);
+    InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
     setupConnections();
 }
 
@@ -43,16 +47,17 @@ FxInstrumentForm::~FxInstrumentForm() = default;
 
 void FxInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged,
-            this, markChanged);
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
     connect(ui_->boughtCurrencyEdit, &QLineEdit::textChanged,
             this, markChanged);
     connect(ui_->soldCurrencyEdit, &QLineEdit::textChanged,
             this, markChanged);
     connect(ui_->valueDateEdit, &QLineEdit::textChanged,
             this, markChanged);
-    connect(ui_->settlementEdit, &QLineEdit::textChanged,
-            this, markChanged);
+    connect(ui_->settlementCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged,
             this, markChanged);
     connect(ui_->boughtAmountSpinBox,
@@ -81,19 +86,20 @@ void FxInstrumentForm::clear() {
 void FxInstrumentForm::setTradeType(const QString& code,
     bool has_options, bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
+    ui_->tradeTypeCodeEdit->setText(code.trimmed());
     // FX has only an options sub-section; the extension flag is unused.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->optionsTab), has_options);
 }
 
 void FxInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->boughtCurrencyEdit->setReadOnly(readOnly);
     ui_->boughtAmountSpinBox->setReadOnly(readOnly);
     ui_->soldCurrencyEdit->setReadOnly(readOnly);
     ui_->soldAmountSpinBox->setReadOnly(readOnly);
     ui_->valueDateEdit->setReadOnly(readOnly);
-    ui_->settlementEdit->setReadOnly(readOnly);
+    ui_->settlementCombo->setEnabled(!readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 }
 
@@ -112,8 +118,6 @@ void FxInstrumentForm::setChangeReason(
 }
 
 void FxInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.bought_currency =
         ui_->boughtCurrencyEdit->text().trimmed().toStdString();
     instrument_.bought_amount = ui_->boughtAmountSpinBox->value();
@@ -123,7 +127,7 @@ void FxInstrumentForm::writeUiToInstrument() {
     instrument_.value_date =
         ui_->valueDateEdit->text().trimmed().toStdString();
     instrument_.settlement =
-        ui_->settlementEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->settlementCombo);
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
@@ -171,13 +175,13 @@ void FxInstrumentForm::setInstrument(
 void FxInstrumentForm::populateFromInstrument() {
     // Block signals while setting values so dirty_ stays untouched.
     const auto block = [this](bool b) {
-        ui_->tradeTypeCodeEdit->blockSignals(b);
         ui_->boughtCurrencyEdit->blockSignals(b);
         ui_->boughtAmountSpinBox->blockSignals(b);
         ui_->soldCurrencyEdit->blockSignals(b);
         ui_->soldAmountSpinBox->blockSignals(b);
         ui_->valueDateEdit->blockSignals(b);
-        ui_->settlementEdit->blockSignals(b);
+        ui_->settlementCombo->blockSignals(b);
+        ui_->optionTypeCombo->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
     };
 
@@ -192,8 +196,7 @@ void FxInstrumentForm::populateFromInstrument() {
     ui_->soldAmountSpinBox->setValue(instrument_.sold_amount);
     ui_->valueDateEdit->setText(
         QString::fromStdString(instrument_.value_date));
-    ui_->settlementEdit->setText(
-        QString::fromStdString(instrument_.settlement));
+    InstrumentFormUtils::setComboValue(ui_->settlementCombo, instrument_.settlement);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
     block(false);

@@ -33,7 +33,9 @@
            <widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="tradeTypeCodeEdit"/>
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="readOnly"><bool>true</bool></property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Reference Entity:</string></property></widget>
@@ -111,17 +113,13 @@
            <widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget>
           </item>
           <item row="9" column="1">
-           <widget class="QLineEdit" name="dayCountCodeEdit">
-            <property name="placeholderText"><string>e.g. Actual365Fixed</string></property>
-           </widget>
+           <widget class="QComboBox" name="dayCountCombo"/>
           </item>
           <item row="10" column="0">
            <widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget>
           </item>
           <item row="10" column="1">
-           <widget class="QLineEdit" name="paymentFrequencyCodeEdit">
-            <property name="placeholderText"><string>e.g. Quarterly, SemiAnnual</string></property>
-           </widget>
+           <widget class="QComboBox" name="paymentFrequencyCombo"/>
           </item>
           <item row="11" column="0">
            <widget class="QLabel"><property name="text"><string>Index Name:</string></property></widget>
@@ -144,17 +142,13 @@
            <widget class="QLabel"><property name="text"><string>Seniority:</string></property></widget>
           </item>
           <item row="13" column="1">
-           <widget class="QLineEdit" name="seniorityEdit">
-            <property name="placeholderText"><string>e.g. Senior, Subordinated</string></property>
-           </widget>
+           <widget class="QComboBox" name="seniorityCombo"/>
           </item>
           <item row="14" column="0">
            <widget class="QLabel"><property name="text"><string>Restructuring:</string></property></widget>
           </item>
           <item row="14" column="1">
-           <widget class="QLineEdit" name="restructuringEdit">
-            <property name="placeholderText"><string>e.g. MM, MR, CR, XR</string></property>
-           </widget>
+           <widget class="QComboBox" name="restructuringCombo"/>
           </item>
           <item row="15" column="0">
            <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
@@ -200,9 +194,7 @@
            <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="optionTypeEdit">
-            <property name="placeholderText"><string>Call or Put (CreditDefaultSwapOption)</string></property>
-           </widget>
+           <widget class="QComboBox" name="optionTypeCombo"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Option Expiry Date:</string></property></widget>

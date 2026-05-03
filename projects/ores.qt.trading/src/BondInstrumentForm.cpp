@@ -19,12 +19,14 @@
  */
 #include "ores.qt/BondInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_BondInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
@@ -38,6 +40,11 @@ BondInstrumentForm::BondInstrumentForm(QWidget* parent)
     // Extensions tab is hidden until setTradeType() reveals it.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->extensionsTab), false);
+    InstrumentFormUtils::populateFrequency(ui_->couponFrequencyCombo);
+    InstrumentFormUtils::populateDayCount(ui_->dayCountCombo);
+    InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
+    InstrumentFormUtils::populateTrsReturnType(ui_->trsReturnTypeCombo);
+    InstrumentFormUtils::populateAscotOptionType(ui_->ascotOptionTypeCombo);
     setupConnections();
 }
 
@@ -45,21 +52,26 @@ BondInstrumentForm::~BondInstrumentForm() = default;
 
 void BondInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
     connect(ui_->issuerEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->currencyEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->issueDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->maturityDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->couponFrequencyCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->dayCountCodeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->couponFrequencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->dayCountCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->callDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->futureExpiryDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->optionTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->optionExpiryDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->trsReturnTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->trsReturnTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->trsFundingLegCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->ascotOptionTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->ascotOptionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->faceValueSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, markChanged);
@@ -95,18 +107,18 @@ void BondInstrumentForm::clear() {
 void BondInstrumentForm::setTradeType(const QString& code,
     bool /*has_options*/, bool has_extension) {
     instrument_.trade_type_code = code.trimmed().toStdString();
+    ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->extensionsTab), has_extension);
 }
 
 void BondInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->issuerEdit->setReadOnly(readOnly);
     ui_->currencyEdit->setReadOnly(readOnly);
     ui_->faceValueSpinBox->setReadOnly(readOnly);
     ui_->couponRateSpinBox->setReadOnly(readOnly);
-    ui_->couponFrequencyCodeEdit->setReadOnly(readOnly);
-    ui_->dayCountCodeEdit->setReadOnly(readOnly);
+    ui_->couponFrequencyCombo->setEnabled(!readOnly);
+    ui_->dayCountCombo->setEnabled(!readOnly);
     ui_->issueDateEdit->setReadOnly(readOnly);
     ui_->maturityDateEdit->setReadOnly(readOnly);
     ui_->settlementDaysSpinBox->setReadOnly(readOnly);
@@ -114,12 +126,12 @@ void BondInstrumentForm::setReadOnly(bool readOnly) {
     ui_->conversionRatioSpinBox->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->futureExpiryDateEdit->setReadOnly(readOnly);
-    ui_->optionTypeEdit->setReadOnly(readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
     ui_->optionExpiryDateEdit->setReadOnly(readOnly);
     ui_->optionStrikeSpinBox->setReadOnly(readOnly);
-    ui_->trsReturnTypeEdit->setReadOnly(readOnly);
+    ui_->trsReturnTypeCombo->setEnabled(!readOnly);
     ui_->trsFundingLegCodeEdit->setReadOnly(readOnly);
-    ui_->ascotOptionTypeEdit->setReadOnly(readOnly);
+    ui_->ascotOptionTypeCombo->setEnabled(!readOnly);
 }
 
 bool BondInstrumentForm::isDirty() const { return dirty_; }
@@ -132,8 +144,6 @@ void BondInstrumentForm::setChangeReason(
 }
 
 void BondInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.issuer =
         ui_->issuerEdit->text().trimmed().toStdString();
     instrument_.currency =
@@ -141,9 +151,9 @@ void BondInstrumentForm::writeUiToInstrument() {
     instrument_.face_value = ui_->faceValueSpinBox->value();
     instrument_.coupon_rate = ui_->couponRateSpinBox->value();
     instrument_.coupon_frequency_code =
-        ui_->couponFrequencyCodeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->couponFrequencyCombo);
     instrument_.day_count_code =
-        ui_->dayCountCodeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
     instrument_.issue_date =
         ui_->issueDateEdit->text().trimmed().toStdString();
     instrument_.maturity_date =
@@ -157,7 +167,7 @@ void BondInstrumentForm::writeUiToInstrument() {
     instrument_.future_expiry_date =
         ui_->futureExpiryDateEdit->text().trimmed().toStdString();
     instrument_.option_type =
-        ui_->optionTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
     instrument_.option_expiry_date =
         ui_->optionExpiryDateEdit->text().trimmed().toStdString();
     {
@@ -166,11 +176,11 @@ void BondInstrumentForm::writeUiToInstrument() {
             ? std::optional<double>(s) : std::nullopt;
     }
     instrument_.trs_return_type =
-        ui_->trsReturnTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
     instrument_.trs_funding_leg_code =
         ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
     instrument_.ascot_option_type =
-        ui_->ascotOptionTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->ascotOptionTypeCombo);
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
@@ -198,13 +208,12 @@ void BondInstrumentForm::setInstrument(
 
 void BondInstrumentForm::populateFromInstrument() {
     const auto block = [this](bool b) {
-        ui_->tradeTypeCodeEdit->blockSignals(b);
         ui_->issuerEdit->blockSignals(b);
         ui_->currencyEdit->blockSignals(b);
         ui_->faceValueSpinBox->blockSignals(b);
         ui_->couponRateSpinBox->blockSignals(b);
-        ui_->couponFrequencyCodeEdit->blockSignals(b);
-        ui_->dayCountCodeEdit->blockSignals(b);
+        ui_->couponFrequencyCombo->blockSignals(b);
+        ui_->dayCountCombo->blockSignals(b);
         ui_->issueDateEdit->blockSignals(b);
         ui_->maturityDateEdit->blockSignals(b);
         ui_->settlementDaysSpinBox->blockSignals(b);
@@ -212,12 +221,12 @@ void BondInstrumentForm::populateFromInstrument() {
         ui_->conversionRatioSpinBox->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
         ui_->futureExpiryDateEdit->blockSignals(b);
-        ui_->optionTypeEdit->blockSignals(b);
+        ui_->optionTypeCombo->blockSignals(b);
         ui_->optionExpiryDateEdit->blockSignals(b);
         ui_->optionStrikeSpinBox->blockSignals(b);
-        ui_->trsReturnTypeEdit->blockSignals(b);
+        ui_->trsReturnTypeCombo->blockSignals(b);
         ui_->trsFundingLegCodeEdit->blockSignals(b);
-        ui_->ascotOptionTypeEdit->blockSignals(b);
+        ui_->ascotOptionTypeCombo->blockSignals(b);
     };
 
     block(true);
@@ -229,10 +238,10 @@ void BondInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.currency));
     ui_->faceValueSpinBox->setValue(instrument_.face_value);
     ui_->couponRateSpinBox->setValue(instrument_.coupon_rate);
-    ui_->couponFrequencyCodeEdit->setText(
-        QString::fromStdString(instrument_.coupon_frequency_code));
-    ui_->dayCountCodeEdit->setText(
-        QString::fromStdString(instrument_.day_count_code));
+    InstrumentFormUtils::setComboValue(
+        ui_->couponFrequencyCombo, instrument_.coupon_frequency_code);
+    InstrumentFormUtils::setComboValue(
+        ui_->dayCountCombo, instrument_.day_count_code);
     ui_->issueDateEdit->setText(
         QString::fromStdString(instrument_.issue_date));
     ui_->maturityDateEdit->setText(
@@ -245,18 +254,18 @@ void BondInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.description));
     ui_->futureExpiryDateEdit->setText(
         QString::fromStdString(instrument_.future_expiry_date));
-    ui_->optionTypeEdit->setText(
-        QString::fromStdString(instrument_.option_type));
+    InstrumentFormUtils::setComboValue(
+        ui_->optionTypeCombo, instrument_.option_type);
     ui_->optionExpiryDateEdit->setText(
         QString::fromStdString(instrument_.option_expiry_date));
     ui_->optionStrikeSpinBox->setValue(
         instrument_.option_strike.value_or(0.0));
-    ui_->trsReturnTypeEdit->setText(
-        QString::fromStdString(instrument_.trs_return_type));
+    InstrumentFormUtils::setComboValue(
+        ui_->trsReturnTypeCombo, instrument_.trs_return_type);
     ui_->trsFundingLegCodeEdit->setText(
         QString::fromStdString(instrument_.trs_funding_leg_code));
-    ui_->ascotOptionTypeEdit->setText(
-        QString::fromStdString(instrument_.ascot_option_type));
+    InstrumentFormUtils::setComboValue(
+        ui_->ascotOptionTypeCombo, instrument_.ascot_option_type);
     block(false);
 }
 

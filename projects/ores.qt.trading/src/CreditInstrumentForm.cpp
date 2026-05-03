@@ -19,12 +19,14 @@
  */
 #include "ores.qt/CreditInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_CreditInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
@@ -38,6 +40,11 @@ CreditInstrumentForm::CreditInstrumentForm(QWidget* parent)
     // Extensions tab hidden until setTradeType() reveals it.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->extensionsTab), false);
+    InstrumentFormUtils::populateDayCount(ui_->dayCountCombo);
+    InstrumentFormUtils::populateFrequency(ui_->paymentFrequencyCombo);
+    InstrumentFormUtils::populateSeniority(ui_->seniorityCombo);
+    InstrumentFormUtils::populateRestructuring(ui_->restructuringCombo);
+    InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
     setupConnections();
 }
 
@@ -45,19 +52,24 @@ CreditInstrumentForm::~CreditInstrumentForm() = default;
 
 void CreditInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
     connect(ui_->referenceEntityEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->currencyEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->tenorEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->startDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->maturityDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->dayCountCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->paymentFrequencyCodeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->dayCountCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->paymentFrequencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->indexNameEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->seniorityEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->restructuringEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->seniorityCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->restructuringCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
-    connect(ui_->optionTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->optionExpiryDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->linkedAssetCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->notionalSpinBox,
@@ -101,12 +113,12 @@ void CreditInstrumentForm::clear() {
 void CreditInstrumentForm::setTradeType(const QString& code,
     bool /*has_options*/, bool has_extension) {
     instrument_.trade_type_code = code.trimmed().toStdString();
+    ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->extensionsTab), has_extension);
 }
 
 void CreditInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->referenceEntityEdit->setReadOnly(readOnly);
     ui_->currencyEdit->setReadOnly(readOnly);
     ui_->notionalSpinBox->setReadOnly(readOnly);
@@ -115,14 +127,14 @@ void CreditInstrumentForm::setReadOnly(bool readOnly) {
     ui_->tenorEdit->setReadOnly(readOnly);
     ui_->startDateEdit->setReadOnly(readOnly);
     ui_->maturityDateEdit->setReadOnly(readOnly);
-    ui_->dayCountCodeEdit->setReadOnly(readOnly);
-    ui_->paymentFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->dayCountCombo->setEnabled(!readOnly);
+    ui_->paymentFrequencyCombo->setEnabled(!readOnly);
     ui_->indexNameEdit->setReadOnly(readOnly);
     ui_->indexSeriesSpinBox->setReadOnly(readOnly);
-    ui_->seniorityEdit->setReadOnly(readOnly);
-    ui_->restructuringEdit->setReadOnly(readOnly);
+    ui_->seniorityCombo->setEnabled(!readOnly);
+    ui_->restructuringCombo->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->optionTypeEdit->setReadOnly(readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
     ui_->optionExpiryDateEdit->setReadOnly(readOnly);
     ui_->optionStrikeSpinBox->setReadOnly(readOnly);
     ui_->linkedAssetCodeEdit->setReadOnly(readOnly);
@@ -140,8 +152,6 @@ void CreditInstrumentForm::setChangeReason(
 }
 
 void CreditInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.reference_entity =
         ui_->referenceEntityEdit->text().trimmed().toStdString();
     instrument_.currency =
@@ -156,20 +166,20 @@ void CreditInstrumentForm::writeUiToInstrument() {
     instrument_.maturity_date =
         ui_->maturityDateEdit->text().trimmed().toStdString();
     instrument_.day_count_code =
-        ui_->dayCountCodeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
     instrument_.payment_frequency_code =
-        ui_->paymentFrequencyCodeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->paymentFrequencyCombo);
     instrument_.index_name =
         ui_->indexNameEdit->text().trimmed().toStdString();
     instrument_.index_series = ui_->indexSeriesSpinBox->value();
     instrument_.seniority =
-        ui_->seniorityEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->seniorityCombo);
     instrument_.restructuring =
-        ui_->restructuringEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->restructuringCombo);
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.option_type =
-        ui_->optionTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
     instrument_.option_expiry_date =
         ui_->optionExpiryDateEdit->text().trimmed().toStdString();
     {
@@ -216,7 +226,6 @@ void CreditInstrumentForm::setInstrument(
 
 void CreditInstrumentForm::populateFromInstrument() {
     const auto block = [this](bool b) {
-        ui_->tradeTypeCodeEdit->blockSignals(b);
         ui_->referenceEntityEdit->blockSignals(b);
         ui_->currencyEdit->blockSignals(b);
         ui_->notionalSpinBox->blockSignals(b);
@@ -225,14 +234,14 @@ void CreditInstrumentForm::populateFromInstrument() {
         ui_->tenorEdit->blockSignals(b);
         ui_->startDateEdit->blockSignals(b);
         ui_->maturityDateEdit->blockSignals(b);
-        ui_->dayCountCodeEdit->blockSignals(b);
-        ui_->paymentFrequencyCodeEdit->blockSignals(b);
+        ui_->dayCountCombo->blockSignals(b);
+        ui_->paymentFrequencyCombo->blockSignals(b);
         ui_->indexNameEdit->blockSignals(b);
         ui_->indexSeriesSpinBox->blockSignals(b);
-        ui_->seniorityEdit->blockSignals(b);
-        ui_->restructuringEdit->blockSignals(b);
+        ui_->seniorityCombo->blockSignals(b);
+        ui_->restructuringCombo->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
-        ui_->optionTypeEdit->blockSignals(b);
+        ui_->optionTypeCombo->blockSignals(b);
         ui_->optionExpiryDateEdit->blockSignals(b);
         ui_->optionStrikeSpinBox->blockSignals(b);
         ui_->linkedAssetCodeEdit->blockSignals(b);
@@ -256,21 +265,21 @@ void CreditInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.start_date));
     ui_->maturityDateEdit->setText(
         QString::fromStdString(instrument_.maturity_date));
-    ui_->dayCountCodeEdit->setText(
-        QString::fromStdString(instrument_.day_count_code));
-    ui_->paymentFrequencyCodeEdit->setText(
-        QString::fromStdString(instrument_.payment_frequency_code));
+    InstrumentFormUtils::setComboValue(
+        ui_->dayCountCombo, instrument_.day_count_code);
+    InstrumentFormUtils::setComboValue(
+        ui_->paymentFrequencyCombo, instrument_.payment_frequency_code);
     ui_->indexNameEdit->setText(
         QString::fromStdString(instrument_.index_name));
     ui_->indexSeriesSpinBox->setValue(instrument_.index_series);
-    ui_->seniorityEdit->setText(
-        QString::fromStdString(instrument_.seniority));
-    ui_->restructuringEdit->setText(
-        QString::fromStdString(instrument_.restructuring));
+    InstrumentFormUtils::setComboValue(
+        ui_->seniorityCombo, instrument_.seniority);
+    InstrumentFormUtils::setComboValue(
+        ui_->restructuringCombo, instrument_.restructuring);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
-    ui_->optionTypeEdit->setText(
-        QString::fromStdString(instrument_.option_type));
+    InstrumentFormUtils::setComboValue(
+        ui_->optionTypeCombo, instrument_.option_type);
     ui_->optionExpiryDateEdit->setText(
         QString::fromStdString(instrument_.option_expiry_date));
     ui_->optionStrikeSpinBox->setValue(

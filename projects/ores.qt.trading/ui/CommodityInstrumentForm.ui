@@ -33,7 +33,9 @@
            <widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="tradeTypeCodeEdit"/>
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="readOnly"><bool>true</bool></property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Commodity Code:</string></property></widget>
@@ -124,17 +126,13 @@
            <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="optionTypeEdit">
-            <property name="placeholderText"><string>Call or Put</string></property>
-           </widget>
+           <widget class="QComboBox" name="optionTypeCombo"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Exercise Type:</string></property></widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="exerciseTypeEdit">
-            <property name="placeholderText"><string>European or American</string></property>
-           </widget>
+           <widget class="QComboBox" name="exerciseTypeCombo"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Strike Price:</string></property></widget>
@@ -150,9 +148,7 @@
            <widget class="QLabel"><property name="text"><string>Barrier Type:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="barrierTypeEdit">
-            <property name="placeholderText"><string>e.g. UpIn, UpOut, DownIn, DownOut</string></property>
-           </widget>
+           <widget class="QComboBox" name="barrierTypeCombo"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel"><property name="text"><string>Lower Barrier:</string></property></widget>
@@ -178,9 +174,7 @@
            <widget class="QLabel"><property name="text"><string>Average Type:</string></property></widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="averageTypeEdit">
-            <property name="placeholderText"><string>Arithmetic or Geometric</string></property>
-           </widget>
+           <widget class="QComboBox" name="averageTypeCombo"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel"><property name="text"><string>Averaging Start Date:</string></property></widget>
@@ -220,9 +214,7 @@
            <widget class="QLabel"><property name="text"><string>Strip Frequency:</string></property></widget>
           </item>
           <item row="11" column="1">
-           <widget class="QLineEdit" name="stripFrequencyCodeEdit">
-            <property name="placeholderText"><string>e.g. Monthly, Quarterly</string></property>
-           </widget>
+           <widget class="QComboBox" name="stripFrequencyCombo"/>
           </item>
           <item row="12" column="0">
            <widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget>
@@ -258,17 +250,13 @@
            <widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget>
           </item>
           <item row="15" column="1">
-           <widget class="QLineEdit" name="dayCountCodeEdit">
-            <property name="placeholderText"><string>e.g. Actual365Fixed</string></property>
-           </widget>
+           <widget class="QComboBox" name="dayCountCombo"/>
           </item>
           <item row="16" column="0">
            <widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget>
           </item>
           <item row="16" column="1">
-           <widget class="QLineEdit" name="paymentFrequencyCodeEdit">
-            <property name="placeholderText"><string>e.g. Quarterly</string></property>
-           </widget>
+           <widget class="QComboBox" name="paymentFrequencyCombo"/>
           </item>
           <item row="17" column="0">
            <widget class="QLabel"><property name="text"><string>Swaption Expiry Date:</string></property></widget>

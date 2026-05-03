@@ -19,12 +19,14 @@
  */
 #include "ores.qt/EquityInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_EquityInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
@@ -40,6 +42,14 @@ EquityInstrumentForm::EquityInstrumentForm(QWidget* parent)
         ui_->subTabWidget->indexOf(ui_->optionsTab), false);
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->extensionsTab), false);
+    InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
+    InstrumentFormUtils::populateExerciseType(ui_->exerciseTypeCombo);
+    InstrumentFormUtils::populateBarrierType(ui_->barrierTypeCombo);
+    InstrumentFormUtils::populateAverageType(ui_->averageTypeCombo);
+    InstrumentFormUtils::populateFrequency(ui_->cliquetFrequencyCombo);
+    InstrumentFormUtils::populateDayCount(ui_->dayCountCombo);
+    InstrumentFormUtils::populateFrequency(ui_->paymentFrequencyCombo);
+    InstrumentFormUtils::populateReturnType(ui_->returnTypeCombo);
     setupConnections();
 }
 
@@ -47,21 +57,29 @@ EquityInstrumentForm::~EquityInstrumentForm() = default;
 
 void EquityInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
     connect(ui_->underlyingCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->currencyEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->startDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->maturityDateEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
-    connect(ui_->optionTypeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->exerciseTypeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->barrierTypeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->averageTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->exerciseTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->barrierTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->averageTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->averagingStartDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->cliquetFrequencyCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->dayCountCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->paymentFrequencyCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->returnTypeEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->cliquetFrequencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->dayCountCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->paymentFrequencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->returnTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->basketJsonEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->notionalSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -107,6 +125,7 @@ void EquityInstrumentForm::clear() {
 void EquityInstrumentForm::setTradeType(const QString& code,
     bool has_options, bool has_extension) {
     instrument_.trade_type_code = code.trimmed().toStdString();
+    ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->optionsTab), has_options);
     ui_->subTabWidget->setTabVisible(
@@ -114,7 +133,6 @@ void EquityInstrumentForm::setTradeType(const QString& code,
 }
 
 void EquityInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->underlyingCodeEdit->setReadOnly(readOnly);
     ui_->currencyEdit->setReadOnly(readOnly);
     ui_->notionalSpinBox->setReadOnly(readOnly);
@@ -122,21 +140,21 @@ void EquityInstrumentForm::setReadOnly(bool readOnly) {
     ui_->startDateEdit->setReadOnly(readOnly);
     ui_->maturityDateEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->optionTypeEdit->setReadOnly(readOnly);
-    ui_->exerciseTypeEdit->setReadOnly(readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
+    ui_->exerciseTypeCombo->setEnabled(!readOnly);
     ui_->strikePriceSpinBox->setReadOnly(readOnly);
-    ui_->barrierTypeEdit->setReadOnly(readOnly);
+    ui_->barrierTypeCombo->setEnabled(!readOnly);
     ui_->lowerBarrierSpinBox->setReadOnly(readOnly);
     ui_->upperBarrierSpinBox->setReadOnly(readOnly);
-    ui_->averageTypeEdit->setReadOnly(readOnly);
+    ui_->averageTypeCombo->setEnabled(!readOnly);
     ui_->averagingStartDateEdit->setReadOnly(readOnly);
     ui_->varianceStrikeSpinBox->setReadOnly(readOnly);
-    ui_->cliquetFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->cliquetFrequencyCombo->setEnabled(!readOnly);
     ui_->accumulationAmountSpinBox->setReadOnly(readOnly);
     ui_->knockOutBarrierSpinBox->setReadOnly(readOnly);
-    ui_->dayCountCodeEdit->setReadOnly(readOnly);
-    ui_->paymentFrequencyCodeEdit->setReadOnly(readOnly);
-    ui_->returnTypeEdit->setReadOnly(readOnly);
+    ui_->dayCountCombo->setEnabled(!readOnly);
+    ui_->paymentFrequencyCombo->setEnabled(!readOnly);
+    ui_->returnTypeCombo->setEnabled(!readOnly);
     ui_->basketJsonEdit->setReadOnly(readOnly);
 }
 
@@ -150,12 +168,6 @@ void EquityInstrumentForm::setChangeReason(
 }
 
 void EquityInstrumentForm::writeUiToInstrument() {
-    // Scoped to equity_option_instrument. Widgets outside this struct's
-    // fields (barrier, averaging, variance, accumulation, return-type,
-    // day-count, basket) are left in place in the .ui for future variant
-    // coverage but are not read back here.
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.underlying_name =
         ui_->underlyingCodeEdit->text().trimmed().toStdString();
     instrument_.currency =
@@ -166,12 +178,12 @@ void EquityInstrumentForm::writeUiToInstrument() {
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.option_type =
-        ui_->optionTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
     instrument_.exercise_type =
-        ui_->exerciseTypeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->exerciseTypeCombo);
     instrument_.strike = ui_->strikePriceSpinBox->value();
     instrument_.cliquet_frequency =
-        ui_->cliquetFrequencyCodeEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->cliquetFrequencyCombo);
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
@@ -206,7 +218,6 @@ void EquityInstrumentForm::setInstrument(
 
 void EquityInstrumentForm::populateFromInstrument() {
     const auto block = [this](bool b) {
-        ui_->tradeTypeCodeEdit->blockSignals(b);
         ui_->underlyingCodeEdit->blockSignals(b);
         ui_->currencyEdit->blockSignals(b);
         ui_->notionalSpinBox->blockSignals(b);
@@ -214,21 +225,21 @@ void EquityInstrumentForm::populateFromInstrument() {
         ui_->startDateEdit->blockSignals(b);
         ui_->maturityDateEdit->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
-        ui_->optionTypeEdit->blockSignals(b);
-        ui_->exerciseTypeEdit->blockSignals(b);
+        ui_->optionTypeCombo->blockSignals(b);
+        ui_->exerciseTypeCombo->blockSignals(b);
         ui_->strikePriceSpinBox->blockSignals(b);
-        ui_->barrierTypeEdit->blockSignals(b);
+        ui_->barrierTypeCombo->blockSignals(b);
         ui_->lowerBarrierSpinBox->blockSignals(b);
         ui_->upperBarrierSpinBox->blockSignals(b);
-        ui_->averageTypeEdit->blockSignals(b);
+        ui_->averageTypeCombo->blockSignals(b);
         ui_->averagingStartDateEdit->blockSignals(b);
         ui_->varianceStrikeSpinBox->blockSignals(b);
-        ui_->cliquetFrequencyCodeEdit->blockSignals(b);
+        ui_->cliquetFrequencyCombo->blockSignals(b);
         ui_->accumulationAmountSpinBox->blockSignals(b);
         ui_->knockOutBarrierSpinBox->blockSignals(b);
-        ui_->dayCountCodeEdit->blockSignals(b);
-        ui_->paymentFrequencyCodeEdit->blockSignals(b);
-        ui_->returnTypeEdit->blockSignals(b);
+        ui_->dayCountCombo->blockSignals(b);
+        ui_->paymentFrequencyCombo->blockSignals(b);
+        ui_->returnTypeCombo->blockSignals(b);
         ui_->basketJsonEdit->blockSignals(b);
     };
 
@@ -246,24 +257,24 @@ void EquityInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.expiry_date));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
-    ui_->optionTypeEdit->setText(
-        QString::fromStdString(instrument_.option_type));
-    ui_->exerciseTypeEdit->setText(
-        QString::fromStdString(instrument_.exercise_type));
+    InstrumentFormUtils::setComboValue(
+        ui_->optionTypeCombo, instrument_.option_type);
+    InstrumentFormUtils::setComboValue(
+        ui_->exerciseTypeCombo, instrument_.exercise_type);
     ui_->strikePriceSpinBox->setValue(instrument_.strike);
-    ui_->barrierTypeEdit->clear();
+    InstrumentFormUtils::setComboValue(ui_->barrierTypeCombo, "");
     ui_->lowerBarrierSpinBox->setValue(0.0);
     ui_->upperBarrierSpinBox->setValue(0.0);
-    ui_->averageTypeEdit->clear();
+    InstrumentFormUtils::setComboValue(ui_->averageTypeCombo, "");
     ui_->averagingStartDateEdit->clear();
     ui_->varianceStrikeSpinBox->setValue(0.0);
-    ui_->cliquetFrequencyCodeEdit->setText(
-        QString::fromStdString(instrument_.cliquet_frequency));
+    InstrumentFormUtils::setComboValue(
+        ui_->cliquetFrequencyCombo, instrument_.cliquet_frequency);
     ui_->accumulationAmountSpinBox->setValue(0.0);
     ui_->knockOutBarrierSpinBox->setValue(0.0);
-    ui_->dayCountCodeEdit->clear();
-    ui_->paymentFrequencyCodeEdit->clear();
-    ui_->returnTypeEdit->clear();
+    InstrumentFormUtils::setComboValue(ui_->dayCountCombo, "");
+    InstrumentFormUtils::setComboValue(ui_->paymentFrequencyCombo, "");
+    InstrumentFormUtils::setComboValue(ui_->returnTypeCombo, "");
     ui_->basketJsonEdit->clear();
     block(false);
 }

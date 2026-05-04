@@ -55,7 +55,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="boughtAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="boughtAmountSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -78,7 +78,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="soldAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="soldAmountSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -159,7 +159,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="strikePriceSpinBox">
+           <widget class="OreDoubleSpinBox" name="strikePriceSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999.000000000000000</double></property>
@@ -195,6 +195,13 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

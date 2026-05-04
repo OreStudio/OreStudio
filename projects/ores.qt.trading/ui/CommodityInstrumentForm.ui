@@ -57,7 +57,7 @@
            <widget class="QLabel"><property name="text"><string>Quantity:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="quantitySpinBox">
+           <widget class="OreDoubleSpinBox" name="quantitySpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -92,7 +92,7 @@
            <widget class="QLabel"><property name="text"><string>Fixed Price:</string></property></widget>
           </item>
           <item row="7" column="1">
-           <widget class="QDoubleSpinBox" name="fixedPriceSpinBox">
+           <widget class="OreDoubleSpinBox" name="fixedPriceSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -138,7 +138,7 @@
            <widget class="QLabel"><property name="text"><string>Strike Price:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="strikePriceSpinBox">
+           <widget class="OreDoubleSpinBox" name="strikePriceSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -154,7 +154,7 @@
            <widget class="QLabel"><property name="text"><string>Lower Barrier:</string></property></widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="lowerBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="lowerBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -164,7 +164,7 @@
            <widget class="QLabel"><property name="text"><string>Upper Barrier:</string></property></widget>
           </item>
           <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="upperBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="upperBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -204,7 +204,7 @@
            <widget class="QLabel"><property name="text"><string>Spread Amount:</string></property></widget>
           </item>
           <item row="10" column="1">
-           <widget class="QDoubleSpinBox" name="spreadAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="spreadAmountSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -220,7 +220,7 @@
            <widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget>
           </item>
           <item row="12" column="1">
-           <widget class="QDoubleSpinBox" name="varianceStrikeSpinBox">
+           <widget class="OreDoubleSpinBox" name="varianceStrikeSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -230,7 +230,7 @@
            <widget class="QLabel"><property name="text"><string>Accumulation Amount:</string></property></widget>
           </item>
           <item row="13" column="1">
-           <widget class="QDoubleSpinBox" name="accumulationAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="accumulationAmountSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -240,7 +240,7 @@
            <widget class="QLabel"><property name="text"><string>Knock-Out Barrier:</string></property></widget>
           </item>
           <item row="14" column="1">
-           <widget class="QDoubleSpinBox" name="knockOutBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="knockOutBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -315,6 +315,13 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

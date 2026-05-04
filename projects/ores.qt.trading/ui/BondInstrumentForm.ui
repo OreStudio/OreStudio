@@ -55,7 +55,7 @@
            <widget class="QLabel"><property name="text"><string>Face Value:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="faceValueSpinBox">
+           <widget class="OreDoubleSpinBox" name="faceValueSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -66,7 +66,7 @@
            <widget class="QLabel"><property name="text"><string>Coupon Rate:</string></property></widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="couponRateSpinBox">
+           <widget class="OreDoubleSpinBox" name="couponRateSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>1.000000000000000</double></property>
@@ -147,7 +147,7 @@
            <widget class="QLabel"><property name="text"><string>Conversion Ratio:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="conversionRatioSpinBox">
+           <widget class="OreDoubleSpinBox" name="conversionRatioSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>9999.000000000000000</double></property>
@@ -220,7 +220,7 @@
            <widget class="QLabel"><property name="text"><string>Option Strike:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="optionStrikeSpinBox">
+           <widget class="OreDoubleSpinBox" name="optionStrikeSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999.000000000000000</double></property>
@@ -264,6 +264,13 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

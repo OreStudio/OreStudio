@@ -25,6 +25,7 @@
 #include <QTabWidget>
 #include <QTimer>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/IInstrumentForm.hpp"
@@ -74,6 +75,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
+    void setImageCache(ImageCache* cache);
 
     /**
      * @brief Populate the dialog with a trade bundle (trade + instrument).
@@ -130,6 +132,7 @@ private:
 
     Ui::TradeDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
     trading::domain::trade trade_;
     std::vector<refdata::domain::book> books_;

@@ -30,6 +30,7 @@
 namespace ores::qt {
 
 class ClientManager;
+class ImageCache;
 
 /**
  * @brief Audit metadata snapshot reported by an @c IInstrumentForm so the
@@ -80,6 +81,9 @@ public:
 
     /// Inject the username stamped on every saved instrument.
     virtual void setUsername(const std::string& username) = 0;
+
+    /// Inject the image cache for flag icons on currency combo boxes.
+    virtual void setImageCache(ImageCache* /*cache*/) {}
 
     /**
      * @brief Populate the form with the already-resolved instrument.

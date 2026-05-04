@@ -85,7 +85,7 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 
     tradeController_ = std::make_unique<TradeController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+        ctx_.change_reason_cache, ctx_.image_cache, ctx_.username, this);
     connectControllerSignals(tradeController_.get());
 }
 

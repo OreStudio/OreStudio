@@ -49,9 +49,7 @@
            <widget class="QLabel"><property name="text"><string>Currency:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="currencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="currencyCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Notional:</string></property></widget>
@@ -79,17 +77,13 @@
            <widget class="QLabel"><property name="text"><string>Start Date:</string></property></widget>
           </item>
           <item row="5" column="1">
-           <widget class="QLineEdit" name="startDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="startDateEdit"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="maturityDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="maturityDateEdit"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
@@ -213,9 +207,7 @@
            <widget class="QLabel"><property name="text"><string>Averaging Start Date:</string></property></widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="averagingStartDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (Asian)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="averagingStartDateEdit"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget>
@@ -312,6 +304,16 @@
   <class>OreDoubleSpinBox</class>
   <extends>QDoubleSpinBox</extends>
   <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
  </customwidget>
 </customwidgets>
 <resources/>

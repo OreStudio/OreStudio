@@ -23,8 +23,12 @@
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_FxInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/InstrumentFormUtils.hpp"
 
 namespace ores::qt {
@@ -48,12 +52,12 @@ FxInstrumentForm::~FxInstrumentForm() = default;
 void FxInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
     auto markChangedStr = [this](const QString&) { onFieldChanged(); };
-    connect(ui_->boughtCurrencyEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->soldCurrencyEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->valueDateEdit, &QLineEdit::textChanged,
-            this, markChanged);
+    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
+    connect(ui_->boughtCurrencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->soldCurrencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->valueDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->settlementCombo, &QComboBox::currentTextChanged,
             this, markChangedStr);
     connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
@@ -70,6 +74,53 @@ void FxInstrumentForm::setupConnections() {
 
 void FxInstrumentForm::setClientManager(ClientManager* cm) {
     clientManager_ = cm;
+    populateCurrencies();
+}
+
+void FxInstrumentForm::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+    setup_flag_combo(this, ui_->boughtCurrencyCombo, imageCache_,
+                     FlagSource::Currency);
+    setup_flag_combo(this, ui_->soldCurrencyCombo, imageCache_,
+                     FlagSource::Currency);
+}
+
+void FxInstrumentForm::populateCurrencies() {
+    if (!clientManager_) return;
+
+    QPointer<FxInstrumentForm> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+        [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        auto populate = [&codes](QComboBox* cb, const std::string& value) {
+            cb->blockSignals(true);
+            cb->clear();
+            cb->addItem(QString());
+            for (const auto& c : codes)
+                cb->addItem(QString::fromStdString(c));
+            InstrumentFormUtils::setComboValue(cb, value);
+            cb->blockSignals(false);
+        };
+
+        populate(self->ui_->boughtCurrencyCombo, self->instrument_.bought_currency);
+        populate(self->ui_->soldCurrencyCombo, self->instrument_.sold_currency);
+
+        if (self->imageCache_) {
+            apply_flag_icons(self->ui_->boughtCurrencyCombo,
+                             self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(self->ui_->soldCurrencyCombo,
+                             self->imageCache_, FlagSource::Currency);
+        }
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() {
+        return fetch_currency_codes(cm);
+    }));
 }
 
 void FxInstrumentForm::setUsername(const std::string& username) {
@@ -93,9 +144,9 @@ void FxInstrumentForm::setTradeType(const QString& code,
 }
 
 void FxInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->boughtCurrencyEdit->setReadOnly(readOnly);
+    ui_->boughtCurrencyCombo->setEnabled(!readOnly);
     ui_->boughtAmountSpinBox->setReadOnly(readOnly);
-    ui_->soldCurrencyEdit->setReadOnly(readOnly);
+    ui_->soldCurrencyCombo->setEnabled(!readOnly);
     ui_->soldAmountSpinBox->setReadOnly(readOnly);
     ui_->valueDateEdit->setReadOnly(readOnly);
     ui_->settlementCombo->setEnabled(!readOnly);
@@ -119,13 +170,12 @@ void FxInstrumentForm::setChangeReason(
 
 void FxInstrumentForm::writeUiToInstrument() {
     instrument_.bought_currency =
-        ui_->boughtCurrencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->boughtCurrencyCombo);
     instrument_.bought_amount = ui_->boughtAmountSpinBox->value();
     instrument_.sold_currency =
-        ui_->soldCurrencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->soldCurrencyCombo);
     instrument_.sold_amount = ui_->soldAmountSpinBox->value();
-    instrument_.value_date =
-        ui_->valueDateEdit->text().trimmed().toStdString();
+    instrument_.value_date = ui_->valueDateEdit->isoDate();
     instrument_.settlement =
         InstrumentFormUtils::getComboValue(ui_->settlementCombo);
     instrument_.description =
@@ -175,9 +225,9 @@ void FxInstrumentForm::setInstrument(
 void FxInstrumentForm::populateFromInstrument() {
     // Block signals while setting values so dirty_ stays untouched.
     const auto block = [this](bool b) {
-        ui_->boughtCurrencyEdit->blockSignals(b);
+        ui_->boughtCurrencyCombo->blockSignals(b);
         ui_->boughtAmountSpinBox->blockSignals(b);
-        ui_->soldCurrencyEdit->blockSignals(b);
+        ui_->soldCurrencyCombo->blockSignals(b);
         ui_->soldAmountSpinBox->blockSignals(b);
         ui_->valueDateEdit->blockSignals(b);
         ui_->settlementCombo->blockSignals(b);
@@ -188,14 +238,13 @@ void FxInstrumentForm::populateFromInstrument() {
     block(true);
     ui_->tradeTypeCodeEdit->setText(
         QString::fromStdString(instrument_.trade_type_code));
-    ui_->boughtCurrencyEdit->setText(
-        QString::fromStdString(instrument_.bought_currency));
+    InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo,
+        instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
-    ui_->soldCurrencyEdit->setText(
-        QString::fromStdString(instrument_.sold_currency));
+    InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo,
+        instrument_.sold_currency);
     ui_->soldAmountSpinBox->setValue(instrument_.sold_amount);
-    ui_->valueDateEdit->setText(
-        QString::fromStdString(instrument_.value_date));
+    ui_->valueDateEdit->setIsoDate(instrument_.value_date);
     InstrumentFormUtils::setComboValue(ui_->settlementCombo, instrument_.settlement);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));

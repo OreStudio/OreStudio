@@ -47,9 +47,7 @@
            <widget class="QLabel"><property name="text"><string>Currency:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="currencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="currencyCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Face Value:</string></property></widget>
@@ -90,17 +88,13 @@
            <widget class="QLabel"><property name="text"><string>Issue Date:</string></property></widget>
           </item>
           <item row="7" column="1">
-           <widget class="QLineEdit" name="issueDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="issueDateEdit"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget>
           </item>
           <item row="8" column="1">
-           <widget class="QLineEdit" name="maturityDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="maturityDateEdit"/>
           </item>
          </layout>
         </widget>
@@ -139,9 +133,7 @@
            <widget class="QLabel"><property name="text"><string>Call Date:</string></property></widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="callDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (CallableBond)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="callDateEdit"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Conversion Ratio:</string></property></widget>
@@ -198,9 +190,7 @@
            <widget class="QLabel"><property name="text"><string>Future Expiry Date:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="futureExpiryDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (BondFuture)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="futureExpiryDateEdit"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
@@ -212,9 +202,7 @@
            <widget class="QLabel"><property name="text"><string>Option Expiry Date:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="optionExpiryDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (BondOption)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="optionExpiryDateEdit"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Option Strike:</string></property></widget>
@@ -269,6 +257,16 @@
   <class>OreDoubleSpinBox</class>
   <extends>QDoubleSpinBox</extends>
   <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
  </customwidget>
 </customwidgets>
 <resources/>

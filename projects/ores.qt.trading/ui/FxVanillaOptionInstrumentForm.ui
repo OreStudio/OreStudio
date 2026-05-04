@@ -45,9 +45,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="boughtCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. EUR)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="boughtCurrencyCombo"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="labelBoughtAmount">
@@ -68,9 +66,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="soldCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="soldCurrencyCombo"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="labelSoldAmount">
@@ -99,9 +95,7 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="expiryDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (e.g. 2026-12-31)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="expiryDateEdit"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel" name="labelExerciseStyle">
@@ -159,6 +153,16 @@
   <class>OreDoubleSpinBox</class>
   <extends>QDoubleSpinBox</extends>
   <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
  </customwidget>
 </customwidgets>
 <resources/>

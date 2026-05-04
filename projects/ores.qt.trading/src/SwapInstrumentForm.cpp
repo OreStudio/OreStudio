@@ -19,12 +19,17 @@
  */
 #include "ores.qt/SwapInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_SwapInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
@@ -323,13 +328,17 @@ SwapInstrumentForm::~SwapInstrumentForm() = default;
 
 void SwapInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
+    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
     connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->currencyEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->startDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->maturityDateEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->currencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->startDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
+    connect(ui_->maturityDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
-    connect(ui_->fraFixingDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->fraSettlementDateEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->fraFixingDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
+    connect(ui_->fraSettlementDateEdit, &QDateEdit::dateChanged,
+            this, markChangedDate);
     connect(ui_->rpaCounterpartyEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->inflationIndexCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->callableDatesJsonEdit, &QPlainTextEdit::textChanged, this, markChanged);
@@ -346,6 +355,41 @@ void SwapInstrumentForm::setupConnections() {
 
 void SwapInstrumentForm::setClientManager(ClientManager* cm) {
     clientManager_ = cm;
+    populateCurrencies();
+}
+
+void SwapInstrumentForm::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+    setup_flag_combo(this, ui_->currencyCombo, imageCache_,
+                     FlagSource::Currency);
+}
+
+void SwapInstrumentForm::populateCurrencies() {
+    if (!clientManager_) return;
+
+    QPointer<SwapInstrumentForm> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+        [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        auto* cb = self->ui_->currencyCombo;
+        cb->blockSignals(true);
+        cb->clear();
+        cb->addItem(QString());
+        for (const auto& c : codes)
+            cb->addItem(QString::fromStdString(c));
+        InstrumentFormUtils::setComboValue(cb, self->state_.currency);
+        cb->blockSignals(false);
+        if (self->imageCache_)
+            apply_flag_icons(cb, self->imageCache_, FlagSource::Currency);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() {
+        return fetch_currency_codes(cm);
+    }));
 }
 
 void SwapInstrumentForm::setUsername(const std::string& username) {
@@ -372,7 +416,7 @@ void SwapInstrumentForm::setTradeType(const QString& code,
 void SwapInstrumentForm::setReadOnly(bool readOnly) {
     ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
     ui_->notionalSpinBox->setReadOnly(readOnly);
-    ui_->currencyEdit->setReadOnly(readOnly);
+    ui_->currencyCombo->setEnabled(!readOnly);
     ui_->startDateEdit->setReadOnly(readOnly);
     ui_->maturityDateEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
@@ -395,16 +439,14 @@ void SwapInstrumentForm::setChangeReason(
 }
 
 void SwapInstrumentForm::writeUiToInstrument() {
-    state_.start_date =
-        ui_->startDateEdit->text().trimmed().toStdString();
-    state_.maturity_date =
-        ui_->maturityDateEdit->text().trimmed().toStdString();
+    state_.start_date = ui_->startDateEdit->isoDate();
+    state_.maturity_date = ui_->maturityDateEdit->isoDate();
     state_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
 
     // FRA-specific
     state_.currency =
-        ui_->currencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->currencyCombo);
     state_.notional = ui_->notionalSpinBox->value();
 
     // Callable swap-specific
@@ -455,7 +497,7 @@ void SwapInstrumentForm::populateFromState() {
     const auto block = [this](bool b) {
         ui_->tradeTypeCodeEdit->blockSignals(b);
         ui_->notionalSpinBox->blockSignals(b);
-        ui_->currencyEdit->blockSignals(b);
+        ui_->currencyCombo->blockSignals(b);
         ui_->startDateEdit->blockSignals(b);
         ui_->maturityDateEdit->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
@@ -472,18 +514,15 @@ void SwapInstrumentForm::populateFromState() {
     ui_->tradeTypeCodeEdit->setText(
         QString::fromStdString(state_.trade_type_code));
     ui_->notionalSpinBox->setValue(state_.notional);
-    ui_->currencyEdit->setText(
-        QString::fromStdString(state_.currency));
-    ui_->startDateEdit->setText(
-        QString::fromStdString(state_.start_date));
-    ui_->maturityDateEdit->setText(
-        QString::fromStdString(state_.maturity_date));
+    InstrumentFormUtils::setComboValue(ui_->currencyCombo, state_.currency);
+    ui_->startDateEdit->setIsoDate(state_.start_date);
+    ui_->maturityDateEdit->setIsoDate(state_.maturity_date);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(state_.description));
     // FRA extension widgets — not populated from per-type domain objects
     // (these UI widgets will be repurposed in a future UI redesign).
-    ui_->fraFixingDateEdit->clear();
-    ui_->fraSettlementDateEdit->clear();
+    ui_->fraFixingDateEdit->setIsoDate("");
+    ui_->fraSettlementDateEdit->setIsoDate("");
     ui_->lockoutDaysSpinBox->setValue(state_.lockout_days.value_or(0));
     ui_->callableDatesJsonEdit->setPlainText(
         QString::fromStdString(state_.call_dates_json));

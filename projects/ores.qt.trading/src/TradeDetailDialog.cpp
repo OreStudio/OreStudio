@@ -327,6 +327,10 @@ void TradeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void TradeDetailDialog::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+}
+
 void TradeDetailDialog::connectFormSignals(IInstrumentForm* form) {
     connect(form, &IInstrumentForm::changed, this,
             &TradeDetailDialog::onInstrumentFieldChanged);
@@ -372,6 +376,8 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
 
     form->setClientManager(clientManager_);
     form->setUsername(username_);
+    if (imageCache_)
+        form->setImageCache(imageCache_);
 
     bool has_options = false, has_extension = false;
     auto it = tradeTypeCache_.find(tradeTypeCode);

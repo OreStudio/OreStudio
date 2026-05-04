@@ -26,6 +26,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_CommodityInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
@@ -55,11 +58,13 @@ CommodityInstrumentForm::~CommodityInstrumentForm() = default;
 void CommodityInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
     auto markChangedStr = [this](const QString&) { onFieldChanged(); };
+    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
     connect(ui_->commodityCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->currencyEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->currencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->unitEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->startDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->maturityDateEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->startDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
+    connect(ui_->maturityDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
             this, markChangedStr);
     connect(ui_->exerciseTypeCombo, &QComboBox::currentTextChanged,
@@ -68,8 +73,10 @@ void CommodityInstrumentForm::setupConnections() {
             this, markChangedStr);
     connect(ui_->averageTypeCombo, &QComboBox::currentTextChanged,
             this, markChangedStr);
-    connect(ui_->averagingStartDateEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->averagingEndDateEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->averagingStartDateEdit, &QDateEdit::dateChanged,
+            this, markChangedDate);
+    connect(ui_->averagingEndDateEdit, &QDateEdit::dateChanged,
+            this, markChangedDate);
     connect(ui_->spreadCommodityCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->stripFrequencyCombo, &QComboBox::currentTextChanged,
             this, markChangedStr);
@@ -77,7 +84,8 @@ void CommodityInstrumentForm::setupConnections() {
             this, markChangedStr);
     connect(ui_->paymentFrequencyCombo, &QComboBox::currentTextChanged,
             this, markChangedStr);
-    connect(ui_->swaptionExpiryDateEdit, &QLineEdit::textChanged, this, markChanged);
+    connect(ui_->swaptionExpiryDateEdit, &QDateEdit::dateChanged,
+            this, markChangedDate);
     connect(ui_->basketJsonEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->quantitySpinBox,
@@ -111,6 +119,41 @@ void CommodityInstrumentForm::setupConnections() {
 
 void CommodityInstrumentForm::setClientManager(ClientManager* cm) {
     clientManager_ = cm;
+    populateCurrencies();
+}
+
+void CommodityInstrumentForm::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+    setup_flag_combo(this, ui_->currencyCombo, imageCache_,
+                     FlagSource::Currency);
+}
+
+void CommodityInstrumentForm::populateCurrencies() {
+    if (!clientManager_) return;
+
+    QPointer<CommodityInstrumentForm> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+        [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+        auto* cb = self->ui_->currencyCombo;
+        cb->blockSignals(true);
+        cb->clear();
+        cb->addItem(QString());
+        for (const auto& c : codes)
+            cb->addItem(QString::fromStdString(c));
+        InstrumentFormUtils::setComboValue(cb, self->instrument_.currency);
+        cb->blockSignals(false);
+        if (self->imageCache_)
+            apply_flag_icons(cb, self->imageCache_, FlagSource::Currency);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() {
+        return fetch_currency_codes(cm);
+    }));
 }
 
 void CommodityInstrumentForm::setUsername(const std::string& username) {
@@ -134,7 +177,7 @@ void CommodityInstrumentForm::setTradeType(const QString& code,
 
 void CommodityInstrumentForm::setReadOnly(bool readOnly) {
     ui_->commodityCodeEdit->setReadOnly(readOnly);
-    ui_->currencyEdit->setReadOnly(readOnly);
+    ui_->currencyCombo->setEnabled(!readOnly);
     ui_->quantitySpinBox->setReadOnly(readOnly);
     ui_->unitEdit->setReadOnly(readOnly);
     ui_->startDateEdit->setReadOnly(readOnly);
@@ -175,14 +218,12 @@ void CommodityInstrumentForm::writeUiToInstrument() {
     instrument_.commodity_code =
         ui_->commodityCodeEdit->text().trimmed().toStdString();
     instrument_.currency =
-        ui_->currencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->currencyCombo);
     instrument_.quantity = ui_->quantitySpinBox->value();
     instrument_.unit =
         ui_->unitEdit->text().trimmed().toStdString();
-    instrument_.start_date =
-        ui_->startDateEdit->text().trimmed().toStdString();
-    instrument_.maturity_date =
-        ui_->maturityDateEdit->text().trimmed().toStdString();
+    instrument_.start_date = ui_->startDateEdit->isoDate();
+    instrument_.maturity_date = ui_->maturityDateEdit->isoDate();
     {
         const double v = ui_->fixedPriceSpinBox->value();
         instrument_.fixed_price = (v > 0.0)
@@ -199,10 +240,8 @@ void CommodityInstrumentForm::writeUiToInstrument() {
         InstrumentFormUtils::getComboValue(ui_->exerciseTypeCombo);
     instrument_.average_type =
         InstrumentFormUtils::getComboValue(ui_->averageTypeCombo);
-    instrument_.averaging_start_date =
-        ui_->averagingStartDateEdit->text().trimmed().toStdString();
-    instrument_.averaging_end_date =
-        ui_->averagingEndDateEdit->text().trimmed().toStdString();
+    instrument_.averaging_start_date = ui_->averagingStartDateEdit->isoDate();
+    instrument_.averaging_end_date = ui_->averagingEndDateEdit->isoDate();
     instrument_.spread_commodity_code =
         ui_->spreadCommodityCodeEdit->text().trimmed().toStdString();
     {
@@ -245,8 +284,7 @@ void CommodityInstrumentForm::writeUiToInstrument() {
         InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
     instrument_.payment_frequency_code =
         InstrumentFormUtils::getComboValue(ui_->paymentFrequencyCombo);
-    instrument_.swaption_expiry_date =
-        ui_->swaptionExpiryDateEdit->text().trimmed().toStdString();
+    instrument_.swaption_expiry_date = ui_->swaptionExpiryDateEdit->isoDate();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
@@ -277,7 +315,7 @@ void CommodityInstrumentForm::setInstrument(
 void CommodityInstrumentForm::populateFromInstrument() {
     const auto block = [this](bool b) {
         ui_->commodityCodeEdit->blockSignals(b);
-        ui_->currencyEdit->blockSignals(b);
+        ui_->currencyCombo->blockSignals(b);
         ui_->quantitySpinBox->blockSignals(b);
         ui_->unitEdit->blockSignals(b);
         ui_->startDateEdit->blockSignals(b);
@@ -310,15 +348,13 @@ void CommodityInstrumentForm::populateFromInstrument() {
         QString::fromStdString(instrument_.trade_type_code));
     ui_->commodityCodeEdit->setText(
         QString::fromStdString(instrument_.commodity_code));
-    ui_->currencyEdit->setText(
-        QString::fromStdString(instrument_.currency));
+    InstrumentFormUtils::setComboValue(
+        ui_->currencyCombo, instrument_.currency);
     ui_->quantitySpinBox->setValue(instrument_.quantity);
     ui_->unitEdit->setText(
         QString::fromStdString(instrument_.unit));
-    ui_->startDateEdit->setText(
-        QString::fromStdString(instrument_.start_date));
-    ui_->maturityDateEdit->setText(
-        QString::fromStdString(instrument_.maturity_date));
+    ui_->startDateEdit->setIsoDate(instrument_.start_date);
+    ui_->maturityDateEdit->setIsoDate(instrument_.maturity_date);
     ui_->fixedPriceSpinBox->setValue(instrument_.fixed_price.value_or(0.0));
     InstrumentFormUtils::setComboValue(
         ui_->optionTypeCombo, instrument_.option_type);
@@ -327,10 +363,8 @@ void CommodityInstrumentForm::populateFromInstrument() {
         ui_->exerciseTypeCombo, instrument_.exercise_type);
     InstrumentFormUtils::setComboValue(
         ui_->averageTypeCombo, instrument_.average_type);
-    ui_->averagingStartDateEdit->setText(
-        QString::fromStdString(instrument_.averaging_start_date));
-    ui_->averagingEndDateEdit->setText(
-        QString::fromStdString(instrument_.averaging_end_date));
+    ui_->averagingStartDateEdit->setIsoDate(instrument_.averaging_start_date);
+    ui_->averagingEndDateEdit->setIsoDate(instrument_.averaging_end_date);
     ui_->spreadCommodityCodeEdit->setText(
         QString::fromStdString(instrument_.spread_commodity_code));
     ui_->spreadAmountSpinBox->setValue(instrument_.spread_amount.value_or(0.0));
@@ -352,8 +386,7 @@ void CommodityInstrumentForm::populateFromInstrument() {
         ui_->dayCountCombo, instrument_.day_count_code);
     InstrumentFormUtils::setComboValue(
         ui_->paymentFrequencyCombo, instrument_.payment_frequency_code);
-    ui_->swaptionExpiryDateEdit->setText(
-        QString::fromStdString(instrument_.swaption_expiry_date));
+    ui_->swaptionExpiryDateEdit->setIsoDate(instrument_.swaption_expiry_date);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
     block(false);

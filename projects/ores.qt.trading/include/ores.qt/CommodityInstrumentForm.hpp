@@ -57,6 +57,7 @@ public:
 
     void setClientManager(ClientManager* cm) override;
     void setUsername(const std::string& username) override;
+    void setImageCache(ImageCache* cache) override;
 
     void setInstrument(
         const trading::messaging::instrument_export_result& instrument) override;
@@ -79,12 +80,14 @@ public:
 
 private:
     void setupConnections();
+    void populateCurrencies();
     void populateFromInstrument();
     void emitProvenance();
     void onFieldChanged();
 
     Ui::CommodityInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
     trading::domain::commodity_instrument instrument_;
     bool dirty_ = false;

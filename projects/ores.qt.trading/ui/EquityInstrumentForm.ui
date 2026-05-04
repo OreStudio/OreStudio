@@ -33,7 +33,9 @@
            <widget class="QLabel"><property name="text"><string>Trade Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="tradeTypeCodeEdit"/>
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="readOnly"><bool>true</bool></property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Underlying Code:</string></property></widget>
@@ -47,15 +49,13 @@
            <widget class="QLabel"><property name="text"><string>Currency:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="currencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="currencyCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Notional:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="notionalSpinBox">
+           <widget class="OreDoubleSpinBox" name="notionalSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -66,7 +66,7 @@
            <widget class="QLabel"><property name="text"><string>Quantity:</string></property></widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="quantitySpinBox">
+           <widget class="OreDoubleSpinBox" name="quantitySpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -77,17 +77,13 @@
            <widget class="QLabel"><property name="text"><string>Start Date:</string></property></widget>
           </item>
           <item row="5" column="1">
-           <widget class="QLineEdit" name="startDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="startDateEdit"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel"><property name="text"><string>Maturity Date:</string></property></widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="maturityDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="maturityDateEdit"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
@@ -133,23 +129,19 @@
            <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="optionTypeEdit">
-            <property name="placeholderText"><string>Call or Put</string></property>
-           </widget>
+           <widget class="QComboBox" name="optionTypeCombo"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Exercise Type:</string></property></widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="exerciseTypeEdit">
-            <property name="placeholderText"><string>European, American, Bermudan</string></property>
-           </widget>
+           <widget class="QComboBox" name="exerciseTypeCombo"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Strike Price:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="strikePriceSpinBox">
+           <widget class="OreDoubleSpinBox" name="strikePriceSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -159,15 +151,13 @@
            <widget class="QLabel"><property name="text"><string>Barrier Type:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="barrierTypeEdit">
-            <property name="placeholderText"><string>e.g. UpIn, UpOut, DownIn, DownOut</string></property>
-           </widget>
+           <widget class="QComboBox" name="barrierTypeCombo"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel"><property name="text"><string>Lower Barrier:</string></property></widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="lowerBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="lowerBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -177,7 +167,7 @@
            <widget class="QLabel"><property name="text"><string>Upper Barrier:</string></property></widget>
           </item>
           <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="upperBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="upperBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -211,23 +201,19 @@
            <widget class="QLabel"><property name="text"><string>Average Type:</string></property></widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="averageTypeEdit">
-            <property name="placeholderText"><string>Arithmetic or Geometric (Asian)</string></property>
-           </widget>
+           <widget class="QComboBox" name="averageTypeCombo"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Averaging Start Date:</string></property></widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="averagingStartDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (Asian)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="averagingStartDateEdit"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Variance Strike:</string></property></widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="varianceStrikeSpinBox">
+           <widget class="OreDoubleSpinBox" name="varianceStrikeSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999.000000000000000</double></property>
@@ -238,15 +224,13 @@
            <widget class="QLabel"><property name="text"><string>Cliquet Frequency:</string></property></widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="cliquetFrequencyCodeEdit">
-            <property name="placeholderText"><string>e.g. Annual, SemiAnnual (Cliquet)</string></property>
-           </widget>
+           <widget class="QComboBox" name="cliquetFrequencyCombo"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel"><property name="text"><string>Accumulation Amount:</string></property></widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="accumulationAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="accumulationAmountSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -257,7 +241,7 @@
            <widget class="QLabel"><property name="text"><string>Knock-Out Barrier:</string></property></widget>
           </item>
           <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="knockOutBarrierSpinBox">
+           <widget class="OreDoubleSpinBox" name="knockOutBarrierSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999.000000000000000</double></property>
@@ -268,25 +252,19 @@
            <widget class="QLabel"><property name="text"><string>Day Count:</string></property></widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="dayCountCodeEdit">
-            <property name="placeholderText"><string>e.g. Actual365Fixed (EquitySwap)</string></property>
-           </widget>
+           <widget class="QComboBox" name="dayCountCombo"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel"><property name="text"><string>Payment Frequency:</string></property></widget>
           </item>
           <item row="7" column="1">
-           <widget class="QLineEdit" name="paymentFrequencyCodeEdit">
-            <property name="placeholderText"><string>e.g. Quarterly (EquitySwap)</string></property>
-           </widget>
+           <widget class="QComboBox" name="paymentFrequencyCombo"/>
           </item>
           <item row="8" column="0">
            <widget class="QLabel"><property name="text"><string>Return Type:</string></property></widget>
           </item>
           <item row="8" column="1">
-           <widget class="QLineEdit" name="returnTypeEdit">
-            <property name="placeholderText"><string>TotalReturn or PriceReturn (EquityTRS)</string></property>
-           </widget>
+           <widget class="QComboBox" name="returnTypeCombo"/>
           </item>
           <item row="9" column="0">
            <widget class="QLabel"><property name="text"><string>Basket (JSON):</string></property></widget>
@@ -321,6 +299,23 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

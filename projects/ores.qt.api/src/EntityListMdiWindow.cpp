@@ -110,7 +110,7 @@ QProgressBar* EntityListMdiWindow::loadingBar() {
     if (!loadingBar_) {
         loadingBar_ = new QProgressBar(this);
         loadingBar_->setRange(0, 0);  // indeterminate (marquee) mode
-        loadingBar_->setFixedHeight(4);
+        loadingBar_->setFixedHeight(20);
         loadingBar_->setTextVisible(false);
         loadingBar_->hide();
     }

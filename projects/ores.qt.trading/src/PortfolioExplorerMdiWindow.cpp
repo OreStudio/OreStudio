@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include <QApplication>
+#include <QThreadPool>
 #include <QDialog>
 #include <QDrag>
 #include <QLabel>
@@ -230,10 +231,13 @@ void PortfolioExplorerMdiWindow::setupConnections() {
     // Trade model signals
     connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded,
             this, [this]() {
+        endLoading();
         paginationWidget_->update_state(
             static_cast<std::uint32_t>(tradeModel_->rowCount()),
             tradeModel_->total_available_count());
     });
+    connect(tradeModel_, &PortfolioExplorerTradeModel::loadError,
+            this, [this](const QString&, const QString&) { endLoading(); });
 
     // Pagination signals
     connect(paginationWidget_, &PaginationWidget::page_requested,
@@ -300,10 +304,15 @@ void PortfolioExplorerMdiWindow::doReload() {
     portfolios_loaded_ = false;
     books_loaded_ = false;
 
+    BOOST_LOG_SEV(lg(), info) << "doReload: submitting tasks. Thread pool: "
+        << QThreadPool::globalInstance()->activeThreadCount() << " active / "
+        << QThreadPool::globalInstance()->maxThreadCount() << " max";
+
     // Fetch portfolios
     QPointer<PortfolioExplorerMdiWindow> self = this;
     portfolioWatcher_->setFuture(
         QtConcurrent::run([self]() -> PortfolioFetchResult {
+            BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio task started on worker thread";
             return exception_helper::wrap_async_fetch<PortfolioFetchResult>(
                 [&]() -> PortfolioFetchResult {
                     if (!self || !self->clientManager_)
@@ -312,8 +321,10 @@ void PortfolioExplorerMdiWindow::doReload() {
 
                     refdata::messaging::get_portfolios_request req;
                     req.limit = 1000;
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio sending NATS request";
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio NATS response received";
                     if (!result)
                         return {.success = false, .portfolios = {},
                                 .error_message = QString::fromStdString(
@@ -329,6 +340,7 @@ void PortfolioExplorerMdiWindow::doReload() {
     // Fetch books
     bookWatcher_->setFuture(
         QtConcurrent::run([self]() -> BookFetchResult {
+            BOOST_LOG_SEV(lg(), info) << "DIAG: book task started on worker thread";
             return exception_helper::wrap_async_fetch<BookFetchResult>(
                 [&]() -> BookFetchResult {
                     if (!self || !self->clientManager_)
@@ -337,8 +349,10 @@ void PortfolioExplorerMdiWindow::doReload() {
 
                     refdata::messaging::get_books_request req;
                     req.limit = 1000;
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: books sending NATS request";
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: books NATS response received";
                     if (!result)
                         return {.success = false, .books = {},
                                 .error_message = QString::fromStdString(
@@ -354,6 +368,7 @@ void PortfolioExplorerMdiWindow::doReload() {
     // Fetch counterparties for display
     counterpartyWatcher_->setFuture(
         QtConcurrent::run([self]() -> CounterpartyFetchResult {
+            BOOST_LOG_SEV(lg(), info) << "DIAG: counterparty task started on worker thread";
             return exception_helper::wrap_async_fetch<CounterpartyFetchResult>(
                 [&]() -> CounterpartyFetchResult {
                     if (!self || !self->clientManager_)
@@ -362,8 +377,10 @@ void PortfolioExplorerMdiWindow::doReload() {
 
                     refdata::messaging::get_counterparties_request req;
                     req.limit = 1000;
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties sending NATS request";
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
+                    BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties NATS response received";
                     if (!result)
                         return {.success = false, .cpty_map = {},
                                 .error_message = QString::fromStdString(
@@ -381,6 +398,8 @@ void PortfolioExplorerMdiWindow::doReload() {
                             .error_message = {}};
                 }, "counterparties");
         }));
+
+    BOOST_LOG_SEV(lg(), info) << "doReload: all tasks submitted";
 }
 
 void PortfolioExplorerMdiWindow::onPortfoliosLoaded() {
@@ -513,6 +532,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
     if (selected.isEmpty()) {
         tradeModel_->set_filter(std::nullopt, std::nullopt);
         updateBreadcrumb(nullptr);
+        beginLoading();
         tradeModel_->refresh();
         updateActionStates();
         return;
@@ -524,6 +544,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
 
     tradeModel_->set_filter(filter.book_id, filter.portfolio_id);
     updateBreadcrumb(node);
+    beginLoading();
     tradeModel_->refresh();
     updateActionStates();
 }

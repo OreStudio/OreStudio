@@ -174,6 +174,8 @@ void PaymentFrequencyTypeMdiWindow::setupConnections() {
             this, [this](std::uint32_t offset, std::uint32_t limit) {
         model_->load_page(offset, limit);
     });
+
+    connectModel(model_);
 }
 
 void PaymentFrequencyTypeMdiWindow::doReload() {

@@ -38,7 +38,7 @@ namespace {
 
 ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager,
                                        QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       recencyTracker_(catalog_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {

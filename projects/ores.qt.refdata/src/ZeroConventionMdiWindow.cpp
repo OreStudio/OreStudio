@@ -55,7 +55,7 @@ ZeroConventionMdiWindow::ZeroConventionMdiWindow(
     setupConnections();
 
     // Initial load
-    doReload();
+    reload();
 }
 
 void ZeroConventionMdiWindow::setupUi() {
@@ -82,7 +82,7 @@ void ZeroConventionMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &ZeroConventionMdiWindow::doReload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -174,6 +174,8 @@ void ZeroConventionMdiWindow::setupConnections() {
             this, [this](std::uint32_t offset, std::uint32_t limit) {
         model_->load_page(offset, limit);
     });
+
+    connectModel(model_);
 }
 
 void ZeroConventionMdiWindow::doReload() {

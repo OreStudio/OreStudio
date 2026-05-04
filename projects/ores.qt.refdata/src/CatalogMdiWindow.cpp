@@ -47,7 +47,7 @@ CatalogMdiWindow::CatalogMdiWindow(ClientManager* clientManager,
     setupUi();
     setupToolbar();
     setupConnections();
-    model_->loadData();
+    reload();
 }
 
 void CatalogMdiWindow::setupUi() {

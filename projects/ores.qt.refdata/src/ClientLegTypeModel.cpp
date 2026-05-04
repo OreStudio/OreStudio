@@ -37,7 +37,7 @@ namespace {
 
 ClientLegTypeModel::ClientLegTypeModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(leg_type_key_extractor),

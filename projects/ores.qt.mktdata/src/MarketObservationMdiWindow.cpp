@@ -90,6 +90,7 @@ void MarketObservationMdiWindow::setupUi() {
     connect(model_.get(), &ClientMarketObservationModel::loadError,
             this, &MarketObservationMdiWindow::onLoadError);
 
+    connectModel(model_.get());
     model_->refresh();
 }
 
@@ -101,7 +102,7 @@ void MarketObservationMdiWindow::setupToolbar() {
         Icon::ArrowSync, color_constants::icon_color));
     reloadAction_->setToolTip(tr("Refresh observations"));
     connect(reloadAction_, &QAction::triggered,
-            this, &MarketObservationMdiWindow::doReload);
+            this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

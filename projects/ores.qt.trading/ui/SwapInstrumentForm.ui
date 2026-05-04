@@ -33,7 +33,7 @@
           </item>
           <item row="1" column="0"><widget class="QLabel" name="labelNotional"><property name="text"><string>Notional:</string></property></widget></item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="notionalSpinBox">
+           <widget class="OreDoubleSpinBox" name="notionalSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -42,21 +42,15 @@
           </item>
           <item row="2" column="0"><widget class="QLabel" name="labelCurrency"><property name="text"><string>Currency:</string></property></widget></item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="currencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="currencyCombo"/>
           </item>
           <item row="3" column="0"><widget class="QLabel" name="labelStartDate"><property name="text"><string>Start Date:</string></property></widget></item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="startDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (e.g. 2026-01-01)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="startDateEdit"/>
           </item>
           <item row="4" column="0"><widget class="QLabel" name="labelMaturityDate"><property name="text"><string>Maturity Date:</string></property></widget></item>
           <item row="4" column="1">
-           <widget class="QLineEdit" name="maturityDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (e.g. 2031-01-01)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="maturityDateEdit"/>
           </item>
           <item row="5" column="0"><widget class="QLabel" name="labelDescription"><property name="text"><string>Description:</string></property></widget></item>
           <item row="5" column="1">
@@ -81,15 +75,11 @@
          <layout class="QFormLayout" name="ratesFormLayout">
           <item row="0" column="0"><widget class="QLabel" name="labelFraFixingDate"><property name="text"><string>FRA Fixing Date:</string></property></widget></item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="fraFixingDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (ForwardRateAgreement)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="fraFixingDateEdit"/>
           </item>
           <item row="1" column="0"><widget class="QLabel" name="labelFraSettlementDate"><property name="text"><string>FRA Settlement Date:</string></property></widget></item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="fraSettlementDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (ForwardRateAgreement)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="fraSettlementDateEdit"/>
           </item>
           <item row="2" column="0"><widget class="QLabel" name="labelLockoutDays"><property name="text"><string>Lockout Days:</string></property></widget></item>
           <item row="2" column="1">
@@ -121,7 +111,7 @@
           </item>
           <item row="6" column="0"><widget class="QLabel" name="labelBaseCpi"><property name="text"><string>Base CPI:</string></property></widget></item>
           <item row="6" column="1">
-           <widget class="QDoubleSpinBox" name="baseCpiSpinBox">
+           <widget class="OreDoubleSpinBox" name="baseCpiSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>9999.000000000000000</double></property>
@@ -139,6 +129,23 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

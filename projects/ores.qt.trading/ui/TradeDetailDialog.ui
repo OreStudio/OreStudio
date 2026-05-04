@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>680</width>
-    <height>600</height>
+    <height>480</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>680</width>
-    <height>600</height>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -218,9 +218,13 @@
        </item>
       </layout>
      </widget>
-     <!-- Instrument tab: hosts a QStackedWidget. One page per registered
-          IInstrumentForm; the active page is selected from the trade's
-          product_type. Hidden when no form is registered for the family. -->
+     <!-- Instrument tab: hosts an AdaptiveStackedWidget inside a QScrollArea.
+          One page per registered IInstrumentForm; the active page is selected
+          from the trade's product_type. Hidden when no form is registered for
+          the family. AdaptiveStackedWidget reports the current page's size hint
+          so compact forms (FX) don't inherit the height of large ones
+          (Commodity). The scroll area lets large forms scroll rather than
+          forcing the dialog to grow. -->
      <widget class="QWidget" name="instrumentTab">
       <attribute name="title">
        <string>Instrument</string>
@@ -231,8 +235,34 @@
        <property name="rightMargin"><number>0</number></property>
        <property name="bottomMargin"><number>0</number></property>
        <item>
-        <widget class="QStackedWidget" name="instrumentStack">
-         <property name="currentIndex"><number>-1</number></property>
+        <widget class="QScrollArea" name="instrumentScrollArea">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <widget class="QWidget" name="instrumentScrollContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>660</width>
+            <height>400</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="instrumentScrollLayout">
+           <property name="leftMargin"><number>0</number></property>
+           <property name="topMargin"><number>0</number></property>
+           <property name="rightMargin"><number>0</number></property>
+           <property name="bottomMargin"><number>0</number></property>
+           <item>
+            <widget class="AdaptiveStackedWidget" name="instrumentStack">
+             <property name="currentIndex"><number>-1</number></property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>
@@ -318,6 +348,12 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AdaptiveStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header>ores.qt/AdaptiveStackedWidget.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

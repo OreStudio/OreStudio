@@ -18,7 +18,9 @@
  */
 #include "ores.qt/WorkflowController.hpp"
 
+#include <QEvent>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkflowMdiWindow.hpp"
 #include "ores.qt/WorkflowDefinitionMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -79,10 +81,13 @@ void WorkflowController::showListWindow() {
         self->listSubWindow_ = nullptr;
     });
 
+    listSubWindow_->installEventFilter(this);
+
     emit detachableWindowCreated(listSubWindow_);
 
     mdiArea_->addSubWindow(listSubWindow_);
-    listSubWindow_->adjustSize();
+    if (!UiPersistence::restoreMdiGeometry("WorkflowListSubWindow", listSubWindow_))
+        listSubWindow_->adjustSize();
     listSubWindow_->show();
 }
 
@@ -121,11 +126,24 @@ void WorkflowController::showDefinitionsWindow() {
         self->defsSubWindow_ = nullptr;
     });
 
+    defsSubWindow_->installEventFilter(this);
+
     emit detachableWindowCreated(defsSubWindow_);
 
     mdiArea_->addSubWindow(defsSubWindow_);
-    defsSubWindow_->adjustSize();
+    if (!UiPersistence::restoreMdiGeometry("WorkflowDefsSubWindow", defsSubWindow_))
+        defsSubWindow_->adjustSize();
     defsSubWindow_->show();
+}
+
+bool WorkflowController::eventFilter(QObject* obj, QEvent* event) {
+    if (event->type() == QEvent::Close) {
+        if (obj == listSubWindow_)
+            UiPersistence::saveMdiGeometry("WorkflowListSubWindow", listSubWindow_);
+        else if (obj == defsSubWindow_)
+            UiPersistence::saveMdiGeometry("WorkflowDefsSubWindow", defsSubWindow_);
+    }
+    return QObject::eventFilter(obj, event);
 }
 
 void WorkflowController::closeAllWindows() {

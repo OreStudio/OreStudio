@@ -36,9 +36,7 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="tradeTypeCodeEdit">
-            <property name="placeholderText">
-             <string>e.g. FxForward, FxSwap, FxOption</string>
-            </property>
+            <property name="readOnly"><bool>true</bool></property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -47,9 +45,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="boughtCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. EUR)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="boughtCurrencyCombo"/>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="labelBoughtAmount">
@@ -57,7 +53,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="boughtAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="boughtAmountSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -70,9 +66,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="soldCurrencyEdit">
-            <property name="placeholderText"><string>ISO 4217 (e.g. USD)</string></property>
-           </widget>
+           <widget class="OreCurrencyComboBox" name="soldCurrencyCombo"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="labelSoldAmount">
@@ -80,7 +74,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="soldAmountSpinBox">
+           <widget class="OreDoubleSpinBox" name="soldAmountSpinBox">
             <property name="decimals"><number>2</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999999999.000000000000000</double></property>
@@ -93,9 +87,7 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QLineEdit" name="valueDateEdit">
-            <property name="placeholderText"><string>ISO 8601 date (e.g. 2026-06-30)</string></property>
-           </widget>
+           <widget class="OreDateEdit" name="valueDateEdit"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="labelSettlement">
@@ -103,9 +95,7 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLineEdit" name="settlementEdit">
-            <property name="placeholderText"><string>e.g. Cash, Physical (optional)</string></property>
-           </widget>
+           <widget class="QComboBox" name="settlementCombo"/>
           </item>
           <item row="7" column="0">
            <widget class="QLabel" name="labelDescription">
@@ -155,11 +145,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="optionTypeEdit">
-            <property name="placeholderText">
-             <string>Call or Put</string>
-            </property>
-           </widget>
+           <widget class="QComboBox" name="optionTypeCombo"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="labelStrikePrice">
@@ -167,7 +153,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="strikePriceSpinBox">
+           <widget class="OreDoubleSpinBox" name="strikePriceSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
             <property name="maximum"><double>999999.000000000000000</double></property>
@@ -180,11 +166,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="expiryDateEdit">
-            <property name="placeholderText">
-             <string>ISO 8601 date</string>
-            </property>
-           </widget>
+           <widget class="OreDateEdit" name="expiryDateEdit"/>
           </item>
          </layout>
         </widget>
@@ -203,6 +185,23 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
  <connections/>
 </ui>

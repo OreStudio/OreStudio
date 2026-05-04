@@ -251,6 +251,35 @@ void importer::rewire_instrument_trade_id(trade_import_item& item) {
     }, item.instrument);
 }
 
+void importer::assign_instrument_id(
+    trade_import_item& item, boost::uuids::uuid id) {
+    bool has_instrument = false;
+    std::visit([&](auto& result) {
+        using T = std::decay_t<decltype(result)>;
+        if constexpr (std::is_same_v<T, std::monostate>) {
+            // No instrument for this trade type.
+        } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
+                             std::is_same_v<T, domain::fx_mapping_result> ||
+                             std::is_same_v<T, domain::equity_mapping_result>) {
+            // Nested variant: each inner instrument uses instrument_id
+            std::visit([&](auto& instr) {
+                instr.instrument_id = id;
+            }, result.instrument);
+            has_instrument = true;
+        } else if constexpr (std::is_same_v<T, domain::bond_mapping_result> ||
+                             std::is_same_v<T, domain::credit_mapping_result> ||
+                             std::is_same_v<T, domain::commodity_mapping_result> ||
+                             std::is_same_v<T, domain::scripted_mapping_result> ||
+                             std::is_same_v<T, domain::composite_mapping_result>) {
+            // Direct instrument: these types use id rather than instrument_id
+            result.instrument.id = id;
+            has_instrument = true;
+        }
+    }, item.instrument);
+    if (has_instrument)
+        item.trade.instrument_id = id;
+}
+
 domain::mapped_conventions
 importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();

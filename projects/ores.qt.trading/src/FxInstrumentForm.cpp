@@ -19,11 +19,17 @@
  */
 #include "ores.qt/FxInstrumentForm.hpp"
 
+#include <QComboBox>
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_FxInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
 
 namespace ores::qt {
 
@@ -36,6 +42,8 @@ FxInstrumentForm::FxInstrumentForm(QWidget* parent)
     // Options sub-tab is hidden until setTradeType() reveals it.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->optionsTab), false);
+    InstrumentFormUtils::populateSettlement(ui_->settlementCombo);
+    InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
     setupConnections();
 }
 
@@ -43,16 +51,17 @@ FxInstrumentForm::~FxInstrumentForm() = default;
 
 void FxInstrumentForm::setupConnections() {
     auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->boughtCurrencyEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->soldCurrencyEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->valueDateEdit, &QLineEdit::textChanged,
-            this, markChanged);
-    connect(ui_->settlementEdit, &QLineEdit::textChanged,
-            this, markChanged);
+    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
+    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
+    connect(ui_->boughtCurrencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->soldCurrencyCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->valueDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
+    connect(ui_->settlementCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
+            this, markChangedStr);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged,
             this, markChanged);
     connect(ui_->boughtAmountSpinBox,
@@ -65,6 +74,53 @@ void FxInstrumentForm::setupConnections() {
 
 void FxInstrumentForm::setClientManager(ClientManager* cm) {
     clientManager_ = cm;
+    populateCurrencies();
+}
+
+void FxInstrumentForm::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+    setup_flag_combo(this, ui_->boughtCurrencyCombo, imageCache_,
+                     FlagSource::Currency);
+    setup_flag_combo(this, ui_->soldCurrencyCombo, imageCache_,
+                     FlagSource::Currency);
+}
+
+void FxInstrumentForm::populateCurrencies() {
+    if (!clientManager_) return;
+
+    QPointer<FxInstrumentForm> self = this;
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
+        [self, watcher]() {
+        auto codes = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        auto populate = [&codes](QComboBox* cb, const std::string& value) {
+            cb->blockSignals(true);
+            cb->clear();
+            cb->addItem(QString());
+            for (const auto& c : codes)
+                cb->addItem(QString::fromStdString(c));
+            InstrumentFormUtils::setComboValue(cb, value);
+            cb->blockSignals(false);
+        };
+
+        populate(self->ui_->boughtCurrencyCombo, self->instrument_.bought_currency);
+        populate(self->ui_->soldCurrencyCombo, self->instrument_.sold_currency);
+
+        if (self->imageCache_) {
+            apply_flag_icons(self->ui_->boughtCurrencyCombo,
+                             self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(self->ui_->soldCurrencyCombo,
+                             self->imageCache_, FlagSource::Currency);
+        }
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm]() {
+        return fetch_currency_codes(cm);
+    }));
 }
 
 void FxInstrumentForm::setUsername(const std::string& username) {
@@ -81,19 +137,20 @@ void FxInstrumentForm::clear() {
 void FxInstrumentForm::setTradeType(const QString& code,
     bool has_options, bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
+    ui_->tradeTypeCodeEdit->setText(code.trimmed());
     // FX has only an options sub-section; the extension flag is unused.
     ui_->subTabWidget->setTabVisible(
         ui_->subTabWidget->indexOf(ui_->optionsTab), has_options);
 }
 
 void FxInstrumentForm::setReadOnly(bool readOnly) {
-    ui_->tradeTypeCodeEdit->setReadOnly(readOnly);
-    ui_->boughtCurrencyEdit->setReadOnly(readOnly);
+    ui_->boughtCurrencyCombo->setEnabled(!readOnly);
     ui_->boughtAmountSpinBox->setReadOnly(readOnly);
-    ui_->soldCurrencyEdit->setReadOnly(readOnly);
+    ui_->soldCurrencyCombo->setEnabled(!readOnly);
     ui_->soldAmountSpinBox->setReadOnly(readOnly);
     ui_->valueDateEdit->setReadOnly(readOnly);
-    ui_->settlementEdit->setReadOnly(readOnly);
+    ui_->settlementCombo->setEnabled(!readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 }
 
@@ -112,18 +169,15 @@ void FxInstrumentForm::setChangeReason(
 }
 
 void FxInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.bought_currency =
-        ui_->boughtCurrencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->boughtCurrencyCombo);
     instrument_.bought_amount = ui_->boughtAmountSpinBox->value();
     instrument_.sold_currency =
-        ui_->soldCurrencyEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->soldCurrencyCombo);
     instrument_.sold_amount = ui_->soldAmountSpinBox->value();
-    instrument_.value_date =
-        ui_->valueDateEdit->text().trimmed().toStdString();
+    instrument_.value_date = ui_->valueDateEdit->isoDate();
     instrument_.settlement =
-        ui_->settlementEdit->text().trimmed().toStdString();
+        InstrumentFormUtils::getComboValue(ui_->settlementCombo);
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
@@ -137,7 +191,8 @@ void FxInstrumentForm::setInstrument(
         std::get_if<trading::messaging::fx_export_result>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Non-FX instrument pushed to FxInstrumentForm";
+            << "Non-FX instrument pushed to FxInstrumentForm"
+            << " (variant index=" << instrument.index() << ")";
         emit loadFailed(QStringLiteral(
             "Unexpected instrument type for FX form"));
         return;
@@ -146,6 +201,10 @@ void FxInstrumentForm::setInstrument(
         std::get_if<trading::domain::fx_forward_instrument>(&ex->instrument);
     if (!fwd) {
         const auto ttc = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
+        BOOST_LOG_SEV(lg(), warn)
+            << "Non-forward FX instrument in FxInstrumentForm"
+            << " trade_type_code=" << ttc
+            << " fx variant index=" << ex->instrument.index();
         emit loadFailed(QString::fromStdString(
             "Non-forward FX type not yet supported in this "
             "dialog (trade_type_code=" + ttc + ")"));
@@ -157,35 +216,36 @@ void FxInstrumentForm::setInstrument(
     dirty_ = false;
     populateFromInstrument();
     emitProvenance();
+    BOOST_LOG_SEV(lg(), debug)
+        << "FxInstrumentForm: instrument loaded trade_type_code="
+        << instrument_.trade_type_code;
     emit instrumentLoaded();
 }
 
 void FxInstrumentForm::populateFromInstrument() {
     // Block signals while setting values so dirty_ stays untouched.
     const auto block = [this](bool b) {
-        ui_->tradeTypeCodeEdit->blockSignals(b);
-        ui_->boughtCurrencyEdit->blockSignals(b);
+        ui_->boughtCurrencyCombo->blockSignals(b);
         ui_->boughtAmountSpinBox->blockSignals(b);
-        ui_->soldCurrencyEdit->blockSignals(b);
+        ui_->soldCurrencyCombo->blockSignals(b);
         ui_->soldAmountSpinBox->blockSignals(b);
         ui_->valueDateEdit->blockSignals(b);
-        ui_->settlementEdit->blockSignals(b);
+        ui_->settlementCombo->blockSignals(b);
+        ui_->optionTypeCombo->blockSignals(b);
         ui_->descriptionEdit->blockSignals(b);
     };
 
     block(true);
     ui_->tradeTypeCodeEdit->setText(
         QString::fromStdString(instrument_.trade_type_code));
-    ui_->boughtCurrencyEdit->setText(
-        QString::fromStdString(instrument_.bought_currency));
+    InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo,
+        instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
-    ui_->soldCurrencyEdit->setText(
-        QString::fromStdString(instrument_.sold_currency));
+    InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo,
+        instrument_.sold_currency);
     ui_->soldAmountSpinBox->setValue(instrument_.sold_amount);
-    ui_->valueDateEdit->setText(
-        QString::fromStdString(instrument_.value_date));
-    ui_->settlementEdit->setText(
-        QString::fromStdString(instrument_.settlement));
+    ui_->valueDateEdit->setIsoDate(instrument_.value_date);
+    InstrumentFormUtils::setComboValue(ui_->settlementCombo, instrument_.settlement);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
     block(false);

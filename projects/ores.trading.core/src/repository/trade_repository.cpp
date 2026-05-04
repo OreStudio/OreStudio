@@ -45,7 +45,7 @@ std::vector<std::string> fetch_book_ids(
     const std::string& tid, const std::string& id,
     logging::logger_t& lg, const std::string& desc) {
     const std::string sql =
-        "SELECT id::text FROM " + fn + "($1::uuid, $2::uuid)";
+        "SELECT id::text FROM " + fn + "($1::uuid, $2::uuid) AS t(id)";
     return execute_parameterized_string_query(ctx, sql, {tid, id}, lg, desc);
 }
 

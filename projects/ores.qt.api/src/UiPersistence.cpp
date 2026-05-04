@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QSplitter>
 #include <QHeaderView>
+#include <QMdiSubWindow>
 
 namespace ores::qt {
 
@@ -90,6 +91,27 @@ bool UiPersistence::restoreHeader(const QString& group, QHeaderView* h,
     s.setValue("settingsVersion", version);
     s.endGroup();
     return false;
+}
+
+void UiPersistence::saveMdiGeometry(const QString& group, const QMdiSubWindow* w) {
+    auto s = openSettings();
+    s.beginGroup(group);
+    s.setValue("mdiGeometry", w->geometry());
+    s.endGroup();
+}
+
+bool UiPersistence::restoreMdiGeometry(const QString& group, QMdiSubWindow* w) {
+    auto s = openSettings();
+    s.beginGroup(group);
+    if (!s.contains("mdiGeometry")) {
+        s.endGroup();
+        return false;
+    }
+    const QRect r = s.value("mdiGeometry").toRect();
+    s.endGroup();
+    if (!r.isValid()) return false;
+    w->setGeometry(r);
+    return true;
 }
 
 }

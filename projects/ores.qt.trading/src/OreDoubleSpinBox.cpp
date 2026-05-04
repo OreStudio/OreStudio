@@ -18,11 +18,7 @@
  */
 #include "ores.qt/OreDoubleSpinBox.hpp"
 
-namespace ores::qt {
-
 OreDoubleSpinBox::OreDoubleSpinBox(QWidget* parent)
     : QDoubleSpinBox(parent) {
     setGroupSeparatorShown(true);
 }
-
-} // namespace ores::qt

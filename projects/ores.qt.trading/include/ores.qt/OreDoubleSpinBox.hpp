@@ -21,14 +21,10 @@
 
 #include <QDoubleSpinBox>
 
-namespace ores::qt {
-
 class OreDoubleSpinBox : public QDoubleSpinBox {
     Q_OBJECT
 public:
     explicit OreDoubleSpinBox(QWidget* parent = nullptr);
 };
-
-} // namespace ores::qt
 
 #endif

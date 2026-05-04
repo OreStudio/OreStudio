@@ -88,11 +88,8 @@ void BookController::showListWindow() {
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
-    BOOST_LOG_SEV(lg(), info) << "DIAG: Books showListWindow calling addSubWindow";
     mdiArea_->addSubWindow(listMdiSubWindow_);
-    BOOST_LOG_SEV(lg(), info) << "DIAG: Books showListWindow addSubWindow returned, calling show";
     listMdiSubWindow_->show();
-    BOOST_LOG_SEV(lg(), info) << "DIAG: Books showListWindow show returned";
 
     // Track window
     track_window(key, listMdiSubWindow_);

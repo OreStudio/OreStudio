@@ -127,8 +127,10 @@ void FxVanillaOptionInstrumentForm::setUsername(const std::string& username) {
 }
 
 void FxVanillaOptionInstrumentForm::clear() {
+    const std::string ttc = instrument_.trade_type_code;
     instrument_ = trading::domain::fx_vanilla_option_instrument{};
-    loaded_ = false;
+    instrument_.trade_type_code = ttc;
+    loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
 }

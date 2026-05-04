@@ -123,8 +123,8 @@ void BondInstrumentForm::populateCurrencies() {
         cb->addItem(QString());
         for (const auto& c : codes)
             cb->addItem(QString::fromStdString(c));
-        cb->blockSignals(false);
         InstrumentFormUtils::setComboValue(cb, self->instrument_.currency);
+        cb->blockSignals(false);
         if (self->imageCache_)
             apply_flag_icons(cb, self->imageCache_, FlagSource::Currency);
     });

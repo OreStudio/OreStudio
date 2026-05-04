@@ -22,5 +22,3 @@ OreDoubleSpinBox::OreDoubleSpinBox(QWidget* parent)
     : QDoubleSpinBox(parent) {
     setGroupSeparatorShown(true);
 }
-
-#include "moc_OreDoubleSpinBox.cpp"

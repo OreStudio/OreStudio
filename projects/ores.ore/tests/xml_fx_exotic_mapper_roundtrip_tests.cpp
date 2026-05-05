@@ -203,6 +203,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     CHECK(!instr.reference_currency.empty());
     CHECK(!instr.settlement_currency.empty());
     CHECK(!instr.fx_index.empty());
+    CHECK(!instr.long_short.empty());
 
     const auto rt = fx_instrument_mapper::reverse_fx_average_forward(instr);
     const bool has_data = rt.FxAverageForwardData.operator bool();
@@ -238,8 +239,13 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     CHECK(instr.trade_type_code == "FxTaRF");
     CHECK(!instr.fx_index.empty());
     CHECK(!instr.currency.empty());
+    CHECK(!instr.long_short.empty());
     REQUIRE(instr.fixing_amount.has_value());
     CHECK(*instr.fixing_amount > 0.0);
+    REQUIRE(instr.strike.has_value());
+    CHECK(*instr.strike > 0.0);
+    REQUIRE(instr.target_amount.has_value());
+    CHECK(*instr.target_amount > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_tarf(instr);
     const bool has_data = rt.FxTaRFData.operator bool();

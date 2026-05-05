@@ -36,7 +36,12 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/WX>
     # /FS forces synchronous PDB writes so sccache can cache /Zi compilations.
     # Without it, parallel cl.exe invocations race on the shared .pdb file.
-    $<$<CXX_COMPILER_ID:MSVC>:/FS>)
+    $<$<CXX_COMPILER_ID:MSVC>:/FS>
+    # rfl reflects structs with ~18 fields (e.g. fra_instrument), generating an
+    # O(N²) constexpr duplicate-field-names check that exhausts MSVC's default
+    # limits and triggers C1202. Raise both the recursion depth and step budget.
+    $<$<CXX_COMPILER_ID:MSVC>:/constexpr:depth1024>
+    $<$<CXX_COMPILER_ID:MSVC>:/constexpr:steps10000000>)
 
 #
 # Catch2 args: common args, reporters specified per test target.

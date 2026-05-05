@@ -221,10 +221,10 @@ void FxAsianForwardInstrumentForm::writeUiToInstrument() {
 }
 
 void FxAsianForwardInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::fx_export_result>(&instrument);
+        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-FX instrument pushed to FxAsianForwardInstrumentForm";
@@ -233,7 +233,7 @@ void FxAsianForwardInstrumentForm::setInstrument(
         return;
     }
     const auto* af =
-        std::get_if<trading::domain::fx_asian_forward_instrument>(&ex->instrument);
+        std::get_if<trading::domain::fx_asian_forward_instrument>(ex);
     if (!af) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-asian-forward FX type pushed to FxAsianForwardInstrumentForm";

@@ -46,7 +46,7 @@ const std::string tags("[ore][xml][mapper][roundtrip][equity]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::equity_instrument_mapper;
-using ores::ore::domain::equity_mapping_result;
+using ores::trading::domain::equity_instrument_variant;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -54,7 +54,7 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-equity_mapping_result load_and_map(const std::string& filename) {
+equity_instrument_variant load_and_map(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -76,7 +76,7 @@ TEST_CASE("equity_mapper_roundtrip_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Option_European.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_option_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquityOption");
     CHECK(!inst.underlying_name.empty());
@@ -96,7 +96,7 @@ TEST_CASE("equity_mapper_roundtrip_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Forward.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_forward_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_forward_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquityForward");
     CHECK(!inst.underlying_name.empty());
@@ -115,7 +115,7 @@ TEST_CASE("equity_mapper_roundtrip_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_Swap.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_swap_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_swap_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquitySwap");
     CHECK(!inst.underlying_name.empty());
@@ -136,7 +136,7 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
     const auto r = load_and_map("Equity_Variance_Swap.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_variance_swap_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityVarianceSwap");
     CHECK(!inst.underlying_name.empty());
@@ -156,7 +156,7 @@ TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {
     const auto r = load_and_map("Equity_Barrier_Option.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_barrier_option_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityBarrierOption");
     CHECK(!inst.underlying_name.empty());
@@ -175,7 +175,7 @@ TEST_CASE("equity_mapper_roundtrip_asian_option", tags) {
     const auto r = load_and_map("Equity_Asian_Option.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_asian_option_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityAsianOption");
     CHECK(!inst.underlying_name.empty());
@@ -194,7 +194,7 @@ TEST_CASE("equity_mapper_roundtrip_digital_option", tags) {
     const auto r = load_and_map("Equity_Digital_Option.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_digital_option_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityDigitalOption");
     CHECK(!inst.underlying_name.empty());
@@ -213,7 +213,7 @@ TEST_CASE("equity_mapper_roundtrip_touch_option", tags) {
     const auto r = load_and_map("Equity_OneTouch_Option.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_digital_option_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityTouchOption");
     CHECK(!inst.barrier_type.empty());
@@ -230,7 +230,7 @@ TEST_CASE("equity_mapper_roundtrip_outperformance_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Equity_OutperformanceOption.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_option_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquityOutperformanceOption");
     CHECK(!inst.currency.empty());
@@ -255,7 +255,7 @@ TEST_CASE("equity_mapper_roundtrip_accumulator", tags) {
     const auto r = load_and_map("Exotic_EquityAccumulator_single_name.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_accumulator_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityAccumulator");
     CHECK(!inst.underlying_name.empty());
@@ -274,7 +274,7 @@ TEST_CASE("equity_mapper_roundtrip_tarf", tags) {
     const auto r = load_and_map("Exotic_EquityTaRF.xml");
     const auto& inst =
         std::get<ores::trading::domain::equity_accumulator_instrument>(
-            r.instrument);
+            r);
 
     CHECK(inst.trade_type_code == "EquityTaRF");
     CHECK(!inst.underlying_name.empty());
@@ -291,7 +291,7 @@ TEST_CASE("equity_mapper_roundtrip_cliquet_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_Equity_Cliquet_Option.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_option_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_option_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquityCliquetOption");
     CHECK(!inst.underlying_name.empty());
@@ -307,7 +307,7 @@ TEST_CASE("equity_mapper_roundtrip_worst_of_basket_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_EquityWorstOfBasketSwap.xml");
     const auto& inst =
-        std::get<ores::trading::domain::equity_swap_instrument>(r.instrument);
+        std::get<ores::trading::domain::equity_swap_instrument>(r);
 
     CHECK(inst.trade_type_code == "EquityWorstOfBasketSwap");
     CHECK(!inst.currency.empty());

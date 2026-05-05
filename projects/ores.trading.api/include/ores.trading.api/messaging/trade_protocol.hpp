@@ -25,6 +25,7 @@
 #include <vector>
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::trading::messaging {
@@ -46,7 +47,7 @@ struct get_activity_types_response {
  */
 struct trade_export_item {
     ores::trading::domain::trade trade;
-    instrument_export_result instrument;
+    ores::trading::domain::trade_instrument instrument;
 };
 
 /**

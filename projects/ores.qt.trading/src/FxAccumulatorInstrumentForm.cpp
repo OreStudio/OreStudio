@@ -167,10 +167,10 @@ void FxAccumulatorInstrumentForm::writeUiToInstrument() {
 }
 
 void FxAccumulatorInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::fx_export_result>(&instrument);
+        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-FX instrument pushed to FxAccumulatorInstrumentForm";
@@ -179,7 +179,7 @@ void FxAccumulatorInstrumentForm::setInstrument(
         return;
     }
     const auto* ac =
-        std::get_if<trading::domain::fx_accumulator_instrument>(&ex->instrument);
+        std::get_if<trading::domain::fx_accumulator_instrument>(ex);
     if (!ac) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-accumulator FX type pushed to FxAccumulatorInstrumentForm";

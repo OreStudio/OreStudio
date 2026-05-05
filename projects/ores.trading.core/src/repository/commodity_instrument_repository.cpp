@@ -41,7 +41,7 @@ std::string commodity_instrument_repository::sql() {
 
 void commodity_instrument_repository::write(context ctx,
     const domain::commodity_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instrument: " << v.instrument_id;
     execute_write_query(ctx, commodity_instrument_mapper::map(v),
         lg(), "Writing commodity_instrument to database.");
 }

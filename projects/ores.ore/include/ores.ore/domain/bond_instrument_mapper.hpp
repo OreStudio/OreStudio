@@ -27,13 +27,6 @@
 namespace ores::ore::domain {
 
 /**
- * @brief Result of a forward mapping from ORE XSD to the ORES bond domain type.
- */
-struct bond_mapping_result {
-    ores::trading::domain::bond_instrument instrument;
-};
-
-/**
  * @brief Maps ORE XSD bond trade types to ORES domain types and back.
  *
  * Handles:
@@ -72,13 +65,13 @@ private:
         const ores::trading::domain::bond_instrument& instr);
 
 public:
-    static bond_mapping_result forward_bond(const trade& t);
-    static bond_mapping_result forward_forward_bond(const trade& t);
-    static bond_mapping_result forward_callable_bond(const trade& t);
-    static bond_mapping_result forward_convertible_bond(const trade& t);
-    static bond_mapping_result forward_bond_option(const trade& t);
-    static bond_mapping_result forward_bond_trs(const trade& t);
-    static bond_mapping_result forward_bond_repo(const trade& t);
+    static trading::domain::bond_instrument forward_bond(const trade& t);
+    static trading::domain::bond_instrument forward_forward_bond(const trade& t);
+    static trading::domain::bond_instrument forward_callable_bond(const trade& t);
+    static trading::domain::bond_instrument forward_convertible_bond(const trade& t);
+    static trading::domain::bond_instrument forward_bond_option(const trade& t);
+    static trading::domain::bond_instrument forward_bond_trs(const trade& t);
+    static trading::domain::bond_instrument forward_bond_repo(const trade& t);
 
     static trade reverse_bond(
         const ores::trading::domain::bond_instrument& instr);

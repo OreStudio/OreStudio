@@ -49,7 +49,7 @@ struct bond_instrument final {
     /**
      * @brief UUID uniquely identifying this bond instrument.
      */
-    boost::uuids::uuid id;
+    boost::uuids::uuid instrument_id;
 
     /**
      * @brief Party that owns this instrument.

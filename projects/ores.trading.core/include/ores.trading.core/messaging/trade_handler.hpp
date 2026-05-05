@@ -124,10 +124,10 @@ private:
         case product_type::swap: {
             service::fra_instrument_service fra_svc(ctx);
             const auto& ttc = t.trade_type;
-            std::optional<swap_export_result> ex_opt;
+            std::optional<ores::trading::domain::swap_instrument_data> ex_opt;
             if (ttc == "ForwardRateAgreement") {
                 if (auto r = fra_svc.get_fra_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -136,7 +136,7 @@ private:
                        || ttc == "FlexiSwap") {
                 service::vanilla_swap_instrument_service svc(ctx);
                 if (auto r = svc.get_vanilla_swap_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -144,7 +144,7 @@ private:
             } else if (ttc == "CapFloor") {
                 service::cap_floor_instrument_service svc(ctx);
                 if (auto r = svc.get_cap_floor_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -152,7 +152,7 @@ private:
             } else if (ttc == "Swaption") {
                 service::swaption_instrument_service svc(ctx);
                 if (auto r = svc.get_swaption_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -160,7 +160,7 @@ private:
             } else if (ttc == "BalanceGuaranteedSwap") {
                 service::balance_guaranteed_swap_instrument_service svc(ctx);
                 if (auto r = svc.get_balance_guaranteed_swap_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -168,7 +168,7 @@ private:
             } else if (ttc == "CallableSwap") {
                 service::callable_swap_instrument_service svc(ctx);
                 if (auto r = svc.get_callable_swap_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -176,7 +176,7 @@ private:
             } else if (ttc == "KnockOutSwap") {
                 service::knock_out_swap_instrument_service svc(ctx);
                 if (auto r = svc.get_knock_out_swap_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -184,7 +184,7 @@ private:
             } else if (ttc == "InflationSwap") {
                 service::inflation_swap_instrument_service svc(ctx);
                 if (auto r = svc.get_inflation_swap_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -192,7 +192,7 @@ private:
             } else if (ttc == "RiskParticipationAgreement") {
                 service::rpa_instrument_service svc(ctx);
                 if (auto r = svc.get_rpa_instrument(id)) {
-                    swap_export_result ex;
+                    ores::trading::domain::swap_instrument_data ex;
                     ex.instrument = std::move(*r);
                     ex.legs = fra_svc.get_swap_legs(id);
                     ex_opt = std::move(ex);
@@ -212,64 +212,43 @@ private:
         }
         case product_type::fx: {
             const auto& ttc = t.trade_type;
-            std::optional<fx_export_result> ex_opt;
+            std::optional<ores::trading::domain::fx_instrument_variant> ex_opt;
             // Routing mirrors trade_mapper::map_fx_instrument; keep in sync.
             if (ttc == "FxForward" || ttc == "FxSwap") {
                 service::fx_forward_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_forward_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_forward_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxOption") {
                 service::fx_vanilla_option_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_vanilla_option_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_vanilla_option_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxBarrierOption" ||
                        ttc == "FxGenericBarrierOption" ||
                        ttc == "FxDoubleBarrierOption" ||
                        ttc == "FxEuropeanBarrierOption" ||
                        ttc == "FxKIKOBarrierOption") {
                 service::fx_barrier_option_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_barrier_option_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_barrier_option_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxDigitalOption" ||
                        ttc == "FxDigitalBarrierOption" ||
                        ttc == "FxTouchOption" ||
                        ttc == "FxDoubleTouchOption") {
                 service::fx_digital_option_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_digital_option_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_digital_option_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxAverageForward" || ttc == "FxTaRF") {
                 service::fx_asian_forward_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_asian_forward_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_asian_forward_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxAccumulator") {
                 service::fx_accumulator_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_accumulator_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_accumulator_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             } else if (ttc == "FxVarianceSwap") {
                 service::fx_variance_swap_instrument_service svc(ctx);
-                if (auto r = svc.get_fx_variance_swap_instrument(id)) {
-                    fx_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_fx_variance_swap_instrument(id))
+                    ex_opt = ores::trading::domain::fx_instrument_variant{std::move(*r)};
             }
             if (ex_opt) {
                 item.instrument = std::move(*ex_opt);
@@ -286,7 +265,7 @@ private:
         case product_type::bond: {
             service::bond_instrument_service isvc(ctx);
             if (auto r = isvc.get_bond_instrument(id)) {
-                item.instrument = bond_export_result{std::move(*r)};
+                item.instrument = std::move(*r);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "populate_instrument: populated bond for trade=" << t.external_id;
             } else {
@@ -299,7 +278,7 @@ private:
         case product_type::credit: {
             service::credit_instrument_service isvc(ctx);
             if (auto r = isvc.get_credit_instrument(id)) {
-                item.instrument = credit_export_result{std::move(*r)};
+                item.instrument = std::move(*r);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "populate_instrument: populated credit for trade=" << t.external_id;
             } else {
@@ -311,75 +290,48 @@ private:
         }
         case product_type::equity: {
             const auto& ttc = t.trade_type;
-            std::optional<equity_export_result> ex_opt;
+            std::optional<ores::trading::domain::equity_instrument_variant> ex_opt;
             // Routing mirrors trade_mapper::map_equity_instrument; keep in sync.
             if (ttc == "EquityOption" || ttc == "EquityCliquetOption" ||
                 ttc == "EquityOutperformanceOption") {
                 service::equity_option_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_option_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_option_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityForward") {
                 service::equity_forward_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_forward_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_forward_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquitySwap" || ttc == "EquityWorstOfBasketSwap") {
                 service::equity_swap_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_swap_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_swap_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityVarianceSwap") {
                 service::equity_variance_swap_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_variance_swap_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_variance_swap_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityBarrierOption" ||
                        ttc == "EquityDoubleBarrierOption" ||
                        ttc == "EquityEuropeanBarrierOption") {
                 service::equity_barrier_option_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_barrier_option_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_barrier_option_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityAsianOption") {
                 service::equity_asian_option_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_asian_option_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_asian_option_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityDigitalOption" ||
                        ttc == "EquityTouchOption") {
                 service::equity_digital_option_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_digital_option_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_digital_option_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityAccumulator" || ttc == "EquityTaRF") {
                 service::equity_accumulator_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_accumulator_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_accumulator_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             } else if (ttc == "EquityPosition") {
                 service::equity_position_instrument_service svc(ctx);
-                if (auto r = svc.get_equity_position_instrument(id)) {
-                    equity_export_result ex;
-                    ex.instrument = std::move(*r);
-                    ex_opt = std::move(ex);
-                }
+                if (auto r = svc.get_equity_position_instrument(id))
+                    ex_opt = ores::trading::domain::equity_instrument_variant{std::move(*r)};
             }
             if (ex_opt) {
                 item.instrument = std::move(*ex_opt);
@@ -396,7 +348,7 @@ private:
         case product_type::commodity: {
             service::commodity_instrument_service isvc(ctx);
             if (auto r = isvc.get_commodity_instrument(id)) {
-                item.instrument = commodity_export_result{std::move(*r)};
+                item.instrument = std::move(*r);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "populate_instrument: populated commodity for trade=" << t.external_id;
             } else {
@@ -409,7 +361,7 @@ private:
         case product_type::composite: {
             service::composite_instrument_service isvc(ctx);
             if (auto r = isvc.get_composite_instrument(id)) {
-                composite_export_result ex;
+                ores::trading::domain::composite_instrument_data ex;
                 ex.instrument = std::move(*r);
                 ex.legs = isvc.get_legs(id);
                 item.instrument = std::move(ex);
@@ -425,7 +377,7 @@ private:
         case product_type::scripted: {
             service::scripted_instrument_service isvc(ctx);
             if (auto r = isvc.get_scripted_instrument(id)) {
-                item.instrument = scripted_export_result{std::move(*r)};
+                item.instrument = std::move(*r);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "populate_instrument: populated scripted for trade=" << t.external_id;
             } else {

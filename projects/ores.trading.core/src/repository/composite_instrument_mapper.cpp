@@ -34,7 +34,7 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::composite_instrument r;
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
@@ -58,7 +58,7 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     composite_instrument_entity r;
-    r.id = boost::uuids::to_string(v.id);
+    r.id = boost::uuids::to_string(v.instrument_id);
     r.tenant_id = v.tenant_id.to_string();
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;

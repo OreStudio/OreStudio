@@ -20,7 +20,6 @@
 #ifndef ORES_ORE_DOMAIN_SWAP_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_SWAP_INSTRUMENT_MAPPER_HPP
 
-#include <variant>
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
@@ -34,34 +33,10 @@
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/rates_instrument_variant.hpp"
 
 namespace ores::ore::domain {
-
-/**
- * @brief Discriminated union of all rates instrument domain types.
- *
- * Each forward mapper produces exactly one of these; reverse mappers consume
- * the specific type they were designed for.
- */
-using rates_instrument_variant = std::variant<
-    ores::trading::domain::fra_instrument,
-    ores::trading::domain::vanilla_swap_instrument,
-    ores::trading::domain::cap_floor_instrument,
-    ores::trading::domain::swaption_instrument,
-    ores::trading::domain::balance_guaranteed_swap_instrument,
-    ores::trading::domain::callable_swap_instrument,
-    ores::trading::domain::knock_out_swap_instrument,
-    ores::trading::domain::inflation_swap_instrument,
-    ores::trading::domain::rpa_instrument
->;
-
-/**
- * @brief Result of a forward mapping from ORE XSD to ORES domain types.
- */
-struct swap_mapping_result {
-    rates_instrument_variant instrument;
-    std::vector<ores::trading::domain::swap_leg> legs;
-};
 
 /**
  * @brief Maps ORE XSD swap/FRA/CapFloor trade types to ORES domain types and
@@ -102,25 +77,25 @@ public:
      * @brief Forward-maps a Swap trade (SwapData or CrossCurrencySwapData) to
      * ORES domain types, producing a vanilla_swap_instrument.
      */
-    static swap_mapping_result forward_swap(const trade& t);
+    static trading::domain::swap_instrument_data forward_swap(const trade& t);
 
     /**
      * @brief Forward-maps an InflationSwap trade (InflationSwapData) to ORES
      * domain types, producing an inflation_swap_instrument.
      */
-    static swap_mapping_result forward_inflation_swap(const trade& t);
+    static trading::domain::swap_instrument_data forward_inflation_swap(const trade& t);
 
     /**
      * @brief Forward-maps a ForwardRateAgreement trade to ORES domain types,
      * producing a fra_instrument.
      */
-    static swap_mapping_result forward_fra(const trade& t);
+    static trading::domain::swap_instrument_data forward_fra(const trade& t);
 
     /**
      * @brief Forward-maps a CapFloor trade to ORES domain types, producing a
      * cap_floor_instrument.
      */
-    static swap_mapping_result forward_capfloor(const trade& t);
+    static trading::domain::swap_instrument_data forward_capfloor(const trade& t);
 
     /**
      * @brief Reverse-maps ORES domain types back to a Swap ORE XSD trade.
@@ -151,7 +126,7 @@ public:
      * Maps the first exercise date to instrument.expiry_date, leg data to
      * swap_legs, and the option style to instrument.exercise_type.
      */
-    static swap_mapping_result forward_swaption(const trade& t);
+    static trading::domain::swap_instrument_data forward_swaption(const trade& t);
 
     /**
      * @brief Reverse-maps ORES domain types back to a Swaption ORE XSD trade.
@@ -167,7 +142,7 @@ public:
      * Exercise dates are serialised as a JSON array in
      * instrument.call_dates_json.
      */
-    static swap_mapping_result forward_callable_swap(const trade& t);
+    static trading::domain::swap_instrument_data forward_callable_swap(const trade& t);
 
     /**
      * @brief Reverse-maps ORES domain types back to a CallableSwap ORE XSD
@@ -185,7 +160,7 @@ public:
      * schedule are not stored in the current domain model — these are coverage
      * gaps reported by the Python gap check.
      */
-    static swap_mapping_result forward_flexi_swap(const trade& t);
+    static trading::domain::swap_instrument_data forward_flexi_swap(const trade& t);
 
     /**
      * @brief Forward-maps a BalanceGuaranteedSwap trade to ORES domain types,
@@ -194,7 +169,7 @@ public:
      * Only leg economics are captured. Tranche structure and ReferenceSecurity
      * are not stored in the current domain model.
      */
-    static swap_mapping_result forward_balance_guaranteed_swap(const trade& t);
+    static trading::domain::swap_instrument_data forward_balance_guaranteed_swap(const trade& t);
 
 private:
     static ores::trading::domain::swap_leg map_leg(

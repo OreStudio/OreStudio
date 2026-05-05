@@ -33,7 +33,7 @@ namespace ores::trading::domain {
  * ORE product types.
  *
  * Discriminated by trade_type_code. Constituent trades are stored separately
- * in composite_leg records keyed by this instrument's id.
+ * in composite_leg records keyed by this instrument's instrument_id.
  */
 struct composite_instrument final {
     /**
@@ -49,7 +49,7 @@ struct composite_instrument final {
     /**
      * @brief UUID uniquely identifying this composite instrument.
      */
-    boost::uuids::uuid id;
+    boost::uuids::uuid instrument_id;
 
     /**
      * @brief Party that owns this instrument.

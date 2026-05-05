@@ -41,7 +41,7 @@ std::string scripted_instrument_repository::sql() {
 
 void scripted_instrument_repository::write(context ctx,
     const domain::scripted_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing scripted_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing scripted_instrument: " << v.instrument_id;
     execute_write_query(ctx, scripted_instrument_mapper::map(v),
         lg(), "Writing scripted_instrument to database.");
 }

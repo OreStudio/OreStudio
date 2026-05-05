@@ -245,20 +245,19 @@ optionData make_option_data(const commodity_instrument& instr) {
 // Forward: CommodityForward
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result commodity_instrument_mapper::forward_commodity_forward(
+trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_forward(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityForward: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommodityForward");
+    trading::domain::commodity_instrument result = make_base("CommodityForward");
     if (!t.CommodityForwardData) return result;
     const auto& d = *t.CommodityForwardData;
 
-    result.instrument.commodity_code = std::string(d.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.fixed_price = static_cast<double>(d.Strike);
-    result.instrument.maturity_date = std::string(d.Maturity);
+    result.commodity_code = std::string(d.Name);
+    result.currency = to_string(d.Currency);
+    result.quantity = static_cast<double>(d.Quantity);
+    result.fixed_price = static_cast<double>(d.Strike);
+    result.maturity_date = std::string(d.Maturity);
     return result;
 }
 
@@ -266,22 +265,21 @@ commodity_mapping_result commodity_instrument_mapper::forward_commodity_forward(
 // Forward: CommodityOption
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result commodity_instrument_mapper::forward_commodity_option(
+trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOption: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommodityOption");
+    trading::domain::commodity_instrument result = make_base("CommodityOption");
     if (!t.CommodityOptionData) return result;
     const auto& d = *t.CommodityOptionData;
 
-    result.instrument.commodity_code = std::string(d.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
+    result.commodity_code = std::string(d.Name);
+    result.currency = to_string(d.Currency);
+    result.quantity = static_cast<double>(d.Quantity);
+    result.strike_price = static_cast<double>(d.Strike);
+    result.option_type = extract_option_type(d.OptionData);
+    result.exercise_type = extract_exercise_style(d.OptionData);
+    result.maturity_date = first_exercise_date(d.OptionData);
     return result;
 }
 
@@ -289,20 +287,19 @@ commodity_mapping_result commodity_instrument_mapper::forward_commodity_option(
 // Forward: CommoditySwap
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result commodity_instrument_mapper::forward_commodity_swap(
+trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwap: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommoditySwap");
+    trading::domain::commodity_instrument result = make_base("CommoditySwap");
     if (!t.SwapData) return result;
     const auto& d = *t.SwapData;
 
     const auto info = extract_floating_leg_info(d.LegData);
-    result.instrument.commodity_code = info.commodity_code;
-    result.instrument.currency = info.currency;
-    result.instrument.start_date = info.start_date;
-    result.instrument.maturity_date = info.maturity_date;
+    result.commodity_code = info.commodity_code;
+    result.currency = info.currency;
+    result.start_date = info.start_date;
+    result.maturity_date = info.maturity_date;
     return result;
 }
 
@@ -310,22 +307,21 @@ commodity_mapping_result commodity_instrument_mapper::forward_commodity_swap(
 // Forward: CommoditySwaption
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result
+trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwaption: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommoditySwaption");
+    trading::domain::commodity_instrument result = make_base("CommoditySwaption");
     if (!t.CommoditySwaptionData) return result;
     const auto& d = *t.CommoditySwaptionData;
 
-    result.instrument.swaption_expiry_date =
+    result.swaption_expiry_date =
         first_exercise_date(d.OptionData);
     const auto info = extract_floating_leg_info(d.LegData);
-    result.instrument.commodity_code = info.commodity_code;
-    result.instrument.currency = info.currency;
-    result.instrument.start_date = info.start_date;
-    result.instrument.maturity_date = info.maturity_date;
+    result.commodity_code = info.commodity_code;
+    result.currency = info.currency;
+    result.start_date = info.start_date;
+    result.maturity_date = info.maturity_date;
     return result;
 }
 
@@ -333,22 +329,21 @@ commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
 // Forward: CommodityVarianceSwap
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result
+trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_variance_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityVarianceSwap: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommodityVarianceSwap");
+    trading::domain::commodity_instrument result = make_base("CommodityVarianceSwap");
     if (!t.CommodityVarianceSwapData) return result;
     const auto& d = *t.CommodityVarianceSwapData;
 
-    result.instrument.commodity_code =
+    result.commodity_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.start_date = std::string(d.StartDate);
-    result.instrument.maturity_date = std::string(d.EndDate);
-    result.instrument.variance_strike = static_cast<double>(d.Strike);
-    result.instrument.quantity = static_cast<double>(d.Notional);
+    result.currency = to_string(d.Currency);
+    result.start_date = std::string(d.StartDate);
+    result.maturity_date = std::string(d.EndDate);
+    result.variance_strike = static_cast<double>(d.Strike);
+    result.quantity = static_cast<double>(d.Notional);
     return result;
 }
 
@@ -356,25 +351,24 @@ commodity_instrument_mapper::forward_commodity_variance_swap(const trade& t) {
 // Forward: CommodityAveragePriceOption
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result commodity_instrument_mapper::forward_commodity_apo(
+trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_apo(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityAveragePriceOption: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommodityAveragePriceOption");
+    trading::domain::commodity_instrument result = make_base("CommodityAveragePriceOption");
     if (!t.CommodityAveragePriceOptionData) return result;
     const auto& d = *t.CommodityAveragePriceOptionData;
 
-    result.instrument.commodity_code = std::string(d.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.averaging_start_date = std::string(d.StartDate);
-    result.instrument.averaging_end_date = std::string(d.EndDate);
-    result.instrument.average_type = to_string(d.PriceType);
+    result.commodity_code = std::string(d.Name);
+    result.currency = to_string(d.Currency);
+    result.quantity = static_cast<double>(d.Quantity);
+    result.strike_price = static_cast<double>(d.Strike);
+    result.option_type = extract_option_type(d.OptionData);
+    result.exercise_type = extract_exercise_style(d.OptionData);
+    result.maturity_date = first_exercise_date(d.OptionData);
+    result.averaging_start_date = std::string(d.StartDate);
+    result.averaging_end_date = std::string(d.EndDate);
+    result.average_type = to_string(d.PriceType);
     return result;
 }
 
@@ -382,12 +376,11 @@ commodity_mapping_result commodity_instrument_mapper::forward_commodity_apo(
 // Forward: CommodityOptionStrip
 // ---------------------------------------------------------------------------
 
-commodity_mapping_result
+trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOptionStrip: "
                                << std::string(t.id);
-    commodity_mapping_result result;
-    result.instrument = make_base("CommodityOptionStrip");
+    trading::domain::commodity_instrument result = make_base("CommodityOptionStrip");
     if (!t.CommodityOptionStripData) return result;
     const auto& d = *t.CommodityOptionStripData;
 
@@ -395,12 +388,12 @@ commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
     if (d.LegData.legDataType &&
             d.LegData.legDataType->CommodityFloatingLegData) {
         const auto& fl = *d.LegData.legDataType->CommodityFloatingLegData;
-        result.instrument.commodity_code = std::string(fl.Name);
+        result.commodity_code = std::string(fl.Name);
     }
     if (d.LegData.Currency)
-        result.instrument.currency = std::string(*d.LegData.Currency);
+        result.currency = std::string(*d.LegData.Currency);
     if (d.LegData.ScheduleData && !d.LegData.ScheduleData->Rules.empty())
-        result.instrument.strip_frequency_code =
+        result.strip_frequency_code =
             std::string(d.LegData.ScheduleData->Rules.front().Tenor);
     return result;
 }

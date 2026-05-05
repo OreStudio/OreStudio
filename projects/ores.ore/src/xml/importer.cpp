@@ -177,7 +177,15 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                     item.trade.instrument_id = instr_id;
 
                     using ores::trading::domain::product_type;
-                    if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
+                    using ores::trading::domain::swap_instrument_data;
+                    using ores::trading::domain::fx_instrument_variant;
+                    using ores::trading::domain::bond_instrument;
+                    using ores::trading::domain::credit_instrument;
+                    using ores::trading::domain::equity_instrument_variant;
+                    using ores::trading::domain::commodity_instrument;
+                    using ores::trading::domain::composite_instrument_data;
+                    using ores::trading::domain::scripted_instrument;
+                    if constexpr (std::is_same_v<T, swap_instrument_data>) {
                         item.trade.product_type = product_type::swap;
                         std::visit([&](auto& instr) {
                             instr.instrument_id = instr_id;
@@ -185,38 +193,38 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                         }, result.instrument);
                         for (auto& leg : result.legs)
                             leg.instrument_id = instr_id;
-                    } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
+                    } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                         item.trade.product_type = product_type::fx;
                         std::visit([&](auto& instr) {
                             instr.instrument_id = instr_id;
                             instr.trade_id = item.trade.id;
-                        }, result.instrument);
-                    } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
+                        }, result);
+                    } else if constexpr (std::is_same_v<T, bond_instrument>) {
                         item.trade.product_type = product_type::bond;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
+                        result.instrument_id = instr_id;
+                        result.trade_id = item.trade.id;
+                    } else if constexpr (std::is_same_v<T, credit_instrument>) {
                         item.trade.product_type = product_type::credit;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
+                        result.instrument_id = instr_id;
+                        result.trade_id = item.trade.id;
+                    } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
                         item.trade.product_type = product_type::equity;
                         std::visit([&](auto& instr) {
                             instr.instrument_id = instr_id;
                             instr.trade_id = item.trade.id;
-                        }, result.instrument);
-                    } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
+                        }, result);
+                    } else if constexpr (std::is_same_v<T, commodity_instrument>) {
                         item.trade.product_type = product_type::commodity;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
+                        result.instrument_id = instr_id;
+                        result.trade_id = item.trade.id;
+                    } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                         item.trade.product_type = product_type::composite;
-                        result.instrument.id = instr_id;
+                        result.instrument.instrument_id = instr_id;
                         result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
+                    } else if constexpr (std::is_same_v<T, scripted_instrument>) {
                         item.trade.product_type = product_type::scripted;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
+                        result.instrument_id = instr_id;
+                        result.trade_id = item.trade.id;
                     }
                 }
             }, item.instrument);
@@ -237,16 +245,25 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 void importer::rewire_instrument_trade_id(trade_import_item& item) {
     std::visit([&](auto& result) {
         using T = std::decay_t<decltype(result)>;
+        using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::fx_instrument_variant;
+        using ores::trading::domain::equity_instrument_variant;
+        using ores::trading::domain::composite_instrument_data;
         if constexpr (std::is_same_v<T, std::monostate>) {
             // No instrument for this trade type.
-        } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
-                             std::is_same_v<T, domain::fx_mapping_result> ||
-                             std::is_same_v<T, domain::equity_mapping_result>) {
+        } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
             std::visit([&](auto& instr) {
                 instr.trade_id = item.trade.id;
             }, result.instrument);
-        } else {
+        } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                             std::is_same_v<T, equity_instrument_variant>) {
+            std::visit([&](auto& instr) {
+                instr.trade_id = item.trade.id;
+            }, result);
+        } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
             result.instrument.trade_id = item.trade.id;
+        } else {
+            result.trade_id = item.trade.id;
         }
     }, item.instrument);
 }
@@ -256,23 +273,28 @@ void importer::assign_instrument_id(
     bool has_instrument = false;
     std::visit([&](auto& result) {
         using T = std::decay_t<decltype(result)>;
+        using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::fx_instrument_variant;
+        using ores::trading::domain::equity_instrument_variant;
+        using ores::trading::domain::composite_instrument_data;
         if constexpr (std::is_same_v<T, std::monostate>) {
             // No instrument for this trade type.
-        } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
-                             std::is_same_v<T, domain::fx_mapping_result> ||
-                             std::is_same_v<T, domain::equity_mapping_result>) {
-            // Nested variant: each inner instrument uses instrument_id
+        } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
             std::visit([&](auto& instr) {
                 instr.instrument_id = id;
             }, result.instrument);
             has_instrument = true;
-        } else if constexpr (std::is_same_v<T, domain::bond_mapping_result> ||
-                             std::is_same_v<T, domain::credit_mapping_result> ||
-                             std::is_same_v<T, domain::commodity_mapping_result> ||
-                             std::is_same_v<T, domain::scripted_mapping_result> ||
-                             std::is_same_v<T, domain::composite_mapping_result>) {
-            // Direct instrument: these types use id rather than instrument_id
-            result.instrument.id = id;
+        } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                             std::is_same_v<T, equity_instrument_variant>) {
+            std::visit([&](auto& instr) {
+                instr.instrument_id = id;
+            }, result);
+            has_instrument = true;
+        } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+            result.instrument.instrument_id = id;
+            has_instrument = true;
+        } else {
+            result.instrument_id = id;
             has_instrument = true;
         }
     }, item.instrument);

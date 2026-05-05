@@ -23,16 +23,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 
 namespace ores::ore::domain {
-
-/**
- * @brief Result of a forward mapping from ORE XSD to the ORES composite
- * instrument domain type.
- */
-struct composite_mapping_result {
-    ores::trading::domain::composite_instrument instrument;
-};
 
 /**
  * @brief Maps ORE XSD composite trade types to ORES domain types and back.
@@ -55,10 +48,10 @@ private:
     }
 
 public:
-    static composite_mapping_result forward_composite_trade(const trade& t);
-    static composite_mapping_result forward_multi_leg_option(const trade& t);
-    static composite_mapping_result forward_total_return_swap(const trade& t);
-    static composite_mapping_result forward_contract_for_difference(
+    static trading::domain::composite_instrument_data forward_composite_trade(const trade& t);
+    static trading::domain::composite_instrument_data forward_multi_leg_option(const trade& t);
+    static trading::domain::composite_instrument_data forward_total_return_swap(const trade& t);
+    static trading::domain::composite_instrument_data forward_contract_for_difference(
         const trade& t);
 
     static trade reverse_composite_trade(

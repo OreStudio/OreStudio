@@ -229,10 +229,10 @@ void EquityInstrumentForm::writeUiToInstrument() {
 }
 
 void EquityInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::equity_export_result>(&instrument);
+        std::get_if<trading::domain::equity_instrument_variant>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-equity instrument pushed to EquityInstrumentForm";
@@ -241,7 +241,7 @@ void EquityInstrumentForm::setInstrument(
         return;
     }
     const auto* opt =
-        std::get_if<trading::domain::equity_option_instrument>(&ex->instrument);
+        std::get_if<trading::domain::equity_option_instrument>(ex);
     if (!opt) {
         emit loadFailed(QStringLiteral(
             "Non-option equity type not yet supported in this dialog"));

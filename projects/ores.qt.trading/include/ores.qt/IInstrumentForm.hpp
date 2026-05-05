@@ -25,7 +25,7 @@
 #include <string>
 #include <QString>
 #include <QWidget>
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 
 namespace ores::qt {
 
@@ -57,7 +57,7 @@ struct InstrumentProvenance {
  *
  *  1. Dialog construction: instantiate the form via the registry, call
  *     @ref setClientManager and @ref setUsername.
- *  2. Edit mode: dialog already holds the @c instrument_export_result from
+ *  2. Edit mode: dialog already holds the @c trade_instrument from
  *     the trade bundle and pushes it via @ref setInstrument; the form
  *     pattern-matches its family and populates fields synchronously.
  *  3. Create mode: @ref clear is called and the form starts blank.
@@ -96,7 +96,7 @@ public:
      * emits @ref loadFailed with a descriptive message.
      */
     virtual void setInstrument(
-        const trading::messaging::instrument_export_result& instrument) = 0;
+        const trading::domain::trade_instrument& instrument) = 0;
 
     /// Reset the form to a blank state ready for create mode.
     virtual void clear() = 0;

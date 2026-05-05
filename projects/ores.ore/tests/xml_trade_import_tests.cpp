@@ -45,11 +45,10 @@ std::filesystem::path example_path(const std::string& filename) {
 
 using ores::ore::xml::importer;
 using ores::ore::xml::trade_import_item;
-using ores::ore::domain::instrument_mapping_result;
-using ores::ore::domain::swap_mapping_result;
-using ores::ore::domain::fx_mapping_result;
+using ores::trading::domain::swap_instrument_data;
+using ores::trading::domain::fx_instrument_variant;
 using ores::trading::domain::fx_forward_instrument;
-using ores::ore::domain::bond_mapping_result;
+using ores::trading::domain::bond_instrument;
 using ores::trading::domain::trade;
 using namespace ores::logging;
 
@@ -265,9 +264,9 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
 
     const auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
-    REQUIRE(std::holds_alternative<swap_mapping_result>(item.instrument));
+    REQUIRE(std::holds_alternative<swap_instrument_data>(item.instrument));
 
-    const auto& r = std::get<swap_mapping_result>(item.instrument);
+    const auto& r = std::get<swap_instrument_data>(item.instrument);
     // Extract instrument_id from the inner variant.
     const auto instr_id = std::visit(
         [](const auto& instr) { return instr.instrument_id; }, r.instrument);
@@ -294,10 +293,10 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
 
     const auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
-    REQUIRE(std::holds_alternative<fx_mapping_result>(item.instrument));
+    REQUIRE(std::holds_alternative<fx_instrument_variant>(item.instrument));
 
-    const auto& r = std::get<fx_mapping_result>(item.instrument);
-    const auto& instr = std::get<fx_forward_instrument>(r.instrument);
+    const auto& r = std::get<fx_instrument_variant>(item.instrument);
+    const auto& instr = std::get<fx_forward_instrument>(r);
     CHECK(instr.instrument_id != item.trade.id);
     // trade.id is nil at this stage (planner mints later). The back-reference
     // must still be wired to the current trade.id value so
@@ -325,16 +324,16 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     // First trade in the portfolio must be a bond.
     const auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
-    REQUIRE(std::holds_alternative<bond_mapping_result>(item.instrument));
+    REQUIRE(std::holds_alternative<bond_instrument>(item.instrument));
 
-    const auto& r = std::get<bond_mapping_result>(item.instrument);
-    CHECK(r.instrument.id != item.trade.id);
-    CHECK(r.instrument.trade_id == item.trade.id);
-    CHECK(item.trade.instrument_id == r.instrument.id);
+    const auto& r = std::get<bond_instrument>(item.instrument);
+    CHECK(r.instrument_id != item.trade.id);
+    CHECK(r.trade_id == item.trade.id);
+    CHECK(item.trade.instrument_id == r.instrument_id);
     CHECK(item.trade.product_type == ores::trading::domain::product_type::bond);
-    CHECK(!r.instrument.issuer.empty());
+    CHECK(!r.issuer.empty());
 
-    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.instrument.issuer;
+    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issuer;
 }
 
 TEST_CASE("import_portfolio_with_context_unmapped_type_is_monostate", tags) {

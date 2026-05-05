@@ -27,7 +27,7 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.ore/domain/trade_mapper.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.ore/domain/conventions_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -47,7 +47,7 @@ struct trade_import_item {
     trading::domain::trade trade;
     std::string ore_counterparty_name;             ///< ORE CounterParty string, empty if absent
     std::filesystem::path source_file;             ///< ORE XML file this trade was read from
-    domain::instrument_mapping_result instrument;  ///< monostate if trade type not yet mapped
+    trading::domain::trade_instrument instrument;  ///< monostate if trade type not yet mapped
 };
 
 /**

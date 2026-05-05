@@ -101,10 +101,10 @@ void CompositeInstrumentForm::writeUiToInstrument() {
 }
 
 void CompositeInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* comp =
-        std::get_if<trading::messaging::composite_export_result>(&instrument);
+        std::get_if<trading::domain::composite_instrument_data>(&instrument);
     if (!comp) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-composite instrument pushed to CompositeInstrumentForm";

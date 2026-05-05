@@ -126,22 +126,21 @@ legData credit_instrument_mapper::reverse_cds_leg(
 // Forward: CreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-credit_mapping_result credit_instrument_mapper::forward_cds(const trade& t) {
+trading::domain::credit_instrument credit_instrument_mapper::forward_cds(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CreditDefaultSwap: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("CreditDefaultSwap");
+    trading::domain::credit_instrument result = make_base("CreditDefaultSwap");
     if (!t.CreditDefaultSwapData) return result;
     const auto& d = *t.CreditDefaultSwapData;
     if (d.IssuerId)
-        result.instrument.reference_entity = std::string(*d.IssuerId);
+        result.reference_entity = std::string(*d.IssuerId);
     else if (d.creditCurveIdType.CreditCurveId)
-        result.instrument.reference_entity =
+        result.reference_entity =
             std::string(*d.creditCurveIdType.CreditCurveId);
     if (d.FixedRecoveryRate)
-        result.instrument.recovery_rate =
+        result.recovery_rate =
             static_cast<double>(*d.FixedRecoveryRate);
-    map_cds_leg(d.LegData, result.instrument);
+    map_cds_leg(d.LegData, result);
     return result;
 }
 
@@ -149,17 +148,16 @@ credit_mapping_result credit_instrument_mapper::forward_cds(const trade& t) {
 // Forward: IndexCreditDefaultSwap
 // ---------------------------------------------------------------------------
 
-credit_mapping_result
+trading::domain::credit_instrument
 credit_instrument_mapper::forward_index_cds(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping IndexCreditDefaultSwap: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("IndexCreditDefaultSwap");
+    trading::domain::credit_instrument result = make_base("IndexCreditDefaultSwap");
     if (!t.IndexCreditDefaultSwapData) return result;
     const auto& d = *t.IndexCreditDefaultSwapData;
-    result.instrument.reference_entity = std::string(d.CreditCurveId);
-    result.instrument.index_name = std::string(d.CreditCurveId);
-    map_cds_leg(d.LegData, result.instrument);
+    result.reference_entity = std::string(d.CreditCurveId);
+    result.index_name = std::string(d.CreditCurveId);
+    map_cds_leg(d.LegData, result);
     return result;
 }
 
@@ -167,20 +165,19 @@ credit_instrument_mapper::forward_index_cds(const trade& t) {
 // Forward: IndexCreditDefaultSwapOption
 // ---------------------------------------------------------------------------
 
-credit_mapping_result
+trading::domain::credit_instrument
 credit_instrument_mapper::forward_index_cds_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping IndexCreditDefaultSwapOption: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("IndexCreditDefaultSwapOption");
+    trading::domain::credit_instrument result = make_base("IndexCreditDefaultSwapOption");
     if (!t.IndexCreditDefaultSwapOptionData) return result;
     const auto& d = *t.IndexCreditDefaultSwapOptionData;
-    result.instrument.reference_entity = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
-    result.instrument.index_name = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
+    result.reference_entity = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
+    result.index_name = std::string(d.IndexCreditDefaultSwapData.CreditCurveId);
     if (d.Strike)
-        result.instrument.option_strike = static_cast<double>(*d.Strike);
-    result.instrument.option_expiry_date = first_exercise_date(d.OptionData);
-    map_cds_leg(d.IndexCreditDefaultSwapData.LegData, result.instrument);
+        result.option_strike = static_cast<double>(*d.Strike);
+    result.option_expiry_date = first_exercise_date(d.OptionData);
+    map_cds_leg(d.IndexCreditDefaultSwapData.LegData, result);
     return result;
 }
 
@@ -188,21 +185,20 @@ credit_instrument_mapper::forward_index_cds_option(const trade& t) {
 // Forward: CreditLinkedSwap
 // ---------------------------------------------------------------------------
 
-credit_mapping_result
+trading::domain::credit_instrument
 credit_instrument_mapper::forward_credit_linked_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CreditLinkedSwap: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("CreditLinkedSwap");
+    trading::domain::credit_instrument result = make_base("CreditLinkedSwap");
     if (!t.CreditLinkedSwapData) return result;
     const auto& d = *t.CreditLinkedSwapData;
-    result.instrument.reference_entity = std::string(d.CreditCurveId);
-    result.instrument.linked_asset_code = std::string(d.CreditCurveId);
+    result.reference_entity = std::string(d.CreditCurveId);
+    result.linked_asset_code = std::string(d.CreditCurveId);
     if (d.FixedRecoveryRate)
-        result.instrument.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
+        result.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
     // Extract currency/notional from first contingent payment leg if available.
     if (d.ContingentPayments && !d.ContingentPayments->LegData.empty())
-        map_cds_leg(d.ContingentPayments->LegData.front(), result.instrument);
+        map_cds_leg(d.ContingentPayments->LegData.front(), result);
     return result;
 }
 
@@ -210,21 +206,20 @@ credit_instrument_mapper::forward_credit_linked_swap(const trade& t) {
 // Forward: SyntheticCDO
 // ---------------------------------------------------------------------------
 
-credit_mapping_result
+trading::domain::credit_instrument
 credit_instrument_mapper::forward_synthetic_cdo(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping SyntheticCDO: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("SyntheticCDO");
+    trading::domain::credit_instrument result = make_base("SyntheticCDO");
     if (!t.CdoData) return result;
     const auto& d = *t.CdoData;
-    result.instrument.reference_entity = std::string(d.Qualifier);
-    result.instrument.start_date = std::string(d.ProtectionStart);
-    result.instrument.tranche_attachment = static_cast<double>(d.AttachmentPoint);
-    result.instrument.tranche_detachment = static_cast<double>(d.DetachmentPoint);
+    result.reference_entity = std::string(d.Qualifier);
+    result.start_date = std::string(d.ProtectionStart);
+    result.tranche_attachment = static_cast<double>(d.AttachmentPoint);
+    result.tranche_detachment = static_cast<double>(d.DetachmentPoint);
     if (d.FixedRecoveryRate)
-        result.instrument.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
-    map_cds_leg(d.LegData, result.instrument);
+        result.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
+    map_cds_leg(d.LegData, result);
     return result;
 }
 
@@ -232,21 +227,20 @@ credit_instrument_mapper::forward_synthetic_cdo(const trade& t) {
 // Forward: RiskParticipationAgreement
 // ---------------------------------------------------------------------------
 
-credit_mapping_result
+trading::domain::credit_instrument
 credit_instrument_mapper::forward_rpa(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping RiskParticipationAgreement: "
                                << std::string(t.id);
-    credit_mapping_result result;
-    result.instrument = make_base("RiskParticipationAgreement");
+    trading::domain::credit_instrument result = make_base("RiskParticipationAgreement");
     if (!t.RiskParticipationAgreementData) return result;
     const auto& d = *t.RiskParticipationAgreementData;
-    result.instrument.reference_entity = std::string(d.CreditCurveId);
+    result.reference_entity = std::string(d.CreditCurveId);
     if (d.IssuerId)
-        result.instrument.reference_entity = std::string(*d.IssuerId);
-    result.instrument.start_date = std::string(d.ProtectionStart);
-    result.instrument.maturity_date = std::string(d.ProtectionEnd);
+        result.reference_entity = std::string(*d.IssuerId);
+    result.start_date = std::string(d.ProtectionStart);
+    result.maturity_date = std::string(d.ProtectionEnd);
     if (d.FixedRecoveryRate)
-        result.instrument.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
+        result.recovery_rate = static_cast<double>(*d.FixedRecoveryRate);
     return result;
 }
 

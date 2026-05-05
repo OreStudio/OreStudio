@@ -41,7 +41,7 @@ std::string credit_instrument_repository::sql() {
 
 void credit_instrument_repository::write(context ctx,
     const domain::credit_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing credit_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing credit_instrument: " << v.instrument_id;
     execute_write_query(ctx, credit_instrument_mapper::map(v),
         lg(), "Writing credit_instrument to database.");
 }

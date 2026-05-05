@@ -167,10 +167,10 @@ void FxVarianceSwapInstrumentForm::writeUiToInstrument() {
 }
 
 void FxVarianceSwapInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::fx_export_result>(&instrument);
+        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-FX instrument pushed to FxVarianceSwapInstrumentForm";
@@ -179,7 +179,7 @@ void FxVarianceSwapInstrumentForm::setInstrument(
         return;
     }
     const auto* vs =
-        std::get_if<trading::domain::fx_variance_swap_instrument>(&ex->instrument);
+        std::get_if<trading::domain::fx_variance_swap_instrument>(ex);
     if (!vs) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-variance-swap FX type pushed to FxVarianceSwapInstrumentForm";

@@ -156,11 +156,11 @@ currencyCode parse_currency_code(const std::string& s) {
 // Forward: CompositeTrade
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_composite_trade(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CompositeTrade: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("CompositeTrade");
     if (!t.CompositeTradeData) return result;
     const auto& d = *t.CompositeTradeData;
@@ -174,11 +174,11 @@ composite_instrument_mapper::forward_composite_trade(const trade& t) {
 // Forward: MultiLegOption
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_multi_leg_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping MultiLegOption: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("MultiLegOption");
     // MultiLegOptionData has leg data but composite_instrument only
     // captures the top-level type; legs are stored separately.
@@ -219,11 +219,11 @@ trade composite_instrument_mapper::reverse_composite_trade(
 // Forward: TotalReturnSwap
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_total_return_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping TotalReturnSwap: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("TotalReturnSwap");
     if (!t.TotalReturnSwapData) return result;
     const auto& d = *t.TotalReturnSwapData;
@@ -241,11 +241,11 @@ composite_instrument_mapper::forward_total_return_swap(const trade& t) {
 // Forward: ContractForDifference
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_contract_for_difference(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ContractForDifference: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("ContractForDifference");
     if (!t.ContractForDifferenceData) return result;
     const auto& d = *t.ContractForDifferenceData;

@@ -713,11 +713,12 @@ fx_mapping_result fx_instrument_mapper::forward_fx_tarf(const trade& t) {
     if (!t.FxTaRFData) return {r};
     const auto& d = *t.FxTaRFData;
 
-    r.currency     = to_string(d.Currency);
-    r.fx_index     = std::string(d.Underlying.Name);
+    r.currency      = to_string(d.Currency);
+    r.fx_index      = std::string(d.Underlying.Name);
     r.fixing_amount = static_cast<double>(d.FixingAmount);
+    r.long_short    = std::string(d.OptionData.LongShort);
     if (d.Strike)
-        r.strike   = static_cast<double>(*d.Strike);
+        r.strike    = static_cast<double>(*d.Strike);
 
     // Target amount (profit cap) if present
     for (const auto& bd : d.Barriers.BarrierData) {

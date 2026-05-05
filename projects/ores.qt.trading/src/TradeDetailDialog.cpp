@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TradeDetailDialog.hpp"
 
+#include <algorithm>
 #include <QComboBox>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -63,6 +64,12 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupConnections();
+
+    // Cap dialog height so the scroll area in the Instrument tab actually
+    // scrolls for tall forms instead of letting the dialog grow off-screen.
+    // 700px fits ~10 form rows comfortably; taller content scrolls.
+    constexpr int kMaxDialogHeight = 700;
+    setMaximumHeight(std::max(kMaxDialogHeight, minimumHeight()));
 
     // Zero-interval timer coalesces rapid tradeTypeEdit keystrokes so the
     // form selection logic runs at most once per event-loop cycle.

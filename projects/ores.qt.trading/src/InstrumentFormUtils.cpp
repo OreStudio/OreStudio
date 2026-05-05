@@ -81,7 +81,15 @@ void InstrumentFormUtils::populateFrequency(QComboBox* cb) {
 
 void InstrumentFormUtils::populateBarrierType(QComboBox* cb) {
     cb->clear();
-    cb->addItems({"", "UpIn", "UpOut", "DownIn", "DownOut"});
+    cb->addItems({
+        "",
+        "UpAndIn",
+        "UpAndOut",
+        "DownAndIn",
+        "DownAndOut",
+        "KnockIn",
+        "KnockOut",
+    });
 }
 
 void InstrumentFormUtils::populateAverageType(QComboBox* cb) {
@@ -112,6 +120,16 @@ void InstrumentFormUtils::populateAscotOptionType(QComboBox* cb) {
 void InstrumentFormUtils::populateReturnType(QComboBox* cb) {
     cb->clear();
     cb->addItems({"", "TotalReturn", "PriceReturn"});
+}
+
+void InstrumentFormUtils::populateLongShort(QComboBox* cb) {
+    cb->clear();
+    cb->addItems({"", "Long", "Short"});
+}
+
+void InstrumentFormUtils::populateMomentType(QComboBox* cb) {
+    cb->clear();
+    cb->addItems({"", "Variance", "Volatility"});
 }
 
 void InstrumentFormUtils::setComboValue(QComboBox* cb, const std::string& value) {

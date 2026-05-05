@@ -59,7 +59,7 @@ public:
      *  Monthly, EveryFourthWeek, Biweekly, Weekly, Daily, Once */
     static void populateFrequency(QComboBox* cb);
 
-    /** "", "UpIn", "UpOut", "DownIn", "DownOut" */
+    /** "", "UpAndIn", "UpAndOut", "DownAndIn", "DownAndOut", "KnockIn", "KnockOut" */
     static void populateBarrierType(QComboBox* cb);
 
     /** "", "Arithmetic", "Geometric" */
@@ -79,6 +79,12 @@ public:
 
     /** "", "TotalReturn", "PriceReturn" — equity swap / TRS return type */
     static void populateReturnType(QComboBox* cb);
+
+    /** "", "Long", "Short" */
+    static void populateLongShort(QComboBox* cb);
+
+    /** "", "Variance", "Volatility" — FX/equity variance swap moment type */
+    static void populateMomentType(QComboBox* cb);
 
     // ── Value accessors ────────────────────────────────────────────────────────
 

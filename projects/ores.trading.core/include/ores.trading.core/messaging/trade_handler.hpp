@@ -249,14 +249,14 @@ private:
                     ex.instrument = std::move(*r);
                     ex_opt = std::move(ex);
                 }
-            } else if (ttc == "FxAverageForward") {
+            } else if (ttc == "FxAverageForward" || ttc == "FxTaRF") {
                 service::fx_asian_forward_instrument_service svc(ctx);
                 if (auto r = svc.get_fx_asian_forward_instrument(id)) {
                     fx_export_result ex;
                     ex.instrument = std::move(*r);
                     ex_opt = std::move(ex);
                 }
-            } else if (ttc == "FxAccumulator" || ttc == "FxTaRF") {
+            } else if (ttc == "FxAccumulator") {
                 service::fx_accumulator_instrument_service svc(ctx);
                 if (auto r = svc.get_fx_accumulator_instrument(id)) {
                     fx_export_result ex;

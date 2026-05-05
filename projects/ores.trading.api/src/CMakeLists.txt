@@ -43,4 +43,12 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
+# fra_instrument has 18 fields; rfl's duplicate-field-names check performs an
+# O(N²) constexpr expansion that exhausts MSVC's default depth (512) and step
+# (100 000) budgets, producing C1202. PUBLIC propagates to all consumers that
+# include these headers and instantiate rfl reflection on the trading types.
+target_compile_options(${lib_target_name} PUBLIC
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth1024>
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

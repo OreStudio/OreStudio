@@ -23,11 +23,20 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::ore::xml {
+
+struct roundtrip_summary {
+    int total_xml_files      = 0;
+    int skipped              = 0;
+    int output_files_written = 0;
+    int trades_mapped        = 0;
+    int trades_passthrough   = 0;
+};
 
 /**
  * @brief Exports domain objects to their ORE XML representation.
@@ -55,6 +64,15 @@ public:
      */
     static std::string export_portfolio(
         const std::vector<trading::messaging::trade_export_item>& items);
+
+    /**
+     * @brief Walks input_dir recursively, roundtrips every portfolio XML
+     * through the import→export pipeline, and writes mirrored outputs under
+     * output_dir. No DB or network access; purely file-level.
+     */
+    static roundtrip_summary roundtrip_portfolio(
+        const std::filesystem::path& input_dir,
+        const std::filesystem::path& output_dir);
 };
 
 }

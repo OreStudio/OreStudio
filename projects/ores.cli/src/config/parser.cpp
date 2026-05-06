@@ -24,6 +24,7 @@
 #include "ores.cli/config/domain_parsers/variability_parser.hpp"
 #include "ores.cli/config/domain_parsers/compute_parser.hpp"
 #include "ores.cli/config/domain_parsers/trading_parser.hpp"
+#include "ores.cli/config/domain_parsers/ore_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reason_categories_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
@@ -70,6 +71,9 @@ namespace {
 
     const std::string trading_domain_name("trading");
     const std::string trading_domain_desc("Trading: instrument reference data (day-count-fraction-types, leg-types, etc.).");
+
+    const std::string ore_domain_name("ore");
+    const std::string ore_domain_desc("ORE: XML import/export utilities (roundtrip).");
 
     const std::string operation_arg("operation");
 
@@ -135,12 +139,13 @@ namespace {
                             domain_name == dq_domain_name ||
                             domain_name == variability_domain_name ||
                             domain_name == compute_domain_name ||
-                            domain_name == trading_domain_name);
+                            domain_name == trading_domain_name ||
+                            domain_name == ore_domain_name);
 
         if (!is_valid) {
             BOOST_THROW_EXCEPTION(
                 parser_exception(std::format("Invalid or unsupported domain: {}. "
-                                             "Available domains: refdata, iam, dq, variability, compute, trading",
+                                             "Available domains: refdata, iam, dq, variability, compute, trading, ore",
                                              domain_name)));
         }
     }
@@ -184,6 +189,7 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(variability_domain_name, variability_domain_desc);
     lambda(compute_domain_name, compute_domain_desc);
     lambda(trading_domain_name, trading_domain_desc);
+    lambda(ore_domain_name, ore_domain_desc);
 
     info << std::endl
          << "For entity and operation specific options, use: <domain> <entity> <operation> --help"
@@ -259,6 +265,8 @@ std::optional<options> handle_domain_command(const std::string& domain_name,
         return domain_parsers::handle_compute_command(has_help, po, info, vm);
     } else if (domain_name == trading_domain_name) {
         return domain_parsers::handle_trading_command(has_help, po, info, vm);
+    } else if (domain_name == ore_domain_name) {
+        return domain_parsers::handle_ore_command(has_help, po, info, vm);
     }
 
     // Unreachable - all domains handled above

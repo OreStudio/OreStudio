@@ -77,3 +77,13 @@ target_link_libraries(${exe_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+
+add_custom_target(ore-domain-roundtrip
+    COMMAND $<TARGET_FILE:${exe_target_name}>
+            ore roundtrip
+            ${CMAKE_SOURCE_DIR}/external/ore/examples
+            --output-dir ${CMAKE_SOURCE_DIR}/assets/test_data/domain_roundtrip
+    DEPENDS ${exe_target_name}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Regenerating ORE domain roundtrip outputs"
+)

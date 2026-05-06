@@ -30,13 +30,12 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    std::string trade_key_extractor(
-        const trading::messaging::trade_export_item& item) {
-        return item.trade.external_id;
+    std::string trade_key_extractor(const trading::domain::trade& t) {
+        return t.external_id;
     }
     std::chrono::system_clock::time_point trade_timestamp_extractor(
-        const trading::messaging::trade_export_item& item) {
-        return item.trade.recorded_at;
+        const trading::domain::trade& t) {
+        return t.recorded_at;
     }
 }
 
@@ -78,7 +77,7 @@ QVariant ClientTradeModel::data(
     if (row >= items_.size())
         return {};
 
-    const auto& trade = items_[row].trade;
+    const auto& trade = items_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -207,7 +206,7 @@ void ClientTradeModel::fetch_trades(
                 BOOST_LOG_SEV(lg(), debug) << "Making trades request with offset="
                                            << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .items = {},
+                    return {.success = false, .trades = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -217,17 +216,17 @@ void ClientTradeModel::fetch_trades(
                     std::nullopt, offset, limit);
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades";
-                    return {.success = false, .items = {},
+                    return {.success = false, .trades = {},
                             .total_available_count = 0,
                             .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->items.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->trades.size()
                                            << " trades, total available: "
                                            << result->total_count;
                 return {.success = true,
-                        .items = std::move(result->items),
+                        .trades = std::move(result->trades),
                         .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "trades");
@@ -250,11 +249,11 @@ void ClientTradeModel::onTradesLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result.items.size());
+    const int new_count = static_cast<int>(result.trades.size());
 
     if (new_count > 0) {
         beginResetModel();
-        items_ = std::move(result.items);
+        items_ = std::move(result.trades);
         endResetModel();
 
         const bool has_recent = recencyTracker_.update(items_);
@@ -284,14 +283,6 @@ void ClientTradeModel::set_page_size(std::uint32_t size) {
 
 const trading::domain::trade*
 ClientTradeModel::getTrade(int row) const {
-    const auto idx = static_cast<std::size_t>(row);
-    if (idx >= items_.size())
-        return nullptr;
-    return &items_[idx].trade;
-}
-
-const trading::messaging::trade_export_item*
-ClientTradeModel::getTradeBundle(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= items_.size())
         return nullptr;

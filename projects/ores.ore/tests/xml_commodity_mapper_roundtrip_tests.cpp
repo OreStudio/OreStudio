@@ -81,7 +81,7 @@ TEST_CASE("commodity_mapper_roundtrip_forward", tags) {
     CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_forward(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityForwardData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityForward roundtrip passed. "
@@ -101,7 +101,7 @@ TEST_CASE("commodity_mapper_roundtrip_option", tags) {
     CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_option(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityOption roundtrip passed. Strike: "
@@ -119,7 +119,7 @@ TEST_CASE("commodity_mapper_roundtrip_swap", tags) {
     CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swap(
-        r.instrument);
+        r);
     REQUIRE(rt.SwapData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommoditySwap roundtrip passed. "
@@ -135,7 +135,7 @@ TEST_CASE("commodity_mapper_roundtrip_swaption", tags) {
     CHECK(!r.swaption_expiry_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swaption(
-        r.instrument);
+        r);
     REQUIRE(rt.CommoditySwaptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommoditySwaption roundtrip passed. Expiry: "
@@ -154,7 +154,7 @@ TEST_CASE("commodity_mapper_roundtrip_variance_swap", tags) {
     CHECK(r.variance_strike.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_variance_swap(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityVarianceSwapData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityVarianceSwap roundtrip passed. Strike: "
@@ -174,7 +174,7 @@ TEST_CASE("commodity_mapper_roundtrip_apo", tags) {
     CHECK(!r.averaging_end_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_apo(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityAveragePriceOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityAveragePriceOption roundtrip passed. "
@@ -190,7 +190,7 @@ TEST_CASE("commodity_mapper_roundtrip_option_strip", tags) {
     CHECK(!r.strip_frequency_code.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_option_strip(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityOptionStripData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityOptionStrip roundtrip passed. "

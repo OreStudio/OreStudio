@@ -79,7 +79,7 @@ TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     CHECK(!r.maturity_date.empty());
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_cds(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_cds(r);
     REQUIRE(rt.CreditDefaultSwapData);
     CHECK(rt.CreditDefaultSwapData->creditCurveIdType.CreditCurveId);
 
@@ -98,7 +98,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
     CHECK(r.notional > 0.0);
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_index_cds(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_index_cds(r);
     REQUIRE(rt.IndexCreditDefaultSwapData);
 
     BOOST_LOG_SEV(lg, info) << "IndexCDS roundtrip passed. Index: "
@@ -115,7 +115,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     CHECK(r.option_strike.has_value());
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_index_cds_option(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_index_cds_option(r);
     REQUIRE(rt.IndexCreditDefaultSwapOptionData);
     CHECK(rt.IndexCreditDefaultSwapOptionData->Strike);
 
@@ -132,7 +132,7 @@ TEST_CASE("credit_mapper_roundtrip_credit_linked_swap", tags) {
     CHECK(!r.linked_asset_code.empty());
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_credit_linked_swap(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_credit_linked_swap(r);
     REQUIRE(rt.CreditLinkedSwapData);
 
     BOOST_LOG_SEV(lg, info) << "CreditLinkedSwap roundtrip passed. Reference: "
@@ -148,7 +148,7 @@ TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
     CHECK(r.tranche_detachment.has_value());
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_synthetic_cdo(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_synthetic_cdo(r);
     REQUIRE(rt.CdoData);
     const bool has_tranche = (rt.CdoData->AttachmentPoint != 0.0f ||
                               rt.CdoData->DetachmentPoint != 0.0f);
@@ -169,7 +169,7 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
     CHECK(!r.maturity_date.empty());
 
     // Reverse roundtrip
-    const auto rt = credit_instrument_mapper::reverse_rpa(r.instrument);
+    const auto rt = credit_instrument_mapper::reverse_rpa(r);
     REQUIRE(rt.RiskParticipationAgreementData);
 
     BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: "

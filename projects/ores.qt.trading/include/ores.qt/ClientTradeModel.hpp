@@ -95,13 +95,6 @@ public:
     const trading::domain::trade* getTrade(int row) const;
 
     /**
-     * @brief Get the full trade bundle (trade + instrument) at @p row.
-     *
-     * @return The bundle, or nullptr if @p row is invalid.
-     */
-    const trading::messaging::trade_export_item* getTradeBundle(int row) const;
-
-    /**
      * @brief Load a specific page of data.
      */
     void load_page(std::uint32_t offset, std::uint32_t limit);
@@ -140,7 +133,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<trading::messaging::trade_export_item> items;
+        std::vector<trading::domain::trade> trades;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
@@ -149,17 +142,17 @@ private:
     void fetch_trades(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<trading::messaging::trade_export_item> items_;
+    std::vector<trading::domain::trade> items_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using TradeKeyExtractor =
-        std::string(*)(const trading::messaging::trade_export_item&);
+        std::string(*)(const trading::domain::trade&);
     using TradeTimestampExtractor = std::chrono::system_clock::time_point(*)(
-        const trading::messaging::trade_export_item&);
-    RecencyTracker<trading::messaging::trade_export_item,
+        const trading::domain::trade&);
+    RecencyTracker<trading::domain::trade,
                    TradeKeyExtractor,
                    TradeTimestampExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;

@@ -376,7 +376,7 @@ void CreditInstrumentForm::saveInstrument(
         BOOST_LOG_SEV(lg(), info) << "Credit instrument saved";
         self->dirty_ = false;
         self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.id));
+        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
     });
 
     auto* cm = clientManager_;

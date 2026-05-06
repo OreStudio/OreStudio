@@ -118,12 +118,12 @@ TEST_CASE("import_portfolio_from_minimal_swap", tags) {
         "examples/MinimalSetup/Input/portfolio_swap.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
-    const auto trades = importer::import_portfolio(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << trades.size() << " trades";
+    const auto items = importer::import_portfolio_with_context(f);
+    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
-    REQUIRE(trades.size() == 1);
+    REQUIRE(items.size() == 1);
 
-    const auto& t = trades.front();
+    const auto& t = items.front().trade;
     CHECK(t.external_id == "Swap_20y");
     CHECK(t.trade_type == "Swap");
     CHECK(t.netting_set_id == "CPTY_A");
@@ -138,20 +138,20 @@ TEST_CASE("import_portfolio_from_example_1", tags) {
     const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
-    const auto trades = importer::import_portfolio(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << trades.size() << " trades";
+    const auto items = importer::import_portfolio_with_context(f);
+    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
-    REQUIRE(trades.size() == 12);
+    REQUIRE(items.size() == 12);
 
     // First trade should be a Swap.
-    const auto& first = trades.front();
+    const auto& first = items.front().trade;
     CHECK(first.external_id == "Swap_20");
     CHECK(first.trade_type == "Swap");
     CHECK(first.netting_set_id == "CPTY_A");
 
     // Verify all trades have the same counterparty netting set.
-    for (const auto& t : trades) {
-        CHECK(t.netting_set_id == "CPTY_A");
+    for (const auto& item : items) {
+        CHECK(item.trade.netting_set_id == "CPTY_A");
     }
 }
 
@@ -162,14 +162,14 @@ TEST_CASE("import_portfolio_from_minimal_swaptions", tags) {
         "examples/MinimalSetup/Input/portfolio_swaptions.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
-    const auto trades = importer::import_portfolio(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << trades.size() << " trades";
+    const auto items = importer::import_portfolio_with_context(f);
+    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
-    REQUIRE(!trades.empty());
+    REQUIRE(!items.empty());
 
     // All trades should be Swaptions.
-    for (const auto& t : trades) {
-        CHECK(t.trade_type == "Swaption");
+    for (const auto& item : items) {
+        CHECK(item.trade.trade_type == "Swaption");
     }
 }
 
@@ -177,16 +177,16 @@ TEST_CASE("import_portfolio_all_trades_pass_validation", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
-    const auto trades = importer::import_portfolio(f);
-    REQUIRE(!trades.empty());
+    const auto items = importer::import_portfolio_with_context(f);
+    REQUIRE(!items.empty());
 
-    for (const auto& t : trades) {
-        const auto errors = importer::validate_trade(t);
-        INFO("Trade " << t.external_id << " failed validation: " << errors);
+    for (const auto& item : items) {
+        const auto errors = importer::validate_trade(item.trade);
+        INFO("Trade " << item.trade.external_id << " failed validation: " << errors);
         CHECK(errors.empty());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "All " << trades.size()
+    BOOST_LOG_SEV(lg, debug) << "All " << items.size()
                              << " imported trades pass validation";
 }
 
@@ -222,9 +222,9 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
         BOOST_LOG_SEV(lg, info) << "Importing: " << file;
         const auto t0 = std::chrono::steady_clock::now();
 
-        std::vector<trade> trades;
+        std::vector<trade_import_item> items;
         try {
-            trades = importer::import_portfolio(file);
+            items = importer::import_portfolio_with_context(file);
         } catch (const std::exception& e) {
             FAIL_CHECK("Exception importing " << file.filename()
                        << ": " << e.what());
@@ -234,14 +234,14 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - t0).count();
 
-        trade_count += static_cast<int>(trades.size());
+        trade_count += static_cast<int>(items.size());
         BOOST_LOG_SEV(lg, info) << file.filename() << " -> "
-                                << trades.size() << " trades in " << ms << "ms";
+                                << items.size() << " trades in " << ms << "ms";
 
-        for (const auto& t : trades) {
-            const auto errors = importer::validate_trade(t);
+        for (const auto& item : items) {
+            const auto errors = importer::validate_trade(item.trade);
             INFO("File: " << file.filename()
-                 << "  Trade: " << t.external_id);
+                 << "  Trade: " << item.trade.external_id);
             CHECK(errors.empty());
         }
     }

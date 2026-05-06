@@ -69,7 +69,7 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
-    void openEdit(const trading::messaging::trade_export_item& bundle);
+    void openEdit(const trading::domain::trade& trade);
 
 signals:
     void statusMessage(const QString& message);
@@ -79,7 +79,7 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const trading::messaging::trade_export_item& bundle);
+    void onShowDetails(const trading::domain::trade& trade);
     void onAddNewRequested();
     void onShowHistory(const trading::domain::trade& trade);
     void onImportTradesRequested();

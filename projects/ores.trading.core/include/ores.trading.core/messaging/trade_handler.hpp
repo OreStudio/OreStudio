@@ -440,13 +440,7 @@ public:
                     node = gen(req->node_id);
                 }
                 auto trades = svc.list_trades_by_node(offset, limit, node);
-                resp.items.reserve(trades.size());
-                for (auto& t : trades) {
-                    trade_export_item item;
-                    item.trade = t;
-                    populate_instrument_for_trade(ctx, t, item);
-                    resp.items.push_back(std::move(item));
-                }
+                resp.trades = std::move(trades);
                 resp.total_available_count =
                     static_cast<int>(svc.count_trades_by_node(node));
             }
@@ -455,7 +449,7 @@ public:
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
-            resp.items.clear();
+            resp.trades.clear();
             resp.total_available_count = 0;
         }
         BOOST_LOG_SEV(trade_handler_lg(), debug)
@@ -559,6 +553,43 @@ public:
             BOOST_LOG_SEV(trade_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
+    }
+
+    void detail(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::trade_service svc(ctx);
+        get_trade_detail_response resp;
+        try {
+            if (auto req = decode<get_trade_detail_request>(msg)) {
+                auto trade_opt = svc.find_trade(req->trade_id);
+                if (!trade_opt) {
+                    resp.success = false;
+                    resp.message = "Trade not found: " + req->trade_id;
+                } else {
+                    resp.trade = std::move(*trade_opt);
+                    trade_export_item item;
+                    populate_instrument_for_trade(ctx, resp.trade, item);
+                    resp.instrument = std::move(item.instrument);
+                    resp.success = true;
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
     void export_portfolio(ores::nats::message msg) {

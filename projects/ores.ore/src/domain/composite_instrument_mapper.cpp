@@ -21,11 +21,13 @@
 
 #include <map>
 #include <stdexcept>
+#include "ores.trading.api/domain/composite_leg.hpp"
 
 namespace ores::ore::domain {
 
 using namespace ores::logging;
 using ores::trading::domain::composite_instrument;
+using ores::trading::domain::composite_leg;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -150,6 +152,21 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
+composite_leg make_composite_leg(
+        const compositeTradeComponents_Trade_t& comp, int seq) {
+    composite_leg leg;
+    leg.leg_sequence = seq;
+    if (comp.id)
+        leg.constituent_trade_id = std::string(*comp.id);
+    else
+        leg.constituent_trade_id = to_string(comp.TradeType);
+    leg.modified_by         = "ores";
+    leg.performed_by        = "ores";
+    leg.change_reason_code  = "system.external_data_import";
+    leg.change_commentary   = "Imported from ORE XML";
+    return leg;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -167,6 +184,12 @@ composite_instrument_mapper::forward_composite_trade(const trade& t) {
 
     if (d.BasketName)
         result.instrument.description = std::string(*d.BasketName);
+
+    if (d.Components) {
+        int seq = 1;
+        for (const auto& comp : d.Components->Trade)
+            result.legs.push_back(make_composite_leg(comp, seq++));
+    }
     return result;
 }
 

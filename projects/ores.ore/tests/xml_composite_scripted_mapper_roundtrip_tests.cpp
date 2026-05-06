@@ -123,3 +123,24 @@ TEST_CASE("composite_mapper_roundtrip_composite_trade", tags) {
 
     BOOST_LOG_SEV(lg, info) << "CompositeTrade roundtrip passed.";
 }
+
+TEST_CASE("composite_mapper_components_populate_legs", tags) {
+    auto lg(make_logger(test_suite));
+    const auto r = load_and_map_composite("Hybrid_CompositeTrade.xml");
+
+    // Hybrid_CompositeTrade.xml has two component trades under <Components>.
+    REQUIRE(r.legs.size() == 2);
+
+    // Legs are 1-based and ordered.
+    CHECK(r.legs[0].leg_sequence == 1);
+    CHECK(r.legs[1].leg_sequence == 2);
+
+    // Each leg carries a constituent trade identifier.
+    for (const auto& leg : r.legs) {
+        CHECK(!leg.constituent_trade_id.empty());
+        CHECK(leg.change_reason_code == "system.external_data_import");
+    }
+
+    BOOST_LOG_SEV(lg, info) << "CompositeTrade legs populated: "
+                            << r.legs.size();
+}

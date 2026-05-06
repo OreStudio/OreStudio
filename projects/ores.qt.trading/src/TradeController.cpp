@@ -150,15 +150,22 @@ void TradeController::reloadListWindow() {
     }
 }
 
-void TradeController::openEdit(
-    const trading::messaging::trade_export_item& bundle) {
-    showDetailWindow(bundle);
+void TradeController::openEdit(const trading::domain::trade& trade) {
+    onShowDetails(trade);
 }
 
-void TradeController::onShowDetails(
-    const trading::messaging::trade_export_item& bundle) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << bundle.trade.external_id;
-    showDetailWindow(bundle);
+void TradeController::onShowDetails(const trading::domain::trade& trade) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;
+    const auto id = boost::uuids::to_string(trade.id);
+    auto bundle_opt = clientManager_->getTradeDetail(id);
+    if (!bundle_opt) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch detail for trade: " << trade.external_id;
+        emit errorMessage(tr("Could not load instrument data for trade '%1'.")
+            .arg(QString::fromStdString(trade.external_id)));
+        return;
+    }
+    showDetailWindow(*bundle_opt);
 }
 
 void TradeController::onAddNewRequested() {

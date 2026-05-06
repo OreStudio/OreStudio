@@ -32,7 +32,7 @@
 namespace ores::trading::domain {
 
 template<typename T>
-concept Instrument = std::regular<T> && requires(T t) {
+concept Instrument = requires(T t) {
     { t.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
     t.trade_id;
 };

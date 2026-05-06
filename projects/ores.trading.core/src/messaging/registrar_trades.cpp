@@ -67,6 +67,13 @@ register_trade_handlers(ores::nats::service::client& nats,
         }));
 
     subs.push_back(nats.queue_subscribe(
+        std::string(get_trade_detail_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.detail(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
         std::string(export_portfolio_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             trade_handler h(nats, ctx, verifier);

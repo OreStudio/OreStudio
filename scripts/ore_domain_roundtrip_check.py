@@ -136,11 +136,14 @@ def run_check(repo_root: Path, strict: bool) -> int:
         return 1
 
     # Collect all original portfolio XML files (files containing <Portfolio>).
+    # Read only the first 4 KiB — enough to find the root tag without loading
+    # large files into memory.
     orig_files: list[Path] = []
     for p in sorted(orig_root.rglob("*.xml")):
         try:
-            text = p.read_bytes()
-            if b"<Portfolio>" in text:
+            with p.open("rb") as fh:
+                chunk = fh.read(4096)
+            if b"<Portfolio>" in chunk:
                 orig_files.append(p)
         except OSError:
             pass
@@ -230,6 +233,10 @@ def run_check(repo_root: Path, strict: bool) -> int:
 
     print()
 
+    # Passthrough trades are intentionally unmapped trade types whose instruments
+    # are not yet handled by any mapper (monostate).  They are expected and do
+    # not constitute a CI failure; only partial coverage and missing output files
+    # are considered regressions that --strict should catch.
     has_problems = bool(partial_trades or missing_outputs)
     if has_problems and strict:
         print("STRICT MODE: partial or missing outputs found — exiting with code 1",

@@ -424,8 +424,15 @@ roundtrip_summary exporter::roundtrip_portfolio(
 
         const std::string xml = export_portfolio(export_items);
         const auto out_path = output_dir / fs::relative(file, input_dir);
-        fs::create_directories(out_path.parent_path());
-        platform::filesystem::file::write_content(out_path, xml);
+        try {
+            fs::create_directories(out_path.parent_path());
+            platform::filesystem::file::write_content(out_path, xml);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to write " << out_path
+                                      << ": " << e.what();
+            ++summary.skipped;
+            continue;
+        }
         ++summary.output_files_written;
 
         BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;

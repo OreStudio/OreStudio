@@ -23,6 +23,7 @@
 #include <chrono>
 #include <algorithm>
 #include <filesystem>
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/project_root.hpp"
@@ -259,15 +260,21 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("IR_Swap_Vanilla.xml");
-    const auto items = importer::import_portfolio_with_context(f);
+    auto items = importer::import_portfolio_with_context(f);
     REQUIRE(items.size() == 1);
 
-    const auto& item = items.front();
+    auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
     REQUIRE(std::holds_alternative<swap_instrument_data>(item.instrument));
 
+    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    boost::uuids::random_generator gen;
+    item.trade.id = gen();
+    const auto instr_uuid = gen();
+    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.id);
+    item.trade.instrument_id = instr_uuid;
+
     const auto& r = std::get<swap_instrument_data>(item.instrument);
-    // Extract instrument_id from the inner variant.
     const auto instr_id = std::visit(
         [](const auto& instr) { return instr.instrument_id; }, r.instrument);
     const auto trade_id_opt = std::visit(
@@ -288,20 +295,23 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("FX_Forward.xml");
-    const auto items = importer::import_portfolio_with_context(f);
+    auto items = importer::import_portfolio_with_context(f);
     REQUIRE(items.size() == 1);
 
-    const auto& item = items.front();
+    auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
     REQUIRE(std::holds_alternative<fx_instrument_variant>(item.instrument));
+
+    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    boost::uuids::random_generator gen;
+    item.trade.id = gen();
+    const auto instr_uuid = gen();
+    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.id);
+    item.trade.instrument_id = instr_uuid;
 
     const auto& r = std::get<fx_instrument_variant>(item.instrument);
     const auto& instr = std::get<fx_forward_instrument>(r);
     CHECK(instr.instrument_id != item.trade.id);
-    // trade.id is nil at this stage (planner mints later). The back-reference
-    // must still be wired to the current trade.id value so
-    // importer::rewire_instrument_trade_id can propagate the minted UUID
-    // through item.instrument without having to reconstruct the optional.
     REQUIRE(instr.trade_id.has_value());
     CHECK(*instr.trade_id == item.trade.id);
     CHECK(item.trade.instrument_id == instr.instrument_id);
@@ -318,13 +328,20 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("Cash_Bonds.xml");
-    const auto items = importer::import_portfolio_with_context(f);
+    auto items = importer::import_portfolio_with_context(f);
     REQUIRE(!items.empty());
 
     // First trade in the portfolio must be a bond.
-    const auto& item = items.front();
+    auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
     REQUIRE(std::holds_alternative<bond_instrument>(item.instrument));
+
+    // Mint UUIDs as the planner would; tests verify the wiring is correct.
+    boost::uuids::random_generator gen;
+    item.trade.id = gen();
+    const auto instr_uuid = gen();
+    ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.id);
+    item.trade.instrument_id = instr_uuid;
 
     const auto& r = std::get<bond_instrument>(item.instrument);
     CHECK(r.instrument_id != item.trade.id);

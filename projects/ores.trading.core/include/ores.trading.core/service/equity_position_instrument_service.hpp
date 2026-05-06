@@ -30,9 +30,6 @@
 namespace ores::trading::service {
 
 class equity_position_instrument_service {
-    std::vector<domain::equity_position_instrument>
-    get_equity_position_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_position_instrument_service";
@@ -52,6 +49,9 @@ public:
     get_equity_position_instrument(const std::string& id);
 
     void save_equity_position_instrument(const domain::equity_position_instrument& v);
+
+    std::vector<domain::equity_position_instrument>
+    get_equity_position_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

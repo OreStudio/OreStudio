@@ -36,9 +36,6 @@ namespace ores::trading::service {
  * @brief Service for managing composite instruments.
  */
 class composite_instrument_service {
-    std::vector<domain::composite_instrument>
-    get_composite_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.composite_instrument_service";
@@ -77,6 +74,9 @@ public:
 
     std::vector<domain::composite_instrument>
     get_composite_instrument_history(const std::string& id);
+
+    std::vector<domain::composite_instrument>
+    get_composite_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

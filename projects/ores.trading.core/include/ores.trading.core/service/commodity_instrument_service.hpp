@@ -34,9 +34,6 @@ namespace ores::trading::service {
  * @brief Service for managing commodity instruments.
  */
 class commodity_instrument_service {
-    std::vector<domain::commodity_instrument>
-    get_commodity_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.commodity_instrument_service";
@@ -68,6 +65,9 @@ public:
 
     std::vector<domain::commodity_instrument>
     get_commodity_instrument_history(const std::string& id);
+
+    std::vector<domain::commodity_instrument>
+    get_commodity_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

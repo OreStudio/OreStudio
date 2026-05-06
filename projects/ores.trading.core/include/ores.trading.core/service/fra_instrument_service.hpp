@@ -36,9 +36,6 @@ namespace ores::trading::service {
  * @brief Service for managing FRA instruments.
  */
 class fra_instrument_service {
-    std::vector<domain::fra_instrument>
-    get_fra_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fra_instrument_service";
@@ -82,6 +79,9 @@ public:
 
     std::vector<domain::swap_leg>
     get_swap_legs_batch(const std::vector<std::string>& instrument_ids);
+
+    std::vector<domain::fra_instrument>
+    get_fra_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

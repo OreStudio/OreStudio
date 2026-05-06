@@ -30,9 +30,6 @@
 namespace ores::trading::service {
 
 class fx_variance_swap_instrument_service {
-    std::vector<domain::fx_variance_swap_instrument>
-    get_fx_variance_swap_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_variance_swap_instrument_service";
@@ -53,6 +50,9 @@ public:
 
     void save_fx_variance_swap_instrument(
         const domain::fx_variance_swap_instrument& v);
+
+    std::vector<domain::fx_variance_swap_instrument>
+    get_fx_variance_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

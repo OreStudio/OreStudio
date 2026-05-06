@@ -30,9 +30,6 @@
 namespace ores::trading::service {
 
 class fx_forward_instrument_service {
-    std::vector<domain::fx_forward_instrument>
-    get_fx_forward_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_forward_instrument_service";
@@ -52,6 +49,9 @@ public:
     get_fx_forward_instrument(const std::string& id);
 
     void save_fx_forward_instrument(const domain::fx_forward_instrument& v);
+
+    std::vector<domain::fx_forward_instrument>
+    get_fx_forward_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

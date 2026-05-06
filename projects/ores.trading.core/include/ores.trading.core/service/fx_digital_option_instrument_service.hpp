@@ -30,9 +30,6 @@
 namespace ores::trading::service {
 
 class fx_digital_option_instrument_service {
-    std::vector<domain::fx_digital_option_instrument>
-    get_fx_digital_option_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_digital_option_instrument_service";
@@ -53,6 +50,9 @@ public:
 
     void save_fx_digital_option_instrument(
         const domain::fx_digital_option_instrument& v);
+
+    std::vector<domain::fx_digital_option_instrument>
+    get_fx_digital_option_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

@@ -34,9 +34,6 @@ namespace ores::trading::service {
  * @brief Service for managing knock-out swap instruments.
  */
 class knock_out_swap_instrument_service {
-    std::vector<domain::knock_out_swap_instrument>
-    get_knock_out_swap_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.knock_out_swap_instrument_service";
@@ -70,6 +67,9 @@ public:
 
     std::vector<domain::knock_out_swap_instrument>
     get_knock_out_swap_instrument_history(const std::string& id);
+
+    std::vector<domain::knock_out_swap_instrument>
+    get_knock_out_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

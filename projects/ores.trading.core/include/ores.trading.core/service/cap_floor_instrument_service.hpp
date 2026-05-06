@@ -34,9 +34,6 @@ namespace ores::trading::service {
  * @brief Service for managing cap/floor instruments.
  */
 class cap_floor_instrument_service {
-    std::vector<domain::cap_floor_instrument>
-    get_cap_floor_instruments(const std::vector<std::string>& ids);
-
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.cap_floor_instrument_service";
@@ -68,6 +65,9 @@ public:
 
     std::vector<domain::cap_floor_instrument>
     get_cap_floor_instrument_history(const std::string& id);
+
+    std::vector<domain::cap_floor_instrument>
+    get_cap_floor_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

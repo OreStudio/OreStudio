@@ -1,5 +1,8 @@
 #+title: ORE Import / Export Code Cleanup
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+status: COMPLETE
+#+completed: 2026-05-06
+#+pr: https://github.com/OreStudio/OreStudio/pull/728
 
 * Overview
 

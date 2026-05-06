@@ -52,4 +52,11 @@ void fx_forward_instrument_service::save_fx_forward_instrument(
                               << t.instrument_id;
 }
 
+
+std::vector<domain::fx_forward_instrument>
+fx_forward_instrument_service::get_fx_forward_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

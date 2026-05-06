@@ -145,4 +145,21 @@ void composite_leg_repository::remove_by_instrument(
         "Removing composite legs for instrument from database.");
 }
 
+
+std::vector<domain::composite_leg>
+composite_leg_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids)
+              && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c, "leg_sequence"_c);
+    return execute_read_query<composite_leg_entity, domain::composite_leg>(
+        ctx, query,
+        [](const auto& entities) { return composite_leg_mapper::map(entities); },
+        lg(), "Reading composite legs for multiple instruments.");
+}
+
 }

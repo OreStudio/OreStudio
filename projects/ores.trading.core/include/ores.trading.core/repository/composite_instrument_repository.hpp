@@ -61,6 +61,9 @@ public:
 
     std::uint32_t count_latest(context ctx);
 
+    std::vector<domain::composite_instrument>
+    read_latest(context ctx, const std::vector<std::string>& ids);
+
     void remove(context ctx, const std::string& id);
 };
 

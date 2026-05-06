@@ -30,6 +30,9 @@
 namespace ores::trading::service {
 
 class equity_asian_option_instrument_service {
+    std::vector<domain::equity_asian_option_instrument>
+    get_equity_asian_option_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_asian_option_instrument_service";

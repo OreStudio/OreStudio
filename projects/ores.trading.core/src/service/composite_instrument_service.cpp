@@ -104,4 +104,18 @@ composite_instrument_service::get_composite_instrument_history(const std::string
     return repo_.read_all(ctx_, id);
 }
 
+
+std::vector<domain::composite_instrument>
+composite_instrument_service::get_composite_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
+
+std::vector<domain::composite_leg>
+composite_instrument_service::get_legs_batch(
+    const std::vector<std::string>& instrument_ids) {
+    return leg_repo_.read_by_instruments_batch(ctx_, instrument_ids);
+}
+
 }

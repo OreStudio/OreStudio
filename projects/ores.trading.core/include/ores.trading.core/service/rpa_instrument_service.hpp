@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing RPA instruments.
  */
 class rpa_instrument_service {
+    std::vector<domain::rpa_instrument>
+    get_rpa_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.rpa_instrument_service";

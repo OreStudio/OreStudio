@@ -59,6 +59,10 @@ public:
 
     std::uint32_t count_latest(context ctx);
 
+    std::vector<domain::swap_leg>
+    read_by_instruments_batch(
+        context ctx, const std::vector<std::string>& instrument_ids);
+
     void remove(context ctx, const std::string& id);
     void remove_by_instrument(context ctx, const std::string& instrument_id);
 };

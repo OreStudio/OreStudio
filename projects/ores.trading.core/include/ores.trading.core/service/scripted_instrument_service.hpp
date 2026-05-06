@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing scripted instruments.
  */
 class scripted_instrument_service {
+    std::vector<domain::scripted_instrument>
+    get_scripted_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.scripted_instrument_service";

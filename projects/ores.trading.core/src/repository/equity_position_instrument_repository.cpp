@@ -106,4 +106,20 @@ void equity_position_instrument_repository::remove(
     execute_delete_query(ctx, query, lg(), "Removing equity position instrument from database.");
 }
 
+
+std::vector<domain::equity_position_instrument>
+equity_position_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<equity_position_instrument_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<equity_position_instrument_entity, domain::equity_position_instrument>(
+        ctx, query,
+        [](const auto& entities) { return equity_position_instrument_mapper::map(entities); },
+        lg(), "Reading latest equity_position_instruments by ids.");
+}
+
 }

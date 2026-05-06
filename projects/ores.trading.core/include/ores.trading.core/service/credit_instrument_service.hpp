@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing credit instruments.
  */
 class credit_instrument_service {
+    std::vector<domain::credit_instrument>
+    get_credit_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.credit_instrument_service";

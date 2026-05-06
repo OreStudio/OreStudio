@@ -102,4 +102,20 @@ void vanilla_swap_instrument_repository::remove(context ctx, const std::string& 
     execute_delete_query(ctx, query, lg(), "Removing vanilla swap instrument from database.");
 }
 
+
+std::vector<domain::vanilla_swap_instrument>
+vanilla_swap_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<vanilla_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<vanilla_swap_instrument_entity, domain::vanilla_swap_instrument>(
+        ctx, query,
+        [](const auto& entities) { return vanilla_swap_instrument_mapper::map(entities); },
+        lg(), "Reading latest vanilla_swap_instruments by ids.");
+}
+
 }

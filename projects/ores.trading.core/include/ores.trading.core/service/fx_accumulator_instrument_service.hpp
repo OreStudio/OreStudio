@@ -30,6 +30,9 @@
 namespace ores::trading::service {
 
 class fx_accumulator_instrument_service {
+    std::vector<domain::fx_accumulator_instrument>
+    get_fx_accumulator_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_accumulator_instrument_service";

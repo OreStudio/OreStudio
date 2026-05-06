@@ -30,6 +30,9 @@
 namespace ores::trading::service {
 
 class equity_variance_swap_instrument_service {
+    std::vector<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_variance_swap_instrument_service";

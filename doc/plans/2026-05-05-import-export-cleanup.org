@@ -1,0 +1,581 @@
+#+title: ORE Import / Export Code Cleanup
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+The import and export paths are critical production paths: import is
+triggered by the ORE import workflow; export drives both the UI
+portfolio view and the compute-grid storage job. Both paths have
+accumulated design issues that affect correctness, performance, and
+maintainability.
+
+This plan addresses nine problems across six phases. One phase
+introduces a new NATS subject; all other changes are internal.
+
+* Problems identified
+
+** P1 — Duplicate and misplaced type hierarchy
+
+Two parallel sets of instrument carrier types exist:
+
+| Import side (=ores.ore::domain=) | Export side (=ores.trading.api::messaging=) |
+|----------------------------------+---------------------------------------------|
+| =swap_mapping_result=            | =swap_export_result=                        |
+| =fx_mapping_result=              | =fx_export_result=                          |
+| =bond_mapping_result=            | =bond_export_result=                        |
+| =credit_mapping_result=          | =credit_export_result=                      |
+| =equity_mapping_result=          | =equity_export_result=                      |
+| =commodity_mapping_result=       | =commodity_export_result=                   |
+| =scripted_mapping_result=        | =scripted_export_result=                    |
+
+Seven of the eight pairs are structurally identical field-for-field.
+The eighth (composite) differs only because the mapping side is missing
+=legs= (see P3). Any code that crosses the boundary needs a mechanical
+bridge or a duplicated dispatch table.
+
+Beyond the duplication, the types are in the wrong place:
+=*_export_result= lives in =ores.trading.api::messaging=, but these
+types carry no wire-protocol concerns — they are pure domain data. They
+belong in =ores.trading.api::domain=.
+
+The fix is not type aliases. Both sets are deleted and replaced by a
+single authoritative type hierarchy defined once in the domain layer.
+
+** P2 — No =Instrument= concept; cross-cutting operations use ad-hoc visitors
+
+Operations that apply uniformly to every instrument — stamping
+=instrument_id= / =trade_id=, validating required fields — are
+implemented as per-family if-else chains or multi-arm =std::visit=
+blocks scattered across =importer.cpp=, =assign_instrument_id=, and
+=rewire_instrument_trade_id=. There is no compile-time expression of
+what it means to be an instrument.
+
+** P3 — Composite legs dropped on import
+
+The composite mapper produces a result with only =composite_instrument=.
+The XSD =<CompositeTrade>= element carries =<Components>= sub-elements
+that become =composite_leg= records. Because the importer never reads
+=<Components>=, composite legs are silently dropped at import time —
+they are never saved and therefore never available on export.
+
+** P4 — UUID minting in the wrong layer
+
+=importer::import_portfolio_with_context= generates UUIDs for
+=instrument_id= and =trade_id= internally. =ore_import_planner::plan()=
+immediately overwrites both with freshly generated UUIDs and then calls
+=rewire_instrument_trade_id= and =assign_instrument_id= to propagate
+them. The importer-generated UUIDs are discarded on every call.
+
+The importer is a parser; UUID minting is a planner responsibility.
+This misplacement produced two unnecessary utility methods
+(=rewire_instrument_trade_id=, =assign_instrument_id=) whose sole
+purpose is to patch up back-references after the planner re-mints IDs.
+
+** P5 — N+1 DB queries on bulk export
+
+=populate_instrument_for_trade= is called once per trade in two
+handlers:
+
+- =export_portfolio=: one DB call per trade in the page.
+- =export_trades_to_storage=: fetches up to 100 000 trades then makes
+  one DB call per trade, plus a second call per swap trade for legs.
+
+A 1000-trade export makes at minimum 1000 sequential DB round-trips.
+The handler also carries a 340-line if-else routing chain that
+duplicates the logic in =trade_mapper=, requiring every new trade type
+to be registered in two places.
+
+** P6 — =export_trades_to_storage= unbounded memory
+
+The handler issues =list_trades_by_node(0, 100000, ...)= — a hardcoded
+limit loading all trades into memory before any instrument fetch begins.
+
+** P7 — =import_portfolio= without context is redundant
+
+=importer::import_portfolio(path)= maps trades and discards instrument
+mappings entirely. No production caller uses it; the planner always
+uses =import_portfolio_with_context=.
+
+** P8 — =instrument_id= field-name inconsistency across domain structs
+
+Per-type variant families (swap, FX, equity) use =instrument_id=;
+flat-instrument families (bond, credit, commodity, scripted, composite)
+use =id=. This inconsistency makes generic operations over all
+instruments impossible without family-specific branching.
+
+** P9 — Trade list bundles instrument data that is rarely used
+
+=get_trades_request= returns =trade_export_item= bundles — trade
+metadata plus the full instrument for every trade in the page. The
+client caches these bundles and uses the cached instrument when the user
+opens a trade detail dialog, eliminating a second round-trip.
+
+The cost is that every list request triggers N individual DB instrument
+fetches (one per trade in the page) even though the user typically opens
+only a small fraction of the trades they scan. This is the primary
+source of the N+1 problem on the read path.
+
+The right split:
+- Trade list → metadata only (fast, single query).
+- Trade detail → one instrument fetch on demand, triggered when the
+  user opens a trade.
+
+* Non-goals
+
+- No rewrite of individual forward or reverse mapper functions.
+- No changes to the scanner (=ore_directory_scanner=) classification.
+- No parallel or async DB execution; batch queries achieve the required
+  performance within the synchronous model.
+- No SQL schema changes; =id= vs =instrument_id= column names are
+  resolved in the entity/mapper layer, not by migration.
+
+* Constraints
+
+- Phases must land in order: Phase 1 (new type hierarchy) is a
+  prerequisite for all later phases.
+- All phases build cleanly and pass the existing test suite.
+- No backwards-compatibility shims. All consumers of deleted types and
+  methods are updated in the same commit.
+
+* Phase plan
+
+** Phase 1 — New domain type hierarchy: =Instrument= concept + =trade_instrument=
+
+This phase replaces both the =*_mapping_result= and =*_export_result=
+families with a single authoritative set of types in
+=ores.trading.api/domain/=. It is purely additive; deletions of the old
+types happen once all consumers are migrated at the end of this phase.
+
+*** 1a — Define the =Instrument= concept
+
+New file: =ores.trading.api/include/ores.trading.api/domain/instrument.hpp=
+
+#+begin_src cpp
+  namespace ores::trading::domain {
+
+  /**
+   * @brief Satisfied by every concrete per-type instrument struct.
+   *
+   * Requires value-type semantics and the two cross-cutting UUID fields
+   * that all instruments carry regardless of family.
+   */
+  template<typename T>
+  concept Instrument = std::regular<T> && requires(T t) {
+      { t.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
+      { t.trade_id }      -> std::convertible_to<boost::uuids::uuid>;
+  };
+
+  } // namespace
+#+end_src
+
+Verify that every existing concrete instrument struct (=fx_forward_instrument=,
+=vanilla_swap_instrument=, =bond_instrument=, etc.) satisfies the concept
+with =static_assert=. Any that do not must have =instrument_id= and
+=trade_id= fields added (see also Phase 5).
+
+*** 1b — Define =with_legs<T, Leg>= for families with associated collections
+
+In the same header or a sibling =instrument_legs.hpp=:
+
+#+begin_src cpp
+  /**
+   * @brief Pairs an instrument with its associated leg collection.
+   *
+   * Used for swap (rates) and composite families, which carry structured
+   * sub-rows alongside the primary instrument record.
+   */
+  template<typename T, typename Leg>
+  struct with_legs {
+      T instrument;
+      std::vector<Leg> legs;
+  };
+
+  using swap_instrument_data      = with_legs<rates_instrument_variant, swap_leg>;
+  using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
+#+end_src
+
+Generic UUID stamping using the concept:
+
+#+begin_src cpp
+  template<Instrument T>
+  void stamp_ids(T& instr,
+                 boost::uuids::uuid instrument_id,
+                 boost::uuids::uuid trade_id) {
+      instr.instrument_id = instrument_id;
+      instr.trade_id      = trade_id;
+  }
+
+  template<Instrument T, typename Leg>
+  void stamp_ids(with_legs<T, Leg>& data,
+                 boost::uuids::uuid instrument_id,
+                 boost::uuids::uuid trade_id) {
+      stamp_ids(data.instrument, instrument_id, trade_id);
+      for (auto& leg : data.legs)
+          leg.instrument_id = instrument_id;
+  }
+#+end_src
+
+For inner-variant families (FX, equity, rates) where the =instrument=
+field is itself a variant, =stamp_ids= requires an overload that
+dispatches with a concept-constrained lambda:
+
+#+begin_src cpp
+  template<typename... Ts>
+      requires (Instrument<Ts> && ...)
+  void stamp_ids(std::variant<Ts...>& v,
+                 boost::uuids::uuid instrument_id,
+                 boost::uuids::uuid trade_id) {
+      std::visit([&]<Instrument I>(I& instr) {
+          stamp_ids(instr, instrument_id, trade_id);
+      }, v);
+  }
+#+end_src
+
+*** 1c — Define =trade_instrument= unified carrier
+
+New file:
+=ores.trading.api/include/ores.trading.api/domain/trade_instrument.hpp=
+
+#+begin_src cpp
+  namespace ores::trading::domain {
+
+  /**
+   * @brief Unified instrument carrier used in both import and export paths.
+   *
+   * std::monostate — trade has no instrument (unsupported type or new trade).
+   * All other alternatives are mutually exclusive; exactly one is active.
+   *
+   * Families with associated leg collections (swap, composite) use
+   * with_legs<> wrappers. Families with multiple sub-types (FX, equity,
+   * rates) use their existing inner variant. Single-type families carry
+   * the domain struct directly.
+   */
+  using trade_instrument = std::variant<
+      std::monostate,
+      swap_instrument_data,            // rates family: instrument + legs
+      fx_instrument_variant,           // FX family: 7 sub-types
+      bond_instrument,                 // bond
+      credit_instrument,               // credit
+      equity_instrument_variant,       // equity family: 9 sub-types
+      commodity_instrument,            // commodity
+      composite_instrument_data,       // composite: instrument + legs
+      scripted_instrument              // scripted
+  >;
+
+  } // namespace
+#+end_src
+
+=stamp_ids= for the full carrier dispatches to the overloads above:
+
+#+begin_src cpp
+  void stamp_ids(trade_instrument& ti,
+                 boost::uuids::uuid instrument_id,
+                 boost::uuids::uuid trade_id) {
+      std::visit([&]<typename T>(T& v) {
+          if constexpr (!std::is_same_v<T, std::monostate>)
+              stamp_ids(v, instrument_id, trade_id);
+      }, ti);
+  }
+#+end_src
+
+*** 1d — Replace =trade_import_item.instrument= and =trade_export_item.instrument=
+
+In =importer.hpp=, change =trade_import_item.instrument= from
+=domain::instrument_mapping_result= to =trading::domain::trade_instrument=.
+
+In =trade_protocol.hpp=, change =trade_export_item.instrument= from
+=trading::messaging::instrument_export_result= to
+=trading::domain::trade_instrument=.
+
+Both types now carry the same =trade_instrument= field — no bridge
+required anywhere.
+
+*** 1e — Update all mapper return types
+
+In each =*_instrument_mapper.hpp=, change the return type of every
+=forward_*= method from =*_mapping_result= to the corresponding
+=trade_instrument= alternative directly (or construct a
+=trade_instrument= at the call site in =trade_mapper=). Delete all
+=*_mapping_result= structs.
+
+In =trade_mapper.hpp=, =instrument_mapping_result= becomes:
+
+#+begin_src cpp
+  using instrument_mapping_result = trading::domain::trade_instrument;
+#+end_src
+
+Or remove the alias entirely and use =trade_instrument= directly.
+
+*** 1f — Delete old type families
+
+Delete:
+- All =*_mapping_result= structs from =ores.ore::domain=.
+- All =*_export_result= structs from =ores.trading.api::messaging=
+  (=instrument_protocol.hpp=) along with =instrument_export_result=.
+
+Update all includes. The compiler enforces completeness.
+
+** Phase 2 — Fix composite legs gap in the importer
+
+*** 2a — Extend =composite_instrument_mapper=
+
+The =composite_instrument_data= wrapper (from Phase 1) already provides
+the =legs= field. The mapper must now populate it.
+
+In =composite_instrument_mapper.cpp=, after reading
+=composite_instrument= fields, read =<Components>= from the XSD and
+populate =result.legs= with =composite_leg= records. Mirror the pattern
+in =swap_instrument_mapper= which reads legs into
+=swap_instrument_data.legs=.
+
+*** 2b — Update =stamp_ids= call in importer
+
+The composite branch in =import_portfolio_with_context= stamps
+=result.instrument.id= today. After Phase 1 it uses the generic
+=stamp_ids= overload which handles both instrument and legs uniformly —
+no bespoke branch needed.
+
+*** 2c — Tests
+
+Add or extend existing composite roundtrip tests to assert that legs
+are populated after a forward mapping.
+
+** Phase 3 — Pure parser: remove UUID minting from the importer
+
+*** 3a — Strip UUID generation from =import_portfolio_with_context=
+
+Remove =boost::uuids::random_generator gen= and all UUID / =product_type=
+assignment lines from the =std::visit= block. Returned
+=trade_import_item= objects carry nil UUIDs.
+
+=product_type= stamping: verify whether any downstream caller reads
+=product_type= before the planner mints IDs. If so, keep just that
+stamp and document the dependency. Otherwise remove it too.
+
+*** 3b — Mint UUIDs in the planner
+
+=ore_import_planner::plan()= already generates =trade.id= and calls the
+now-deleted helpers. Replace with direct use of =stamp_ids=:
+
+#+begin_src cpp
+  item.trade.id = uuid_gen();
+  const auto instr_id = uuid_gen();
+  stamp_ids(item.instrument, instr_id, item.trade.id);
+  item.trade.instrument_id = instr_id;
+#+end_src
+
+The generic =stamp_ids= (Phase 1) handles all families uniformly with
+no per-family branching in the planner.
+
+*** 3c — Delete =rewire_instrument_trade_id= and =assign_instrument_id=
+
+No callers remain. Delete from =importer.hpp= and =importer.cpp=.
+
+*** 3d — Delete =import_portfolio= without context
+
+Delete =importer::import_portfolio(path)= and update its test to use
+=import_portfolio_with_context= instead.
+
+** Phase 4 — Batch-fetch instruments on bulk export (fix N+1)
+
+This phase applies to =export_portfolio= and =export_trades_to_storage=
+— the paths that need all instruments for a set of trades. The on-demand
+detail fetch (Phase 6) removes the N+1 from the UI list path.
+
+*** 4a — Add =InstrumentService= concept
+
+#+begin_src cpp
+  template<typename S, typename T>
+  concept InstrumentService =
+      Instrument<T> &&
+      requires(S s, const std::vector<std::string>& ids) {
+          { s.get_instruments(ids) } -> std::same_as<std::vector<T>>;
+      };
+#+end_src
+
+All per-type services will satisfy this concept after 4b.
+
+*** 4b — Add batch =get_instruments= to every per-type service
+
+Each per-type service gains:
+
+#+begin_src cpp
+  std::vector<instrument_type> get_instruments(
+      const std::vector<std::string>& ids);
+#+end_src
+
+SQL pattern (same for all):
+
+#+begin_src sql
+  SELECT * FROM ores_trading_<type>_instruments_tbl
+  WHERE instrument_id = ANY($1::uuid[])
+#+end_src
+
+Services requiring batch leg fetch (=fra_instrument_service=,
+=composite_instrument_service=) additionally gain:
+
+#+begin_src cpp
+  std::map<std::string, std::vector<leg_type>>
+  get_legs_for_instruments(const std::vector<std::string>& ids);
+#+end_src
+
+SQL: =WHERE instrument_id = ANY($1::uuid[])=; results grouped by
+=instrument_id= in the service layer.
+
+*** 4c — New =populate_instruments_for_trades= batch method
+
+Replace =populate_instrument_for_trade= (per-item) with:
+
+#+begin_src cpp
+  template<typename Ctx>
+  static void populate_instruments_for_trades(
+      const Ctx& ctx,
+      std::vector<trade_bundle>& items);
+#+end_src
+
+Algorithm:
+1. Group =items= by =(product_type, trade_type_code)=; collect
+   instrument UUID strings per group.
+2. For each group, call the batch service method (4b) → build a
+   =map<string, trade_instrument>= from results.
+3. Walk =items= a second time; look up each instrument by UUID and set
+   =item.instrument=.
+
+Result: one DB query per represented instrument type in the portfolio,
+regardless of how many trades of that type exist.
+
+*** 4d — Fix =export_trades_to_storage= pagination
+
+Replace the hardcoded =list_trades_by_node(0, 100000, ...)= with a
+paged loop (page size 1000). Apply =populate_instruments_for_trades=
+per page. This bounds peak memory to one page of trades and their
+instruments.
+
+*** 4e — Delete =populate_instrument_for_trade= (single-item version)
+
+No callers remain after 4c and Phase 6. Delete to prevent future misuse.
+
+** Phase 5 — Unify =instrument_id= field name across all domain structs
+
+*** 5a — Audit and rename
+
+Confirm that =bond_instrument=, =credit_instrument=,
+=commodity_instrument=, =scripted_instrument=, and =composite_instrument=
+use =id= rather than =instrument_id=. Rename the C++ field to
+=instrument_id= in each struct. If the underlying SQL column is also
+=id=, rename it in the column alias in the entity mapper rather than
+the schema (no migration required).
+
+After this phase every concrete instrument struct satisfies
+=Instrument= without any special-casing, and =stamp_ids= in Phase 3b
+works uniformly with no per-family branching.
+
+*** 5b — Remove per-family branching from any remaining visit sites
+
+Search for =.id == instr_id= or =.id = = patterns in instrument
+visitors; replace with =.instrument_id=.
+
+** Phase 6 — Split trade list from trade detail (fix N+1 on read path)
+
+*** 6a — Change =get_trades_response= to return metadata only
+
+In =trade_protocol.hpp=, change =get_trades_response=:
+
+#+begin_src cpp
+  // Before:
+  struct get_trades_response {
+      bool success = true;
+      std::string message;
+      std::vector<trade_export_item> items;  // trade + instrument
+      int total_available_count = 0;
+  };
+
+  // After:
+  struct get_trades_response {
+      bool success = true;
+      std::string message;
+      std::vector<trading::domain::trade> trades;  // metadata only
+      int total_available_count = 0;
+  };
+#+end_src
+
+The server =list= handler no longer calls =populate_instruments_for_trades=.
+It issues a single =list_trades_by_node= DB query and returns. For a
+100-trade page this is one DB call instead of 100+.
+
+*** 6b — New =get_trade_detail_request= / response
+
+#+begin_src cpp
+  struct get_trade_detail_request {
+      using response_type = struct get_trade_detail_response;
+      static constexpr std::string_view nats_subject =
+          "trading.v1.trades.detail";
+      std::string trade_id;
+  };
+
+  struct get_trade_detail_response {
+      bool success = true;
+      std::string message;
+      trading::domain::trade trade;
+      trading::domain::trade_instrument instrument;
+  };
+#+end_src
+
+The server handler fetches the single trade, calls the per-type service
+for its instrument (one DB call), and returns the bundle. This is the
+same logic as the old per-item =populate_instrument_for_trade= but
+executed on demand and for one trade only.
+
+*** 6c — Update the server handler
+
+Register the new NATS subject in =registrar_trades.cpp=. Implement the
+handler method in =trade_handler.hpp= using the single-item instrument
+fetch (acceptable here: the user explicitly asked for one trade's
+detail).
+
+*** 6d — Update the Qt client
+
+In =ClientTradeModel= / =PortfolioExplorerTradeModel= / =OrgExplorerTradeModel=:
+- Change the cached type from =trade_export_item= to =trading::domain::trade=.
+- Remove instrument fields from the model.
+
+In =TradeController=:
+- =openEdit= / =onShowDetails= now receive a =trading::domain::trade=.
+- Before opening =TradeDetailDialog=, issue =get_trade_detail_request=
+  synchronously (the dialog is not shown until the response arrives) or
+  asynchronously (show dialog with a loading state, populate instrument
+  on receipt).
+- Pass the returned bundle to =setTradeBundle=.
+
+In =TradeDetailDialog= / =setTradeBundle=: no change to the interface —
+it still receives a bundle; the bundle is now fetched on demand rather
+than from cache.
+
+*** 6e — Remove =trade_export_item= if no longer needed
+
+After 6d, audit whether =trade_export_item= has any remaining callers.
+If only =export_portfolio_response= uses it, consider inlining the type
+or retaining it for that path only. If no callers remain, delete it.
+
+* Verification
+
+- All targets build clean after each phase.
+- =ores.ore.tests= passes (importer, exporter, mapper roundtrip suites).
+- =ores.trading.core.tests= passes.
+- End-to-end smoke after Phase 3: import a portfolio of 50+ trades;
+  confirm all instruments saved; all UUIDs consistent.
+- Performance smoke after Phase 4: time =export_portfolio= for 500
+  trades before and after; confirm DB call count drops from N to ~8
+  (one per instrument type represented).
+- End-to-end smoke after Phase 6: open the trade list; confirm the page
+  loads with a single DB call (no instrument queries); open a trade
+  detail; confirm instrument loads and dialog populates correctly.
+
+* Follow-up (deferred)
+
+- Routing table consolidation: drive both =trade_mapper= dispatch and
+  =populate_instruments_for_trades= grouping from a single =constexpr=
+  map of =(product_type, trade_type_code)= → service tag.
+- Async detail fetch in the Qt client (Phase 6d): show the trade dialog
+  immediately with a loading indicator rather than blocking on the
+  detail request.

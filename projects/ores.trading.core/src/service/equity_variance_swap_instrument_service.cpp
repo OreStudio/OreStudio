@@ -54,4 +54,11 @@ void equity_variance_swap_instrument_service::save_equity_variance_swap_instrume
                               << t.instrument_id;
 }
 
+
+std::vector<domain::equity_variance_swap_instrument>
+equity_variance_swap_instrument_service::get_equity_variance_swap_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

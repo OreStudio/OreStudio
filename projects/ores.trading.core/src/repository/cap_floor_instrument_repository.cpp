@@ -102,4 +102,20 @@ void cap_floor_instrument_repository::remove(context ctx, const std::string& ins
     execute_delete_query(ctx, query, lg(), "Removing cap/floor instrument from database.");
 }
 
+
+std::vector<domain::cap_floor_instrument>
+cap_floor_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
+        ctx, query,
+        [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
+        lg(), "Reading latest cap_floor_instruments by ids.");
+}
+
 }

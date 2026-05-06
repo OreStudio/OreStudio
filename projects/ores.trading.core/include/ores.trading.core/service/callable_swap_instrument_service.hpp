@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing callable swap instruments.
  */
 class callable_swap_instrument_service {
+    std::vector<domain::callable_swap_instrument>
+    get_callable_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.callable_swap_instrument_service";

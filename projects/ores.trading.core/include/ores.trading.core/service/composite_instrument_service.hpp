@@ -36,6 +36,9 @@ namespace ores::trading::service {
  * @brief Service for managing composite instruments.
  */
 class composite_instrument_service {
+    std::vector<domain::composite_instrument>
+    get_composite_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.composite_instrument_service";
@@ -63,6 +66,9 @@ public:
 
     std::vector<domain::composite_leg>
     get_legs(const std::string& instrument_id);
+
+    std::vector<domain::composite_leg>
+    get_legs_batch(const std::vector<std::string>& instrument_ids);
 
     void save_composite_instrument(const domain::composite_instrument& v,
         const std::vector<domain::composite_leg>& legs);

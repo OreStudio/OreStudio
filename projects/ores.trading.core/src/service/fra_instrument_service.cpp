@@ -91,4 +91,18 @@ fra_instrument_service::get_swap_legs(const std::string& instrument_id) {
     return leg_repo_.read_by_instrument(ctx_, instrument_id);
 }
 
+
+std::vector<domain::fra_instrument>
+fra_instrument_service::get_fra_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
+
+std::vector<domain::swap_leg>
+fra_instrument_service::get_swap_legs_batch(
+    const std::vector<std::string>& instrument_ids) {
+    return leg_repo_.read_by_instruments_batch(ctx_, instrument_ids);
+}
+
 }

@@ -30,6 +30,9 @@
 namespace ores::trading::service {
 
 class fx_vanilla_option_instrument_service {
+    std::vector<domain::fx_vanilla_option_instrument>
+    get_fx_vanilla_option_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_vanilla_option_instrument_service";

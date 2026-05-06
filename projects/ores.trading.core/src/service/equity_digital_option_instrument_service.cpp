@@ -54,4 +54,11 @@ void equity_digital_option_instrument_service::save_equity_digital_option_instru
                               << t.instrument_id;
 }
 
+
+std::vector<domain::equity_digital_option_instrument>
+equity_digital_option_instrument_service::get_equity_digital_option_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

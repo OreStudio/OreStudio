@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing bond instruments.
  */
 class bond_instrument_service {
+    std::vector<domain::bond_instrument>
+    get_bond_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.bond_instrument_service";

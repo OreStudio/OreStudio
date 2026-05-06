@@ -83,4 +83,11 @@ scripted_instrument_service::get_scripted_instrument_history(const std::string& 
     return repo_.read_all(ctx_, id);
 }
 
+
+std::vector<domain::scripted_instrument>
+scripted_instrument_service::get_scripted_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

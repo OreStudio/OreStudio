@@ -34,6 +34,9 @@ namespace ores::trading::service {
  * @brief Service for managing balance guaranteed swap instruments.
  */
 class balance_guaranteed_swap_instrument_service {
+    std::vector<domain::balance_guaranteed_swap_instrument>
+    get_balance_guaranteed_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.balance_guaranteed_swap_instrument_service";

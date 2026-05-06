@@ -34,7 +34,7 @@ namespace ores::trading::domain {
 template<typename T>
 concept Instrument = requires(T t) {
     { t.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
-    t.trade_id;
+    { t.trade_id }      -> std::convertible_to<std::optional<boost::uuids::uuid>>;
 };
 
 template<typename T, typename Leg>

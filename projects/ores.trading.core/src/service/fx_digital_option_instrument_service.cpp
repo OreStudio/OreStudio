@@ -53,4 +53,11 @@ void fx_digital_option_instrument_service::save_fx_digital_option_instrument(
                               << t.instrument_id;
 }
 
+
+std::vector<domain::fx_digital_option_instrument>
+fx_digital_option_instrument_service::get_fx_digital_option_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

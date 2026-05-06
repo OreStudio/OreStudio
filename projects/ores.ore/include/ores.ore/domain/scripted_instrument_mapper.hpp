@@ -27,14 +27,6 @@
 namespace ores::ore::domain {
 
 /**
- * @brief Result of a forward mapping from ORE XSD to the ORES scripted
- * instrument domain type.
- */
-struct scripted_mapping_result {
-    ores::trading::domain::scripted_instrument instrument;
-};
-
-/**
  * @brief Maps ORE XSD scripted trade types to ORES domain types and back.
  *
  * Handles:
@@ -57,10 +49,10 @@ private:
     }
 
 public:
-    static scripted_mapping_result forward_scripted_trade(const trade& t);
-    static scripted_mapping_result forward_double_digital_option(const trade& t);
-    static scripted_mapping_result forward_performance_option_01(const trade& t);
-    static scripted_mapping_result forward_knock_out_swap(const trade& t);
+    static trading::domain::scripted_instrument forward_scripted_trade(const trade& t);
+    static trading::domain::scripted_instrument forward_double_digital_option(const trade& t);
+    static trading::domain::scripted_instrument forward_performance_option_01(const trade& t);
+    static trading::domain::scripted_instrument forward_knock_out_swap(const trade& t);
 
     static trade reverse_scripted_trade(
         const ores::trading::domain::scripted_instrument& instr);

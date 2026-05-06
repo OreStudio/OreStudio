@@ -66,6 +66,9 @@ public:
     std::vector<domain::rpa_instrument>
     get_rpa_instrument_history(const std::string& id);
 
+    std::vector<domain::rpa_instrument>
+    get_rpa_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::rpa_instrument_repository repo_;

@@ -242,10 +242,10 @@ void CreditInstrumentForm::writeUiToInstrument() {
 }
 
 void CreditInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::credit_export_result>(&instrument);
+        std::get_if<trading::domain::credit_instrument>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-credit instrument pushed to CreditInstrumentForm";
@@ -254,7 +254,7 @@ void CreditInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = ex->instrument;
+    instrument_ = *ex;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -376,7 +376,7 @@ void CreditInstrumentForm::saveInstrument(
         BOOST_LOG_SEV(lg(), info) << "Credit instrument saved";
         self->dirty_ = false;
         self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.id));
+        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
     });
 
     auto* cm = clientManager_;

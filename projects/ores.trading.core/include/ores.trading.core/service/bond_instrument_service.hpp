@@ -66,6 +66,9 @@ public:
     std::vector<domain::bond_instrument>
     get_bond_instrument_history(const std::string& id);
 
+    std::vector<domain::bond_instrument>
+    get_bond_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::bond_instrument_repository repo_;

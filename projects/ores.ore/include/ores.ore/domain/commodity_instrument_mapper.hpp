@@ -27,14 +27,6 @@
 namespace ores::ore::domain {
 
 /**
- * @brief Result of a forward mapping from ORE XSD to the ORES commodity
- * domain type.
- */
-struct commodity_mapping_result {
-    ores::trading::domain::commodity_instrument instrument;
-};
-
-/**
  * @brief Maps ORE XSD commodity trade types to ORES domain types and back.
  *
  * Handles:
@@ -62,14 +54,14 @@ private:
 
 public:
     // Forward mappings
-    static commodity_mapping_result forward_commodity_forward(const trade& t);
-    static commodity_mapping_result forward_commodity_option(const trade& t);
-    static commodity_mapping_result forward_commodity_swap(const trade& t);
-    static commodity_mapping_result forward_commodity_swaption(const trade& t);
-    static commodity_mapping_result forward_commodity_variance_swap(
+    static trading::domain::commodity_instrument forward_commodity_forward(const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_option(const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_swap(const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_swaption(const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_variance_swap(
         const trade& t);
-    static commodity_mapping_result forward_commodity_apo(const trade& t);
-    static commodity_mapping_result forward_commodity_option_strip(
+    static trading::domain::commodity_instrument forward_commodity_apo(const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_option_strip(
         const trade& t);
 
     // Reverse mappings

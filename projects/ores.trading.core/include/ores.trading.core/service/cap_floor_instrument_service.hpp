@@ -66,6 +66,9 @@ public:
     std::vector<domain::cap_floor_instrument>
     get_cap_floor_instrument_history(const std::string& id);
 
+    std::vector<domain::cap_floor_instrument>
+    get_cap_floor_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::cap_floor_instrument_repository repo_;

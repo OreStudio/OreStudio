@@ -50,6 +50,9 @@ public:
 
     void save_equity_swap_instrument(const domain::equity_swap_instrument& v);
 
+    std::vector<domain::equity_swap_instrument>
+    get_equity_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_swap_instrument_repository repo_;

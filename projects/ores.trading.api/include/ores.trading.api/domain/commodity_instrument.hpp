@@ -59,7 +59,7 @@ struct commodity_instrument final {
     /**
      * @brief UUID uniquely identifying this commodity instrument.
      */
-    boost::uuids::uuid id;
+    boost::uuids::uuid instrument_id;
 
     /**
      * @brief Party that owns this instrument.

@@ -51,6 +51,9 @@ public:
     void save_fx_variance_swap_instrument(
         const domain::fx_variance_swap_instrument& v);
 
+    std::vector<domain::fx_variance_swap_instrument>
+    get_fx_variance_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::fx_variance_swap_instrument_repository repo_;

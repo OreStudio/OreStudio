@@ -663,12 +663,38 @@ std::optional<TradeListResult> ClientManager::listTrades(
         }
 
         return TradeListResult{
-            .items = std::move(result->items),
+            .trades = std::move(result->trades),
             .total_count = static_cast<std::uint32_t>(
                 result->total_available_count)
         };
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "listTrades failed: " << e.what();
+        return std::nullopt;
+    }
+}
+
+std::optional<trading::messaging::trade_export_item>
+ClientManager::getTradeDetail(const std::string& trade_id) {
+    try {
+        trading::messaging::get_trade_detail_request request;
+        request.trade_id = trade_id;
+        auto result = process_authenticated_request(std::move(request));
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail failed: " << result.error();
+            return std::nullopt;
+        }
+        if (!result->success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail server error: " << result->message;
+            return std::nullopt;
+        }
+        trading::messaging::trade_export_item item;
+        item.trade = std::move(result->trade);
+        item.instrument = std::move(result->instrument);
+        return item;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "getTradeDetail failed: " << e.what();
         return std::nullopt;
     }
 }

@@ -46,7 +46,7 @@ const std::string tags("[ore][xml][mapper][roundtrip][commodity]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::commodity_instrument_mapper;
-using ores::ore::domain::commodity_mapping_result;
+using ores::trading::domain::commodity_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -54,7 +54,7 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-commodity_mapping_result load_and_map(const std::string& filename) {
+commodity_instrument load_and_map(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -72,127 +72,127 @@ TEST_CASE("commodity_mapper_roundtrip_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Forward.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommodityForward");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.currency.empty());
-    CHECK(r.instrument.quantity > 0.0);
-    CHECK(r.instrument.fixed_price.has_value());
-    CHECK(*r.instrument.fixed_price > 0.0);
-    CHECK(!r.instrument.maturity_date.empty());
+    CHECK(r.trade_type_code == "CommodityForward");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.currency.empty());
+    CHECK(r.quantity > 0.0);
+    CHECK(r.fixed_price.has_value());
+    CHECK(*r.fixed_price > 0.0);
+    CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_forward(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityForwardData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityForward roundtrip passed. "
-                            << r.instrument.commodity_code;
+                            << r.commodity_code;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Option.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommodityOption");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.currency.empty());
-    CHECK(r.instrument.quantity > 0.0);
-    CHECK(r.instrument.strike_price.has_value());
-    CHECK(!r.instrument.option_type.empty());
-    CHECK(!r.instrument.maturity_date.empty());
+    CHECK(r.trade_type_code == "CommodityOption");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.currency.empty());
+    CHECK(r.quantity > 0.0);
+    CHECK(r.strike_price.has_value());
+    CHECK(!r.option_type.empty());
+    CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_option(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityOption roundtrip passed. Strike: "
-                            << *r.instrument.strike_price;
+                            << *r.strike_price;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Swap_NYMEX_A7Q.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommoditySwap");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.currency.empty());
-    CHECK(!r.instrument.start_date.empty());
-    CHECK(!r.instrument.maturity_date.empty());
+    CHECK(r.trade_type_code == "CommoditySwap");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.currency.empty());
+    CHECK(!r.start_date.empty());
+    CHECK(!r.maturity_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swap(
-        r.instrument);
+        r);
     REQUIRE(rt.SwapData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommoditySwap roundtrip passed. "
-                            << r.instrument.commodity_code;
+                            << r.commodity_code;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_swaption", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Swaption_NYMEX_NG.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommoditySwaption");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.swaption_expiry_date.empty());
+    CHECK(r.trade_type_code == "CommoditySwaption");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.swaption_expiry_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_swaption(
-        r.instrument);
+        r);
     REQUIRE(rt.CommoditySwaptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommoditySwaption roundtrip passed. Expiry: "
-                            << r.instrument.swaption_expiry_date;
+                            << r.swaption_expiry_date;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_variance_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Variance_Swap.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommodityVarianceSwap");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.currency.empty());
-    CHECK(!r.instrument.start_date.empty());
-    CHECK(!r.instrument.maturity_date.empty());
-    CHECK(r.instrument.variance_strike.has_value());
+    CHECK(r.trade_type_code == "CommodityVarianceSwap");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.currency.empty());
+    CHECK(!r.start_date.empty());
+    CHECK(!r.maturity_date.empty());
+    CHECK(r.variance_strike.has_value());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_variance_swap(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityVarianceSwapData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityVarianceSwap roundtrip passed. Strike: "
-                            << *r.instrument.variance_strike;
+                            << *r.variance_strike;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_apo", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_APO_NYMEX_CL.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommodityAveragePriceOption");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.currency.empty());
-    CHECK(r.instrument.quantity > 0.0);
-    CHECK(r.instrument.strike_price.has_value());
-    CHECK(!r.instrument.averaging_start_date.empty());
-    CHECK(!r.instrument.averaging_end_date.empty());
+    CHECK(r.trade_type_code == "CommodityAveragePriceOption");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.currency.empty());
+    CHECK(r.quantity > 0.0);
+    CHECK(r.strike_price.has_value());
+    CHECK(!r.averaging_start_date.empty());
+    CHECK(!r.averaging_end_date.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_apo(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityAveragePriceOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityAveragePriceOption roundtrip passed. "
-                            << r.instrument.commodity_code;
+                            << r.commodity_code;
 }
 
 TEST_CASE("commodity_mapper_roundtrip_option_strip", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Commodity_Option_Strip_NYMEX_NG.xml");
 
-    CHECK(r.instrument.trade_type_code == "CommodityOptionStrip");
-    CHECK(!r.instrument.commodity_code.empty());
-    CHECK(!r.instrument.strip_frequency_code.empty());
+    CHECK(r.trade_type_code == "CommodityOptionStrip");
+    CHECK(!r.commodity_code.empty());
+    CHECK(!r.strip_frequency_code.empty());
 
     const auto rt = commodity_instrument_mapper::reverse_commodity_option_strip(
-        r.instrument);
+        r);
     REQUIRE(rt.CommodityOptionStripData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CommodityOptionStrip roundtrip passed. "
-                            << r.instrument.commodity_code;
+                            << r.commodity_code;
 }

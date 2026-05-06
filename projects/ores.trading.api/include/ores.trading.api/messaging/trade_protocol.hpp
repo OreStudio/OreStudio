@@ -25,6 +25,7 @@
 #include <vector>
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::trading::messaging {
@@ -46,7 +47,7 @@ struct get_activity_types_response {
  */
 struct trade_export_item {
     ores::trading::domain::trade trade;
-    instrument_export_result instrument;
+    ores::trading::domain::trade_instrument instrument;
 };
 
 /**
@@ -56,9 +57,8 @@ struct trade_export_item {
  * resolves it to the book-id set via ores_trading_get_book_ids_for_node_fn.
  * An empty @p node_id lists all trades visible to the tenant.
  *
- * The response carries trade_export_item bundles: each bundle has the
- * trade plus its resolved per-family instrument, so clients never need a
- * second round trip to display the trade detail.
+ * The response carries only trade metadata (no instrument data). To load
+ * instrument details for a specific trade, use get_trade_detail_request.
  */
 struct get_trades_request {
     using response_type = struct get_trades_response;
@@ -71,8 +71,21 @@ struct get_trades_request {
 struct get_trades_response {
     bool success = true;
     std::string message;
-    std::vector<trade_export_item> items;
+    std::vector<ores::trading::domain::trade> trades;
     int total_available_count = 0;
+};
+
+struct get_trade_detail_request {
+    using response_type = struct get_trade_detail_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.detail";
+    std::string trade_id;
+};
+
+struct get_trade_detail_response {
+    bool success = false;
+    std::string message;
+    ores::trading::domain::trade trade;
+    ores::trading::domain::trade_instrument instrument;
 };
 
 struct save_trade_request {

@@ -66,6 +66,9 @@ public:
     std::vector<domain::callable_swap_instrument>
     get_callable_swap_instrument_history(const std::string& id);
 
+    std::vector<domain::callable_swap_instrument>
+    get_callable_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::callable_swap_instrument_repository repo_;

@@ -19,7 +19,10 @@
  */
 #include "ores.qt/TradeDetailDialog.hpp"
 
+#include <algorithm>
 #include <QComboBox>
+#include <QScreen>
+#include <QShowEvent>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QtConcurrent>
@@ -64,6 +67,10 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     setupUi();
     setupConnections();
 
+    // Cap dialog height so the scroll area in the Instrument tab actually
+    // scrolls for tall forms instead of letting the dialog grow off-screen.
+    // 700px fits ~10 form rows comfortably; taller content scrolls.
+
     // Zero-interval timer coalesces rapid tradeTypeEdit keystrokes so the
     // form selection logic runs at most once per event-loop cycle.
     createTypeTimer_ = new QTimer(this);
@@ -94,6 +101,17 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
 
 TradeDetailDialog::~TradeDetailDialog() {
     delete ui_;
+}
+
+void TradeDetailDialog::showEvent(QShowEvent* event) {
+    DetailDialogBase::showEvent(event);
+    // Cap height to 75% of the available screen so the instrument scroll area
+    // actually scrolls for tall forms. Done here (not the constructor) because
+    // screen() is guaranteed non-null once the widget is being shown.
+    if (maximumHeight() == QWIDGETSIZE_MAX) {
+        const int cap = screen()->availableGeometry().height() * 3 / 4;
+        setMaximumHeight(std::max(cap, minimumHeight()));
+    }
 }
 
 QTabWidget*       TradeDetailDialog::tabWidget()        const { return ui_->tabWidget; }

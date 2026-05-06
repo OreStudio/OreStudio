@@ -27,7 +27,7 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.ore/domain/trade_mapper.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.ore/domain/conventions_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -47,7 +47,7 @@ struct trade_import_item {
     trading::domain::trade trade;
     std::string ore_counterparty_name;             ///< ORE CounterParty string, empty if absent
     std::filesystem::path source_file;             ///< ORE XML file this trade was read from
-    domain::instrument_mapping_result instrument;  ///< monostate if trade type not yet mapped
+    trading::domain::trade_instrument instrument;  ///< monostate if trade type not yet mapped
 };
 
 /**
@@ -129,57 +129,19 @@ public:
     static std::string validate_trade(const trading::domain::trade& trade);
 
     /**
-     * @brief Imports trades from an ORE portfolio XML file.
-     *
-     * Parses the portfolio XML and maps each trade to the ORES trading
-     * domain. UUID fields that require external context (book_id,
-     * counterparty_id, portfolio_id, party_id) are left as nil and must be
-     * populated by the calling code.
-     *
-     * @param path Path to the ORE portfolio XML file
-     * @return Vector of partially-mapped trading domain trades
-     */
-    static std::vector<trading::domain::trade>
-    import_portfolio(const std::filesystem::path& path);
-
-    /**
      * @brief Imports trades from an ORE portfolio XML file with mapping context.
      *
-     * Like import_portfolio() but also captures the raw ORE CounterParty
-     * string from each trade envelope so that callers can present a
-     * counterparty mapping dialog before resolving UUIDs.
+     * Parses the portfolio XML, maps each trade to the ORES trading domain,
+     * and captures the raw ORE CounterParty string from each trade envelope.
+     * All UUID fields (trade.id, instrument_id, book_id, etc.) are left nil;
+     * the caller (e.g. ore_import_planner) is responsible for minting UUIDs
+     * via trading::domain::stamp_ids and populating context fields.
      *
      * @param path Path to the ORE portfolio XML file
-     * @return Vector of trade_import_item, each pairing a partially-mapped
-     *         trade with its ORE counterparty name (empty if not present)
+     * @return Vector of trade_import_item with product_type set, all UUIDs nil
      */
     static std::vector<trade_import_item>
     import_portfolio_with_context(const std::filesystem::path& path);
-
-    /**
-     * @brief Rewires the soft back-reference instrument.trade_id on @p item
-     *        to match the current value of item.trade.id.
-     *
-     * import_portfolio_with_context() stamps a provisional (nil) trade.id into
-     * the instrument at parse time. Callers that later mint a real trade.id
-     * (e.g. ore_import_planner) must rewire the back-reference so downstream
-     * persistence keeps trade ↔ instrument in sync. Without this, UI joins
-     * from instrument to trade fail and economics render blank.
-     *
-     * No-op for items whose trade type has no instrument mapping (monostate).
-     */
-    static void rewire_instrument_trade_id(trade_import_item& item);
-
-    /**
-     * @brief Assigns @p id as the instrument_id on both the instrument and
-     *        trade.instrument_id, establishing the forward FK from trade to
-     *        instrument so that populate_instrument_for_trade can find it.
-     *
-     * Call after rewire_instrument_trade_id once a stable UUID has been minted.
-     * No-op for items whose trade type has no instrument mapping (monostate).
-     */
-    static void assign_instrument_id(
-        trade_import_item& item, boost::uuids::uuid id);
 };
 
 }

@@ -51,6 +51,9 @@ public:
     void save_fx_accumulator_instrument(
         const domain::fx_accumulator_instrument& v);
 
+    std::vector<domain::fx_accumulator_instrument>
+    get_fx_accumulator_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::fx_accumulator_instrument_repository repo_;

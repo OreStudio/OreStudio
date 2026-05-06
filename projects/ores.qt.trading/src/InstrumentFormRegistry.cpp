@@ -27,6 +27,11 @@
 #include "ores.qt/EquityInstrumentForm.hpp"
 #include "ores.qt/FxInstrumentForm.hpp"
 #include "ores.qt/FxVanillaOptionInstrumentForm.hpp"
+#include "ores.qt/FxBarrierOptionInstrumentForm.hpp"
+#include "ores.qt/FxDigitalOptionInstrumentForm.hpp"
+#include "ores.qt/FxAsianForwardInstrumentForm.hpp"
+#include "ores.qt/FxAccumulatorInstrumentForm.hpp"
+#include "ores.qt/FxVarianceSwapInstrumentForm.hpp"
 #include "ores.qt/ScriptedInstrumentForm.hpp"
 #include "ores.qt/SwapInstrumentForm.hpp"
 
@@ -130,6 +135,44 @@ void register_default_forms(InstrumentFormRegistry& registry) {
     registry.registerTypeForm(QStringLiteral("FxOption"),
         [](QWidget* parent) -> IInstrumentForm* {
             return new FxVanillaOptionInstrumentForm(parent);
+        });
+
+    // FX barrier options
+    auto makeBarrier = [](QWidget* parent) -> IInstrumentForm* {
+        return new FxBarrierOptionInstrumentForm(parent);
+    };
+    registry.registerTypeForm(QStringLiteral("FxBarrierOption"), makeBarrier);
+    registry.registerTypeForm(QStringLiteral("FxDoubleBarrierOption"), makeBarrier);
+    registry.registerTypeForm(QStringLiteral("FxEuropeanBarrierOption"), makeBarrier);
+    registry.registerTypeForm(QStringLiteral("FxKIKOBarrierOption"), makeBarrier);
+    registry.registerTypeForm(QStringLiteral("FxGenericBarrierOption"), makeBarrier);
+
+    // FX digital options
+    auto makeDigital = [](QWidget* parent) -> IInstrumentForm* {
+        return new FxDigitalOptionInstrumentForm(parent);
+    };
+    registry.registerTypeForm(QStringLiteral("FxDigitalOption"), makeDigital);
+    registry.registerTypeForm(QStringLiteral("FxDigitalBarrierOption"), makeDigital);
+    registry.registerTypeForm(QStringLiteral("FxTouchOption"), makeDigital);
+    registry.registerTypeForm(QStringLiteral("FxDoubleTouchOption"), makeDigital);
+
+    // FX asian forwards
+    auto makeAsian = [](QWidget* parent) -> IInstrumentForm* {
+        return new FxAsianForwardInstrumentForm(parent);
+    };
+    registry.registerTypeForm(QStringLiteral("FxAverageForward"), makeAsian);
+    registry.registerTypeForm(QStringLiteral("FxTaRF"), makeAsian);
+
+    // FX accumulator
+    registry.registerTypeForm(QStringLiteral("FxAccumulator"),
+        [](QWidget* parent) -> IInstrumentForm* {
+            return new FxAccumulatorInstrumentForm(parent);
+        });
+
+    // FX variance swap
+    registry.registerTypeForm(QStringLiteral("FxVarianceSwap"),
+        [](QWidget* parent) -> IInstrumentForm* {
+            return new FxVarianceSwapInstrumentForm(parent);
         });
 }
 

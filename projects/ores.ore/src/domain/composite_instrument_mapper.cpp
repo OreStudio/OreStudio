@@ -21,11 +21,13 @@
 
 #include <map>
 #include <stdexcept>
+#include "ores.trading.api/domain/composite_leg.hpp"
 
 namespace ores::ore::domain {
 
 using namespace ores::logging;
 using ores::trading::domain::composite_instrument;
+using ores::trading::domain::composite_leg;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -150,23 +152,44 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
+composite_leg make_composite_leg(
+        const compositeTradeComponents_Trade_t& comp, int seq) {
+    composite_leg leg;
+    leg.leg_sequence = seq;
+    if (comp.id)
+        leg.constituent_trade_id = std::string(*comp.id);
+    else
+        leg.constituent_trade_id = to_string(comp.TradeType);
+    leg.modified_by         = "ores";
+    leg.performed_by        = "ores";
+    leg.change_reason_code  = "system.external_data_import";
+    leg.change_commentary   = "Imported from ORE XML";
+    return leg;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
 // Forward: CompositeTrade
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_composite_trade(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CompositeTrade: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("CompositeTrade");
     if (!t.CompositeTradeData) return result;
     const auto& d = *t.CompositeTradeData;
 
     if (d.BasketName)
         result.instrument.description = std::string(*d.BasketName);
+
+    if (d.Components) {
+        int seq = 1;
+        for (const auto& comp : d.Components->Trade)
+            result.legs.push_back(make_composite_leg(comp, seq++));
+    }
     return result;
 }
 
@@ -174,11 +197,11 @@ composite_instrument_mapper::forward_composite_trade(const trade& t) {
 // Forward: MultiLegOption
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_multi_leg_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping MultiLegOption: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("MultiLegOption");
     // MultiLegOptionData has leg data but composite_instrument only
     // captures the top-level type; legs are stored separately.
@@ -219,11 +242,11 @@ trade composite_instrument_mapper::reverse_composite_trade(
 // Forward: TotalReturnSwap
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_total_return_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping TotalReturnSwap: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("TotalReturnSwap");
     if (!t.TotalReturnSwapData) return result;
     const auto& d = *t.TotalReturnSwapData;
@@ -241,11 +264,11 @@ composite_instrument_mapper::forward_total_return_swap(const trade& t) {
 // Forward: ContractForDifference
 // ---------------------------------------------------------------------------
 
-composite_mapping_result
+trading::domain::composite_instrument_data
 composite_instrument_mapper::forward_contract_for_difference(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ContractForDifference: "
                                << std::string(t.id);
-    composite_mapping_result result;
+    trading::domain::composite_instrument_data result;
     result.instrument = make_base("ContractForDifference");
     if (!t.ContractForDifferenceData) return result;
     const auto& d = *t.ContractForDifferenceData;

@@ -305,24 +305,36 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
         REQUIRE(item.trade.id != nil);
 
         std::visit([&](const auto& r) {
-            using namespace ores::ore::domain;
+            using ores::trading::domain::swap_instrument_data;
+            using ores::trading::domain::fx_instrument_variant;
+            using ores::trading::domain::equity_instrument_variant;
+            using ores::trading::domain::composite_instrument_data;
             using T = std::decay_t<decltype(r)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
                 // No instrument mapping for this trade type — skip.
-            } else if constexpr (std::is_same_v<T, swap_mapping_result> ||
-                                 std::is_same_v<T, fx_mapping_result> ||
-                                 std::is_same_v<T, equity_mapping_result>) {
+            } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                 std::visit([&](const auto& instr) {
                     INFO("Instrument variant index checked");
                     REQUIRE(instr.trade_id.has_value());
                     CHECK(*instr.trade_id == item.trade.id);
                     ++checked;
                 }, r.instrument);
-            } else {
-                // bond/credit/commodity/scripted/composite all hold the
-                // instrument directly with a trade_id member.
+            } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                                 std::is_same_v<T, equity_instrument_variant>) {
+                std::visit([&](const auto& instr) {
+                    INFO("Instrument variant index checked");
+                    REQUIRE(instr.trade_id.has_value());
+                    CHECK(*instr.trade_id == item.trade.id);
+                    ++checked;
+                }, r);
+            } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 REQUIRE(r.instrument.trade_id.has_value());
                 CHECK(*r.instrument.trade_id == item.trade.id);
+                ++checked;
+            } else {
+                // bond/credit/commodity/scripted — direct trade_id field
+                REQUIRE(r.trade_id.has_value());
+                CHECK(*r.trade_id == item.trade.id);
                 ++checked;
             }
         }, item.instrument);

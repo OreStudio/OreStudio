@@ -97,6 +97,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_ || instrumentHasChanges_;
     }
+    void showEvent(QShowEvent* event) override;
 
 signals:
     void tradeSaved(const QString& code);

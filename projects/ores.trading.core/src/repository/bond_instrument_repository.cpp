@@ -41,7 +41,7 @@ std::string bond_instrument_repository::sql() {
 
 void bond_instrument_repository::write(context ctx,
     const domain::bond_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing bond_instrument: " << v.instrument_id;
     execute_write_query(ctx, bond_instrument_mapper::map(v),
         lg(), "Writing bond_instrument to database.");
 }
@@ -146,6 +146,22 @@ void bond_instrument_repository::remove(context ctx, const std::string& id) {
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing bond_instrument from database.");
+}
+
+
+std::vector<domain::bond_instrument>
+bond_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_instrument_entity>> |
+        where("tenant_id"_c == tid && "id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<bond_instrument_entity, domain::bond_instrument>(
+        ctx, query,
+        [](const auto& entities) { return bond_instrument_mapper::map(entities); },
+        lg(), "Reading latest bond_instruments by ids.");
 }
 
 }

@@ -64,6 +64,9 @@ public:
     std::vector<domain::composite_leg>
     get_legs(const std::string& instrument_id);
 
+    std::vector<domain::composite_leg>
+    get_legs_batch(const std::vector<std::string>& instrument_ids);
+
     void save_composite_instrument(const domain::composite_instrument& v,
         const std::vector<domain::composite_leg>& legs);
 
@@ -71,6 +74,9 @@ public:
 
     std::vector<domain::composite_instrument>
     get_composite_instrument_history(const std::string& id);
+
+    std::vector<domain::composite_instrument>
+    get_composite_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

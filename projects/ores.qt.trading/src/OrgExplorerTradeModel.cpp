@@ -60,7 +60,7 @@ QVariant OrgExplorerTradeModel::data(
     if (row >= items_.size())
         return {};
 
-    const auto& trade = items_[row].trade;
+    const auto& trade = items_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
@@ -201,7 +201,7 @@ void OrgExplorerTradeModel::fetch_trades(
         QtConcurrent::run([self, offset, limit, node_id]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .items = {},
+                    return {.success = false, .trades = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -210,14 +210,14 @@ void OrgExplorerTradeModel::fetch_trades(
                 auto result = self->clientManager_->listTrades(
                     node_id, offset, limit);
                 if (!result) {
-                    return {.success = false, .items = {},
+                    return {.success = false, .trades = {},
                             .total_available_count = 0,
                             .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
                 return {.success = true,
-                        .items = std::move(result->items),
+                        .trades = std::move(result->trades),
                         .total_available_count = result->total_count,
                         .error_message = {}, .error_details = {}};
             }, "org trades");
@@ -240,7 +240,7 @@ void OrgExplorerTradeModel::onTradesLoaded() {
     total_available_count_ = result.total_available_count;
 
     beginResetModel();
-    items_ = std::move(result.items);
+    items_ = std::move(result.trades);
     endResetModel();
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << items_.size()
@@ -251,14 +251,6 @@ void OrgExplorerTradeModel::onTradesLoaded() {
 
 const trading::domain::trade*
 OrgExplorerTradeModel::get_trade(int row) const {
-    const auto idx = static_cast<std::size_t>(row);
-    if (idx >= items_.size())
-        return nullptr;
-    return &items_[idx].trade;
-}
-
-const trading::messaging::trade_export_item*
-OrgExplorerTradeModel::get_trade_bundle(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= items_.size())
         return nullptr;

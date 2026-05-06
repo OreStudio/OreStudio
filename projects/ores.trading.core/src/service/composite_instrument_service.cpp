@@ -70,12 +70,12 @@ void composite_instrument_service::save_composite_instrument(
     const domain::composite_instrument& v,
     const std::vector<domain::composite_leg>& legs) {
     auto t = v;
-    if (t.id.is_nil()) {
+    if (t.instrument_id.is_nil()) {
         static boost::uuids::random_generator gen;
-        t.id = gen();
+        t.instrument_id = gen();
     }
-    const auto id_str = boost::uuids::to_string(t.id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.id
+    const auto id_str = boost::uuids::to_string(t.instrument_id);
+    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.instrument_id
                                << " with " << legs.size() << " legs";
     stamp(t, ctx_);
     // Replace-on-save: remove the existing leg set before writing the new
@@ -83,11 +83,11 @@ void composite_instrument_service::save_composite_instrument(
     leg_repo_.remove_by_instrument(ctx_, id_str);
     repo_.write(ctx_, t);
     for (auto leg : legs) {
-        leg.instrument_id = t.id;
+        leg.instrument_id = t.instrument_id;
         stamp(leg, ctx_);
         leg_repo_.write(ctx_, leg);
     }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.instrument_id;
 }
 
 void composite_instrument_service::remove_composite_instrument(const std::string& id) {
@@ -102,6 +102,20 @@ composite_instrument_service::get_composite_instrument_history(const std::string
     BOOST_LOG_SEV(lg(), debug)
         << "Getting history for composite_instrument: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+
+std::vector<domain::composite_instrument>
+composite_instrument_service::get_composite_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
+
+std::vector<domain::composite_leg>
+composite_instrument_service::get_legs_batch(
+    const std::vector<std::string>& instrument_ids) {
+    return leg_repo_.read_by_instruments_batch(ctx_, instrument_ids);
 }
 
 }

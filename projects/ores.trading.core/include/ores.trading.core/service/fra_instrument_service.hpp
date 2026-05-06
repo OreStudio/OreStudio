@@ -77,6 +77,12 @@ public:
     std::vector<domain::swap_leg>
     get_swap_legs(const std::string& instrument_id);
 
+    std::vector<domain::swap_leg>
+    get_swap_legs_batch(const std::vector<std::string>& instrument_ids);
+
+    std::vector<domain::fra_instrument>
+    get_fra_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::fra_instrument_repository repo_;

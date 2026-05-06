@@ -288,7 +288,7 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
 // Forward: Swap / CrossCurrencySwap
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_swap(const trade& t) {
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping swap: " << std::string(t.id);
 
     const swapData* sd = nullptr;
@@ -304,7 +304,7 @@ swap_mapping_result swap_instrument_mapper::forward_swap(const trade& t) {
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!sd) return result;
@@ -329,7 +329,7 @@ swap_mapping_result swap_instrument_mapper::forward_swap(const trade& t) {
 // Forward: InflationSwap
 // ---------------------------------------------------------------------------
 
-swap_mapping_result
+trading::domain::swap_instrument_data
 swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping InflationSwap: "
                                << std::string(t.id);
@@ -340,7 +340,7 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.InflationSwapData) return result;
@@ -366,7 +366,7 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
 // Forward: ForwardRateAgreement
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_fra(const trade& t) {
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FRA: " << std::string(t.id);
 
     fra_instrument instr;
@@ -375,7 +375,7 @@ swap_mapping_result swap_instrument_mapper::forward_fra(const trade& t) {
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.ForwardRateAgreementData) return result;
@@ -411,7 +411,7 @@ swap_mapping_result swap_instrument_mapper::forward_fra(const trade& t) {
 // Forward: CapFloor
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_capfloor(const trade& t) {
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(const trade& t) {
     BOOST_LOG_SEV(lg(), debug)
         << "Forward-mapping capfloor: " << std::string(t.id);
 
@@ -421,7 +421,7 @@ swap_mapping_result swap_instrument_mapper::forward_capfloor(const trade& t) {
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.CapFloorData) return result;
@@ -621,7 +621,7 @@ trade swap_instrument_mapper::reverse_capfloor(
 // Forward: Swaption
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_swaption(const trade& t) {
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Swaption: "
                                << std::string(t.id);
 
@@ -631,7 +631,7 @@ swap_mapping_result swap_instrument_mapper::forward_swaption(const trade& t) {
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.SwaptionData) return result;
@@ -710,7 +710,7 @@ trade swap_instrument_mapper::reverse_swaption(
 // Forward: CallableSwap
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_callable_swap(
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableSwap: "
                                << std::string(t.id);
@@ -721,7 +721,7 @@ swap_mapping_result swap_instrument_mapper::forward_callable_swap(
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.CallableSwapData) return result;
@@ -796,7 +796,7 @@ trade swap_instrument_mapper::reverse_callable_swap(
 // Forward: FlexiSwap (leg economics only)
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_flexi_swap(
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FlexiSwap: "
                                << std::string(t.id);
@@ -807,7 +807,7 @@ swap_mapping_result swap_instrument_mapper::forward_flexi_swap(
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.FlexiSwapData) return result;
@@ -833,7 +833,7 @@ swap_mapping_result swap_instrument_mapper::forward_flexi_swap(
 // Forward: BalanceGuaranteedSwap (leg economics only)
 // ---------------------------------------------------------------------------
 
-swap_mapping_result swap_instrument_mapper::forward_balance_guaranteed_swap(
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_balance_guaranteed_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BalanceGuaranteedSwap: "
                                << std::string(t.id);
@@ -844,7 +844,7 @@ swap_mapping_result swap_instrument_mapper::forward_balance_guaranteed_swap(
     instr.change_reason_code = "system.external_data_import";
     instr.change_commentary = "Imported from ORE XML";
 
-    swap_mapping_result result;
+    trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
     if (!t.BalanceGuaranteedSwapData) return result;

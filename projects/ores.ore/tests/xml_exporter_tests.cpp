@@ -40,52 +40,6 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-// Convert an import-side instrument_mapping_result (from ores.ore) to the
-// export-side instrument_export_result (from ores.trading.api) for testing.
-ores::trading::messaging::instrument_export_result to_export_result(
-    const ores::ore::domain::instrument_mapping_result& r) {
-    using namespace ores::ore::domain;
-    using namespace ores::trading::messaging;
-    return std::visit([](const auto& v)
-            -> ores::trading::messaging::instrument_export_result {
-        using T = std::decay_t<decltype(v)>;
-        if constexpr (std::is_same_v<T, std::monostate>)
-            return std::monostate{};
-        else if constexpr (std::is_same_v<T, swap_mapping_result>)
-            return swap_export_result{v.instrument, v.legs};
-        else if constexpr (std::is_same_v<T, fx_mapping_result>) {
-            // fx_mapping_result::instrument (import-side variant) has the same
-            // alternatives as fx_export_result::instrument; copy through.
-            fx_export_result ex;
-            std::visit([&](const auto& instr) {
-                ex.instrument = instr;
-            }, v.instrument);
-            return ex;
-        }
-        else if constexpr (std::is_same_v<T, bond_mapping_result>)
-            return bond_export_result{v.instrument};
-        else if constexpr (std::is_same_v<T, credit_mapping_result>)
-            return credit_export_result{v.instrument};
-        else if constexpr (std::is_same_v<T, equity_mapping_result>) {
-            // equity_mapping_result::instrument (import-side variant) has the
-            // same alternatives as equity_export_result::instrument; copy
-            // through.
-            equity_export_result ex;
-            std::visit([&](const auto& instr) {
-                ex.instrument = instr;
-            }, v.instrument);
-            return ex;
-        }
-        else if constexpr (std::is_same_v<T, commodity_mapping_result>)
-            return commodity_export_result{v.instrument};
-        else if constexpr (std::is_same_v<T, scripted_mapping_result>)
-            return scripted_export_result{v.instrument};
-        else if constexpr (std::is_same_v<T, composite_mapping_result>)
-            return composite_export_result{v.instrument, {}};
-        return std::monostate{};
-    }, r);
-}
-
 }
 
 using ores::ore::xml::exporter;
@@ -261,7 +215,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     for (const auto& src : imported) {
         trade_export_item item;
         item.trade = src.trade;
-        item.instrument = to_export_result(src.instrument);
+        item.instrument = src.instrument;
         items.push_back(std::move(item));
     }
 
@@ -285,7 +239,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     for (const auto& src : imported) {
         trade_export_item item;
         item.trade = src.trade;
-        item.instrument = to_export_result(src.instrument);
+        item.instrument = src.instrument;
         items.push_back(std::move(item));
     }
 

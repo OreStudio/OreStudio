@@ -57,6 +57,9 @@ public:
     std::vector<domain::fra_instrument>
     read_all(context ctx, const std::string& instrument_id);
 
+    std::vector<domain::fra_instrument>
+    read_latest(context ctx, const std::vector<std::string>& ids);
+
     void remove(context ctx, const std::string& instrument_id);
 };
 

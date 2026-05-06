@@ -93,4 +93,11 @@ callable_swap_instrument_service::get_callable_swap_instrument_history(
     return repo_.read_all(ctx_, id);
 }
 
+
+std::vector<domain::callable_swap_instrument>
+callable_swap_instrument_service::get_callable_swap_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

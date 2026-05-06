@@ -50,6 +50,9 @@ public:
 
     void save_equity_forward_instrument(const domain::equity_forward_instrument& v);
 
+    std::vector<domain::equity_forward_instrument>
+    get_equity_forward_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_forward_instrument_repository repo_;

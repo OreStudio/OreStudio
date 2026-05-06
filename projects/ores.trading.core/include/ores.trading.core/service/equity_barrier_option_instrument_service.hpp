@@ -50,6 +50,9 @@ public:
 
     void save_equity_barrier_option_instrument(const domain::equity_barrier_option_instrument& v);
 
+    std::vector<domain::equity_barrier_option_instrument>
+    get_equity_barrier_option_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_barrier_option_instrument_repository repo_;

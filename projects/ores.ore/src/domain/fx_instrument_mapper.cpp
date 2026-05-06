@@ -264,13 +264,13 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type,
 // Forward: FxForward
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_forward(const trade& t) {
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxForward: "
                                << std::string(t.id);
     fx_forward_instrument r;
     r.trade_type_code = "FxForward";
     set_audit(r);
-    if (!t.FxForwardData) return {r};
+    if (!t.FxForwardData) return r;
     const auto& fwd = *t.FxForwardData;
 
     r.value_date      = std::string(fwd.ValueDate);
@@ -281,20 +281,20 @@ fx_mapping_result fx_instrument_mapper::forward_fx_forward(const trade& t) {
     if (fwd.Settlement)
         r.settlement  = to_string(*fwd.Settlement);
 
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxSwap
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_swap(const trade& t) {
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxSwap: "
                                << std::string(t.id);
     fx_forward_instrument r;
     r.trade_type_code = "FxSwap";
     set_audit(r);
-    if (!t.FxSwapData) return {r};
+    if (!t.FxSwapData) return r;
     const auto& sw = *t.FxSwapData;
 
     // Near leg only; far leg is a documented coverage gap.
@@ -306,20 +306,20 @@ fx_mapping_result fx_instrument_mapper::forward_fx_swap(const trade& t) {
     if (sw.Settlement)
         r.settlement  = to_string(*sw.Settlement);
 
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_option(const trade& t) {
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxOption: "
                                << std::string(t.id);
     fx_vanilla_option_instrument r;
     r.trade_type_code = "FxOption";
     set_audit(r);
-    if (!t.FxOptionData) return {r};
+    if (!t.FxOptionData) return r;
     const auto& opt = *t.FxOptionData;
 
     r.bought_currency = to_string(opt.BoughtCurrency);
@@ -337,21 +337,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_option(const trade& t) {
     r.expiry_date       = expiry_date_from_vec(
         xsd::vector<optionData>{od});
 
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxBarrierOption: "
                                << std::string(t.id);
     fx_barrier_option_instrument r;
     r.trade_type_code = "FxBarrierOption";
     set_audit(r);
-    if (!t.FxBarrierOptionData) return {r};
+    if (!t.FxBarrierOptionData) return r;
     const auto& d = *t.FxBarrierOptionData;
 
     r.bought_currency = to_string(d.BoughtCurrency);
@@ -371,21 +371,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_barrier_option(
             r.upper_barrier = static_cast<double>(
                 d.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxDoubleBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_double_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_double_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: "
                                << std::string(t.id);
     fx_barrier_option_instrument r;
     r.trade_type_code = "FxDoubleBarrierOption";
     set_audit(r);
-    if (!t.FxDoubleBarrierOptionData) return {r};
+    if (!t.FxDoubleBarrierOptionData) return r;
     const auto& d = *t.FxDoubleBarrierOptionData;
 
     r.bought_currency = to_string(d.BoughtCurrency);
@@ -405,21 +405,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_double_barrier_option(
             r.upper_barrier = static_cast<double>(
                 d.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxEuropeanBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_european_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_european_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: "
                                << std::string(t.id);
     fx_barrier_option_instrument r;
     r.trade_type_code = "FxEuropeanBarrierOption";
     set_audit(r);
-    if (!t.FxEuropeanBarrierOptionData) return {r};
+    if (!t.FxEuropeanBarrierOptionData) return r;
     const auto& d = *t.FxEuropeanBarrierOptionData;
 
     r.bought_currency = to_string(d.BoughtCurrency);
@@ -439,21 +439,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_european_barrier_option(
             r.upper_barrier = static_cast<double>(
                 d.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxKIKOBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_kiko_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_kiko_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: "
                                << std::string(t.id);
     fx_barrier_option_instrument r;
     r.trade_type_code = "FxKIKOBarrierOption";
     set_audit(r);
-    if (!t.FxKIKOBarrierOptionData) return {r};
+    if (!t.FxKIKOBarrierOptionData) return r;
     const auto& d = *t.FxKIKOBarrierOptionData;
 
     r.bought_currency = to_string(d.BoughtCurrency);
@@ -474,21 +474,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_kiko_barrier_option(
             r.upper_barrier = static_cast<double>(
                 d.Barriers.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxGenericBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_generic_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_generic_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxGenericBarrierOption: "
                                << std::string(t.id);
     fx_barrier_option_instrument r;
     r.trade_type_code = "FxGenericBarrierOption";
     set_audit(r);
-    if (!t.FxGenericBarrierOptionData) return {r};
+    if (!t.FxGenericBarrierOptionData) return r;
     const auto& d = *t.FxGenericBarrierOptionData;
 
     if (d.underlyingTypes.Name)
@@ -511,14 +511,14 @@ fx_mapping_result fx_instrument_mapper::forward_fx_generic_barrier_option(
             r.upper_barrier = static_cast<double>(
                 d.Barriers.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxDigitalOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_digital_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_digital_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalOption: "
                                << std::string(t.id);
@@ -526,7 +526,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_digital_option(
     r.trade_type_code = "FxDigitalOption";
     r.long_short      = "Long";
     set_audit(r);
-    if (!t.FxDigitalOptionData) return {r};
+    if (!t.FxDigitalOptionData) return r;
     const auto& d = *t.FxDigitalOptionData;
 
     r.foreign_currency = to_string(d.ForeignCurrency);
@@ -536,14 +536,14 @@ fx_mapping_result fx_instrument_mapper::forward_fx_digital_option(
     r.payoff_amount    = static_cast<double>(d.PayoffAmount);
     r.option_type      = option_type_from_vec(d.OptionData);
     r.expiry_date      = expiry_date_from_vec(d.OptionData);
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxDigitalBarrierOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_digital_barrier_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_digital_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalBarrierOption: "
                                << std::string(t.id);
@@ -551,7 +551,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_digital_barrier_option(
     r.trade_type_code = "FxDigitalBarrierOption";
     r.long_short      = "Long";
     set_audit(r);
-    if (!t.FxDigitalBarrierOptionData) return {r};
+    if (!t.FxDigitalBarrierOptionData) return r;
     const auto& d = *t.FxDigitalBarrierOptionData;
 
     r.foreign_currency  = to_string(d.ForeignCurrency);
@@ -568,14 +568,14 @@ fx_mapping_result fx_instrument_mapper::forward_fx_digital_barrier_option(
             r.lower_barrier = static_cast<double>(
                 d.BarrierData.front().Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxTouchOption / FxDoubleTouchOption
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_touch_option(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_touch_option(
         const trade& t) {
     const std::string type_str = to_string(t.TradeType);
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping " << type_str << ": "
@@ -588,7 +588,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_touch_option(
     const fxTouchOptionData* dp = nullptr;
     if (t.FxTouchOptionData)       dp = &(*t.FxTouchOptionData);
     else if (t.FxDoubleTouchOptionData) dp = &(*t.FxDoubleTouchOptionData);
-    if (!dp) return {r};
+    if (!dp) return r;
     const auto& d = *dp;
 
     r.foreign_currency  = to_string(d.ForeignCurrency);
@@ -607,14 +607,14 @@ fx_mapping_result fx_instrument_mapper::forward_fx_touch_option(
             r.upper_barrier = static_cast<double>(
                 d.BarrierData[1].Levels.Level.front());
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxVarianceSwap
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_variance_swap(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_variance_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxVarianceSwap: "
                                << std::string(t.id);
@@ -622,7 +622,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_variance_swap(
     r.trade_type_code = "FxVarianceSwap";
     r.long_short      = "Long";
     set_audit(r);
-    if (!t.FxVarianceSwapData) return {r};
+    if (!t.FxVarianceSwapData) return r;
     const auto& d = *t.FxVarianceSwapData;
 
     if (d.underlyingTypes.Name)
@@ -636,21 +636,21 @@ fx_mapping_result fx_instrument_mapper::forward_fx_variance_swap(
     r.notional   = static_cast<double>(d.Notional);
     r.currency   = to_string(d.Currency);
     r.moment_type = "Variance"; // default; MomentType element not always present
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxAverageForward
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_average_forward(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_average_forward(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAverageForward: "
                                << std::string(t.id);
     fx_asian_forward_instrument r;
     r.trade_type_code = "FxAverageForward";
     set_audit(r);
-    if (!t.FxAverageForwardData) return {r};
+    if (!t.FxAverageForwardData) return r;
     const auto& d = *t.FxAverageForwardData;
 
     r.payment_date        = std::string(d.PaymentDate);
@@ -660,14 +660,14 @@ fx_mapping_result fx_instrument_mapper::forward_fx_average_forward(
     r.settlement_notional = static_cast<double>(d.SettlementNotional);
     r.fx_index            = std::string(d.FXIndex);
     r.long_short          = "Long";
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxAccumulator
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_accumulator(
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_accumulator(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAccumulator: "
                                << std::string(t.id);
@@ -675,7 +675,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_accumulator(
     r.trade_type_code = "FxAccumulator";
     r.long_short      = "Long";
     set_audit(r);
-    if (!t.FxAccumulatorData) return {r};
+    if (!t.FxAccumulatorData) return r;
     const auto& d = *t.FxAccumulatorData;
 
     r.currency          = to_string(d.Currency);
@@ -697,27 +697,28 @@ fx_mapping_result fx_instrument_mapper::forward_fx_accumulator(
             }
         }
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================
 // Forward: FxTaRF
 // ===========================================================================
 
-fx_mapping_result fx_instrument_mapper::forward_fx_tarf(const trade& t) {
+trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_tarf(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxTaRF: "
                                << std::string(t.id);
     fx_asian_forward_instrument r;
     r.trade_type_code = "FxTaRF";
     set_audit(r);
-    if (!t.FxTaRFData) return {r};
+    if (!t.FxTaRFData) return r;
     const auto& d = *t.FxTaRFData;
 
-    r.currency     = to_string(d.Currency);
-    r.fx_index     = std::string(d.Underlying.Name);
+    r.currency      = to_string(d.Currency);
+    r.fx_index      = std::string(d.Underlying.Name);
     r.fixing_amount = static_cast<double>(d.FixingAmount);
+    r.long_short    = std::string(d.OptionData.LongShort);
     if (d.Strike)
-        r.strike   = static_cast<double>(*d.Strike);
+        r.strike    = static_cast<double>(*d.Strike);
 
     // Target amount (profit cap) if present
     for (const auto& bd : d.Barriers.BarrierData) {
@@ -728,7 +729,7 @@ fx_mapping_result fx_instrument_mapper::forward_fx_tarf(const trade& t) {
             break;
         }
     }
-    return {r};
+    return r;
 }
 
 // ===========================================================================

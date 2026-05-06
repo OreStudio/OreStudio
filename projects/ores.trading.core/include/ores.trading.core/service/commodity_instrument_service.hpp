@@ -66,6 +66,9 @@ public:
     std::vector<domain::commodity_instrument>
     get_commodity_instrument_history(const std::string& id);
 
+    std::vector<domain::commodity_instrument>
+    get_commodity_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::commodity_instrument_repository repo_;

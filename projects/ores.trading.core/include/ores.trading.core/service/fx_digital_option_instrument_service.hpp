@@ -51,6 +51,9 @@ public:
     void save_fx_digital_option_instrument(
         const domain::fx_digital_option_instrument& v);
 
+    std::vector<domain::fx_digital_option_instrument>
+    get_fx_digital_option_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::fx_digital_option_instrument_repository repo_;

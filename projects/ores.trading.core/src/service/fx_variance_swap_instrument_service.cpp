@@ -53,4 +53,11 @@ void fx_variance_swap_instrument_service::save_fx_variance_swap_instrument(
                               << t.instrument_id;
 }
 
+
+std::vector<domain::fx_variance_swap_instrument>
+fx_variance_swap_instrument_service::get_fx_variance_swap_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

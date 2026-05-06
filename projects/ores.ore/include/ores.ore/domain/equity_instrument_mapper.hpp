@@ -20,7 +20,6 @@
 #ifndef ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 
-#include <variant>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
@@ -32,31 +31,9 @@
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
+#include "ores.trading.api/domain/equity_instrument_variant.hpp"
 
 namespace ores::ore::domain {
-
-/**
- * @brief Variant holding one of the nine per-type equity instrument domain
- *        objects.
- */
-using equity_instrument_variant = std::variant<
-    ores::trading::domain::equity_option_instrument,
-    ores::trading::domain::equity_digital_option_instrument,
-    ores::trading::domain::equity_barrier_option_instrument,
-    ores::trading::domain::equity_asian_option_instrument,
-    ores::trading::domain::equity_forward_instrument,
-    ores::trading::domain::equity_variance_swap_instrument,
-    ores::trading::domain::equity_swap_instrument,
-    ores::trading::domain::equity_accumulator_instrument,
-    ores::trading::domain::equity_position_instrument
->;
-
-/**
- * @brief Result of a forward mapping from ORE XSD to the ORES equity domain type.
- */
-struct equity_mapping_result {
-    equity_instrument_variant instrument;
-};
 
 /**
  * @brief Maps ORE XSD equity trade types to ORES domain types and back.
@@ -104,28 +81,28 @@ private:
 
 public:
     // Phase 4 — forward
-    static equity_mapping_result forward_equity_option(const trade& t);
-    static equity_mapping_result forward_equity_forward(const trade& t);
-    static equity_mapping_result forward_equity_swap(const trade& t);
-    static equity_mapping_result forward_equity_variance_swap(const trade& t);
-    static equity_mapping_result forward_equity_barrier_option(const trade& t);
-    static equity_mapping_result forward_equity_asian_option(const trade& t);
-    static equity_mapping_result forward_equity_digital_option(const trade& t);
-    static equity_mapping_result forward_equity_touch_option(const trade& t);
-    static equity_mapping_result forward_equity_outperformance_option(
+    static trading::domain::equity_instrument_variant forward_equity_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_forward(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_swap(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_variance_swap(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_barrier_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_asian_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_digital_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_touch_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_outperformance_option(
         const trade& t);
 
     // Phase 10 — forward (barrier variant extensions)
-    static equity_mapping_result forward_equity_double_barrier_option(
+    static trading::domain::equity_instrument_variant forward_equity_double_barrier_option(
         const trade& t);
-    static equity_mapping_result forward_equity_european_barrier_option(
+    static trading::domain::equity_instrument_variant forward_equity_european_barrier_option(
         const trade& t);
 
     // Phase 5 — forward
-    static equity_mapping_result forward_equity_accumulator(const trade& t);
-    static equity_mapping_result forward_equity_tarf(const trade& t);
-    static equity_mapping_result forward_equity_cliquet_option(const trade& t);
-    static equity_mapping_result forward_equity_worst_of_basket_swap(
+    static trading::domain::equity_instrument_variant forward_equity_accumulator(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_tarf(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_cliquet_option(const trade& t);
+    static trading::domain::equity_instrument_variant forward_equity_worst_of_basket_swap(
         const trade& t);
 
     // Phase 4 — reverse

@@ -50,7 +50,7 @@ struct scripted_instrument final {
     /**
      * @brief UUID uniquely identifying this scripted instrument.
      */
-    boost::uuids::uuid id;
+    boost::uuids::uuid instrument_id;
 
     /**
      * @brief Party that owns this instrument.

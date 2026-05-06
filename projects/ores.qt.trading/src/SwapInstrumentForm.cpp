@@ -164,7 +164,7 @@ State from_rpa(const trading::domain::rpa_instrument& i) {
     return s;
 }
 
-State extract_state(const trading::messaging::swap_export_result& swap) {
+State extract_state(const trading::domain::swap_instrument_data& swap) {
     return std::visit([](const auto& instr) -> State {
         using T = std::decay_t<decltype(instr)>;
         using namespace trading::domain;
@@ -470,10 +470,10 @@ void SwapInstrumentForm::writeUiToInstrument() {
 }
 
 void SwapInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* swap =
-        std::get_if<trading::messaging::swap_export_result>(&instrument);
+        std::get_if<trading::domain::swap_instrument_data>(&instrument);
     if (!swap) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-swap instrument pushed to SwapInstrumentForm";

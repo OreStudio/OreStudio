@@ -50,6 +50,9 @@ public:
 
     void save_equity_position_instrument(const domain::equity_position_instrument& v);
 
+    std::vector<domain::equity_position_instrument>
+    get_equity_position_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_position_instrument_repository repo_;

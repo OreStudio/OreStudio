@@ -50,6 +50,9 @@ public:
 
     void save_equity_variance_swap_instrument(const domain::equity_variance_swap_instrument& v);
 
+    std::vector<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_variance_swap_instrument_repository repo_;

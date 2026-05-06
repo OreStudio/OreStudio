@@ -77,7 +77,7 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto t = load_first_trade("FX_Forward.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
+    const auto& instr = std::get<fx_forward_instrument>(result);
 
     CHECK(instr.trade_type_code == "FxForward");
     CHECK(!instr.value_date.empty());
@@ -94,7 +94,7 @@ TEST_CASE("mapper_roundtrip_fx_forward_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Forward.xml");
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
+    const auto& instr = std::get<fx_forward_instrument>(result);
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_forward(instr);
 
@@ -117,7 +117,7 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto t = load_first_trade("FX_Swap.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
-    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
+    const auto& instr = std::get<fx_forward_instrument>(result);
 
     CHECK(instr.trade_type_code == "FxSwap");
     CHECK(!instr.value_date.empty());
@@ -134,7 +134,7 @@ TEST_CASE("mapper_roundtrip_fx_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Swap.xml");
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
-    const auto& instr = std::get<fx_forward_instrument>(result.instrument);
+    const auto& instr = std::get<fx_forward_instrument>(result);
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_swap(instr);
 
@@ -155,7 +155,7 @@ TEST_CASE("mapper_roundtrip_fx_option_forward", tags) {
     const auto t = load_first_trade("FX_Option_European.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_option(t);
-    const auto& instr = std::get<fx_vanilla_option_instrument>(result.instrument);
+    const auto& instr = std::get<fx_vanilla_option_instrument>(result);
 
     CHECK(instr.trade_type_code == "FxOption");
     CHECK(instr.bought_currency == "EUR");
@@ -171,7 +171,7 @@ TEST_CASE("mapper_roundtrip_fx_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Option_European.xml");
     const auto result = fx_instrument_mapper::forward_fx_option(t);
-    const auto& instr = std::get<fx_vanilla_option_instrument>(result.instrument);
+    const auto& instr = std::get<fx_vanilla_option_instrument>(result);
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_option(instr);
 

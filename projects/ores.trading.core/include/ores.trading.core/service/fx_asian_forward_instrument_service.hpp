@@ -51,6 +51,9 @@ public:
     void save_fx_asian_forward_instrument(
         const domain::fx_asian_forward_instrument& v);
 
+    std::vector<domain::fx_asian_forward_instrument>
+    get_fx_asian_forward_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::fx_asian_forward_instrument_repository repo_;

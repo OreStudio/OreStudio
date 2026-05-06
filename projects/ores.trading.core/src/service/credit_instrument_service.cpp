@@ -59,13 +59,13 @@ credit_instrument_service::get_credit_instrument(const std::string& id) {
 }
 
 void credit_instrument_service::save_credit_instrument(const domain::credit_instrument& v) {
-    if (v.id.is_nil())
+    if (v.instrument_id.is_nil())
         throw std::invalid_argument("Credit instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving credit_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving credit_instrument: " << v.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved credit_instrument: " << t.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved credit_instrument: " << t.instrument_id;
 }
 
 void credit_instrument_service::remove_credit_instrument(const std::string& id) {
@@ -78,6 +78,13 @@ std::vector<domain::credit_instrument>
 credit_instrument_service::get_credit_instrument_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for credit_instrument: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+
+std::vector<domain::credit_instrument>
+credit_instrument_service::get_credit_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
 }
 
 }

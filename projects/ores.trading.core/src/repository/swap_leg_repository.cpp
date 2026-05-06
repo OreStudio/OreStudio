@@ -145,4 +145,21 @@ void swap_leg_repository::remove_by_instrument(
         "Removing swap legs for instrument from database.");
 }
 
+
+std::vector<domain::swap_leg>
+swap_leg_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids)
+              && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c, "leg_number"_c);
+    return execute_read_query<swap_leg_entity, domain::swap_leg>(
+        ctx, query,
+        [](const auto& entities) { return swap_leg_mapper::map(entities); },
+        lg(), "Reading swap legs for multiple instruments.");
+}
+
 }

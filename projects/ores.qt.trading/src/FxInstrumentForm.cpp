@@ -185,10 +185,10 @@ void FxInstrumentForm::writeUiToInstrument() {
 }
 
 void FxInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
     const auto* ex =
-        std::get_if<trading::messaging::fx_export_result>(&instrument);
+        std::get_if<trading::domain::fx_instrument_variant>(&instrument);
     if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-FX instrument pushed to FxInstrumentForm"
@@ -198,13 +198,13 @@ void FxInstrumentForm::setInstrument(
         return;
     }
     const auto* fwd =
-        std::get_if<trading::domain::fx_forward_instrument>(&ex->instrument);
+        std::get_if<trading::domain::fx_forward_instrument>(ex);
     if (!fwd) {
         const auto ttc = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
         BOOST_LOG_SEV(lg(), warn)
             << "Non-forward FX instrument in FxInstrumentForm"
             << " trade_type_code=" << ttc
-            << " fx variant index=" << ex->instrument.index();
+            << " fx variant index=" << ex->index();
         emit loadFailed(QString::fromStdString(
             "Non-forward FX type not yet supported in this "
             "dialog (trade_type_code=" + ttc + ")"));

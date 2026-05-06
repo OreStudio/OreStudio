@@ -59,7 +59,7 @@ public:
     void setUsername(const std::string& username) override;
 
     void setInstrument(
-        const trading::messaging::instrument_export_result& instrument) override;
+        const trading::domain::trade_instrument& instrument) override;
     void clear() override;
 
     void setTradeType(const QString& code,

@@ -66,6 +66,9 @@ public:
     std::vector<domain::credit_instrument>
     get_credit_instrument_history(const std::string& id);
 
+    std::vector<domain::credit_instrument>
+    get_credit_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::credit_instrument_repository repo_;

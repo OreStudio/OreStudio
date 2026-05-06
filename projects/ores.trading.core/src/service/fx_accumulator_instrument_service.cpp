@@ -53,4 +53,11 @@ void fx_accumulator_instrument_service::save_fx_accumulator_instrument(
                               << t.instrument_id;
 }
 
+
+std::vector<domain::fx_accumulator_instrument>
+fx_accumulator_instrument_service::get_fx_accumulator_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

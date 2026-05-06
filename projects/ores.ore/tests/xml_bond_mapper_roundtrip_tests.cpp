@@ -69,7 +69,7 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     const auto t = load_trade("Cash_Bonds.xml", 0);
 
     const auto result = bond_instrument_mapper::forward_bond(t);
-    const auto& instr = result.instrument;
+    const auto& instr = result;
 
     CHECK(instr.trade_type_code == "Bond");
     CHECK(instr.issuer == "CPTY_C");
@@ -88,7 +88,7 @@ TEST_CASE("mapper_roundtrip_bond_reverse", tags) {
     const auto result = bond_instrument_mapper::forward_bond(t);
 
     const auto reconstructed =
-        bond_instrument_mapper::reverse_bond(result.instrument);
+        bond_instrument_mapper::reverse_bond(result);
 
     REQUIRE(reconstructed.BondData.operator bool());
     const auto& bd = *reconstructed.BondData;
@@ -131,7 +131,7 @@ TEST_CASE("mapper_roundtrip_forward_bond_forward", tags) {
     const auto t = load_trade("Cash_Bonds.xml", 1);
 
     const auto result = bond_instrument_mapper::forward_forward_bond(t);
-    const auto& instr = result.instrument;
+    const auto& instr = result;
 
     CHECK(instr.trade_type_code == "ForwardBond");
     CHECK(instr.issuer == "CPTY_C");
@@ -146,7 +146,7 @@ TEST_CASE("mapper_roundtrip_forward_bond_reverse", tags) {
     const auto result = bond_instrument_mapper::forward_forward_bond(t);
 
     const auto reconstructed =
-        bond_instrument_mapper::reverse_forward_bond(result.instrument);
+        bond_instrument_mapper::reverse_forward_bond(result);
 
     REQUIRE(reconstructed.ForwardBondData.operator bool());
     const auto& fbd = *reconstructed.ForwardBondData;
@@ -164,7 +164,7 @@ TEST_CASE("mapper_roundtrip_convertible_bond_forward", tags) {
     const auto t = load_trade("Cash_ConvertibleBond.xml", 0);
 
     const auto result = bond_instrument_mapper::forward_convertible_bond(t);
-    const auto& instr = result.instrument;
+    const auto& instr = result;
 
     CHECK(instr.trade_type_code == "ConvertibleBond");
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond forward-mapper test passed, "
@@ -176,10 +176,10 @@ TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_trade("Cash_ConvertibleBond.xml", 0);
     const auto result = bond_instrument_mapper::forward_convertible_bond(t);
-    const auto& instr = result.instrument;
+    const auto& instr = result;
 
     const auto reconstructed =
-        bond_instrument_mapper::reverse_convertible_bond(result.instrument);
+        bond_instrument_mapper::reverse_convertible_bond(result);
 
     REQUIRE(reconstructed.ConvertibleBondData.operator bool());
     const auto& cbd = *reconstructed.ConvertibleBondData;

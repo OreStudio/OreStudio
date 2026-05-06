@@ -35,7 +35,7 @@ std::string convert_to_table(const std::vector<bond_instrument>& v) {
           << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.id)
+        table << boost::uuids::to_string(t.instrument_id)
               << t.trade_type_code
               << t.issuer
               << t.currency

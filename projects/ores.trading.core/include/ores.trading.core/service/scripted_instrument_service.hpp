@@ -66,6 +66,9 @@ public:
     std::vector<domain::scripted_instrument>
     get_scripted_instrument_history(const std::string& id);
 
+    std::vector<domain::scripted_instrument>
+    get_scripted_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::scripted_instrument_repository repo_;

@@ -54,4 +54,11 @@ void equity_forward_instrument_service::save_equity_forward_instrument(
                               << t.instrument_id;
 }
 
+
+std::vector<domain::equity_forward_instrument>
+equity_forward_instrument_service::get_equity_forward_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

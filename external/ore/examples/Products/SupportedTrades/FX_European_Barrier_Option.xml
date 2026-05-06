@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Portfolio>
+    <Trade id="FX_EUROPEAN_BARRIER_OPTION_EURJPY">
+        <TradeType>FxEuropeanBarrierOption</TradeType>
+        <Envelope>
+            <CounterParty>CPTY</CounterParty>
+            <NettingSetId>NS</NettingSetId>
+            <AdditionalFields>
+                <party_id>party</party_id>
+                <valuation_date>2025-02-10</valuation_date>
+            </AdditionalFields>
+        </Envelope>
+        <FxEuropeanBarrierOptionData>
+            <OptionData>
+                <LongShort>Long</LongShort>
+                <OptionType>Call</OptionType>
+                <Style>European</Style>
+                <Settlement>Cash</Settlement>
+                <PayOffAtExpiry>false</PayOffAtExpiry>
+                <ExerciseDates>
+                    <ExerciseDate>2027-12-24</ExerciseDate>
+                </ExerciseDates>
+            </OptionData>
+            <BarrierData>
+                <Type>UpAndIn</Type>
+                <Levels>
+                    <Level>130</Level>
+                </Levels>
+            </BarrierData>
+            <BoughtCurrency>EUR</BoughtCurrency>
+            <BoughtAmount>1000000</BoughtAmount>
+            <SoldCurrency>JPY</SoldCurrency>
+            <SoldAmount>125000000</SoldAmount>
+        </FxEuropeanBarrierOptionData>
+    </Trade>
+</Portfolio>

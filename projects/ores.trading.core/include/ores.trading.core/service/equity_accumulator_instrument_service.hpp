@@ -50,6 +50,9 @@ public:
 
     void save_equity_accumulator_instrument(const domain::equity_accumulator_instrument& v);
 
+    std::vector<domain::equity_accumulator_instrument>
+    get_equity_accumulator_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::equity_accumulator_instrument_repository repo_;

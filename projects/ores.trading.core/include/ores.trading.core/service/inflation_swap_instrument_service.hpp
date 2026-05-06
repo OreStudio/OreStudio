@@ -68,6 +68,9 @@ public:
     std::vector<domain::inflation_swap_instrument>
     get_inflation_swap_instrument_history(const std::string& id);
 
+    std::vector<domain::inflation_swap_instrument>
+    get_inflation_swap_instruments(const std::vector<std::string>& ids);
+
 private:
     context ctx_;
     repository::inflation_swap_instrument_repository repo_;

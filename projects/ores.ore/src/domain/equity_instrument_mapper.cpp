@@ -284,12 +284,12 @@ std::string equity_instrument_mapper::underlyings_to_json(
 // Forward: EquityOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_option_instrument>();
     inst.trade_type_code = "EquityOption";
     inst.modified_by = "ores";
@@ -313,12 +313,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_option(
 // Forward: EquityForward
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_forward(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_forward(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityForward: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_forward_instrument>();
     inst.trade_type_code = "EquityForward";
     inst.modified_by = "ores";
@@ -340,12 +340,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_forward(
 // Forward: EquitySwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_swap(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquitySwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_swap_instrument>();
     inst.trade_type_code = "EquitySwap";
     inst.modified_by = "ores";
@@ -391,12 +391,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_swap(
 // Forward: EquityVarianceSwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_variance_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityVarianceSwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_variance_swap_instrument>();
     inst.trade_type_code = "EquityVarianceSwap";
     inst.modified_by = "ores";
@@ -419,12 +419,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
 // Forward: EquityBarrierOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityBarrierOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_barrier_option_instrument>();
     inst.trade_type_code = "EquityBarrierOption";
     inst.modified_by = "ores";
@@ -453,12 +453,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
 // Forward: EquityAsianOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_asian_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAsianOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_asian_option_instrument>();
     inst.trade_type_code = "EquityAsianOption";
     inst.modified_by = "ores";
@@ -485,12 +485,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
 // Forward: EquityDigitalOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_digital_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDigitalOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_digital_option_instrument>();
     inst.trade_type_code = "EquityDigitalOption";
     inst.modified_by = "ores";
@@ -514,12 +514,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
 // Forward: EquityTouchOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_touch_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTouchOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_digital_option_instrument>();
     inst.trade_type_code = "EquityTouchOption";
     inst.modified_by = "ores";
@@ -545,13 +545,13 @@ equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
 // Forward: EquityOutperformanceOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_outperformance_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOutperformanceOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_option_instrument>();
     inst.trade_type_code = "EquityOutperformanceOption";
     inst.modified_by = "ores";
@@ -580,12 +580,12 @@ equity_instrument_mapper::forward_equity_outperformance_option(
 // Forward: EquityAccumulator
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_accumulator(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAccumulator: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_accumulator_instrument>();
     inst.trade_type_code = "EquityAccumulator";
     inst.modified_by = "ores";
@@ -622,12 +622,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
 // Forward: EquityTaRF
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_tarf(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTaRF: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_accumulator_instrument>();
     inst.trade_type_code = "EquityTaRF";
     inst.modified_by = "ores";
@@ -658,12 +658,12 @@ equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
 // Forward: EquityCliquetOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_cliquet_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityCliquetOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_option_instrument>();
     inst.trade_type_code = "EquityCliquetOption";
     inst.modified_by = "ores";
@@ -695,13 +695,13 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
 // Forward: EquityWorstOfBasketSwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_worst_of_basket_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityWorstOfBasketSwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_swap_instrument>();
     inst.trade_type_code = "EquityWorstOfBasketSwap";
     inst.modified_by = "ores";
@@ -1113,13 +1113,13 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
 // Forward: EquityDoubleBarrierOption (same struct as EquityBarrierOption)
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_double_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDoubleBarrierOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_barrier_option_instrument>();
     inst.trade_type_code = "EquityDoubleBarrierOption";
     inst.modified_by = "ores";
@@ -1147,14 +1147,14 @@ equity_instrument_mapper::forward_equity_double_barrier_option(
 // Forward: EquityEuropeanBarrierOption (same struct as EquityBarrierOption)
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_european_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug)
         << "Forward-mapping EquityEuropeanBarrierOption: "
         << std::string(t.id);
-    equity_mapping_result result;
-    auto& inst = result.instrument.emplace<
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
         ores::trading::domain::equity_barrier_option_instrument>();
     inst.trade_type_code = "EquityEuropeanBarrierOption";
     inst.modified_by = "ores";

@@ -1,0 +1,21 @@
+<Portfolio>
+  <Trade id="EQDigitalOption">
+    <TradeType>EquityDigitalOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2026-07-17</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>3300</Strike>
+      <PayoffAmount>1000</PayoffAmount>
+      <Name>RIC:.SPX</Name>
+      <Quantity>0</Quantity>
+    </EquityDigitalOptionData>
+  </Trade>
+</Portfolio>

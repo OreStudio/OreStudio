@@ -1,0 +1,17 @@
+<Portfolio>
+  <Trade id="RPA_VANILLA">
+    <TradeType>RiskParticipationAgreement</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <RiskParticipationAgreementData>
+      <ParticipationRate>0</ParticipationRate>
+      <ProtectionStart>2025-02-10</ProtectionStart>
+      <ProtectionEnd>2037-12-16</ProtectionEnd>
+      <CreditCurveId>CompanyXZY</CreditCurveId>
+      <FixedRecoveryRate>0.150000006</FixedRecoveryRate>
+      <ProtectionFee/>
+      <Underlying/>
+    </RiskParticipationAgreementData>
+  </Trade>
+</Portfolio>

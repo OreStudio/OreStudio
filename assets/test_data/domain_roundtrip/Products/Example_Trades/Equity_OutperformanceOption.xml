@@ -1,0 +1,30 @@
+<Portfolio>
+  <Trade id="OutperformanceOption1#KnockIn">
+    <TradeType>EquityOutperformanceOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityOutperformanceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2025-03-03</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Currency>USD</Currency>
+      <Notional>500000</Notional>
+      <Underlying1>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+      </Underlying1>
+      <Underlying2>
+        <Type>Equity</Type>
+        <Name>RIC:.NDX</Name>
+      </Underlying2>
+      <InitialPrice1>0</InitialPrice1>
+      <InitialPrice2>0</InitialPrice2>
+      <StrikeReturn>0.00999999978</StrikeReturn>
+    </EquityOutperformanceOptionData>
+  </Trade>
+</Portfolio>

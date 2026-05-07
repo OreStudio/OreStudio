@@ -1,0 +1,34 @@
+<Portfolio>
+  <Trade id="CreditLinkedSwap">
+    <TradeType>CreditLinkedSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CreditLinkedSwapData>
+      <CreditCurveId>RED:46A844|SNRFOR|USD|XR14</CreditCurveId>
+      <ContingentPayments>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <Notionals>
+            <Notional>152350000</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate></StartDate>
+              <EndDate>2034-06-17</EndDate>
+              <Tenor>6M</Tenor>
+              <Convention>F</Convention>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0659999996</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </ContingentPayments>
+    </CreditLinkedSwapData>
+  </Trade>
+</Portfolio>

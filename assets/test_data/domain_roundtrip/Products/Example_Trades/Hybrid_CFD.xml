@@ -1,0 +1,16 @@
+<Portfolio>
+  <Trade id="EquityCFD">
+    <TradeType>ContractForDifference</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <ContractForDifferenceData>
+      <UnderlyingData/>
+      <ReturnData>
+        <Payer>false</Payer>
+        <Currency>AED</Currency>
+        <ScheduleData/>
+      </ReturnData>
+    </ContractForDifferenceData>
+  </Trade>
+</Portfolio>

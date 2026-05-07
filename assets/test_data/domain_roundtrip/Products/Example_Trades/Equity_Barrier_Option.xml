@@ -1,0 +1,28 @@
+<Portfolio>
+  <Trade id="EQBarrierOption">
+    <TradeType>EquityBarrierOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-08-15</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels>
+          <Level>3500</Level>
+        </Levels>
+      </BarrierData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Strike>3200.000000</Strike>
+      <Quantity>1000</Quantity>
+    </EquityBarrierOptionData>
+  </Trade>
+</Portfolio>

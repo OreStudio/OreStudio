@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="Commodity_Swaption_NYMEX_NG">
+    <TradeType>CommoditySwaption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommoditySwaptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2025-05-09</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CommodityFloating</LegType>
+        <Currency>USD</Currency>
+        <CommodityFloatingLegData>
+          <Name>NYMEX:NG</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities/>
+        </CommodityFloatingLegData>
+      </LegData>
+    </CommoditySwaptionData>
+  </Trade>
+</Portfolio>

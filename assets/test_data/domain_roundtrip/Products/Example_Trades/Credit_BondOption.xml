@@ -1,0 +1,21 @@
+<Portfolio>
+  <Trade id="Bond_Call_Option">
+    <TradeType>BondOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondOptionData>
+      <OptionData>
+        <LongShort></LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2025-04-16</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>1.000000</Strike>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>

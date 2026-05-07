@@ -1,0 +1,38 @@
+<Portfolio>
+  <Trade id="Bond_Call_Option_StrikePrice">
+    <TradeType>BondOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondOptionData>
+      <OptionData>
+        <LongShort></LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-02-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+  <Trade id="Bond_Call_Option_YieldStrike">
+    <TradeType>BondOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondOptionData>
+      <OptionData>
+        <LongShort></LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-02-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>

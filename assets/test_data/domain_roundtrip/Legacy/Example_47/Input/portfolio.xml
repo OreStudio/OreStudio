@@ -1,0 +1,11 @@
+<Portfolio>
+  <Trade id="Composite_Equity_Swap">
+    <TradeType>CompositeTrade</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY</NettingSetId>
+    </Envelope>
+    <CompositeTradeData>
+      <Currency>USD</Currency>
+    </CompositeTradeData>
+  </Trade>
+</Portfolio>

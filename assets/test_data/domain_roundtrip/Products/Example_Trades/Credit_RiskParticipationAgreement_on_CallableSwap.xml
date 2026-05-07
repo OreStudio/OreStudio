@@ -1,0 +1,17 @@
+<Portfolio>
+  <Trade id="RPA_CALLABLE">
+    <TradeType>RiskParticipationAgreement</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <RiskParticipationAgreementData>
+      <ParticipationRate>0</ParticipationRate>
+      <ProtectionStart>2023-02-16</ProtectionStart>
+      <ProtectionEnd>2042-04-22</ProtectionEnd>
+      <CreditCurveId>CompanyXZY</CreditCurveId>
+      <FixedRecoveryRate>0.150000006</FixedRecoveryRate>
+      <ProtectionFee/>
+      <Underlying/>
+    </RiskParticipationAgreementData>
+  </Trade>
+</Portfolio>

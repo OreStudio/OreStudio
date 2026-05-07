@@ -1,0 +1,35 @@
+<Portfolio>
+  <Trade id="FX_TARF_EURUSD">
+    <TradeType>FxTaRF</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>1000000</FixingAmount>
+      <Strike>1.10000002</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>CumulatedProfitCap</Type>
+          <Levels>
+            <Level>100000</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxTaRFData>
+  </Trade>
+</Portfolio>

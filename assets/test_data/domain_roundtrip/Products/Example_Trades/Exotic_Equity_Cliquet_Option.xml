@@ -1,0 +1,17 @@
+<Portfolio>
+  <Trade id="EQ_CLIQUET_SPX">
+    <TradeType>EquityCliquetOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityCliquetOptionData>
+      <Name>.SPX</Name>
+      <Currency>USD</Currency>
+      <Notional>1000000</Notional>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <Moneyness>1</Moneyness>
+      <ScheduleData/>
+    </EquityCliquetOptionData>
+  </Trade>
+</Portfolio>

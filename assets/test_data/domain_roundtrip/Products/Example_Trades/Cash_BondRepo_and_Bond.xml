@@ -1,0 +1,28 @@
+<Portfolio>
+  <Trade id="Repo">
+    <TradeType>BondRepo</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondRepoData>
+      <BondData>
+        <SecurityId>ISIN:US912828X703</SecurityId>
+      </BondData>
+      <RepoData>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+        </LegData>
+      </RepoData>
+    </BondRepoData>
+  </Trade>
+  <Trade id="Security">
+    <TradeType>Bond</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondData>
+      <SecurityId>ISIN:US912828X703</SecurityId>
+    </BondData>
+  </Trade>
+</Portfolio>

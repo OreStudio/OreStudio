@@ -1,0 +1,17 @@
+<Portfolio>
+  <Trade id="ForwardBond">
+    <TradeType>ForwardBond</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate></ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward></LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>

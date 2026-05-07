@@ -1,0 +1,66 @@
+<Portfolio>
+  <Trade id="SCRIPTED_FX_TARF">
+    <TradeType>FxTaRF</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>1000000</FixingAmount>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>ECB-EUR-USD</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers/>
+    </FxTaRFData>
+  </Trade>
+  <Trade id="FX_Forward_2D">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>20230202</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1090000</SoldAmount>
+    </FxForwardData>
+  </Trade>
+  <Trade id="FX_Forward_3D">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>20230203</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1090000</SoldAmount>
+    </FxForwardData>
+  </Trade>
+  <Trade id="FX_Forward_7D">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>20230207</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1090000</SoldAmount>
+    </FxForwardData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,32 @@
+<Portfolio>
+  <Trade id="FixedRateBond">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>CPTY</IssuerId>
+      <SecurityId>SECURITY_1</SecurityId>
+      <SettlementDays>2</SettlementDays>
+      <IssueDate>20150203</IssueDate>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <EndDate>2025-03-01</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00999999978</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>

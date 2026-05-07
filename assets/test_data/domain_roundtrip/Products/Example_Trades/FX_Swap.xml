@@ -1,0 +1,18 @@
+<Portfolio>
+  <Trade id="FXSWP_EURUSD_10Y">
+    <TradeType>FxSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxSwapData>
+      <NearDate>2025-08-23</NearDate>
+      <NearBoughtCurrency>EUR</NearBoughtCurrency>
+      <NearBoughtAmount>1000000</NearBoughtAmount>
+      <NearSoldCurrency>USD</NearSoldCurrency>
+      <NearSoldAmount>1100000</NearSoldAmount>
+      <FarDate></FarDate>
+      <FarBoughtAmount>0</FarBoughtAmount>
+      <FarSoldAmount>0</FarSoldAmount>
+    </FxSwapData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="Cap_on_CMS">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>CMS</LegType>
+        <Currency>USD</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>75000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-03-02</StartDate>
+            <EndDate>2028-03-01</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

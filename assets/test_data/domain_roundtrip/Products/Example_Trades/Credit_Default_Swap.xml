@@ -1,0 +1,32 @@
+<Portfolio>
+  <Trade id="CDS">
+    <TradeType>CreditDefaultSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CreditDefaultSwapData>
+      <CreditCurveId>Berkshire Hathaway Inc.</CreditCurveId>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <EndDate>2033-01-27</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00999999978</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </CreditDefaultSwapData>
+  </Trade>
+</Portfolio>

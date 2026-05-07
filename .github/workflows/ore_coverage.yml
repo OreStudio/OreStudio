@@ -14,7 +14,7 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 ---
-name: ORE Coverage Gap Check
+name: ORE Domain Roundtrip Check
 on:  # yamllint disable-line rule:truthy
   push:
     branches: ["main"]
@@ -24,7 +24,7 @@ on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  coverage:
+  roundtrip:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -35,5 +35,5 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run ORE coverage gap check
-        run: python3 scripts/ore_coverage_check.py --strict
+      - name: Run ORE domain roundtrip check
+        run: python3 scripts/ore_domain_roundtrip_check.py

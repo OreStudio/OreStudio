@@ -1,5 +1,8 @@
 #+title: ORE Domain Roundtrip Check (Thing 3)
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+note: Type bridge section updated 2026-05-06 — import/export cleanup (PR #728)
+#+      unified instrument carriers; trade_import_item and trade_export_item now
+#+      both use trade_instrument, so the bridge is a trivial struct copy.
 
 * Overview
 
@@ -104,78 +107,41 @@ Thing 2 at zero additional CI cost.
 
 * Type bridge rationale
 
-=importer::import_portfolio_with_context= returns
-=std::vector<trade_import_item>=, each carrying an
-=instrument_mapping_result= (defined in =trade_mapper.hpp=):
+As of PR #728 (import/export cleanup), the import and export sides
+share a single unified instrument carrier type:
 
 #+begin_example
-  instrument_mapping_result = variant<
-      monostate,
-      swap_mapping_result   { rates_instrument_variant; vector<swap_leg>; },
-      fx_mapping_result     { fx_instrument_variant; },
-      bond_mapping_result   { ... },
-      credit_mapping_result { ... },
-      equity_mapping_result { ... },
-      ...>
+  trade_instrument = std::variant<
+      std::monostate,
+      swap_instrument_data,       // with_legs<rates_instrument_variant, swap_leg>
+      fx_instrument_variant,
+      bond_instrument,
+      credit_instrument,
+      equity_instrument_variant,
+      commodity_instrument,
+      composite_instrument_data,  // with_legs<composite_instrument, composite_leg>
+      scripted_instrument>
 #+end_example
 
-=exporter::export_portfolio= expects
-=std::vector<trade_export_item>=, each carrying an
-=instrument_export_result= (defined in =instrument_protocol.hpp=):
+Both =trade_import_item= and =trade_export_item= carry a
+=trade_instrument= field. There is no longer any type conversion
+required between the import and export sides — the bridge is a trivial
+struct copy:
 
-#+begin_example
-  instrument_export_result = variant<
-      monostate,
-      swap_export_result   { rates_instrument_variant; vector<swap_leg>; },
-      fx_export_result     { fx_instrument_variant; },
-      bond_export_result   { ... },
-      credit_export_result { ... },
-      equity_export_result { ... },
-      ...>
-#+end_example
+#+begin_src cpp
+  trade_export_item ei;
+  ei.trade      = item.trade;
+  ei.instrument = item.instrument;
+#+end_src
 
-The inner instrument variant types are the same C++ types in both
-(=fx_forward_instrument=, =vanilla_swap_instrument=, etc.). The
-difference is the outer container structs (=*_mapping_result= vs
-=*_export_result=). The bridge is a single =std::visit= that
-reconstructs the export-side struct from the import-side one, a
-mechanical field-copy with no semantic transformation.
+The original bridge design (with separate =*_mapping_result= /
+=*_export_result= types) is obsolete.
 
 * Phase plan
 
-** Phase 1 — Type bridge and =exporter::roundtrip_portfolio= in =ores.ore=
+** Phase 1 — =exporter::roundtrip_portfolio= in =ores.ore=
 
-*** =projects/ores.ore/src/xml/exporter.cpp= (private helper)
-
-Add a file-local =to_export_result= function that converts
-=instrument_mapping_result= → =instrument_export_result=:
-
-#+begin_src cpp
-  instrument_export_result
-  to_export_result(const domain::instrument_mapping_result& r) {
-      return std::visit([](const auto& m) -> instrument_export_result {
-          using T = std::decay_t<decltype(m)>;
-          if constexpr (std::is_same_v<T, std::monostate>)
-              return std::monostate{};
-          else if constexpr (std::is_same_v<T, domain::swap_mapping_result>)
-              return swap_export_result{m.instrument, m.legs};
-          else if constexpr (std::is_same_v<T, domain::fx_mapping_result>)
-              return fx_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::bond_mapping_result>)
-              return bond_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::credit_mapping_result>)
-              return credit_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::equity_mapping_result>)
-              return equity_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>)
-              return commodity_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>)
-              return scripted_export_result{m.instrument};
-          else if constexpr (std::is_same_v<T, domain::composite_mapping_result>)
-              return composite_export_result{m.instrument};
-      }, r);
-  }
-#+end_src
+No type bridge is needed (see updated rationale above).
 
 *** =projects/ores.ore/include/ores.ore/xml/exporter.hpp=
 
@@ -205,13 +171,17 @@ Implement =roundtrip_portfolio=:
       throws (non-portfolio XML, parse error), skip and increment
       =skipped=; continue.
    b. Build =std::vector<trade_export_item>=: for each
-      =trade_import_item=:
-      - =ei.trade = item.trade=
-      - If =item.instrument= is =monostate=: load original XSD trade
-        from =p.Trade= by index and push it directly into the output
-        portfolio (passthrough); increment =trades_passthrough=.
-      - Otherwise: =ei.instrument = to_export_result(item.instrument)=;
-        push to export items; increment =trades_mapped=.
+      =trade_import_item= do a trivial struct copy:
+      #+begin_src cpp
+        trade_export_item ei;
+        ei.trade      = item.trade;
+        ei.instrument = item.instrument;  // same trade_instrument type
+        if (std::holds_alternative<std::monostate>(item.instrument))
+            ++summary.trades_passthrough;
+        else
+            ++summary.trades_mapped;
+        export_items.push_back(std::move(ei));
+      #+end_src
    c. Call =exporter::export_portfolio(export_items)= → XML string.
    d. Compute mirrored output path:
       =output_dir / std::filesystem::relative(file, input_dir)=.
@@ -219,16 +189,8 @@ Implement =roundtrip_portfolio=:
    f. Increment =output_files_written=.
 3. Return =roundtrip_summary=.
 
-The =importer= header (=ores.ore/xml/importer.hpp=) is not yet included
-in =exporter.cpp=; add it. All mapper headers are already present.
-
-Note on passthrough: for unmapped trades, the XSD =domain::trade=
-object is preserved verbatim from the parsed portfolio (loaded
-internally via =domain::load_data= or accessed via the original parse
-done inside =import_portfolio_with_context=). If re-parsing is
-undesirable (two parses per file), =roundtrip_portfolio= may load the
-portfolio once via =load_data= to retain the XSD objects alongside the
-import result. Prefer whichever avoids double-parsing.
+The =importer= header (=ores.ore/xml/importer.hpp=) must be included
+in =exporter.cpp=.
 
 ** Phase 2 — =ores.cli ore roundtrip= subcommand
 

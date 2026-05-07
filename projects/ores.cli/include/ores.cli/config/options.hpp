@@ -29,6 +29,7 @@
 #include "ores.cli/config/delete_options.hpp"
 #include "ores.cli/config/list_options.hpp"
 #include "ores.cli/config/add_options.hpp"
+#include "ores.cli/config/ore_roundtrip_options.hpp"
 
 namespace ores::cli::config {
 
@@ -61,6 +62,10 @@ struct options final {
      * @brief Configuration related to adding entities, if any.
      */
     std::optional<add_options> adding;
+    /**
+     * @brief Configuration for the ore roundtrip command, if any.
+     */
+    std::optional<ore_roundtrip_options> ore_roundtrip;
     /**
      * @brief Database connection configuration.
      */

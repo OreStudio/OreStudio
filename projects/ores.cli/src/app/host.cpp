@@ -27,6 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
+#include "ores.ore/xml/exporter.hpp"
 
 namespace ores::cli::app {
 
@@ -63,6 +64,34 @@ int host::execute(const std::vector<std::string>& args,
      */
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+
+    /*
+     * DB-free commands are intercepted here, before constructing application.
+     */
+    if (cfg.ore_roundtrip.has_value()) {
+        try {
+            const auto& opts = *cfg.ore_roundtrip;
+            const auto s = ores::ore::xml::exporter::roundtrip_portfolio(
+                opts.input_dir, opts.output_dir);
+            std_output
+                << "XML files found:      " << s.total_xml_files      << "\n"
+                << "Skipped:              " << s.skipped               << "\n"
+                << "Outputs written:      " << s.output_files_written  << "\n"
+                << "Trades mapped:        " << s.trades_mapped         << "\n"
+                << "Trades passthrough:   " << s.trades_passthrough    << "\n";
+            return EXIT_SUCCESS;
+        } catch (const std::exception& e) {
+            const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+            if (be != nullptr) {
+                using boost::diagnostic_information;
+                BOOST_LOG_SEV(lg(), error) << "Roundtrip error: "
+                                           << diagnostic_information(*be);
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Roundtrip error: " << e.what();
+            }
+            throw;
+        }
+    }
 
     try {
         ores::cli::app::application app(std_output, cfg.database);

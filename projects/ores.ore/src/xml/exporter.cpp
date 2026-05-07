@@ -19,7 +19,10 @@
  */
 #include "ores.ore/xml/exporter.hpp"
 
+#include <fstream>
+#include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.ore/xml/importer.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
@@ -377,6 +380,72 @@ std::string exporter::export_portfolio(
     BOOST_LOG_SEV(lg(), debug) << "Finished portfolio export. Trades: "
                                << p.Trade.size();
     return result;
+}
+
+roundtrip_summary exporter::roundtrip_portfolio(
+    const std::filesystem::path& input_dir,
+    const std::filesystem::path& output_dir) {
+    BOOST_LOG_SEV(lg(), debug) << "Starting portfolio roundtrip. Input: "
+                               << input_dir << " Output: " << output_dir;
+
+    roundtrip_summary summary;
+    namespace fs = std::filesystem;
+
+    for (const auto& entry : fs::recursive_directory_iterator(input_dir)) {
+        if (!entry.is_regular_file()) continue;
+        if (entry.path().extension() != ".xml") continue;
+
+        ++summary.total_xml_files;
+        const auto& file = entry.path();
+        BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
+
+        std::vector<trade_import_item> import_items;
+        try {
+            import_items = importer::import_portfolio_with_context(file);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), debug) << "Skipping " << file.filename()
+                                       << ": " << e.what();
+            ++summary.skipped;
+            continue;
+        }
+
+        std::vector<trading::messaging::trade_export_item> export_items;
+        export_items.reserve(import_items.size());
+        for (const auto& item : import_items) {
+            trading::messaging::trade_export_item ei;
+            ei.trade      = item.trade;
+            ei.instrument = item.instrument;
+            if (std::holds_alternative<std::monostate>(item.instrument))
+                ++summary.trades_passthrough;
+            else
+                ++summary.trades_mapped;
+            export_items.push_back(std::move(ei));
+        }
+
+        const std::string xml = export_portfolio(export_items);
+        const auto out_path = output_dir / fs::relative(file, input_dir);
+        try {
+            fs::create_directories(out_path.parent_path());
+            platform::filesystem::file::write_content(out_path, xml);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to write " << out_path
+                                      << ": " << e.what();
+            ++summary.skipped;
+            continue;
+        }
+        ++summary.output_files_written;
+
+        BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete."
+        << " Total: " << summary.total_xml_files
+        << " Skipped: " << summary.skipped
+        << " Written: " << summary.output_files_written
+        << " Mapped: " << summary.trades_mapped
+        << " Passthrough: " << summary.trades_passthrough;
+
+    return summary;
 }
 
 }

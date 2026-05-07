@@ -26,16 +26,24 @@
 #include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.ore/domain/conventions_mapper.hpp"
 
 namespace ores::ore::xml {
 
 struct roundtrip_summary {
-    int total_xml_files      = 0;
-    int skipped              = 0;
-    int output_files_written = 0;
-    int trades_mapped        = 0;
-    int trades_passthrough   = 0;
+    int       total_xml_files      = 0;
+    int       skipped              = 0;
+    int       output_files_written = 0;
+    int       trades_mapped        = 0;
+    int       trades_passthrough   = 0;
+    int       currency_files       = 0;
+    int       calendar_files       = 0;
+    int       convention_files     = 0;
+    long long import_ms            = 0;  ///< wall time inside importer calls
+    long long export_ms            = 0;  ///< wall time inside exporter calls
+    long long total_ms             = 0;  ///< wall time for the full roundtrip
 };
 
 /**
@@ -55,6 +63,12 @@ public:
     static std::string
     export_currency_config(const std::vector<refdata::domain::currency>& v);
 
+    static std::string export_calendar_adjustments(
+        const std::vector<refdata::domain::calendar_adjustment>& v);
+
+    static std::string export_conventions(
+        const domain::mapped_conventions& mc);
+
     /**
      * @brief Reconstructs an ORE portfolio XML from a vector of
      * (trade, instrument) pairs returned by export_portfolio_response.
@@ -66,11 +80,13 @@ public:
         const std::vector<trading::messaging::trade_export_item>& items);
 
     /**
-     * @brief Walks input_dir recursively, roundtrips every portfolio XML
+     * @brief Walks input_dir recursively, roundtrips every supported ORE XML
      * through the import→export pipeline, and writes mirrored outputs under
-     * output_dir. No DB or network access; purely file-level.
+     * output_dir. Detects Portfolio, CurrencyConfig, CalendarAdjustments, and
+     * Conventions files by inspecting the first 4 KiB of each file.
+     * No DB or network access; purely file-level.
      */
-    static roundtrip_summary roundtrip_portfolio(
+    static roundtrip_summary roundtrip(
         const std::filesystem::path& input_dir,
         const std::filesystem::path& output_dir);
 };

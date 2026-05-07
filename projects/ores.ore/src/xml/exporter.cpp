@@ -19,11 +19,14 @@
  */
 #include "ores.ore/xml/exporter.hpp"
 
+#include <chrono>
 #include <fstream>
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/xml/importer.hpp"
 #include "ores.ore/domain/domain.hpp"
+#include "ores.ore/domain/calendar_adjustment_mapper.hpp"
+#include "ores.ore/domain/conventions_mapper.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
@@ -50,6 +53,16 @@ using trading::domain::scripted_instrument;
 
 namespace {
 
+bool contains_tag(const std::filesystem::path& file, std::string_view tag) {
+    constexpr std::size_t kPeek = 4096;
+    std::ifstream ifs(file, std::ios::binary);
+    if (!ifs) return false;
+    std::string buf(kPeek, '\0');
+    ifs.read(buf.data(), static_cast<std::streamsize>(kPeek));
+    buf.resize(static_cast<std::size_t>(ifs.gcount()));
+    return buf.find(tag) != std::string::npos;
+}
+
 void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
     static_cast<std::string&>(t.id) = src.external_id;
     if (!src.netting_set_id.empty()) {
@@ -67,15 +80,23 @@ void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
 
 std::string
 exporter::export_currency_config(const std::vector<currency>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Started export. Total: " << v.size();
-    BOOST_LOG_SEV(lg(), trace) << "Currencies: " << v;
-
+    BOOST_LOG_SEV(lg(), debug) << "Exporting currency config. Total: " << v.size();
     const auto mapped = domain::currency_mapper::map(v);
-    std::string r = domain::save_data(mapped);
-    BOOST_LOG_SEV(lg(), trace) << "XML: " << r;
+    return domain::save_data(mapped);
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished exporting. Result: " << r;
-    return r;
+std::string exporter::export_calendar_adjustments(
+        const std::vector<refdata::domain::calendar_adjustment>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting " << v.size()
+                               << " calendar adjustments.";
+    const auto xsd = domain::calendar_adjustment_mapper::reverse(v);
+    return domain::save_data(xsd);
+}
+
+std::string exporter::export_conventions(const domain::mapped_conventions& mc) {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting conventions.";
+    const auto xsd = domain::conventions_mapper::reverse(mc);
+    return domain::save_data(xsd);
 }
 
 std::string exporter::export_portfolio(
@@ -382,14 +403,19 @@ std::string exporter::export_portfolio(
     return result;
 }
 
-roundtrip_summary exporter::roundtrip_portfolio(
+roundtrip_summary exporter::roundtrip(
     const std::filesystem::path& input_dir,
     const std::filesystem::path& output_dir) {
-    BOOST_LOG_SEV(lg(), debug) << "Starting portfolio roundtrip. Input: "
+    BOOST_LOG_SEV(lg(), debug) << "Starting roundtrip. Input: "
                                << input_dir << " Output: " << output_dir;
+
+    using clock = std::chrono::steady_clock;
+    using ms    = std::chrono::milliseconds;
 
     roundtrip_summary summary;
     namespace fs = std::filesystem;
+
+    const auto wall_start = clock::now();
 
     for (const auto& entry : fs::recursive_directory_iterator(input_dir)) {
         if (!entry.is_regular_file()) continue;
@@ -399,9 +425,82 @@ roundtrip_summary exporter::roundtrip_portfolio(
         const auto& file = entry.path();
         BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
 
-        std::vector<trade_import_item> import_items;
+        const bool is_portfolio    = contains_tag(file, "<Portfolio>");
+        const bool is_currency     = !is_portfolio && contains_tag(file, "<CurrencyConfig>");
+        const bool is_calendar     = !is_portfolio && !is_currency
+                                     && contains_tag(file, "<CalendarAdjustments>");
+        const bool is_conventions  = !is_portfolio && !is_currency && !is_calendar
+                                     && contains_tag(file, "<Conventions>");
+
+        if (!is_portfolio && !is_currency && !is_calendar && !is_conventions) {
+            BOOST_LOG_SEV(lg(), debug) << "Skipping unrecognised XML: "
+                                       << file.filename();
+            ++summary.skipped;
+            continue;
+        }
+
+        std::string xml;
         try {
-            import_items = importer::import_portfolio_with_context(file);
+            if (is_portfolio) {
+                const auto t0 = clock::now();
+                auto import_items = importer::import_portfolio_with_context(file);
+                summary.import_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t0).count();
+
+                std::vector<trading::messaging::trade_export_item> export_items;
+                export_items.reserve(import_items.size());
+                for (const auto& item : import_items) {
+                    trading::messaging::trade_export_item ei;
+                    ei.trade      = item.trade;
+                    ei.instrument = item.instrument;
+                    if (std::holds_alternative<std::monostate>(item.instrument))
+                        ++summary.trades_passthrough;
+                    else
+                        ++summary.trades_mapped;
+                    export_items.push_back(std::move(ei));
+                }
+
+                const auto t1 = clock::now();
+                xml = export_portfolio(export_items);
+                summary.export_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t1).count();
+
+            } else if (is_currency) {
+                const auto t0 = clock::now();
+                auto currencies = importer::import_currency_config(file);
+                summary.import_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t0).count();
+
+                const auto t1 = clock::now();
+                xml = export_currency_config(currencies);
+                summary.export_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t1).count();
+                ++summary.currency_files;
+
+            } else if (is_calendar) {
+                const auto t0 = clock::now();
+                auto adjustments = importer::import_calendar_adjustments(file);
+                summary.import_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t0).count();
+
+                const auto t1 = clock::now();
+                xml = export_calendar_adjustments(adjustments);
+                summary.export_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t1).count();
+                ++summary.calendar_files;
+
+            } else { // is_conventions
+                const auto t0 = clock::now();
+                auto mc = importer::import_conventions(file);
+                summary.import_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t0).count();
+
+                const auto t1 = clock::now();
+                xml = export_conventions(mc);
+                summary.export_ms +=
+                    std::chrono::duration_cast<ms>(clock::now() - t1).count();
+                ++summary.convention_files;
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), debug) << "Skipping " << file.filename()
                                        << ": " << e.what();
@@ -409,20 +508,6 @@ roundtrip_summary exporter::roundtrip_portfolio(
             continue;
         }
 
-        std::vector<trading::messaging::trade_export_item> export_items;
-        export_items.reserve(import_items.size());
-        for (const auto& item : import_items) {
-            trading::messaging::trade_export_item ei;
-            ei.trade      = item.trade;
-            ei.instrument = item.instrument;
-            if (std::holds_alternative<std::monostate>(item.instrument))
-                ++summary.trades_passthrough;
-            else
-                ++summary.trades_mapped;
-            export_items.push_back(std::move(ei));
-        }
-
-        const std::string xml = export_portfolio(export_items);
         const auto out_path = output_dir / fs::relative(file, input_dir);
         try {
             fs::create_directories(out_path.parent_path());
@@ -434,16 +519,23 @@ roundtrip_summary exporter::roundtrip_portfolio(
             continue;
         }
         ++summary.output_files_written;
-
         BOOST_LOG_SEV(lg(), trace) << "Written: " << out_path;
     }
 
+    summary.total_ms = std::chrono::duration_cast<ms>(clock::now() - wall_start).count();
+
     BOOST_LOG_SEV(lg(), debug) << "Roundtrip complete."
-        << " Total: " << summary.total_xml_files
-        << " Skipped: " << summary.skipped
-        << " Written: " << summary.output_files_written
-        << " Mapped: " << summary.trades_mapped
-        << " Passthrough: " << summary.trades_passthrough;
+        << " Total: "        << summary.total_xml_files
+        << " Skipped: "      << summary.skipped
+        << " Written: "      << summary.output_files_written
+        << " Mapped: "       << summary.trades_mapped
+        << " Passthrough: "  << summary.trades_passthrough
+        << " Currencies: "   << summary.currency_files
+        << " Calendars: "    << summary.calendar_files
+        << " Conventions: "  << summary.convention_files
+        << " Import ms: "    << summary.import_ms
+        << " Export ms: "    << summary.export_ms
+        << " Total ms: "     << summary.total_ms;
 
     return summary;
 }

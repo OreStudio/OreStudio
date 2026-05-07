@@ -39,6 +39,340 @@ void set_audit(T& r) {
     r.change_commentary  = std::string(audit_commentary);
 }
 
+// ---------------------------------------------------------------------------
+// Reverse parse helpers — canonical string → XSD enum
+// ---------------------------------------------------------------------------
+
+domain::dayCounter parse_day_counter(const std::string& s) {
+    using dc = domain::dayCounter;
+    if (s == "ACT/360")                   return dc::Actual_360;
+    if (s == "ACT/360 (incl. last)")      return dc::A360__Incl_Last_;
+    if (s == "ACT/365.FIXED")             return dc::A365F;
+    if (s == "ACT/365L")                  return dc::ACT_365L;
+    if (s == "ACT/365 (Canadian Bond)")   return dc::Act_365__Canadian_Bond_;
+    if (s == "T360")                      return dc::T360;
+    if (s == "30/360")                    return dc::_30_360;
+    if (s == "ACT/nACT")                  return dc::ACT_nACT;
+    if (s == "30E/360")                   return dc::_30E_360;
+    if (s == "30E/360.ISDA")              return dc::_30E_360_ISDA;
+    if (s == "30/360 (German)")           return dc::_30_360_German;
+    if (s == "30/360 (Italian)")          return dc::_30_360_Italian;
+    if (s == "ACT/ACT.ISDA")             return dc::ActActISDA;
+    if (s == "ACT/ACT.ISMA")             return dc::ActActISMA;
+    if (s == "ACT/ACT.AFB")              return dc::ActActAFB;
+    if (s == "1/1")                       return dc::_1_1;
+    if (s == "BUS/252")                   return dc::BUS_252;
+    if (s == "NL/365")                    return dc::NL_365;
+    if (s == "ACT/365 (JGB)")            return dc::Actual_365__JGB_;
+    if (s == "Simple")                    return dc::Simple;
+    if (s == "Year")                      return dc::Year;
+    if (s == "ACT/364")                   return dc::A364;
+    if (s == "Month")                     return dc::Month;
+    throw std::runtime_error("parse_day_counter: unrecognised '" + s + "'");
+}
+
+domain::businessDayConvention parse_bdc(const std::string& s) {
+    using bdc = domain::businessDayConvention;
+    if (s == "Following")                  return bdc::Following;
+    if (s == "ModifiedFollowing")          return bdc::ModifiedFollowing;
+    if (s == "Preceding")                  return bdc::Preceding;
+    if (s == "ModifiedPreceding")          return bdc::ModifiedPreceding;
+    if (s == "HalfMonthModifiedFollowing") return bdc::HalfMonthModifiedFollowing;
+    if (s == "Nearest")                    return bdc::NEAREST;
+    if (s == "Unadjusted")                 return bdc::Unadjusted;
+    throw std::runtime_error("parse_bdc: unrecognised '" + s + "'");
+}
+
+domain::frequencyType parse_frequency(const std::string& s) {
+    using ft = domain::frequencyType;
+    if (s == "Once")        return ft::Once;
+    if (s == "Annual")      return ft::Annual;
+    if (s == "Semiannual")  return ft::Semiannual;
+    if (s == "Quarterly")   return ft::Quarterly;
+    if (s == "Bimonthly")   return ft::Bimonthly;
+    if (s == "Monthly")     return ft::Monthly;
+    if (s == "Lunarmonth")  return ft::Lunarmonth;
+    if (s == "Weekly")      return ft::Weekly;
+    if (s == "Daily")       return ft::Daily;
+    throw std::runtime_error("parse_frequency: unrecognised '" + s + "'");
+}
+
+domain::compounding parse_compounding(const std::string& s) {
+    using cm = domain::compounding;
+    if (s == "Simple")               return cm::Simple;
+    if (s == "Compounded")           return cm::Compounded;
+    if (s == "Continuous")           return cm::Continuous;
+    if (s == "SimpleThenCompounded") return cm::SimpleThenCompounded;
+    throw std::runtime_error("parse_compounding: unrecognised '" + s + "'");
+}
+
+domain::dateRule parse_date_rule(const std::string& s) {
+    using dr = domain::dateRule;
+    if (s == "Backward")                return dr::Backward;
+    if (s == "Forward")                 return dr::Forward;
+    if (s == "Zero")                    return dr::Zero;
+    if (s == "ThirdWednesday")          return dr::ThirdWednesday;
+    if (s == "Twentieth")               return dr::Twentieth;
+    if (s == "TwentiethIMM")            return dr::TwentiethIMM;
+    if (s == "OldCDS")                  return dr::OldCDS;
+    if (s == "CDS")                     return dr::CDS;
+    if (s == "CDS2015")                 return dr::CDS2015;
+    if (s == "ThirdThursday")           return dr::ThirdThursday;
+    if (s == "ThirdFriday")             return dr::ThirdFriday;
+    if (s == "MondayAfterThirdFriday")  return dr::MondayAfterThirdFriday;
+    if (s == "TuesdayAfterThirdFriday") return dr::TuesdayAfterThirdFriday;
+    if (s == "LastWednesday")           return dr::LastWednesday;
+    if (s == "EveryThursday")           return dr::EveryThursday;
+    throw std::runtime_error("parse_date_rule: unrecognised '" + s + "'");
+}
+
+domain::bool_ make_bool(bool v) {
+    return v ? domain::bool_::True : domain::bool_::False;
+}
+
+domain::currencyCode parse_currency_code(const std::string& s) {
+    using cc = domain::currencyCode;
+    static const std::map<std::string, cc> kMap = {
+        {"AED", cc::AED}, {"AFN", cc::AFN}, {"ALL", cc::ALL}, {"AMD", cc::AMD},
+        {"ANG", cc::ANG}, {"AOA", cc::AOA}, {"ARS", cc::ARS}, {"AUD", cc::AUD},
+        {"AWG", cc::AWG}, {"AZN", cc::AZN}, {"BAM", cc::BAM}, {"BBD", cc::BBD},
+        {"BDT", cc::BDT}, {"BGN", cc::BGN}, {"BHD", cc::BHD}, {"BIF", cc::BIF},
+        {"BMD", cc::BMD}, {"BND", cc::BND}, {"BOB", cc::BOB}, {"BOV", cc::BOV},
+        {"BRL", cc::BRL}, {"BSD", cc::BSD}, {"BTN", cc::BTN}, {"BWP", cc::BWP},
+        {"BYN", cc::BYN}, {"BZD", cc::BZD}, {"CAD", cc::CAD}, {"CDF", cc::CDF},
+        {"CHE", cc::CHE}, {"CHF", cc::CHF}, {"CHW", cc::CHW}, {"CLF", cc::CLF},
+        {"CLP", cc::CLP}, {"CNH", cc::CNH}, {"CNT", cc::CNT}, {"CNY", cc::CNY},
+        {"COP", cc::COP}, {"COU", cc::COU}, {"CRC", cc::CRC}, {"CUC", cc::CUC},
+        {"CUP", cc::CUP}, {"CVE", cc::CVE}, {"CYP", cc::CYP}, {"CZK", cc::CZK},
+        {"DJF", cc::DJF}, {"DKK", cc::DKK}, {"DOP", cc::DOP}, {"DZD", cc::DZD},
+        {"EGP", cc::EGP}, {"ERN", cc::ERN}, {"ETB", cc::ETB}, {"EUR", cc::EUR},
+        {"FJD", cc::FJD}, {"FKP", cc::FKP}, {"GBP", cc::GBP}, {"GEL", cc::GEL},
+        {"GGP", cc::GGP}, {"GHS", cc::GHS}, {"GIP", cc::GIP}, {"GMD", cc::GMD},
+        {"GNF", cc::GNF}, {"GTQ", cc::GTQ}, {"GYD", cc::GYD}, {"HKD", cc::HKD},
+        {"HNL", cc::HNL}, {"HRK", cc::HRK}, {"HTG", cc::HTG}, {"HUF", cc::HUF},
+        {"IDR", cc::IDR}, {"ILS", cc::ILS}, {"IMP", cc::IMP}, {"INR", cc::INR},
+        {"IQD", cc::IQD}, {"IRR", cc::IRR}, {"ISK", cc::ISK}, {"JEP", cc::JEP},
+        {"JMD", cc::JMD}, {"JOD", cc::JOD}, {"JPY", cc::JPY}, {"KES", cc::KES},
+        {"KGS", cc::KGS}, {"KHR", cc::KHR}, {"KID", cc::KID}, {"KMF", cc::KMF},
+        {"KPW", cc::KPW}, {"KRW", cc::KRW}, {"KWD", cc::KWD}, {"KYD", cc::KYD},
+        {"KZT", cc::KZT}, {"LAK", cc::LAK}, {"LBP", cc::LBP}, {"LKR", cc::LKR},
+        {"LRD", cc::LRD}, {"LSL", cc::LSL}, {"LTL", cc::LTL}, {"LVL", cc::LVL},
+        {"LYD", cc::LYD}, {"MAD", cc::MAD}, {"MDL", cc::MDL}, {"MGA", cc::MGA},
+        {"MKD", cc::MKD}, {"MMK", cc::MMK}, {"MNT", cc::MNT}, {"MOP", cc::MOP},
+        {"MRU", cc::MRU}, {"MUR", cc::MUR}, {"MVR", cc::MVR}, {"MWK", cc::MWK},
+        {"MXN", cc::MXN}, {"MXV", cc::MXV}, {"MYR", cc::MYR}, {"MZN", cc::MZN},
+        {"NAD", cc::NAD}, {"NGN", cc::NGN}, {"NIO", cc::NIO}, {"NOK", cc::NOK},
+        {"NPR", cc::NPR}, {"NZD", cc::NZD}, {"OMR", cc::OMR}, {"PAB", cc::PAB},
+        {"PEN", cc::PEN}, {"PGK", cc::PGK}, {"PHP", cc::PHP}, {"PKR", cc::PKR},
+        {"PLN", cc::PLN}, {"PYG", cc::PYG}, {"QAR", cc::QAR}, {"RON", cc::RON},
+        {"RSD", cc::RSD}, {"RUB", cc::RUB}, {"RWF", cc::RWF}, {"SAR", cc::SAR},
+        {"SBD", cc::SBD}, {"SCR", cc::SCR}, {"SDG", cc::SDG}, {"SEK", cc::SEK},
+        {"SGD", cc::SGD}, {"SHP", cc::SHP}, {"SLL", cc::SLL}, {"SOS", cc::SOS},
+        {"SRD", cc::SRD}, {"STN", cc::STN}, {"SVC", cc::SVC}, {"SYP", cc::SYP},
+        {"SZL", cc::SZL}, {"THB", cc::THB}, {"TJS", cc::TJS}, {"TMT", cc::TMT},
+        {"TND", cc::TND}, {"TOP", cc::TOP}, {"TRY", cc::TRY}, {"TTD", cc::TTD},
+        {"TWD", cc::TWD}, {"TZS", cc::TZS}, {"UAH", cc::UAH}, {"UGX", cc::UGX},
+        {"USD", cc::USD}, {"USN", cc::USN}, {"UYI", cc::UYI}, {"UYU", cc::UYU},
+        {"UYW", cc::UYW}, {"UZS", cc::UZS}, {"VES", cc::VES}, {"VND", cc::VND},
+        {"VUV", cc::VUV}, {"WST", cc::WST}, {"XAF", cc::XAF}, {"XAG", cc::XAG},
+        {"XAU", cc::XAU}, {"XCD", cc::XCD}, {"XOF", cc::XOF}, {"XPD", cc::XPD},
+        {"XPF", cc::XPF}, {"XPT", cc::XPT}, {"XSU", cc::XSU}, {"XUA", cc::XUA},
+        {"YER", cc::YER}, {"ZAR", cc::ZAR}, {"ZMW", cc::ZMW}, {"ZWL", cc::ZWL},
+        {"BTC", cc::BTC}, {"ETH", cc::ETH}, {"XBT", cc::XBT}, {"ETC", cc::ETC},
+        {"BCH", cc::BCH}, {"XRP", cc::XRP}, {"LTC", cc::LTC},
+        {"ZUR", cc::ZUR}, {"ZUG", cc::ZUG},
+    };
+    const auto it = kMap.find(s);
+    if (it == kMap.end())
+        throw std::runtime_error(
+            "parse_currency_code: unrecognised '" + s + "'");
+    return it->second;
+}
+
+// ---------------------------------------------------------------------------
+// Individual type reverse mappers
+// ---------------------------------------------------------------------------
+
+zeroType reverse_zero(const refdata::domain::zero_convention& v) {
+    zeroType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.TenorBased = make_bool(v.tenor_based);
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    if (v.compounding)
+        r.Compounding = parse_compounding(*v.compounding);
+    if (v.compounding_frequency)
+        r.CompoundingFrequency = parse_frequency(*v.compounding_frequency);
+    if (v.tenor_calendar) {
+        zeroType_TenorCalendar_t tc;
+        static_cast<std::string&>(tc) = *v.tenor_calendar;
+        r.TenorCalendar = tc;
+    }
+    if (v.spot_lag)
+        r.SpotLag = static_cast<int64_t>(*v.spot_lag);
+    if (v.spot_calendar) {
+        zeroType_SpotCalendar_t sc;
+        static_cast<std::string&>(sc) = *v.spot_calendar;
+        r.SpotCalendar = sc;
+    }
+    if (v.roll_convention)
+        r.RollConvention = parse_bdc(*v.roll_convention);
+    if (v.end_of_month)
+        r.EOM = make_bool(*v.end_of_month);
+    return r;
+}
+
+depositType reverse_deposit(const refdata::domain::deposit_convention& v) {
+    depositType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.IndexBased = make_bool(v.index_based);
+    if (v.index) {
+        depositType_Index_t idx;
+        static_cast<std::string&>(idx) = *v.index;
+        r.Index = idx;
+    }
+    if (v.calendar) {
+        depositType_Calendar_t cal;
+        static_cast<std::string&>(cal) = *v.calendar;
+        r.Calendar = cal;
+    }
+    if (v.convention)
+        r.Convention = parse_bdc(*v.convention);
+    if (v.end_of_month)
+        r.EOM = make_bool(*v.end_of_month);
+    if (v.day_count_fraction)
+        r.DayCounter = parse_day_counter(*v.day_count_fraction);
+    if (v.settlement_days)
+        r.SettlementDays = static_cast<uint64_t>(*v.settlement_days);
+    return r;
+}
+
+swapType reverse_swap(const refdata::domain::swap_convention& v) {
+    swapType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    if (v.fixed_calendar) {
+        swapType_FixedCalendar_t fc;
+        static_cast<std::string&>(fc) = *v.fixed_calendar;
+        r.FixedCalendar = fc;
+    }
+    r.FixedFrequency = parse_frequency(v.fixed_frequency);
+    if (v.fixed_convention)
+        r.FixedConvention = parse_bdc(*v.fixed_convention);
+    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
+    static_cast<std::string&>(r.Index) = v.index;
+    if (v.float_frequency)
+        r.FloatFrequency = parse_frequency(*v.float_frequency);
+    if (v.sub_periods_coupon_type) {
+        const auto& s = *v.sub_periods_coupon_type;
+        if (s == "Compounding")
+            r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
+        else if (s == "Averaging")
+            r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
+        else
+            throw std::runtime_error("reverse_swap: unknown sub_periods_coupon_type: " + s);
+    }
+    return r;
+}
+
+oisType reverse_ois(const refdata::domain::ois_convention& v) {
+    oisType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SpotLag = static_cast<int64_t>(v.spot_lag);
+    static_cast<std::string&>(r.Index) = v.index;
+    r.FixedDayCounter = parse_day_counter(v.fixed_day_count_fraction);
+    if (v.fixed_calendar) {
+        oisType_FixedCalendar_t fc;
+        static_cast<std::string&>(fc) = *v.fixed_calendar;
+        r.FixedCalendar = fc;
+    }
+    if (v.payment_lag)
+        r.PaymentLag = static_cast<int64_t>(*v.payment_lag);
+    if (v.end_of_month)
+        r.EOM = make_bool(*v.end_of_month);
+    if (v.fixed_frequency)
+        r.FixedFrequency = parse_frequency(*v.fixed_frequency);
+    if (v.fixed_convention)
+        r.FixedConvention = parse_bdc(*v.fixed_convention);
+    if (v.fixed_payment_convention)
+        r.FixedPaymentConvention = parse_bdc(*v.fixed_payment_convention);
+    if (v.rule)
+        r.Rule = parse_date_rule(*v.rule);
+    if (v.payment_calendar) {
+        oisType_PaymentCalendar_t pc;
+        static_cast<std::string&>(pc) = *v.payment_calendar;
+        r.PaymentCalendar = pc;
+    }
+    if (v.rate_cutoff)
+        r.RateCutoff = static_cast<int64_t>(*v.rate_cutoff);
+    return r;
+}
+
+fraType reverse_fra(const refdata::domain::fra_convention& v) {
+    fraType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.Index) = v.index;
+    return r;
+}
+
+iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v) {
+    iborIndexType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    r.BusinessDayConvention = parse_bdc(v.business_day_convention);
+    r.EndOfMonth = make_bool(v.end_of_month);
+    return r;
+}
+
+overnightIndexType reverse_overnight_index(
+        const refdata::domain::overnight_index_convention& v) {
+    overnightIndexType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    return r;
+}
+
+fxType reverse_fx(const refdata::domain::fx_convention& v) {
+    fxType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SpotDays = static_cast<int64_t>(v.spot_days);
+    r.SourceCurrency = parse_currency_code(v.source_currency);
+    r.TargetCurrency = parse_currency_code(v.target_currency);
+    r.PointsFactor = v.points_factor;
+    if (v.advance_calendar) {
+        fxType_AdvanceCalendar_t ac;
+        static_cast<std::string&>(ac) = *v.advance_calendar;
+        r.AdvanceCalendar = ac;
+    }
+    if (v.spot_relative)
+        r.SpotRelative = make_bool(*v.spot_relative);
+    if (v.end_of_month)
+        r.EOM = make_bool(*v.end_of_month);
+    if (v.convention)
+        r.Convention = parse_bdc(*v.convention);
+    return r;
+}
+
+cdsConventionsType reverse_cds(const refdata::domain::cds_convention& v) {
+    cdsConventionsType r;
+    static_cast<std::string&>(r.Id) = v.id;
+    r.SettlementDays = static_cast<int64_t>(v.settlement_days);
+    static_cast<std::string&>(r.Calendar) = v.calendar;
+    r.Frequency = parse_frequency(v.frequency);
+    r.PaymentConvention = parse_bdc(v.payment_convention);
+    r.Rule = parse_date_rule(v.rule);
+    r.DayCounter = parse_day_counter(v.day_count_fraction);
+    if (v.upfront_settlement_days)
+        r.UpfrontSettlementDays = static_cast<uint64_t>(*v.upfront_settlement_days);
+    r.SettlesAccrual = make_bool(v.settles_accrual);
+    r.PaysAtDefaultTime = make_bool(v.pays_at_default_time);
+    if (v.last_period_day_count_fraction)
+        r.LastPeriodDayCounter = parse_day_counter(*v.last_period_day_count_fraction);
+    return r;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -579,6 +913,64 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         << " FX=" << r.fx.size()
         << " CDS=" << r.cds.size();
 
+    return r;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse — mapped_conventions → ORE XML conventions
+// ---------------------------------------------------------------------------
+
+conventions conventions_mapper::reverse(const mapped_conventions& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. "
+        << "Zero=" << v.zero.size()
+        << " Deposit=" << v.deposit.size()
+        << " Swap=" << v.swap.size()
+        << " OIS=" << v.ois.size()
+        << " FRA=" << v.fra.size()
+        << " IborIndex=" << v.ibor_index.size()
+        << " OvernightIndex=" << v.overnight_index.size()
+        << " FX=" << v.fx.size()
+        << " CDS=" << v.cds.size();
+
+    conventions r;
+
+    r.Zero.reserve(v.zero.size());
+    for (const auto& x : v.zero)
+        r.Zero.push_back(reverse_zero(x));
+
+    r.Deposit.reserve(v.deposit.size());
+    for (const auto& x : v.deposit)
+        r.Deposit.push_back(reverse_deposit(x));
+
+    r.Swap.reserve(v.swap.size());
+    for (const auto& x : v.swap)
+        r.Swap.push_back(reverse_swap(x));
+
+    r.OIS.reserve(v.ois.size());
+    for (const auto& x : v.ois)
+        r.OIS.push_back(reverse_ois(x));
+
+    r.FRA.reserve(v.fra.size());
+    for (const auto& x : v.fra)
+        r.FRA.push_back(reverse_fra(x));
+
+    r.IborIndex.reserve(v.ibor_index.size());
+    for (const auto& x : v.ibor_index)
+        r.IborIndex.push_back(reverse_ibor_index(x));
+
+    r.OvernightIndex.reserve(v.overnight_index.size());
+    for (const auto& x : v.overnight_index)
+        r.OvernightIndex.push_back(reverse_overnight_index(x));
+
+    r.FX.reserve(v.fx.size());
+    for (const auto& x : v.fx)
+        r.FX.push_back(reverse_fx(x));
+
+    r.CDS.reserve(v.cds.size());
+    for (const auto& x : v.cds)
+        r.CDS.push_back(reverse_cds(x));
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished reverse-mapping conventions.";
     return r;
 }
 

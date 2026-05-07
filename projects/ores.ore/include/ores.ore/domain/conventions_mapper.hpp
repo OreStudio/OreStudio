@@ -113,6 +113,11 @@ public:
 
     static refdata::domain::cds_convention
     map_cds(const cdsConventionsType& v);
+
+    /**
+     * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.
+     */
+    static domain::conventions reverse(const mapped_conventions& v);
 };
 
 }

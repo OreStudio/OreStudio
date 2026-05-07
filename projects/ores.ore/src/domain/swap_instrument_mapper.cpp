@@ -118,12 +118,23 @@ scheduleData make_schedule(const std::string& start, const std::string& end,
 }
 
 std::optional<legType> leg_type_from_string(const std::string& s) {
-    if (s == "Fixed") return legType::Fixed;
-    if (s == "Floating") return legType::Floating;
-    if (s == "CMS") return legType::CMS;
-    if (s == "CMSSpread") return legType::CMSSpread;
-    if (s == "DigitalCMS") return legType::DigitalCMS;
-    if (s == "ZeroCouponFixed") return legType::ZeroCouponFixed;
+    if (s == "Fixed")               return legType::Fixed;
+    if (s == "Floating")            return legType::Floating;
+    if (s == "CPI")                 return legType::CPI;
+    if (s == "YY")                  return legType::YY;
+    if (s == "CMS")                 return legType::CMS;
+    if (s == "CMB")                 return legType::CMB;
+    if (s == "DigitalCMS")          return legType::DigitalCMS;
+    if (s == "CMSSpread")           return legType::CMSSpread;
+    if (s == "DigitalCMSSpread")    return legType::DigitalCMSSpread;
+    if (s == "Cashflow")            return legType::Cashflow;
+    if (s == "Equity")              return legType::Equity;
+    if (s == "FormulaBased")        return legType::FormulaBased;
+    if (s == "ZeroCouponFixed")     return legType::ZeroCouponFixed;
+    if (s == "CommodityFixed")      return legType::CommodityFixed;
+    if (s == "CommodityFloating")   return legType::CommodityFloating;
+    if (s == "EquityMargin")        return legType::EquityMargin;
+    if (s == "DurationAdjustedCMS") return legType::DurationAdjustedCMS;
     return std::nullopt;
 }
 

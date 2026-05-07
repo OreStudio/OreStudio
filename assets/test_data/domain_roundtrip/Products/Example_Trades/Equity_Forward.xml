@@ -1,0 +1,16 @@
+<Portfolio>
+  <Trade id="EqForward">
+    <TradeType>EquityForward</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityForwardData>
+      <LongShort>Long</LongShort>
+      <Maturity>2025-02-20</Maturity>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Strike>2800</Strike>
+      <Quantity>775</Quantity>
+    </EquityForwardData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,29 @@
+<Portfolio>
+  <Trade id="Cap_on_FedFunds">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Currency>USD</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>13930000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>USD-FedFunds</Index>
+        </FloatingLegData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

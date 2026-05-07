@@ -1,0 +1,45 @@
+<Portfolio>
+  <Trade id="CPI_Swap_using_Swap">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-07-10</StartDate>
+            <EndDate>2028-07-09</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>GBP-LIBOR-6M</Index>
+        </FloatingLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CPI</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-07-10</StartDate>
+            <EndDate>2028-07-09</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

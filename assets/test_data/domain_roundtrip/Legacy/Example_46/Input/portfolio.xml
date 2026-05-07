@@ -1,0 +1,13 @@
+<Portfolio>
+  <Trade id="GenericTRS">
+    <TradeType>TotalReturnSwap</TradeType>
+    <TotalReturnSwapData>
+      <UnderlyingData/>
+      <ReturnData>
+        <Payer>false</Payer>
+        <Currency>AED</Currency>
+        <ScheduleData/>
+      </ReturnData>
+    </TotalReturnSwapData>
+  </Trade>
+</Portfolio>

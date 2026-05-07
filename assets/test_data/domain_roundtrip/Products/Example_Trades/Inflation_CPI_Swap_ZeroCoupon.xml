@@ -1,0 +1,42 @@
+<Portfolio>
+  <Trade id="CPI_Swap_ZC_using_Swap">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>ZeroCouponFixed</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>184500</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-05</StartDate>
+            <EndDate>2032-09-06</EndDate>
+            <Tenor>0D</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CPI</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>184500</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-05</StartDate>
+            <EndDate>2032-09-06</EndDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

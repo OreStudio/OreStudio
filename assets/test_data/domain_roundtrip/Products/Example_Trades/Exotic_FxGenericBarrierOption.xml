@@ -1,0 +1,33 @@
+<Portfolio>
+  <Trade id="generic_fx_barrier_option">
+    <TradeType>FxGenericBarrierOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxGenericBarrierOptionData>
+      <PayCurrency>USD</PayCurrency>
+      <Name>TR20H-EUR-USD</Name>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-12-20</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>DownAndOut</Type>
+          <Levels>
+            <Level>1.10000002</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>DownAndOut</Type>
+          <Levels>
+            <Level>1.29999995</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxGenericBarrierOptionData>
+  </Trade>
+</Portfolio>

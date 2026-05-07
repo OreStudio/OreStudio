@@ -1,0 +1,17 @@
+<Portfolio>
+  <Trade id="KnockOutSwap_example">
+    <TradeType>KnockOutSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <KnockOutSwapData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels>
+          <Level>0.0500000007</Level>
+        </Levels>
+      </BarrierData>
+      <BarrierStartDate>2027-05-03</BarrierStartDate>
+    </KnockOutSwapData>
+  </Trade>
+</Portfolio>

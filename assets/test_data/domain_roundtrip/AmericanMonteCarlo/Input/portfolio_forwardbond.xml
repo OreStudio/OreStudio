@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="FwdBond">
+    <TradeType>ForwardBond</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>SECURITY_1_FWDEXP_20251220</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate></ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward></LongInForward>
+    </ForwardBondData>
+  </Trade>
+  <Trade id="NoFwdContract">
+    <TradeType>Bond</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <BondData>
+      <SecurityId>SECURITY_1_cutted</SecurityId>
+    </BondData>
+  </Trade>
+</Portfolio>

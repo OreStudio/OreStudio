@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="EQOneTouchOption">
+    <TradeType>EquityTouchOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2026-07-17</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>UpAndIn</Type>
+        <Levels>
+          <Level>3300</Level>
+        </Levels>
+      </BarrierData>
+      <Name>RIC:.SPX</Name>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>1000000</PayoffAmount>
+    </EquityTouchOptionData>
+  </Trade>
+</Portfolio>

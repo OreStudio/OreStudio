@@ -1,0 +1,24 @@
+<Portfolio>
+  <Trade id="BondTRS">
+    <TradeType>BondTRS</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondTRSData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+      <TotalReturnData>
+        <Payer></Payer>
+        <PriceType>Dirty</PriceType>
+        <ScheduleData/>
+      </TotalReturnData>
+      <FundingData>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+        </LegData>
+      </FundingData>
+    </BondTRSData>
+  </Trade>
+</Portfolio>

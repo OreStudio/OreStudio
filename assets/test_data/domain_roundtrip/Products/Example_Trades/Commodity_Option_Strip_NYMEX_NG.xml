@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="Commodity_Option_Strip_NYMEX_NG">
+    <TradeType>CommodityOptionStrip</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommodityOptionStripData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CommodityFloating</LegType>
+        <Currency>USD</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor>1M</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+        <CommodityFloatingLegData>
+          <Name>NYMEX:NG</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities/>
+        </CommodityFloatingLegData>
+      </LegData>
+    </CommodityOptionStripData>
+  </Trade>
+</Portfolio>

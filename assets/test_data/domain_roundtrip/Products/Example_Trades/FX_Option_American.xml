@@ -1,0 +1,22 @@
+<Portfolio>
+  <Trade id="AMERICAN_FX_CALL_OPTION">
+    <TradeType>FxOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2033-02-20</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxOptionData>
+  </Trade>
+</Portfolio>

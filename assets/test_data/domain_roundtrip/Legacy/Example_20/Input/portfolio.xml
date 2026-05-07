@@ -1,0 +1,32 @@
+<Portfolio>
+  <Trade id="CDS">
+    <TradeType>CreditDefaultSwap</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_B</NettingSetId>
+    </Envelope>
+    <CreditDefaultSwapData>
+      <CreditCurveId>CPTY_A</CreditCurveId>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <EndDate>20260205</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00999999978</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </CreditDefaultSwapData>
+  </Trade>
+</Portfolio>

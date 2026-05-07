@@ -1,0 +1,30 @@
+<Portfolio>
+  <Trade id="Cap_GBP_Amortising">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Currency>GBP</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>3000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-10-11</StartDate>
+            <EndDate>2038-10-10</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>GBP-LIBOR-6M</Index>
+        </FloatingLegData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

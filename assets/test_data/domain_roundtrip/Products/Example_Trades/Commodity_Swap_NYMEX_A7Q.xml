@@ -1,0 +1,38 @@
+<Portfolio>
+  <Trade id="Commodity_Swap_NYMEX_A7Q">
+    <TradeType>CommoditySwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CommodityFixed</LegType>
+        <Currency>USD</Currency>
+        <CommodityFixedLegData>
+          <Prices>
+            <Price>0</Price>
+          </Prices>
+        </CommodityFixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>CommodityFloating</LegType>
+        <Currency>USD</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-05-18</StartDate>
+            <EndDate>2026-05-18</EndDate>
+            <Tenor>1M</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+        <CommodityFloatingLegData>
+          <Name>NYMEX:A7Q</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities/>
+        </CommodityFloatingLegData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,16 @@
+<Portfolio>
+  <Trade id="CommodityForward">
+    <TradeType>CommodityForward</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommodityForwardData>
+      <Position>Long</Position>
+      <Maturity>2025-06-21</Maturity>
+      <Name>PM:XAUUSD</Name>
+      <Currency>USD</Currency>
+      <Strike>1355</Strike>
+      <Quantity>1000</Quantity>
+    </CommodityForwardData>
+  </Trade>
+</Portfolio>

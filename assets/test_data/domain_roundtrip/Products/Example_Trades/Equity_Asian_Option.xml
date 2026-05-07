@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="EQAsianOption">
+    <TradeType>EquityAsianOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityAsianOptionData>
+      <Currency>USD</Currency>
+      <Quantity>1</Quantity>
+      <StrikeData>
+        <Value>3100</Value>
+      </StrikeData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-28</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+    </EquityAsianOptionData>
+  </Trade>
+</Portfolio>

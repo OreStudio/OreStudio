@@ -1,0 +1,33 @@
+<Portfolio>
+  <Trade id="AsianBasketOption#1">
+    <TradeType>ScriptedTrade</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <ScriptedTradeData>
+      <ScriptName>AsianBasketOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>Call</Value>
+        </Number>
+        <Number>
+          <Name>Notional</Name>
+          <Value>1.000000</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>5000.000000</Value>
+        </Number>
+        <Index>
+          <Name>Underlying_0</Name>
+          <Value>EQ-RIC:.SPX</Value>
+        </Index>
+        <Index>
+          <Name>Underlying_1</Name>
+          <Value>EQ-RIC:.STOXX50E</Value>
+        </Index>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
+</Portfolio>

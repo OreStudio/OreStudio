@@ -1,0 +1,36 @@
+<Portfolio>
+  <Trade id="EQDigitalOption">
+    <TradeType>EquityDigitalOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <EquityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <Premiums>
+          <Premium>
+            <Amount>5000</Amount>
+            <Currency>USD</Currency>
+            <PayDate>2026-07-17</PayDate>
+          </Premium>
+        </Premiums>
+        <ExerciseDates>
+          <ExerciseDate>2026-07-17</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>3300</Strike>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>1000</PayoffAmount>
+      <Name>RIC:.SPX</Name>
+      <Quantity>1000</Quantity>
+    </EquityDigitalOptionData>
+  </Trade>
+</Portfolio>

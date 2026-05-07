@@ -1,0 +1,44 @@
+<Portfolio>
+  <Trade id="EQ_CLIQUET_SPX">
+    <TradeType>EquityCliquetOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <EquityCliquetOptionData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+        <IdentifierType>RIC</IdentifierType>
+      </Underlying>
+      <Currency>USD</Currency>
+      <Notional>1000000</Notional>
+      <LongShort>Short</LongShort>
+      <OptionType>Call</OptionType>
+      <Moneyness>1</Moneyness>
+      <LocalCap>0.0700000003</LocalCap>
+      <GlobalFloor>-0.0700000003</GlobalFloor>
+      <ScheduleData>
+        <Dates>
+          <Calendar>USD</Calendar>
+          <Convention>F</Convention>
+          <Dates>
+            <Date>2023-07-17</Date>
+            <Date>2024-07-16</Date>
+            <Date>2025-07-16</Date>
+            <Date>2026-07-17</Date>
+            <Date>2027-07-17</Date>
+            <Date>2028-07-16</Date>
+          </Dates>
+        </Dates>
+      </ScheduleData>
+      <SettlementDays>5</SettlementDays>
+      <Premium>0.0270000007</Premium>
+      <PremiumPaymentDate>2023-07-17</PremiumPaymentDate>
+    </EquityCliquetOptionData>
+  </Trade>
+</Portfolio>

@@ -53,14 +53,14 @@ using trading::domain::scripted_instrument;
 
 namespace {
 
-bool contains_tag(const std::filesystem::path& file, std::string_view tag) {
+std::string read_header(const std::filesystem::path& file) {
     constexpr std::size_t kPeek = 4096;
     std::ifstream ifs(file, std::ios::binary);
-    if (!ifs) return false;
+    if (!ifs) return {};
     std::string buf(kPeek, '\0');
     ifs.read(buf.data(), static_cast<std::streamsize>(kPeek));
     buf.resize(static_cast<std::size_t>(ifs.gcount()));
-    return buf.find(tag) != std::string::npos;
+    return buf;
 }
 
 void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
@@ -425,12 +425,14 @@ roundtrip_summary exporter::roundtrip(
         const auto& file = entry.path();
         BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
 
-        const bool is_portfolio    = contains_tag(file, "<Portfolio>");
-        const bool is_currency     = !is_portfolio && contains_tag(file, "<CurrencyConfig>");
-        const bool is_calendar     = !is_portfolio && !is_currency
-                                     && contains_tag(file, "<CalendarAdjustments>");
-        const bool is_conventions  = !is_portfolio && !is_currency && !is_calendar
-                                     && contains_tag(file, "<Conventions>");
+        const auto hdr = read_header(file);
+        const bool is_portfolio   = hdr.find("<Portfolio>") != std::string::npos;
+        const bool is_currency    = !is_portfolio
+                                    && hdr.find("<CurrencyConfig>") != std::string::npos;
+        const bool is_calendar    = !is_portfolio && !is_currency
+                                    && hdr.find("<CalendarAdjustments>") != std::string::npos;
+        const bool is_conventions = !is_portfolio && !is_currency && !is_calendar
+                                    && hdr.find("<Conventions>") != std::string::npos;
 
         if (!is_portfolio && !is_currency && !is_calendar && !is_conventions) {
             BOOST_LOG_SEV(lg(), debug) << "Skipping unrecognised XML: "

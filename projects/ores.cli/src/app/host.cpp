@@ -71,14 +71,24 @@ int host::execute(const std::vector<std::string>& args,
     if (cfg.ore_roundtrip.has_value()) {
         try {
             const auto& opts = *cfg.ore_roundtrip;
-            const auto s = ores::ore::xml::exporter::roundtrip_portfolio(
+            const auto s = ores::ore::xml::exporter::roundtrip(
                 opts.input_dir, opts.output_dir);
+            const int total_trades = s.trades_mapped + s.trades_passthrough;
+            const double tps = s.total_ms > 0
+                ? total_trades * 1000.0 / s.total_ms : 0.0;
             std_output
                 << "XML files found:      " << s.total_xml_files      << "\n"
                 << "Skipped:              " << s.skipped               << "\n"
                 << "Outputs written:      " << s.output_files_written  << "\n"
                 << "Trades mapped:        " << s.trades_mapped         << "\n"
-                << "Trades passthrough:   " << s.trades_passthrough    << "\n";
+                << "Trades passthrough:   " << s.trades_passthrough    << "\n"
+                << "Currency files:       " << s.currency_files        << "\n"
+                << "Calendar files:       " << s.calendar_files        << "\n"
+                << "Convention files:     " << s.convention_files      << "\n"
+                << "Import time (ms):     " << s.import_ms             << "\n"
+                << "Export time (ms):     " << s.export_ms             << "\n"
+                << "Total time (ms):      " << s.total_ms              << "\n"
+                << "Throughput:           " << static_cast<int>(tps)   << " trades/s\n";
             return EXIT_SUCCESS;
         } catch (const std::exception& e) {
             const auto *const be(dynamic_cast<const boost::exception* const>(&e));

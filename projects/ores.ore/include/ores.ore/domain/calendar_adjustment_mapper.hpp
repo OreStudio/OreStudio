@@ -42,16 +42,13 @@ private:
     }
 
 public:
-    /**
-     * @brief Maps a single ORE @c newcalendar element to a domain type.
-     */
     static refdata::domain::calendar_adjustment map(const newcalendar& v);
-
-    /**
-     * @brief Maps all calendars in an ORE @c calendaradjustment document.
-     */
     static std::vector<refdata::domain::calendar_adjustment>
     map(const calendaradjustment& v);
+
+    static newcalendar reverse(const refdata::domain::calendar_adjustment& v);
+    static calendaradjustment
+    reverse(const std::vector<refdata::domain::calendar_adjustment>& v);
 };
 
 }

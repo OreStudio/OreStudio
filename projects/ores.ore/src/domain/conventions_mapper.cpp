@@ -20,6 +20,7 @@
 #include "ores.ore/domain/conventions_mapper.hpp"
 
 #include <algorithm>
+#include <map>
 #include <stdexcept>
 
 namespace ores::ore::domain {

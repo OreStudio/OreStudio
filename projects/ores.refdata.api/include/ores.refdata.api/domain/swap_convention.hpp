@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_SWAP_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_SWAP_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_SWAP_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_SWAP_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -32,10 +32,7 @@ namespace ores::refdata::domain {
  *
  * Defines the fixed-leg schedule and the floating-leg index for a standard
  * interest rate swap. Used by ORE to bootstrap par swap rates off a yield
- * curve. Corresponds to the @c <Swap> element in @c conventions.xml.
- *
- * The @c index field references an IBOR or overnight index convention by its
- * ORE identifier (e.g. "EUR-EURIBOR-6M").
+ * curve. Corresponds to the <Swap> element in ORE conventions.xml.
  */
 struct swap_convention final {
     /**
@@ -49,17 +46,19 @@ struct swap_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "EUR-6M-SWAP-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'EUR-6M-SWAP-CONVENTIONS', 'USD-3M-SWAP-CONVENTIONS'.
      */
     std::string id;
 
     /**
-     * @brief Fixed-leg payment calendar (e.g. "TARGET").
+     * @brief Fixed-leg payment calendar (e.g. 'TARGET').
      */
     std::optional<std::string> fixed_calendar;
 
     /**
-     * @brief Fixed-leg payment frequency (canonical CDM, e.g. "Annual").
+     * @brief Fixed-leg payment frequency (canonical CDM, e.g. 'Annual').
      */
     std::string fixed_frequency;
 
@@ -69,34 +68,39 @@ struct swap_convention final {
     std::optional<std::string> fixed_convention;
 
     /**
-     * @brief Day count fraction for the fixed leg (canonical FpML, e.g. "30/360").
+     * @brief Day count fraction for the fixed leg (canonical FpML, e.g. '30/360').
      */
     std::string fixed_day_count_fraction;
 
     /**
-     * @brief Floating-leg index identifier (e.g. "EUR-EURIBOR-6M").
+     * @brief Floating-leg index identifier (e.g. 'EUR-EURIBOR-6M').
      */
     std::string index;
 
     /**
-     * @brief Floating-leg payment frequency override (canonical CDM).
-     * When absent the frequency is derived from the index tenor.
+     * @brief Floating-leg payment frequency override (canonical CDM). When absent the frequency is derived from the index tenor.
      */
     std::optional<std::string> float_frequency;
 
     /**
-     * @brief Sub-period coupon type when the float leg uses sub-periods.
-     * Either "Compounding" or "Averaging".
+     * @brief Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding' or 'Averaging'.
      */
     std::optional<std::string> sub_periods_coupon_type;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this swap convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -104,11 +108,6 @@ struct swap_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

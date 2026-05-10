@@ -1,0 +1,166 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
+    "has_tenant_id": true,
+    "entity_singular": "swap_convention",
+    "entity_plural": "swap_conventions",
+    "entity_title": "Swap Convention",
+    "brief": "Conventions for a vanilla interest rate swap.",
+    "description": "Defines the fixed-leg schedule and the floating-leg index for a standard\ninterest rate swap. Used by ORE to bootstrap par swap rates off a yield\ncurve. Corresponds to the <Swap> element in ORE conventions.xml.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique convention identifier.",
+      "detail": "Examples: 'EUR-6M-SWAP-CONVENTIONS', 'USD-3M-SWAP-CONVENTIONS'.",
+      "generator_expr": "std::string(\"EUR-6M-SWAP-CONVENTIONS\")"
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "fixed_calendar",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Fixed-leg payment calendar (e.g. 'TARGET').",
+        "generator_expr": "std::string(\"TARGET\")"
+      },
+      {
+        "name": "fixed_frequency",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Fixed-leg payment frequency (canonical CDM, e.g. 'Annual').",
+        "generator_expr": "std::string(\"Annual\")"
+      },
+      {
+        "name": "fixed_convention",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Business day convention for the fixed leg (canonical FpML).",
+        "generator_expr": "std::string(\"ModifiedFollowing\")"
+      },
+      {
+        "name": "fixed_day_count_fraction",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Day count fraction for the fixed leg (canonical FpML, e.g. '30/360').",
+        "generator_expr": "std::string(\"30/360\")"
+      },
+      {
+        "name": "index",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Floating-leg index identifier (e.g. 'EUR-EURIBOR-6M').",
+        "generator_expr": "std::string(\"EUR-EURIBOR-6M\")"
+      },
+      {
+        "name": "float_frequency",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Floating-leg payment frequency override (canonical CDM). When absent the frequency is derived from the index tenor.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "sub_periods_coupon_type",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding' or 'Averaging'.",
+        "generator_expr": "std::nullopt"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_swap_conventions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "swap_convention",
+      "entity_plural_short": "swap_conventions",
+      "entity_singular_words": "swap convention",
+      "entity_plural_words": "swap conventions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<optional>"],
+        "entity": ["<string>", "<optional>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "sc",
+      "table_display": [
+        {"column": "id", "header": "Id"},
+        {"column": "fixed_frequency", "header": "Fixed Freq"},
+        {"column": "fixed_day_count_fraction", "header": "Fixed DCF"},
+        {"column": "index", "header": "Index"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "collection_name": "swap_conventions",
+      "item_var": "sc",
+      "key_field": "id",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_swap_conventions_request",
+      "get_response_class": "refdata::messaging::get_swap_conventions_response",
+      "get_message_type": "get_swap_conventions_request",
+      "save_request_class": "refdata::messaging::save_swap_convention_request",
+      "save_response_class": "refdata::messaging::save_swap_convention_response",
+      "save_message_type": "save_swap_convention_request",
+      "save_request_item_field": "swap_convention",
+      "delete_request_class": "refdata::messaging::delete_swap_convention_request",
+      "delete_response_class": "refdata::messaging::delete_swap_convention_response",
+      "delete_message_type": "delete_swap_convention_request",
+      "history_request_class": "refdata::messaging::get_swap_convention_history_request",
+      "history_response_class": "refdata::messaging::get_swap_convention_history_response",
+      "history_message_type": "get_swap_convention_history_request",
+
+      "detail_fields": [
+        {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
+        {"field": "fixed_frequency", "label": "Fixed Frequency", "widget": "fixedFrequencyEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. Annual"},
+        {"field": "fixed_day_count_fraction", "label": "Fixed Day Count Fraction", "widget": "fixedDayCountFractionEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. 30/360"},
+        {"field": "index", "label": "Index", "widget": "indexEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. EUR-EURIBOR-6M"},
+        {"field": "fixed_calendar", "label": "Fixed Calendar", "widget": "fixedCalendarEdit",
+         "type": "line_edit", "placeholder": "e.g. TARGET"},
+        {"field": "fixed_convention", "label": "Fixed Convention", "widget": "fixedConventionEdit",
+         "type": "line_edit", "placeholder": "e.g. ModifiedFollowing"},
+        {"field": "float_frequency", "label": "Float Frequency", "widget": "floatFrequencyEdit",
+         "type": "line_edit", "placeholder": "e.g. Semiannual"},
+        {"field": "sub_periods_coupon_type", "label": "Sub-Periods Coupon Type", "widget": "subPeriodsCouponTypeEdit",
+         "type": "line_edit", "placeholder": "e.g. Compounding"}
+      ],
+
+      "columns": [
+        {"enum_name": "Id", "field": "id", "header": "Id", "is_string": true, "width": 220},
+        {"enum_name": "FixedFrequency", "field": "fixed_frequency", "header": "Fixed Freq", "is_string": true, "width": 100},
+        {"enum_name": "FixedDayCountFraction", "field": "fixed_day_count_fraction", "header": "Fixed DCF", "is_string": true, "width": 100},
+        {"enum_name": "Index", "field": "index", "header": "Index", "is_string": true, "width": 160},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "SwapConventionListWindow",
+      "window_title": "Swap Conventions",
+      "icon": "Chart"
+    }
+  }
+}

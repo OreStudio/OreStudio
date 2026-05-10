@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_FRA_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_FRA_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_FRA_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_FRA_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -29,9 +29,9 @@ namespace ores::refdata::domain {
 /**
  * @brief Conventions for a forward rate agreement (FRA).
  *
- * A FRA convention is the simplest convention type: it ties a FRA instrument
- * to an IBOR index whose own conventions (calendar, day count, settlement)
- * govern the FRA. Corresponds to the @c <FRA> element in @c conventions.xml.
+ * A FRA convention ties a FRA instrument to an IBOR index whose own
+ * conventions (calendar, day count, settlement) govern the FRA.
+ * Corresponds to the <FRA> element in ORE conventions.xml.
  */
 struct fra_convention final {
     /**
@@ -45,25 +45,31 @@ struct fra_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "EUR-6M-FRA-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'EUR-6M-FRA-CONVENTIONS', 'USD-3M-FRA-CONVENTIONS'.
      */
     std::string id;
 
     /**
-     * @brief IBOR index identifier (e.g. "EUR-EURIBOR-6M").
-     *
-     * All settlement, calendar, and day count details are inherited from the
-     * referenced index convention.
+     * @brief IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day count details are inherited from the referenced index convention.
      */
     std::string index;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this FRA convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -71,11 +77,6 @@ struct fra_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

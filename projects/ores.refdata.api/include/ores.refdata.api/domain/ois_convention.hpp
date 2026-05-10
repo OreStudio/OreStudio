@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -32,7 +32,7 @@ namespace ores::refdata::domain {
  *
  * Defines the fixed-leg and overnight floating-leg parameters for an OIS.
  * OIS are used to bootstrap risk-free overnight discount curves (e.g. EONIA,
- * SOFR, SONIA). Corresponds to the @c <OIS> element in @c conventions.xml.
+ * SOFR, SONIA). Corresponds to the <OIS> element in ORE conventions.xml.
  */
 struct ois_convention final {
     /**
@@ -46,7 +46,9 @@ struct ois_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "EUR-OIS-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'EUR-OIS-CONVENTIONS', 'USD-OIS-CONVENTIONS'.
      */
     std::string id;
 
@@ -56,7 +58,7 @@ struct ois_convention final {
     int spot_lag = 0;
 
     /**
-     * @brief Overnight index identifier (e.g. "EUR-EONIA", "USD-SOFR").
+     * @brief Overnight index identifier (e.g. 'EUR-EONIA', 'USD-SOFR').
      */
     std::string index;
 
@@ -66,7 +68,7 @@ struct ois_convention final {
     std::string fixed_day_count_fraction;
 
     /**
-     * @brief Fixed-leg payment calendar (e.g. "TARGET").
+     * @brief Fixed-leg payment calendar (e.g. 'TARGET').
      */
     std::optional<std::string> fixed_calendar;
 
@@ -81,7 +83,7 @@ struct ois_convention final {
     std::optional<bool> end_of_month;
 
     /**
-     * @brief Fixed-leg payment frequency (canonical CDM, e.g. "Annual").
+     * @brief Fixed-leg payment frequency (canonical CDM, e.g. 'Annual').
      */
     std::optional<std::string> fixed_frequency;
 
@@ -96,12 +98,12 @@ struct ois_convention final {
     std::optional<std::string> fixed_payment_convention;
 
     /**
-     * @brief Date generation rule for the schedule (e.g. "Backward", "CDS2015").
+     * @brief Date generation rule for the schedule (e.g. 'Backward', 'CDS2015').
      */
     std::optional<std::string> rule;
 
     /**
-     * @brief Payment calendar override (e.g. "TARGET").
+     * @brief Payment calendar override (e.g. 'TARGET').
      */
     std::optional<std::string> payment_calendar;
 
@@ -111,12 +113,19 @@ struct ois_convention final {
     std::optional<int> rate_cutoff;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this OIS convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -124,11 +133,6 @@ struct ois_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

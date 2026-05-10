@@ -46,6 +46,15 @@
 #include "ores.refdata.api/domain/currency_table.hpp"
 #include "ores.refdata.api/domain/currency_json.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/zero_convention_repository.hpp"
+#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.refdata.core/repository/swap_convention_repository.hpp"
+#include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/fra_convention_repository.hpp"
+#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/fx_convention_repository.hpp"
+#include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.api/domain/role.hpp"
@@ -195,6 +204,51 @@ import_currencies(const std::vector<std::filesystem::path> files) const {
 }
 
 void application::
+import_conventions(const std::vector<std::filesystem::path> files) const {
+    refdata::repository::zero_convention_repository          zero_rp;
+    refdata::repository::deposit_convention_repository       deposit_rp;
+    refdata::repository::swap_convention_repository          swap_rp;
+    refdata::repository::ois_convention_repository           ois_rp;
+    refdata::repository::fra_convention_repository           fra_rp;
+    refdata::repository::ibor_index_convention_repository    ibor_rp;
+    refdata::repository::overnight_index_convention_repository overnight_rp;
+    refdata::repository::fx_convention_repository            fx_rp;
+    refdata::repository::cds_convention_repository           cds_rp;
+
+    for (const auto& f : files) {
+        BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
+        auto convs(ore_importer::import_conventions(f));
+
+        zero_rp.write(context_, convs.zero);
+        deposit_rp.write(context_, convs.deposit);
+        swap_rp.write(context_, convs.swap);
+        ois_rp.write(context_, convs.ois);
+        fra_rp.write(context_, convs.fra);
+        ibor_rp.write(context_, convs.ibor_index);
+        overnight_rp.write(context_, convs.overnight_index);
+        fx_rp.write(context_, convs.fx);
+        cds_rp.write(context_, convs.cds);
+
+        const auto total = convs.zero.size() + convs.deposit.size() +
+            convs.swap.size() + convs.ois.size() + convs.fra.size() +
+            convs.ibor_index.size() + convs.overnight_index.size() +
+            convs.fx.size() + convs.cds.size();
+
+        output_stream_ << f.filename() << ": Imported " << total
+                       << " conventions (zero=" << convs.zero.size()
+                       << ", deposit=" << convs.deposit.size()
+                       << ", swap=" << convs.swap.size()
+                       << ", ois=" << convs.ois.size()
+                       << ", fra=" << convs.fra.size()
+                       << ", ibor=" << convs.ibor_index.size()
+                       << ", overnight=" << convs.overnight_index.size()
+                       << ", fx=" << convs.fx.size()
+                       << ", cds=" << convs.cds.size()
+                       << ")." << std::endl;
+    }
+}
+
+void application::
 import_data(const std::optional<config::import_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No importing configuration found.";
@@ -205,6 +259,9 @@ import_data(const std::optional<config::import_options>& ocfg) const {
     switch (cfg.target_entity) {
         case config::entity::currencies:
             import_currencies(cfg.targets);
+            break;
+        case config::entity::conventions:
+            import_conventions(cfg.targets);
             break;
         default:
             BOOST_THROW_EXCEPTION(
@@ -914,6 +971,9 @@ export_data(const std::optional<config::export_options>& ocfg) const {
         case config::entity::compute_results:
             export_compute_results(cfg);
             break;
+        case config::entity::conventions:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Export is not yet supported for conventions."));
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Export is not yet supported for feature flags."));
@@ -1141,6 +1201,9 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
         case config::entity::compute_results:
             BOOST_THROW_EXCEPTION(
                 application_exception("Delete is not supported for compute entities via CLI."));
+        case config::entity::conventions:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Delete is not yet supported for conventions."));
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Delete is not yet supported for feature flags."));

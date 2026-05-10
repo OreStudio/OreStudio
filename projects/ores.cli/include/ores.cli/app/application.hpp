@@ -87,6 +87,7 @@ private:
      */
     void set_tenant_context(const std::string& tenant);
     void import_currencies(const std::vector<std::filesystem::path> files) const;
+    void import_conventions(const std::vector<std::filesystem::path> files) const;
     void import_data(const std::optional<config::import_options>& ocfg) const;
 
     void export_currencies(const config::export_options& cfg) const;

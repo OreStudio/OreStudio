@@ -29,6 +29,7 @@ namespace ores::cli::config {
         // refdata
         currencies,
         countries,
+        conventions,
         // iam
         accounts,
         roles,

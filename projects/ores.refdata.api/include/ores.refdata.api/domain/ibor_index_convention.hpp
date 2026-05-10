@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_IBOR_INDEX_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_IBOR_INDEX_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_IBOR_INDEX_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_IBOR_INDEX_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -31,13 +31,7 @@ namespace ores::refdata::domain {
  *
  * Defines the fixing calendar, day count, settlement lag, and business day
  * convention for a term IBOR index such as EURIBOR or USD LIBOR.
- * Corresponds to the @c <IborIndex> element in @c conventions.xml.
- *
- * The @c id typically takes the form "@c CCY-NAME" (e.g. "EUR-EURIBOR",
- * "USD-LIBOR"). The per-tenor variant (e.g. "EUR-EURIBOR-6M") is resolved
- * by ORE from the base index id and the instrument tenor.
- *
- * Aligns with the FpML @c FloatingRateIndex concept.
+ * Corresponds to the <IborIndex> element in ORE conventions.xml.
  */
 struct ibor_index_convention final {
     /**
@@ -51,17 +45,19 @@ struct ibor_index_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique index identifier (e.g. "EUR-EURIBOR", "USD-LIBOR").
+     * @brief Unique index identifier.
+     *
+     * Examples: 'EUR-EURIBOR', 'USD-LIBOR'.
      */
     std::string id;
 
     /**
-     * @brief Calendar used to determine valid fixing dates (e.g. "TARGET").
+     * @brief Calendar used to determine valid fixing dates (e.g. 'TARGET').
      */
     std::string fixing_calendar;
 
     /**
-     * @brief Day count fraction for accrual (canonical FpML, e.g. "ACT/360").
+     * @brief Day count fraction for accrual (canonical FpML, e.g. 'ACT/360').
      */
     std::string day_count_fraction;
 
@@ -81,12 +77,19 @@ struct ibor_index_convention final {
     bool end_of_month = false;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this IBOR index convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -94,11 +97,6 @@ struct ibor_index_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

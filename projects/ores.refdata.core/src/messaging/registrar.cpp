@@ -48,6 +48,13 @@
 #include "ores.refdata.core/messaging/asset_class_handler.hpp"
 #include "ores.refdata.core/messaging/zero_convention_handler.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_handler.hpp"
+#include "ores.refdata.core/messaging/swap_convention_handler.hpp"
+#include "ores.refdata.core/messaging/ois_convention_handler.hpp"
+#include "ores.refdata.core/messaging/fra_convention_handler.hpp"
+#include "ores.refdata.core/messaging/ibor_index_convention_handler.hpp"
+#include "ores.refdata.core/messaging/overnight_index_convention_handler.hpp"
+#include "ores.refdata.core/messaging/fx_convention_handler.hpp"
+#include "ores.refdata.core/messaging/cds_convention_handler.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
@@ -74,6 +81,13 @@
 #include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/fra_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -182,6 +196,146 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             get_deposit_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Swap conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<swap_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_swap_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_swap_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_swap_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_swap_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // OIS conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<ois_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_ois_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_ois_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_ois_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_ois_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // FRA conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<fra_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_fra_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_fra_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_fra_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_fra_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // IBOR index conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<ibor_index_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_ibor_index_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_ibor_index_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_ibor_index_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_ibor_index_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Overnight index conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<overnight_index_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_overnight_index_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_overnight_index_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_overnight_index_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_overnight_index_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // FX conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<fx_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_fx_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_fx_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_fx_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_fx_convention_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // CDS conventions
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<cds_convention_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_cds_conventions_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            save_cds_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            delete_cds_convention_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_cds_convention_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 

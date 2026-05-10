@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_FX_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_FX_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_FX_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_FX_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -31,11 +31,8 @@ namespace ores::refdata::domain {
  * @brief Conventions for FX spot and forward contracts.
  *
  * Defines the spot settlement lag, pip factor, and adjustment conventions for
- * a currency pair. Corresponds to the @c <FX> element in @c conventions.xml.
- *
- * The @c id typically takes the form "@c CCY1-CCY2-FX-CONVENTIONS" (e.g.
- * "EUR-USD-FX-CONVENTIONS"). The @c source_currency / @c target_currency pair
- * determines the quote convention direction.
+ * a currency pair. Corresponds to the <FX> element in ORE conventions.xml.
+ * The id typically takes the form 'CCY1-CCY2-FX-CONVENTIONS'.
  */
 struct fx_convention final {
     /**
@@ -49,7 +46,9 @@ struct fx_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique convention identifier (e.g. "EUR-USD-FX-CONVENTIONS").
+     * @brief Unique convention identifier.
+     *
+     * Examples: 'EUR-USD-FX-CONVENTIONS', 'GBP-USD-FX-CONVENTIONS'.
      */
     std::string id;
 
@@ -59,22 +58,19 @@ struct fx_convention final {
     int spot_days = 0;
 
     /**
-     * @brief ISO 4217 code of the source (base) currency (e.g. "EUR").
+     * @brief ISO 4217 code of the source (base) currency (e.g. 'EUR').
      */
     std::string source_currency;
 
     /**
-     * @brief ISO 4217 code of the target (quote) currency (e.g. "USD").
+     * @brief ISO 4217 code of the target (quote) currency (e.g. 'USD').
      */
     std::string target_currency;
 
     /**
-     * @brief Divisor applied to quoted FX points to obtain the rate increment.
-     *
-     * For most pairs this is 10000.0 (i.e. 1 pip = 0.0001); for JPY pairs
-     * it is typically 100.0.
+     * @brief Divisor applied to quoted FX points to obtain the rate increment (e.g. 10000.0 for most pairs).
      */
-    double points_factor = 0.0;
+    double points_factor;
 
     /**
      * @brief Calendar used when advancing from spot to forward dates.
@@ -97,12 +93,19 @@ struct fx_convention final {
     std::optional<std::string> convention;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this FX convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -110,11 +113,6 @@ struct fx_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

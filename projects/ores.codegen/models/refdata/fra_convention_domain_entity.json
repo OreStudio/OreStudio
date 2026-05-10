@@ -1,0 +1,102 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
+    "has_tenant_id": true,
+    "entity_singular": "fra_convention",
+    "entity_plural": "fra_conventions",
+    "entity_title": "FRA Convention",
+    "brief": "Conventions for a forward rate agreement (FRA).",
+    "description": "A FRA convention ties a FRA instrument to an IBOR index whose own\nconventions (calendar, day count, settlement) govern the FRA.\nCorresponds to the <FRA> element in ORE conventions.xml.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique convention identifier.",
+      "detail": "Examples: 'EUR-6M-FRA-CONVENTIONS', 'USD-3M-FRA-CONVENTIONS'.",
+      "generator_expr": "std::string(\"EUR-6M-FRA-CONVENTIONS\")"
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "index",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day count details are inherited from the referenced index convention.",
+        "generator_expr": "std::string(\"EUR-EURIBOR-6M\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_refdata_fra_conventions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "fra_convention",
+      "entity_plural_short": "fra_conventions",
+      "entity_singular_words": "FRA convention",
+      "entity_plural_words": "FRA conventions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "fc",
+      "table_display": [
+        {"column": "id", "header": "Id"},
+        {"column": "index", "header": "Index"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "collection_name": "fra_conventions",
+      "item_var": "fc",
+      "key_field": "id",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "refdata::messaging::get_fra_conventions_request",
+      "get_response_class": "refdata::messaging::get_fra_conventions_response",
+      "get_message_type": "get_fra_conventions_request",
+      "save_request_class": "refdata::messaging::save_fra_convention_request",
+      "save_response_class": "refdata::messaging::save_fra_convention_response",
+      "save_message_type": "save_fra_convention_request",
+      "save_request_item_field": "fra_convention",
+      "delete_request_class": "refdata::messaging::delete_fra_convention_request",
+      "delete_response_class": "refdata::messaging::delete_fra_convention_response",
+      "delete_message_type": "delete_fra_convention_request",
+      "history_request_class": "refdata::messaging::get_fra_convention_history_request",
+      "history_response_class": "refdata::messaging::get_fra_convention_history_response",
+      "history_message_type": "get_fra_convention_history_request",
+
+      "detail_fields": [
+        {"field": "id", "label": "Id", "widget": "idEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter convention id"},
+        {"field": "index", "label": "Index", "widget": "indexEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. EUR-EURIBOR-6M"}
+      ],
+
+      "columns": [
+        {"enum_name": "Id", "field": "id", "header": "Id", "is_string": true, "width": 220},
+        {"enum_name": "Index", "field": "index", "header": "Index", "is_string": true, "width": 180},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "FraConventionListWindow",
+      "window_title": "FRA Conventions",
+      "icon": "Chart"
+    }
+  }
+}

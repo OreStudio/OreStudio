@@ -204,7 +204,7 @@ import_currencies(const std::vector<std::filesystem::path> files) const {
 }
 
 void application::
-import_conventions(const std::vector<std::filesystem::path> files) const {
+import_conventions(const std::vector<std::filesystem::path>& files) const {
     refdata::repository::zero_convention_repository          zero_rp;
     refdata::repository::deposit_convention_repository       deposit_rp;
     refdata::repository::swap_convention_repository          swap_rp;

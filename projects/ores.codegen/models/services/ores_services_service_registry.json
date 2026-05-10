@@ -11,7 +11,9 @@
         "dml_prefixes": [
           {"prefix": "ores_iam_"}
         ],
-        "select_tables": [],
+        "select_tables": [
+          {"table": "ores_variability_system_settings_tbl"}
+        ],
         "select_prefixes": []
       },
       {

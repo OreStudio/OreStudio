@@ -122,6 +122,7 @@ alter default privileges in schema public
 -- iam_service: IAM domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
+grant select on ores_variability_system_settings_tbl to :iam_service_user;
 
 -- ---------------------------------------------------------------------------
 -- refdata_service: Reference Data domain service

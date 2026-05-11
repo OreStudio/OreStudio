@@ -277,7 +277,6 @@ void AppHistoryDialog::updateFullDetails(int versionIndex) {
 
     const auto& version = versions_[versionIndex];
 
-    ui_->codeValue->setText(QString::fromStdString(version.name));
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
     ui_->versionNumberValue->setText(QString::number(version.version));

@@ -75,17 +75,17 @@ end-to-end without the wizard.
 |     1 | ZeroConventionController registered in refdata plugin  | Done      | 08cc8eefc      |
 |     1 | Codegen auto-derives qt include paths + domain class   | Done      | fab932c0f      |
 |     1 | Qt menu renamed "ORE Conventions" → "Conventions"      | Done      | 9603bd13e      |
-|     2 | deposit_convention                                     | Pending   | —              |
-|     2 | swap_convention                                        | Pending   | —              |
-|     2 | ois_convention                                         | Pending   | —              |
-|     2 | fra_convention                                         | Pending   | —              |
-|     2 | ibor_index_convention                                  | Pending   | —              |
-|     2 | overnight_index_convention                             | Pending   | —              |
-|     2 | fx_convention                                          | Pending   | —              |
-|     2 | cds_convention                                         | Pending   | —              |
+|     2 | deposit_convention                                     | Done      | PR #718        |
+|     2 | swap_convention                                        | Done      | PR #733        |
+|     2 | ois_convention                                         | Done      | PR #733        |
+|     2 | fra_convention                                         | Done      | PR #733        |
+|     2 | ibor_index_convention                                  | Done      | PR #733        |
+|     2 | overnight_index_convention                             | Done      | PR #733        |
+|     2 | fx_convention                                          | Done      | PR #733        |
+|     2 | cds_convention                                         | Done      | PR #733        |
 |     2 | ~del~ → ~remove~ migration across handlers (34 sites)  | Done      | 465eb4d91      |
 |     3 | CLI: ~market_data~ entity + import handler            | Pending   | —              |
-|     3 | CLI: ~conventions~ entity + import handler             | Pending   | —              |
+|     3 | CLI: ~conventions~ entity + import handler             | Done      | PR #734        |
 |     3 | CLI: single ORE import entrypoint (sequenced saga)     | Pending   | —              |
 |     - | Commit ~scripts/validate_ore_examples.sh~ (XSD gate)   | Pending   | —              |
 
@@ -127,7 +127,7 @@ Later, Qt include paths and the domain class name were made auto-derivable
 Model file: ~projects/ores.codegen/models/refdata/zero_convention_domain_entity.json~.
 This is the template for the eight Phase 2 models.
 
-* Phase 2 — Remaining Eight Conventions (PENDING)
+* Phase 2 — Remaining Eight Conventions (COMPLETED)
 
 Each type gets the same stack produced for ~zero_convention~. One commit per
 layer per type (≈5 commits per type), so each type lands as a reviewable

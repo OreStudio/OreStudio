@@ -46,6 +46,13 @@
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/ZeroConventionController.hpp"
 #include "ores.qt/DepositConventionController.hpp"
+#include "ores.qt/SwapConventionController.hpp"
+#include "ores.qt/OisConventionController.hpp"
+#include "ores.qt/FraConventionController.hpp"
+#include "ores.qt/IborIndexConventionController.hpp"
+#include "ores.qt/OvernightIndexConventionController.hpp"
+#include "ores.qt/FxConventionController.hpp"
+#include "ores.qt/CdsConventionController.hpp"
 
 namespace ores::qt {
 
@@ -168,6 +175,41 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.username, this);
     connectControllerSignals(depositConventionController_.get());
+
+    swapConventionController_ = std::make_unique<SwapConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(swapConventionController_.get());
+
+    oisConventionController_ = std::make_unique<OisConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(oisConventionController_.get());
+
+    fraConventionController_ = std::make_unique<FraConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(fraConventionController_.get());
+
+    iborIndexConventionController_ = std::make_unique<IborIndexConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(iborIndexConventionController_.get());
+
+    overnightIndexConventionController_ = std::make_unique<OvernightIndexConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(overnightIndexConventionController_.get());
+
+    fxConventionController_ = std::make_unique<FxConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(fxConventionController_.get());
+
+    cdsConventionController_ = std::make_unique<CdsConventionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.username, this);
+    connectControllerSignals(cdsConventionController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +276,41 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             ico(Icon::Tag), tr("&Deposit Conventions"));
         connect(actDepositConventions, &QAction::triggered, this, [this]() {
             if (depositConventionController_) depositConventionController_->showListWindow();
+        });
+        auto* actSwapConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&Swap Conventions"));
+        connect(actSwapConventions, &QAction::triggered, this, [this]() {
+            if (swapConventionController_) swapConventionController_->showListWindow();
+        });
+        auto* actOisConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&OIS Conventions"));
+        connect(actOisConventions, &QAction::triggered, this, [this]() {
+            if (oisConventionController_) oisConventionController_->showListWindow();
+        });
+        auto* actFraConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&FRA Conventions"));
+        connect(actFraConventions, &QAction::triggered, this, [this]() {
+            if (fraConventionController_) fraConventionController_->showListWindow();
+        });
+        auto* actIborIndexConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&IBOR Index Conventions"));
+        connect(actIborIndexConventions, &QAction::triggered, this, [this]() {
+            if (iborIndexConventionController_) iborIndexConventionController_->showListWindow();
+        });
+        auto* actOvernightIndexConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("O&vernight Index Conventions"));
+        connect(actOvernightIndexConventions, &QAction::triggered, this, [this]() {
+            if (overnightIndexConventionController_) overnightIndexConventionController_->showListWindow();
+        });
+        auto* actFxConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("F&X Conventions"));
+        connect(actFxConventions, &QAction::triggered, this, [this]() {
+            if (fxConventionController_) fxConventionController_->showListWindow();
+        });
+        auto* actCdsConventions = menuOreConventions->addAction(
+            ico(Icon::Tag), tr("&CDS Conventions"));
+        connect(actCdsConventions, &QAction::triggered, this, [this]() {
+            if (cdsConventionController_) cdsConventionController_->showListWindow();
         });
 
         ref->addSeparator();

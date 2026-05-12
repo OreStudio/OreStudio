@@ -1,0 +1,546 @@
+:PROPERTIES:
+:ID: 6F1A8C2E-9A4D-4F71-B6E0-2D5C8B9E7A41
+:END:
+#+title: Bootstrap, Role Lifecycle and Architecture Violations
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+#+status: OPEN
+
+* Summary
+
+This document is a follow-up to
+[[file:wsl-db-permission-investigation.org][WSL DB Permission Errors:
+Cross-Service Grant Investigation]]. That investigation correctly identified
+two missing GRANTs and applied targeted fixes, but left the root cause
+unresolved — why an "old" Linux box did not see the same errors as a
+freshly-provisioned WSL box, given that both run identical code.
+
+The answer is *not* about WSL or socket-vs-TCP authentication. It is about
+the role lifecycle in ~recreate_database.sh~:
+
+#+begin_quote
+~recreate_database.sql~ drops only the *database*. Cluster-level *roles and
+users* are created idempotently — they are never dropped or revoked. Any
+membership granted to a service user in a previous era of the schema
+persists across every subsequent ~recreate_database.sh~ run.
+#+end_quote
+
+On the old Linux box, the domain service users (~iam_service~,
+~refdata_service~, ~compute_service~, …) were originally created as members
+of the broad ~rw_role~. The 2026-03 least-privilege change removed
+~in role rw_role~ from the create paths but did not add any code to *revoke*
+the prior membership. Result: the old box's service users keep their
+historical ~rw_role~ grant — which carries
+~SELECT, INSERT, UPDATE, DELETE, TRUNCATE on all tables in schema public~
+(see ~setup_schema.sql:73-86~) — and so missing per-service GRANTs never
+trigger a failure there. A fresh box creates the users for the first time
+under the strict model and immediately hits the missing GRANTs.
+
+A second, distinct concern surfaced during the same investigation: the IAM
+service today reads from and writes to tables it does not own
+(~ores_refdata_parties_tbl~, ~ores_variability_system_settings_tbl~), in
+direct violation of the
+[[file:../plans/2026-03-28-service-rbac-design.org][Service Account RBAC
+Design]]. The cross-service GRANTs added to plug the WSL outage encode that
+violation into the permission matrix; they are a stop-gap, not a target
+state.
+
+This document covers:
+
+1. The cluster-level role lifecycle bug.
+2. The bootstrap sequence and what makes it special.
+3. The cross-service direct-access violations in IAM (and a smaller one in
+   ~compute~).
+4. A remediation plan that separates "must fix to make recreate-db
+   reproducible" from "should fix to honour the RBAC architecture".
+
+* Part 1 — The Role Lifecycle Bug
+
+** What ~recreate_database.sh~ actually does
+
+The shell wrapper validates environment, then runs two phases:
+
+1. As ~postgres~ superuser, ~recreate_database.sql~:
+   - DROPs the target database
+     (~drop database if exists :db_name~ at ~recreate_database.sql:55~).
+   - Creates/updates the *group roles* idempotently
+     (~recreate_database.sql:73-92~ — ~create role ... nologin~ guarded by
+     ~not exists~).
+   - Creates/updates the *login users* idempotently
+     (lines 110-189, with the domain service users delegated to the
+     generated file ~create/iam/service_users_create.sql~).
+2. As the DDL user, ~setup_database.sh~ runs ~setup_schema.sql~ which
+   recreates tables, runs population, then applies
+   ~create/iam/iam_service_db_grants_create.sql~.
+
+The per-user blocks in (1) all follow the same pattern:
+
+#+begin_src sql
+select set_config('ores.cur_user', :'iam_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user'));
+    end if;
+end $$;
+alter user :iam_service_user with password :'iam_service_password';
+grant :service_role to :iam_service_user;
+alter role :iam_service_user set search_path to public;
+#+end_src
+
+The block can only *add* state to an existing user: a password reset, a
+new ~grant service_role to ...~, a new search_path. It *never*:
+
+- revokes prior group memberships,
+- drops the user before recreating it,
+- alters non-listed session settings (e.g. ~app.current_tenant_id~ left over
+  from an earlier era),
+- removes object-level GRANTs the user accumulated previously.
+
+Importantly, the script's docstring claims the operation is
+"idempotent and scoped to this environment" (~recreate_database.sql:25-27~).
+This is only true for *fresh* clusters. On a cluster that has carried
+service users across schema epochs, "idempotent" means "monotonically
+accumulating".
+
+** Why the two machines diverged
+
+A standalone, never-touched ~drop_roles.sql~ exists at the top of
+~projects/ores.sql/~ and *does* drop every user and group role for an
+environment label. It is documented as
+"~The environment database must be dropped BEFORE running this script.~" and
+"~USAGE: psql -U postgres -v env_label=local2 -f drop_roles.sql~".
+
+~recreate_database.sh~ never calls it. Nothing in the docs tells a developer
+to call it before ~recreate_database.sh~. As a result:
+
+| Machine          | Service users existed before strict-grant era? | Effect                                                                  |
+|------------------+------------------------------------------------+-------------------------------------------------------------------------|
+| Old Debian Linux | Yes — created as ~in role rw_role~             | Carry ~rw_role~ membership ⇒ DML on every table in ~public~. Missing per-service GRANTs are invisible. |
+| Fresh WSL        | No                                             | Created under strict model with only ~service_role~. Missing GRANTs surface immediately as ~permission denied~. |
+
+This is sufficient to explain every symptom in
+~wsl-db-permission-investigation.org~. The TCP-vs-socket hypothesis at the
+bottom of that document is a red herring: ~pg_hba.conf~ controls
+authentication, not authorisation. Once a connection is authenticated as
+~iam_service~, the same per-role GRANTs apply regardless of transport.
+
+** Evidence
+
+The grant matrix file ~iam_service_db_grants_create.sql~ has only three
+commits in its history (~git log~):
+
+- ~e0a707b5~ — initial introduction (merge of
+  ~feature/party-isolation-rls-policies~).
+- ~c6e6d5aa~ — adds ~grant select on ores_variability_system_settings_tbl~.
+- ~79e2db2e~ — adds ~ores_refdata_parties~ DML for IAM and
+  ~ores_dq_change_reasons_tbl~ SELECT for compute.
+
+For every commit prior to ~c6e6d5aa~, the file lacked the IAM grants. A
+~recreate_database.sh~ run on any machine whose ~iam_service~ user was
+created *before* the file existed would still successfully access those
+tables — through the leftover ~rw_role~ membership.
+
+The pre-existing ~setup_user.sql~ (one-shot script for new clusters,
+~setup_user.sql:357-368~) creates service users with no group membership
+and only adds them to ~service_role~. The "old box" almost certainly
+predates this version, because at that time ~setup_user.sql~ used
+~in role rw_role~ for *every* user; the change to strip ~rw_role~ from
+service users is what motivated ~iam_service_db_grants_create.sql~ in the
+first place.
+
+** Recommended fix
+
+Three options, in increasing order of intrusiveness:
+
+1. *(Minimum)* Document the requirement: a clear note in the
+   ~recreate_database.sh~ help text and in ~CLAUDE.md~ that ~drop_roles.sql~
+   must be run once after pulling any schema change that touches role
+   membership. This is unsatisfying — it relies on humans noticing.
+2. *(Recommended)* Add a ~--reset-roles~ (or default-on) phase to
+   ~recreate_database.sh~ that invokes ~drop_roles.sql~ before
+   ~recreate_database.sql~. The destructive nature warrants a flag, but it
+   should be on by default and require ~--keep-roles~ to opt out.
+3. *(Stronger)* Make the create blocks *converge* rather than *accumulate*.
+   Every user block should explicitly:
+   - ~revoke <every_other_group_role> from <user>~ before granting the
+     intended one,
+   - ~alter role <user> reset all~ to clear stale session settings,
+   - ~reassign owned by ... to ... ; drop owned by ...~ patterns where
+     object-level state could leak across epochs.
+
+   This is harder to get right (must enumerate all group roles, must avoid
+   nuking the database we just created) but means ~recreate_database.sh~
+   becomes truly idempotent regardless of cluster history.
+
+Option (2) is the right pragmatic choice: ~drop_roles.sql~ already exists,
+already handles all dependency ordering, and the cost of a flag is
+trivial. Option (3) can follow if and when we hit a second class of
+"persistent state" bug.
+
+The ~drop_roles.sql~ list of users is hard-coded
+(~drop_roles.sql:59-79~). It must be regenerated from the service registry
+when new services are added; today this is manual.
+
+** Related: ~populate~ files diverge from the service registry
+
+Already noted in the WSL investigation — ~http_user~, ~wt_user~,
+~compute_wrapper_user~ exist in
+~populate/iam/iam_service_accounts_populate.sql~ and
+~populate/iam/iam_service_account_roles_populate.sql~ but are not in the
+service registry model. A full codegen regeneration would silently strip
+these entries, breaking IAM accounts for HTTP, Wt and the compute wrapper
+on a clean rebuild. Either:
+
+- Move the static infrastructure-user inserts into a non-generated
+  ~populate/iam/iam_infrastructure_service_accounts_populate.sql~, or
+- Add ~"category": "infrastructure"~ entries to the service registry model
+  so codegen emits them deterministically.
+
+* Part 2 — The Bootstrap Sequence
+
+Bootstrap is the only operating mode in which the system runs *before* IAM
+has a usable account or party graph. It is therefore the only place where
+the normal RBAC story (every NATS call carries a verified JWT, every DB
+write is authorised by ~check_permission()~) cannot fully apply. The rules
+of engagement must be stated explicitly so we don't accidentally relax
+them outside of bootstrap.
+
+** Phases
+
+The flow, from a cold cluster to a working tenant admin, has five phases:
+
+*** Phase 0 — Cluster preparation (postgres superuser)
+
+Run once per OS install (or once per WSL reset). Performed by
+~recreate_database.sh~:
+
+1. Drop the target database.
+2. Create/update group roles: ~owner~, ~rw~, ~ro~, ~service~ (env-scoped,
+   e.g. ~ores_local1_owner~).
+3. Create/update login users: ~ddl_user~, ~cli_user~, ~wt_user~,
+   ~shell_user~, ~http_user~, ~readonly_user~, test users, and one
+   ~<service>_service~ per entry in the service registry.
+
+Bootstrap-specific note: there is no notion of tenant or authentication
+here. The script is run by a privileged operator (DBA / developer). This is
+acceptable because the operation is purely DDL on the cluster.
+
+*** Phase 1 — Schema and data setup (DDL user)
+
+Performed by ~setup_database.sh~ → ~setup_schema.sql~ as the DDL user
+(member of ~owner_role~):
+
+1. Create all tables/functions/triggers under ~public~ via ~create/create.sql~.
+2. Populate foundation data (~foundation_populate.sql~).
+3. Populate all other lookup/dimension data.
+4. Apply broad role GRANTs: ~rw_role~ gets DML on all tables, ~ro_role~
+   gets SELECT.
+5. Apply per-service GRANTs via
+   ~create/iam/iam_service_db_grants_create.sql~ (the "least-privilege
+   matrix").
+6. Initialise instance-level feature flags
+   (~instance/init_instance.sql~).
+
+A key artefact of phase 1 is the *system tenant* (UUID
+~ffffffff-ffff-ffff-ffff-ffffffffffff~) with:
+- a "system" party owned by the system tenant,
+- the service account rows (one per registered ~<service>_service_user~),
+- the bootstrap-mode flag set to ~true~ in
+  ~ores_variability_system_settings_tbl~ for the system tenant.
+
+*** Phase 2 — Service startup (each service)
+
+Every service (~iam~, ~refdata~, ~compute~, …) starts as its dedicated DB
+user and:
+
+1. Connects to NATS.
+2. Logs in to IAM at ~ores.<env>.<inst>.iam.v1.auth.service-login~ using its
+   service-account credentials, receiving a JWT.
+3. Caches the JWT, attaches it as ~Authorization: Bearer ...~ on every
+   outbound request, and renews on expiry.
+
+Bootstrap-specific note: the *IAM service itself* cannot use the same login
+path; it would need to talk to itself. It uses a self-issued JWT signed
+with the same private key it uses to verify others.
+
+*** Phase 3 — Initial admin (bootstrap mode only)
+
+While ~system.bootstrap_mode = true~, IAM exposes
+~ores.<env>.<inst>.iam.v1.bootstrap.create-admin~ which:
+
+1. Hashes the password in C++ (scrypt).
+2. Calls SQL function ~ores_iam_create_initial_admin_fn(...)~ as
+   ~SECURITY DEFINER~. This function creates the account, assigns the
+   ~SuperAdmin~ role, associates it with the system party, and flips
+   ~system.bootstrap_mode~ to ~false~.
+
+The handler at ~bootstrap_handler.hpp:90~ guards on
+~bootstrap_mode_service::is_in_bootstrap_mode()~, so this subject becomes a
+no-op once the flag is cleared. After this point, no JWT-less subject can
+mutate identity data.
+
+*** Phase 4 — Tenant provisioning (admin only)
+
+~ores.<env>.<inst>.iam.v1.bootstrap.provision-tenant~ creates a new tenant
+with its own admin. The handler at ~bootstrap_handler.hpp:153~:
+
+1. Switches to system-tenant context.
+2. Calls ~ores_iam_provision_tenant_fn(...)~ as ~SECURITY DEFINER~ — this
+   creates the tenant row, copies system-tenant reference data (roles,
+   permissions, lookups), seeds the WRLD business centre, creates the new
+   tenant's system party, and sets that tenant's ~bootstrap_mode~ flag.
+3. Switches to the *new tenant's* context.
+4. Calls ~account_service::create_account(...)~ for the tenant admin
+   *as the IAM service DB user, directly* — no SQL function, no security
+   definer. This needs ~INSERT~ on ~ores_iam_accounts_tbl~ — which the IAM
+   service already has via its ~ores_iam_~ DML prefix grant.
+5. Calls ~refdata::repository::party_repository::read_system_party(...)~
+   to look up the new tenant's system party, *as the IAM service DB user*.
+   This needs ~SELECT~ on ~ores_refdata_parties_tbl~ — *which is the
+   architecture violation*.
+6. Calls ~account_party_service::save_account_party(...)~ to link the new
+   admin to the system party, *as the IAM service DB user*. This needs
+   ~INSERT~ on ~ores_iam_account_parties_tbl~ (own table) and ~SELECT~ on
+   ~ores_refdata_parties_tbl~ for FK validation, depending on how the
+   constraint is defined.
+
+Why split: steps 1-3 absolutely need ~SECURITY DEFINER~ (they cross tenant
+boundaries and write to system-tenant rows that the IAM service must not be
+able to mutate at will). Steps 4-6 do not strictly need it, but the
+ergonomic price is the cross-service GRANT for ~ores_refdata_parties_*~.
+
+** Why bootstrap is special
+
+Three structural reasons the normal RBAC story can't fully apply during
+bootstrap:
+
+1. *No accounts yet.* JWT issuance requires an authenticated account. The
+   first account is the very thing we are creating.
+2. *No party graph yet.* Many cross-service operations rely on the tenant
+   having a "system party". Provisioning is what creates it.
+3. *Service-to-service auth on the boundary.* The IAM service issues JWTs;
+   it can't validate its own callers via the same loop without an infinite
+   recursion at startup.
+
+The accepted relaxations during bootstrap are:
+
+- The two ~bootstrap~ subjects are reachable *without* a JWT, gated by the
+  ~system.bootstrap_mode~ flag.
+- ~SECURITY DEFINER~ SQL functions run as the DDL user for the operations
+  that cross schemas (tenant provisioning, initial admin creation).
+- Inside the bootstrap handler, the IAM C++ code runs as the IAM service DB
+  user and performs the residual writes/reads it needs to "stitch" the new
+  admin to the new tenant.
+
+The relaxations *must* end the moment ~bootstrap_mode~ flips off. Today
+they do — but the cross-service GRANTs added to make Phase 4 work *do
+not* automatically expire, so the IAM service retains DML on
+~ores_refdata_parties_tbl~ forever. That is the bridge between bootstrap
+and the next section.
+
+* Part 3 — Architecture Violations in IAM
+
+The
+[[file:../plans/2026-03-28-service-rbac-design.org][Service Account RBAC
+Design]] is explicit about cross-component access (excerpt):
+
+| Service     | Own schema    | Shared SELECT                              |
+|-------------+---------------+--------------------------------------------|
+| ~ores_iam~  | ~iam~         | — (none)                                   |
+
+In practice, the IAM service today reaches into two other components'
+tables, and the GRANTs file encodes the violation:
+
+#+begin_src sql
+-- iam_service_db_grants_create.sql:122-126
+select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
+select _ores_grant_dml_fn('ores_refdata_parties', :'iam_service_user');   -- VIOLATION
+grant select on ores_variability_system_settings_tbl to :iam_service_user;-- VIOLATION
+#+end_src
+
+** Violation 1 — variability.system_settings
+
+*Code paths:*
+- ~auth_handler.hpp:139-155~ (~auth_is_tenant_bootstrap_mode~): every login
+  checks the target tenant's bootstrap flag.
+- ~auth_handler.hpp:173-183~ (~reload_token_settings~): at IAM startup,
+  read JWT TTL settings.
+- ~account_handler.hpp~: same pattern (signup / account create flows
+  consult signup-policy flags).
+- ~bootstrap_mode_service.hpp:112~: linked directly,
+  ~variability::service::system_settings_service~ is a member.
+
+*Why it exists.* ~ores.variability~ owns runtime configuration — feature
+flags, TTLs, signup policy. The IAM service uses it as a settings store.
+Linking the variability core was the path of least resistance: it is the
+same C++ binary, the SQL is already written, no NATS hop in the hot path
+of login.
+
+*Architectural intent.* These reads should be cached. They are
+read-mostly: settings change at human cadence (minutes/hours), login
+happens at subsecond cadence. Two clean options:
+
+1. *IAM caches the settings in-process* and refreshes them on a NATS
+   "system-settings-changed" notification published by the variability
+   service.
+2. *IAM owns its own settings table* for IAM-relevant flags
+   (~iam.token_settings~, ~iam.signup_policy~, ~iam.bootstrap_state~) and
+   stops reading the cross-tenant ~ores_variability_system_settings_tbl~
+   entirely. This is the strictest interpretation of the RBAC plan, and
+   probably the right end state, because the bootstrap flag and JWT
+   settings are really IAM concerns, not generic "variability".
+
+Option (2) is cleaner. Option (1) is a smaller intermediate step.
+
+** Violation 2 — refdata.parties
+
+*Code paths:*
+- ~bootstrap_handler.hpp:203~: ~party_repository.read_system_party(...)~
+  during tenant provisioning.
+- ~auth_handler.hpp:75-106~ (~auth_compute_visible_party_ids~,
+  ~auth_lookup_party~): every login enriches the JWT with the party graph
+  the user can see (~read_descendants~ on the party hierarchy).
+- ~account_handler.hpp~: same lookups when servicing account CRUD that
+  needs to display "associated party".
+
+*Why it exists.*
+- Provisioning: the IAM service needs the system-party id of the
+  newly-created tenant to link the first admin. Could be returned from the
+  ~SECURITY DEFINER~ provisioning function as an extra OUT parameter.
+- Login enrichment: visible-party computation is a hot path; doing a NATS
+  round-trip to refdata on every login adds latency and a hard
+  availability coupling.
+
+*Architectural intent.*
+- The provisioning case is easy to remove: extend
+  ~ores_iam_provision_tenant_fn~ to return ~(tenant_id, system_party_id)~
+  and remove the direct ~party_repository~ call. The
+  ~save_account_party~ insert into ~ores_iam_account_parties_tbl~ stays
+  (that table belongs to IAM), and the FK to ~ores_refdata_parties_tbl~
+  can be enforced by an internal cached id rather than a runtime SELECT.
+- The login case is harder. Options:
+  1. Refdata publishes a "party graph snapshot per tenant" via NATS
+     JetStream; IAM consumes it and answers ~visible_party_ids~ locally.
+  2. Refdata exposes ~refdata.v1.parties.read-descendants~ and
+     ~refdata.v1.parties.read-latest~ as NATS request/reply subjects, IAM
+     calls them with a short timeout and a fallback ("user sees only their
+     own party").
+  3. The visible-party set is precomputed and cached in
+     ~ores_iam_account_parties_tbl~ extension columns, kept in sync by an
+     IAM-side subscriber to refdata party-change notifications.
+
+(2) is the smallest change. (3) is the best for hot-path latency. (1) is
+the most "right" architecturally but requires snapshot semantics in
+JetStream we don't have today.
+
+** Smaller violation in compute
+
+The same GRANTs file gives ~compute_service~ SELECT on
+~ores_refdata_parties_tbl~ and ~ores_dq_change_reasons_tbl~. These are
+similarly hot-path reads (every pricing job needs the party / change
+reason) and should follow the same remediation pattern as the IAM
+visible-party case.
+
+* Part 4 — Remediation Plan
+
+Two independent tracks; both are needed but they have very different
+risk profiles.
+
+** Track A — Make ~recreate_database.sh~ deterministic
+
+Goal: identical results on any cluster, regardless of history.
+
+1. Add ~drop_roles.sh~ wrapper that:
+   - Generates the user list from the service registry (so new services
+     are picked up automatically), parameterised by ~env_label~.
+   - Calls ~drop_roles.sql~ with that list (replacing the current
+     hard-coded array).
+2. Have ~recreate_database.sh~ call ~drop_roles.sh~ *after*
+   ~drop database~ and *before* ~recreate_database.sql~. Gate with
+   ~--keep-roles~ for the rare case where role membership must be
+   preserved (CI parallelism using the same role across DBs, etc.).
+3. Regenerate ~drop_roles.sql~ from the service registry as part of
+   codegen (or replace it with a generated file
+   ~create/iam/service_users_drop.sql~ that complements
+   ~service_users_create.sql~).
+4. Update ~recreate_database.sql~ docstring to drop the "idempotent"
+   wording until step (1) lands.
+5. Move static infrastructure-service accounts (~http_user~, ~wt_user~,
+   ~compute_wrapper_user~) out of the generated populate files into a
+   non-generated counterpart, or add a category to the registry. (Already
+   noted in the WSL doc.)
+6. Add a smoke test: ~ci/scripts/test_recreate_idempotent.sh~ that runs
+   ~recreate_database.sh~ twice and asserts both runs produce identical
+   ~pg_roles~ / ~pg_auth_members~ / ~has_table_privilege~ snapshots for a
+   representative table set.
+
+Effort: small. Risk: low (everything is local DDL). This should land
+before any further work on Track B.
+
+** Track B — Honour the RBAC architecture
+
+Goal: remove cross-component DB GRANTs from the IAM (and compute)
+service users. Done in this order to minimise breakage:
+
+1. *Move IAM-owned settings out of variability.* Create
+   ~ores_iam_token_settings_tbl~ and ~ores_iam_bootstrap_state_tbl~,
+   migrate the relevant keys, delete the IAM ⇒ variability GRANT. Keep
+   the variability service for genuinely cross-cutting flags. Smallest
+   change with the highest ratio of mess removed.
+2. *Return system_party_id from provisioning.* Modify
+   ~ores_iam_provision_tenant_fn~ to return a record, drop the
+   ~party_repository.read_system_party~ call in
+   ~bootstrap_handler.hpp:204~. Re-evaluate whether
+   ~save_account_party~ still works without DML on
+   ~ores_refdata_parties_tbl~ (it should — that table is read-only from
+   IAM's perspective once the id is in hand, and the IAM-side
+   ~account_parties~ table is what we write).
+3. *Introduce refdata NATS read API for parties.* Add
+   ~refdata.v1.parties.read-latest~ and
+   ~refdata.v1.parties.read-descendants~ as authenticated request/reply
+   subjects. Switch ~auth_compute_visible_party_ids~ /
+   ~auth_lookup_party~ to use them. This is a real refactor with
+   testing and a latency-budget review, but it's the heart of the RBAC
+   plan.
+4. *Drop the IAM ⇒ refdata DML grant* once (2) and (3) ship. Tighten the
+   compute service the same way: replace its
+   ~grant select on ores_refdata_parties_tbl~ with a NATS call to the new
+   subjects.
+5. *Cache aggressively in IAM and compute.* Hot paths cannot survive an
+   uncached NATS hop. Put the cached values behind a clear refresh
+   contract (TTL + invalidation on refdata change notifications).
+
+Effort: medium-to-large. Risk: medium (touches login latency and the
+provisioning flow). Sequence the steps so each one independently
+de-risks the next.
+
+** Out of scope but worth recording
+
+- ~drop_roles.sql~'s hard-coded user list will rot. Track A item 3
+  addresses it.
+- The IAM service core links ~ores.variability.core~ at the CMake level.
+  Once Track B step 1 lands, that link should be removed entirely (with
+  ~iam.core/CMakeLists.txt~ losing ~ores.variability.core~). If we keep
+  it around for any reason, it must be flagged as deprecated to prevent
+  new code from adding more cross-component reads.
+- Bootstrap-mode flag location: today it lives in
+  ~ores_variability_system_settings_tbl~. Moving it to
+  ~ores_iam_bootstrap_state_tbl~ also removes the need for variability
+  to know about IAM concepts.
+
+* Appendix — File Pointers
+
+| Concern                            | File                                                        |
+|------------------------------------+-------------------------------------------------------------|
+| Role lifecycle (drop)              | ~projects/ores.sql/drop_roles.sql~                          |
+| Role lifecycle (create)            | ~projects/ores.sql/recreate_database.sql~                   |
+| Role lifecycle (one-shot create)   | ~projects/ores.sql/setup_user.sql~                          |
+| Service users (generated)          | ~projects/ores.sql/create/iam/service_users_create.sql~     |
+| Per-service GRANT matrix           | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~ |
+| RW role broad GRANT                | ~projects/ores.sql/setup_schema.sql:73-86~                  |
+| Bootstrap handler                  | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
+| IAM auth handler (party / settings)| ~projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp~ |
+| IAM bootstrap-mode service         | ~projects/ores.iam.core/src/service/bootstrap_mode_service.cpp~ |
+| RBAC design                        | ~doc/plans/2026-03-28-service-rbac-design.org~              |
+| WSL investigation (predecessor)    | ~doc/analysis/wsl-db-permission-investigation.org~          |

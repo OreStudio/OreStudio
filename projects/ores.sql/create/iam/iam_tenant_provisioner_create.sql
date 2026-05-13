@@ -65,6 +65,7 @@ create or replace function ores_iam_provision_tenant_fn(
 ) as $$
 declare
     v_system_tenant_id uuid;
+    v_tenant_id        uuid;
     v_copied_count     integer;
     v_actor            text;
 begin
@@ -95,6 +96,7 @@ begin
 
     -- Generate new tenant ID
     tenant_id := gen_random_uuid();
+    v_tenant_id := tenant_id;
 
     -- Create the tenant record
     -- Note: The trigger sets tenant_id = system_tenant_id (all tenants owned by system)
@@ -116,12 +118,13 @@ begin
     -- Copy IAM data from system tenant
     -- =========================================================================
 
-    -- Copy permissions (simple table: id, tenant_id, code, description)
-    insert into ores_iam_permissions_tbl (id, tenant_id, code, description)
-    select gen_random_uuid(), tenant_id, code, description
-    from ores_iam_permissions_tbl
-    where tenant_id = v_system_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    -- Copy permissions
+    insert into ores_iam_permissions_tbl (id, tenant_id, code, description, valid_from, valid_to)
+    select gen_random_uuid(), v_tenant_id, p.code, p.description,
+           current_timestamp, ores_utility_infinity_timestamp_fn()
+    from ores_iam_permissions_tbl p
+    where p.tenant_id = v_system_tenant_id
+    and p.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % permissions', v_copied_count;
@@ -132,11 +135,11 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        gen_random_uuid(), tenant_id, name, description,
+        gen_random_uuid(), v_tenant_id, r.name, r.description,
         v_actor, v_actor, 'system.new_record', 'Copied from system tenant during provisioning'
-    from ores_iam_roles_tbl
-    where tenant_id = v_system_tenant_id
-    and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_iam_roles_tbl r
+    where r.tenant_id = v_system_tenant_id
+    and r.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % roles', v_copied_count;
@@ -145,7 +148,7 @@ begin
     -- Need to map old role/permission IDs to new IDs by name/code
     insert into ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id)
     select
-        tenant_id,
+        v_tenant_id,
         new_r.id,
         new_p.id
     from ores_iam_role_permissions_tbl rp
@@ -156,10 +159,10 @@ begin
         and old_p.tenant_id = v_system_tenant_id
         and old_p.valid_to = ores_utility_infinity_timestamp_fn()
     join ores_iam_roles_tbl new_r on new_r.name = old_r.name
-        and new_r.tenant_id = tenant_id
+        and new_r.tenant_id = v_tenant_id
         and new_r.valid_to = ores_utility_infinity_timestamp_fn()
     join ores_iam_permissions_tbl new_p on new_p.code = old_p.code
-        and new_p.tenant_id = tenant_id
+        and new_p.tenant_id = v_tenant_id
         and new_p.valid_to = ores_utility_infinity_timestamp_fn()
     where rp.tenant_id = v_system_tenant_id
     and rp.valid_to = ores_utility_infinity_timestamp_fn();
@@ -180,12 +183,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_party_categories_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_party_categories_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % party categories', v_copied_count;
@@ -196,12 +199,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_party_types_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_party_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % party types', v_copied_count;
@@ -212,12 +215,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_party_statuses_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_party_statuses_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % party statuses', v_copied_count;
@@ -228,12 +231,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_contact_types_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_contact_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % contact types', v_copied_count;
@@ -245,13 +248,13 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         coding_scheme_code, max_cardinality,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_party_id_schemes_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_party_id_schemes_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % party ID schemes', v_copied_count;
@@ -262,12 +265,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_book_statuses_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_book_statuses_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % book statuses', v_copied_count;
@@ -278,12 +281,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_purpose_types_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_purpose_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % purpose types', v_copied_count;
@@ -294,12 +297,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_rounding_types_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_rounding_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % rounding types', v_copied_count;
@@ -310,12 +313,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_monetary_natures_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_monetary_natures_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % monetary natures', v_copied_count;
@@ -326,12 +329,12 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, tenant_id, 0, name, description, display_order,
+        code, v_tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
-    from ores_refdata_currency_market_tiers_tbl
-    where tenant_id = v_system_tenant_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_refdata_currency_market_tiers_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % currency market tiers', v_copied_count;
@@ -351,7 +354,7 @@ begin
         description, modified_by, performed_by,
         change_reason_code, change_commentary
     ) values (
-        'WRLD', tenant_id, 0, 'NONE',
+        'WRLD', v_tenant_id, 0, 'NONE',
         'World. Global business centre for entities not tied to a specific geographic location.',
         v_actor, v_actor,
         'system.new_record', 'System business centre for tenant'
@@ -365,7 +368,7 @@ begin
         party_type, business_center_code, parent_party_id, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        system_party_id, tenant_id,
+        system_party_id, v_tenant_id,
         'System Party', p_code || '_system', 'System',
         'Internal', 'WRLD', null, 'Active',
         v_actor, v_actor, 'system.new_record',
@@ -381,7 +384,7 @@ begin
     -- appears on first login. The wizard clears this flag on completion.
 
     perform ores_variability_system_settings_upsert_fn(
-        tenant_id,
+        v_tenant_id,
         'system.bootstrap_mode',
         'true',
         'boolean',

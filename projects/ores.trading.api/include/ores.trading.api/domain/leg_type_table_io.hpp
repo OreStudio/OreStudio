@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.trading.api/domain/leg_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the leg_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<leg_type>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<leg_type>& v);
 
 }
 

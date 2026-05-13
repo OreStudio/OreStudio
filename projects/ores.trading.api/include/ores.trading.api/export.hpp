@@ -17,21 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_CALLABLE_SWAP_INSTRUMENT_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_CALLABLE_SWAP_INSTRUMENT_TABLE_IO_HPP
+#ifndef ORES_TRADING_API_EXPORT_HPP
+#define ORES_TRADING_API_EXPORT_HPP
 
-#include <iosfwd>
-#include <vector>
-#include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::trading::domain {
-
-/**
- * @brief Dumps the callable_swap_instrument objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<callable_swap_instrument>& v);
-
-}
+#ifdef ORES_TRADING_API_LIBRARY
+#  define ORES_TRADING_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_TRADING_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

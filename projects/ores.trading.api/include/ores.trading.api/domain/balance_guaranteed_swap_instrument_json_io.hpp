@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the balance_guaranteed_swap_instrument to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const balance_guaranteed_swap_instrument& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const balance_guaranteed_swap_instrument& v);
 
 }
 

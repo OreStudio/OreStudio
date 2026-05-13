@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/payment_frequency_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts payment_frequency_types to the table format.
  */
-std::string convert_to_table(const std::vector<payment_frequency_type>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<payment_frequency_type>& v);
 
 }
 

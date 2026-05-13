@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the fpml_event_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<fpml_event_type>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<fpml_event_type>& v);
 
 }
 

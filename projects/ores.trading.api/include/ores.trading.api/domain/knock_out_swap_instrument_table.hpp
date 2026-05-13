@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts knock_out_swap_instruments to the table format.
  */
-std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<knock_out_swap_instrument>& v);
 
 }
 

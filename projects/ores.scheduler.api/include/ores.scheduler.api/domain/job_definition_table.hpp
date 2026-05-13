@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.scheduler.api/export.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::scheduler::domain {
@@ -29,7 +30,7 @@ namespace ores::scheduler::domain {
 /**
  * @brief Converts job_definitions to the table format.
  */
-std::string convert_to_table(const std::vector<job_definition>& v);
+ORES_SCHEDULER_API_EXPORT std::string convert_to_table(const std::vector<job_definition>& v);
 
 }
 

@@ -21,6 +21,7 @@
 #define ORES_REPORTING_DOMAIN_REPORT_TYPE_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
 
 namespace ores::reporting::domain {
@@ -28,7 +29,7 @@ namespace ores::reporting::domain {
 /**
  * @brief Dumps the report_type to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const report_type& v);
+ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const report_type& v);
 
 }
 

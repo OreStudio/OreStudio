@@ -23,6 +23,7 @@
 #include <expected>
 #include <string>
 #include <string_view>
+#include "ores.scheduler.api/export.hpp"
 
 namespace ores::scheduler::domain {
 
@@ -41,7 +42,7 @@ namespace ores::scheduler::domain {
  *   }
  * @endcode
  */
-class cron_expression final {
+class ORES_SCHEDULER_API_EXPORT cron_expression final {
 public:
     /**
      * @brief Default constructor. Creates an expression that runs every minute.

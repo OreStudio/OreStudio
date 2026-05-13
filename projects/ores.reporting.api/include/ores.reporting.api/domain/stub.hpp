@@ -21,6 +21,7 @@
 #define ORES_REPORTING_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.reporting.api/export.hpp"
 
 namespace ores::reporting::domain {
 
@@ -31,7 +32,7 @@ struct stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_REPORTING_API_EXPORT std::string stub_function();
 
 }
 

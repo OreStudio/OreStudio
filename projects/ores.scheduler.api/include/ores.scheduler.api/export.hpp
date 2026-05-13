@@ -9,29 +9,22 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+ * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_DOMAIN_REPORT_TYPE_TABLE_HPP
-#define ORES_REPORTING_DOMAIN_REPORT_TYPE_TABLE_HPP
+#ifndef ORES_SCHEDULER_API_EXPORT_HPP
+#define ORES_SCHEDULER_API_EXPORT_HPP
 
-#include <string>
-#include <vector>
-#include "ores.reporting.api/export.hpp"
-#include "ores.reporting.api/domain/report_type.hpp"
+#include <boost/config.hpp>
 
-namespace ores::reporting::domain {
-
-/**
- * @brief Converts report_types to the table format.
- */
-ORES_REPORTING_API_EXPORT std::string convert_to_table(const std::vector<report_type>& v);
-
-}
+#ifdef ORES_SCHEDULER_API_LIBRARY
+#  define ORES_SCHEDULER_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_SCHEDULER_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

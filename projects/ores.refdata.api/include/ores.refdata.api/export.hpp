@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_COUNTERPARTY_JSON_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_COUNTERPARTY_JSON_IO_HPP
+#ifndef ORES_REFDATA_API_EXPORT_HPP
+#define ORES_REFDATA_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.refdata.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::refdata::domain {
-
-/**
- * @brief Dumps the counterparty to a stream in JSON format.
- */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const counterparty& v);
-
-}
+#ifdef ORES_REFDATA_API_LIBRARY
+#  define ORES_REFDATA_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_REFDATA_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

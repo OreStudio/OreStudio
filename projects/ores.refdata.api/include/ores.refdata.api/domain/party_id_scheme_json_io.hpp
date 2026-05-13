@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the party_id_scheme to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const party_id_scheme& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const party_id_scheme& v);
 
 }
 

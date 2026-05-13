@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/currency_version_history.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the currency version history object to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<currency_version_history>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<currency_version_history>& v);
 
 }
 

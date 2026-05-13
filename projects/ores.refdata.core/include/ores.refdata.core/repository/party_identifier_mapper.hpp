@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.core/repository/party_identifier_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps party_identifier domain entities to data storage layer and vice-versa.
  */
-class party_identifier_mapper {
+class ORES_REFDATA_CORE_EXPORT party_identifier_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.party_identifier_mapper";

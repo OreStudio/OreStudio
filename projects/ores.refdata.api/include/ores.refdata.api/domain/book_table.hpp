@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts books to the table format.
  */
-std::string convert_to_table(const std::vector<book>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<book>& v);
 
 }
 

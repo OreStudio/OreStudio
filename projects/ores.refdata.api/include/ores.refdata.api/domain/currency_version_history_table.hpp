@@ -22,13 +22,14 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/currency_version_history.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts currency version history to table format.
  */
-std::string convert_to_table(const std::vector<currency_version_history>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency_version_history>& v);
 
 }
 

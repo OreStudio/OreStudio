@@ -57,7 +57,7 @@ target_include_directories(${lib_target_name} PRIVATE
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
-        ores.refdata.core.lib
+        ores.refdata.api.lib
         ores.storage.lib
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.

@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts counterparties to the table format.
  */
-std::string convert_to_table(const std::vector<counterparty>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<counterparty>& v);
 
 }
 

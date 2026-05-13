@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic portfolio.
  */
-domain::portfolio generate_synthetic_portfolio(
+ORES_REFDATA_API_EXPORT domain::portfolio generate_synthetic_portfolio(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic portfolios.
  */
-std::vector<domain::portfolio>
+ORES_REFDATA_API_EXPORT std::vector<domain::portfolio>
 generate_synthetic_portfolios(std::size_t n,
     utility::generation::generation_context& ctx);
 

@@ -56,7 +56,7 @@ target_include_directories(${lib_target_name} PRIVATE
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
-        ores.refdata.core.lib
+        ores.refdata.api.lib
         ores.trading.api.lib
         ores.ore.lib
         ores.storage.lib

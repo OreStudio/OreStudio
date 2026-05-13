@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts ois_conventions to the table format.
  */
-std::string convert_to_table(const std::vector<ois_convention>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<ois_convention>& v);
 
 }
 

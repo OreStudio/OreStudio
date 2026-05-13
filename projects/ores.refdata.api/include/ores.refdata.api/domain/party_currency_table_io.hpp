@@ -23,10 +23,11 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/party_currency.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
-std::ostream& operator<<(std::ostream& s, const std::vector<party_currency>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<party_currency>& v);
 
 }
 

@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts party_id_schemes to the table format.
  */
-std::string convert_to_table(const std::vector<party_id_scheme>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<party_id_scheme>& v);
 
 }
 

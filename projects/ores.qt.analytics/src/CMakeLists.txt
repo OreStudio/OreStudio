@@ -55,7 +55,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.qt.refdata.lib
-        ores.refdata.core.lib
+        ores.refdata.api.lib
         ores.analytics.api.lib
     PRIVATE
         ores.qt.lib)

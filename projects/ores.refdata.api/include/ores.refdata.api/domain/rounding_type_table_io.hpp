@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the rounding_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<rounding_type>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<rounding_type>& v);
 
 }
 

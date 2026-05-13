@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_DOMAIN_TAG_JSON_IO_HPP
-#define ORES_ASSETS_DOMAIN_TAG_JSON_IO_HPP
+#ifndef ORES_ASSETS_API_EXPORT_HPP
+#define ORES_ASSETS_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.assets.api/domain/tag.hpp"
-#include "ores.assets.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::assets::domain {
-
-ORES_ASSETS_API_EXPORT std::ostream& operator<<(std::ostream& s, const tag& v);
-
-}
+#ifdef ORES_ASSETS_API_LIBRARY
+#  define ORES_ASSETS_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_ASSETS_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

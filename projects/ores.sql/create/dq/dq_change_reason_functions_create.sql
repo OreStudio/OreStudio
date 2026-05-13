@@ -20,6 +20,10 @@
 -- Tenant-aware change reason validation.
 -- Change reasons are DQ governance data owned by the system tenant,
 -- so we validate against system tenant's change reasons.
+--
+-- SECURITY DEFINER: called from INSERT/UPDATE triggers in every service component.
+-- The triggering session user must not need SELECT on ores_dq_change_reasons_tbl.
+-- Running as the DDL owner satisfies the read.
 create or replace function ores_dq_validate_change_reason_fn(
     p_tenant_id uuid,
     p_change_reason_code text
@@ -47,4 +51,6 @@ begin
 
     return p_change_reason_code;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+    security definer
+    set search_path = public, pg_temp;

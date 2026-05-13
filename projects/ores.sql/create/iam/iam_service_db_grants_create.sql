@@ -129,65 +129,47 @@ grant select on ores_variability_system_settings_tbl to :iam_service_user;
 -- refdata_service: Reference Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
-grant select on ores_iam_tenants_tbl to :refdata_service_user;
 
 -- ---------------------------------------------------------------------------
 -- dq_service: Data Quality domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_dq_', :'dq_service_user');
-grant select on ores_iam_tenants_tbl to :dq_service_user;
 
 -- ---------------------------------------------------------------------------
 -- variability_service: Variability domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_variability_', :'variability_service_user');
-grant select on ores_iam_tenants_tbl to :variability_service_user;
 
 -- ---------------------------------------------------------------------------
 -- assets_service: Assets domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_assets_', :'assets_service_user');
-grant select on ores_iam_tenants_tbl to :assets_service_user;
 
 -- ---------------------------------------------------------------------------
 -- scheduler_service: Scheduler domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_scheduler_', :'scheduler_service_user');
-grant select on ores_iam_tenants_tbl to :scheduler_service_user;
-grant select on ores_dq_change_reasons_tbl to :scheduler_service_user;
-grant select on ores_dq_change_reason_categories_tbl to :scheduler_service_user;
 
 -- ---------------------------------------------------------------------------
 -- reporting_service: Reporting domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_reporting_', :'reporting_service_user');
-grant select on ores_iam_tenants_tbl to :reporting_service_user;
-grant select on ores_dq_change_reasons_tbl to :reporting_service_user;
-grant select on ores_dq_change_reason_categories_tbl to :reporting_service_user;
-select _ores_grant_select_fn('ores_scheduler_', :'reporting_service_user');
 
 -- ---------------------------------------------------------------------------
 -- telemetry_service: Telemetry domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_telemetry_', :'telemetry_service_user');
-grant select on ores_iam_tenants_tbl to :telemetry_service_user;
 
 -- ---------------------------------------------------------------------------
 -- trading_service: Trading domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_trading_', :'trading_service_user');
-grant select on ores_iam_tenants_tbl to :trading_service_user;
-grant select on ores_dq_change_reasons_tbl to :trading_service_user;
-grant select on ores_dq_change_reason_categories_tbl to :trading_service_user;
 select _ores_grant_select_fn('ores_refdata_', :'trading_service_user');
 
 -- ---------------------------------------------------------------------------
 -- compute_service: Compute Grid domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_compute_', :'compute_service_user');
-grant select on ores_iam_tenants_tbl to :compute_service_user;
-grant select on ores_refdata_parties_tbl to :compute_service_user;
-grant select on ores_dq_change_reasons_tbl to :compute_service_user;
 
 -- ---------------------------------------------------------------------------
 -- synthetic_service: Synthetic domain service
@@ -209,19 +191,16 @@ select _ores_grant_select_fn('ores_telemetry_', :'synthetic_service_user');
 select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_iam_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_refdata_parties', :'workflow_service_user');
-grant select on ores_iam_tenants_tbl to :workflow_service_user;
 
 -- ---------------------------------------------------------------------------
 -- ore_service: ORE Import domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_workflow_', :'ore_service_user');
-grant select on ores_iam_tenants_tbl to :ore_service_user;
 
 -- ---------------------------------------------------------------------------
 -- marketdata_service: Market Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
-grant select on ores_iam_tenants_tbl to :marketdata_service_user;
 
 -- ---------------------------------------------------------------------------
 -- controller_service: Service Controller domain service
@@ -232,7 +211,6 @@ select _ores_grant_dml_fn('ores_controller_', :'controller_service_user');
 -- analytics_service: Analytics domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
-grant select on ores_iam_tenants_tbl to :analytics_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

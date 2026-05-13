@@ -25,8 +25,31 @@ commands:
 
 ## Architecture
 
-Read `projects/modeling/system_model.org` for details on how the system
+Read `projects/modeling/system_model.org` for details on the system
 architecture.
+
+## Database Isolation
+
+Each domain service user (`ores_<env>_<service>_service`) holds DML only on
+its own `ores_<service>_*` tables. This is the strict service table isolation
+invariant. Key rules:
+
+- **Do not add cross-component SELECT/DML grants** to the service registry
+  (`projects/ores.codegen/models/services/ores_services_service_registry.json`)
+  without a documented justification. Any such addition is a tracked violation.
+- **FK constraints do not require SELECT grants** on the referenced table at
+  runtime. PostgreSQL enforces FKs internally; the `REFERENCES` privilege is
+  only needed when creating the constraint (done by the DDL user).
+- **Cross-component trigger validation functions** (`ores_iam_validate_tenant_fn`,
+  `ores_dq_validate_change_reason_fn`) are `SECURITY DEFINER` — they run as
+  the DDL owner and require no cross-component grants on calling service users.
+- **New trigger validation functions** that SELECT from another service's tables
+  must be `SECURITY DEFINER` with `SET search_path = public, pg_temp`.
+
+The remaining cross-component grants (IAM↔variability, IAM/workflow↔refdata,
+ORE↔workflow, trading↔refdata) are tracked in
+`doc/plans/2026-05-12-strict-service-table-isolation.org` with phase targets
+for removal.
 
 ## Testing
 

@@ -27,9 +27,7 @@
         "dml_prefixes": [
           {"prefix": "ores_refdata_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -42,9 +40,7 @@
         "dml_prefixes": [
           {"prefix": "ores_dq_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -57,9 +53,7 @@
         "dml_prefixes": [
           {"prefix": "ores_variability_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -72,9 +66,7 @@
         "dml_prefixes": [
           {"prefix": "ores_assets_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -87,11 +79,7 @@
         "dml_prefixes": [
           {"prefix": "ores_scheduler_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -104,14 +92,8 @@
         "dml_prefixes": [
           {"prefix": "ores_reporting_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
-        ],
-        "select_prefixes": [
-          {"prefix": "ores_scheduler_"}
-        ]
+        "select_tables": [],
+        "select_prefixes": []
       },
       {
         "name": "telemetry",
@@ -123,9 +105,7 @@
         "dml_prefixes": [
           {"prefix": "ores_telemetry_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -138,11 +118,7 @@
         "dml_prefixes": [
           {"prefix": "ores_trading_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": [
           {"prefix": "ores_refdata_"}
         ]
@@ -157,11 +133,7 @@
         "dml_prefixes": [
           {"prefix": "ores_compute_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_refdata_parties_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -170,6 +142,7 @@
         "env_key": "SYNTHETIC_SERVICE",
         "iam_role": "SyntheticService",
         "description": "Synthetic",
+        "role": "tooling",
         "email": "synthetic_service@system.ores",
         "dml_prefixes": [],
         "select_tables": [],
@@ -198,9 +171,7 @@
           {"prefix": "ores_iam_"},
           {"prefix": "ores_refdata_parties"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -213,9 +184,7 @@
         "dml_prefixes": [
           {"prefix": "ores_workflow_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -228,9 +197,7 @@
         "dml_prefixes": [
           {"prefix": "ores_marketdata_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {
@@ -256,9 +223,7 @@
         "dml_prefixes": [
           {"prefix": "ores_analytics_"}
         ],
-        "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       }
     ]

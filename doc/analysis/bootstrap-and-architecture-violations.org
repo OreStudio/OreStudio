@@ -529,6 +529,65 @@ de-risks the next.
   ~ores_iam_bootstrap_state_tbl~ also removes the need for variability
   to know about IAM concepts.
 
+* Part 5 — Resolution (2026-05-13)
+
+A code audit completed in May 2026 clarified the true root cause of the
+cross-component SELECT grants and identified a much simpler resolution
+than the cache-table approach originally proposed.
+
+** Root cause of most SELECT grants
+
+The ~SELECT ON ores_iam_tenants_tbl~ grants on 16 service users and the
+~SELECT ON ores_dq_change_reasons_tbl~ grants on 4 service users existed
+because the shared trigger validator functions:
+
+- ~ores_iam_validate_tenant_fn~ (in ~iam_tenant_functions_create.sql~)
+- ~ores_dq_validate_change_reason_fn~ (in ~dq_change_reason_functions_create.sql~)
+
+were defined as ~SECURITY INVOKER~ (the PostgreSQL default). Every
+service component's INSERT/UPDATE triggers call these functions. Because
+they execute as the triggering session user, that user needed ~SELECT~ on
+the tables the functions read.
+
+Note: PostgreSQL FK constraint enforcement does /not/ require ~SELECT~ on
+the referenced table — the check is done internally by the kernel. These
+grants were not for FK enforcement; they existed solely because of the
+SECURITY INVOKER trigger functions.
+
+** Fix applied
+
+Both validator functions were changed to ~SECURITY DEFINER~ with
+~SET search_path = public, pg_temp~. They now run as their DDL-user
+definer; no service user requires cross-component ~SELECT~ for trigger
+validation. The 16 tenant SELECT grants and the 4+3 change-reason
+SELECT grants were removed from the service registry and regenerated out
+of ~iam_service_db_grants_create.sql~.
+
+Two additional grants had no code justification at all:
+- ~SELECT ON ores_refdata_parties_tbl~ for ~compute_service_user~ — no
+  trigger or C++ code in compute queries this table.
+- ~SELECT ON ores_scheduler_*~ (prefix) for ~reporting_service_user~ —
+  ~scheduler_job_id~ in the reporting tables is a soft UUID column; no
+  trigger or C++ code in reporting queries scheduler tables.
+
+Both were removed.
+
+** What remains
+
+After the fix, the only cross-component grants that survive are genuine
+architectural coupling documented in the isolation plan
+([[file:../plans/2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]):
+
+- IAM reads ~ores_variability_system_settings_tbl~ (Phase 4.1)
+- IAM has DML on ~ores_refdata_parties~ (Phase 4.2/4.3)
+- Workflow has DML on ~ores_iam_*~ and ~ores_refdata_parties~ (Phase 5.2)
+- ORE has DML on ~ores_workflow_*~ (Phase 5.3)
+- Trading holds SELECT on ~ores_refdata_*~ prefix (Phase 5.1 — inline
+  trigger validations that need their own SECURITY DEFINER functions)
+
+Track A from Part 4 has been implemented (mandatory role drops in
+~recreate_database.sh~). Track B is the isolation plan Phases 4–5.
+
 * Appendix — File Pointers
 
 | Concern                            | File                                                        |

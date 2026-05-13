@@ -21,6 +21,7 @@
 #define ORES_CONTROLLER_API_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.controller.api/export.hpp"
 
 namespace ores::controller::api::domain {
 
@@ -31,7 +32,7 @@ struct stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_CONTROLLER_API_EXPORT std::string stub_function();
 
 }
 

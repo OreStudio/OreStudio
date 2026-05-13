@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONTROLLER_API_DOMAIN_SERVICE_INSTANCE_JSON_IO_HPP
-#define ORES_CONTROLLER_API_DOMAIN_SERVICE_INSTANCE_JSON_IO_HPP
+#ifndef ORES_CONTROLLER_API_EXPORT_HPP
+#define ORES_CONTROLLER_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.controller.api/domain/service_instance.hpp"
-#include "ores.controller.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::controller::api::domain {
-
-ORES_CONTROLLER_API_EXPORT std::ostream& operator<<(std::ostream& s, const service_instance& v);
-
-}
+#ifdef ORES_CONTROLLER_API_LIBRARY
+#  define ORES_CONTROLLER_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_CONTROLLER_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

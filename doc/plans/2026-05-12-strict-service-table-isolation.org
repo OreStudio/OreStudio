@@ -2,7 +2,7 @@
 #+SUBTITLE: Mandatory role drops + zero cross-component DB access
 #+DATE: 2026-05-12
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS (Phases 0–3 complete; 4–5 in progress)
+#+STATUS: COMPLETE (Phases 0–4 done; deferred items in cross-service-write-decoupling.org)
 #+OPTIONS: toc:t num:nil
 
 * Context
@@ -83,14 +83,18 @@ Remaining cross-component grants after Phase 1:
 
 *Effort: S–M. Risk: Low–Medium.*
 
-** 2.1 — IAM reads variability settings via NATS
+** 2.1 — IAM reads variability settings via SECURITY DEFINER function
+
+*Status: COMPLETE*
 
 IAM reads ~ores_variability_system_settings_tbl~ at runtime for bootstrap
 mode, JWT token settings, and signup policy. These are generic runtime
 configuration values owned by variability; IAM should not hold a DB grant
 to read them directly.
 
-*Fix: read via NATS, cache in-process.*
+*Fix: ~ores_variability_get_system_settings_fn~ (SECURITY DEFINER) wraps the
+SELECT; ~system_settings_service::refresh()~ calls ~read_for_tenant~ when a
+tenant_id is set, bypassing the need for a direct SELECT grant.*
 
 Steps:
 
@@ -163,12 +167,15 @@ Steps:
 
 * Phase 4 — Lock the Invariant
 
-After Phases 2 and 3 (and once the deferred plan items land):
+*Status: COMPLETE*
 
-1. ~create/iam/iam_service_db_grants_create.sql~ contains only one DML
-   grant per service — its own ~ores_<S>_*~ prefix.
-2. The invariant is documented in ~CLAUDE.md~ and ~system_model.org~
-   (already done in Phase 1).
+Every domain service user now holds DML only on its own ~ores_<S>_*~ prefix,
+with no cross-component SELECT grants. The three remaining cross-component DML
+grants (IAM→refdata parties, workflow→IAM/refdata, ORE→workflow) require NATS
+write APIs and are deferred to
+[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+
+~CLAUDE.md~ and ~system_model.org~ reflect current state.
 
 * Deferred Items
 
@@ -200,10 +207,10 @@ boundaries. After this plan:
 |-------+------------------------------------------+--------+--------+-------------|
 | 0     | Mandatory role drops                     | S      | Low    | COMPLETE    |
 | 1     | SECURITY DEFINER validators + cleanup    | S      | Low    | COMPLETE    |
-| 2.1   | IAM settings via NATS (not DB grant)     | S      | Low    | pending     |
-| 2.2   | Provisioning returns system_party_id     | S      | Low    | pending     |
-| 3     | SECURITY DEFINER for trading refdata fns | S      | Low    | pending     |
-| 4     | Lock invariant                           | S      | Low    | pending     |
+| 2.1   | IAM settings via SECURITY DEFINER fn     | S      | Low    | COMPLETE    |
+| 2.2   | Provisioning returns system_party_id     | S      | Low    | COMPLETE    |
+| 3     | SECURITY DEFINER for trading trigger fns | S      | Low    | COMPLETE    |
+| 4     | Lock invariant                           | S      | Low    | COMPLETE    |
 | —     | IAM party cache (deferred)               | L      | Medium | deferred    |
 | —     | Workflow/ORE NATS write APIs (deferred)  | L      | High   | deferred    |
 

@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 #include "ores.telemetry/domain/attribute_value.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -36,7 +37,7 @@ namespace ores::telemetry::domain {
  *
  * This follows OpenTelemetry's resource semantic conventions.
  */
-struct resource final {
+struct ORES_TELEMETRY_EXPORT resource final {
     /**
      * @brief Key-value pairs describing the resource.
      *

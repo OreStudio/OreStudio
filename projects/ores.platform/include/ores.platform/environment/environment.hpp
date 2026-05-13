@@ -22,13 +22,14 @@
 
 #include <string>
 #include <optional>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::environment {
 
 /**
  * @brief Utilities for reading environment variables.
  */
-class environment final {
+class ORES_PLATFORM_EXPORT environment final {
 public:
     /**
      * @brief Gets an environment variable value.

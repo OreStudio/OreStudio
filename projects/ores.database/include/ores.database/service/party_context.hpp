@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database::service {
 
@@ -39,7 +40,7 @@ namespace ores::database::service {
  * on every connection, enabling all party-isolated reads and writes.
  * Publishers must call this once per party before a batch of DML.
  */
-class party_context final {
+class ORES_DATABASE_EXPORT party_context final {
 public:
     party_context() = delete;
 

@@ -26,6 +26,7 @@
 #include <boost/asio/ip/address.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.geo/export.hpp"
 
 namespace ores::geo::service {
 
@@ -57,7 +58,7 @@ enum class geolocation_error {
  *
  * Thread-safety: All public methods are thread-safe.
  */
-class geolocation_service {
+class ORES_GEO_EXPORT geolocation_service {
 public:
     /**
      * @brief Construct a geolocation service with database context.

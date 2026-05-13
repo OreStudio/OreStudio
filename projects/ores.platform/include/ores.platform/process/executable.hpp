@@ -21,6 +21,7 @@
 
 #include <filesystem>
 #include <string>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::process {
 
@@ -30,7 +31,7 @@ namespace ores::platform::process {
  * Uses /proc/self/exe on Linux, _NSGetExecutablePath on macOS, and
  * GetModuleFileNameW on Windows. Returns an empty path on failure.
  */
-std::filesystem::path executable_path();
+ORES_PLATFORM_EXPORT std::filesystem::path executable_path();
 
 /**
  * @brief Returns the build time of the running executable as a string.
@@ -42,7 +43,7 @@ std::filesystem::path executable_path();
  *
  * Format: "YYYY/MM/DD HH:MM:SS" (UTC). Returns "unknown" on failure.
  */
-std::string executable_build_time();
+ORES_PLATFORM_EXPORT std::string executable_build_time();
 
 /**
  * @brief Returns the hostname of the current machine.
@@ -50,7 +51,7 @@ std::string executable_build_time();
  * Cross-platform wrapper: gethostname on POSIX, GetComputerNameA on Windows.
  * Returns "unknown" on failure.
  */
-std::string get_hostname();
+ORES_PLATFORM_EXPORT std::string get_hostname();
 
 }
 

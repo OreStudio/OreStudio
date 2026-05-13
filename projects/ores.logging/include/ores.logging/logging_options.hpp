@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 #include <filesystem>
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
@@ -68,7 +69,7 @@ struct logging_options final {
     std::string tag;
 };
 
-std::ostream& operator<<(std::ostream& s, const logging_options& v);
+ORES_LOGGING_EXPORT std::ostream& operator<<(std::ostream& s, const logging_options& v);
 
 }
 

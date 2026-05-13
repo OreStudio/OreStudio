@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
@@ -40,7 +41,7 @@ inline constexpr const char* k_timestamp_format = "%Y-%m-%d %H:%M:%S";
  * only for display. The canonical wire/storage format is ISO 8601 with a 'Z'
  * suffix: "YYYY-MM-DD HH:MM:SSZ".
  */
-class datetime final {
+class ORES_PLATFORM_EXPORT datetime final {
 public:
     /**
      * @brief Serialises a time point to ISO 8601 UTC string with 'Z' suffix.

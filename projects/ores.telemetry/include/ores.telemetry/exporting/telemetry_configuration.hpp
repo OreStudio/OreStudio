@@ -24,6 +24,7 @@
 #include <optional>
 #include <boost/program_options.hpp>
 #include "ores.telemetry/exporting/telemetry_options.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -35,7 +36,7 @@ namespace ores::telemetry::exporting {
  * captures all log records and exports them to a JSON Lines file for
  * log aggregation and analysis.
  */
-class telemetry_configuration final {
+class ORES_TELEMETRY_EXPORT telemetry_configuration final {
 public:
     telemetry_configuration() = delete;
 

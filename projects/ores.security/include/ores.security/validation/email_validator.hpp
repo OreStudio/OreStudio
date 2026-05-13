@@ -22,6 +22,7 @@
 
 #include <string>
 #include "ores.security/validation/validation_result.hpp"
+#include "ores.security/export.hpp"
 
 namespace ores::security::validation {
 
@@ -39,7 +40,7 @@ namespace ores::security::validation {
  * - Domain part contains at least one '.'
  * - Local and domain parts are not empty
  */
-class email_validator {
+class ORES_SECURITY_EXPORT email_validator {
 public:
     /**
      * @brief Validates an email address against basic format requirements.

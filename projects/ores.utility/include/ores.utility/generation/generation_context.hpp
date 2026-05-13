@@ -23,6 +23,7 @@
 #include <memory>
 #include "ores.utility/generation/generation_engine.hpp"
 #include "ores.utility/generation/generation_environment.hpp"
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -34,7 +35,7 @@ namespace ores::utility::generation {
  * passing contextual data (tenant_id, modified_by, FK references) through
  * entity generation graphs.
  */
-class generation_context final {
+class ORES_UTILITY_EXPORT generation_context final {
 public:
     using entries = generation_environment::entries;
 

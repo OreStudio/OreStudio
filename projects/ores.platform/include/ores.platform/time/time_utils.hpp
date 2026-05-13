@@ -25,13 +25,14 @@
 #include <filesystem>
 #include <string>
 #include <string_view>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
 /**
  * @brief Cross-platform time utilities.
  */
-class time_utils final {
+class ORES_PLATFORM_EXPORT time_utils final {
 public:
     /**
      * @brief Converts time_t to UTC tm struct (cross-platform).

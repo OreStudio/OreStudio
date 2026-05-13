@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::converter {
 
 /**
  * @brief Minimal RFC 4648 Base32 encoder, no padding.
  */
-class base32_converter {
+class ORES_UTILITY_EXPORT base32_converter {
 public:
     static std::string convert(const std::vector<uint8_t>& data);
 };

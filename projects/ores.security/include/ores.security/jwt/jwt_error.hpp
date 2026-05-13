@@ -21,6 +21,7 @@
 #define ORES_SECURITY_JWT_JWT_ERROR_HPP
 
 #include <string>
+#include "ores.security/export.hpp"
 
 namespace ores::security::jwt {
 
@@ -39,7 +40,7 @@ enum class jwt_error {
 /**
  * @brief Returns a string description for a JWT error.
  */
-std::string to_string(jwt_error error);
+ORES_SECURITY_EXPORT std::string to_string(jwt_error error);
 
 }
 

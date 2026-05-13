@@ -25,6 +25,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -34,7 +35,7 @@ namespace ores::utility::generation {
  * Supports parent-child chaining: a child environment inherits all entries
  * from its parent, with overrides taking precedence.
  */
-class generation_environment final {
+class ORES_UTILITY_EXPORT generation_environment final {
 public:
     using entries = std::unordered_map<std::string, std::string>;
 

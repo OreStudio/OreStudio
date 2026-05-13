@@ -28,6 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::serialization {
 
@@ -46,7 +47,7 @@ constexpr std::uint32_t MAX_ELEMENT_COUNT = 100'000;
  * All multi-byte integers are read in big-endian (network) byte order.
  * The span is advanced past the read data on success.
  */
-class reader {
+class ORES_UTILITY_EXPORT reader {
 public:
     /**
      * @brief Read a single byte.

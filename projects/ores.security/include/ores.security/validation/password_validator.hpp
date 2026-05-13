@@ -22,6 +22,7 @@
 
 #include <string>
 #include "ores.security/validation/validation_result.hpp"
+#include "ores.security/export.hpp"
 
 namespace ores::security::validation {
 
@@ -37,7 +38,7 @@ namespace ores::security::validation {
  * the enforce_policy parameter. This should NEVER be disabled in production
  * environments.
  */
-class password_validator {
+class ORES_SECURITY_EXPORT password_validator {
 public:
     /**
      * @brief Validates a password against the security policy.

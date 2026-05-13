@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::converter {
 
 /**
  * @brief Minimal Base64 encoder.
  */
-class base64_converter {
+class ORES_UTILITY_EXPORT base64_converter {
 public:
     /**
      * @brief Convert to Base64.

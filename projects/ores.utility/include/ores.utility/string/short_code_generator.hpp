@@ -22,6 +22,7 @@
 
 #include <string>
 #include <unordered_set>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::string {
 
@@ -32,7 +33,7 @@ namespace ores::utility::string {
  * Removes dotted abbreviations (S.A., B.V., etc.) and word suffixes
  * (PLC, LLC, LTD, INC, CORP, etc.).
  */
-std::string strip_corporate_suffixes(const std::string& name);
+ORES_UTILITY_EXPORT std::string strip_corporate_suffixes(const std::string& name);
 
 /**
  * @brief Generates a 3-6 character mnemonic short code from an entity name.
@@ -45,7 +46,7 @@ std::string strip_corporate_suffixes(const std::string& name);
  *   5. Three+ words: 2+2+2.
  *   6. Pad to minimum 3 chars with 'X'.
  */
-std::string generate_short_code(const std::string& name);
+ORES_UTILITY_EXPORT std::string generate_short_code(const std::string& name);
 
 /**
  * @brief Generates a unique short code, appending numeric suffixes on collision.
@@ -54,7 +55,7 @@ std::string generate_short_code(const std::string& name);
  * If the base code already exists in @p used_codes, appends 2, 3, ... until
  * unique. Inserts the final code into @p used_codes.
  */
-std::string generate_unique_short_code(const std::string& name,
+ORES_UTILITY_EXPORT std::string generate_unique_short_code(const std::string& name,
     std::unordered_set<std::string>& used_codes);
 
 }

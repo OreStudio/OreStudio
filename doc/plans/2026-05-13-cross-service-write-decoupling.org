@@ -1,0 +1,154 @@
+#+TITLE: Cross-Service Write Decoupling
+#+SUBTITLE: IAM party cache + NATS write APIs for workflow/ORE
+#+DATE: 2026-05-13
+#+AUTHOR: ORE Studio Team
+#+STATUS: PLANNING
+#+OPTIONS: toc:t num:nil
+
+* Context
+
+This plan covers the three deferred items from
+[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+that require significant NATS API work or cross-service refactoring. They are
+tracked separately because they are larger, riskier, and some depend on others.
+
+The strict service table isolation plan (Phases 0–4) must complete first; this
+plan begins only after the invariant is locked.
+
+** Items covered
+
+1. *4.3 — IAM hot-path party reads* (~auth_handler~, ~account_handler~)
+   currently query ~ores_refdata_parties_tbl~ directly on every login. Replace
+   with a NATS-backed party cache local to IAM.
+
+2. *5.2 — Workflow writes to IAM and refdata tables* during tenant onboarding.
+   Replace with IAM and refdata NATS write APIs consumed by workflow.
+
+3. *5.3 — ORE writes to workflow tables* as a job queue during import. Replace
+   with a workflow NATS write API consumed by ORE. Blocked on 5.2.
+
+* Phase 4.3 — IAM Party Cache
+
+*Effort: L. Risk: Medium.*
+
+IAM performs visible-party graph computation on every authenticated request.
+The current implementation holds ~SELECT~ and ~DML~ grants on
+~ores_refdata_parties_tbl~ to support ~auth_compute_visible_party_ids~ and
+~auth_lookup_party~ in ~auth_handler.hpp~ and ~account_handler.hpp~.
+
+** Design
+
+1. Refdata exposes a NATS request/reply subject
+   ~refdata.v1.parties.read~ accepting a tenant + party-id list and returning
+   party records. Refdata also publishes to ~refdata.v1.parties.changed~ on any
+   INSERT/UPDATE/DELETE (via LISTEN/NOTIFY already in place).
+
+2. IAM introduces a local read-through cache (~ores_iam_party_cache_tbl~ or
+   in-process, TBD) populated from the NATS party read API at startup per
+   tenant and refreshed on change notifications.
+
+3. ~auth_compute_visible_party_ids~ and ~auth_lookup_party~ are rewritten to
+   consult the cache rather than querying ~ores_refdata_parties_tbl~ directly.
+
+4. Remove ~DML on ores_refdata_parties~ from the IAM service registry entry.
+   After Phase 4.3, IAM holds no cross-component DB grant.
+
+** Open questions
+
+- *In-process vs DB-backed cache.* An in-process cache is simpler and faster
+  but is lost on restart. A local ~ores_iam_party_cache_tbl~ survives restart
+  and lets multiple IAM instances share state; the trade-off is schema
+  coupling and cache invalidation complexity. Decide before implementation.
+- *Cache granularity.* Per-tenant full load vs. per-party lazy load. Party
+  graphs can be large for multi-tenant deployments; lazy load with TTL may be
+  more appropriate.
+- *Bootstrap ordering.* IAM must be able to obtain party data before the
+  refdata service is healthy (e.g., during first-boot provisioning). The
+  provisioning path uses ~SECURITY DEFINER~ and does not depend on this cache;
+  verify no other startup path does.
+
+** Steps
+
+1. Add ~refdata.v1.parties.read~ request/reply handler in ~ores.refdata.core~.
+2. Add ~refdata.v1.parties.changed~ publish from the refdata party repository
+   on write operations (LISTEN/NOTIFY already triggers internal events; wire
+   those to a NATS publish).
+3. Implement party cache client in ~ores.iam.core~: subscribe to
+   ~refdata.v1.parties.changed~, populate on demand via
+   ~refdata.v1.parties.read~.
+4. Replace DB reads in ~auth_handler.hpp~ and ~account_handler.hpp~ with cache
+   lookups.
+5. Remove ~ores_refdata_parties~ DML from IAM service registry; regenerate
+   grants.
+6. Remove CMake links from ~ores.iam.core/src/CMakeLists.txt~ to any refdata
+   targets only used by the removed DB reads.
+
+* Phase 5.2 — Workflow Write APIs (IAM and Refdata)
+
+*Effort: L. Risk: High.*
+
+During tenant onboarding, workflow writes directly to:
+- ~ores_iam_*~ tables (account creation, role assignments)
+- ~ores_refdata_parties~ (party record creation for the new tenant)
+
+This requires workflow to hold DML grants on two cross-component table groups.
+The correct architecture is for IAM and refdata to expose NATS write subjects
+that workflow calls.
+
+** Steps
+
+1. IAM exposes a NATS write API (request/reply) for account and role
+   provisioning operations performed during onboarding.
+2. Refdata exposes a NATS write API for party record creation.
+3. Workflow replaces direct DB writes with calls to these NATS subjects.
+4. Remove ~ores_iam_*~ and ~ores_refdata_parties~ DML from the workflow service
+   registry entry; regenerate grants.
+
+** Dependency
+
+Phase 4.3 must be fully landed before 5.2 ships, because the refdata parties
+NATS write API (step 2) is the same surface that Phase 4.3's party cache reads
+will rely on for change notifications.
+
+* Phase 5.3 — ORE Write API (Workflow)
+
+*Effort: M. Risk: Medium.*
+
+ORE import writes job queue records directly to ~ores_workflow_*~ tables,
+requiring ORE to hold a DML grant on a cross-component prefix. Replace with a
+workflow NATS write API.
+
+** Steps
+
+1. Workflow exposes a NATS write subject for job queue submission.
+2. ORE replaces direct DB writes with calls to this subject.
+3. Remove ~ores_workflow_*~ DML from the ORE service registry; regenerate
+   grants.
+
+** Dependency
+
+Blocked on Phase 5.2: the workflow NATS API surface from 5.2 establishes
+conventions that 5.3 must follow.
+
+* Sequencing and Effort
+
+| Phase | Title                                    | Effort | Risk   | Blocked by |
+|-------+------------------------------------------+--------+--------+------------|
+| 4.3   | IAM party cache (NATS-backed)            | L      | Medium | —          |
+| 5.2   | Workflow→IAM/refdata NATS write APIs     | L      | High   | 4.3        |
+| 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        |
+
+All phases here begin after the isolation plan invariant is locked (Phase 4 of
+[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]).
+
+* File Pointers
+
+| Concern                              | File                                                                          |
+|--------------------------------------+-------------------------------------------------------------------------------|
+| IAM auth handler (party reads)       | ~projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp~     |
+| IAM account handler (party reads)    | ~projects/ores.iam.core/include/ores.iam.core/messaging/account_handler.hpp~  |
+| Refdata party repository             | ~projects/ores.refdata.core/include/ores.refdata.core/repositories/~          |
+| Workflow onboarding handler          | ~projects/ores.workflow.core/include/ores.workflow.core/messaging/~           |
+| ORE import handler                   | ~projects/ores.ore.core/include/ores.ore.core/messaging/~                     |
+| Service registry                     | ~projects/ores.codegen/models/services/ores_services_service_registry.json~   |
+| Predecessor isolation plan           | ~doc/plans/2026-05-12-strict-service-table-isolation.org~                     |

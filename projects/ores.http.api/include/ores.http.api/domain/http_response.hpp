@@ -23,13 +23,14 @@
 #include <string>
 #include <unordered_map>
 #include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::domain {
 
 /**
  * @brief Represents an HTTP response to be sent to the client.
  */
-struct http_response final {
+struct ORES_HTTP_API_EXPORT http_response final {
     /**
      * @brief HTTP status code.
      */

@@ -21,17 +21,18 @@
 #define ORES_CONNECTIONS_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::domain {
 
 /**
  * @brief Stub to be removed.
  */
-struct stub final {
+struct ORES_CONNECTIONS_EXPORT stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_CONNECTIONS_EXPORT std::string stub_function();
 
 }
 

@@ -26,13 +26,14 @@
 #include <unordered_map>
 #include "ores.http.api/domain/http_method.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::domain {
 
 /**
  * @brief Represents an incoming HTTP request.
  */
-struct http_request final {
+struct ORES_HTTP_API_EXPORT http_request final {
     /**
      * @brief HTTP method (GET, POST, etc.)
      */

@@ -21,17 +21,18 @@
 #define ORES_STORAGE_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.storage/export.hpp"
 
 namespace ores::storage::domain {
 
 /**
  * @brief Stub to be removed once real domain types are added.
  */
-struct stub final {
+struct ORES_STORAGE_EXPORT stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_STORAGE_EXPORT std::string stub_function();
 
 }
 

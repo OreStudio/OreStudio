@@ -21,17 +21,18 @@
 #define ORES_SERVICE_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.service/export.hpp"
 
 namespace ores::service::domain {
 
 /**
  * @brief Stub to be removed once real domain types are added.
  */
-struct stub final {
+struct ORES_SERVICE_EXPORT stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_SERVICE_EXPORT std::string stub_function();
 
 }
 

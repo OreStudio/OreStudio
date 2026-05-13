@@ -21,17 +21,18 @@
 #define ORES_NATS_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::domain {
 
 /**
  * @brief Stub to be removed once real domain types are added.
  */
-struct stub final {
+struct ORES_NATS_EXPORT stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_NATS_EXPORT std::string stub_function();
 
 }
 

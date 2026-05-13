@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_JSON_IO_HPP
-#define ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_JSON_IO_HPP
+#ifndef ORES_ANALYTICS_API_EXPORT_HPP
+#define ORES_ANALYTICS_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.analytics.api/domain/pricing_engine_type.hpp"
-#include "ores.analytics.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::analytics::domain {
-
-/**
- * @brief Dumps the pricing_engine_type to a stream in JSON format.
- */
-ORES_ANALYTICS_API_EXPORT std::ostream& operator<<(std::ostream& s, const pricing_engine_type& v);
-
-}
+#ifdef ORES_ANALYTICS_API_LIBRARY
+#  define ORES_ANALYTICS_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_ANALYTICS_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

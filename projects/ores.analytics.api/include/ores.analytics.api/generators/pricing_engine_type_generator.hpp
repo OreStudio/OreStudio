@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::analytics::generators {
@@ -36,7 +37,7 @@ namespace ores::analytics::generators {
  * @param n Number of types to generate. If n is 0 or greater than the
  *          available set, returns all available fictional types.
  */
-std::vector<domain::pricing_engine_type> generate_fictional_pricing_engine_types(
+ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_engine_type> generate_fictional_pricing_engine_types(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

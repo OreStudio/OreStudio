@@ -23,6 +23,7 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::analytics::generators {
@@ -38,7 +39,7 @@ namespace ores::analytics::generators {
  * @param config_id UUID of the pricing model config these parameters belong to.
  * @param product_id UUID of the pricing model product for scoped parameters.
  */
-std::vector<domain::pricing_model_product_parameter>
+ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_model_product_parameter>
 generate_fictional_pricing_model_product_parameters(
     std::size_t n,
     const boost::uuids::uuid& config_id,

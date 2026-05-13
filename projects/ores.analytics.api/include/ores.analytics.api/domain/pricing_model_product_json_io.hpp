@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/export.hpp"
 
 namespace ores::analytics::domain {
 
 /**
  * @brief Dumps the pricing_model_product to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const pricing_model_product& v);
+ORES_ANALYTICS_API_EXPORT std::ostream& operator<<(std::ostream& s, const pricing_model_product& v);
 
 }
 

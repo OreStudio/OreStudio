@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the change_reason_category object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const change_reason_category& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const change_reason_category& v);
 
 }
 

@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic origin_dimension.
  */
-domain::origin_dimension generate_synthetic_origin_dimension(
+ORES_DQ_API_EXPORT domain::origin_dimension generate_synthetic_origin_dimension(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic origin_dimensions.
  */
-std::vector<domain::origin_dimension>
+ORES_DQ_API_EXPORT std::vector<domain::origin_dimension>
 generate_synthetic_origin_dimensions(std::size_t n,
     utility::generation::generation_context& ctx);
 

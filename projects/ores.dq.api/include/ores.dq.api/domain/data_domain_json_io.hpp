@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/data_domain.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the data_domain object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const data_domain& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const data_domain& v);
 
 }
 

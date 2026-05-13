@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the dataset_bundle to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const dataset_bundle& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const dataset_bundle& v);
 
 }
 

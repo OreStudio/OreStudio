@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the subject_area object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const subject_area& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const subject_area& v);
 
 }
 

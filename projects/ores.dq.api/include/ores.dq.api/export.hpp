@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_DATASET_JSON_IO_HPP
-#define ORES_DQ_API_DOMAIN_DATASET_JSON_IO_HPP
+#ifndef ORES_DQ_API_EXPORT_HPP
+#define ORES_DQ_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.dq.api/domain/dataset.hpp"
-#include "ores.dq.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::dq::domain {
-
-/**
- * @brief Dumps the dataset to a stream in JSON format.
- */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const dataset& v);
-
-}
+#ifdef ORES_DQ_API_LIBRARY
+#  define ORES_DQ_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_DQ_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

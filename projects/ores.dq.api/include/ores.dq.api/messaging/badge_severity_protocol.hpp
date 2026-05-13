@@ -26,6 +26,7 @@
 #include <expected>
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::messaging {
 
@@ -36,19 +37,19 @@ namespace ores::dq::messaging {
 /**
  * @brief Request to retrieve all badge severities.
  */
-struct get_badge_severities_request final {
+ORES_DQ_API_EXPORT struct get_badge_severities_request final {
     std::vector<std::byte> serialize() const;
     static std::expected<get_badge_severities_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_severities_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_severities_request& v);
 
 /**
  * @brief Response containing all badge severities.
  */
-struct get_badge_severities_response final {
+ORES_DQ_API_EXPORT struct get_badge_severities_response final {
     std::vector<domain::badge_severity> severities;
 
     std::vector<std::byte> serialize() const;
@@ -57,12 +58,12 @@ struct get_badge_severities_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_severities_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_severities_response& v);
 
 /**
  * @brief Request to save a badge severity (create or update).
  */
-struct save_badge_severity_request final {
+ORES_DQ_API_EXPORT struct save_badge_severity_request final {
     domain::badge_severity severity;
 
     std::vector<std::byte> serialize() const;
@@ -71,12 +72,12 @@ struct save_badge_severity_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_badge_severity_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_badge_severity_request& v);
 
 /**
  * @brief Response confirming badge severity save operation.
  */
-struct save_badge_severity_response final {
+ORES_DQ_API_EXPORT struct save_badge_severity_response final {
     bool success;
     std::string message;
 
@@ -86,23 +87,23 @@ struct save_badge_severity_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_badge_severity_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_badge_severity_response& v);
 
 /**
  * @brief Result for a single badge severity deletion.
  */
-struct delete_badge_severity_result final {
+ORES_DQ_API_EXPORT struct delete_badge_severity_result final {
     std::string code;  ///< Primary key
     bool success;
     std::string message;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_severity_result& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_severity_result& v);
 
 /**
  * @brief Request to delete one or more badge severities.
  */
-struct delete_badge_severity_request final {
+ORES_DQ_API_EXPORT struct delete_badge_severity_request final {
     std::vector<std::string> codes;  ///< Primary keys
 
     std::vector<std::byte> serialize() const;
@@ -111,12 +112,12 @@ struct delete_badge_severity_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_severity_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_severity_request& v);
 
 /**
  * @brief Response confirming badge severity deletion(s).
  */
-struct delete_badge_severity_response final {
+ORES_DQ_API_EXPORT struct delete_badge_severity_response final {
     std::vector<delete_badge_severity_result> results;
 
     std::vector<std::byte> serialize() const;
@@ -125,12 +126,12 @@ struct delete_badge_severity_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_severity_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_severity_response& v);
 
 /**
  * @brief Request to retrieve version history for a badge severity.
  */
-struct get_badge_severity_history_request final {
+ORES_DQ_API_EXPORT struct get_badge_severity_history_request final {
     std::string code;  ///< Primary key
 
     std::vector<std::byte> serialize() const;
@@ -139,12 +140,12 @@ struct get_badge_severity_history_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_severity_history_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_severity_history_request& v);
 
 /**
  * @brief Response containing badge severity version history.
  */
-struct get_badge_severity_history_response final {
+ORES_DQ_API_EXPORT struct get_badge_severity_history_response final {
     bool success;
     std::string message;
     std::vector<domain::badge_severity> versions;
@@ -155,7 +156,7 @@ struct get_badge_severity_history_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_severity_history_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_severity_history_response& v);
 
 }
 

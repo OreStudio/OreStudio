@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts change_reasons to the table format.
  */
-std::string convert_to_table(const std::vector<change_reason>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<change_reason>& v);
 
 }
 

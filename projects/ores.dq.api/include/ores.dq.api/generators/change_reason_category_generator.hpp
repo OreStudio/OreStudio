@@ -23,13 +23,14 @@
 #include <vector>
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic change_reason_category.
  */
-domain::change_reason_category generate_synthetic_change_reason_category(
+ORES_DQ_API_EXPORT domain::change_reason_category generate_synthetic_change_reason_category(
     utility::generation::generation_context& ctx);
 
 /**
@@ -37,7 +38,7 @@ domain::change_reason_category generate_synthetic_change_reason_category(
  *
  * @note c++ 23 generators are not supported on all compilers.
  */
-std::vector<domain::change_reason_category>
+ORES_DQ_API_EXPORT std::vector<domain::change_reason_category>
 generate_synthetic_change_reason_categories(std::size_t n,
     utility::generation::generation_context& ctx);
 

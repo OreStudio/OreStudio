@@ -23,6 +23,7 @@
 #include <string>
 #include <optional>
 #include <ostream>
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
@@ -64,19 +65,19 @@ enum class publication_mode {
  * @param mode The publication mode to convert.
  * @return String representation: "upsert", "insert_only", or "replace_all".
  */
-std::string to_string(publication_mode mode);
+ORES_DQ_API_EXPORT std::string to_string(publication_mode mode);
 
 /**
  * @brief Parse a string to publication_mode.
  * @param s The string to parse.
  * @return The parsed mode, or std::nullopt if the string is invalid.
  */
-std::optional<publication_mode> publication_mode_from_string(const std::string& s);
+ORES_DQ_API_EXPORT std::optional<publication_mode> publication_mode_from_string(const std::string& s);
 
 /**
  * @brief Stream output operator for publication_mode.
  */
-std::ostream& operator<<(std::ostream& s, publication_mode mode);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, publication_mode mode);
 
 }
 

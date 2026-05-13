@@ -21,6 +21,7 @@
 #define ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 
 #include <optional>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
@@ -58,7 +59,7 @@ namespace ores::ore::domain {
  * - counterparty_id (ORE CounterParty is a string name, not an ORES UUID)
  * - party_id (derived from book_id in ORES)
  */
-class trade_mapper {
+class ORES_ORE_EXPORT trade_mapper {
 private:
     inline static std::string_view logger_name = "ores.ore.domain.trade_mapper";
 

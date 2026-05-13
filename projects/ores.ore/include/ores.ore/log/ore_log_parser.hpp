@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include "ores.ore/export.hpp"
 
 namespace ores::ore::log {
 
@@ -79,7 +80,7 @@ struct ore_log_line {
  * @return Parsed result, or std::nullopt for empty, malformed, or
  *         unrecognised lines.
  */
-std::optional<ore_log_line> parse_ore_log_line(std::string_view line);
+ORES_ORE_EXPORT std::optional<ore_log_line> parse_ore_log_line(std::string_view line);
 
 } // namespace ores::ore::log
 

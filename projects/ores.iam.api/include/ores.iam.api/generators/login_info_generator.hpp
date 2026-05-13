@@ -21,6 +21,7 @@
 #define ORES_IAM_GENERATORS_LOGIN_INFO_GENERATOR_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::iam::generators {
 /**
  * @brief Generates a synthetic login_info.
  */
-domain::login_info generate_synthetic_login_info(
+ORES_IAM_API_EXPORT domain::login_info generate_synthetic_login_info(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic login_infos.
  */
-std::vector<domain::login_info>
+ORES_IAM_API_EXPORT std::vector<domain::login_info>
 generate_synthetic_login_infos(std::size_t n,
     utility::generation::generation_context& ctx);
 

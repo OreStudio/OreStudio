@@ -22,6 +22,7 @@
 
 #include <set>
 #include <string>
+#include "ores.ore/export.hpp"
 #include "ores.ore/scanner/scan_result.hpp"
 #include "ores.ore/planner/import_choices.hpp"
 #include "ores.ore/planner/ore_import_plan.hpp"
@@ -41,7 +42,7 @@ namespace ores::ore::planner {
  * 3. Calls importer::import_portfolio_with_context for each book's source
  *    files and stamps the resulting trades with context fields.
  */
-class ore_import_planner {
+class ORES_ORE_EXPORT ore_import_planner {
 private:
     inline static std::string_view logger_name =
         "ores.ore.planner.ore_import_planner";

@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <filesystem>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
@@ -53,7 +54,7 @@ struct trade_import_item {
 /**
  * @brief Imports domain objects from their ORE XML representation.
  */
-class importer {
+class ORES_ORE_EXPORT importer {
 private:
     inline static std::string_view logger_name = "ores.ore.xml.importer";
 

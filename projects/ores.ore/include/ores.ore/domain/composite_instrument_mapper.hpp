@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_COMPOSITE_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_COMPOSITE_INSTRUMENT_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
@@ -36,7 +37,7 @@ namespace ores::ore::domain {
  *   - TotalReturnSwap        (totalReturnSwapData)
  *   - ContractForDifference  (totalReturnSwapData via ContractForDifferenceData)
  */
-class composite_instrument_mapper {
+class ORES_ORE_EXPORT composite_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.composite_instrument_mapper";

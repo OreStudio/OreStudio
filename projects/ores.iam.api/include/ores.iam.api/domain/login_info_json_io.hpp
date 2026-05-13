@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_LOGIN_INFO_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the login_info object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const login_info& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const login_info& v);
 
 }
 

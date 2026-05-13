@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_TYPE_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_type.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the account_type to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const account_type& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const account_type& v);
 
 }
 

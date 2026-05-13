@@ -22,6 +22,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.ore/market/fixing.hpp"
 #include "ores.ore/market/market_datum.hpp"
 
@@ -40,7 +41,7 @@ namespace ores::ore::market {
  *         format.  The message includes the 1-based line number and the
  *         offending content.
  */
-std::vector<market_datum> parse_market_data(std::istream& in);
+ORES_ORE_EXPORT std::vector<market_datum> parse_market_data(std::istream& in);
 
 /**
  * @brief Parses an ORE fixings file (fixings*.txt).
@@ -55,7 +56,7 @@ std::vector<market_datum> parse_market_data(std::istream& in);
  *         format.  The message includes the 1-based line number and the
  *         offending content.
  */
-std::vector<fixing> parse_fixings(std::istream& in);
+ORES_ORE_EXPORT std::vector<fixing> parse_fixings(std::istream& in);
 
 } // namespace ores::ore::market
 

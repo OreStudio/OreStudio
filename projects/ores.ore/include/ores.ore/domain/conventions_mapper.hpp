@@ -21,6 +21,7 @@
 #define ORES_ORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
@@ -62,7 +63,7 @@ struct mapped_conventions {
  * "FOLLOWING") to canonical FpML/CDM codes before storing them in the domain
  * types. Individual @c map_* methods are exposed for unit testing.
  */
-class conventions_mapper {
+class ORES_ORE_EXPORT conventions_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.conventions_mapper";

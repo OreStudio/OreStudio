@@ -21,6 +21,7 @@
 #define ORES_FPML_DOMAIN_STUB_HPP
 
 #include <string>
+#include "ores.fpml/export.hpp"
 
 namespace ores::fpml::domain {
 
@@ -31,7 +32,7 @@ struct stub final {
     int version = 0;
 };
 
-std::string stub_function();
+ORES_FPML_EXPORT std::string stub_function();
 
 }
 #endif

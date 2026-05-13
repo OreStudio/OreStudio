@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_ROLE_JSON_IO_HPP
-#define ORES_IAM_DOMAIN_ROLE_JSON_IO_HPP
+#ifndef ORES_IAM_API_EXPORT_HPP
+#define ORES_IAM_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.iam.api/export.hpp"
-#include "ores.iam.api/domain/role.hpp"
+#include <boost/config.hpp>
 
-namespace ores::iam::domain {
-
-/**
- * @brief Dumps the role object to a stream in JSON format.
- */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const role& v);
-
-}
+#ifdef ORES_IAM_API_LIBRARY
+#  define ORES_IAM_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_IAM_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

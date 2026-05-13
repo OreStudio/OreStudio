@@ -21,6 +21,7 @@
 #define ORES_ORE_DOMAIN_CALENDAR_ADJUSTMENT_MAPPER_HPP
 
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.ore/domain/domain.hpp"
@@ -30,7 +31,7 @@ namespace ores::ore::domain {
 /**
  * @brief Maps between ORE XML calendar adjustment types and refdata domain types.
  */
-class calendar_adjustment_mapper {
+class ORES_ORE_EXPORT calendar_adjustment_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.calendar_adjustment_mapper";

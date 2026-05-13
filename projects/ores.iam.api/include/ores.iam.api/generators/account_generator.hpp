@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_GENERATOR_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::iam::generators {
 /**
  * @brief Generates a synthetic account.
  */
-domain::account generate_synthetic_account(
+ORES_IAM_API_EXPORT domain::account generate_synthetic_account(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic accounts.
  */
-std::vector<domain::account>
+ORES_IAM_API_EXPORT std::vector<domain::account>
 generate_synthetic_accounts(std::size_t n,
     utility::generation::generation_context& ctx);
 

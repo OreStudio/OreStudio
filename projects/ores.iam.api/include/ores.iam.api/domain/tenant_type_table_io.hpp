@@ -22,6 +22,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
 
 namespace ores::iam::domain {
@@ -29,7 +30,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the tenant_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<tenant_type>& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<tenant_type>& v);
 
 }
 

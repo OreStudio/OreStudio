@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
@@ -37,7 +38,7 @@ namespace ores::ore::domain {
  * field captures the product name and underlyings_json / parameters_json
  * store the key economic parameters as JSON.
  */
-class scripted_instrument_mapper {
+class ORES_ORE_EXPORT scripted_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.scripted_instrument_mapper";

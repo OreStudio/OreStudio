@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
@@ -49,7 +50,7 @@ struct roundtrip_summary {
 /**
  * @brief Exports domain objects to their ORE XML representation.
  */
-class exporter {
+class ORES_ORE_EXPORT exporter {
 private:
     inline static std::string_view logger_name = "ores.ore.xml.exporter";
 

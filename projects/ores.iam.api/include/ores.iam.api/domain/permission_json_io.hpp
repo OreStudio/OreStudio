@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_PERMISSION_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the permission object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const permission& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const permission& v);
 
 }
 

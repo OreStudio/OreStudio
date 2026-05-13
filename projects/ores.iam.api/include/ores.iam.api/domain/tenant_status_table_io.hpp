@@ -22,6 +22,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
 
 namespace ores::iam::domain {
@@ -29,7 +30,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the tenant_status objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<tenant_status>& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<tenant_status>& v);
 
 }
 

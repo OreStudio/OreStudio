@@ -19,6 +19,7 @@
  */
 #include "ores.variability.core/repository/system_settings_repository.hpp"
 
+#include <unordered_map>
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.core/repository/system_setting_entity.hpp"
@@ -145,6 +146,28 @@ system_settings_repository::read_all(context ctx, const std::string& name) {
         ctx, query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
         lg(), "Reading all system settings by name");
+}
+
+std::unordered_map<std::string, std::string>
+system_settings_repository::read_for_tenant(
+    context ctx, const std::string& tenant_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant: " << tenant_id;
+
+    const auto rows = execute_parameterized_multi_column_query(ctx,
+        "SELECT setting_name, setting_value"
+        " FROM ores_variability_get_system_settings_fn($1)",
+        {tenant_id}, lg(), "Reading system settings for tenant via SECURITY DEFINER");
+
+    std::unordered_map<std::string, std::string> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 2 && row[0] && row[1])
+            result[*row[0]] = *row[1];
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size()
+        << " settings for tenant " << tenant_id;
+    return result;
 }
 
 void system_settings_repository::remove(context ctx, const std::string& name) {

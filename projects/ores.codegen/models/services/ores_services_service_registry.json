@@ -12,9 +12,7 @@
           {"prefix": "ores_iam_"},
           {"prefix": "ores_refdata_parties"}
         ],
-        "select_tables": [
-          {"table": "ores_variability_system_settings_tbl"}
-        ],
+        "select_tables": [],
         "select_prefixes": []
       },
       {

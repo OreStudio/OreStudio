@@ -17,27 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_MESSAGING_REGISTRAR_HPP
-#define ORES_SYNTHETIC_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_SYNTHETIC_CORE_EXPORT_HPP
+#define ORES_SYNTHETIC_CORE_EXPORT_HPP
 
-#include <optional>
-#include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.synthetic.core/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::synthetic::messaging {
-
-class ORES_SYNTHETIC_CORE_EXPORT registrar {
-public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
-};
-
-}
+#ifdef ORES_SYNTHETIC_CORE_LIBRARY
+#  define ORES_SYNTHETIC_CORE_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_SYNTHETIC_CORE_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

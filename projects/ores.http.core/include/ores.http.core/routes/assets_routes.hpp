@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.core/export.hpp"
 
 namespace ores::http_server::routes {
 
@@ -37,7 +38,7 @@ namespace ores::http_server::routes {
  * Asset Management:
  * - POST /api/v1/assets/images - get_images_request (batch retrieval)
  */
-class assets_routes final {
+class ORES_HTTP_CORE_EXPORT assets_routes final {
 public:
     assets_routes(database::context ctx,
         std::shared_ptr<iam::service::auth_session_service> sessions);

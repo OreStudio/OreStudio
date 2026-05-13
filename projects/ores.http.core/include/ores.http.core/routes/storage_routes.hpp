@@ -25,6 +25,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.core/export.hpp"
 
 namespace ores::http_server::routes {
 
@@ -44,7 +45,7 @@ namespace ores::http_server::routes {
  *
  * Well-known bucket names are defined in ores.storage::net::buckets.
  */
-class storage_routes final {
+class ORES_HTTP_CORE_EXPORT storage_routes final {
 public:
     explicit storage_routes(std::string storage_dir);
 

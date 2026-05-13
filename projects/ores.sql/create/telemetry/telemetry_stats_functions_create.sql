@@ -34,7 +34,6 @@ begin
 
             if current_license != 'timescale' then
                 raise notice 'TimescaleDB Apache license - continuous aggregates not available';
-                raise notice 'Set timescaledb.license = ''timescale'' for full features';
                 return;
             end if;
         end;

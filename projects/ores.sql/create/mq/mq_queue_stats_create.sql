@@ -45,9 +45,7 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice '=========================================';
-        raise notice 'TimescaleDB detected - creating hypertable';
-        raise notice '=========================================';
+        raise notice 'TimescaleDB detected - creating hypertable (1-day chunks)';
 
         perform public.create_hypertable(
             'ores_mq_queue_stats_tbl',
@@ -55,7 +53,6 @@ begin
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
-        raise notice 'Created hypertable with 1-day chunks';
 
         declare
             current_license text;
@@ -68,18 +65,13 @@ begin
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );
-                raise notice 'Enabled retention policy (30 days)';
             else
                 raise notice 'TimescaleDB Apache license - retention policy skipped';
-                raise notice 'Set timescaledb.license = ''timescale'' for full features';
             end if;
         end;
 
-        raise notice 'TimescaleDB setup complete for ores_mq_queue_stats_tbl';
     else
-        raise notice '================================================';
-        raise notice 'TimescaleDB NOT available - using regular table';
-        raise notice '================================================';
+        raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
         raise notice 'Note: Manual cleanup of old stats data will be required';
     end if;
 end $$;

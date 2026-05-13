@@ -138,7 +138,8 @@ public:
 
     void reload_token_settings() {
         try {
-            variability::service::system_settings_service svc(ctx_);
+            variability::service::system_settings_service svc(
+                ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
             token_settings_ = domain::token_settings::load(svc);
         } catch (const std::exception& e) {

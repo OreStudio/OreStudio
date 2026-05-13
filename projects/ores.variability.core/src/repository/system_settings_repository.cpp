@@ -170,26 +170,6 @@ system_settings_repository::read_for_tenant(
     return result;
 }
 
-std::unordered_map<std::string, std::string>
-system_settings_repository::read_for_system(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading system settings via system tenant";
-
-    const auto rows = execute_parameterized_multi_column_query(ctx,
-        "SELECT setting_name, setting_value"
-        " FROM ores_variability_get_system_settings_fn()",
-        {}, lg(), "Reading system settings via SECURITY DEFINER (no-arg)");
-
-    std::unordered_map<std::string, std::string> result;
-    result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() >= 2 && row[0] && row[1])
-            result[*row[0]] = *row[1];
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size() << " system settings";
-    return result;
-}
-
 void system_settings_repository::remove(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing system setting from database: " << name;
 

@@ -96,10 +96,11 @@ void system_settings_service::refresh() {
         // grant on ores_variability_system_settings_tbl.
         cache_ = repo_.read_for_tenant(ctx_, tenant_id_);
     } else {
-        // No-tenant path (startup / system-level reads): use the no-arg
-        // SECURITY DEFINER overload which resolves the system tenant
-        // internally. Direct SELECT is not used — avoids needing a grant.
-        cache_ = repo_.read_for_system(ctx_);
+        // Variability service's own context: caller holds a direct SELECT
+        // grant on the table (DDL user or variability service user).
+        auto settings = repo_.read_latest(ctx_);
+        for (auto& s : settings)
+            cache_[s.name] = s.value;
     }
 
     BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: "

@@ -37,14 +37,3 @@ create or replace function ores_variability_get_system_settings_fn(
     order by name;
 $$ language sql stable security definer set search_path = public, pg_temp;
 
--- No-argument variant: used at service startup before a tenant_id is known
--- (e.g. auth_handler, bootstrap_handler token/mode checks). Reads the system
--- tenant's settings, which hold the global configuration values.
-create or replace function ores_variability_get_system_settings_fn()
-returns table(setting_name text, setting_value text) as $$
-    select name, value
-    from ores_variability_system_settings_tbl
-    where tenant_id = ores_iam_system_tenant_id_fn()
-      and valid_to = ores_utility_infinity_timestamp_fn()
-    order by name;
-$$ language sql stable security definer set search_path = public, pg_temp;

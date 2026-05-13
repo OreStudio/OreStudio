@@ -18,4 +18,3 @@
  */
 
 drop function if exists ores_variability_get_system_settings_fn(uuid);
-drop function if exists ores_variability_get_system_settings_fn();

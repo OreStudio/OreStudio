@@ -72,7 +72,7 @@ public:
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
-                ctx_, ctx_.tenant_id().to_string(), auth_svc);
+                ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, bootstrap_status_response{
@@ -101,7 +101,7 @@ public:
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
-                ctx_, ctx_.tenant_id().to_string(), auth_svc);
+                ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             if (!bms.is_in_bootstrap_mode()) {
                 BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
                     << "Rejected " << msg.subject

@@ -16,6 +16,10 @@ technical terms. This page serves as a "general index" of the knowledge.
 
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]
 
+* C++ Architecture
+
+- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]]
+
 * Security
 
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]

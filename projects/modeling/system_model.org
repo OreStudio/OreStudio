@@ -156,6 +156,7 @@ See [[file:../doc/plans/2026-05-12-strict-service-table-isolation.org][strict-se
   skill.
 - To understand how to add new domain types, see the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill.
 - To understand unit testing, see the [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]] skill.
+- To understand symbol visibility rules for shared libraries, see [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]].
 
 * General information
 

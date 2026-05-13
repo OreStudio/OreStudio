@@ -27,10 +27,11 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::messaging {
 
-class registrar {
+class ORES_MARKETDATA_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,

@@ -17,20 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_JSON_IO_HPP
-#define ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_JSON_IO_HPP
+#ifndef ORES_MARKETDATA_API_EXPORT_HPP
+#define ORES_MARKETDATA_API_EXPORT_HPP
 
-#include <iosfwd>
-#include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.api/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::marketdata::domain {
-
-/**
- * @brief Serialises a market_series to a stream in JSON format.
- */
-ORES_MARKETDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const market_series& v);
-
-}
+#ifdef ORES_MARKETDATA_API_LIBRARY
+#  define ORES_MARKETDATA_API_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_MARKETDATA_API_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

@@ -54,9 +54,9 @@ begin
             current_user, current_user, 'system.initial_load',
             'Root system party for the platform tenant'
         );
-        raise notice 'Created system party for system tenant';
+        raise debug 'Created system party for system tenant';
     else
-        raise notice 'System party already exists for system tenant';
+        raise debug 'System party already exists for system tenant';
     end if;
 end;
 $$ language plpgsql;

@@ -72,7 +72,7 @@ begin
       and s.valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_status_new is null or v_status_live is null then
-        raise notice 'SKIP: trade_status FSM states not found. Run dq_fsm populate first.';
+        raise debug 'SKIP: trade_status FSM states not found. Run dq_fsm populate first.';
         return;
     end if;
     -- Look up prerequisite data
@@ -83,7 +83,7 @@ begin
     limit 1;
 
     if v_book_id is null then
-        raise notice 'SKIP: No book found for system tenant. Run refdata sample data first.';
+        raise debug 'SKIP: No book found for system tenant. Run refdata sample data first.';
         return;
     end if;
 
@@ -94,7 +94,7 @@ begin
     limit 1;
 
     if v_portfolio_id is null then
-        raise notice 'SKIP: No portfolio found for system tenant. Run refdata sample data first.';
+        raise debug 'SKIP: No portfolio found for system tenant. Run refdata sample data first.';
         return;
     end if;
 
@@ -115,7 +115,7 @@ begin
     limit 1;
 
     if v_cp_a_id is null or v_cp_b_id is null then
-        raise notice 'SKIP: Need at least 2 counterparties for system tenant.';
+        raise debug 'SKIP: Need at least 2 counterparties for system tenant.';
         return;
     end if;
 
@@ -126,7 +126,7 @@ begin
           and netting_set_id = 'NS-SAMPLE-001'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise notice 'SKIP: Sample trade NS-SAMPLE-001 already exists.';
+        raise debug 'SKIP: Sample trade NS-SAMPLE-001 already exists.';
         return;
     end if;
 
@@ -152,7 +152,7 @@ begin
         'system.new_record', 'Sample IRS trade booking'
     );
 
-    raise notice 'Booked IRS trade id=%', v_trade_id;
+    raise debug 'Booked IRS trade id=%', v_trade_id;
 
     -- UTI identifier
     insert into ores_trading_identifiers_tbl (
@@ -194,7 +194,7 @@ begin
         'system.new_record', 'Original counterparty for sample IRS'
     );
 
-    raise notice 'Step 1 complete: trade booked with counterparty A';
+    raise debug 'Step 1 complete: trade booked with counterparty A';
 
     -- =========================================================================
     -- Step 2: Novation — transfer to Counterparty B
@@ -251,8 +251,8 @@ begin
         'system.amendment', 'Novation transferee'
     );
 
-    raise notice 'Step 2 complete: novation applied, counterparty now B';
-    raise notice 'Trade id=% now shows 2 temporal rows (New + Novation)', v_trade_id;
+    raise debug 'Step 2 complete: novation applied, counterparty now B';
+    raise debug 'Trade id=% now shows 2 temporal rows (New + Novation)', v_trade_id;
 
 end;
 $$;

@@ -47,9 +47,9 @@ begin
             1,
             current_user, 'system.initial_load', 'Seed report type: risk'
         );
-        raise notice 'Created report type: risk';
+        raise debug 'Created report type: risk';
     else
-        raise notice 'Report type already exists: risk';
+        raise debug 'Report type already exists: risk';
     end if;
 
     if not exists (
@@ -68,9 +68,9 @@ begin
             2,
             current_user, 'system.initial_load', 'Seed report type: grid'
         );
-        raise notice 'Created report type: grid';
+        raise debug 'Created report type: grid';
     else
-        raise notice 'Report type already exists: grid';
+        raise debug 'Report type already exists: grid';
     end if;
 end;
 $$;

@@ -74,7 +74,7 @@ begin
     delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating cryptocurrencies for dataset: Cryptocurrencies Large';
+    raise debug 'Populating cryptocurrencies for dataset: Cryptocurrencies Large';
 
     -- Insert cryptocurrencies with icon links
     insert into ores_dq_currencies_artefact_tbl (
@@ -12347,10 +12347,10 @@ begin
         and i.key = lower(c.iso_code);
 
     get diagnostics v_count = row_count;
-    raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies Large', v_count;
+    raise debug 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies Large', v_count;
 
     -- Report count of cryptocurrencies with icons
-    raise notice 'Cryptocurrencies with matching icons: %', (
+    raise debug 'Cryptocurrencies with matching icons: %', (
         select count(*)
         from ores_dq_currencies_artefact_tbl
         where dataset_id = v_dataset_id

@@ -191,7 +191,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_regulatory_corporate_sectors_artefact_tbl', v_count;
+    raise debug 'Populated % records into dq_regulatory_corporate_sectors_artefact_tbl', v_count;
 end;
 $$;
 

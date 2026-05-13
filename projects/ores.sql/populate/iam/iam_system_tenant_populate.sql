@@ -70,9 +70,9 @@ begin
             'system.initial_load',
             'Initial system tenant creation'
         );
-        raise notice 'Created system tenant';
+        raise debug 'Created system tenant';
     else
-        raise notice 'System tenant already exists';
+        raise debug 'System tenant already exists';
     end if;
 end;
 $$ language plpgsql;

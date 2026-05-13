@@ -93,7 +93,7 @@ begin
         'cross_asset', 1, 'ORE_ASSET_CLASS', 'ORE', 'Cross Asset');
     v_count := v_count + 1;
 
-    raise notice 'Populated % ORE asset class records into dq_asset_classes_artefact_tbl', v_count;
+    raise debug 'Populated % ORE asset class records into dq_asset_classes_artefact_tbl', v_count;
 end;
 $$;
 

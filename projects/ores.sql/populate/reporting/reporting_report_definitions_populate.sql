@@ -97,11 +97,11 @@ begin
         select 1 from ores_dq_report_definitions_artefact_tbl
         where dataset_id = v_dataset_id
     ) then
-        raise notice 'Report definitions artefact already populated for dataset %', v_dataset_id;
+        raise debug 'Report definitions artefact already populated for dataset %', v_dataset_id;
         return;
     end if;
 
-    raise notice 'Populating report definitions for dataset: ore.report_definitions';
+    raise debug 'Populating report definitions for dataset: ore.report_definitions';
 
     insert into ores_dq_report_definitions_artefact_tbl (
         dataset_id, tenant_id, id, version,
@@ -229,7 +229,7 @@ begin
      'Displays the most important Greeks across the entire deal set for a book or portfolio. The primary real-time risk overview report for traders and risk managers providing high-level sign-off visibility on the current state of risk. Configurable measures (PV, Daily P&L, MTD P&L, YTD P&L, Delta P&L) and aggregation dimensions (Book, Portfolio, Currency Pair, Greek, Unit Hedge). Supports filtering by book and by threshold. Scheduled versions run at EOD and at AM/PM Flash times; EOD run uses the signed-off market data cut.',
      'risk', '*/10 * * * *', 'skip', 280);
 
-    raise notice 'Inserted 28 report definition artefacts for ore.report_definitions';
+    raise debug 'Inserted 28 report definition artefacts for ore.report_definitions';
 end;
 $$ language plpgsql;
 

@@ -56,7 +56,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
-        raise notice 'report_definition_lifecycle machine already exists (%), skipping.', v_machine_id;
+        raise debug 'report_definition_lifecycle machine already exists (%), skipping.', v_machine_id;
         return;
     end if;
 
@@ -73,7 +73,7 @@ begin
         current_user, 'system.initial_load', 'Seed report_definition_lifecycle FSM machine'
     );
 
-    raise notice 'Created report_definition_lifecycle machine: %', v_machine_id;
+    raise debug 'Created report_definition_lifecycle machine: %', v_machine_id;
 
     -- -------------------------------------------------------------------------
     -- States
@@ -101,7 +101,7 @@ begin
          v_machine_id, 'archived', 0, 1,
          current_user, 'system.initial_load', 'Seed report_definition_lifecycle state: archived');
 
-    raise notice 'Created 4 report_definition_lifecycle states.';
+    raise debug 'Created 4 report_definition_lifecycle states.';
 
     -- -------------------------------------------------------------------------
     -- Transitions (6 total)
@@ -136,6 +136,6 @@ begin
          v_machine_id, v_state_suspended, v_state_archived, 'Archive', null,
          current_user, 'system.initial_load', 'suspended -> archived');
 
-    raise notice 'Created 6 report_definition_lifecycle transitions.';
+    raise debug 'Created 6 report_definition_lifecycle transitions.';
 end;
 $$;

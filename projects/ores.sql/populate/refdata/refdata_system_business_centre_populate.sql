@@ -66,7 +66,7 @@ begin
             current_user, current_user,
             'system.initial_load', 'System business centre for platform tenant'
         );
-        raise notice 'Created WRLD business centre for system tenant';
+        raise debug 'Created WRLD business centre for system tenant';
     elsif exists (
         select 1 from ores_refdata_business_centres_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
@@ -87,9 +87,9 @@ begin
             current_user, current_user,
             'system.initial_load', 'Update source and image for WRLD system business centre'
         );
-        raise notice 'Updated WRLD business centre for system tenant';
+        raise debug 'Updated WRLD business centre for system tenant';
     else
-        raise notice 'WRLD business centre already up to date';
+        raise debug 'WRLD business centre already up to date';
     end if;
 end;
 $$ language plpgsql;

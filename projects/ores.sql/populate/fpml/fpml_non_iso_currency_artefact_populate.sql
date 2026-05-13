@@ -82,7 +82,7 @@ begin
     delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating currencies for dataset: FpML Non Iso Currency';
+    raise debug 'Populating currencies for dataset: FpML Non Iso Currency';
 
     -- Insert FpML non-ISO currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
@@ -123,7 +123,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % non-ISO currencies', v_count;
+    raise debug 'Successfully populated % non-ISO currencies', v_count;
 end $$;
 
 -- =============================================================================

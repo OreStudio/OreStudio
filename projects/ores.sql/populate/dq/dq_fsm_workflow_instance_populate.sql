@@ -58,7 +58,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
-        raise notice 'workflow_instance machine already exists (%), skipping.', v_machine_id;
+        raise debug 'workflow_instance machine already exists (%), skipping.', v_machine_id;
         return;
     end if;
 
@@ -75,7 +75,7 @@ begin
         current_user, 'system.initial_load', 'Seed workflow_instance FSM machine'
     );
 
-    raise notice 'Created workflow_instance machine: %', v_machine_id;
+    raise debug 'Created workflow_instance machine: %', v_machine_id;
 
     -- -------------------------------------------------------------------------
     -- States
@@ -111,7 +111,7 @@ begin
          v_machine_id, 'compensated', 0, 1,
          current_user, 'system.initial_load', 'Seed workflow_instance state: compensated');
 
-    raise notice 'Created 6 workflow_instance states.';
+    raise debug 'Created 6 workflow_instance states.';
 
     -- -------------------------------------------------------------------------
     -- Transitions (6 total)
@@ -146,6 +146,6 @@ begin
          v_machine_id, v_state_compensating, v_state_failed, 'fail_during_compensation', null,
          current_user, 'system.initial_load', 'compensating -> failed');
 
-    raise notice 'Created 6 workflow_instance transitions.';
+    raise debug 'Created 6 workflow_instance transitions.';
 end;
 $$;

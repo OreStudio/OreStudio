@@ -72,7 +72,7 @@ begin
     delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_currencies_dataset_id;
 
-    raise notice 'Populating currencies for dataset: ISO 4217 Currency Codes';
+    raise debug 'Populating currencies for dataset: ISO 4217 Currency Codes';
 
     -- Insert currencies with flag image links
     -- Currency-to-flag mapping: each currency maps to its issuing country's flag
@@ -270,10 +270,10 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % currencies for dataset: ISO 4217 Currency Codes', v_count;
+    raise debug 'Successfully populated % currencies for dataset: ISO 4217 Currency Codes', v_count;
 
     -- Report currencies using placeholder flag
-    raise notice 'Currencies using placeholder flag (xx):';
+    raise debug 'Currencies using placeholder flag (xx):';
     perform iso_code
     from ores_dq_currencies_artefact_tbl
     where dataset_id = v_currencies_dataset_id

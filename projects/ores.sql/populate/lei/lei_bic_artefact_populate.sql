@@ -52,7 +52,7 @@ begin
     delete from ores_dq_lei_bic_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating artefacts for dataset: GLEIF LEI BIC Mappings';
+    raise debug 'Populating artefacts for dataset: GLEIF LEI BIC Mappings';
 
     -- Insert artefact data
     insert into ores_dq_lei_bic_artefact_tbl (
@@ -39359,5 +39359,5 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % artefacts for dataset: GLEIF LEI BIC Mappings', v_count;
+    raise debug 'Successfully populated % artefacts for dataset: GLEIF LEI BIC Mappings', v_count;
 end $$;

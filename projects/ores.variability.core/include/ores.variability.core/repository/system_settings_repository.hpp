@@ -100,6 +100,17 @@ public:
     read_for_tenant(context ctx, const std::string& tenant_id);
 
     /**
+     * @brief Reads the system tenant's settings via a SECURITY DEFINER function.
+     *
+     * Used at service startup before any tenant_id is known (e.g. auth_handler,
+     * bootstrap_handler). Calls the no-arg overload of
+     * ores_variability_get_system_settings_fn() which resolves the system tenant
+     * internally.
+     */
+    std::unordered_map<std::string, std::string>
+    read_for_system(context ctx);
+
+    /**
      * @brief Logically deletes a setting by closing its temporal validity.
      */
     void remove(context ctx, const std::string& name);

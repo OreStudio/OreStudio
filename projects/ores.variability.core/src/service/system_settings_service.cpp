@@ -91,13 +91,15 @@ void system_settings_service::refresh() {
     cache_.clear();
 
     if (!tenant_id_.empty()) {
-        // Use the SECURITY DEFINER function path — callers with no direct
-        // SELECT grant on ores_variability_system_settings_tbl (e.g. IAM
-        // service user) must go through this route.
+        // Per-tenant path: use SECURITY DEFINER function filtered to the
+        // specific tenant. Required for service users with no direct SELECT
+        // grant on ores_variability_system_settings_tbl.
         cache_ = repo_.read_for_tenant(ctx_, tenant_id_);
     } else {
-        for (const auto& s : repo_.read_latest(ctx_))
-            cache_[s.name] = s.value;
+        // No-tenant path (startup / system-level reads): use the no-arg
+        // SECURITY DEFINER overload which resolves the system tenant
+        // internally. Direct SELECT is not used — avoids needing a grant.
+        cache_ = repo_.read_for_system(ctx_);
     }
 
     BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: "

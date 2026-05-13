@@ -10,10 +10,22 @@
         "email": "iam_service@system.ores",
         "dml_prefixes": [
           {"prefix": "ores_iam_"},
-          {"prefix": "ores_refdata_parties"}
+          {
+            "prefix": "ores_refdata_parties",
+            "migration_exception": {
+              "until": "phase-4",
+              "reason": "bootstrap_handler writes parties during provisioning; remove after plan §4.2 (SECURITY DEFINER returns system_party_id) and §4.3 (IAM party cache)"
+            }
+          }
         ],
         "select_tables": [
-          {"table": "ores_variability_system_settings_tbl"}
+          {
+            "table": "ores_variability_system_settings_tbl",
+            "migration_exception": {
+              "until": "phase-4",
+              "reason": "auth/account handlers read system flags (bootstrap_mode, signup policy, token settings); remove after plan §4.1 (IAM-owned settings tables)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -28,7 +40,13 @@
           {"prefix": "ores_refdata_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every refdata table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -43,7 +61,13 @@
           {"prefix": "ores_dq_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every dq table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -58,7 +82,13 @@
           {"prefix": "ores_variability_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every variability table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -73,7 +103,13 @@
           {"prefix": "ores_assets_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every assets table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -88,9 +124,27 @@
           {"prefix": "ores_scheduler_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every scheduler table; replace with per-service tenant cache (plan §2)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reasons_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache (plan §3)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reason_categories_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache that includes categories (plan §3)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -105,12 +159,36 @@
           {"prefix": "ores_reporting_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every reporting table; replace with per-service tenant cache (plan §2)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reasons_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache (plan §3)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reason_categories_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache that includes categories (plan §3)"
+            }
+          }
         ],
         "select_prefixes": [
-          {"prefix": "ores_scheduler_"}
+          {
+            "prefix": "ores_scheduler_",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "reads scheduler job execution history for report artefacts; replace with JetStream execution-completed projection (plan §5.4)"
+            }
+          }
         ]
       },
       {
@@ -124,7 +202,13 @@
           {"prefix": "ores_telemetry_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every telemetry table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -139,12 +223,36 @@
           {"prefix": "ores_trading_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"},
-          {"table": "ores_dq_change_reason_categories_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every trading table; replace with per-service tenant cache (plan §2)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reasons_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache (plan §3)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reason_categories_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache that includes categories (plan §3)"
+            }
+          }
         ],
         "select_prefixes": [
-          {"prefix": "ores_refdata_"}
+          {
+            "prefix": "ores_refdata_",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "reads currencies, business centres, parties, conventions; replace with per-entity NATS snapshot caches (plan §5.2)"
+            }
+          }
         ]
       },
       {
@@ -158,9 +266,27 @@
           {"prefix": "ores_compute_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"},
-          {"table": "ores_refdata_parties_tbl"},
-          {"table": "ores_dq_change_reasons_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every compute table; replace with per-service tenant cache (plan §2)"
+            }
+          },
+          {
+            "table": "ores_refdata_parties_tbl",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "party validation on compute jobs; replace with compute party cache via refdata JetStream (plan §5.1)"
+            }
+          },
+          {
+            "table": "ores_dq_change_reasons_tbl",
+            "migration_exception": {
+              "until": "phase-3",
+              "reason": "audit-trail FK validation; replace with change-reason cache (plan §3)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -170,6 +296,7 @@
         "env_key": "SYNTHETIC_SERVICE",
         "iam_role": "SyntheticService",
         "description": "Synthetic",
+        "role": "tooling",
         "email": "synthetic_service@system.ores",
         "dml_prefixes": [],
         "select_tables": [],
@@ -195,11 +322,29 @@
         "email": "workflow_service@system.ores",
         "dml_prefixes": [
           {"prefix": "ores_workflow_"},
-          {"prefix": "ores_iam_"},
-          {"prefix": "ores_refdata_parties"}
+          {
+            "prefix": "ores_iam_",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "onboarding flow writes IAM accounts and account-parties directly; replace with IAM NATS write APIs (plan §5.5)"
+            }
+          },
+          {
+            "prefix": "ores_refdata_parties",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "onboarding flow writes refdata parties directly; replace with refdata NATS write APIs (plan §5.5)"
+            }
+          }
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every workflow table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -211,10 +356,22 @@
         "description": "ORE Import",
         "email": "ore_service@system.ores",
         "dml_prefixes": [
-          {"prefix": "ores_workflow_"}
+          {
+            "prefix": "ores_workflow_",
+            "migration_exception": {
+              "until": "phase-5",
+              "reason": "ORE import uses workflow tables as a job queue directly; replace with workflow NATS write APIs (plan §5.6)"
+            }
+          }
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every ore table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -229,7 +386,13 @@
           {"prefix": "ores_marketdata_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every marketdata table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       },
@@ -257,7 +420,13 @@
           {"prefix": "ores_analytics_"}
         ],
         "select_tables": [
-          {"table": "ores_iam_tenants_tbl"}
+          {
+            "table": "ores_iam_tenants_tbl",
+            "migration_exception": {
+              "until": "phase-2",
+              "reason": "tenant FK on every analytics table; replace with per-service tenant cache (plan §2)"
+            }
+          }
         ],
         "select_prefixes": []
       }

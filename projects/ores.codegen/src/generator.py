@@ -2005,6 +2005,12 @@ def main():
         with open(args.model_path, 'r', encoding='utf-8') as f:
             model_data = json.load(f)
 
+        # Run service registry invariant validator before generating
+        if args.profile == "service-registry":
+            from validate_service_registry import validate
+            if not validate(Path(args.model_path)):
+                sys.exit(1)
+
         # Resolve all templates in the profile (with model type filtering)
         templates = resolve_profile_templates(args.profile, profiles, model_type)
         if not templates:

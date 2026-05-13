@@ -22,6 +22,7 @@
 
 #include <boost/program_options.hpp>
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::config {
 
@@ -35,7 +36,7 @@ namespace ores::nats::config {
  * Standard options:
  *   --nats-url      NATS server URL (default: nats://localhost:4222)
  */
-class nats_configuration final {
+class ORES_NATS_EXPORT nats_configuration final {
 public:
     nats_configuration() = delete;
 

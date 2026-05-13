@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <chrono>
 #include <iosfwd>
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::net {
 
@@ -102,7 +103,7 @@ struct http_server_options final {
     std::string server_identifier = "ores-http-server";
 };
 
-std::ostream& operator<<(std::ostream& s, const http_server_options& v);
+ORES_HTTP_API_EXPORT std::ostream& operator<<(std::ostream& s, const http_server_options& v);
 
 }
 

@@ -20,6 +20,7 @@
 #define ORES_TESTING_PROJECT_ROOT_HPP
 
 #include <filesystem>
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -31,7 +32,7 @@ namespace ores::testing {
  * resources using project-relative paths, avoiding fragile relative paths
  * like "../../../".
  */
-class project_root {
+class ORES_TESTING_EXPORT project_root {
 public:
     /**
      * @brief Returns the absolute path to the project root directory.

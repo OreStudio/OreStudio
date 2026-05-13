@@ -24,6 +24,7 @@
 #include <chrono>
 #include <boost/asio/awaitable.hpp>
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 
@@ -42,7 +43,7 @@ namespace ores::nats::service {
  * @param per_request_timeout Timeout for each individual NATS request.
  * @return PEM-encoded RSA public key string (never empty).
  */
-boost::asio::awaitable<std::string>
+ORES_NATS_EXPORT boost::asio::awaitable<std::string>
 fetch_jwks_public_key(client& nats,
     std::chrono::seconds per_request_timeout = std::chrono::seconds(10));
 

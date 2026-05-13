@@ -22,6 +22,7 @@
 
 #include <string>
 #include <filesystem>
+#include "ores.storage/export.hpp"
 
 namespace ores::storage::net {
 
@@ -33,7 +34,7 @@ namespace ores::storage::net {
  *
  * URL format: http://host:port/path
  */
-class http_client {
+class ORES_STORAGE_EXPORT http_client {
 public:
     /**
      * @brief Downloads a remote resource to a local file via HTTP GET.

@@ -28,6 +28,7 @@
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/export.hpp"
 
 namespace ores::eventing::service {
 
@@ -54,7 +55,7 @@ namespace ores::eventing::service {
  *     source.start();
  * @endcode
  */
-class postgres_event_source final {
+class ORES_EVENTING_EXPORT postgres_event_source final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

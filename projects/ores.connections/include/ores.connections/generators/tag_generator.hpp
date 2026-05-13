@@ -23,25 +23,26 @@
 #include <vector>
 #include "ores.connections/domain/tag.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic tag.
  */
-domain::tag generate_synthetic_tag(
+ORES_CONNECTIONS_EXPORT domain::tag generate_synthetic_tag(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tags.
  */
-std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
+ORES_CONNECTIONS_EXPORT std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tags with unique names.
  */
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
+ORES_CONNECTIONS_EXPORT std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

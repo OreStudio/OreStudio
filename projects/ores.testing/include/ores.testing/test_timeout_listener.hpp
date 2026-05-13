@@ -27,6 +27,7 @@
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -41,7 +42,7 @@ namespace ores::testing {
  * Default timeout is 60 seconds per test. Set the ORES_TEST_TIMEOUT_SECONDS
  * environment variable to override.
  */
-class test_timeout_listener : public Catch::EventListenerBase {
+class ORES_TESTING_EXPORT test_timeout_listener : public Catch::EventListenerBase {
 private:
     inline static std::string_view logger_name =
         "ores.testing.test_timeout_listener";

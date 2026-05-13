@@ -23,6 +23,7 @@
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -45,7 +46,7 @@ namespace ores::testing {
  * }
  *
  */
-class logging_listener : public Catch::EventListenerBase {
+class ORES_TESTING_EXPORT logging_listener : public Catch::EventListenerBase {
 public:
     /**
      * @brief Sets the test module name from the main function

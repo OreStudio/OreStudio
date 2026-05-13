@@ -35,6 +35,7 @@
 #include "ores.telemetry/domain/nats_stream_sample.hpp"
 #include "ores.telemetry/domain/nats_samples_query.hpp"
 #include "ores.telemetry/domain/service_sample.hpp"
+#include "ores.telemetry.database/export.hpp"
 
 namespace ores::telemetry::database::repository {
 
@@ -44,7 +45,7 @@ namespace ores::telemetry::database::repository {
  * Handles CRUD operations for telemetry log records stored in a TimescaleDB
  * hypertable. Supports time-range queries and statistics aggregation.
  */
-class telemetry_repository {
+class ORES_TELEMETRY_DATABASE_EXPORT telemetry_repository {
 private:
     inline static std::string_view logger_name =
         "ores.telemetry.repository.telemetry_repository";

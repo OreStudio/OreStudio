@@ -23,6 +23,7 @@
 #include <string>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -34,7 +35,7 @@ namespace ores::testing {
  * tenant within the shared database. The tenant includes copies of all
  * required reference data from the system tenant.
  */
-class database_lifecycle_listener : public Catch::EventListenerBase {
+class ORES_TESTING_EXPORT database_lifecycle_listener : public Catch::EventListenerBase {
 private:
     inline static std::string_view logger_name =
         "ores.testing.database_lifecycle_listener";

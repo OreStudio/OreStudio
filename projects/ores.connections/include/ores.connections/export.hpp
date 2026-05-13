@@ -17,31 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_EVENTING_GENERATORS_ENTITY_CHANGE_EVENT_GENERATOR_HPP
-#define ORES_EVENTING_GENERATORS_ENTITY_CHANGE_EVENT_GENERATOR_HPP
+#ifndef ORES_CONNECTIONS_EXPORT_HPP
+#define ORES_CONNECTIONS_EXPORT_HPP
 
-#include "ores.eventing/domain/entity_change_event.hpp"
-#include <vector>
-#include "ores.eventing/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::eventing::generators {
-
-/**
- * @brief Generates random entity change event instances for testing.
- */
-class ORES_EVENTING_EXPORT entity_change_event_generator final {
-public:
-    /**
-     * @brief Generates a single random entity change event.
-     */
-    static domain::entity_change_event generate();
-
-    /**
-     * @brief Generates a vector of random entity change event.
-     */
-    static std::vector<domain::entity_change_event> generate_set(size_t n);
-};
-
-}
+#ifdef ORES_CONNECTIONS_LIBRARY
+#  define ORES_CONNECTIONS_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_CONNECTIONS_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

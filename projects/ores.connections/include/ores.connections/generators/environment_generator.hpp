@@ -24,26 +24,27 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/environment.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic pure environment (no credentials).
  */
-domain::environment generate_synthetic_environment(
+ORES_CONNECTIONS_EXPORT domain::environment generate_synthetic_environment(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic environment assigned to a specific folder.
  */
-domain::environment generate_synthetic_environment(
+ORES_CONNECTIONS_EXPORT domain::environment generate_synthetic_environment(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id);
 
 /**
  * @brief Generates N synthetic environments.
  */
-std::vector<domain::environment> generate_synthetic_environments(
+ORES_CONNECTIONS_EXPORT std::vector<domain::environment> generate_synthetic_environments(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

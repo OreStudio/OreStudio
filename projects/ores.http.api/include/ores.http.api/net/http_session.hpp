@@ -32,6 +32,7 @@
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::net {
 
@@ -55,7 +56,7 @@ using session_bytes_callback = std::function<void(
 /**
  * @brief Handles a single HTTP session/connection.
  */
-class http_session final : public std::enable_shared_from_this<http_session> {
+class ORES_HTTP_API_EXPORT http_session final : public std::enable_shared_from_this<http_session> {
 public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
         std::shared_ptr<router> router,

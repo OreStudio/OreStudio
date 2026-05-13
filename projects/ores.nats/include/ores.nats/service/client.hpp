@@ -32,6 +32,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 
@@ -70,7 +71,7 @@ namespace ores::nats::service {
  *     {{"Authorization", "Bearer " + jwt}});
  * @endcode
  */
-class client {
+class ORES_NATS_EXPORT client {
 public:
     explicit client(config::nats_options opts);
     ~client();

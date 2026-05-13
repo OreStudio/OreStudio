@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.compute.api/domain/result.hpp"
+#include "ores.compute.api/export.hpp"
 
 namespace ores::compute::domain {
 
 /**
  * @brief Converts results to the table format.
  */
-std::string convert_to_table(const std::vector<result>& v);
+ORES_COMPUTE_API_EXPORT std::string convert_to_table(const std::vector<result>& v);
 
 }
 

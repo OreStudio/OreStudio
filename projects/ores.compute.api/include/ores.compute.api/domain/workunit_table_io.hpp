@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/export.hpp"
 
 namespace ores::compute::domain {
 
 /**
  * @brief Dumps the workunit objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<workunit>& v);
+ORES_COMPUTE_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<workunit>& v);
 
 }
 

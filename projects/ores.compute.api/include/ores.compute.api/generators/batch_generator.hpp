@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.compute.api/domain/batch.hpp"
+#include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::compute::generators {
@@ -29,13 +30,13 @@ namespace ores::compute::generators {
 /**
  * @brief Generates a synthetic compute batch.
  */
-domain::batch generate_synthetic_batch(
+ORES_COMPUTE_API_EXPORT domain::batch generate_synthetic_batch(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic compute batches.
  */
-std::vector<domain::batch>
+ORES_COMPUTE_API_EXPORT std::vector<domain::batch>
 generate_synthetic_batches(std::size_t n,
     utility::generation::generation_context& ctx);
 

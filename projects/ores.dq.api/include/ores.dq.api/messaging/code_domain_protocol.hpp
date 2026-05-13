@@ -37,7 +37,7 @@ namespace ores::dq::messaging {
 /**
  * @brief Request to retrieve all code domains.
  */
-ORES_DQ_API_EXPORT struct get_code_domains_request final {
+struct ORES_DQ_API_EXPORT get_code_domains_request final {
     std::vector<std::byte> serialize() const;
     static std::expected<get_code_domains_request,
                          ores::utility::serialization::error_code>
@@ -49,7 +49,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_code_doma
 /**
  * @brief Response containing all code domains.
  */
-ORES_DQ_API_EXPORT struct get_code_domains_response final {
+struct ORES_DQ_API_EXPORT get_code_domains_response final {
     std::vector<domain::code_domain> domains;
 
     std::vector<std::byte> serialize() const;
@@ -63,7 +63,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_code_doma
 /**
  * @brief Request to save a code domain (create or update).
  */
-ORES_DQ_API_EXPORT struct save_code_domain_request final {
+struct ORES_DQ_API_EXPORT save_code_domain_request final {
     domain::code_domain domain;
 
     std::vector<std::byte> serialize() const;
@@ -77,7 +77,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_code_dom
 /**
  * @brief Response confirming code domain save operation.
  */
-ORES_DQ_API_EXPORT struct save_code_domain_response final {
+struct ORES_DQ_API_EXPORT save_code_domain_response final {
     bool success;
     std::string message;
 
@@ -92,7 +92,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_code_dom
 /**
  * @brief Result for a single code domain deletion.
  */
-ORES_DQ_API_EXPORT struct delete_code_domain_result final {
+struct ORES_DQ_API_EXPORT delete_code_domain_result final {
     std::string code;  ///< Primary key
     bool success;
     std::string message;
@@ -103,7 +103,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_code_d
 /**
  * @brief Request to delete one or more code domains.
  */
-ORES_DQ_API_EXPORT struct delete_code_domain_request final {
+struct ORES_DQ_API_EXPORT delete_code_domain_request final {
     std::vector<std::string> codes;  ///< Primary keys
 
     std::vector<std::byte> serialize() const;
@@ -117,7 +117,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_code_d
 /**
  * @brief Response confirming code domain deletion(s).
  */
-ORES_DQ_API_EXPORT struct delete_code_domain_response final {
+struct ORES_DQ_API_EXPORT delete_code_domain_response final {
     std::vector<delete_code_domain_result> results;
 
     std::vector<std::byte> serialize() const;
@@ -131,7 +131,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_code_d
 /**
  * @brief Request to retrieve version history for a code domain.
  */
-ORES_DQ_API_EXPORT struct get_code_domain_history_request final {
+struct ORES_DQ_API_EXPORT get_code_domain_history_request final {
     std::string code;  ///< Primary key
 
     std::vector<std::byte> serialize() const;
@@ -145,7 +145,7 @@ ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_code_doma
 /**
  * @brief Response containing code domain version history.
  */
-ORES_DQ_API_EXPORT struct get_code_domain_history_response final {
+struct ORES_DQ_API_EXPORT get_code_domain_history_response final {
     bool success;
     std::string message;
     std::vector<domain::code_domain> versions;

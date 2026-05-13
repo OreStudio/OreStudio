@@ -155,7 +155,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_identifiers_insert_trg
 before insert on "ores_trading_identifiers_tbl"

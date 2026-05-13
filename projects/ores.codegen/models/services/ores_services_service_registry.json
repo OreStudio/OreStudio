@@ -119,9 +119,7 @@
           {"prefix": "ores_trading_"}
         ],
         "select_tables": [],
-        "select_prefixes": [
-          {"prefix": "ores_refdata_"}
-        ]
+        "select_prefixes": []
       },
       {
         "name": "compute",

@@ -164,7 +164,6 @@ select _ores_grant_dml_fn('ores_telemetry_', :'telemetry_service_user');
 -- trading_service: Trading domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_trading_', :'trading_service_user');
-select _ores_grant_select_fn('ores_refdata_', :'trading_service_user');
 
 -- ---------------------------------------------------------------------------
 -- compute_service: Compute Grid domain service

@@ -18,4 +18,4 @@
  *
  */
 
-drop function if exists ores_iam_provision_tenant_fn(text, text, text, text, text);
+drop function if exists ores_iam_provision_tenant_fn(text, text, text, text, text, text);

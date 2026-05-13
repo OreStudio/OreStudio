@@ -51,21 +51,22 @@
 --   p_hostname: Unique hostname (e.g., 'acme.example.com', 'test_123.localhost')
 --   p_description: Optional description
 --
--- Returns: The new tenant_id (UUID)
+-- Returns: (tenant_id uuid, system_party_id uuid)
 --
 create or replace function ores_iam_provision_tenant_fn(
-    p_type text,
-    p_code text,
-    p_name text,
-    p_hostname text,
+    p_type        text,
+    p_code        text,
+    p_name        text,
+    p_hostname    text,
     p_description text default null,
-    p_actor text default null
-) returns uuid as $$
+    p_actor       text default null,
+    out tenant_id      uuid,
+    out system_party_id uuid
+) as $$
 declare
-    v_new_tenant_id uuid;
     v_system_tenant_id uuid;
-    v_copied_count integer;
-    v_actor text;
+    v_copied_count     integer;
+    v_actor            text;
 begin
     -- Resolve actor: use explicit parameter if provided, otherwise fall back to
     -- session GUC (ores_iam_current_actor_fn), then current_user.
@@ -93,7 +94,7 @@ begin
     end if;
 
     -- Generate new tenant ID
-    v_new_tenant_id := gen_random_uuid();
+    tenant_id := gen_random_uuid();
 
     -- Create the tenant record
     -- Note: The trigger sets tenant_id = system_tenant_id (all tenants owned by system)
@@ -101,15 +102,15 @@ begin
         id, type, code, name, description, hostname, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        v_new_tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',
+        tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',
         v_actor, v_actor, 'system.new_record', 'Tenant provisioned'
     );
 
-    raise notice 'Created tenant: % (id: %)', p_code, v_new_tenant_id;
+    raise notice 'Created tenant: % (id: %)', p_code, tenant_id;
 
     -- NOTE: We keep system tenant context during data copying.
     -- The SELECTs need system tenant context to read source data (due to RLS).
-    -- The INSERTs explicitly specify v_new_tenant_id, which the trigger validates.
+    -- The INSERTs explicitly specify tenant_id, which the trigger validates.
 
     -- =========================================================================
     -- Copy IAM data from system tenant
@@ -117,7 +118,7 @@ begin
 
     -- Copy permissions (simple table: id, tenant_id, code, description)
     insert into ores_iam_permissions_tbl (id, tenant_id, code, description)
-    select gen_random_uuid(), v_new_tenant_id, code, description
+    select gen_random_uuid(), tenant_id, code, description
     from ores_iam_permissions_tbl
     where tenant_id = v_system_tenant_id
     and valid_to = ores_utility_infinity_timestamp_fn();
@@ -131,7 +132,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        gen_random_uuid(), v_new_tenant_id, name, description,
+        gen_random_uuid(), tenant_id, name, description,
         v_actor, v_actor, 'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_roles_tbl
     where tenant_id = v_system_tenant_id
@@ -144,7 +145,7 @@ begin
     -- Need to map old role/permission IDs to new IDs by name/code
     insert into ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id)
     select
-        v_new_tenant_id,
+        tenant_id,
         new_r.id,
         new_p.id
     from ores_iam_role_permissions_tbl rp
@@ -155,10 +156,10 @@ begin
         and old_p.tenant_id = v_system_tenant_id
         and old_p.valid_to = ores_utility_infinity_timestamp_fn()
     join ores_iam_roles_tbl new_r on new_r.name = old_r.name
-        and new_r.tenant_id = v_new_tenant_id
+        and new_r.tenant_id = tenant_id
         and new_r.valid_to = ores_utility_infinity_timestamp_fn()
     join ores_iam_permissions_tbl new_p on new_p.code = old_p.code
-        and new_p.tenant_id = v_new_tenant_id
+        and new_p.tenant_id = tenant_id
         and new_p.valid_to = ores_utility_infinity_timestamp_fn()
     where rp.tenant_id = v_system_tenant_id
     and rp.valid_to = ores_utility_infinity_timestamp_fn();
@@ -179,7 +180,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_categories_tbl
@@ -195,7 +196,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_types_tbl
@@ -211,7 +212,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_party_statuses_tbl
@@ -227,7 +228,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_contact_types_tbl
@@ -244,7 +245,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         coding_scheme_code, max_cardinality,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
@@ -261,7 +262,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_book_statuses_tbl
@@ -277,7 +278,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_purpose_types_tbl
@@ -293,7 +294,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_rounding_types_tbl
@@ -309,7 +310,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_monetary_natures_tbl
@@ -325,7 +326,7 @@ begin
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        code, v_new_tenant_id, 0, name, description, display_order,
+        code, tenant_id, 0, name, description, display_order,
         v_actor, v_actor, 'system.new_record',
         'Copied from system tenant during provisioning'
     from ores_refdata_currency_market_tiers_tbl
@@ -350,7 +351,7 @@ begin
         description, modified_by, performed_by,
         change_reason_code, change_commentary
     ) values (
-        'WRLD', v_new_tenant_id, 0, 'NONE',
+        'WRLD', tenant_id, 0, 'NONE',
         'World. Global business centre for entities not tied to a specific geographic location.',
         v_actor, v_actor,
         'system.new_record', 'System business centre for tenant'
@@ -358,12 +359,13 @@ begin
 
     raise notice 'Created WRLD business centre for tenant: %', p_code;
 
+    system_party_id := gen_random_uuid();
     insert into ores_refdata_parties_tbl (
         id, tenant_id, full_name, short_code, party_category,
         party_type, business_center_code, parent_party_id, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        gen_random_uuid(), v_new_tenant_id,
+        system_party_id, tenant_id,
         'System Party', p_code || '_system', 'System',
         'Internal', 'WRLD', null, 'Active',
         v_actor, v_actor, 'system.new_record',
@@ -379,7 +381,7 @@ begin
     -- appears on first login. The wizard clears this flag on completion.
 
     perform ores_variability_system_settings_upsert_fn(
-        v_new_tenant_id,
+        tenant_id,
         'system.bootstrap_mode',
         'true',
         'boolean',
@@ -395,8 +397,6 @@ begin
     -- Tenants populate refdata via the dataset library using the "Publish
     -- Datasets" feature in the Data Librarian.
 
-    raise notice 'Tenant provisioning complete: % (id: %)', p_code, v_new_tenant_id;
-
-    return v_new_tenant_id;
+    raise notice 'Tenant provisioning complete: % (id: %)', p_code, tenant_id;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;

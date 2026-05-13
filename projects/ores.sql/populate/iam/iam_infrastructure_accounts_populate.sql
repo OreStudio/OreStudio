@@ -40,7 +40,8 @@
  *                                         ComputeWrapperService already exist)
  */
 
-\echo '--- Infrastructure Account Role Assignments ---'
+\o /dev/null
+\qecho '--- Infrastructure Account Role Assignments ---'
 
 -- compute_wrapper_user: no DB password — authenticates via session at startup.
 select ores_iam_service_accounts_upsert_fn(
@@ -68,3 +69,4 @@ where a.email in (
     'wt@system.ores'
 )
   and ar.valid_to = ores_utility_infinity_timestamp_fn();
+\o

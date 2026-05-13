@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- GLEIF LEI Datasets
 -- =============================================================================
 
-\echo '--- GLEIF LEI Datasets ---'
+\qecho '--- GLEIF LEI Datasets ---'
 
 -- GLEIF LEI Entities (Small)
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -210,4 +211,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Open Data',
     'lei_relationships'
 );
-
+\o

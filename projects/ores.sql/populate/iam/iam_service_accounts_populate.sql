@@ -34,7 +34,8 @@
  * This script is idempotent.
  */
 
-\echo '--- Service Accounts ---'
+\o /dev/null
+\qecho '--- Service Accounts ---'
 
 -- Capture service DB passwords from the environment so they are never stored
 -- in plaintext in committed SQL. The backtick syntax runs a shell command at
@@ -219,3 +220,4 @@ select 'Service Accounts' as entity, count(*) as count
 from ores_iam_accounts_tbl
 where account_type != 'user'
   and valid_to = ores_utility_infinity_timestamp_fn();
+\o

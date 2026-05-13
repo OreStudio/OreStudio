@@ -29,6 +29,7 @@
  * - Derived: Data transformed, aggregated, or calculated via code
  */
 
+\o /dev/null
 -- =============================================================================
 -- Migration: Rename Source to Primary
 -- =============================================================================
@@ -47,7 +48,7 @@ where origin_code = 'Source';
 -- Data Quality Origin Dimensions
 -- =============================================================================
 
-\echo '--- Data Quality Origin Dimensions ---'
+\qecho '--- Data Quality Origin Dimensions ---'
 
 select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Primary',
@@ -65,9 +66,10 @@ select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Origin Dimensions' as entity, count(*) as count
 from ores_dq_origin_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

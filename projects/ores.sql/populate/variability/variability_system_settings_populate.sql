@@ -26,6 +26,7 @@
  * duplicate entries or overwrite existing values.
  */
 
+\o /dev/null
 -- -----------------------------------------------------------------------------
 -- Seed system settings with their default values (insert-if-absent)
 -- -----------------------------------------------------------------------------
@@ -100,3 +101,4 @@ select name, data_type, value, description
 from ores_variability_system_settings_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
 order by name;
+\o

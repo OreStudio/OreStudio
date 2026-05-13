@@ -26,11 +26,12 @@
  * This must be run before populating the artefact tables.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Flag Icons Datasets
 -- =============================================================================
 
-\echo '--- Flag Icons Datasets ---'
+\qecho '--- Flag Icons Datasets ---'
 
 -- Country Flag Images
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -51,4 +52,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'MIT License',
     'images'
 );
-
+\o

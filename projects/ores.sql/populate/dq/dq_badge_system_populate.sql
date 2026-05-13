@@ -31,11 +31,12 @@
  * Severity codes align with Bootstrap 5 contextual classes.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Badge Severities
 -- =============================================================================
 
-\echo '--- Badge Severities ---'
+\qecho '--- Badge Severities ---'
 
 select ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
     'secondary', 'Secondary', 'Muted or neutral state. No special attention required.', 1);
@@ -59,7 +60,7 @@ select ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Code Domains
 -- =============================================================================
 
-\echo '--- Code Domains ---'
+\qecho '--- Code Domains ---'
 
 select ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
     'party_status', 'Party Status',
@@ -123,7 +124,7 @@ select ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- text_colour is always #ffffff (white) for all current badges.
 -- =============================================================================
 
-\echo '--- Badge Definitions ---'
+\qecho '--- Badge Definitions ---'
 
 -- Status: Active
 select ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -287,7 +288,7 @@ select ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Badge Mappings
 -- =============================================================================
 
-\echo '--- Badge Mappings ---'
+\qecho '--- Badge Mappings ---'
 
 -- party_status
 select ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -417,8 +418,8 @@ select ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Badge Severities' as entity, count(*) as count
 from ores_dq_badge_severities_tbl
@@ -436,3 +437,4 @@ select 'Badge Mappings', count(*)
 from ores_dq_badge_mappings_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

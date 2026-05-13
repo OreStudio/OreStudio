@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Slovaris Dataset Dependencies
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Dataset Dependencies ---'
+\qecho '--- Data Quality Slovaris Dataset Dependencies ---'
 
 select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.countries',
@@ -44,11 +45,12 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select dataset_code, dependency_code, role
 from ores_dq_dataset_dependencies_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
   and dataset_code like 'slovaris.%'
 order by dataset_code, dependency_code;
+\o

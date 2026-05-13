@@ -26,11 +26,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- General Methodologies
 -- =============================================================================
 
-\echo '--- General Methodologies ---'
+\qecho '--- General Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Synthetic Data Generation',
@@ -77,3 +78,4 @@ Updated when a new ORE version introduces new codes or deprecates existing ones.
 select 'dq_methodologies' as entity, count(*) as count
 from ores_dq_methodologies_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
+\o

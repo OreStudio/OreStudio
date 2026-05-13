@@ -30,7 +30,8 @@
  * This script is idempotent.
  */
 
-\echo '--- System Business Centre ---'
+\o /dev/null
+\qecho '--- System Business Centre ---'
 
 -- Use a helper function for idempotent creation
 create or replace function ores_seed_system_business_centre_fn()
@@ -102,3 +103,4 @@ select 'refdata_business_centres (system)' as entity, count(*) as count
 from ores_refdata_business_centres_tbl
 where tenant_id = ores_iam_system_tenant_id_fn()
 and valid_to = ores_utility_infinity_timestamp_fn();
+\o

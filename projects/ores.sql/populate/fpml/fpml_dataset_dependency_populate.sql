@@ -6,11 +6,12 @@
  * Must be run after fpml dataset populate scripts.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FPML Dataset Dependencies
 -- =============================================================================
 
-\echo '--- FPML Dataset Dependencies ---'
+\qecho '--- FPML Dataset Dependencies ---'
 
 select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.non_iso_currency',
@@ -23,3 +24,4 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'assets.country_flags',
     'visual_assets'
 );
+\o

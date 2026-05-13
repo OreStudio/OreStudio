@@ -98,9 +98,9 @@ begin
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality data domain: %', p_name;
+        raise debug 'Created data quality data domain: %', p_name;
     else
-        raise notice 'Data quality data domain already exists: %', p_name;
+        raise debug 'Data quality data domain already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -134,9 +134,9 @@ begin
     on conflict (tenant_id, name, domain_name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality subject area: % in domain %', p_name, p_domain_name;
+        raise debug 'Created data quality subject area: % in domain %', p_name, p_domain_name;
     else
-        raise notice 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
+        raise debug 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
     end if;
 end;
 $$ language plpgsql;
@@ -169,9 +169,9 @@ begin
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality catalog: %', p_name;
+        raise debug 'Created data quality catalog: %', p_name;
     else
-        raise notice 'Data quality catalog already exists: %', p_name;
+        raise debug 'Data quality catalog already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -204,9 +204,9 @@ begin
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created dataset dependency: % depends on % (role: %)', p_dataset_code, p_dependency_code, p_role;
+        raise debug 'Created dataset dependency: % depends on % (role: %)', p_dataset_code, p_dependency_code, p_role;
     else
-        raise notice 'Dataset dependency already exists: % depends on %', p_dataset_code, p_dependency_code;
+        raise debug 'Dataset dependency already exists: % depends on %', p_dataset_code, p_dependency_code;
     end if;
 end;
 $$ language plpgsql;
@@ -239,9 +239,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality origin: %', p_code;
+        raise debug 'Created data quality origin: %', p_code;
     else
-        raise notice 'Data quality origin already exists: %', p_code;
+        raise debug 'Data quality origin already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -270,9 +270,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality nature: %', p_code;
+        raise debug 'Created data quality nature: %', p_code;
     else
-        raise notice 'Data quality nature already exists: %', p_code;
+        raise debug 'Data quality nature already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -301,9 +301,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created data quality treatment: %', p_code;
+        raise debug 'Created data quality treatment: %', p_code;
     else
-        raise notice 'Data quality treatment already exists: %', p_code;
+        raise debug 'Data quality treatment already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -396,9 +396,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created coding scheme authority type: %', p_code;
+        raise debug 'Created coding scheme authority type: %', p_code;
     else
-        raise notice 'Coding scheme authority type already exists: %', p_code;
+        raise debug 'Coding scheme authority type already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -431,9 +431,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created coding scheme: %', p_code;
+        raise debug 'Created coding scheme: %', p_code;
     else
-        raise notice 'Coding scheme already exists: %', p_code;
+        raise debug 'Coding scheme already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -468,9 +468,9 @@ begin
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created dq_methodologies: %', p_name;
+        raise debug 'Created dq_methodologies: %', p_name;
     else
-        raise notice 'dq_methodologies already exists: %', p_name;
+        raise debug 'dq_methodologies already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -540,9 +540,9 @@ begin
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created dq_datasets: %', p_name;
+        raise debug 'Created dq_datasets: %', p_name;
     else
-        raise notice 'dq_datasets already exists: %', p_name;
+        raise debug 'dq_datasets already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -586,9 +586,9 @@ begin
     on conflict (tenant_id, dataset_id, name) do nothing;
 
     if found then
-        raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
+        raise debug 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
     else
-        raise notice 'Tag already exists: % for dataset %', p_tag_name, p_dataset_name;
+        raise debug 'Tag already exists: % for dataset %', p_tag_name, p_dataset_name;
     end if;
 end;
 $$ language plpgsql;
@@ -684,9 +684,9 @@ begin
     on conflict (tenant_id, username) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created service account: %', p_username;
+        raise debug 'Created service account: %', p_username;
     else
-        raise notice 'Service account already exists: %', p_username;
+        raise debug 'Service account already exists: %', p_username;
     end if;
 
     -- Store service_password_hash using SHA-256 (suitable for high-entropy
@@ -697,7 +697,7 @@ begin
         where username  = p_username
           and tenant_id = ores_iam_system_tenant_id_fn()
           and valid_to  = ores_utility_infinity_timestamp_fn();
-        raise notice 'Set service_password_hash for: %', p_username;
+        raise debug 'Set service_password_hash for: %', p_username;
     end if;
 end;
 $$ language plpgsql;
@@ -816,9 +816,9 @@ begin
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
+        raise debug 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
     else
-        raise notice 'System setting already exists: %', p_name;
+        raise debug 'System setting already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -893,9 +893,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created dataset bundle: %', p_code;
+        raise debug 'Created dataset bundle: %', p_code;
     else
-        raise notice 'Dataset bundle already exists: %', p_code;
+        raise debug 'Dataset bundle already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -928,9 +928,9 @@ begin
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Added dataset % to bundle %', p_dataset_code, p_bundle_code;
+        raise debug 'Added dataset % to bundle %', p_dataset_code, p_bundle_code;
     else
-        raise notice 'Dataset % already in bundle %', p_dataset_code, p_bundle_code;
+        raise debug 'Dataset % already in bundle %', p_dataset_code, p_bundle_code;
     end if;
 end;
 $$ language plpgsql;
@@ -966,9 +966,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created badge severity: %', p_code;
+        raise debug 'Created badge severity: %', p_code;
     else
-        raise notice 'Badge severity already exists: %', p_code;
+        raise debug 'Badge severity already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -1000,9 +1000,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created code domain: %', p_code;
+        raise debug 'Created code domain: %', p_code;
     else
-        raise notice 'Code domain already exists: %', p_code;
+        raise debug 'Code domain already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -1040,9 +1040,9 @@ begin
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created badge definition: %', p_code;
+        raise debug 'Created badge definition: %', p_code;
     else
-        raise notice 'Badge definition already exists: %', p_code;
+        raise debug 'Badge definition already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
@@ -1075,9 +1075,9 @@ begin
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created badge mapping: % / % -> %', p_code_domain_code, p_entity_code, p_badge_code;
+        raise debug 'Created badge mapping: % / % -> %', p_code_domain_code, p_entity_code, p_badge_code;
     else
-        raise notice 'Badge mapping already exists: % / %', p_code_domain_code, p_entity_code;
+        raise debug 'Badge mapping already exists: % / %', p_code_domain_code, p_entity_code;
     end if;
 end;
 $$ language plpgsql;

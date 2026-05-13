@@ -30,11 +30,12 @@
  * - Mock: Static, hand-written data for unit tests
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Nature Dimensions
 -- =============================================================================
 
-\echo '--- Data Quality Nature Dimensions ---'
+\qecho '--- Data Quality Nature Dimensions ---'
 
 select ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Actual',
@@ -58,9 +59,10 @@ select ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Nature Dimensions' as entity, count(*) as count
 from ores_dq_nature_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

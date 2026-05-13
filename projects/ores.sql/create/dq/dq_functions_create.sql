@@ -47,9 +47,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_methodology: %', p_name;
+        raise debug 'Created dq_methodology: %', p_name;
     else
-        raise notice 'dq_methodology already exists: %', p_name;
+        raise debug 'dq_methodology already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -98,9 +98,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_dataset: %', p_name;
+        raise debug 'Created dq_dataset: %', p_name;
     else
-        raise notice 'dq_dataset already exists: %', p_name;
+        raise debug 'dq_dataset already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;

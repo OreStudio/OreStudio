@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- GLEIF LEI Methodology
 -- =============================================================================
 
-\echo '--- GLEIF LEI Methodology ---'
+\qecho '--- GLEIF LEI Methodology ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GLEIF Golden Copy Extraction',
@@ -47,3 +48,4 @@ Diverse subsets (small ~6K entities, large ~15K entities) are extracted using le
 
 See methodology documentation for detailed steps.'
 );
+\o

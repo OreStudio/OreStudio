@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Solvaris Bundle Members
 -- =============================================================================
 
-\echo '--- Solvaris Bundle Members ---'
+\qecho '--- Solvaris Bundle Members ---'
 
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'solvaris', 'geo.ip2country', 1);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'solvaris', 'slovaris.country_flags', 2);
@@ -40,8 +41,8 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 -- Base System Bundle Members
 -- =============================================================================
 
-\echo ''
-\echo '--- Base System Bundle Members ---'
+\qecho ''
+\qecho '--- Base System Bundle Members ---'
 
 -- Visual assets
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'base', 'assets.country_flags', 1);
@@ -90,8 +91,8 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 -- Crypto Bundle Members
 -- =============================================================================
 
-\echo ''
-\echo '--- Crypto Bundle Members ---'
+\qecho ''
+\qecho '--- Crypto Bundle Members ---'
 
 -- Visual assets
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'crypto', 'assets.country_flags', 1);
@@ -136,13 +137,14 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 -- Organisation Bundle Members
 -- =============================================================================
 
-\echo ''
-\echo '--- Organisation Bundle Members ---'
+\qecho ''
+\qecho '--- Organisation Bundle Members ---'
 
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.business_units', 10);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.portfolios', 20);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.books', 30);
 
-\echo '--- ORE Analytics Bundle Members ---'
+\qecho '--- ORE Analytics Bundle Members ---'
 
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'ore_analytics', 'ore.report_definitions', 10);
+\o

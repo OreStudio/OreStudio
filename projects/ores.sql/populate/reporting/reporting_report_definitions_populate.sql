@@ -33,11 +33,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Catalog Registration
 -- =============================================================================
 
-\echo '--- ORE Analytics Catalog ---'
+\qecho '--- ORE Analytics Catalog ---'
 
 select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ORE Analytics',
@@ -49,7 +50,7 @@ select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Dataset Registration
 -- =============================================================================
 
-\echo '--- ORE Analytics: Report Definitions Dataset ---'
+\qecho '--- ORE Analytics: Report Definitions Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ore.report_definitions',
@@ -74,7 +75,7 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Artefact Seed Data
 -- =============================================================================
 
-\echo '--- ORE Report Definition Artefacts ---'
+\qecho '--- ORE Report Definition Artefacts ---'
 
 do $$
 declare
@@ -241,3 +242,4 @@ from ores_dq_report_definitions_artefact_tbl a
 join ores_dq_datasets_tbl d on d.id = a.dataset_id
 where d.code = 'ore.report_definitions'
   and d.valid_to = ores_utility_infinity_timestamp_fn();
+\o

@@ -6,13 +6,14 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
+\o /dev/null
 
 
 -- =============================================================================
 -- FPML Coding Schemes Dataset
 -- =============================================================================
 
-\echo '--- FPML Coding Schemes Dataset ---'
+\qecho '--- FPML Coding Schemes Dataset ---'
 
 -- FpML Coding Schemes
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -33,3 +34,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML License',
     'coding_schemes'
 );
+\o

@@ -36,7 +36,9 @@
 -- Summary Result Type
 -- =============================================================================
 
+set client_min_messages = warning;
 DROP TYPE IF EXISTS ores_utility_layer_summary_row CASCADE;
+reset client_min_messages;
 CREATE TYPE ores_utility_layer_summary_row AS (
     layer text,
     entity text,

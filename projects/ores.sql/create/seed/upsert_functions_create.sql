@@ -39,7 +39,6 @@
  * All functions follow the pattern:
  * 1. Check if record exists (using natural key + valid_to check for temporal tables)
  * 2. If not exists, insert with standard audit columns (modified_by, change_reason_code, etc.)
- * 3. Log action via RAISE NOTICE for visibility during population
  */
 
 -- =============================================================================
@@ -334,12 +333,6 @@ begin
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
-
-    if found then
-        raise notice 'Created change reason category: %', p_code;
-    else
-        raise notice 'Change reason category already exists: %', p_code;
-    end if;
 end;
 $$ language plpgsql;
 
@@ -372,12 +365,6 @@ begin
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
-
-    if found then
-        raise notice 'Created change reason: %', p_code;
-    else
-        raise notice 'Change reason already exists: %', p_code;
-    end if;
 end;
 $$ language plpgsql;
 
@@ -625,12 +612,6 @@ begin
     values (p_tenant_id, gen_random_uuid(), p_code, p_description,
             current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
-
-    if found then
-        raise notice 'Created permission: %', p_code;
-    else
-        raise notice 'Permission already exists: %', p_code;
-    end if;
 end;
 $$ language plpgsql;
 
@@ -656,12 +637,6 @@ begin
             current_user, 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
-
-    if found then
-        raise notice 'Created role: %', p_name;
-    else
-        raise notice 'Role already exists: %', p_name;
-    end if;
 end;
 $$ language plpgsql;
 
@@ -770,12 +745,6 @@ begin
         'system.new_record', 'System seed data',
         current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (account_id, role_id, valid_from) do nothing;
-
-    if found then
-        raise notice 'Assigned role % to account %', p_role_name, p_username;
-    else
-        raise notice 'Role % already assigned to account %', p_role_name, p_username;
-    end if;
 end;
 $$ language plpgsql;
 
@@ -815,12 +784,6 @@ begin
     values (p_tenant_id, v_role_id, v_permission_id, current_timestamp, ores_utility_infinity_timestamp_fn())
     on conflict (tenant_id, role_id, permission_id)
         where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
-
-    if found then
-        raise notice 'Assigned permission % to role %', p_permission_code, p_role_name;
-    else
-        raise notice 'Permission % already assigned to role %', p_permission_code, p_role_name;
-    end if;
 end;
 $$ language plpgsql;
 

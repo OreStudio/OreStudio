@@ -196,6 +196,24 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
+# Derive env_label from ORES_DB_OWNER_ROLE (e.g. "ores_local1_owner" → "local1")
+env_label="${ORES_DB_OWNER_ROLE#ores_}"
+env_label="${env_label%_owner}"
+
+# Phase 0a: Drop target database (required before role drops)
+echo "--- Dropping target database: ${DB_NAME} ---"
+PGPASSWORD="${PGPASSWORD}" psql \
+    -h "${ORES_DB_HOST}" -U postgres \
+    -c "DROP DATABASE IF EXISTS \"${DB_NAME}\";"
+echo ""
+
+# Phase 0b: Drop environment roles (mandatory for reproducible cluster state)
+PGPASSWORD="${PGPASSWORD}" psql \
+    -h "${ORES_DB_HOST}" -U postgres \
+    -v env_label="${env_label}" \
+    -f ./drop_roles.sql
+echo ""
+
 # Build psql -v args for each domain service user/password.
 # SERVICE_NAMES is sourced from the generated service_vars.sh above.
 _SVC_PSQL_ARGS=()
@@ -207,7 +225,9 @@ for _svc in "${SERVICE_NAMES[@]}"; do
     _SVC_PSQL_ARGS+=(-v "${_svc}_service_password=${!_pvar:-}")
 done
 
-# Phase 1: Drop database, recreate roles and users (postgres superuser)
+# Phase 1: Recreate roles and users (postgres superuser).
+# DB drop already done in Phase 0a; the DROP DATABASE IF EXISTS in
+# recreate_database.sql is now a guaranteed no-op.
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)

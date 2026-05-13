@@ -123,12 +123,9 @@ begin
         create extension if not exists timescaledb;
         raise notice 'Installed: timescaledb';
     elsif tsdb_available and not tsdb_loaded then
-        raise notice 'timescaledb is installed but not loaded in shared_preload_libraries';
-        raise notice 'Sessions will use regular tables';
-        raise notice '(Add timescaledb to shared_preload_libraries and restart PostgreSQL)';
+        raise notice 'TimescaleDB: installed but not in shared_preload_libraries — sessions use regular tables';
     else
-        raise notice 'TimescaleDB not available - sessions will use regular tables';
-        raise notice '(This is fine for development/testing, but production should use TimescaleDB)';
+        raise notice 'TimescaleDB: not available — sessions use regular tables';
     end if;
 end $$;
 

@@ -75,7 +75,12 @@ begin
         'ores_' || v_label || '_reporting_service',
         'ores_' || v_label || '_telemetry_service',
         'ores_' || v_label || '_trading_service',
-        'ores_' || v_label || '_compute_service'
+        'ores_' || v_label || '_compute_service',
+        'ores_' || v_label || '_workflow_service',
+        'ores_' || v_label || '_ore_service',
+        'ores_' || v_label || '_marketdata_service',
+        'ores_' || v_label || '_controller_service',
+        'ores_' || v_label || '_analytics_service'
     ];
 
     -- Revoke group memberships and drop user roles

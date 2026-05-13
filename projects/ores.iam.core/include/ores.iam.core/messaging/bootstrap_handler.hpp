@@ -160,7 +160,7 @@ public:
         }
         try {
             using ores::database::service::tenant_context;
-            using ores::database::repository::execute_parameterized_string_query;
+            using ores::database::repository::execute_parameterized_multi_column_query;
 
             // Call the SQL provisioner in system tenant context. The procedure
             // creates the tenant, copies all system-tenant reference data (roles,
@@ -173,23 +173,22 @@ public:
             // fail the modified_by validation in the SQL trigger.
             // Use ctx_.service_account() so the name is always env-scoped and
             // matches what iam_service_accounts_populate.sql registered.
-            // Returns two rows: tenant_id, system_party_id
-            const auto results = execute_parameterized_string_query(sys_ctx,
-                "SELECT unnest(ARRAY[tenant_id::text, system_party_id::text])"
+            const auto rows = execute_parameterized_multi_column_query(sys_ctx,
+                "SELECT tenant_id::text, system_party_id::text"
                 " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)",
                 {req->type, req->code, req->name, req->hostname,
                  req->description, ctx_.service_account()},
                 bootstrap_handler_lg(), "Provisioning tenant");
 
-            if (results.size() < 2) {
+            if (rows.empty() || rows[0].size() < 2 || !rows[0][0] || !rows[0][1]) {
                 reply(nats_, msg, provision_tenant_response{
                     .success = false,
                     .error_message = "Provisioner returned incomplete result"});
                 return;
             }
 
-            const auto& tenant_id_str = results[0];
-            const auto& system_party_id_str = results[1];
+            const auto& tenant_id_str = *rows[0][0];
+            const auto& system_party_id_str = *rows[0][1];
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
                 << "Provisioned tenant: " << req->code
                 << " (id: " << tenant_id_str

@@ -199,6 +199,10 @@ fi
 # Derive env_label from ORES_DB_OWNER_ROLE (e.g. "ores_local1_owner" → "local1")
 env_label="${ORES_DB_OWNER_ROLE#ores_}"
 env_label="${env_label%_owner}"
+if [[ -z "${env_label}" ]]; then
+    echo "Error: Could not derive env_label from ORES_DB_OWNER_ROLE: ${ORES_DB_OWNER_ROLE}" >&2
+    exit 1
+fi
 
 # Phase 0a: Drop target database (required before role drops)
 echo "--- Dropping target database: ${DB_NAME} ---"

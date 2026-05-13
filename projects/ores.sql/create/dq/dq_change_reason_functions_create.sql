@@ -52,5 +52,6 @@ begin
     return p_change_reason_code;
 end;
 $$ language plpgsql
+    stable
     security definer
     set search_path = public, pg_temp;

@@ -32,11 +32,8 @@
 #include "ores.dq.core/repository/catalog_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
-#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 

@@ -24,7 +24,6 @@
 #include "ores.refdata.core/repository/party_contact_information_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 

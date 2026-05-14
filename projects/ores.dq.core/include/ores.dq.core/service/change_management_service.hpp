@@ -30,7 +30,6 @@
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/change_reason_repository.hpp"
-#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 

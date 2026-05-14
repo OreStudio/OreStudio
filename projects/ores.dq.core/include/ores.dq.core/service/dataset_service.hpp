@@ -31,7 +31,6 @@
 #include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/methodology_repository.hpp"
-#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 

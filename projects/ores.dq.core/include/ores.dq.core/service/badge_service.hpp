@@ -30,12 +30,9 @@
 #include "ores.dq.core/repository/badge_severity_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_definition_repository.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/code_domain_repository.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
-#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 

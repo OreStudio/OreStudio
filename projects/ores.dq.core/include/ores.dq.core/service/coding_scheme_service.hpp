@@ -30,7 +30,6 @@
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
-#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 

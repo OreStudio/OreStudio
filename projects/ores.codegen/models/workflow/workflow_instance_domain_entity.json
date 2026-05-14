@@ -4,6 +4,7 @@
     "component": "workflow",
     "entity_singular": "workflow_instance",
     "entity_plural": "workflow_instances",
+    "entity_singular_title": "Workflow Instance",
     "entity_title": "Workflow Instance",
     "has_tenant_id": true,
     "brief": "A single execution of a named workflow.",
@@ -34,12 +35,11 @@
         "description": "Workflow type name, e.g. 'provision_parties_workflow'."
       },
       {
-        "name": "status",
-        "type": "text",
-        "cpp_type": "std::string",
+        "name": "state_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
         "nullable": false,
-        "default": "'pending'",
-        "description": "Current workflow status: pending, in_progress, completed, failed, compensating, compensated."
+        "description": "FK to the FSM state record (ores_dq_fsm_states_tbl) for this instance."
       },
       {
         "name": "request_json",
@@ -77,11 +77,42 @@
         "description": "Username or service identity that initiated the workflow."
       },
       {
+        "name": "current_step_index",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Zero-based index of the step currently being executed."
+      },
+      {
+        "name": "step_count",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Total number of steps in this workflow definition."
+      },
+      {
+        "name": "materialised_steps_json",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "JSON snapshot of the step sequence built at instance start. Prevents a non-deterministic build_steps from reshaping an in-flight workflow after a service restart."
+      },
+      {
         "name": "completed_at",
         "type": "timestamptz",
         "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
         "nullable": true,
         "description": "Timestamp when the workflow reached a terminal state."
+      },
+      {
+        "name": "last_event_at",
+        "type": "timestamptz",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "Timestamp of the most recent step-completed event processed."
       }
     ],
 

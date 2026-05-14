@@ -22,7 +22,7 @@
  * Template: sql_schema_non_temporal_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Workflow Instance Table
  *
  * Tracks the lifecycle of a workflow execution, including its type, status,
  * the serialised request that triggered it, and any result or error produced.

@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 

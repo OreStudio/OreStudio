@@ -27,6 +27,7 @@
 #include <QPainter>
 #include <QModelIndex>
 #include <QStyleOptionViewItem>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

@@ -24,6 +24,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

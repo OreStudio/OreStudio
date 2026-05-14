@@ -34,6 +34,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

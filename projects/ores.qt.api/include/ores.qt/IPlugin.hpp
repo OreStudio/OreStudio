@@ -23,6 +23,7 @@
 #include <QString>
 #include <QtPlugin>
 #include "ores.qt/plugin_context.hpp"
+#include "ores.qt.api/export.hpp"
 
 class QMenu;
 class QAction;

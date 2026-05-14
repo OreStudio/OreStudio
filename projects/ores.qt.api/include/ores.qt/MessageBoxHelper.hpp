@@ -24,6 +24,7 @@
 #include <QWidget>
 #include <QString>
 #include <QIcon>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

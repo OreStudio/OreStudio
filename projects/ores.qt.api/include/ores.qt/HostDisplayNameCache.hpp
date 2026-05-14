@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QString>
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

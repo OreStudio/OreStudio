@@ -27,6 +27,7 @@
 #include <QFont>
 #include <QStyledItemDelegate>
 #include "ores.qt/ColumnMetadata.hpp"
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

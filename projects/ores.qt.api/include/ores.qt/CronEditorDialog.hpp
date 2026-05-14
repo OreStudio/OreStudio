@@ -23,6 +23,7 @@
 #include <QDialog>
 #include <QString>
 #include "ores.qt/CronFieldWidget.hpp"
+#include "ores.qt.api/export.hpp"
 
 class QLabel;
 class QTabWidget;

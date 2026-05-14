@@ -23,6 +23,7 @@
 #include <QString>
 #include <chrono>
 #include <string>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

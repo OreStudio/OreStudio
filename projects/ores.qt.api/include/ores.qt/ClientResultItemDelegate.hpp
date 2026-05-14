@@ -22,6 +22,7 @@
 
 #include <QFont>
 #include <QStyledItemDelegate>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

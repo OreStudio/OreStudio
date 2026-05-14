@@ -26,6 +26,7 @@
 #include <QString>
 #include <optional>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

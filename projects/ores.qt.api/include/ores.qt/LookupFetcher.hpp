@@ -24,6 +24,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

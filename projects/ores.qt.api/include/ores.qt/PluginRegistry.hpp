@@ -22,6 +22,7 @@
 #include <QString>
 #include <QVector>
 #include "ores.qt/IPlugin.hpp"
+#include "ores.qt.api/export.hpp"
 
 class QPluginLoader;
 

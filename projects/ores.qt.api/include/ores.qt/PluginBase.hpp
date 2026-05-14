@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include "ores.qt/IPlugin.hpp"
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

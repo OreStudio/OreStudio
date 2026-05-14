@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QAbstractTableModel>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

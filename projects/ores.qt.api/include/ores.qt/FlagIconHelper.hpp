@@ -24,6 +24,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <QObject>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

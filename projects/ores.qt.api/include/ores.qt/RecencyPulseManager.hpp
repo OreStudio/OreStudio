@@ -22,6 +22,7 @@
 
 #include <QTimer>
 #include <QObject>
+#include "ores.qt.api/export.hpp"
 
 namespace ores::qt {
 

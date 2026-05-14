@@ -258,7 +258,7 @@ begin
     where valid_to = ores_utility_infinity_timestamp_fn()
     do nothing;
 
-    raise notice 'Activity types seeded.';
+    raise debug 'Activity types seeded.';
 end;
 $$;
 

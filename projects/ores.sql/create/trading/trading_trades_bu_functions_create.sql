@@ -53,7 +53,7 @@ begin
     where b.owner_unit_id in (select bu.id from bu)
       and b.valid_to = ores_utility_infinity_timestamp_fn();
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 comment on function ores_trading_get_book_ids_by_business_unit_fn(uuid, uuid) is
 'Returns the UUIDs of all books owned by any business unit in the subtree

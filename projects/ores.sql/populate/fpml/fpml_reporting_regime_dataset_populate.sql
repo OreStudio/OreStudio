@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Reporting Regime Dataset
 -- =============================================================================
 
-\echo '--- FpML Reporting Regime Dataset ---'
+\qecho '--- FpML Reporting Regime Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.reporting_regime',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'reporting_regimes'
 );
+\o

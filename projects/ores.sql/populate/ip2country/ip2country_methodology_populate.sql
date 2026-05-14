@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- IP Geolocation Data Sourcing Methodologies
 -- =============================================================================
 
-\echo '--- IP Geolocation Methodologies ---'
+\qecho '--- IP Geolocation Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'iptoasn.com IP to Country Database',
@@ -75,4 +76,4 @@ For most use cases, monthly updates are sufficient.
 - Country codes follow ISO 3166-1 alpha-2 standard
 - Data accuracy depends on BGP routing information'
 );
-
+\o

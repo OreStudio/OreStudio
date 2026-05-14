@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Slovaris Methodologies
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Methodologies ---'
+\qecho '--- Data Quality Slovaris Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'OreStudio Code Generation Methodology',
@@ -143,9 +144,10 @@ As new artefact types are added to the code generator:
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Total Methodologies' as entity, count(*) as count
 from ores_dq_methodologies_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

@@ -76,7 +76,7 @@ begin
     delete from ores_dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating currencies for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
+    raise debug 'Populating currencies for dataset: %', (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 
     -- Insert Solvaris currencies with flag image links
     insert into ores_dq_currencies_artefact_tbl (
@@ -207,7 +207,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % currencies for dataset: %', v_count, (select name from ores_dq_datasets_tbl where id = v_dataset_id);
+    raise debug 'Successfully populated % currencies for dataset: %', v_count, (select name from ores_dq_datasets_tbl where id = v_dataset_id);
 end $$;
 
 -- =============================================================================

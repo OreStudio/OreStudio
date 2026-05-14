@@ -26,12 +26,13 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
+\o /dev/null
 
 -- =============================================================================
 -- Cryptocurrency Dataset Tags
 -- =============================================================================
 
-\echo '--- Cryptocurrency Dataset Tags ---'
+\qecho '--- Cryptocurrency Dataset Tags ---'
 
 select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Cryptocurrency Icon Images',
@@ -56,4 +57,4 @@ select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'cryptocurrency',
     'Top 100 cryptocurrencies by market cap'
 );
-
+\o

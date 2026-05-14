@@ -1,7 +1,7 @@
 #+TITLE: Service Account RBAC Design
 #+DATE: 2026-03-28
 #+AUTHOR: ORE Studio Team
-#+STATUS: DRAFT
+#+STATUS: REVISED 2026-05-13
 
 * Context
 
@@ -65,23 +65,36 @@ connection pooling).
 
 ** GRANT matrix
 
-The table below lists the minimum GRANTs each service requires.  "Own
-component" means full SELECT/INSERT/UPDATE/DELETE on all tables in that schema.
-"Shared read" means SELECT only on specific tables owned by another service.
+The table below lists the GRANTs each service holds.  "Own component"
+means full SELECT/INSERT/UPDATE/DELETE on all =ores_<S>_*= tables.
+"Cross-component" entries are tracked violations with a phase target in
+the isolation plan.
 
-| Service DB user      | Own schema(s)        | Shared SELECT                                           |
-|----------------------+----------------------+---------------------------------------------------------|
-| =ores_iam=           | =iam=                | —                                                       |
-| =ores_refdata=       | =refdata=            | =iam.tenants=                                           |
-| =ores_dq=            | =dq=                 | =iam.tenants=                                           |
-| =ores_variability=   | =variability=        | =iam.tenants=                                           |
-| =ores_assets=        | =assets=             | =iam.tenants=                                           |
-| =ores_scheduler=     | =scheduler=          | =iam.tenants=, =dq.change_reasons=                      |
-| =ores_reporting=     | =reporting=          | =iam.tenants=, =dq.change_reasons=                      |
-| =ores_trading=       | =trading=            | =iam.tenants=, =refdata.*=, =dq.change_reasons=         |
-| =ores_compute=       | =compute=            | =iam.tenants=, =refdata.parties=                        |
-| =ores_telemetry=     | =telemetry=          | =iam.tenants=                                           |
-| =ores_synthetic=     | =synthetic=          | =iam.tenants=, read on most schemas                     |
+Cross-component tenant and change-reason /validation/ no longer requires
+SELECT grants: ~ores_iam_validate_tenant_fn~ and
+~ores_dq_validate_change_reason_fn~ are ~SECURITY DEFINER~ functions that
+run as the DDL owner.  PostgreSQL FK enforcement similarly requires no
+SELECT on the referenced table at runtime.
+
+| Service DB user        | Own component      | Cross-component (reason / phase)                                  |
+|------------------------+--------------------+-------------------------------------------------------------------|
+| =ores_iam=             | =ores_iam_=        | SELECT =variability.system_settings= (IAM settings / Ph 4.1)     |
+|                        |                    | DML =refdata.parties= (provisioning / Ph 4.2–4.3)                |
+| =ores_refdata=         | =ores_refdata_=    | —                                                                 |
+| =ores_dq=              | =ores_dq_=         | —                                                                 |
+| =ores_variability=     | =ores_variability_=| —                                                                 |
+| =ores_assets=          | =ores_assets_=     | —                                                                 |
+| =ores_scheduler=       | =ores_scheduler_=  | —                                                                 |
+| =ores_reporting=       | =ores_reporting_=  | —                                                                 |
+| =ores_trading=         | =ores_trading_=    | SELECT =ores_refdata_*= (trigger validation / Ph 5.1)             |
+| =ores_compute=         | =ores_compute_=    | —                                                                 |
+| =ores_telemetry=       | =ores_telemetry_=  | —                                                                 |
+| =ores_workflow=        | =ores_workflow_=   | DML =ores_iam_*=, DML =ores_refdata_parties= (onboarding / Ph 5.2)|
+| =ores_ore=             | =ores_ore_=        | DML =ores_workflow_*= (job queue / Ph 5.3)                        |
+| =ores_marketdata=      | =ores_marketdata_= | —                                                                 |
+| =ores_controller=      | =ores_controller_= | —                                                                 |
+| =ores_analytics=       | =ores_analytics_=  | —                                                                 |
+| =ores_synthetic=       | tooling role       | SELECT all schemas (developer tool — permanent exception)         |
 
 ** Implementation Steps
 

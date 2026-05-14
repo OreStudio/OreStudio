@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Regulatory Corporate Sector Dataset
 -- =============================================================================
 
-\echo '--- FpML Regulatory Corporate Sector Dataset ---'
+\qecho '--- FpML Regulatory Corporate Sector Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.regulatory_corporate_sector',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'regulatory_corporate_sectors'
 );
+\o

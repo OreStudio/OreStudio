@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- ISO Standards Dataset Dependencies
 -- =============================================================================
 
-\echo '--- ISO Standards Dataset Dependencies ---'
+\qecho '--- ISO Standards Dataset Dependencies ---'
 
 select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'iso.countries',
@@ -54,4 +55,4 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'assets.country_flags',
     'visual_assets'
 );
-
+\o

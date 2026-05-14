@@ -2603,7 +2603,7 @@ begin
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_business_centres_artefact_tbl', v_count;
+    raise debug 'Populated % records into dq_business_centres_artefact_tbl', v_count;
 end;
 $$;
 
@@ -2651,7 +2651,7 @@ begin
       and i.key = lower(substring(bc.code, 1, 2));
 
     get diagnostics v_updated = row_count;
-    raise notice 'Updated % records with flag images', v_updated;
+    raise debug 'Updated % records with flag images', v_updated;
 
     -- Set placeholder for any without matching flags
     update ores_dq_business_centres_artefact_tbl
@@ -2662,7 +2662,7 @@ begin
 
     get diagnostics v_updated = row_count;
     if v_updated > 0 then
-        raise notice 'Set placeholder image for % records without matching flags', v_updated;
+        raise debug 'Set placeholder image for % records without matching flags', v_updated;
     end if;
 
     -- Fix NY* codes: assign US flag (code prefix 'ny' has no country match)

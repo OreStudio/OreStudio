@@ -24,6 +24,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.compute.core/repository/app_version_entity.hpp"
 #include "ores.compute.core/repository/app_version_mapper.hpp"
 
@@ -55,7 +56,7 @@ std::vector<domain::app_version>
 app_version_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    static const auto sys = std::string("ffffffff-ffff-ffff-ffff-ffffffffffff");
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_version_entity>> |
         where(("tenant_id"_c == tid || "tenant_id"_c == sys)
               && "valid_to"_c == max.value()) |
@@ -72,7 +73,7 @@ app_version_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest app version. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    static const auto sys = std::string("ffffffff-ffff-ffff-ffff-ffffffffffff");
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_version_entity>> |
         where(("tenant_id"_c == tid || "tenant_id"_c == sys)
               && "id"_c == id && "valid_to"_c == max.value());
@@ -87,7 +88,7 @@ std::vector<domain::app_version>
 app_version_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all app version versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    static const auto sys = std::string("ffffffff-ffff-ffff-ffff-ffffffffffff");
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_version_entity>> |
         where(("tenant_id"_c == tid || "tenant_id"_c == sys)
               && "id"_c == id) |

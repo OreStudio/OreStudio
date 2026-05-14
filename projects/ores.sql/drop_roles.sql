@@ -41,15 +41,22 @@
 \echo '=== Dropping environment roles for:' :env_label '==='
 \echo ''
 
+-- psql does not interpolate variables inside dollar-quoted DO blocks, so we
+-- pass the label via a session-level config parameter instead.
+\pset tuples_only on
+select set_config('app.ores_env_label', :'env_label', false);
+\pset tuples_only off
+
 do $$
 declare
-    v_label   text := :'env_label';
+    v_label   text := current_setting('app.ores_env_label');
     v_owner   text;
     v_rw      text;
     v_ro      text;
     v_service text;
     v_users   text[];
     v_role    text;
+    v_group   text;
 begin
     v_owner   := 'ores_' || v_label || '_owner';
     v_rw      := 'ores_' || v_label || '_rw';
@@ -75,17 +82,28 @@ begin
         'ores_' || v_label || '_reporting_service',
         'ores_' || v_label || '_telemetry_service',
         'ores_' || v_label || '_trading_service',
-        'ores_' || v_label || '_compute_service'
+        'ores_' || v_label || '_compute_service',
+        'ores_' || v_label || '_workflow_service',
+        'ores_' || v_label || '_ore_service',
+        'ores_' || v_label || '_marketdata_service',
+        'ores_' || v_label || '_controller_service',
+        'ores_' || v_label || '_analytics_service'
     ];
 
     -- Revoke group memberships and drop user roles
     foreach v_role in array v_users loop
         if exists (select 1 from pg_roles where rolname = v_role) then
-            -- Revoke from all group roles (no-op if not a member)
-            execute format('revoke %I from %I', v_owner,   v_role);
-            execute format('revoke %I from %I', v_rw,      v_role);
-            execute format('revoke %I from %I', v_ro,      v_role);
-            execute format('revoke %I from %I', v_service, v_role);
+            -- Only revoke memberships that actually exist to avoid spurious warnings
+            foreach v_group in array array[v_owner, v_rw, v_ro, v_service] loop
+                if exists (
+                    select 1 from pg_auth_members am
+                    join pg_roles gr on gr.oid = am.roleid
+                    join pg_roles ur on ur.oid = am.member
+                    where gr.rolname = v_group and ur.rolname = v_role
+                ) then
+                    execute format('revoke %I from %I', v_group, v_role);
+                end if;
+            end loop;
             execute format('drop role %I', v_role);
             raise notice 'Dropped role: %', v_role;
         else

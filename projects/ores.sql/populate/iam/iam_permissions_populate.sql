@@ -35,6 +35,7 @@
  * - "component::*" grants all permissions within a component
  */
 
+\o /dev/null
 -- =============================================================================
 -- IAM Component Permissions
 -- =============================================================================
@@ -421,3 +422,4 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), '*', 'Full
 -- Show summary
 select count(*) as total_permissions from ores_iam_permissions_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
+\o

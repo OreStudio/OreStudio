@@ -64,7 +64,7 @@ begin
     delete from ores_dq_business_units_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating business units for dataset: testdata.business_units';
+    raise debug 'Populating business units for dataset: testdata.business_units';
 
     insert into ores_dq_business_units_artefact_tbl (
         dataset_id, tenant_id, id, version, unit_name,
@@ -137,7 +137,7 @@ begin
          'Counterparty Risk', '10000000-0000-4000-a000-00000000000c', 'CPTY_RISK', 'GBLO', 'BUSINESS_AREA');
 
     get diagnostics v_count = row_count;
-    raise notice 'Successfully populated % business units', v_count;
+    raise debug 'Successfully populated % business units', v_count;
 end $$;
 
 -- =============================================================================

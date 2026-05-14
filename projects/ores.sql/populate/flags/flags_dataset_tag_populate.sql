@@ -26,11 +26,12 @@
  * Must be run after flags_dataset_populate.sql.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Flag Icons Dataset Tags
 -- =============================================================================
 
-\echo '--- Flag Icons Dataset Tags ---'
+\qecho '--- Flag Icons Dataset Tags ---'
 
 select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Country Flag Images',
@@ -39,4 +40,4 @@ select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'flag',
     'Country and region flag images'
 );
-
+\o

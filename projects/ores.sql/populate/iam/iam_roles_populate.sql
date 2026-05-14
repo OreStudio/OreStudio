@@ -39,6 +39,7 @@
  * - permissions_populate.sql must be run first
  */
 
+\o /dev/null
 -- Create platform-level admin roles
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'Platform super administrator with tenant management access');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TenantAdmin', 'Tenant administrator with full access within a tenant');
@@ -240,3 +241,4 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Role-Permission assignments:', count(*) from ores_iam_role_permissions_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
+\o

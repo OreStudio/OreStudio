@@ -18,11 +18,12 @@
  *
  */
 
+\o /dev/null
 -- =============================================================================
 -- ORE Asset Class Dataset
 -- =============================================================================
 
-\echo '--- ORE Asset Class Dataset ---'
+\qecho '--- ORE Asset Class Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ore.asset_class',
@@ -42,3 +43,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Apache License 2.0',
     'asset_classes'
 );
+\o

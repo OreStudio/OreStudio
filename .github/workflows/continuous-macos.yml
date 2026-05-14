@@ -19,6 +19,7 @@ name: Continuous MacOS
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -53,12 +54,19 @@ jobs:
         with:
           submodules: true
 
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 2000M
+          save: false
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -139,6 +147,22 @@ jobs:
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+
+      - name: Delete sccache entry
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
+            || true
+
+      - name: Save sccache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Show sccache statistics
         if: always()

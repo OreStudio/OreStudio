@@ -26,11 +26,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Dataset Bundles
 -- =============================================================================
 
-\echo '--- Dataset Bundles ---'
+\qecho '--- Dataset Bundles ---'
 
 select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
     'solvaris',
@@ -61,3 +62,4 @@ select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ORE Analytics',
     'Default ORE analytics report definitions. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) for use during party provisioning.'
 );
+\o

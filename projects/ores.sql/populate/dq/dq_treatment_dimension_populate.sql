@@ -30,11 +30,12 @@
  * - Anonymized: Irreversibly altered to prevent re-identification
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Treatment Dimensions
 -- =============================================================================
 
-\echo '--- Data Quality Treatment Dimensions ---'
+\qecho '--- Data Quality Treatment Dimensions ---'
 
 select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Raw',
@@ -58,9 +59,10 @@ select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Treatment Dimensions' as entity, count(*) as count
 from ores_dq_treatment_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

@@ -26,12 +26,13 @@
  * This must be run before populating the artefact tables.
  */
 
+\o /dev/null
 
 -- =============================================================================
 -- Cryptocurrency Datasets
 -- =============================================================================
 
-\echo '--- Cryptocurrency Datasets ---'
+\qecho '--- Cryptocurrency Datasets ---'
 
 -- Cryptocurrency Icon Images
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -92,4 +93,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Public Domain',
     'currencies'
 );
-
+\o

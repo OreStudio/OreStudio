@@ -47,9 +47,9 @@ begin
             1,
             current_user, 'system.initial_load', 'Seed concurrency policy: skip'
         );
-        raise notice 'Created concurrency policy: skip';
+        raise debug 'Created concurrency policy: skip';
     else
-        raise notice 'Concurrency policy already exists: skip';
+        raise debug 'Concurrency policy already exists: skip';
     end if;
 
     if not exists (
@@ -68,9 +68,9 @@ begin
             2,
             current_user, 'system.initial_load', 'Seed concurrency policy: queue'
         );
-        raise notice 'Created concurrency policy: queue';
+        raise debug 'Created concurrency policy: queue';
     else
-        raise notice 'Concurrency policy already exists: queue';
+        raise debug 'Concurrency policy already exists: queue';
     end if;
 
     if not exists (
@@ -89,9 +89,9 @@ begin
             3,
             current_user, 'system.initial_load', 'Seed concurrency policy: fail'
         );
-        raise notice 'Created concurrency policy: fail';
+        raise debug 'Created concurrency policy: fail';
     else
-        raise notice 'Concurrency policy already exists: fail';
+        raise debug 'Concurrency policy already exists: fail';
     end if;
 end;
 $$;

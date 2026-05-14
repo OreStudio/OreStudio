@@ -30,11 +30,12 @@
  * - internal: Proprietary/organization-specific
  */
 
+\o /dev/null
 -- =============================================================================
 -- Coding Scheme Authority Types
 -- =============================================================================
 
-\echo '--- Coding Scheme Authority Types ---'
+\qecho '--- Coding Scheme Authority Types ---'
 
 select ores_dq_coding_scheme_authority_types_upsert_fn(ores_iam_system_tenant_id_fn(),
     'official',
@@ -58,9 +59,10 @@ select ores_dq_coding_scheme_authority_types_upsert_fn(ores_iam_system_tenant_id
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Coding Scheme Authority Types' as entity, count(*) as count
 from ores_dq_coding_scheme_authority_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

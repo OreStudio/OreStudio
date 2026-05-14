@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Slovaris Datasets
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Datasets ---'
+\qecho '--- Data Quality Slovaris Datasets ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'slovaris.country_flags',
@@ -88,9 +89,10 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Total Datasets' as entity, count(*) as count
 from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

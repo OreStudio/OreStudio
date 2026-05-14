@@ -129,6 +129,6 @@ begin
             chunk_time_interval => interval '30 days',
             if_not_exists => true
         );
-        raise notice 'Created hypertable with 30-day chunks for ores_marketdata_fixings_tbl';
+        raise notice 'TimescaleDB detected - creating hypertable (30-day chunks)';
     end if;
 end $$;

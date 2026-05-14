@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Supervisory Body Dataset
 -- =============================================================================
 
-\echo '--- FpML Supervisory Body Dataset ---'
+\qecho '--- FpML Supervisory Body Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.supervisory_body',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'supervisory_bodies'
 );
+\o

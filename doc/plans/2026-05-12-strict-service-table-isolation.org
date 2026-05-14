@@ -1,0 +1,242 @@
+#+TITLE: Strict Service Table Isolation
+#+SUBTITLE: Mandatory role drops + zero cross-component DB access
+#+DATE: 2026-05-12
+#+AUTHOR: ORE Studio Team
+#+STATUS: COMPLETE (Phases 0–4 done; deferred items in cross-service-write-decoupling.org)
+#+OPTIONS: toc:t num:nil
+
+* Context
+
+Two findings in
+[[file:../analysis/bootstrap-and-architecture-violations.org][Bootstrap and
+Architecture Violations]] motivate this plan:
+
+1. ~recreate_database.sh~ does not drop cluster-level roles, so historical
+   group memberships silently mask missing per-service GRANTs. The system
+   is therefore not reproducible across machines.
+2. Several service users hold cross-component table grants. The Service
+   Account RBAC Design
+   ([[file:2026-03-28-service-rbac-design.org][2026-03-28-service-rbac-design.org]])
+   stipulated that cross-component access should be the exception.
+
+This plan establishes a strict architectural invariant — *a domain service
+user holds DB privileges on its own component's tables only* — and lays
+out an incremental migration to reach it.
+
+The heavier architectural work (IAM party cache, workflow/ORE NATS write
+APIs) is tracked separately in
+[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+
+* Goal and Invariant
+
+For every domain service ~S~ with DB user ~ores_<env>_<S>_service~:
+
+1. ~S~ has ~SELECT/INSERT/UPDATE/DELETE~ only on tables matching
+   ~ores_<S>_%~ in the ~public~ schema.
+2. ~S~ has ~USAGE/SELECT~ on sequences only for its own tables.
+3. ~S~ has no grants on any table prefixed with another component.
+4. ~S~ has no membership of the broad ~rw_role~ or ~owner_role~.
+5. Cross-component validation (tenant existence, change-reason validity,
+   refdata entity existence) is enforced by ~SECURITY DEFINER~ functions
+   owned by the defining service — no ~SELECT~ grant on cross-component
+   tables is needed by the calling service user.
+
+** Key clarifications
+
+- *FK constraints do not require ~SELECT~* on the referenced table at
+  runtime. The ~REFERENCES~ privilege is needed only to /create/ a FK
+  (done by the DDL user); at runtime the check is system-internal.
+- *Trigger-called validator functions* that SELECT from another service's
+  tables must be ~SECURITY DEFINER~ with ~SET search_path = public, pg_temp~.
+  New validator functions must follow the same rule.
+
+** Non-goals
+
+- Splitting ~public~ into per-component PostgreSQL schemas.
+- Removing C++ type-sharing between components (only DB access paths must move).
+- Touching unit tests that use the DDL user directly.
+
+* Phase 0 — Mandatory Role Drops
+
+*Status: COMPLETE* (commit ~6eb3930e4~)
+
+~recreate_database.sh~ now drops all environment roles before recreating
+them, ensuring reproducible cluster state regardless of history.
+
+* Phase 1 — SECURITY DEFINER Validators + Grant Cleanup
+
+*Status: COMPLETE* (commit ~f94fda946~)
+
+~ores_iam_validate_tenant_fn~ and ~ores_dq_validate_change_reason_fn~
+converted to ~SECURITY DEFINER~. 24 cross-component SELECT grants removed.
+Two confirmed-incorrect grants (compute→refdata_parties,
+reporting→scheduler prefix) also removed.
+
+Remaining cross-component grants after Phase 1:
+- IAM: SELECT ~ores_variability_system_settings_tbl~ (Phase 2.1)
+- IAM: DML ~ores_refdata_parties~ (Phase 2.2 + deferred plan)
+- Trading: SELECT ~ores_refdata_*~ prefix (Phase 3)
+- Workflow: DML ~ores_iam_*~ and ~ores_refdata_parties~ (deferred plan)
+- ORE: DML ~ores_workflow_*~ (deferred plan)
+
+* Phase 2 — IAM Cross-Component Reads
+
+*Effort: S–M. Risk: Low–Medium.*
+
+** 2.1 — IAM reads variability settings via SECURITY DEFINER function
+
+*Status: COMPLETE*
+
+IAM reads ~ores_variability_system_settings_tbl~ at runtime for bootstrap
+mode, JWT token settings, and signup policy. These are generic runtime
+configuration values owned by variability; IAM should not hold a DB grant
+to read them directly.
+
+*Fix: ~ores_variability_get_system_settings_fn~ (SECURITY DEFINER) wraps the
+SELECT; ~system_settings_service::refresh()~ calls ~read_for_tenant~ when a
+tenant_id is set, bypassing the need for a direct SELECT grant.*
+
+Steps:
+
+1. Variability exposes a new NATS request/reply subject
+   ~variability.v1.system-settings.read~ that returns the requested keys.
+   Variability also publishes to ~variability.v1.system-settings.changed~
+   when any value is written (LISTEN/NOTIFY already triggers this).
+2. In ~bootstrap_mode_service.cpp~ and the relevant handlers, replace the
+   direct ~system_settings_service~ repository call with a NATS request at
+   startup. Cache the result in-process and refresh on change notification.
+3. Remove ~grant select on ores_variability_system_settings_tbl to
+   :iam_service_user~ from the service registry.
+4. Remove the CMake link from ~ores.iam.core/src/CMakeLists.txt~ to
+   ~ores.variability.core~ once no IAM source files reference it.
+
+** 2.2 — Provisioning returns the system_party_id
+
+~bootstrap_handler.hpp:203~ calls
+~party_repository.read_system_party(...)~ immediately after
+~ores_iam_provision_tenant_fn~, solely to retrieve the party id that the
+provisioning function just created.
+
+*Fix: return it from the function.*
+
+Steps:
+
+1. Modify ~ores_iam_provision_tenant_fn~ to ~RETURNS RECORD~ with
+   ~(tenant_id uuid, system_party_id uuid)~.
+2. Update ~bootstrap_handler.hpp~ to consume both fields and remove the
+   ~party_repository.read_system_party~ call.
+3. Verify ~save_account_party~ still works — it inserts into
+   ~ores_iam_account_parties_tbl~ (IAM-owned) and uses the party id now
+   returned from provisioning, so no cross-service read is needed.
+4. After this step the only remaining IAM DML grant on
+   ~ores_refdata_parties~ is for the hot-path party reads in
+   ~auth_handler.hpp~, which are tracked in the deferred plan.
+
+* Phase 3 — Trading Refdata Trigger Validation
+
+*Effort: S. Risk: Low.*
+
+Trading table triggers contain inline ~SELECT~ statements against refdata
+tables (~books~, ~portfolios~, ~counterparties~, ~parties~, ~business_units~)
+for soft-FK validation. Because these run in a ~SECURITY INVOKER~ context,
+the trading service user holds a broad ~SELECT ON ores_refdata_*~ prefix grant.
+
+*Fix: wrap each inline SELECT in a named ~SECURITY DEFINER~ function.*
+
+Steps:
+
+1. In ~projects/ores.sql/create/refdata/~ create a new file
+   ~refdata_trading_validation_fns_create.sql~ defining:
+   - ~ores_refdata_validate_book_fn(tenant_id uuid, book_id uuid)~
+   - ~ores_refdata_validate_portfolio_fn(tenant_id uuid, portfolio_id uuid)~
+   - ~ores_refdata_validate_counterparty_fn(tenant_id uuid, counterparty_id uuid)~
+   - ~ores_refdata_validate_party_fn(tenant_id uuid, party_id uuid)~
+   - ~ores_refdata_validate_business_unit_fn(tenant_id uuid, bu_id uuid)~
+   Each function is ~SECURITY DEFINER~ with ~SET search_path = public, pg_temp~.
+
+2. Replace the inline ~SELECT~ blocks in:
+   - ~trading_trades_create.sql~
+   - ~trading_trades_functions_create.sql~
+   - ~trading_trades_bu_functions_create.sql~
+   - ~trading_identifiers_create.sql~
+   - ~trading_party_roles_create.sql~
+   with calls to the corresponding ~SECURITY DEFINER~ functions.
+
+3. Remove ~select _ores_grant_select_fn('ores_refdata_', :'trading_service_user')~
+   from the service registry and regenerate the grants file.
+
+* Phase 4 — Lock the Invariant
+
+*Status: COMPLETE*
+
+Every domain service user now holds DML only on its own ~ores_<S>_*~ prefix,
+with no cross-component SELECT grants. The three remaining cross-component DML
+grants (IAM→refdata parties, workflow→IAM/refdata, ORE→workflow) require NATS
+write APIs and are deferred to
+[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+
+~CLAUDE.md~ and ~system_model.org~ reflect current state.
+
+* Deferred Items
+
+The following items require significant NATS API work and multi-service
+refactoring. They are tracked in a separate plan:
+[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]]
+
+- IAM hot-path party reads (~auth_handler~, ~account_handler~) replace
+  direct ~ores_refdata_parties_tbl~ access with a NATS-backed cache.
+- Workflow writes to IAM and refdata tables during onboarding → replace
+  with IAM and refdata NATS write APIs.
+- ORE import writes to workflow tables → replace with workflow NATS write APIs.
+
+* Bootstrap Concerns
+
+Bootstrap remains the one place where IAM legitimately crosses domain
+boundaries. After this plan:
+
+1. ~SECURITY DEFINER~ provisioning function continues to handle
+   tenant + system-party creation in a single transaction.
+2. After Phase 2.2, the function returns ~system_party_id~, so IAM no
+   longer reads ~ores_refdata_parties_tbl~ during provisioning.
+3. Bootstrap-mode gating is read via NATS from variability (Phase 2.1),
+   so no DB grant is needed.
+
+* Sequencing and Effort
+
+| Phase | Title                                    | Effort | Risk   | Status      |
+|-------+------------------------------------------+--------+--------+-------------|
+| 0     | Mandatory role drops                     | S      | Low    | COMPLETE    |
+| 1     | SECURITY DEFINER validators + cleanup    | S      | Low    | COMPLETE    |
+| 2.1   | IAM settings via SECURITY DEFINER fn     | S      | Low    | COMPLETE    |
+| 2.2   | Provisioning returns system_party_id     | S      | Low    | COMPLETE    |
+| 3     | SECURITY DEFINER for trading trigger fns | S      | Low    | COMPLETE    |
+| 4     | Lock invariant                           | S      | Low    | COMPLETE    |
+| —     | IAM party cache (deferred)               | L      | Medium | deferred    |
+| —     | Workflow/ORE NATS write APIs (deferred)  | L      | High   | deferred    |
+
+* Open Questions
+
+1. *Schema-per-component.* Moving to per-component Postgres schemas would
+   make GRANTs trivial. Out of scope here; natural next step once the
+   invariant holds.
+2. *Trading refdata coupling.* The SECURITY DEFINER function approach keeps
+   DB-level referential integrity for trading entities. Consider whether
+   this is the right long-term model or whether trading should hold a local
+   refdata cache instead.
+3. *Synthetic service.* Currently classified ~role: "tooling"~ with broad
+   SELECT on all domains. The cleaner option is to run it as the DDL user.
+
+* File Pointers
+
+| Concern                           | File                                                                        |
+|-----------------------------------+-----------------------------------------------------------------------------|
+| Mandatory drops                   | ~projects/ores.sql/recreate_database.sh~, ~drop_roles.sql~                  |
+| Service registry                  | ~projects/ores.codegen/models/services/ores_services_service_registry.json~ |
+| GRANT matrix                      | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~             |
+| Tenant validator fn               | ~projects/ores.sql/create/iam/iam_tenant_functions_create.sql~              |
+| Change reason validator fn        | ~projects/ores.sql/create/dq/dq_change_reason_functions_create.sql~         |
+| Trading trigger refdata SELECTs   | ~projects/ores.sql/create/trading/trading_trades_create.sql~ et al.         |
+| IAM handlers (party + settings)   | ~projects/ores.iam.core/include/ores.iam.core/messaging/~                   |
+| Bootstrap handler                 | ~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~ |
+| Predecessor analysis              | ~doc/analysis/bootstrap-and-architecture-violations.org~                    |
+| Deferred write-decoupling plan    | ~doc/plans/2026-05-13-cross-service-write-decoupling.org~                   |

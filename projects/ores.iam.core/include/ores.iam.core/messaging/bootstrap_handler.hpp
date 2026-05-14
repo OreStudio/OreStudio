@@ -37,10 +37,9 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
-#include "ores.refdata.api/domain/party.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 
 namespace ores::iam::messaging {
 
@@ -73,7 +72,7 @@ public:
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
-                ctx_, ctx_.tenant_id().to_string(), auth_svc);
+                ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, bootstrap_status_response{
@@ -102,7 +101,7 @@ public:
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
-                ctx_, ctx_.tenant_id().to_string(), auth_svc);
+                ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             if (!bms.is_in_bootstrap_mode()) {
                 BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
                     << "Rejected " << msg.subject
@@ -161,7 +160,7 @@ public:
         }
         try {
             using ores::database::service::tenant_context;
-            using ores::database::repository::execute_parameterized_string_query;
+            using ores::database::repository::execute_parameterized_multi_column_query;
 
             // Call the SQL provisioner in system tenant context. The procedure
             // creates the tenant, copies all system-tenant reference data (roles,
@@ -174,23 +173,26 @@ public:
             // fail the modified_by validation in the SQL trigger.
             // Use ctx_.service_account() so the name is always env-scoped and
             // matches what iam_service_accounts_populate.sql registered.
-            const auto results = execute_parameterized_string_query(sys_ctx,
-                "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)::text",
+            const auto rows = execute_parameterized_multi_column_query(sys_ctx,
+                "SELECT tenant_id::text, system_party_id::text"
+                " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)",
                 {req->type, req->code, req->name, req->hostname,
                  req->description, ctx_.service_account()},
                 bootstrap_handler_lg(), "Provisioning tenant");
 
-            if (results.empty()) {
+            if (rows.empty() || rows[0].size() < 2 || !rows[0][0] || !rows[0][1]) {
                 reply(nats_, msg, provision_tenant_response{
                     .success = false,
-                    .error_message = "Provisioner returned no tenant_id"});
+                    .error_message = "Provisioner returned incomplete result"});
                 return;
             }
 
-            const auto& tenant_id_str = results[0];
+            const auto& tenant_id_str = *rows[0][0];
+            const auto& system_party_id_str = *rows[0][1];
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
                 << "Provisioned tenant: " << req->code
-                << " (id: " << tenant_id_str << ")";
+                << " (id: " << tenant_id_str
+                << ", system_party: " << system_party_id_str << ")";
 
             // Create the admin account in the new tenant's context.
             auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
@@ -199,31 +201,21 @@ public:
                 req->principal, req->email, req->password,
                 ctx_.service_account());
 
-            // Associate the admin account with the system party.
-            refdata::repository::party_repository party_repo(tenant_ctx);
-            auto system_parties = party_repo.read_system_party(tenant_id_str);
-            if (!system_parties.empty()) {
-                const auto& sys_party = system_parties.front();
-                domain::account_party ap;
-                ap.account_id = acct.id;
-                ap.party_id = sys_party.id;
-                ap.tenant_id = tenant_id_str;
-                ap.modified_by = req->principal;
-                ap.performed_by = req->principal;
-                ap.change_reason_code = "system.initial_load";
-                ap.change_commentary =
-                    "Provision tenant: associate admin with system party";
-                service::account_party_service ap_svc(tenant_ctx);
-                ap_svc.save_account_party(ap);
-                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                    << "Associated " << req->principal
-                    << " with system party "
-                    << boost::uuids::to_string(sys_party.id);
-            } else {
-                BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
-                    << "No system party found for tenant " << tenant_id_str
-                    << "; account has no party context";
-            }
+            // Associate the admin account with the system party returned by provisioner.
+            domain::account_party ap;
+            ap.account_id = acct.id;
+            ap.party_id = boost::uuids::string_generator{}(system_party_id_str);
+            ap.tenant_id = tenant_id_str;
+            ap.modified_by = req->principal;
+            ap.performed_by = req->principal;
+            ap.change_reason_code = "system.initial_load";
+            ap.change_commentary =
+                "Provision tenant: associate admin with system party";
+            service::account_party_service ap_svc(tenant_ctx);
+            ap_svc.save_account_party(ap);
+            BOOST_LOG_SEV(bootstrap_handler_lg(), info)
+                << "Associated " << req->principal
+                << " with system party " << system_party_id_str;
 
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;

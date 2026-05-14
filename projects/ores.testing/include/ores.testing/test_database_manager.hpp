@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/service/tenant_context.hpp"
 
 namespace ores::testing {
 
@@ -118,10 +119,10 @@ private:
     static std::string get_test_tenant_id_env();
 
     /**
-     * @brief System tenant ID constant (max UUID per RFC 9562).
+     * @brief System tenant ID constant (canonical source: tenant_context).
      */
     static constexpr auto system_tenant_id =
-        "ffffffff-ffff-ffff-ffff-ffffffffffff";
+        ores::database::service::tenant_context::system_tenant_id;
 };
 
 }

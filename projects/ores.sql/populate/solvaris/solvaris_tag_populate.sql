@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Slovaris Tags
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Tags ---'
+\qecho '--- Data Quality Slovaris Tags ---'
 
 select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Solvaris Countries',
@@ -55,8 +56,8 @@ select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'ores_dq_datasets' as entity, count(*) as count
 from ores_dq_datasets_tbl
@@ -64,3 +65,4 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'ores_dq_tags_artefact', count(*)
 from ores_dq_tags_artefact_tbl;
+\o

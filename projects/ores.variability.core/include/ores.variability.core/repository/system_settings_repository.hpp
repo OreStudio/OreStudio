@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <unordered_map>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -88,6 +89,15 @@ public:
     std::vector<domain::system_setting> read_all(context ctx,
         const std::string& name);
     /**@}*/
+
+    /**
+     * @brief Reads active settings for a tenant via a SECURITY DEFINER function.
+     *
+     * Returns a name→value map by calling ores_variability_get_system_settings_fn.
+     * Used by service contexts that hold no direct SELECT grant on the table.
+     */
+    std::unordered_map<std::string, std::string>
+    read_for_tenant(context ctx, const std::string& tenant_id);
 
     /**
      * @brief Logically deletes a setting by closing its temporal validity.

@@ -26,12 +26,13 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
+\o /dev/null
 
 -- =============================================================================
 -- Cryptocurrency Dataset Dependencies
 -- =============================================================================
 
-\echo '--- Cryptocurrency Dataset Dependencies ---'
+\qecho '--- Cryptocurrency Dataset Dependencies ---'
 
 select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'crypto.large',
@@ -44,4 +45,4 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'assets.crypto_icons',
     'visual_assets'
 );
-
+\o

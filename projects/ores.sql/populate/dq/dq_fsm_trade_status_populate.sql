@@ -55,7 +55,7 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     if found then
-        raise notice 'Trade status machine already exists (%), skipping.', v_machine_id;
+        raise debug 'Trade status machine already exists (%), skipping.', v_machine_id;
         return;
     end if;
 
@@ -72,7 +72,7 @@ begin
         current_user, 'system.initial_load', 'Seed trade_status FSM machine'
     );
 
-    raise notice 'Created trade_status machine: %', v_machine_id;
+    raise debug 'Created trade_status machine: %', v_machine_id;
 
     -- -------------------------------------------------------------------------
     -- States
@@ -100,7 +100,7 @@ begin
          v_machine_id, 'cancelled', 0, 1,
          current_user, 'system.initial_load', 'Seed trade_status state: cancelled');
 
-    raise notice 'Created 4 trade_status states.';
+    raise debug 'Created 4 trade_status states.';
 
     -- -------------------------------------------------------------------------
     -- Transitions (5 total)
@@ -131,7 +131,7 @@ begin
          v_machine_id, v_state_live, v_state_cancelled, 'cancel_live', null,
          current_user, 'system.initial_load', 'live -> cancelled');
 
-    raise notice 'Created 5 trade_status transitions.';
+    raise debug 'Created 5 trade_status transitions.';
 end;
 $$;
 

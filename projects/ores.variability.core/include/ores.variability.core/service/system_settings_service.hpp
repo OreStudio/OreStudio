@@ -39,7 +39,7 @@ namespace ores::variability::service {
  * (get_bool, get_int, get_string, get_json) that return compile-time defaults
  * from the registry when a setting is absent from the DB.
  */
-class ORES_VARIABILITY_CORE_EXPORT  {
+class ORES_VARIABILITY_CORE_EXPORT system_settings_service {
 private:
     inline static std::string_view logger_name =
         "ores.variability.service.system_settings_service";

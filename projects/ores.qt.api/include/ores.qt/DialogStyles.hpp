@@ -21,7 +21,6 @@
 #define ORES_QT_DIALOG_STYLES_HPP
 
 #include <QString>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

@@ -22,7 +22,6 @@
 #include <QList>
 #include <QString>
 #include <QtPlugin>
-#include "ores.qt/export.hpp"
 #include "ores.qt/plugin_context.hpp"
 
 class QMenu;

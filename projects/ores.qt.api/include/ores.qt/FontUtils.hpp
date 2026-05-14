@@ -22,7 +22,6 @@
 
 #include <QFont>
 #include <QString>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

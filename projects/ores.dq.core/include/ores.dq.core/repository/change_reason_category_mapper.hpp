@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_MAPPER_HPP
 
 #include "ores.dq.api/domain/change_reason_category.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/change_reason_category_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

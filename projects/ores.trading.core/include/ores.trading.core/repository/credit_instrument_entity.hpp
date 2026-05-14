@@ -24,7 +24,6 @@
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
-#include "ores.trading.core/export.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::trading::repository {

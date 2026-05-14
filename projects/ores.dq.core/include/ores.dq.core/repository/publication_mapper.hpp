@@ -23,7 +23,6 @@
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/publication.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/publication_entity.hpp"
 
 namespace ores::dq::repository {

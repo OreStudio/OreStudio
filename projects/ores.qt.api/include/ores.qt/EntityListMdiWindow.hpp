@@ -31,7 +31,6 @@
 #include <QTableView>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

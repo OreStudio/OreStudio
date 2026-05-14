@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_NATURE_DIMENSION_MAPPER_HPP
 
 #include "ores.dq.api/domain/nature_dimension.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/nature_dimension_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

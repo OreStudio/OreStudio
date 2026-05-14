@@ -25,7 +25,6 @@
 #include <QVector>
 #include <QString>
 #include <QStringList>
-#include "ores.qt/export.hpp"
 
 class QRadioButton;
 class QComboBox;

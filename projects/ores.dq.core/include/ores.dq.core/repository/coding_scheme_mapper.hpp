@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_MAPPER_HPP
 
 #include "ores.dq.api/domain/coding_scheme.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/coding_scheme_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

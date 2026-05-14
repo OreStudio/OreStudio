@@ -20,7 +20,6 @@
 #ifndef ORES_QT_MDI_UTILS_HPP
 #define ORES_QT_MDI_UTILS_HPP
 
-#include "ores.qt/export.hpp"
 
 class QWidget;
 

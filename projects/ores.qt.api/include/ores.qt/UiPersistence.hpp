@@ -22,7 +22,6 @@
 
 #include <QSize>
 #include <QString>
-#include "ores.qt/export.hpp"
 
 class QWidget;
 class QSplitter;

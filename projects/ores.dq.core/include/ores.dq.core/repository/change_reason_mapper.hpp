@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_MAPPER_HPP
 
 #include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/change_reason_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

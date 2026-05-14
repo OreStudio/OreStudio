@@ -28,7 +28,6 @@
 #include <QString>
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

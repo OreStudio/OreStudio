@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_FSM_STATE_MAPPER_HPP
 
 #include "ores.dq.api/domain/fsm_state.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

@@ -21,7 +21,6 @@
 #define ORES_DQ_CORE_REPOSITORY_CATALOG_MAPPER_HPP
 
 #include "ores.dq.api/domain/catalog.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/catalog_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

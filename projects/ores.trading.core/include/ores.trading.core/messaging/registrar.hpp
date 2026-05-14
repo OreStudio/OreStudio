@@ -27,7 +27,6 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 

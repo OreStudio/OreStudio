@@ -29,7 +29,6 @@
 #include <QSize>
 #include <QTimer>
 #include <QWidget>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

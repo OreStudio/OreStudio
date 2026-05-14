@@ -22,7 +22,6 @@
 #include <memory>
 #include <string>
 #include <QString>
-#include "ores.qt/export.hpp"
 
 class QMainWindow;
 class QMdiArea;

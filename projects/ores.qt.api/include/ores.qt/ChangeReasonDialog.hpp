@@ -28,7 +28,6 @@
 #include <QDialogButtonBox>
 #include <vector>
 #include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

@@ -54,7 +54,7 @@ target_link_libraries(${lib_target_name}
         ores.storage.lib
         ores.trading.api.lib
         ores.utility.lib
-        ores.workflow.lib
+        ores.workflow.core.lib
         ores.security.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx

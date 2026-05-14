@@ -64,7 +64,7 @@ target_link_libraries(${lib_target_name}
         ores.compute.api.lib
         ores.scheduler.api.lib
         ores.reporting.api.lib
-        ores.workflow.lib
+        ores.workflow.core.lib
         ores.ore.lib
         ores.ore.api.lib
         ores.controller.api.lib

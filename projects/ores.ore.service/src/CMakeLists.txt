@@ -48,7 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.ore.lib
         ores.ore.api.lib
         ores.storage.lib
-        ores.workflow.lib
+        ores.workflow.core.lib
         ores.iam.client.lib
         ores.refdata.api.lib
         ores.trading.api.lib

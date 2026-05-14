@@ -45,6 +45,7 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
     r.created_by = v.created_by;
     r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
+    r.materialised_steps_json = v.materialised_steps_json;
     if (v.completed_at)
         r.completed_at = timestamp_to_timepoint(*v.completed_at);
     if (v.last_event_at)
@@ -85,6 +86,7 @@ workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     r.created_by = v.created_by;
     r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
+    r.materialised_steps_json = v.materialised_steps_json;
     if (v.completed_at)
         r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
     if (v.last_event_at)

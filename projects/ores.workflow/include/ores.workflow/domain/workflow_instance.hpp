@@ -91,6 +91,16 @@ struct workflow_instance final {
     int step_count = 0;
 
     /**
+     * @brief JSON snapshot of the step sequence built at instance start.
+     *
+     * Array of {name, command_subject, compensation_subject} objects.
+     * Persisted so that a non-deterministic build_steps is never re-invoked
+     * for an in-flight instance after a service restart.
+     * Empty string is invalid; the engine throws on recovery if blank.
+     */
+    std::string materialised_steps_json;
+
+    /**
      * @brief Timestamp when the workflow reached a terminal state.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;

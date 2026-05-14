@@ -60,157 +60,159 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
         "Creates the party record, IAM account, and links them together. "
         "Compensates in reverse order on failure.";
 
-    // ----------------------------------------------------------------
-    // Step 0: save party (refdata)
-    // ----------------------------------------------------------------
-    {
-        workflow_step_def s;
-        s.name = "save_party";
-        s.description = "Create party record in the reference data service.";
-        s.command_subject = "refdata.v1.parties.save";
-        s.compensation_subject = "refdata.v1.parties.delete";
+    def.build_steps = [](const std::string& /*request_json*/,
+        const std::string& /*tenant_id*/,
+        const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
 
-        s.build_command = [](const std::string& request_json,
-            const std::vector<std::string>&) -> std::string {
+        std::vector<workflow_step_def> steps;
 
-            auto wr = rfl::json::read<
-                messaging::provision_party_workflow_request>(request_json);
-            if (!wr) return "{}";
-            const auto& r = *wr;
+        // ----------------------------------------------------------------
+        // Step 0: save party (refdata)
+        // ----------------------------------------------------------------
+        {
+            workflow_step_def s;
+            s.name = "save_party";
+            s.description = "Create party record in the reference data service.";
+            s.command_subject = "refdata.v1.parties.save";
+            s.compensation_subject = "refdata.v1.parties.delete";
 
-            ores::refdata::domain::party p;
-            p.id = boost::lexical_cast<boost::uuids::uuid>(r.party_id);
-            p.full_name = r.full_name;
-            p.short_code = r.short_code;
-            p.party_category = r.party_category;
-            p.party_type = r.party_type;
-            p.business_center_code = r.business_center_code;
-            if (r.parent_party_id)
-                p.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(
-                    *r.parent_party_id);
-            p.status = r.status;
-            p.change_commentary = "Provisioned by workflow";
-            p.recorded_at = std::chrono::system_clock::now();
+            s.build_command = [](const std::string& request_json,
+                const std::vector<std::string>&) -> std::string {
 
-            return rfl::json::write(
-                ores::refdata::messaging::save_party_request{.data = std::move(p)});
-        };
+                auto wr = rfl::json::read<
+                    messaging::provision_party_workflow_request>(request_json);
+                if (!wr) return "{}";
+                const auto& r = *wr;
 
-        // Compensation: build delete_party_request from the original command.
-        // The command_json is a save_party_request; we parse party.id from it.
-        s.build_compensation = [](const std::string& cmd_json,
-            const std::string&) -> std::string {
+                ores::refdata::domain::party p;
+                p.id = boost::lexical_cast<boost::uuids::uuid>(r.party_id);
+                p.full_name = r.full_name;
+                p.short_code = r.short_code;
+                p.party_category = r.party_category;
+                p.party_type = r.party_type;
+                p.business_center_code = r.business_center_code;
+                if (r.parent_party_id)
+                    p.parent_party_id = boost::lexical_cast<boost::uuids::uuid>(
+                        *r.parent_party_id);
+                p.status = r.status;
+                p.change_commentary = "Provisioned by workflow";
+                p.recorded_at = std::chrono::system_clock::now();
 
-            auto cr = rfl::json::read<
-                ores::refdata::messaging::save_party_request>(cmd_json);
-            if (!cr) return "{}";
-            return rfl::json::write(
-                ores::refdata::messaging::delete_party_request{
-                    .ids = {boost::uuids::to_string(cr->data.id)}});
-        };
+                return rfl::json::write(
+                    ores::refdata::messaging::save_party_request{.data = std::move(p)});
+            };
 
-        def.steps.push_back(std::move(s));
-    }
+            s.build_compensation = [](const std::string& cmd_json,
+                const std::string&) -> std::string {
 
-    // ----------------------------------------------------------------
-    // Step 1: save account (IAM)
-    // ----------------------------------------------------------------
-    {
-        workflow_step_def s;
-        s.name = "save_account";
-        s.description = "Create IAM account for the party's principal.";
-        s.command_subject = "iam.v1.accounts.save";
-        s.compensation_subject = "iam.v1.accounts.delete";
+                auto cr = rfl::json::read<
+                    ores::refdata::messaging::save_party_request>(cmd_json);
+                if (!cr) return "{}";
+                return rfl::json::write(
+                    ores::refdata::messaging::delete_party_request{
+                        .ids = {boost::uuids::to_string(cr->data.id)}});
+            };
 
-        s.build_command = [](const std::string& request_json,
-            const std::vector<std::string>&) -> std::string {
+            steps.push_back(std::move(s));
+        }
 
-            auto wr = rfl::json::read<
-                messaging::provision_party_workflow_request>(request_json);
-            if (!wr) return "{}";
-            const auto& r = *wr;
+        // ----------------------------------------------------------------
+        // Step 1: save account (IAM)
+        // ----------------------------------------------------------------
+        {
+            workflow_step_def s;
+            s.name = "save_account";
+            s.description = "Create IAM account for the party's principal.";
+            s.command_subject = "iam.v1.accounts.save";
+            s.compensation_subject = "iam.v1.accounts.delete";
 
-            ores::iam::messaging::save_account_request req{
-                .principal   = r.principal,
-                .password    = r.password,
-                .totp_secret = r.totp_secret,
-                .email       = r.email,
-                .account_type = r.account_type};
-            return rfl::json::write(req);
-        };
+            s.build_command = [](const std::string& request_json,
+                const std::vector<std::string>&) -> std::string {
 
-        // Compensation: build delete_account_request from the step result.
-        // prev[1] (save_account_response) carries account_id.
-        s.build_compensation = [](const std::string&,
-            const std::string& result_json) -> std::string {
+                auto wr = rfl::json::read<
+                    messaging::provision_party_workflow_request>(request_json);
+                if (!wr) return "{}";
+                const auto& r = *wr;
 
-            auto ar = rfl::json::read<
-                ores::iam::messaging::save_account_response>(result_json);
-            if (!ar || ar->account_id.empty()) return "{}";
-            return rfl::json::write(
-                ores::iam::messaging::delete_account_request{
-                    .account_id = ar->account_id});
-        };
+                ores::iam::messaging::save_account_request req{
+                    .principal   = r.principal,
+                    .password    = r.password,
+                    .totp_secret = r.totp_secret,
+                    .email       = r.email,
+                    .account_type = r.account_type};
+                return rfl::json::write(req);
+            };
 
-        def.steps.push_back(std::move(s));
-    }
+            s.build_compensation = [](const std::string&,
+                const std::string& result_json) -> std::string {
 
-    // ----------------------------------------------------------------
-    // Step 2: link account to party (IAM)
-    // ----------------------------------------------------------------
-    {
-        workflow_step_def s;
-        s.name = "link_account_party";
-        s.description = "Link the IAM account to the party record.";
-        s.command_subject = "iam.v1.account-parties.save";
-        s.compensation_subject = "iam.v1.account-parties.delete";
+                auto ar = rfl::json::read<
+                    ores::iam::messaging::save_account_response>(result_json);
+                if (!ar || ar->account_id.empty()) return "{}";
+                return rfl::json::write(
+                    ores::iam::messaging::delete_account_request{
+                        .account_id = ar->account_id});
+            };
 
-        // previous_results[0] = save_party_response   (step 0)
-        // previous_results[1] = save_account_response (step 1) → account_id
-        s.build_command = [](const std::string& request_json,
-            const std::vector<std::string>& prev) -> std::string {
+            steps.push_back(std::move(s));
+        }
 
-            if (prev.size() < 2) return "{}";
+        // ----------------------------------------------------------------
+        // Step 2: link account to party (IAM)
+        // ----------------------------------------------------------------
+        {
+            workflow_step_def s;
+            s.name = "link_account_party";
+            s.description = "Link the IAM account to the party record.";
+            s.command_subject = "iam.v1.account-parties.save";
+            s.compensation_subject = "iam.v1.account-parties.delete";
 
-            auto wr = rfl::json::read<
-                messaging::provision_party_workflow_request>(request_json);
-            if (!wr) return "{}";
+            s.build_command = [](const std::string& request_json,
+                const std::vector<std::string>& prev) -> std::string {
 
-            auto ar = rfl::json::read<
-                ores::iam::messaging::save_account_response>(prev[1]);
-            if (!ar || ar->account_id.empty()) return "{}";
+                if (prev.size() < 2) return "{}";
 
-            ores::iam::domain::account_party link;
-            link.account_id = boost::lexical_cast<boost::uuids::uuid>(
-                ar->account_id);
-            link.party_id = boost::lexical_cast<boost::uuids::uuid>(
-                wr->party_id);
-            link.change_commentary = "Provisioned by workflow";
+                auto wr = rfl::json::read<
+                    messaging::provision_party_workflow_request>(request_json);
+                if (!wr) return "{}";
 
-            return rfl::json::write(
-                ores::iam::messaging::save_account_party_request{
-                    .account_parties = {std::move(link)}});
-        };
+                auto ar = rfl::json::read<
+                    ores::iam::messaging::save_account_response>(prev[1]);
+                if (!ar || ar->account_id.empty()) return "{}";
 
-        // Compensation: build delete_account_party_request from command_json.
-        s.build_compensation = [](const std::string& cmd_json,
-            const std::string&) -> std::string {
+                ores::iam::domain::account_party link;
+                link.account_id = boost::lexical_cast<boost::uuids::uuid>(
+                    ar->account_id);
+                link.party_id = boost::lexical_cast<boost::uuids::uuid>(
+                    wr->party_id);
+                link.change_commentary = "Provisioned by workflow";
 
-            auto cr = rfl::json::read<
-                ores::iam::messaging::save_account_party_request>(cmd_json);
-            if (!cr || cr->account_parties.empty()) return "{}";
-            const auto& ap = cr->account_parties.front();
+                return rfl::json::write(
+                    ores::iam::messaging::save_account_party_request{
+                        .account_parties = {std::move(link)}});
+            };
 
-            using key_t = ores::iam::messaging::account_party_key;
-            return rfl::json::write(
-                ores::iam::messaging::delete_account_party_request{
-                    .keys = {key_t{
-                        .account_id = boost::uuids::to_string(ap.account_id),
-                        .party_id   = boost::uuids::to_string(ap.party_id)}}});
-        };
+            s.build_compensation = [](const std::string& cmd_json,
+                const std::string&) -> std::string {
 
-        def.steps.push_back(std::move(s));
-    }
+                auto cr = rfl::json::read<
+                    ores::iam::messaging::save_account_party_request>(cmd_json);
+                if (!cr || cr->account_parties.empty()) return "{}";
+                const auto& ap = cr->account_parties.front();
+
+                using key_t = ores::iam::messaging::account_party_key;
+                return rfl::json::write(
+                    ores::iam::messaging::delete_account_party_request{
+                        .keys = {key_t{
+                            .account_id = boost::uuids::to_string(ap.account_id),
+                            .party_id   = boost::uuids::to_string(ap.party_id)}}});
+            };
+
+            steps.push_back(std::move(s));
+        }
+
+        return steps;
+    };
 
     registry.register_definition(std::move(def));
 }

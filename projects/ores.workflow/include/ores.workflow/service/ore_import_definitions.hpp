@@ -52,53 +52,59 @@ inline void register_ore_import_workflow(workflow_registry& registry) {
         "parses XML, maps to domain entities, and persists all "
         "currencies, portfolios, books, and trades.";
 
-    // ----------------------------------------------------------------
-    // Step 0: execute the full ORE import
-    // ----------------------------------------------------------------
-    {
-        workflow_step_def s;
-        s.name = "ore_import_execute";
-        s.description = "Fetch tarball from storage, parse ORE XML, map to "
-            "domain entities, and persist all to repositories.";
-        s.command_subject = std::string(
-            ores::ore::messaging::ore_import_execute_request::nats_subject);
-        s.compensation_subject = std::string(
-            ores::ore::messaging::ore_import_rollback_request::nats_subject);
+    def.build_steps = [](const std::string& /*request_json*/,
+        const std::string& /*tenant_id*/,
+        const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
 
-        // The request_json IS already an ore_import_execute_request — pass it through.
-        s.build_command = [](const std::string& request_json,
-            const std::vector<std::string>&) -> std::string {
-            return request_json;
-        };
+        std::vector<workflow_step_def> steps;
 
-        // Build rollback from the execute result stored in response_json.
-        // bearer_token and correlation_id come from the original command_json.
-        s.build_compensation = [](const std::string& cmd_json,
-            const std::string& result_json) -> std::string {
+        // ----------------------------------------------------------------
+        // Step 0: execute the full ORE import
+        // ----------------------------------------------------------------
+        {
+            workflow_step_def s;
+            s.name = "ore_import_execute";
+            s.description = "Fetch tarball from storage, parse ORE XML, map to "
+                "domain entities, and persist all to repositories.";
+            s.command_subject = std::string(
+                ores::ore::messaging::ore_import_execute_request::nats_subject);
+            s.compensation_subject = std::string(
+                ores::ore::messaging::ore_import_rollback_request::nats_subject);
 
-            using ores::ore::messaging::ore_import_execute_request;
-            using ores::ore::messaging::ore_import_execute_result;
-            using ores::ore::messaging::ore_import_rollback_request;
+            s.build_command = [](const std::string& request_json,
+                const std::vector<std::string>&) -> std::string {
+                return request_json;
+            };
 
-            auto cmd = rfl::json::read<ore_import_execute_request>(cmd_json);
-            auto res = rfl::json::read<ore_import_execute_result>(result_json);
+            s.build_compensation = [](const std::string& cmd_json,
+                const std::string& result_json) -> std::string {
 
-            ore_import_rollback_request rollback;
-            if (cmd) {
-                rollback.correlation_id = cmd->correlation_id;
-                rollback.bearer_token   = cmd->bearer_token;
-            }
-            if (res) {
-                rollback.saved_currency_iso_codes = res->saved_currency_iso_codes;
-                rollback.saved_portfolio_ids      = res->saved_portfolio_ids;
-                rollback.saved_book_ids           = res->saved_book_ids;
-                rollback.saved_trade_ids          = res->saved_trade_ids;
-            }
-            return rfl::json::write(rollback);
-        };
+                using ores::ore::messaging::ore_import_execute_request;
+                using ores::ore::messaging::ore_import_execute_result;
+                using ores::ore::messaging::ore_import_rollback_request;
 
-        def.steps.push_back(std::move(s));
-    }
+                auto cmd = rfl::json::read<ore_import_execute_request>(cmd_json);
+                auto res = rfl::json::read<ore_import_execute_result>(result_json);
+
+                ore_import_rollback_request rollback;
+                if (cmd) {
+                    rollback.correlation_id = cmd->correlation_id;
+                    rollback.bearer_token   = cmd->bearer_token;
+                }
+                if (res) {
+                    rollback.saved_currency_iso_codes = res->saved_currency_iso_codes;
+                    rollback.saved_portfolio_ids      = res->saved_portfolio_ids;
+                    rollback.saved_book_ids           = res->saved_book_ids;
+                    rollback.saved_trade_ids          = res->saved_trade_ids;
+                }
+                return rfl::json::write(rollback);
+            };
+
+            steps.push_back(std::move(s));
+        }
+
+        return steps;
+    };
 
     registry.register_definition(std::move(def));
 }

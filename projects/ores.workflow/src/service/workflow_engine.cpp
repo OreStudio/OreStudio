@@ -34,6 +34,18 @@
 
 namespace ores::workflow::service {
 
+namespace {
+
+std::string materialise_steps_json(const std::vector<workflow_step_def>& steps) {
+    std::vector<materialised_step> ms;
+    ms.reserve(steps.size());
+    for (const auto& s : steps)
+        ms.push_back({s.name, s.command_subject, s.compensation_subject});
+    return rfl::json::write(ms);
+}
+
+} // namespace
+
 using namespace ores::logging;
 
 workflow_engine::workflow_engine(ores::nats::service::client& nats,
@@ -124,8 +136,27 @@ void workflow_engine::dispatch_next_step(
         return;
     }
 
+    // Rebuild the step list using the same inputs stored on the instance.
+    // For deterministic workflows this is equivalent to the original call;
+    // for non-deterministic ones the materialised_steps_json on the instance
+    // guards against a different list being produced.
+    const auto steps = def->build_steps(
+        instance.request_json,
+        boost::uuids::to_string(instance.tenant_id),
+        instance.correlation_id);
+
+    if (next_index >= static_cast<int>(steps.size())) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Step index " << next_index
+            << " out of range for type: " << instance.type;
+        instance_repo_.update_state(ctx_, instance.id,
+            instance_states_.require("failed"), "",
+            "Step index out of range: " + std::to_string(next_index));
+        return;
+    }
+
     // Build the command for the next step.
-    const auto& step_def = def->steps[next_index];
+    const auto& step_def = steps[next_index];
     const auto all_steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
 
     // Only include forward step results (step_index >= 0), not compensation.
@@ -195,6 +226,11 @@ void workflow_engine::begin_compensation(
         return;
     }
 
+    const auto step_defs = def->build_steps(
+        instance.request_json,
+        boost::uuids::to_string(instance.tenant_id),
+        instance.correlation_id);
+
     // Load completed forward steps in reverse order for compensation.
     auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
     std::ranges::reverse(steps);
@@ -208,10 +244,10 @@ void workflow_engine::begin_compensation(
             continue;
 
         const auto step_index = static_cast<std::size_t>(s.step_index);
-        if (step_index >= def->steps.size())
+        if (step_index >= step_defs.size())
             continue;
 
-        const auto& step_def = def->steps[step_index];
+        const auto& step_def = step_defs[step_index];
         if (step_def.compensation_subject.empty())
             continue;
 
@@ -390,10 +426,6 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << req.type;
         return;
     }
-    if (def->steps.empty()) {
-        BOOST_LOG_SEV(lg(), error) << "Workflow definition has no steps: " << req.type;
-        return;
-    }
 
     // Parse tenant_id.
     boost::uuids::uuid tenant_id;
@@ -401,6 +433,14 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         tenant_id = boost::lexical_cast<boost::uuids::uuid>(req.tenant_id);
     } catch (...) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant_id: " << req.tenant_id;
+        return;
+    }
+
+    // Build the step list for this specific instance.
+    const auto steps = def->build_steps(
+        req.request_json, req.tenant_id, req.correlation_id);
+    if (steps.empty()) {
+        BOOST_LOG_SEV(lg(), error) << "Workflow definition has no steps: " << req.type;
         return;
     }
 
@@ -425,13 +465,14 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.correlation_id = req.correlation_id;
     instance.created_by = ctx_.service_account();
     instance.current_step_index = 0;
-    instance.step_count = static_cast<int>(def->steps.size());
+    instance.step_count = static_cast<int>(steps.size());
+    instance.materialised_steps_json = materialise_steps_json(steps);
     instance.created_at = std::chrono::system_clock::now();
 
     instance_repo_.create(ctx_, instance);
 
     // Build and dispatch step 0.
-    const auto& step_def = def->steps[0];
+    const auto& step_def = steps[0];
     const auto cmd_json = step_def.build_command(req.request_json, {});
     const auto step_id = boost::uuids::random_generator()();
 
@@ -456,7 +497,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         << "Workflow STARTED:"
         << " type=" << req.type
         << " workflow=" << boost::uuids::to_string(instance_id)
-        << " step_count=" << def->steps.size()
+        << " step_count=" << steps.size()
         << " first_step=" << step_def.name
         << " subject=" << step_def.command_subject
         << " corr=" << req.correlation_id;
@@ -482,6 +523,12 @@ void workflow_engine::recover_in_progress() {
 
     for (const auto& instance : instances) {
         try {
+            if (instance.materialised_steps_json.empty()) {
+                throw std::logic_error(
+                    "Instance " + boost::uuids::to_string(instance.id) +
+                    " has empty materialised_steps_json; recreate the database.");
+            }
+
             // Find all in-progress steps for this instance and re-dispatch.
             const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
             for (const auto& s : steps) {

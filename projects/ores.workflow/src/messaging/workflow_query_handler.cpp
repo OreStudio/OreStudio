@@ -234,10 +234,15 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
             workflow_definition_summary ds;
             ds.type_name   = def.type_name;
             ds.description = def.description;
-            ds.step_count  = static_cast<int>(def.steps.size());
 
-            for (int i = 0; i < static_cast<int>(def.steps.size()); ++i) {
-                const auto& s = def.steps[static_cast<std::size_t>(i)];
+            // Call build_steps with empty inputs to get a representative step
+            // list for display. All currently registered workflows are
+            // deterministic so this produces the canonical step sequence.
+            const auto steps = def.build_steps("", "", "");
+            ds.step_count  = static_cast<int>(steps.size());
+
+            for (int i = 0; i < static_cast<int>(steps.size()); ++i) {
+                const auto& s = steps[static_cast<std::size_t>(i)];
                 workflow_step_definition_summary ss;
                 ss.step_index       = i;
                 ss.name             = s.name;

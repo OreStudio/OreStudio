@@ -86,11 +86,23 @@ struct ORES_WORKFLOW_EXPORT workflow_step_def  {
 };
 
 /**
+ * @brief Serialisable snapshot of one step's metadata for a specific instance.
+ *
+ * Persisted as JSON in workflow_instance.materialised_steps_json so that
+ * the step sequence is preserved across service restarts, even when
+ * build_steps is non-deterministic.
+ */
+struct materialised_step {
+    std::string name;
+    std::string command_subject;
+    std::string compensation_subject;
+};
+
+/**
  * @brief Declarative definition of a complete named workflow.
  *
- * Registered once at startup in the workflow_registry. The engine looks up
- * the definition by type_name to know the step sequence and how to build
- * each command.
+ * Registered once at startup in the workflow_registry. The engine calls
+ * build_steps once per instance at start time to determine the step sequence.
  */
 struct ORES_WORKFLOW_EXPORT workflow_definition  {
     /**
@@ -106,12 +118,21 @@ struct ORES_WORKFLOW_EXPORT workflow_definition  {
     std::string description;
 
     /**
-     * @brief Ordered sequence of step descriptors.
+     * @brief Builds the full step list for a specific workflow instance.
      *
-     * Steps execute in order from index 0. On success the engine advances
-     * to the next step. On failure the engine compensates in reverse order.
+     * Called once at instance start. The returned vector's size is persisted
+     * as workflow_instance.step_count and the step metadata as
+     * workflow_instance.materialised_steps_json. Never called again for
+     * that instance (restart reads from DB instead).
+     *
+     * @param request_json   The workflow instance's originating request JSON.
+     * @param tenant_id      UUID string of the tenant this instance runs for.
+     * @param correlation_id Distributed tracing correlation ID.
      */
-    std::vector<workflow_step_def> steps;
+    std::function<std::vector<workflow_step_def>(
+        const std::string& request_json,
+        const std::string& tenant_id,
+        const std::string& correlation_id)> build_steps;
 };
 
 }

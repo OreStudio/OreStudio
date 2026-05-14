@@ -31,11 +31,11 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.telemetry/messaging/telemetry_protocol.hpp"
-#include "ores.telemetry/messaging/nats_samples_protocol.hpp"
-#include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
+#include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
-#include "ores.telemetry/domain/telemetry_batch.hpp"
+#include "ores.telemetry.core/domain/telemetry_batch.hpp"
 
 namespace ores::telemetry::messaging {
 

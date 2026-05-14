@@ -43,7 +43,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
         ores.platform.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
         ores.utility.lib
     PRIVATE
         faker-cxx::faker-cxx

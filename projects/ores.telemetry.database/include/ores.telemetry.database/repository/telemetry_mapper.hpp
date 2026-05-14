@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_MAPPER_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_MAPPER_HPP
 
-#include "ores.telemetry/domain/telemetry_log_entry.hpp"
-#include "ores.telemetry/domain/telemetry_stats.hpp"
-#include "ores.telemetry/domain/nats_server_sample.hpp"
-#include "ores.telemetry/domain/nats_stream_sample.hpp"
-#include "ores.telemetry/domain/service_sample.hpp"
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_stats.hpp"
+#include "ores.telemetry.core/domain/nats_server_sample.hpp"
+#include "ores.telemetry.core/domain/nats_stream_sample.hpp"
+#include "ores.telemetry.core/domain/service_sample.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
 namespace ores::telemetry::database::repository {

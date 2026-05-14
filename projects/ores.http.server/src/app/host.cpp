@@ -21,7 +21,7 @@
 
 #include <cstdlib>
 #include <boost/exception/diagnostic_information.hpp>
-#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include "ores.http.server/app/application.hpp"

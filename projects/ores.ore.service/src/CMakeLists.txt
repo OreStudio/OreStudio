@@ -43,7 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
     PRIVATE
         ores.ore.core.lib
         ores.ore.api.lib

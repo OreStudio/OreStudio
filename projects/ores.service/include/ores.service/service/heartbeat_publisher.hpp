@@ -32,7 +32,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 
 namespace ores::service::service {
 

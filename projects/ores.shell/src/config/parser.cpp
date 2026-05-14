@@ -26,7 +26,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/logging_configuration.hpp"
-#include "ores.telemetry/exporting/telemetry_configuration.hpp"
+#include "ores.telemetry.core/exporting/telemetry_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace {

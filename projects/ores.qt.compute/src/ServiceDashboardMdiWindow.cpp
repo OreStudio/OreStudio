@@ -47,7 +47,7 @@
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.controller.api/messaging/service_instance_protocol.hpp"
 #include "ores.controller.api/messaging/service_definition_protocol.hpp"
 

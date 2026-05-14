@@ -31,7 +31,7 @@
 #include "ores.wt.service/service/application_context.hpp"
 #include "ores.wt.service/app/ore_application.hpp"
 #include "ores.wt.service/messaging/registrar.hpp"
-#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.platform/environment/environment.hpp"

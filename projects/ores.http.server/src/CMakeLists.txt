@@ -42,7 +42,7 @@ target_link_libraries(${lib_target_name}
         ores.http.core.lib
         ores.nats.lib
         ores.service.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
         ores.utility.lib
         ores.database.lib)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)

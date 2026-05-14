@@ -29,8 +29,8 @@
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/domain/resource.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/tenant_context.hpp"

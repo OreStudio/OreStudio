@@ -77,13 +77,13 @@ target_link_libraries(${lib_target_name}
         ores.workflow.core.lib
         ores.connections.lib
         ores.variability.api.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
         ores.controller.api.lib
         ores.security.lib
         Qt6::Charts)
 # Note: ores.nats, ores.eventing, ores.iam.api, ores.compute.api, ores.utility,
 # ores.platform, and Qt6 core modules come transitively from ores.qt.api.lib (PUBLIC)
-# Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
+# Note: Boost::process comes transitively through ores.telemetry.core.lib (PUBLIC)
 
 # ores.qt is an application-internal static library. It is linked statically
 # into ores.qt.exe and is not useful as a redistributable artifact. On Windows

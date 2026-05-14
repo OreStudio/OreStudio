@@ -19,7 +19,7 @@
  */
 #include "ores.telemetry.service/messaging/registrar.hpp"
 #include "telemetry_handler.hpp"
-#include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 
 namespace ores::telemetry::service::messaging {
 

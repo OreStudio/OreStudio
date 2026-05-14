@@ -42,7 +42,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
     PRIVATE
         Boost::boost)
 

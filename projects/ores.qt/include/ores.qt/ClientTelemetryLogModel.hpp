@@ -28,7 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 
 namespace ores::qt {
 

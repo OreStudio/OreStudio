@@ -1,0 +1,74 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_TELEMETRY_CORE_MESSAGING_TELEMETRY_PROTOCOL_HPP
+#define ORES_TELEMETRY_CORE_MESSAGING_TELEMETRY_PROTOCOL_HPP
+
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_query.hpp"
+
+namespace ores::telemetry::messaging {
+
+struct get_telemetry_logs_request {
+    using response_type = struct get_telemetry_logs_response;
+    static constexpr std::string_view nats_subject =
+        "telemetry.v1.logs.list";
+    domain::telemetry_query query;
+};
+
+struct get_telemetry_logs_response {
+    bool success = false;
+    std::string message;
+    std::vector<domain::telemetry_log_entry> entries;
+    std::uint64_t total_count = 0;
+};
+
+/**
+ * @brief A single log entry item for the fire-and-forget publish protocol.
+ *
+ * Uses primitive types only to avoid rfl serialisation issues with
+ * boost::uuids::uuid and std::chrono::time_point.
+ */
+struct publish_log_entry_item {
+    std::string level;
+    std::int64_t timestamp_ms = 0;
+    std::string component;
+    std::string message;
+};
+
+/**
+ * @brief Request to publish a batch of log entries (fire-and-forget).
+ *
+ * Published by wrapper nodes to ingest ORE engine logs into the telemetry
+ * store. No reply is expected.
+ */
+struct publish_log_entries_request {
+    static constexpr std::string_view nats_subject = "telemetry.v1.logs.publish";
+    std::string source_name;
+    std::string tag;
+    std::vector<publish_log_entry_item> entries;
+};
+
+}
+
+#endif

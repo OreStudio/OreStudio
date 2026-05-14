@@ -27,14 +27,14 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.telemetry/domain/telemetry_log_entry.hpp"
-#include "ores.telemetry/domain/telemetry_query.hpp"
-#include "ores.telemetry/domain/telemetry_stats.hpp"
-#include "ores.telemetry/domain/telemetry_batch.hpp"
-#include "ores.telemetry/domain/nats_server_sample.hpp"
-#include "ores.telemetry/domain/nats_stream_sample.hpp"
-#include "ores.telemetry/domain/nats_samples_query.hpp"
-#include "ores.telemetry/domain/service_sample.hpp"
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_query.hpp"
+#include "ores.telemetry.core/domain/telemetry_stats.hpp"
+#include "ores.telemetry.core/domain/telemetry_batch.hpp"
+#include "ores.telemetry.core/domain/nats_server_sample.hpp"
+#include "ores.telemetry.core/domain/nats_stream_sample.hpp"
+#include "ores.telemetry.core/domain/nats_samples_query.hpp"
+#include "ores.telemetry.core/domain/service_sample.hpp"
 #include "ores.telemetry.database/export.hpp"
 
 namespace ores::telemetry::database::repository {

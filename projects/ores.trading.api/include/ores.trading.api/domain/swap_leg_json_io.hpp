@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the swap_leg to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const swap_leg& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const swap_leg& v);
 
 }
 

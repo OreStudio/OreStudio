@@ -32,6 +32,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.core/service/app_service.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -49,7 +50,7 @@ using ores::service::messaging::decode;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class app_handler {
+class ORES_COMPUTE_CORE_EXPORT app_handler  {
 public:
     app_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

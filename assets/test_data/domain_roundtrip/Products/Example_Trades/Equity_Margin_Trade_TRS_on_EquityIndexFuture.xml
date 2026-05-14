@@ -1,0 +1,40 @@
+<Portfolio>
+  <Trade id="EqMarginSwap_STOXX">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>EquityMargin</LegType>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Equity</LegType>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

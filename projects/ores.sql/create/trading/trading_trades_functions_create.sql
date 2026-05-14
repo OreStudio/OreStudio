@@ -53,7 +53,7 @@ begin
     where b.parent_portfolio_id in (select pt.id from pt)
       and b.valid_to = ores_utility_infinity_timestamp_fn();
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 comment on function ores_trading_get_book_ids_by_portfolio_fn(uuid, uuid) is
 'Returns the UUIDs of all books belonging to any portfolio in the subtree
@@ -85,7 +85,7 @@ begin
           and t.valid_to = ores_utility_infinity_timestamp_fn()
         order by t.book_id, t.id;
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 comment on function ores_trading_get_trade_ids_by_books_fn(uuid, uuid[]) is
 'Returns the UUIDs of all active trades belonging to any of the supplied book
@@ -151,7 +151,7 @@ begin
 
     return;
 end;
-$$ language plpgsql stable security definer;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 comment on function ores_trading_get_book_ids_for_node_fn(uuid, uuid) is
 'Resolves a node_id (book, portfolio, or business unit) to the set of book

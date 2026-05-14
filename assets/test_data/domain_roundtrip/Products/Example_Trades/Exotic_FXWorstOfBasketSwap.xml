@@ -1,0 +1,43 @@
+<Portfolio>
+  <Trade id="Exotic_FX_WorstOfBasketSwap">
+    <TradeType>EquityWorstOfBasketSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityWorstOfBasketSwapData>
+      <LongShort>Long</LongShort>
+      <Currency>EUR</Currency>
+      <Quantity>1955000</Quantity>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>TR20H-USD-CAD</Name>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>TR20H-EUR-SEK</Name>
+        </Underlying>
+      </Underlyings>
+      <InitialPrices/>
+      <FloatingPeriodSchedule>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>6M</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </FloatingPeriodSchedule>
+      <FloatingPayDates>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>6M</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </FloatingPayDates>
+      <KnockOutLevels/>
+      <FixedTriggerLevels/>
+      <FixedRate>0</FixedRate>
+      <FloatingIndex>EUR-EURIBOR-3M</FloatingIndex>
+      <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+    </EquityWorstOfBasketSwapData>
+  </Trade>
+</Portfolio>

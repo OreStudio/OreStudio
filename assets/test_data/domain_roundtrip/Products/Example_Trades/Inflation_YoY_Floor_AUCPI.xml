@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="Inflation_YoY_Floor_AUCPI">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>YY</LegType>
+        <Currency>AUD</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-09-14</StartDate>
+            <EndDate>2032-09-13</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

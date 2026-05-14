@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.core/repository/host_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute hosts.
  */
-class host_service {
+class ORES_COMPUTE_CORE_EXPORT host_service  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.host_service";

@@ -169,12 +169,11 @@ bondData bond_instrument_mapper::reverse_bond_data(
 // Forward: Bond
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_bond(const trade& t) {
+trading::domain::bond_instrument bond_instrument_mapper::forward_bond(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Bond: " << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("Bond");
+    trading::domain::bond_instrument result = make_base("Bond");
     if (t.BondData)
-        map_bond_data(*t.BondData, result.instrument);
+        map_bond_data(*t.BondData, result);
     return result;
 }
 
@@ -182,14 +181,13 @@ bond_mapping_result bond_instrument_mapper::forward_bond(const trade& t) {
 // Forward: ForwardBond
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_forward_bond(
+trading::domain::bond_instrument bond_instrument_mapper::forward_forward_bond(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ForwardBond: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("ForwardBond");
+    trading::domain::bond_instrument result = make_base("ForwardBond");
     if (t.ForwardBondData)
-        map_bond_data(t.ForwardBondData->BondData, result.instrument);
+        map_bond_data(t.ForwardBondData->BondData, result);
     return result;
 }
 
@@ -197,14 +195,13 @@ bond_mapping_result bond_instrument_mapper::forward_forward_bond(
 // Forward: CallableBond
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_callable_bond(
+trading::domain::bond_instrument bond_instrument_mapper::forward_callable_bond(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableBond: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("CallableBond");
+    trading::domain::bond_instrument result = make_base("CallableBond");
     if (t.CallableBondData)
-        map_bond_data(t.CallableBondData->BondData, result.instrument);
+        map_bond_data(t.CallableBondData->BondData, result);
     return result;
 }
 
@@ -212,14 +209,13 @@ bond_mapping_result bond_instrument_mapper::forward_callable_bond(
 // Forward: ConvertibleBond
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_convertible_bond(
+trading::domain::bond_instrument bond_instrument_mapper::forward_convertible_bond(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ConvertibleBond: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("ConvertibleBond");
+    trading::domain::bond_instrument result = make_base("ConvertibleBond");
     if (t.ConvertibleBondData)
-        map_bond_data(t.ConvertibleBondData->BondData, result.instrument);
+        map_bond_data(t.ConvertibleBondData->BondData, result);
     return result;
 }
 
@@ -284,29 +280,28 @@ trade bond_instrument_mapper::reverse_convertible_bond(
 // Forward: BondOption
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_bond_option(
+trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondOption: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("BondOption");
+    trading::domain::bond_instrument result = make_base("BondOption");
     if (!t.BondOptionData) return result;
     const auto& d = *t.BondOptionData;
 
-    map_bond_data(d.BondData, result.instrument);
+    map_bond_data(d.BondData, result);
 
     // Option fields
     if (d.OptionData.OptionType)
-        result.instrument.option_type = std::string(*d.OptionData.OptionType);
+        result.option_type = std::string(*d.OptionData.OptionType);
     if (d.OptionData.exerciseDatesGroup &&
             d.OptionData.exerciseDatesGroup->ExerciseDates &&
             !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        result.instrument.option_expiry_date = std::string(
+        result.option_expiry_date = std::string(
             d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
     if (d.strikeGroup.Strike) {
         const std::string s(*d.strikeGroup.Strike);
         if (!s.empty())
-            result.instrument.option_strike = std::stod(s);
+            result.option_strike = std::stod(s);
     }
 
     return result;
@@ -316,27 +311,26 @@ bond_mapping_result bond_instrument_mapper::forward_bond_option(
 // Forward: BondTRS
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_bond_trs(const trade& t) {
+trading::domain::bond_instrument bond_instrument_mapper::forward_bond_trs(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondTRS: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("BondTRS");
+    trading::domain::bond_instrument result = make_base("BondTRS");
     if (!t.BondTRSData) return result;
     const auto& d = *t.BondTRSData;
 
-    map_bond_data(d.BondData, result.instrument);
+    map_bond_data(d.BondData, result);
 
-    result.instrument.trs_return_type = "TotalReturn";
+    result.trs_return_type = "TotalReturn";
 
     // Funding leg: capture index if floating, otherwise note fixed rate
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
         if (ld.legDataType->FloatingLegData)
-            result.instrument.trs_funding_leg_code =
+            result.trs_funding_leg_code =
                 std::string(ld.legDataType->FloatingLegData->Index);
         else if (ld.legDataType->FixedLegData &&
                 !ld.legDataType->FixedLegData->Rates.Rate.empty())
-            result.instrument.trs_funding_leg_code = "Fixed";
+            result.trs_funding_leg_code = "Fixed";
     }
 
     return result;
@@ -412,19 +406,18 @@ trade bond_instrument_mapper::reverse_bond_trs(
 // Forward: BondRepo
 // ---------------------------------------------------------------------------
 
-bond_mapping_result bond_instrument_mapper::forward_bond_repo(const trade& t) {
+trading::domain::bond_instrument bond_instrument_mapper::forward_bond_repo(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondRepo: "
                                << std::string(t.id);
-    bond_mapping_result result;
-    result.instrument = make_base("BondRepo");
+    trading::domain::bond_instrument result = make_base("BondRepo");
     if (!t.BondRepoData) return result;
     const auto& d = *t.BondRepoData;
-    map_bond_data(d.BondData, result.instrument);
+    map_bond_data(d.BondData, result);
     // Repo leg: capture payment frequency from leg type
     if (d.RepoData.LegData.LegType == legType::Floating) {
-        result.instrument.coupon_frequency_code = "Quarterly";
+        result.coupon_frequency_code = "Quarterly";
     } else {
-        result.instrument.coupon_frequency_code = "Maturity";
+        result.coupon_frequency_code = "Maturity";
     }
     return result;
 }

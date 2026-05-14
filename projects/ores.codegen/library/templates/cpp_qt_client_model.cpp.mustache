@@ -23,7 +23,7 @@ namespace {
 
 Client{{domain_entity.entity_pascal}}Model::Client{{domain_entity.entity_pascal}}Model(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_({{domain_entity.entity_snake}}_key_extractor),
@@ -68,12 +68,20 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{field}});
 {{/is_string}}
+{{#is_optional_string}}
+            return {{domain_entity.qt.item_var}}.{{field}}
+                ? QString::fromStdString(*{{domain_entity.qt.item_var}}.{{field}})
+                : QString{};
+{{/is_optional_string}}
 {{#is_uuid}}
             return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{field}}));
 {{/is_uuid}}
 {{#is_int}}
             return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{field}});
 {{/is_int}}
+{{#is_bool}}
+            return {{domain_entity.qt.item_var}}.{{field}} ? tr("true") : tr("false");
+{{/is_bool}}
 {{#is_timestamp}}
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{field}});
 {{/is_timestamp}}

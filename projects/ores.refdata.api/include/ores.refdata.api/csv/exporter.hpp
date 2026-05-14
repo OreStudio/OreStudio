@@ -23,6 +23,7 @@
 
 #include <vector>
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 
 namespace ores::refdata::csv {
@@ -30,7 +31,7 @@ namespace ores::refdata::csv {
 /**
  * @brief Exports domain objects to their CSV representation.
  */
-class exporter {
+class ORES_REFDATA_API_EXPORT exporter {
 private:
     inline static std::string_view logger_name = "ores.refdata.csv.exporter";
 

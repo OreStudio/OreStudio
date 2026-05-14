@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes RPA instruments to data storage.
  */
-class rpa_instrument_repository {
+class ORES_TRADING_CORE_EXPORT rpa_instrument_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.rpa_instrument_repository";
@@ -56,6 +57,9 @@ public:
     read_latest(context ctx, const std::string& instrument_id);
     std::vector<domain::rpa_instrument>
     read_all(context ctx, const std::string& instrument_id);
+
+    std::vector<domain::rpa_instrument>
+    read_latest(context ctx, const std::vector<std::string>& ids);
 
     void remove(context ctx, const std::string& instrument_id);
 };

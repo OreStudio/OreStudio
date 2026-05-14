@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the artefact_type object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const artefact_type& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const artefact_type& v);
 
 }
 

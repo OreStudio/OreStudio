@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes books to data storage.
  */
-class book_repository {
+class ORES_REFDATA_CORE_EXPORT book_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.book_repository";

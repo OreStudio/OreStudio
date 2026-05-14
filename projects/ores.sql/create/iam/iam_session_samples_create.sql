@@ -46,9 +46,7 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice '=========================================';
-        raise notice 'TimescaleDB detected - creating hypertable';
-        raise notice '=========================================';
+        raise notice 'TimescaleDB detected - creating hypertable (1-day chunks)';
 
         perform public.create_hypertable(
             'ores_iam_session_samples_tbl',
@@ -56,7 +54,6 @@ begin
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
-        raise notice 'Created hypertable with 1-day chunks';
 
         -- NOTE: Compression (columnstore) is intentionally NOT enabled on this
         -- table. TimescaleDB 2.16+ columnstore is incompatible with Row Level
@@ -72,18 +69,12 @@ begin
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );
-                raise notice 'Enabled retention policy (30 days)';
             else
                 raise notice 'TimescaleDB Apache license - retention policy skipped';
-                raise notice 'Set timescaledb.license = ''timescale'' for full features';
             end if;
         end;
 
-        raise notice 'TimescaleDB setup complete for ores_iam_session_samples_tbl table';
     else
-        raise notice '================================================';
-        raise notice 'TimescaleDB NOT available - using regular table';
-        raise notice '================================================';
-        raise notice 'Note: Manual cleanup of old sample data will be required';
+        raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;

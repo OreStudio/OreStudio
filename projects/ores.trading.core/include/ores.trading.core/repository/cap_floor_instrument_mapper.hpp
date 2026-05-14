@@ -23,13 +23,14 @@
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps cap_floor_instrument domain entities to data storage layer and vice-versa.
  */
-class cap_floor_instrument_mapper {
+class ORES_TRADING_CORE_EXPORT cap_floor_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.cap_floor_instrument_mapper";

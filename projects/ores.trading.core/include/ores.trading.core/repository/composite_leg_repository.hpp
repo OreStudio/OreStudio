@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes composite legs to data storage.
  */
-class composite_leg_repository {
+class ORES_TRADING_CORE_EXPORT composite_leg_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.composite_leg_repository";
@@ -58,6 +59,10 @@ public:
     read_all(context ctx, const std::string& id);
 
     std::uint32_t count_latest(context ctx);
+
+    std::vector<domain::composite_leg>
+    read_by_instruments_batch(
+        context ctx, const std::vector<std::string>& instrument_ids);
 
     void remove(context ctx, const std::string& id);
     void remove_by_instrument(context ctx, const std::string& instrument_id);

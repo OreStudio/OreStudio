@@ -35,13 +35,14 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.core/export.hpp"
 
 namespace ores::http_server::routes {
 
 /**
  * @brief Result of successful authorization check.
  */
-struct auth_result {
+struct ORES_HTTP_CORE_EXPORT auth_result {
     boost::uuids::uuid account_id;
     bool is_admin;
 };
@@ -87,7 +88,7 @@ struct auth_result {
  * - GET /api/v1/sessions/statistics - get_session_statistics_request
  * - GET /api/v1/sessions/active - get_active_sessions_request
  */
-class iam_routes final {
+class ORES_HTTP_CORE_EXPORT iam_routes final {
 public:
     iam_routes(database::context ctx,
         std::shared_ptr<variability::service::system_settings_service> system_flags,

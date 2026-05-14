@@ -13,31 +13,20 @@
 # details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51
-# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(name "ores.workflow.api")
-set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_library(${lib_target_name} INTERFACE)
 
-set(lib_files ${files})
-add_library(${lib_target_name} ${lib_files})
-set_target_properties(${lib_target_name} PROPERTIES
-    OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-
-target_include_directories(${lib_target_name} PUBLIC
+target_include_directories(${lib_target_name} INTERFACE
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
-    PRIVATE
+    INTERFACE
         ores.utility.lib)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name})

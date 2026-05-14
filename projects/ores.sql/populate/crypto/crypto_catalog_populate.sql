@@ -25,15 +25,17 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 
 -- =============================================================================
 -- Cryptocurrency Catalog
 -- =============================================================================
 
-\echo '--- Cryptocurrency Catalog ---'
+\qecho '--- Cryptocurrency Catalog ---'
 
 select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Cryptocurrency',
     'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
     'Digital Assets Team'
 );
+\o

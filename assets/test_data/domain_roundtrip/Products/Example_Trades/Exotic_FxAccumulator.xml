@@ -1,0 +1,37 @@
+<Portfolio>
+  <Trade id="FX_Accumulator-AKO">
+    <TradeType>FxAccumulator</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxAccumulatorData>
+      <Currency>JPY</Currency>
+      <FixingAmount>350000</FixingAmount>
+      <Strike>122</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-JPY</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2026-01-12</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2026-01-12</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds/>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>126</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxAccumulatorData>
+  </Trade>
+</Portfolio>

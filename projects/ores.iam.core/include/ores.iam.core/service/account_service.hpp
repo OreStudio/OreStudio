@@ -30,13 +30,14 @@
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
 /**
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
-class account_service {
+class ORES_IAM_CORE_EXPORT account_service {
 private:
    inline static std::string_view logger_name =
         "ores.iam.service.account_service";

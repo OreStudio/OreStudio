@@ -34,6 +34,7 @@
 #include "ores.controller.core/repository/service_instance_repository.hpp"
 #include "ores.controller.core/repository/service_event_repository.hpp"
 #include "ores.controller.core/service/process_supervisor.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::messaging {
 
@@ -52,7 +53,7 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class service_instance_handler {
+class ORES_CONTROLLER_CORE_EXPORT service_instance_handler {
 public:
     service_instance_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

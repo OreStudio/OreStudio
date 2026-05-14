@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- GLEIF LEI Dataset Dependencies
 -- =============================================================================
 
-\echo '--- GLEIF LEI Dataset Dependencies ---'
+\qecho '--- GLEIF LEI Dataset Dependencies ---'
 
 select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'gleif.lei_relationships.small',
@@ -150,4 +151,4 @@ select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'gleif.lei_bic',
     'bic_reference'
 );
-
+\o

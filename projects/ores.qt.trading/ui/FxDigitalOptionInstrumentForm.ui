@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FxDigitalOptionInstrumentForm</class>
+ <widget class="QWidget" name="FxDigitalOptionInstrumentForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>580</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="rootLayout">
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <item>
+    <widget class="QTabWidget" name="subTabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="economicsTab">
+      <attribute name="title">
+       <string>Economics</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="economicsLayout">
+       <item>
+        <widget class="QGroupBox" name="economicsGroup">
+         <property name="title">
+          <string>FX Digital Option Economics</string>
+         </property>
+         <layout class="QFormLayout" name="economicsFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelTradeTypeCode">
+            <property name="text"><string>Trade Type:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="tradeTypeCodeEdit">
+            <property name="readOnly"><bool>true</bool></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelForeignCurrency">
+            <property name="text"><string>Foreign Currency:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="OreCurrencyComboBox" name="foreignCurrencyCombo"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelDomesticCurrency">
+            <property name="text"><string>Domestic Currency:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="OreCurrencyComboBox" name="domesticCurrencyCombo"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelPayoffCurrency">
+            <property name="text"><string>Payoff Currency:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="OreCurrencyComboBox" name="payoffCurrencyCombo"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelPayoffAmount">
+            <property name="text"><string>Payoff Amount:</string></property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="OreDoubleSpinBox" name="payoffAmountSpinBox">
+            <property name="decimals"><number>2</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999999999.000000000000000</double></property>
+            <property name="singleStep"><double>1000.000000000000000</double></property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelOptionType">
+            <property name="text"><string>Option Type:</string></property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="optionTypeCombo"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="labelExpiryDate">
+            <property name="text"><string>Expiry Date:</string></property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="OreDateEdit" name="expiryDateEdit"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="labelLongShort">
+            <property name="text"><string>Long/Short:</string></property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="longShortCombo"/>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="labelStrike">
+            <property name="text"><string>Strike:</string></property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="OreDoubleSpinBox" name="strikeSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999.000000000000000</double></property>
+            <property name="singleStep"><double>0.001000000000000</double></property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="labelBarrierType">
+            <property name="text"><string>Barrier Type:</string></property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QComboBox" name="barrierTypeCombo"/>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="labelLowerBarrier">
+            <property name="text"><string>Lower Barrier:</string></property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="OreDoubleSpinBox" name="lowerBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999.000000000000000</double></property>
+            <property name="singleStep"><double>0.001000000000000</double></property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="labelUpperBarrier">
+            <property name="text"><string>Upper Barrier:</string></property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="OreDoubleSpinBox" name="upperBarrierSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999.000000000000000</double></property>
+            <property name="singleStep"><double>0.001000000000000</double></property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="labelDescription">
+            <property name="text"><string>Description:</string></property>
+           </widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>Enter a description (optional)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="economicsSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>20</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+ <customwidget>
+  <class>OreDoubleSpinBox</class>
+  <extends>QDoubleSpinBox</extends>
+  <header>ores.qt/OreDoubleSpinBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreDateEdit</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/OreDateEdit.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>OreCurrencyComboBox</class>
+  <extends>QComboBox</extends>
+  <header>ores.qt/OreCurrencyComboBox.hpp</header>
+ </customwidget>
+</customwidgets>
+<resources/>
+ <connections/>
+</ui>

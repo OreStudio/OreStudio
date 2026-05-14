@@ -34,7 +34,6 @@
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
@@ -254,61 +253,6 @@ struct get_credit_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::credit_instrument> history;
-};
-
-// ---- Equity instrument protocol ----
-
-struct get_equity_instruments_request {
-    using response_type = struct get_equity_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_instruments.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_equity_instruments_response {
-    std::vector<ores::trading::domain::equity_instrument> instruments;
-    int total_available_count = 0;
-    bool success = true;
-    std::string message;
-};
-
-struct save_equity_instrument_request {
-    using response_type = struct save_equity_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_instruments.save";
-    ores::trading::domain::equity_instrument data;
-};
-
-struct save_equity_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_equity_instrument_request {
-    using response_type = struct delete_equity_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_instruments.delete";
-    std::vector<std::string> ids;
-};
-
-struct delete_equity_instrument_response {
-    bool success = false;
-    std::string message;
-    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
-};
-
-struct get_equity_instrument_history_request {
-    using response_type = struct get_equity_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_instruments.history";
-    std::string id;
-};
-
-struct get_equity_instrument_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::trading::domain::equity_instrument> history;
 };
 
 // ---- Typed equity instrument protocol ----
@@ -1102,72 +1046,6 @@ struct get_rpa_instrument_history_response {
     std::string message;
     std::vector<ores::trading::domain::rpa_instrument> history;
 };
-
-// ---- Instrument-for-trade fetch ----
-
-/**
- * @brief Swap instrument with its legs, used in export/fetch results.
- *
- * The instrument field is a variant over all supported rates instrument types.
- */
-struct swap_export_result {
-    std::variant<
-        ores::trading::domain::fra_instrument,
-        ores::trading::domain::vanilla_swap_instrument,
-        ores::trading::domain::cap_floor_instrument,
-        ores::trading::domain::swaption_instrument,
-        ores::trading::domain::balance_guaranteed_swap_instrument,
-        ores::trading::domain::callable_swap_instrument,
-        ores::trading::domain::knock_out_swap_instrument,
-        ores::trading::domain::inflation_swap_instrument,
-        ores::trading::domain::rpa_instrument
-    > instrument;
-    std::vector<ores::trading::domain::swap_leg> legs;
-};
-
-/**
- * @brief FX instrument, used in export/fetch results.
- *
- * The instrument field is a variant over all supported FX instrument types.
- */
-struct fx_export_result {
-    std::variant<
-        ores::trading::domain::fx_forward_instrument,
-        ores::trading::domain::fx_vanilla_option_instrument,
-        ores::trading::domain::fx_barrier_option_instrument,
-        ores::trading::domain::fx_digital_option_instrument,
-        ores::trading::domain::fx_asian_forward_instrument,
-        ores::trading::domain::fx_accumulator_instrument,
-        ores::trading::domain::fx_variance_swap_instrument
-    > instrument;
-};
-
-/**
- * @brief Composite instrument with its constituent legs.
- */
-struct composite_export_result {
-    ores::trading::domain::composite_instrument instrument;
-    std::vector<ores::trading::domain::composite_leg> legs;
-};
-
-/**
- * @brief Discriminated union of all possible instrument representations.
- *
- * std::monostate indicates the trade has no linked instrument (or the family
- * is not recognised). Populated per-trade inside get_trades_response /
- * export_portfolio_response bundles.
- */
-using instrument_export_result = std::variant<
-    std::monostate,
-    swap_export_result,
-    fx_export_result,
-    ores::trading::domain::bond_instrument,
-    ores::trading::domain::credit_instrument,
-    ores::trading::domain::equity_instrument,
-    ores::trading::domain::commodity_instrument,
-    composite_export_result,
-    ores::trading::domain::scripted_instrument
->;
 
 }
 

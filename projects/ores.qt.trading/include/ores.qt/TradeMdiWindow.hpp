@@ -65,7 +65,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showTradeDetails(const trading::messaging::trade_export_item& bundle);
+    void showTradeDetails(const trading::domain::trade& trade);
     void addNewRequested();
     void tradeDeleted(const QString& code);
     void showTradeHistory(const trading::domain::trade& trade);

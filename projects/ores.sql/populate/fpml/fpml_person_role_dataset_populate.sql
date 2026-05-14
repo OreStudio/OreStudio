@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Person Role Dataset
 -- =============================================================================
 
-\echo '--- FpML Person Role Dataset ---'
+\qecho '--- FpML Person Role Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.person_role',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'person_roles'
 );
+\o

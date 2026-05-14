@@ -42,10 +42,13 @@ exception
 end;
 $$ language plpgsql stable;
 
--- Validate that a tenant_id exists and is active
--- Returns the tenant_id if valid, raises exception otherwise
--- If p_tenant_id is NULL or system tenant ID, uses the current session tenant_id
--- (System tenant ID is treated as placeholder for "use session tenant")
+-- Validate that a tenant_id exists and is active.
+-- Returns the tenant_id if valid, raises exception otherwise.
+-- If p_tenant_id is NULL or the system tenant ID, falls back to the session tenant.
+--
+-- SECURITY DEFINER: called from INSERT/UPDATE triggers in every service component.
+-- The triggering session user (e.g. ores_local1_refdata_service) must not need
+-- SELECT on ores_iam_tenants_tbl. Running as the DDL owner satisfies the read.
 create or replace function ores_iam_validate_tenant_fn(
     p_tenant_id uuid
 ) returns uuid as $$
@@ -83,7 +86,10 @@ begin
 
     return v_tenant_id;
 end;
-$$ language plpgsql stable;
+$$ language plpgsql
+    stable
+    security definer
+    set search_path = public, pg_temp;
 
 -- Lookup tenant by hostname (used during login)
 -- SECURITY DEFINER required to bypass RLS when looking up tenants before login

@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic business_unit.
  */
-domain::business_unit generate_synthetic_business_unit(
+ORES_REFDATA_API_EXPORT domain::business_unit generate_synthetic_business_unit(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic business_units.
  */
-std::vector<domain::business_unit>
+ORES_REFDATA_API_EXPORT std::vector<domain::business_unit>
 generate_synthetic_business_units(std::size_t n,
     utility::generation::generation_context& ctx);
 

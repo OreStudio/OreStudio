@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::filesystem {
 
 /**
  * @brief File was not found.
  */
-class file_not_found : public virtual std::exception,
+class ORES_PLATFORM_EXPORT file_not_found : public virtual std::exception,
                        public virtual boost::exception {
 public:
     file_not_found() = default;

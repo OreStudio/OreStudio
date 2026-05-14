@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts origin_dimensions to the table format.
  */
-std::string convert_to_table(const std::vector<origin_dimension>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<origin_dimension>& v);
 
 }
 

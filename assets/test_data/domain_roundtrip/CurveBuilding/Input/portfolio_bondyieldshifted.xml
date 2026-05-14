@@ -1,0 +1,52 @@
+<Portfolio>
+  <Trade id="ZeroBond_long">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>CPTY</IssuerId>
+      <SecurityId>SECURITY_1</SecurityId>
+      <SettlementDays>2</SettlementDays>
+      <IssueDate>20160203</IssueDate>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <EndDate>2052-03-01</EndDate>
+            <Tenor>32Y</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </BondData>
+  </Trade>
+  <Trade id="ZeroBond_short">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>CPTY</IssuerId>
+      <SecurityId>SECURITY_1</SecurityId>
+      <SettlementDays>2</SettlementDays>
+      <IssueDate>20160203</IssueDate>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <EndDate>2032-03-01</EndDate>
+            <Tenor>12Y</Tenor>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>

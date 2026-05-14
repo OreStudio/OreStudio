@@ -21,6 +21,7 @@
 #define ORES_TELEMETRY_EXPORTING_LOG_EXPORTER_HPP
 
 #include "ores.telemetry/domain/log_record.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -33,7 +34,7 @@ namespace ores::telemetry::exporting {
  * The interface is designed to be simple and allow for different export
  * strategies: synchronous, batched, or streaming.
  */
-class log_exporter {
+class ORES_TELEMETRY_EXPORT log_exporter {
 public:
     virtual ~log_exporter() = default;
 

@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets.api/domain/image.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::repository {
 
 /**
  * @brief Reads and writes images off of data storage.
  */
-class image_repository {
+class ORES_ASSETS_CORE_EXPORT image_repository {
 private:
     inline static std::string_view logger_name =
         "ores.assets.repository.image_repository";

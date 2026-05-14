@@ -34,7 +34,8 @@
  * This script is idempotent.
  */
 
-\echo '--- Service Accounts ---'
+\o /dev/null
+\qecho '--- Service Accounts ---'
 
 -- Capture service DB passwords from the environment so they are never stored
 -- in plaintext in committed SQL. The backtick syntax runs a shell command at
@@ -100,12 +101,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'test_dml_user',
     'test_dml@system.ores',
     'System service account for test DML operations'
-);
-
-select ores_iam_service_accounts_upsert_fn(
-    :'compute_wrapper_user',
-    'compute_wrapper@system.ores',
-    'System service account for Compute Wrapper worker service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
@@ -225,3 +220,4 @@ select 'Service Accounts' as entity, count(*) as count
 from ores_iam_accounts_tbl
 where account_type != 'user'
   and valid_to = ores_utility_infinity_timestamp_fn();
+\o

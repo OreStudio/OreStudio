@@ -25,6 +25,7 @@
 #include <QTabWidget>
 #include <QTimer>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/IInstrumentForm.hpp"
@@ -74,6 +75,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
+    void setImageCache(ImageCache* cache);
 
     /**
      * @brief Populate the dialog with a trade bundle (trade + instrument).
@@ -95,6 +97,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_ || instrumentHasChanges_;
     }
+    void showEvent(QShowEvent* event) override;
 
 signals:
     void tradeSaved(const QString& code);
@@ -120,13 +123,17 @@ private:
     void updateTradeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void connectFormSignals(IInstrumentForm* form);
     void activateForm(IInstrumentForm* form, const std::string& tradeTypeCode);
+    IInstrumentForm* findForm(trading::domain::product_type pt,
+                              const std::string& trade_type_code);
     void applyCreateTradeType();
 
     void saveTrade(const trading::domain::trade& trade);
 
     Ui::TradeDetailDialog* ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
     trading::domain::trade trade_;
     std::vector<refdata::domain::book> books_;
@@ -135,10 +142,13 @@ private:
     bool readOnly_{false};
     bool hasChanges_{false};
 
-    // All IInstrumentForm pages live in instrumentStack; formMap_ gives O(1)
-    // access by product_type without walking the stack at runtime.
+    // All IInstrumentForm pages live in instrumentStack. formMap_ gives O(1)
+    // access by product_type; typeFormMap_ gives O(1) access by trade_type_code
+    // for families that register dedicated per-sub-type forms.
+    // findForm() prefers typeFormMap_ over formMap_.
     InstrumentFormRegistry instrumentFormRegistry_;
     std::map<trading::domain::product_type, IInstrumentForm*> formMap_;
+    std::map<std::string, IInstrumentForm*> typeFormMap_;
     IInstrumentForm* activeForm_ = nullptr;
 
     // Trade-type reference data cached on connect for flag lookups.

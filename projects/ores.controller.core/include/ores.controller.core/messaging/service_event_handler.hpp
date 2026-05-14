@@ -30,6 +30,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.controller.api/messaging/service_event_protocol.hpp"
 #include "ores.controller.core/repository/service_event_repository.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::messaging {
 
@@ -47,7 +48,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class service_event_handler {
+class ORES_CONTROLLER_CORE_EXPORT service_event_handler {
 public:
     service_event_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

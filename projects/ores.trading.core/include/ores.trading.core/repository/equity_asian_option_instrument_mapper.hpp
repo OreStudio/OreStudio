@@ -24,13 +24,14 @@
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps equity_asian_option_instrument domain entities to data storage layer and vice-versa.
  */
-class equity_asian_option_instrument_mapper {
+class ORES_TRADING_CORE_EXPORT equity_asian_option_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.equity_asian_option_instrument_mapper";

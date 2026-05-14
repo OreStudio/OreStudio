@@ -1,0 +1,22 @@
+<Portfolio>
+  <Trade id="EquityOption_isin_ccy_mic">
+    <TradeType>EquityOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2025-03-10</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>GB0005405286</Name>
+      <Currency>HKD</Currency>
+      <Quantity>775</Quantity>
+      <Strike>50.000000</Strike>
+    </EquityOptionData>
+  </Trade>
+</Portfolio>

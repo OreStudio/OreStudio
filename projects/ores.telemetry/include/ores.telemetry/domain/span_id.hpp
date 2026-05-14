@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -39,7 +40,7 @@ namespace ores::telemetry::domain {
  * - Bytes 0-5: 48-bit timestamp in milliseconds
  * - Bytes 6-7: 16-bit sequence/random component
  */
-struct span_id final {
+struct ORES_TELEMETRY_EXPORT span_id final {
     /**
      * @brief The raw 64-bit identifier.
      */
@@ -71,7 +72,7 @@ struct span_id final {
 /**
  * @brief Stream output operator for span_id.
  */
-std::ostream& operator<<(std::ostream& os, const span_id& id);
+ORES_TELEMETRY_EXPORT std::ostream& operator<<(std::ostream& os, const span_id& id);
 
 }
 

@@ -45,6 +45,15 @@ class LegTypeController;
 class MonetaryNatureController;
 class RoundingTypeController;
 class PurposeTypeController;
+class ZeroConventionController;
+class DepositConventionController;
+class SwapConventionController;
+class OisConventionController;
+class FraConventionController;
+class IborIndexConventionController;
+class OvernightIndexConventionController;
+class FxConventionController;
+class CdsConventionController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -105,6 +114,15 @@ private:
     std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
     std::unique_ptr<RoundingTypeController>                roundingTypeController_;
     std::unique_ptr<PurposeTypeController>                 purposeTypeController_;
+    std::unique_ptr<ZeroConventionController>              zeroConventionController_;
+    std::unique_ptr<DepositConventionController>           depositConventionController_;
+    std::unique_ptr<SwapConventionController>              swapConventionController_;
+    std::unique_ptr<OisConventionController>               oisConventionController_;
+    std::unique_ptr<FraConventionController>               fraConventionController_;
+    std::unique_ptr<IborIndexConventionController>         iborIndexConventionController_;
+    std::unique_ptr<OvernightIndexConventionController>    overnightIndexConventionController_;
+    std::unique_ptr<FxConventionController>                fxConventionController_;
+    std::unique_ptr<CdsConventionController>               cdsConventionController_;
 };
 
 }

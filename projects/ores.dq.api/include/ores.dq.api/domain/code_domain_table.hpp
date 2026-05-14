@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts code_domains to the table format.
  */
-std::string convert_to_table(const std::vector<code_domain>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<code_domain>& v);
 
 }
 

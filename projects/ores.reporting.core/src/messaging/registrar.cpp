@@ -72,7 +72,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [rth](ores::nats::message msg) { rth->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_report_type_request::nats_subject, "ores.reporting.service",
-        [rth](ores::nats::message msg) { rth->del(std::move(msg)); }));
+        [rth](ores::nats::message msg) { rth->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_report_type_history_request::nats_subject, "ores.reporting.service",
         [rth](ores::nats::message msg) { rth->history(std::move(msg)); }));
@@ -89,7 +89,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [rdh](ores::nats::message msg) { rdh->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_report_definition_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->del(std::move(msg)); }));
+        [rdh](ores::nats::message msg) { rdh->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_report_definition_history_request::nats_subject, "ores.reporting.service",
         [rdh](ores::nats::message msg) { rdh->history(std::move(msg)); }));
@@ -113,7 +113,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [rih](ores::nats::message msg) { rih->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_report_instance_request::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->del(std::move(msg)); }));
+        [rih](ores::nats::message msg) { rih->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_report_instance_history_request::nats_subject, "ores.reporting.service",
         [rih](ores::nats::message msg) { rih->history(std::move(msg)); }));
@@ -133,7 +133,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [cph](ores::nats::message msg) { cph->save(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_concurrency_policy_request::nats_subject, "ores.reporting.service",
-        [cph](ores::nats::message msg) { cph->del(std::move(msg)); }));
+        [cph](ores::nats::message msg) { cph->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_concurrency_policy_history_request::nats_subject, "ores.reporting.service",
         [cph](ores::nats::message msg) { cph->history(std::move(msg)); }));

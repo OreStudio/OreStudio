@@ -23,13 +23,14 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps swap_leg domain entities to data storage layer and vice-versa.
  */
-class swap_leg_mapper {
+class ORES_TRADING_CORE_EXPORT swap_leg_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.swap_leg_mapper";

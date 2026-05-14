@@ -20,7 +20,6 @@
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/bond_instrument_handler.hpp"
 #include "ores.trading.core/messaging/credit_instrument_handler.hpp"
-#include "ores.trading.core/messaging/equity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/typed_equity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/commodity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/composite_instrument_handler.hpp"
@@ -90,35 +89,6 @@ register_other_instrument_handlers(ores::nats::service::client& nats,
         std::string(get_credit_instrument_history_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             credit_instrument_handler h(nats, ctx, verifier);
-            h.history(std::move(msg));
-        }));
-
-    // Equity instruments
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_equity_instruments_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            equity_instrument_handler h(nats, ctx, verifier);
-            h.list(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_equity_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            equity_instrument_handler h(nats, ctx, verifier);
-            h.save(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(delete_equity_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            equity_instrument_handler h(nats, ctx, verifier);
-            h.remove(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_equity_instrument_history_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            equity_instrument_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
         }));
 

@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts lifecycle_events to the table format.
  */
-std::string convert_to_table(const std::vector<lifecycle_event>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<lifecycle_event>& v);
 
 }
 

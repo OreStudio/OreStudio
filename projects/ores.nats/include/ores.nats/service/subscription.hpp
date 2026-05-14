@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 
@@ -38,7 +39,7 @@ namespace ores::nats::service {
  * // ... sub unsubscribes automatically at end of scope
  * @endcode
  */
-class [[nodiscard]] subscription {
+class [[nodiscard]] ORES_NATS_EXPORT subscription {
 public:
     ~subscription();
 

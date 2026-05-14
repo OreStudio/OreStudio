@@ -28,10 +28,11 @@
 #include <sstream>
 #include <filesystem>
 #include "ores.platform/filesystem/io_error.hpp"
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::filesystem {
 
-class file final {
+class ORES_PLATFORM_EXPORT file final {
 public:
     /**
      * @brief Returns the contents of the file.

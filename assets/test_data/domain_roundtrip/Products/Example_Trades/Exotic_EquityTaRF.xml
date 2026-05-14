@@ -1,0 +1,28 @@
+<Portfolio>
+  <Trade id="EquityTaRF">
+    <TradeType>EquityTaRF</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>775</FixingAmount>
+      <Strike>2900</Strike>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers/>
+    </EquityTaRFData>
+  </Trade>
+</Portfolio>

@@ -24,6 +24,7 @@
 #include <rfl/Result.hpp>
 #include <sqlgen/Ref.hpp>
 #include <sqlgen/sqlite.hpp>
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 
@@ -33,7 +34,7 @@ namespace ores::connections::repository {
  * Provides a simple connection context for the local SQLite database
  * that stores server environment bookmarks, folders, and tags.
  */
-class sqlite_context final {
+class ORES_CONNECTIONS_EXPORT sqlite_context final {
 public:
     using connection_type = sqlgen::sqlite::Connection;
     using connection_ref = sqlgen::Ref<connection_type>;

@@ -29,13 +29,14 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing FRA instruments.
  */
-class fra_instrument_service {
+class ORES_TRADING_CORE_EXPORT fra_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fra_instrument_service";
@@ -76,6 +77,12 @@ public:
      */
     std::vector<domain::swap_leg>
     get_swap_legs(const std::string& instrument_id);
+
+    std::vector<domain::swap_leg>
+    get_swap_legs_batch(const std::vector<std::string>& instrument_ids);
+
+    std::vector<domain::fra_instrument>
+    get_fra_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

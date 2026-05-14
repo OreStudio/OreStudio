@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing commodity instruments.
  */
-class commodity_instrument_service {
+class ORES_TRADING_CORE_EXPORT commodity_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.commodity_instrument_service";
@@ -65,6 +66,9 @@ public:
 
     std::vector<domain::commodity_instrument>
     get_commodity_instrument_history(const std::string& id);
+
+    std::vector<domain::commodity_instrument>
+    get_commodity_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

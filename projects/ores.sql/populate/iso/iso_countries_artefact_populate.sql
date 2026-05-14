@@ -72,7 +72,7 @@ begin
     delete from ores_dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id;
 
-    raise notice 'Populating countries for dataset: ISO 3166 Country Codes';
+    raise debug 'Populating countries for dataset: ISO 3166 Country Codes';
 
     -- Insert countries with flag image links
     -- The flag images have keys matching lowercase alpha2 codes (e.g., 'us', 'gb')
@@ -372,10 +372,10 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % countries for dataset: ISO 3166 Country Codes', v_count;
+    raise debug 'Successfully populated % countries for dataset: ISO 3166 Country Codes', v_count;
 
     -- Report countries using placeholder flag
-    raise notice 'Countries using placeholder flag (xx):';
+    raise debug 'Countries using placeholder flag (xx):';
     perform alpha2_code
     from ores_dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id

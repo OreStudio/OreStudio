@@ -20,19 +20,12 @@
 #ifndef ORES_ORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 
 namespace ores::ore::domain {
-
-/**
- * @brief Result of a forward mapping from ORE XSD to the ORES scripted
- * instrument domain type.
- */
-struct scripted_mapping_result {
-    ores::trading::domain::scripted_instrument instrument;
-};
 
 /**
  * @brief Maps ORE XSD scripted trade types to ORES domain types and back.
@@ -45,7 +38,7 @@ struct scripted_mapping_result {
  * field captures the product name and underlyings_json / parameters_json
  * store the key economic parameters as JSON.
  */
-class scripted_instrument_mapper {
+class ORES_ORE_EXPORT scripted_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.scripted_instrument_mapper";
@@ -57,10 +50,10 @@ private:
     }
 
 public:
-    static scripted_mapping_result forward_scripted_trade(const trade& t);
-    static scripted_mapping_result forward_double_digital_option(const trade& t);
-    static scripted_mapping_result forward_performance_option_01(const trade& t);
-    static scripted_mapping_result forward_knock_out_swap(const trade& t);
+    static trading::domain::scripted_instrument forward_scripted_trade(const trade& t);
+    static trading::domain::scripted_instrument forward_double_digital_option(const trade& t);
+    static trading::domain::scripted_instrument forward_performance_option_01(const trade& t);
+    static trading::domain::scripted_instrument forward_knock_out_swap(const trade& t);
 
     static trade reverse_scripted_trade(
         const ores::trading::domain::scripted_instrument& instr);

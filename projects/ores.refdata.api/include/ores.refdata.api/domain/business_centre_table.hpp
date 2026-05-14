@@ -23,18 +23,19 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts a single business centre to table format string.
  */
-std::string convert_to_table(const business_centre& c);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const business_centre& c);
 
 /**
  * @brief Converts a vector of business centres to table format string.
  */
-std::string convert_to_table(const std::vector<business_centre>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<business_centre>& v);
 
 }
 

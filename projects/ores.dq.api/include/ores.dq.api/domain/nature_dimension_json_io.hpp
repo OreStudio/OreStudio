@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the nature_dimension object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const nature_dimension& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const nature_dimension& v);
 
 }
 

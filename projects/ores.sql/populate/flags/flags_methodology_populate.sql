@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Flag Icons Data Sourcing Methodologies
 -- =============================================================================
 
-\echo '--- Flag Icons Methodologies ---'
+\qecho '--- Flag Icons Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GitHub Flag Icons Download',
@@ -87,4 +88,4 @@ Some flags are for non-country entities:
   - pc.svg: Pacific Community
   - xx.svg: Unknown/placeholder'
 );
-
+\o

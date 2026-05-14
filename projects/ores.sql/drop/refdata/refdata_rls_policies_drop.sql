@@ -108,5 +108,32 @@ drop policy if exists ores_refdata_currencies_tenant_isolation_policy on "ores_r
 -- Currency Market Tiers
 drop policy if exists ores_refdata_currency_market_tiers_tenant_isolation_policy on "ores_refdata_currency_market_tiers_tbl";
 
+-- CDS Conventions
+drop policy if exists ores_refdata_cds_conventions_tenant_isolation_policy on "ores_refdata_cds_conventions_tbl";
+
+-- FX Conventions
+drop policy if exists ores_refdata_fx_conventions_tenant_isolation_policy on "ores_refdata_fx_conventions_tbl";
+
+-- Overnight Index Conventions
+drop policy if exists ores_refdata_overnight_index_conventions_tenant_isolation_policy on "ores_refdata_overnight_index_conventions_tbl";
+
+-- IBOR Index Conventions
+drop policy if exists ores_refdata_ibor_index_conventions_tenant_isolation_policy on "ores_refdata_ibor_index_conventions_tbl";
+
+-- FRA Conventions
+drop policy if exists ores_refdata_fra_conventions_tenant_isolation_policy on "ores_refdata_fra_conventions_tbl";
+
+-- OIS Conventions
+drop policy if exists ores_refdata_ois_conventions_tenant_isolation_policy on "ores_refdata_ois_conventions_tbl";
+
+-- Swap Conventions
+drop policy if exists ores_refdata_swap_conventions_tenant_isolation_policy on "ores_refdata_swap_conventions_tbl";
+
+-- Deposit Conventions
+drop policy if exists ores_refdata_deposit_conventions_tenant_isolation_policy on "ores_refdata_deposit_conventions_tbl";
+
+-- Zero Conventions
+drop policy if exists ores_refdata_zero_conventions_tenant_isolation_policy on "ores_refdata_zero_conventions_tbl";
+
 -- Monetary Natures
 drop policy if exists ores_refdata_monetary_natures_tenant_isolation_policy on "ores_refdata_monetary_natures_tbl";

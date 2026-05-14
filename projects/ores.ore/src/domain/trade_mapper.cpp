@@ -86,7 +86,7 @@ std::vector<trading::domain::trade> trade_mapper::map(const portfolio& v) {
     return r;
 }
 
-std::optional<swap_mapping_result>
+std::optional<trading::domain::swap_instrument_data>
 trade_mapper::map_swap_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "Swap" || type == "CrossCurrencySwap")
@@ -108,7 +108,7 @@ trade_mapper::map_swap_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<fx_mapping_result>
+std::optional<trading::domain::fx_instrument_variant>
 trade_mapper::map_fx_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "FxForward")
@@ -144,7 +144,7 @@ trade_mapper::map_fx_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<bond_mapping_result>
+std::optional<trading::domain::bond_instrument>
 trade_mapper::map_bond_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "Bond")
@@ -164,7 +164,7 @@ trade_mapper::map_bond_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<credit_mapping_result>
+std::optional<trading::domain::credit_instrument>
 trade_mapper::map_credit_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "CreditDefaultSwap")
@@ -182,7 +182,7 @@ trade_mapper::map_credit_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<equity_mapping_result>
+std::optional<trading::domain::equity_instrument_variant>
 trade_mapper::map_equity_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "EquityOption")
@@ -218,7 +218,7 @@ trade_mapper::map_equity_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<commodity_mapping_result>
+std::optional<trading::domain::commodity_instrument>
 trade_mapper::map_commodity_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "CommodityForward")
@@ -238,7 +238,7 @@ trade_mapper::map_commodity_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<scripted_mapping_result>
+std::optional<trading::domain::scripted_instrument>
 trade_mapper::map_scripted_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "ScriptedTrade")
@@ -252,7 +252,7 @@ trade_mapper::map_scripted_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<composite_mapping_result>
+std::optional<trading::domain::composite_instrument_data>
 trade_mapper::map_composite_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "CompositeTrade")
@@ -266,7 +266,7 @@ trade_mapper::map_composite_instrument(const trade& v) {
     return std::nullopt;
 }
 
-instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
+trading::domain::trade_instrument trade_mapper::map_instrument(const trade& v) {
     if (auto r = map_swap_instrument(v))      return *r;
     if (auto r = map_fx_instrument(v))        return *r;
     if (auto r = map_bond_instrument(v))      return *r;

@@ -1,0 +1,31 @@
+<Portfolio>
+  <Trade id="dummytrade">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>20151028</StartDate>
+            <EndDate>20351028</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0199999996</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

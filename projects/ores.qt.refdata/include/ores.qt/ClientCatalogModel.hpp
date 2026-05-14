@@ -24,6 +24,7 @@
 #include <QAbstractTableModel>
 #include <vector>
 #include "ores.dq.api/domain/catalog.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
@@ -39,7 +40,7 @@ namespace ores::qt {
  * recently modified records. Records modified since the last reload
  * are highlighted with a pulsing color effect.
  */
-class ClientCatalogModel : public QAbstractTableModel {
+class ClientCatalogModel : public AbstractClientModel {
     Q_OBJECT
 
 private:

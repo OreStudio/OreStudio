@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- ISO Standards Methodologies
 -- =============================================================================
 
-\echo '--- ISO Standards Methodologies ---'
+\qecho '--- ISO Standards Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Wikipedia ISO 3166 Extraction',
@@ -48,4 +49,4 @@ select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
 
 See methodology documentation for detailed steps.'
 );
-
+\o

@@ -47,9 +47,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_methodology: %', p_name;
+        raise debug 'Created dq_methodology: %', p_name;
     else
-        raise notice 'dq_methodology already exists: %', p_name;
+        raise debug 'dq_methodology already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -98,9 +98,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_dataset: %', p_name;
+        raise debug 'Created dq_dataset: %', p_name;
     else
-        raise notice 'dq_dataset already exists: %', p_name;
+        raise debug 'dq_dataset already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -147,7 +147,7 @@ begin
     where valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
-    raise notice 'Inserted % records into dq_images_artefact_tbl for dataset %', v_count, p_dataset_name;
+    raise debug 'Inserted % records into dq_images_artefact_tbl for dataset %', v_count, p_dataset_name;
 end;
 $$ language plpgsql;
 
@@ -191,7 +191,7 @@ begin
     where valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
-    raise notice 'Inserted % records into dq_tags_artefact_tbl for dataset %', v_count, p_dataset_name;
+    raise debug 'Inserted % records into dq_tags_artefact_tbl for dataset %', v_count, p_dataset_name;
 end;
 $$ language plpgsql;
 
@@ -231,6 +231,6 @@ begin
     where it.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
-    raise notice 'Inserted % records into dq_image_tags_artefact_tbl for dataset %', v_count, p_dataset_name;
+    raise debug 'Inserted % records into dq_image_tags_artefact_tbl for dataset %', v_count, p_dataset_name;
 end;
 $$ language plpgsql;

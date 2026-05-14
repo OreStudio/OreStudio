@@ -27,11 +27,12 @@
  * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
+\o /dev/null
 -- =============================================================================
 -- ISO Standards Datasets
 -- =============================================================================
 
-\echo '--- ISO Standards Datasets ---'
+\qecho '--- ISO Standards Datasets ---'
 
 -- ISO 3166 Country Codes
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -72,4 +73,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'CC BY-SA 3.0',
     'currencies'
 );
-
+\o

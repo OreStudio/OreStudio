@@ -24,6 +24,7 @@
 #include <mutex>
 #include <random>
 #include "ores.telemetry/domain/trace_id.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::generators {
 
@@ -41,7 +42,7 @@ namespace ores::telemetry::generators {
  * - High uniqueness (64-bit random + timestamp + machine = very low collision)
  * - OpenTelemetry compatibility (128-bit size)
  */
-class trace_id_generator final {
+class ORES_TELEMETRY_EXPORT trace_id_generator final {
 public:
     /**
      * @brief Constructs the generator with locally derived machine ID.

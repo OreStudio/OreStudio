@@ -358,14 +358,21 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     int instruments_saved = 0;
     for (const auto& item : plan.trades) {
         using namespace ores::trading::messaging;
-        using namespace ores::ore::domain;
+        using ores::trading::domain::swap_instrument_data;
+        using ores::trading::domain::fx_instrument_variant;
+        using ores::trading::domain::bond_instrument;
+        using ores::trading::domain::credit_instrument;
+        using ores::trading::domain::equity_instrument_variant;
+        using ores::trading::domain::commodity_instrument;
+        using ores::trading::domain::composite_instrument_data;
+        using ores::trading::domain::scripted_instrument;
         std::string instr_error;
 
         const auto save_ok = std::visit([&](const auto& r) -> bool {
             using T = std::decay_t<decltype(r)>;
             if constexpr (std::is_same_v<T, std::monostate>) {
                 return true; // no instrument for this trade type
-            } else if constexpr (std::is_same_v<T, swap_mapping_result>) {
+            } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                 return std::visit([&](const auto& instr) -> bool {
                     using InstrT = std::decay_t<decltype(instr)>;
                     using namespace ores::trading::domain;
@@ -409,7 +416,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         return true;
                     }
                 }, r.instrument);
-            } else if constexpr (std::is_same_v<T, fx_mapping_result>) {
+            } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                 return std::visit([&](const auto& instr) -> bool {
                     using InstrT = std::decay_t<decltype(instr)>;
                     using namespace ores::trading::domain;
@@ -444,29 +451,74 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     } else {
                         return true;
                     }
-                }, r.instrument);
-            } else if constexpr (std::is_same_v<T, bond_mapping_result>) {
-                save_bond_instrument_request req; req.data = r.instrument;
+                }, r);
+            } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                save_bond_instrument_request req; req.data = r;
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, credit_mapping_result>) {
-                save_credit_instrument_request req; req.data = r.instrument;
+            } else if constexpr (std::is_same_v<T, credit_instrument>) {
+                save_credit_instrument_request req; req.data = r;
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, equity_mapping_result>) {
-                save_equity_instrument_request req; req.data = r.instrument;
+            } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
+                return std::visit([&](const auto& instr) -> bool {
+                    using InstrT = std::decay_t<decltype(instr)>;
+                    using namespace ores::trading::domain;
+                    if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
+                        save_equity_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_digital_option_instrument>) {
+                        save_equity_digital_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_barrier_option_instrument>) {
+                        save_equity_barrier_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_asian_option_instrument>) {
+                        save_equity_asian_option_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_forward_instrument>) {
+                        save_equity_forward_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_variance_swap_instrument>) {
+                        save_equity_variance_swap_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
+                        save_equity_swap_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_accumulator_instrument>) {
+                        save_equity_accumulator_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else if constexpr (std::is_same_v<InstrT, equity_position_instrument>) {
+                        save_equity_position_instrument_request req; req.data = instr;
+                        auto resp = nats_call(delegated_nats, req, instr_error);
+                        return resp && resp->success;
+                    } else {
+                        // Unknown per-type alternative — fail loudly so a new
+                        // variant added without updating this dispatch surfaces
+                        // at import time instead of silently skipping saves.
+                        instr_error = "equity variant alternative not handled "
+                                      "by import dispatch";
+                        return false;
+                    }
+                }, r);
+            } else if constexpr (std::is_same_v<T, commodity_instrument>) {
+                save_commodity_instrument_request req; req.data = r;
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, commodity_mapping_result>) {
-                save_commodity_instrument_request req; req.data = r.instrument;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, composite_mapping_result>) {
+            } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                 save_composite_instrument_request req; req.data = r.instrument;
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, scripted_mapping_result>) {
-                save_scripted_instrument_request req; req.data = r.instrument;
+            } else if constexpr (std::is_same_v<T, scripted_instrument>) {
+                save_scripted_instrument_request req; req.data = r;
                 auto resp = nats_call(delegated_nats, req, instr_error);
                 return resp && resp->success;
             } else {

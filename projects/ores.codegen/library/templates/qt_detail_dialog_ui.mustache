@@ -87,6 +87,33 @@
             </property>
            </widget>
 {{/is_dynamic_combo}}
+{{#is_check_box}}
+           <widget class="QCheckBox" name="{{widget}}">
+            <property name="text">
+             <string/>
+            </property>
+{{#is_tristate}}
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
+{{/is_tristate}}
+           </widget>
+{{/is_check_box}}
+{{#is_spin_box}}
+           <widget class="QSpinBox" name="{{widget}}">
+            <property name="minimum">
+             <number>{{spin_min}}</number>
+            </property>
+            <property name="maximum">
+             <number>{{spin_max}}</number>
+            </property>
+{{#is_nullable_int}}
+            <property name="specialValueText">
+             <string>(unset)</string>
+            </property>
+{{/is_nullable_int}}
+           </widget>
+{{/is_spin_box}}
           </item>
 {{/domain_entity.qt.detail_fields}}
          </layout>

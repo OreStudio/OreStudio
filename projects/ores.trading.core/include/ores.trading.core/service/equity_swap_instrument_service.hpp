@@ -21,14 +21,16 @@
 #define ORES_TRADING_SERVICE_EQUITY_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
-class equity_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT equity_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_swap_instrument_service";
@@ -44,7 +46,13 @@ public:
 
     explicit equity_swap_instrument_service(context ctx);
 
+    std::optional<domain::equity_swap_instrument>
+    get_equity_swap_instrument(const std::string& id);
+
     void save_equity_swap_instrument(const domain::equity_swap_instrument& v);
+
+    std::vector<domain::equity_swap_instrument>
+    get_equity_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

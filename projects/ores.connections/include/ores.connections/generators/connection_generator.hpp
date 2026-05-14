@@ -24,26 +24,27 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/connection.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic connection with manual host/port (no environment link).
  */
-domain::connection generate_synthetic_connection(
+ORES_CONNECTIONS_EXPORT domain::connection generate_synthetic_connection(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic connection assigned to a specific folder.
  */
-domain::connection generate_synthetic_connection(
+ORES_CONNECTIONS_EXPORT domain::connection generate_synthetic_connection(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& folder_id);
 
 /**
  * @brief Generates N synthetic connections.
  */
-std::vector<domain::connection> generate_synthetic_connections(
+ORES_CONNECTIONS_EXPORT std::vector<domain::connection> generate_synthetic_connections(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

@@ -23,6 +23,7 @@
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::compute::generators {
@@ -30,7 +31,7 @@ namespace ores::compute::generators {
 /**
  * @brief Generates a synthetic workunit for the given batch and app version.
  */
-domain::workunit generate_synthetic_workunit(
+ORES_COMPUTE_API_EXPORT domain::workunit generate_synthetic_workunit(
     const boost::uuids::uuid& batch_id,
     const boost::uuids::uuid& app_version_id,
     utility::generation::generation_context& ctx);
@@ -38,7 +39,7 @@ domain::workunit generate_synthetic_workunit(
 /**
  * @brief Generates N synthetic workunits for the given batch and app version.
  */
-std::vector<domain::workunit>
+ORES_COMPUTE_API_EXPORT std::vector<domain::workunit>
 generate_synthetic_workunits(std::size_t n,
     const boost::uuids::uuid& batch_id,
     const boost::uuids::uuid& app_version_id,

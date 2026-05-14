@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes subject_areas to data storage.
  */
-class subject_area_repository {
+class ORES_DQ_CORE_EXPORT subject_area_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.subject_area_repository";

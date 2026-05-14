@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.compute.api/domain/app.hpp"
+#include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::compute::generators {
@@ -29,13 +30,13 @@ namespace ores::compute::generators {
 /**
  * @brief Generates a synthetic compute app.
  */
-domain::app generate_synthetic_app(
+ORES_COMPUTE_API_EXPORT domain::app generate_synthetic_app(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic compute apps.
  */
-std::vector<domain::app>
+ORES_COMPUTE_API_EXPORT std::vector<domain::app>
 generate_synthetic_apps(std::size_t n,
     utility::generation::generation_context& ctx);
 

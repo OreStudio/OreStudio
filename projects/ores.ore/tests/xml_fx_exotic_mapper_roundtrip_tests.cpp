@@ -46,7 +46,7 @@ const std::string tags("[ore][xml][mapper][roundtrip][fx][exotic]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
-using ores::ore::domain::fx_mapping_result;
+using ores::trading::domain::fx_instrument_variant;
 using ores::trading::domain::fx_barrier_option_instrument;
 using ores::trading::domain::fx_digital_option_instrument;
 using ores::trading::domain::fx_variance_swap_instrument;
@@ -59,7 +59,7 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-fx_mapping_result load_and_map(const std::string& filename) {
+fx_instrument_variant load_and_map(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -76,7 +76,7 @@ fx_mapping_result load_and_map(const std::string& filename) {
 TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Barrier_Option.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -96,7 +96,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_digital_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxDigitalOption");
     CHECK(!instr.foreign_currency.empty());
@@ -117,7 +117,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Barrier_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_digital_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxDigitalBarrierOption");
     CHECK(!instr.foreign_currency.empty());
@@ -139,7 +139,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_OneTouch_option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_digital_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -159,7 +159,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_DoubleTouch_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_digital_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxDoubleTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -176,7 +176,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Variance_Swap.xml");
-    const auto& instr = std::get<fx_variance_swap_instrument>(r.instrument);
+    const auto& instr = std::get<fx_variance_swap_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxVarianceSwap");
     CHECK(!instr.underlying_code.empty());
@@ -196,13 +196,14 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Average_Forward.xml");
-    const auto& instr = std::get<fx_asian_forward_instrument>(r.instrument);
+    const auto& instr = std::get<fx_asian_forward_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxAverageForward");
     CHECK(!instr.payment_date.empty());
     CHECK(!instr.reference_currency.empty());
     CHECK(!instr.settlement_currency.empty());
     CHECK(!instr.fx_index.empty());
+    CHECK(!instr.long_short.empty());
 
     const auto rt = fx_instrument_mapper::reverse_fx_average_forward(instr);
     const bool has_data = rt.FxAverageForwardData.operator bool();
@@ -215,7 +216,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxAccumulator.xml");
-    const auto& instr = std::get<fx_accumulator_instrument>(r.instrument);
+    const auto& instr = std::get<fx_accumulator_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxAccumulator");
     CHECK(!instr.underlying_code.empty());
@@ -233,13 +234,18 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxTaRF.xml");
-    const auto& instr = std::get<fx_asian_forward_instrument>(r.instrument);
+    const auto& instr = std::get<fx_asian_forward_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxTaRF");
     CHECK(!instr.fx_index.empty());
     CHECK(!instr.currency.empty());
+    CHECK(!instr.long_short.empty());
     REQUIRE(instr.fixing_amount.has_value());
     CHECK(*instr.fixing_amount > 0.0);
+    REQUIRE(instr.strike.has_value());
+    CHECK(*instr.strike > 0.0);
+    REQUIRE(instr.target_amount.has_value());
+    CHECK(*instr.target_amount > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_tarf(instr);
     const bool has_data = rt.FxTaRFData.operator bool();
@@ -252,7 +258,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_generic_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxGenericBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxGenericBarrierOption");
     CHECK(!instr.underlying_code.empty());

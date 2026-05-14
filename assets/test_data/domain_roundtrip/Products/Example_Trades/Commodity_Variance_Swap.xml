@@ -1,0 +1,18 @@
+<Portfolio>
+  <Trade id="Commodity_VarianceSwap_NYMEX_NG">
+    <TradeType>CommodityVarianceSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommodityVarianceSwapData>
+      <StartDate>2025-05-16</StartDate>
+      <EndDate>2025-09-20</EndDate>
+      <Currency>USD</Currency>
+      <Name>NYMEX:NG</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.0500000007</Strike>
+      <Notional>1</Notional>
+      <Calendar>USD</Calendar>
+    </CommodityVarianceSwapData>
+  </Trade>
+</Portfolio>

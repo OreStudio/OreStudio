@@ -19,6 +19,7 @@ name: Continuous Windows
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -56,12 +57,19 @@ jobs:
         with:
           submodules: true
 
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
       - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.22
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 2000M
+          save: false
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
@@ -141,7 +149,7 @@ jobs:
           ./projects/ores.sql/recreate_database.sh -y -D ores_ci
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.3.1
+        uses: lukka/get-cmake@v4.3.2
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v5
@@ -166,6 +174,23 @@ jobs:
           $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
+
+      - name: Delete sccache entry
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
+            || true
+
+      - name: Save sccache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Show sccache statistics
         if: always()

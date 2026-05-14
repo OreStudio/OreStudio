@@ -27,6 +27,7 @@
 #include "ores.nats/domain/consumer_info.hpp"
 #include "ores.nats/domain/stream_info.hpp"
 #include "ores.nats/domain/stream_message.hpp"
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 
@@ -50,7 +51,7 @@ namespace ores::nats::service {
  *     auto consumers = admin.list_consumers(s.name);
  * @endcode
  */
-class jetstream_admin {
+class ORES_NATS_EXPORT jetstream_admin {
 public:
     /**
      * @brief Construct from an opaque JetStream context pointer.

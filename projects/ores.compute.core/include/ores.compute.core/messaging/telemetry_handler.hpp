@@ -36,6 +36,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -52,7 +53,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using namespace ores::logging;
 
-class telemetry_handler {
+class ORES_COMPUTE_CORE_EXPORT telemetry_handler  {
 public:
     telemetry_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

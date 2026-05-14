@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.core/export.hpp"
 
 namespace ores::http_server::routes {
 
@@ -40,7 +41,7 @@ namespace ores::http_server::routes {
  * - DELETE /api/v1/currencies - delete_currency_request (batch)
  * - GET /api/v1/currencies/{code}/history - get_currency_history_request
  */
-class risk_routes final {
+class ORES_HTTP_CORE_EXPORT risk_routes final {
 public:
     risk_routes(database::context ctx,
         std::shared_ptr<iam::service::auth_session_service> sessions);

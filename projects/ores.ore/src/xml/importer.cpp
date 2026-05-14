@@ -21,7 +21,6 @@
 
 #include <sstream>
 #include <type_traits>
-#include <boost/uuid/random_generator.hpp>
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/domain.hpp"
@@ -121,24 +120,6 @@ std::string importer::validate_trade(const trade& t) {
     return errors.str();
 }
 
-std::vector<trade>
-importer::import_portfolio(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), debug) << "Started portfolio import: "
-                               << path.generic_string();
-
-    using namespace ores::platform::filesystem;
-    const std::string c(file::read_content(path));
-    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
-
-    domain::portfolio p;
-    domain::load_data(c, p);
-    const auto r = domain::trade_mapper::map(p);
-
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
-                               << " trades.";
-
-    return r;
-}
 
 std::vector<trade_import_item>
 importer::import_portfolio_with_context(const std::filesystem::path& path) {
@@ -155,68 +136,44 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     std::vector<trade_import_item> r;
     r.reserve(p.Trade.size());
 
-    boost::uuids::random_generator gen;
     for (const auto& t : p.Trade) {
         trade_import_item item;
         item.trade = domain::trade_mapper::map(t);
         item.source_file = path;
-        if (t.Envelope && t.Envelope->CounterParty) {
+        if (t.Envelope && t.Envelope->CounterParty)
             item.ore_counterparty_name = std::string(*t.Envelope->CounterParty);
-        }
 
         try {
             item.instrument = domain::trade_mapper::map_instrument(t);
 
-            // Assign each instrument its own UUID (independent of the trade),
-            // wire the soft FKs in both directions, and record the routing
-            // discriminator on the trade.
-            std::visit([&](auto& result) {
+            // Record the routing discriminator; UUIDs are minted by the caller.
+            std::visit([&](const auto& result) {
                 using T = std::decay_t<decltype(result)>;
-                if constexpr (!std::is_same_v<T, std::monostate>) {
-                    const auto instr_id = gen();
-                    item.trade.instrument_id = instr_id;
-
-                    using ores::trading::domain::product_type;
-                    if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
-                        item.trade.product_type = product_type::swap;
-                        std::visit([&](auto& instr) {
-                            instr.instrument_id = instr_id;
-                            instr.trade_id = item.trade.id;
-                        }, result.instrument);
-                        for (auto& leg : result.legs)
-                            leg.instrument_id = instr_id;
-                    } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
-                        item.trade.product_type = product_type::fx;
-                        std::visit([&](auto& instr) {
-                            instr.instrument_id = instr_id;
-                            instr.trade_id = item.trade.id;
-                        }, result.instrument);
-                    } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
-                        item.trade.product_type = product_type::bond;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
-                        item.trade.product_type = product_type::credit;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
-                        item.trade.product_type = product_type::equity;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
-                        item.trade.product_type = product_type::commodity;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
-                        item.trade.product_type = product_type::composite;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
-                        item.trade.product_type = product_type::scripted;
-                        result.instrument.id = instr_id;
-                        result.instrument.trade_id = item.trade.id;
-                    }
-                }
+                using ores::trading::domain::product_type;
+                using ores::trading::domain::swap_instrument_data;
+                using ores::trading::domain::fx_instrument_variant;
+                using ores::trading::domain::bond_instrument;
+                using ores::trading::domain::credit_instrument;
+                using ores::trading::domain::equity_instrument_variant;
+                using ores::trading::domain::commodity_instrument;
+                using ores::trading::domain::composite_instrument_data;
+                using ores::trading::domain::scripted_instrument;
+                if constexpr (std::is_same_v<T, swap_instrument_data>)
+                    item.trade.product_type = product_type::swap;
+                else if constexpr (std::is_same_v<T, fx_instrument_variant>)
+                    item.trade.product_type = product_type::fx;
+                else if constexpr (std::is_same_v<T, bond_instrument>)
+                    item.trade.product_type = product_type::bond;
+                else if constexpr (std::is_same_v<T, credit_instrument>)
+                    item.trade.product_type = product_type::credit;
+                else if constexpr (std::is_same_v<T, equity_instrument_variant>)
+                    item.trade.product_type = product_type::equity;
+                else if constexpr (std::is_same_v<T, commodity_instrument>)
+                    item.trade.product_type = product_type::commodity;
+                else if constexpr (std::is_same_v<T, composite_instrument_data>)
+                    item.trade.product_type = product_type::composite;
+                else if constexpr (std::is_same_v<T, scripted_instrument>)
+                    item.trade.product_type = product_type::scripted;
             }, item.instrument);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
@@ -232,21 +189,6 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     return r;
 }
 
-void importer::rewire_instrument_trade_id(trade_import_item& item) {
-    std::visit([&](auto& result) {
-        using T = std::decay_t<decltype(result)>;
-        if constexpr (std::is_same_v<T, std::monostate>) {
-            // No instrument for this trade type.
-        } else if constexpr (std::is_same_v<T, domain::swap_mapping_result> ||
-                             std::is_same_v<T, domain::fx_mapping_result>) {
-            std::visit([&](auto& instr) {
-                instr.trade_id = item.trade.id;
-            }, result.instrument);
-        } else {
-            result.instrument.trade_id = item.trade.id;
-        }
-    }, item.instrument);
-}
 
 domain::mapped_conventions
 importer::import_conventions(const std::filesystem::path& path) {

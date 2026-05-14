@@ -24,13 +24,14 @@
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps fx_accumulator_instrument domain entities to data storage layer and vice-versa.
  */
-class fx_accumulator_instrument_mapper {
+class ORES_TRADING_CORE_EXPORT fx_accumulator_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.fx_accumulator_instrument_mapper";

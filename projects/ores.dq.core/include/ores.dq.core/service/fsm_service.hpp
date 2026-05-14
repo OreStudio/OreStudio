@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_state.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 
@@ -35,7 +36,7 @@ namespace ores::dq::service {
  * FSM states and machines are system-level reference data seeded at
  * provisioning time. This service always queries the system tenant.
  */
-class fsm_service {
+class ORES_DQ_CORE_EXPORT fsm_service {
 private:
     inline static std::string_view logger_name = "ores.dq.service.fsm_service";
 

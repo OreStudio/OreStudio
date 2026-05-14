@@ -26,6 +26,7 @@
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.core/repository/image_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::service {
 
@@ -35,7 +36,7 @@ namespace ores::assets::service {
  * Provides a higher-level interface for image operations, wrapping
  * the underlying repositories.
  */
-class assets_service {
+class ORES_ASSETS_CORE_EXPORT assets_service {
 private:
     inline static std::string_view logger_name =
         "ores.assets.service.assets_service";

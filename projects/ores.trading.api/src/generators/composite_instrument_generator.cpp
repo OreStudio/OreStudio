@@ -34,7 +34,7 @@ domain::composite_instrument generate_synthetic_composite_instrument(
 
     domain::composite_instrument r;
     r.version = 1;
-    r.id = boost::uuids::random_generator()();
+    r.instrument_id = boost::uuids::random_generator()();
     r.trade_type_code = "CompositeTrade";
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;

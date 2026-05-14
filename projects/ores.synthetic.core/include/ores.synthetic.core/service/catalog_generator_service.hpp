@@ -22,6 +22,7 @@
 
 #include "ores.synthetic.api/domain/generation_options.hpp"
 #include "ores.synthetic.api/domain/synthetic_catalog.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::service {
 
@@ -57,7 +58,7 @@ namespace ores::synthetic::service {
  * auto same_catalog = service.generate(opts);
  * @endcode
  */
-class catalog_generator_service final {
+class ORES_SYNTHETIC_CORE_EXPORT catalog_generator_service final {
 public:
     /**
      * @brief Generates a complete synthetic data catalog.

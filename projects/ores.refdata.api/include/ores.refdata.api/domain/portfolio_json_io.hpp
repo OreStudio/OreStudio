@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the portfolio to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const portfolio& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const portfolio& v);
 
 }
 

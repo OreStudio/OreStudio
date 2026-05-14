@@ -102,4 +102,20 @@ void balance_guaranteed_swap_instrument_repository::remove(context ctx, const st
     execute_delete_query(ctx, query, lg(), "Removing balance guaranteed swap instrument from database.");
 }
 
+
+std::vector<domain::balance_guaranteed_swap_instrument>
+balance_guaranteed_swap_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<balance_guaranteed_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<balance_guaranteed_swap_instrument_entity, domain::balance_guaranteed_swap_instrument>(
+        ctx, query,
+        [](const auto& entities) { return balance_guaranteed_swap_instrument_mapper::map(entities); },
+        lg(), "Reading latest balance_guaranteed_swap_instruments by ids.");
+}
+
 }

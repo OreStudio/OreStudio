@@ -69,7 +69,7 @@ begin
     delete from ores_dq_portfolios_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating portfolios for dataset: testdata.portfolios';
+    raise debug 'Populating portfolios for dataset: testdata.portfolios';
 
     insert into ores_dq_portfolios_artefact_tbl (
         dataset_id, tenant_id, id, version, name, parent_portfolio_id,
@@ -195,7 +195,7 @@ begin
          '10000000-0000-4000-a000-00000000000c', 'Regulatory', 'USD', 0);
 
     get diagnostics v_count = row_count;
-    raise notice 'Successfully populated % portfolios', v_count;
+    raise debug 'Successfully populated % portfolios', v_count;
 end $$;
 
 -- =============================================================================

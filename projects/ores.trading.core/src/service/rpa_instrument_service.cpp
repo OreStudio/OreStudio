@@ -85,4 +85,11 @@ rpa_instrument_service::get_rpa_instrument_history(const std::string& id) {
     return repo_.read_all(ctx_, id);
 }
 
+
+std::vector<domain::rpa_instrument>
+rpa_instrument_service::get_rpa_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

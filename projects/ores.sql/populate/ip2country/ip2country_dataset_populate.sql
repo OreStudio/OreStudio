@@ -26,11 +26,12 @@
  * This must be run before populating the artefact tables.
  */
 
+\o /dev/null
 -- =============================================================================
 -- IP Geolocation Datasets
 -- =============================================================================
 
-\echo '--- IP Geolocation Datasets ---'
+\qecho '--- IP Geolocation Datasets ---'
 
 -- IP to Country IPv4 Ranges
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -51,4 +52,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'PDDL v1.0',
     'ip2country'
 );
-
+\o

@@ -25,12 +25,13 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 
 -- =============================================================================
 -- Cryptocurrency Data Sourcing Methodologies
 -- =============================================================================
 
-\echo '--- Cryptocurrency Methodologies ---'
+\qecho '--- Cryptocurrency Methodologies ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'GitHub Cryptocurrency Icons Download',
@@ -203,4 +204,4 @@ Some cryptocurrencies have special Unicode symbols:
   DOGE: Ð (Dogecoin)
   XRP: ✕ (Ripple)'
 );
-
+\o

@@ -28,13 +28,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes FSM states to data storage.
  */
-class fsm_state_repository {
+class ORES_DQ_CORE_EXPORT fsm_state_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.fsm_state_repository";

@@ -30,6 +30,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include <rfl/json.hpp>
@@ -172,7 +173,8 @@ public:
 
     void reload_token_settings() {
         try {
-            variability::service::system_settings_service svc(ctx_);
+            variability::service::system_settings_service svc(
+                ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
             token_settings_ = domain::token_settings::load(svc);
         } catch (const std::exception& e) {

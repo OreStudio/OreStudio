@@ -55,7 +55,7 @@ create table if not exists "ores_trading_knock_out_swap_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("maturity_date" > "start_date"),
-    check ("barrier_type" in ('UpOut', 'DownOut'))
+    check ("barrier_type" in ('UpAndOut', 'DownAndOut'))
 );
 
 -- Version uniqueness for optimistic concurrency

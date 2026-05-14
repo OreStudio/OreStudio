@@ -47,9 +47,9 @@ const std::string tags("[ore][xml][mapper][roundtrip][composite][scripted]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::scripted_instrument_mapper;
-using ores::ore::domain::scripted_mapping_result;
+using ores::trading::domain::scripted_instrument;
 using ores::ore::domain::composite_instrument_mapper;
-using ores::ore::domain::composite_mapping_result;
+using ores::trading::domain::composite_instrument_data;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -57,7 +57,7 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-scripted_mapping_result load_and_map_scripted(const std::string& filename) {
+scripted_instrument load_and_map_scripted(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -69,7 +69,7 @@ scripted_mapping_result load_and_map_scripted(const std::string& filename) {
     return *r;
 }
 
-composite_mapping_result load_and_map_composite(const std::string& filename) {
+composite_instrument_data load_and_map_composite(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -87,26 +87,25 @@ TEST_CASE("scripted_mapper_roundtrip_asian_basket_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Scripted_BasketOption.xml");
 
-    CHECK(r.instrument.trade_type_code == "ScriptedTrade");
-    CHECK(r.instrument.script_name == "AsianBasketOption");
-    CHECK(!r.instrument.underlyings_json.empty());
-    CHECK(!r.instrument.parameters_json.empty());
+    CHECK(r.trade_type_code == "ScriptedTrade");
+    CHECK(r.script_name == "AsianBasketOption");
+    CHECK(!r.underlyings_json.empty());
+    CHECK(!r.parameters_json.empty());
 
-    const auto rt = scripted_instrument_mapper::reverse_scripted_trade(
-        r.instrument);
+    const auto rt = scripted_instrument_mapper::reverse_scripted_trade(r);
     REQUIRE(rt.ScriptedTradeData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "ScriptedTrade (AsianBasketOption) roundtrip "
                                "passed. Underlyings: "
-                            << r.instrument.underlyings_json;
+                            << r.underlyings_json;
 }
 
 TEST_CASE("scripted_mapper_roundtrip_average_strike_basket_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Scripted_BasketOption2.xml");
 
-    CHECK(r.instrument.trade_type_code == "ScriptedTrade");
-    CHECK(!r.instrument.underlyings_json.empty());
+    CHECK(r.trade_type_code == "ScriptedTrade");
+    CHECK(!r.underlyings_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "ScriptedTrade (AverageStrikeBasketOption) "
                                "roundtrip passed.";
@@ -123,4 +122,25 @@ TEST_CASE("composite_mapper_roundtrip_composite_trade", tags) {
     REQUIRE(rt.CompositeTradeData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CompositeTrade roundtrip passed.";
+}
+
+TEST_CASE("composite_mapper_components_populate_legs", tags) {
+    auto lg(make_logger(test_suite));
+    const auto r = load_and_map_composite("Hybrid_CompositeTrade.xml");
+
+    // Hybrid_CompositeTrade.xml has two component trades under <Components>.
+    REQUIRE(r.legs.size() == 2);
+
+    // Legs are 1-based and ordered.
+    CHECK(r.legs[0].leg_sequence == 1);
+    CHECK(r.legs[1].leg_sequence == 2);
+
+    // Each leg carries a constituent trade identifier.
+    for (const auto& leg : r.legs) {
+        CHECK(!leg.constituent_trade_id.empty());
+        CHECK(leg.change_reason_code == "system.external_data_import");
+    }
+
+    BOOST_LOG_SEV(lg, info) << "CompositeTrade legs populated: "
+                            << r.legs.size();
 }

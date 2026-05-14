@@ -32,6 +32,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <rfl/json.hpp>
+#include <rfl/AddTagsToVariants.hpp>
 #include <QObject>
 #include <QTimer>
 #include "ores.utility/rfl/reflectors.hpp"
@@ -105,12 +106,10 @@ struct SessionListResult {
 };
 
 /**
- * @brief Result of a trade list request.
- *
- * Each item bundles the trade with its resolved per-family instrument.
+ * @brief Result of a trade list request (metadata only, no instruments).
  */
 struct TradeListResult {
-    std::vector<trading::messaging::trade_export_item> items;
+    std::vector<trading::domain::trade> trades;
     std::uint32_t total_count = 0;
 };
 
@@ -343,7 +342,7 @@ public:
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
-            auto result = rfl::json::read<ResponseType>(data);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -387,7 +386,7 @@ public:
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
-            auto result = rfl::json::read<ResponseType>(data);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -425,6 +424,15 @@ public:
         std::optional<boost::uuids::uuid> node_id = std::nullopt,
         std::uint32_t offset = 0,
         std::uint32_t limit = 100);
+
+    /**
+     * @brief Fetch a single trade with its instrument data.
+     *
+     * @param trade_id UUID string of the trade.
+     * @return Trade bundle on success, nullopt on failure or not found.
+     */
+    std::optional<trading::messaging::trade_export_item>
+    getTradeDetail(const std::string& trade_id);
 
     /**
      * @brief Get active sessions for the current user.

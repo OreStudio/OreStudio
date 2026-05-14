@@ -77,7 +77,7 @@ risk_report_config_repository::resolve_book_ids(
     const auto tid = ctx.tenant_id().to_string();
     const std::string sql =
         "SELECT id::text FROM "
-        "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid)";
+        "ores_reporting_resolve_book_ids_for_config_fn($1::uuid, $2::uuid) AS t(id)";
 
     return execute_parameterized_string_query(
         ctx, sql, {tid, config_id}, lg(),

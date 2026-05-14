@@ -52,7 +52,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(delete_market_series_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             market_series_handler h(nats, ctx, verifier);
-            h.del(std::move(msg));
+            h.remove(std::move(msg));
         }));
 
     // Market observations
@@ -74,7 +74,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(delete_market_observations_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             market_observation_handler h(nats, ctx, verifier);
-            h.del(std::move(msg));
+            h.remove(std::move(msg));
         }));
 
     // Market fixings
@@ -96,7 +96,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(delete_market_fixings_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             market_fixing_handler h(nats, ctx, verifier);
-            h.del(std::move(msg));
+            h.remove(std::move(msg));
         }));
 
     // Import

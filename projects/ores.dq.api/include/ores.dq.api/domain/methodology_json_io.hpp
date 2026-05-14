@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/methodology.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the methodology to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const methodology& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const methodology& v);
 
 }
 

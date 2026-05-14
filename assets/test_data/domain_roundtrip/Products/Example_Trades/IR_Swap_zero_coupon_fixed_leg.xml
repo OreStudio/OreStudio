@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="Zero_fixed_with_zerocouponleg">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>ZeroCouponFixed</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>184500</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-05</StartDate>
+            <EndDate>2027-07-06</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

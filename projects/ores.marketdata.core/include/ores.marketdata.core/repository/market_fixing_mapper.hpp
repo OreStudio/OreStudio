@@ -24,13 +24,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::repository {
 
 /**
  * @brief Maps market_fixing domain entities to database entities and vice-versa.
  */
-class market_fixing_mapper {
+class ORES_MARKETDATA_CORE_EXPORT market_fixing_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.repository.market_fixing_mapper";

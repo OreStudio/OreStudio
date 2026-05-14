@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
 /**
  * @brief Reads and writes roles to data storage.
  */
-class role_repository {
+class ORES_IAM_CORE_EXPORT role_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.role_repository";

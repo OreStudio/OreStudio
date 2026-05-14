@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic book.
  */
-domain::book generate_synthetic_book(
+ORES_REFDATA_API_EXPORT domain::book generate_synthetic_book(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic books.
  */
-std::vector<domain::book>
+ORES_REFDATA_API_EXPORT std::vector<domain::book>
 generate_synthetic_books(std::size_t n,
     utility::generation::generation_context& ctx);
 

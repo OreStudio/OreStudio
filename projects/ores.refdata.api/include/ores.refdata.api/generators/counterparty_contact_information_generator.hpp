@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic counterparty_contact_information.
  */
-domain::counterparty_contact_information generate_synthetic_counterparty_contact_information(
+ORES_REFDATA_API_EXPORT domain::counterparty_contact_information generate_synthetic_counterparty_contact_information(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic counterparty_contact_informations.
  */
-std::vector<domain::counterparty_contact_information>
+ORES_REFDATA_API_EXPORT std::vector<domain::counterparty_contact_information>
 generate_synthetic_counterparty_contact_informations(std::size_t n,
     utility::generation::generation_context& ctx);
 

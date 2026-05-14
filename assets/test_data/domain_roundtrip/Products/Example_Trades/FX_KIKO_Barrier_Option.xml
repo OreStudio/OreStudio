@@ -1,0 +1,35 @@
+<Portfolio>
+  <Trade id="FX_BARRIER_OPTION">
+    <TradeType>FxKIKOBarrierOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxKIKOBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2031-02-21</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndIn</Type>
+          <Levels>
+            <Level>1.29999995</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>UpAndIn</Type>
+          <Levels>
+            <Level>1.10000002</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxKIKOBarrierOptionData>
+  </Trade>
+</Portfolio>

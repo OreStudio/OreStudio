@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.api/export.hpp"
 
 namespace ores::compute::domain {
 
 /**
  * @brief Dumps the host to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const host& v);
+ORES_COMPUTE_API_EXPORT std::ostream& operator<<(std::ostream& s, const host& v);
 
 }
 

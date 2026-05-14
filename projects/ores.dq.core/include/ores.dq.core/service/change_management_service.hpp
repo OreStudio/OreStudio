@@ -28,6 +28,7 @@
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/change_reason_repository.hpp"
 
 namespace ores::dq::service {
@@ -40,7 +41,7 @@ namespace ores::dq::service {
  * - Managing change reasons and their associated categories
  * - Validating change reason codes against the catalog
  */
-class change_management_service {
+class ORES_DQ_CORE_EXPORT change_management_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.change_management_service";

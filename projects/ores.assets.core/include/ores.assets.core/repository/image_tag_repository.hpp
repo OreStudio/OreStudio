@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets.api/domain/image_tag.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::repository {
 
 /**
  * @brief Reads and writes image-tag associations off of data storage.
  */
-class image_tag_repository {
+class ORES_ASSETS_CORE_EXPORT image_tag_repository {
 private:
     inline static std::string_view logger_name =
         "ores.assets.repository.image_tag_repository";

@@ -18,14 +18,16 @@
  *
  */
 
+\o /dev/null
 -- =============================================================================
 -- ORE Catalog
 -- =============================================================================
 
-\echo '--- ORE Catalog ---'
+\qecho '--- ORE Catalog ---'
 
 select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ORE',
     'Open Risk Engine (ORE) reference data and coding schemes. Includes asset class categorization codes used for market data series and trade classification.',
     'Reference Data Team'
 );
+\o

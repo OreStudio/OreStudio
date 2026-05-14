@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.connections/domain/folder.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::domain {
 
 /**
  * @brief Dumps the folder object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const folder& v);
+ORES_CONNECTIONS_EXPORT std::ostream& operator<<(std::ostream& s, const folder& v);
 
 }
 

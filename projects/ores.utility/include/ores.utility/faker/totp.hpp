@@ -21,13 +21,14 @@
 #define ORES_UTILITY_FAKER_TOTP_HPP
 
 #include <string>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::faker {
 
 /*
  * @brief Generates fake Time-based One-Time Password (TOTP) secrets.
  */
-class totp {
+class ORES_UTILITY_EXPORT totp {
 public:
     static std::string totp_secret(std::size_t num_bytes = 20);
 };

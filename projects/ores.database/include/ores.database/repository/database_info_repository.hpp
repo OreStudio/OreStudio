@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_info.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database::repository {
 
@@ -33,7 +34,7 @@ namespace ores::database::repository {
  *
  * This is a read-only repository for a non-temporal table.
  */
-class database_info_repository {
+class ORES_DATABASE_EXPORT database_info_repository {
 private:
     inline static std::string_view logger_name =
         "ores.database.repository.database_info_repository";

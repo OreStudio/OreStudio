@@ -21,6 +21,7 @@
 #define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 
 namespace ores::reporting::domain {
@@ -28,7 +29,7 @@ namespace ores::reporting::domain {
 /**
  * @brief Dumps the concurrency_policy to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const concurrency_policy& v);
+ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const concurrency_policy& v);
 
 }
 

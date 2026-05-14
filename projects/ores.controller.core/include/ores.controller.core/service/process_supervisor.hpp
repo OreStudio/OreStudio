@@ -34,6 +34,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
 #include "ores.utility/concurrency/retry_strategy.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::service {
 
@@ -59,7 +60,7 @@ namespace ores::controller::service {
  * from a synchronous callback; these post the async work to the
  * io_context so the handler can reply immediately.
  */
-class process_supervisor {
+class ORES_CONTROLLER_CORE_EXPORT process_supervisor {
 private:
     inline static std::string_view logger_name =
         "ores.controller.service.process_supervisor";

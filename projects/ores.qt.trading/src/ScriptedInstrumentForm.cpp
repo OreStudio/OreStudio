@@ -110,11 +110,11 @@ void ScriptedInstrumentForm::writeUiToInstrument() {
 }
 
 void ScriptedInstrumentForm::setInstrument(
-    const trading::messaging::instrument_export_result& instrument) {
+    const trading::domain::trade_instrument& instrument) {
 
-    const auto* inst =
+    const auto* ex =
         std::get_if<trading::domain::scripted_instrument>(&instrument);
-    if (!inst) {
+    if (!ex) {
         BOOST_LOG_SEV(lg(), warn)
             << "Non-scripted instrument pushed to ScriptedInstrumentForm";
         emit loadFailed(QStringLiteral(
@@ -122,7 +122,7 @@ void ScriptedInstrumentForm::setInstrument(
         return;
     }
 
-    instrument_ = *inst;
+    instrument_ = *ex;
     loaded_ = true;
     dirty_ = false;
     populateFromInstrument();
@@ -207,7 +207,7 @@ void ScriptedInstrumentForm::saveInstrument(
         BOOST_LOG_SEV(lg(), info) << "Scripted instrument saved";
         self->dirty_ = false;
         self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.id));
+        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
     });
 
     auto* cm = clientManager_;

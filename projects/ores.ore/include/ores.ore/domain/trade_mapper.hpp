@@ -20,10 +20,11 @@
 #ifndef ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 #define ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 
-#include <variant>
 #include <optional>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
@@ -35,24 +36,6 @@
 #include "ores.ore/domain/composite_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
-
-/**
- * @brief Discriminated union of all possible instrument mapping results.
- *
- * std::monostate represents an unmapped trade (exotic, scripted, or a type
- * not yet covered). Each subsequent instrument phase appends a new member.
- */
-using instrument_mapping_result = std::variant<
-    std::monostate,       ///< unmapped / not yet supported
-    swap_mapping_result,
-    fx_mapping_result,
-    bond_mapping_result,
-    credit_mapping_result,
-    equity_mapping_result,
-    commodity_mapping_result,
-    scripted_mapping_result,
-    composite_mapping_result
->;
 
 /**
  * @brief Maps ORE XML trade types to trading domain entities.
@@ -76,7 +59,7 @@ using instrument_mapping_result = std::variant<
  * - counterparty_id (ORE CounterParty is a string name, not an ORES UUID)
  * - party_id (derived from book_id in ORES)
  */
-class trade_mapper {
+class ORES_ORE_EXPORT trade_mapper {
 private:
     inline static std::string_view logger_name = "ores.ore.domain.trade_mapper";
 
@@ -104,7 +87,7 @@ public:
      * Returns a populated result for Swap, CrossCurrencySwap, InflationSwap,
      * ForwardRateAgreement, and CapFloor. Returns empty for all other types.
      */
-    static std::optional<swap_mapping_result>
+    static std::optional<trading::domain::swap_instrument_data>
     map_swap_instrument(const trade& v);
 
     /**
@@ -113,7 +96,7 @@ public:
      * Returns a populated result for FxForward, FxSwap, and FxOption.
      * Returns empty for all other types.
      */
-    static std::optional<fx_mapping_result>
+    static std::optional<trading::domain::fx_instrument_variant>
     map_fx_instrument(const trade& v);
 
     /**
@@ -123,7 +106,7 @@ public:
      * IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO, and
      * RiskParticipationAgreement. Returns empty for all other types.
      */
-    static std::optional<credit_mapping_result>
+    static std::optional<trading::domain::credit_instrument>
     map_credit_instrument(const trade& v);
 
     /**
@@ -132,7 +115,7 @@ public:
      * Returns a populated result for Bond, ForwardBond, CallableBond,
      * and ConvertibleBond. Returns empty for all other types.
      */
-    static std::optional<bond_mapping_result>
+    static std::optional<trading::domain::bond_instrument>
     map_bond_instrument(const trade& v);
 
     /**
@@ -144,36 +127,36 @@ public:
      * EquityAccumulator, EquityTaRF, EquityCliquetOption,
      * and EquityWorstOfBasketSwap. Returns empty for all other types.
      */
-    static std::optional<equity_mapping_result>
+    static std::optional<trading::domain::equity_instrument_variant>
     map_equity_instrument(const trade& v);
 
     /**
      * @brief Dispatches a commodity-family trade to commodity_instrument_mapper.
      */
-    static std::optional<commodity_mapping_result>
+    static std::optional<trading::domain::commodity_instrument>
     map_commodity_instrument(const trade& v);
 
     /**
      * @brief Dispatches a scripted trade to scripted_instrument_mapper.
      */
-    static std::optional<scripted_mapping_result>
+    static std::optional<trading::domain::scripted_instrument>
     map_scripted_instrument(const trade& v);
 
     /**
      * @brief Dispatches a composite trade to composite_instrument_mapper.
      */
-    static std::optional<composite_mapping_result>
+    static std::optional<trading::domain::composite_instrument_data>
     map_composite_instrument(const trade& v);
 
     /**
      * @brief Unified instrument dispatch: maps any supported ORE trade to its
-     * instrument_mapping_result.
+     * trade_instrument.
      *
      * Tries swap, FX, bond, credit, equity, commodity, scripted, composite in
      * order. Returns std::monostate for any unknown type.
      * Callers should use std::visit to handle the result.
      */
-    static instrument_mapping_result map_instrument(const trade& v);
+    static trading::domain::trade_instrument map_instrument(const trade& v);
 };
 
 }

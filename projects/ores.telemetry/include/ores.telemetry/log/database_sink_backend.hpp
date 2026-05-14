@@ -28,6 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::log {
 
@@ -66,7 +67,7 @@ using database_log_handler = std::function<void(const domain::telemetry_log_entr
  * boost::log::core::get()->add_sink(sink);
  * @endcode
  */
-class database_sink_backend :
+class ORES_TELEMETRY_EXPORT database_sink_backend :
     public boost::log::sinks::basic_sink_backend<
         boost::log::sinks::synchronized_feeding> {
 public:

@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="EqSwap">
+    <TradeType>EquitySwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquitySwapData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Equity</LegType>
+        <EquityLegData>
+          <Quantity>1000</Quantity>
+          <ReturnType>Total</ReturnType>
+          <Name>.SPX</Name>
+        </EquityLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>1000</Notional>
+        </Notionals>
+      </LegData>
+    </EquitySwapData>
+  </Trade>
+</Portfolio>

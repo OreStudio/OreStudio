@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Asset Measure Dataset
 -- =============================================================================
 
-\echo '--- FpML Asset Measure Dataset ---'
+\qecho '--- FpML Asset Measure Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.asset_measure',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'asset_measures'
 );
+\o

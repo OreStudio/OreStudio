@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="SCRIPTED_FX_TARF">
+    <TradeType>FxTaRF</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>1000000</FixingAmount>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>ECB-EUR-USD</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers/>
+    </FxTaRFData>
+  </Trade>
+</Portfolio>

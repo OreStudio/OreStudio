@@ -23,13 +23,14 @@
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
 /**
  * @brief Maps concurrency_policy domain entities to data storage layer and vice-versa.
  */
-class concurrency_policy_mapper {
+class ORES_REPORTING_CORE_EXPORT concurrency_policy_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.repository.concurrency_policy_mapper";

@@ -26,6 +26,7 @@
 #include <boost/log/sinks/frontend_requirements.hpp>
 #include "ores.telemetry/domain/log_record.hpp"
 #include "ores.telemetry/domain/resource.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::log {
 
@@ -49,7 +50,7 @@ namespace ores::telemetry::log {
  * boost::log::core::get()->add_sink(sink);
  * @endcode
  */
-class telemetry_sink_backend :
+class ORES_TELEMETRY_EXPORT telemetry_sink_backend :
     public boost::log::sinks::basic_sink_backend<
         boost::log::sinks::synchronized_feeding> {
 public:

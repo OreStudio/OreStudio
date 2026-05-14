@@ -24,6 +24,7 @@
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
@@ -60,6 +61,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ChangeReasonCache* changeReasonCache,
+        ImageCache* imageCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -67,7 +69,7 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
-    void openEdit(const trading::messaging::trade_export_item& bundle);
+    void openEdit(const trading::domain::trade& trade);
 
 signals:
     void statusMessage(const QString& message);
@@ -77,7 +79,7 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowDetails(const trading::messaging::trade_export_item& bundle);
+    void onShowDetails(const trading::domain::trade& trade);
     void onAddNewRequested();
     void onShowHistory(const trading::domain::trade& trade);
     void onImportTradesRequested();
@@ -91,6 +93,7 @@ private:
     void showHistoryWindow(const trading::domain::trade& trade);
 
     ChangeReasonCache* changeReasonCache_{nullptr};
+    ImageCache* imageCache_{nullptr};
     TradeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic party_identifier.
  */
-domain::party_identifier generate_synthetic_party_identifier(
+ORES_REFDATA_API_EXPORT domain::party_identifier generate_synthetic_party_identifier(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_identifiers.
  */
-std::vector<domain::party_identifier>
+ORES_REFDATA_API_EXPORT std::vector<domain::party_identifier>
 generate_synthetic_party_identifiers(std::size_t n,
     utility::generation::generation_context& ctx);
 

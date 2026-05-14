@@ -29,6 +29,7 @@
 #include <unordered_map>
 #include <boost/core/demangle.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.eventing/export.hpp"
 
 namespace ores::eventing::service {
 
@@ -38,7 +39,7 @@ namespace ores::eventing::service {
  * When destroyed, automatically unsubscribes from the event bus.
  * Can be moved but not copied.
  */
-class subscription final {
+class ORES_EVENTING_EXPORT subscription final {
 public:
     using unsubscribe_fn = std::function<void()>;
 
@@ -116,7 +117,7 @@ private:
  *     // Subscription automatically cleaned up when 'sub' goes out of scope
  * @endcode
  */
-class event_bus final {
+class ORES_EVENTING_EXPORT event_bus final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

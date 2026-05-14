@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
 /**
  * @brief Reads and writes account parties to data storage.
  */
-class account_party_repository {
+class ORES_IAM_CORE_EXPORT account_party_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.account_party_repository";

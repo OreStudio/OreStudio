@@ -28,6 +28,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -38,7 +39,7 @@ namespace ores::iam::service {
  * They create sessions directly at startup and end them on shutdown.
  * This service provides a simplified interface for managing these sessions.
  */
-class service_session_service {
+class ORES_IAM_CORE_EXPORT service_session_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.service_session_service";

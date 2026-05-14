@@ -25,7 +25,6 @@
 #include <string_view>
 #include <vector>
 #include <QVector>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

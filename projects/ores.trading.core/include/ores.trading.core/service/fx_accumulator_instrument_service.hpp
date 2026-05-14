@@ -26,10 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
-class fx_accumulator_instrument_service {
+class ORES_TRADING_CORE_EXPORT fx_accumulator_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_accumulator_instrument_service";
@@ -50,6 +51,9 @@ public:
 
     void save_fx_accumulator_instrument(
         const domain::fx_accumulator_instrument& v);
+
+    std::vector<domain::fx_accumulator_instrument>
+    get_fx_accumulator_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

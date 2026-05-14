@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Entity Type Dataset
 -- =============================================================================
 
-\echo '--- FpML Entity Type Dataset ---'
+\qecho '--- FpML Entity Type Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.entity_type',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'entity_classifications'
 );
+\o

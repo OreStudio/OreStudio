@@ -29,13 +29,14 @@
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing composite instruments.
  */
-class composite_instrument_service {
+class ORES_TRADING_CORE_EXPORT composite_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.composite_instrument_service";
@@ -64,6 +65,9 @@ public:
     std::vector<domain::composite_leg>
     get_legs(const std::string& instrument_id);
 
+    std::vector<domain::composite_leg>
+    get_legs_batch(const std::vector<std::string>& instrument_ids);
+
     void save_composite_instrument(const domain::composite_instrument& v,
         const std::vector<domain::composite_leg>& legs);
 
@@ -71,6 +75,9 @@ public:
 
     std::vector<domain::composite_instrument>
     get_composite_instrument_history(const std::string& id);
+
+    std::vector<domain::composite_instrument>
+    get_composite_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

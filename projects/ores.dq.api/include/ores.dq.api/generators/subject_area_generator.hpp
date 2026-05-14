@@ -23,26 +23,27 @@
 #include <vector>
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic subject_area.
  */
-domain::subject_area generate_synthetic_subject_area(
+ORES_DQ_API_EXPORT domain::subject_area generate_synthetic_subject_area(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic subject_area with the given domain name.
  */
-domain::subject_area generate_synthetic_subject_area(
+ORES_DQ_API_EXPORT domain::subject_area generate_synthetic_subject_area(
     const std::string& domain_name,
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic subject_areas.
  */
-std::vector<domain::subject_area>
+ORES_DQ_API_EXPORT std::vector<domain::subject_area>
 generate_synthetic_subject_areas(std::size_t n,
     utility::generation::generation_context& ctx);
 

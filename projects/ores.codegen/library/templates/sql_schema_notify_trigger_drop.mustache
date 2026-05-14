@@ -1,0 +1,7 @@
+{{! Template to generate SQL drop script for a domain entity notify trigger }}
+{{{sql_license}}}
+{{#domain_entity}}
+
+drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_notify_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_notify_fn;
+{{/domain_entity}}

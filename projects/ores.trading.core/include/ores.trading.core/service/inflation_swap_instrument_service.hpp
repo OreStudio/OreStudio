@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing inflation swap instruments.
  */
-class inflation_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT inflation_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.inflation_swap_instrument_service";
@@ -67,6 +68,9 @@ public:
 
     std::vector<domain::inflation_swap_instrument>
     get_inflation_swap_instrument_history(const std::string& id);
+
+    std::vector<domain::inflation_swap_instrument>
+    get_inflation_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::net {
 
@@ -31,7 +32,7 @@ namespace ores::platform::net {
  *
  * @return The hostname, or "unknown" if it cannot be determined.
  */
-std::string get_hostname();
+ORES_PLATFORM_EXPORT std::string get_hostname();
 
 /**
  * @brief Gets the primary MAC address of the machine.
@@ -42,7 +43,7 @@ std::string get_hostname();
  *
  * @return The MAC address if available, empty optional otherwise.
  */
-std::optional<std::string> get_primary_mac_address();
+ORES_PLATFORM_EXPORT std::optional<std::string> get_primary_mac_address();
 
 /**
  * @brief Gets the primary MAC address as raw bytes.
@@ -52,7 +53,7 @@ std::optional<std::string> get_primary_mac_address();
  *
  * @return The MAC address bytes if available, empty optional otherwise.
  */
-std::optional<std::string> get_primary_mac_address_bytes();
+ORES_PLATFORM_EXPORT std::optional<std::string> get_primary_mac_address_bytes();
 
 /**
  * @brief Derives a stable machine identifier from hardware properties.
@@ -62,21 +63,21 @@ std::optional<std::string> get_primary_mac_address_bytes();
  *
  * @return A hex string representing the machine ID.
  */
-std::string derive_machine_id();
+ORES_PLATFORM_EXPORT std::string derive_machine_id();
 
 /**
  * @brief Derives a 16-bit machine identifier suitable for embedding in IDs.
  *
  * @return A 16-bit hash of the machine identity.
  */
-std::uint16_t derive_machine_id_hash();
+ORES_PLATFORM_EXPORT std::uint16_t derive_machine_id_hash();
 
 /**
  * @brief Gets the current process ID.
  *
  * @return The process ID, or 0 if it cannot be determined.
  */
-std::int64_t get_process_id();
+ORES_PLATFORM_EXPORT std::int64_t get_process_id();
 
 }
 

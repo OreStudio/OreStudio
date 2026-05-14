@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/messaging/import_protocol.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::service {
 
@@ -34,7 +35,7 @@ namespace ores::marketdata::service {
  * key registry, upserts market series catalog entries, and bulk-inserts
  * observations and fixings into the TimescaleDB hypertables.
  */
-class import_service {
+class ORES_MARKETDATA_CORE_EXPORT import_service {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.service.import_service";

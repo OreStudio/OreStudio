@@ -1,0 +1,22 @@
+<Portfolio>
+  <Trade id="EquityOption">
+    <TradeType>EquityOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2025-02-20</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Quantity>775</Quantity>
+      <Strike>2800.000000</Strike>
+    </EquityOptionData>
+  </Trade>
+</Portfolio>

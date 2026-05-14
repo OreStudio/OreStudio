@@ -27,6 +27,7 @@
 #include <boost/log/sinks.hpp>
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/logging_options.hpp"
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
@@ -40,7 +41,7 @@ namespace ores::logging {
  * Note: this class uses boost shared_ptr due to legacy reasons (boost log does
  * not support std::shared_ptr).
  */
-class lifecycle_manager {
+class ORES_LOGGING_EXPORT lifecycle_manager {
 protected:
     using file_sink_type = boost::log::sinks::synchronous_sink<
         boost::log::sinks::text_file_backend>;

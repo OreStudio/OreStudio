@@ -1,0 +1,55 @@
+<Portfolio>
+  <Trade id="FXFWD_EURUSD_10Y">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>2026-03-01</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxForwardData>
+  </Trade>
+  <Trade id="FX_CALL_OPTION_EURUSD_10Y">
+    <TradeType>FxOption</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-03-01</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxOptionData>
+  </Trade>
+  <Trade id="FX_PUT_OPTION_EURUSD_10Y">
+    <TradeType>FxOption</TradeType>
+    <Envelope>
+      <NettingSetId>CPTY_A</NettingSetId>
+    </Envelope>
+    <FxOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-03-01</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxOptionData>
+  </Trade>
+</Portfolio>

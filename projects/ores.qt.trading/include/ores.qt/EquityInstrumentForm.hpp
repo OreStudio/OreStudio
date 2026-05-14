@@ -22,7 +22,7 @@
 
 #include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/equity_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
 
 namespace Ui {
 class EquityInstrumentForm;
@@ -57,9 +57,10 @@ public:
 
     void setClientManager(ClientManager* cm) override;
     void setUsername(const std::string& username) override;
+    void setImageCache(ImageCache* cache) override;
 
     void setInstrument(
-        const trading::messaging::instrument_export_result& instrument) override;
+        const trading::domain::trade_instrument& instrument) override;
     void clear() override;
 
     void setTradeType(const QString& code,
@@ -79,14 +80,18 @@ public:
 
 private:
     void setupConnections();
+    void populateCurrencies();
     void populateFromInstrument();
     void emitProvenance();
     void onFieldChanged();
 
     Ui::EquityInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
-    trading::domain::equity_instrument instrument_;
+    /// Per-type instrument state. Scoped to EquityOption for now; extending
+    /// to other equity variants is follow-up work.
+    trading::domain::equity_option_instrument instrument_;
     bool dirty_ = false;
     bool loaded_ = false;
 };

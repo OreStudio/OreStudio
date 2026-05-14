@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Test Data Methodology
 -- =============================================================================
 
-\echo '--- Test Data Methodology ---'
+\qecho '--- Test Data Methodology ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'OreStudio Test Data Generation',
@@ -39,3 +40,4 @@ select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
 for business units, portfolios, and books. Data represents a fictitious
 global markets organisation with regional trading desks.'
 );
+\o

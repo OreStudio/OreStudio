@@ -29,6 +29,7 @@
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.core/repository/nature_dimension_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/origin_dimension_repository.hpp"
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
 
@@ -42,7 +43,7 @@ namespace ores::dq::service {
  * - Managing origin dimensions (CRUD operations)
  * - Managing treatment dimensions (CRUD operations)
  */
-class dimension_service {
+class ORES_DQ_CORE_EXPORT dimension_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.dimension_service";

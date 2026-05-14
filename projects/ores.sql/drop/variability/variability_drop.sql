@@ -18,6 +18,9 @@
  *
  */
 
+-- SECURITY DEFINER functions (drop before table so no dependency issues)
+\ir ./variability_system_settings_functions_drop.sql
+
 -- Triggers depend on their respective tables
 \ir ./variability_system_settings_notify_trigger_drop.sql
 \ir ./variability_system_settings_drop.sql

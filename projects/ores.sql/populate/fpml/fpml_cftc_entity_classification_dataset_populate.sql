@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Cftc Entity Classification Dataset
 -- =============================================================================
 
-\echo '--- FpML Cftc Entity Classification Dataset ---'
+\qecho '--- FpML Cftc Entity Classification Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.cftc_entity_classification',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'entity_classifications'
 );
+\o

@@ -1,0 +1,29 @@
+<Portfolio>
+  <Trade id="EQ_DECUMULATOR">
+    <TradeType>EquityAccumulator</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <EquityAccumulatorData>
+      <Currency>EUR</Currency>
+      <FixingAmount>30</FixingAmount>
+      <Strike>4000</Strike>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.STOXX50</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2025-02-05</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2025-02-05</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds/>
+    </EquityAccumulatorData>
+  </Trade>
+</Portfolio>

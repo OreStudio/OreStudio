@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_CURRENCY_MAPPER_HPP
 #define ORES_ORE_DOMAIN_CURRENCY_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.ore/domain/domain.hpp"
@@ -29,7 +30,7 @@ namespace ores::ore::domain {
 /**
  * @brief Maps refdata domain entities to ORE XML types and vice-versa.
  */
-class currency_mapper {
+class ORES_ORE_EXPORT currency_mapper {
 private:
     inline static std::string_view logger_name = "ores.ore.domain.currency_mapper";
 

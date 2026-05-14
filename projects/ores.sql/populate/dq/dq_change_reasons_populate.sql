@@ -46,11 +46,12 @@
  *       requires_commentary, display_order)
  */
 
+\o /dev/null
 -- =============================================================================
 -- Change Reason Categories
 -- =============================================================================
 
-\echo '--- Change Reason Categories ---'
+\qecho '--- Change Reason Categories ---'
 
 select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system',
@@ -71,8 +72,8 @@ select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn()
 -- Change Reasons: System Category
 -- =============================================================================
 
-\echo ''
-\echo '--- Change Reasons: System ---'
+\qecho ''
+\qecho '--- Change Reasons: System ---'
 
 -- System reasons (auto-assigned, not user-selectable)
 select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -145,8 +146,8 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
 -- =============================================================================
 
-\echo ''
-\echo '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
+\qecho ''
+\qecho '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
 
 select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.non_material_update',
@@ -262,8 +263,8 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Change Reasons: Trade Category (FINRA / MiFID II aligned)
 -- =============================================================================
 
-\echo ''
-\echo '--- Change Reasons: Trade (FINRA / MiFID II) ---'
+\qecho ''
+\qecho '--- Change Reasons: Trade (FINRA / MiFID II) ---'
 
 select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.fat_finger',
@@ -335,8 +336,8 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Change Reason Categories' as entity, count(*) as count
 from ores_dq_change_reason_categories_tbl where valid_to = ores_utility_infinity_timestamp_fn()
@@ -350,3 +351,4 @@ union all
 select 'Change Reasons (trade)', count(*)
 from ores_dq_change_reasons_tbl where category_code = 'trade' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

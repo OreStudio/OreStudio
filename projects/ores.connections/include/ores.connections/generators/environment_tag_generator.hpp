@@ -24,19 +24,20 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/environment_tag.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic environment-tag association.
  */
-domain::environment_tag generate_synthetic_environment_tag(
+ORES_CONNECTIONS_EXPORT domain::environment_tag generate_synthetic_environment_tag(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic environment-tag association with specific IDs.
  */
-domain::environment_tag generate_synthetic_environment_tag(
+ORES_CONNECTIONS_EXPORT domain::environment_tag generate_synthetic_environment_tag(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& environment_id,
     const boost::uuids::uuid& tag_id);
@@ -44,7 +45,7 @@ domain::environment_tag generate_synthetic_environment_tag(
 /**
  * @brief Generates N synthetic environment-tag associations.
  */
-std::vector<domain::environment_tag> generate_synthetic_environment_tags(
+ORES_CONNECTIONS_EXPORT std::vector<domain::environment_tag> generate_synthetic_environment_tags(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

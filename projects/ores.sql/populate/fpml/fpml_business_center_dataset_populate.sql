@@ -29,11 +29,12 @@
  * This must be run before populating the artefact table.
  */
 
+\o /dev/null
 -- =============================================================================
 -- FpML Business Center Dataset
 -- =============================================================================
 
-\echo '--- FpML Business Center Dataset ---'
+\qecho '--- FpML Business Center Dataset ---'
 
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'fpml.business_center',
@@ -53,3 +54,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Public License 2.0',
     'business_centres'
 );
+\o

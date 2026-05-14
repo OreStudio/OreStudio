@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the fsm_state to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const fsm_state& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const fsm_state& v);
 
 }
 

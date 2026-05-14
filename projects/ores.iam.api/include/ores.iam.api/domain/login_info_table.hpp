@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_LOGIN_INFO_TABLE_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Converts login_info to table format.
  */
-std::string convert_to_table(const std::vector<login_info>& v);
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<login_info>& v);
 
 }
 

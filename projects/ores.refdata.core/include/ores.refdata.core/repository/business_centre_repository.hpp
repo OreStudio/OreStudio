@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes business centres off of data storage.
  */
-class business_centre_repository {
+class ORES_REFDATA_CORE_EXPORT business_centre_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.business_centre_repository";

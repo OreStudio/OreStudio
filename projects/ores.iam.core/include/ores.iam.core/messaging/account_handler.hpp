@@ -138,7 +138,8 @@ public:
 
     void reload_token_settings() {
         try {
-            variability::service::system_settings_service svc(ctx_);
+            variability::service::system_settings_service svc(
+                ctx_, database::service::tenant_context::system_tenant_id);
             svc.refresh();
             token_settings_ = domain::token_settings::load(svc);
         } catch (const std::exception& e) {
@@ -291,7 +292,7 @@ public:
         }
     }
 
-    void del(ores::nats::message msg) {
+    void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(account_handler_lg(), msg);
         auto req = decode<delete_account_request>(msg);

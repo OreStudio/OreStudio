@@ -1,0 +1,11 @@
+<Portfolio>
+  <Trade id="BestOfAssetOrCashRainbowOption#1">
+    <TradeType>ScriptedTrade</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <ScriptedTradeData>
+      <Data/>
+    </ScriptedTradeData>
+  </Trade>
+</Portfolio>

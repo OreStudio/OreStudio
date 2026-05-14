@@ -55,9 +55,10 @@ public:
 
     void setClientManager(ClientManager* cm) override;
     void setUsername(const std::string& username) override;
+    void setImageCache(ImageCache* cache) override;
 
     void setInstrument(
-        const trading::messaging::instrument_export_result& instrument) override;
+        const trading::domain::trade_instrument& instrument) override;
     void clear() override;
 
     void setTradeType(const QString& code,
@@ -77,12 +78,14 @@ public:
 
 private:
     void setupConnections();
+    void populateCurrencies();
     void populateFromInstrument();
     void emitProvenance();
     void onFieldChanged();
 
     Ui::FxInstrumentForm* ui_;
     ClientManager* clientManager_ = nullptr;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
     /// Per-type instrument state. Scoped to FxForward for now; extending
     /// to other FX variants is follow-up work tracked in the per-type

@@ -90,8 +90,18 @@ void system_settings_service::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Refreshing system settings cache from database";
     cache_.clear();
 
-    for (const auto& s : repo_.read_latest(ctx_))
-        cache_[s.name] = s.value;
+    if (!tenant_id_.empty()) {
+        // Per-tenant path: use SECURITY DEFINER function filtered to the
+        // specific tenant. Required for service users with no direct SELECT
+        // grant on ores_variability_system_settings_tbl.
+        cache_ = repo_.read_for_tenant(ctx_, tenant_id_);
+    } else {
+        // Variability service's own context: caller holds a direct SELECT
+        // grant on the table (DDL user or variability service user).
+        auto settings = repo_.read_latest(ctx_);
+        for (auto& s : settings)
+            cache_[s.name] = s.value;
+    }
 
     BOOST_LOG_SEV(lg(), info) << "System settings cache refreshed. Count: "
                               << cache_.size();

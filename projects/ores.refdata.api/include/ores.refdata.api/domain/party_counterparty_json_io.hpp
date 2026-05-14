@@ -22,10 +22,11 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/party_counterparty.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
-std::ostream& operator<<(std::ostream& s, const party_counterparty& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const party_counterparty& v);
 
 }
 

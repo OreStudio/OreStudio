@@ -90,6 +90,7 @@ void MarketFixingDetailMdiWindow::setupUi() {
     connect(model_.get(), &ClientMarketFixingModel::loadError,
             this, &MarketFixingDetailMdiWindow::onLoadError);
 
+    connectModel(model_.get());
     model_->refresh();
 }
 
@@ -101,7 +102,7 @@ void MarketFixingDetailMdiWindow::setupToolbar() {
         Icon::ArrowSync, color_constants::icon_color));
     reloadAction_->setToolTip(tr("Refresh fixings"));
     connect(reloadAction_, &QAction::triggered,
-            this, &MarketFixingDetailMdiWindow::doReload);
+            this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

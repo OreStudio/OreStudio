@@ -60,14 +60,14 @@ commodity_instrument_service::get_commodity_instrument(const std::string& id) {
 
 void commodity_instrument_service::save_commodity_instrument(const domain::commodity_instrument& v) {
     auto t = v;
-    if (t.id.is_nil()) {
+    if (t.instrument_id.is_nil()) {
         boost::uuids::random_generator gen;
-        t.id = gen();
+        t.instrument_id = gen();
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity_instrument: " << t.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving commodity_instrument: " << t.instrument_id;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity_instrument: " << t.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved commodity_instrument: " << t.instrument_id;
 }
 
 void commodity_instrument_service::remove_commodity_instrument(const std::string& id) {
@@ -80,6 +80,13 @@ std::vector<domain::commodity_instrument>
 commodity_instrument_service::get_commodity_instrument_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity_instrument: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+
+std::vector<domain::commodity_instrument>
+commodity_instrument_service::get_commodity_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
 }
 
 }

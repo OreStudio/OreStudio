@@ -25,6 +25,7 @@
 #include <random>
 #include <mutex>
 #include "ores.telemetry/domain/span_id.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::generators {
 
@@ -40,7 +41,7 @@ namespace ores::telemetry::generators {
  * - Uniqueness via timestamp + sequence
  * - OpenTelemetry compatibility (64-bit size)
  */
-class span_id_generator final {
+class ORES_TELEMETRY_EXPORT span_id_generator final {
 public:
     /**
      * @brief Constructs the generator.

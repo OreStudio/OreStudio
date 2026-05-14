@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
 /**
  * @brief An exception has occurred during logging.
  */
-class logging_exception : public virtual std::exception,
+class ORES_LOGGING_EXPORT logging_exception : public virtual std::exception,
                           public virtual boost::exception {
 public:
     explicit logging_exception(std::string_view message = "")

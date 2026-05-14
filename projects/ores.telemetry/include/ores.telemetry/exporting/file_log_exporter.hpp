@@ -24,6 +24,7 @@
 #include <fstream>
 #include <filesystem>
 #include "ores.telemetry/exporting/log_exporter.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -43,7 +44,7 @@ namespace ores::telemetry::exporting {
  * Thread-safety: This class is thread-safe. Multiple threads can call
  * export_record() concurrently.
  */
-class file_log_exporter final : public log_exporter {
+class ORES_TELEMETRY_EXPORT file_log_exporter final : public log_exporter {
 public:
     /**
      * @brief Constructs a file log exporter.

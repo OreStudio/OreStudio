@@ -41,7 +41,7 @@ std::string commodity_instrument_repository::sql() {
 
 void commodity_instrument_repository::write(context ctx,
     const domain::commodity_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instrument: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing commodity_instrument: " << v.instrument_id;
     execute_write_query(ctx, commodity_instrument_mapper::map(v),
         lg(), "Writing commodity_instrument to database.");
 }
@@ -146,6 +146,22 @@ void commodity_instrument_repository::remove(context ctx, const std::string& id)
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing commodity_instrument from database.");
+}
+
+
+std::vector<domain::commodity_instrument>
+commodity_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty()) return {};
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<commodity_instrument_entity>> |
+        where("tenant_id"_c == tid && "id"_c.in(ids)
+              && "valid_to"_c == max.value());
+    return execute_read_query<commodity_instrument_entity, domain::commodity_instrument>(
+        ctx, query,
+        [](const auto& entities) { return commodity_instrument_mapper::map(entities); },
+        lg(), "Reading latest commodity_instruments by ids.");
 }
 
 }

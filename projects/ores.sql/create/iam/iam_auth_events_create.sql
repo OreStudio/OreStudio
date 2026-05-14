@@ -62,9 +62,7 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice '=========================================';
-        raise notice 'TimescaleDB detected - creating hypertable';
-        raise notice '=========================================';
+        raise notice 'TimescaleDB detected - creating hypertable (1-day chunks)';
 
         perform public.create_hypertable(
             'ores_iam_auth_events_tbl',
@@ -72,7 +70,6 @@ begin
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
-        raise notice 'Created hypertable with 1-day chunks';
 
         declare
             current_license text;
@@ -147,15 +144,10 @@ begin
                 raise notice 'Configured retention policies for auth events';
             else
                 raise notice 'TimescaleDB Apache license - continuous aggregates and retention policies skipped';
-                raise notice 'Set timescaledb.license = ''timescale'' for full features';
             end if;
         end;
 
-        raise notice 'TimescaleDB setup complete for ores_iam_auth_events_tbl table';
     else
-        raise notice '================================================';
-        raise notice 'TimescaleDB NOT available - using regular table';
-        raise notice '================================================';
-        raise notice 'Note: Manual cleanup of old auth event data will be required';
+        raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;

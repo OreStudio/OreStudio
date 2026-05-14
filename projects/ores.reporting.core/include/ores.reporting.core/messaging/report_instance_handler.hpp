@@ -42,6 +42,7 @@
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -60,7 +61,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class report_instance_handler {
+class ORES_REPORTING_CORE_EXPORT report_instance_handler {
 public:
     report_instance_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
@@ -124,7 +125,7 @@ public:
             << "Completed " << msg.subject;
     }
 
-    void del(ores::nats::message msg) {
+    void remove(ores::nats::message msg) {
         BOOST_LOG_SEV(report_instance_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(

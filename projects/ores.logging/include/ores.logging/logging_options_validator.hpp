@@ -21,13 +21,14 @@
 #define ORES_LOGGING_LOGGING_OPTIONS_VALIDATOR_HPP
 
 #include "ores.logging/logging_options.hpp"
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
 /**
  * @brief Checks the validity of the supplied logging options.
  */
-class logging_options_validator final {
+class ORES_LOGGING_EXPORT logging_options_validator final {
 public:
     logging_options_validator() = delete;
     static void validate(const logging_options& cfg);

@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 9A2F3B14-2E4C-11F0-C7D2-50A1879125FC
+:END:
+#+title: WSL DB Permission Errors: Cross-Service Grant Investigation
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+#+status: OPEN
+
+* Overview
+
+On 2026-05-11, setting up OreStudio on a fresh Debian WSL machine revealed
+permission errors that had not been observed during equivalent provisioning
+runs on a regular Debian Linux machine using the same code (2-3 days prior).
+Two missing cross-service DB grants were identified and fixed. A third,
+deeper issue remains unresolved: why the regular Linux machine was not
+affected.
+
+* Errors Observed
+
+Two distinct ~permission denied~ errors appeared in service logs on the
+fresh WSL DB:
+
+#+begin_src
+[ERROR] [ores.variability.repository.system_settings_repository]
+  Query execution failed: ERROR: permission denied for table
+  ores_variability_system_settings_tbl
+
+[ERROR] [ores.iam.messaging.bootstrap_handler]
+  ores.dev.local1.iam.v1.bootstrap.status failed: Repository error: ...
+  permission denied for table ores_variability_system_settings_tbl
+#+end_src
+
+#+begin_src
+[ERROR] [ores.refdata.repository.party_repository]
+  Query failed: ERROR: permission denied for table ores_refdata_parties_tbl
+
+[ERROR] [ores.iam.repository.account_party_repository]
+  Executing INSERT failed: ERROR: permission denied for table
+  ores_refdata_parties_tbl
+
+[ERROR] [ores.iam.messaging.bootstrap_handler]
+  ores.dev.local1.iam.v1.bootstrap.provision-tenant failed: ...
+  permission denied for table ores_refdata_parties_tbl
+#+end_src
+
+And separately:
+
+#+begin_src
+[ERROR] [ores.compute.service]
+  permission denied for table ores_dq_change_reasons_tbl
+#+end_src
+
+* Root Cause
+
+All three errors share the same structural cause: the service registry model
+(~projects/ores.codegen/models/services/ores_services_service_registry.json~)
+was missing cross-service SELECT/DML grants that were needed by:
+
+| Service | Table                                   | Access needed |
+|---------+-----------------------------------------+---------------|
+| ~iam~   | ~ores_variability_system_settings_tbl~  | SELECT        |
+| ~iam~   | ~ores_refdata_parties_tbl~              | DML           |
+| ~compute~ | ~ores_dq_change_reasons_tbl~          | SELECT        |
+
+The generated file ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~
+is produced from the model via the ~service-registry~ codegen profile. Because
+the grants were absent from the model since the least-privilege commit
+(~532dc2bd6~, 2026-03-28), a fresh ~recreate_database.sh~ run produced a
+database missing these grants.
+
+** Why the variability grant was missing
+
+The IAM service directly links ~ores.variability.core~ and calls
+~variability::service::system_settings_service~ to read system flags
+(~system.user_signups~, ~system.signup_requires_authorization~, etc.) on
+startup and during login. This is a direct DB connection as the
+~iam_service~ user — no NATS hop. The grant was simply never added to the
+model.
+
+** Why the parties grants were missing
+
+~projects/ores.iam.core/include/ores.iam.core/messaging/bootstrap_handler.hpp~
+(line ~203~) instantiates ~refdata::repository::party_repository~ and
+~service::account_party_service~ directly as the IAM service user after
+calling ~ores_iam_provision_tenant_fn~. The ~SECURITY DEFINER~ function
+handles the tenant INSERT as the DDL user, but the subsequent C++ repository
+calls run as ~iam_service_user~ and need explicit grants on
+~ores_refdata_parties_tbl~. These grants were not in the model.
+
+** Why the compute grant was missing
+
+The compute service reads ~ores_dq_change_reasons_tbl~ (for change-reason
+validation) but this cross-service SELECT was not recorded in the model.
+
+* Fix Applied
+
+The service registry model was updated and the grants file regenerated:
+
+#+begin_src json
+// iam service entry — before:
+"select_tables": []
+
+// iam service entry — after:
+"select_tables": [
+  {"table": "ores_variability_system_settings_tbl"}
+],
+"dml_prefixes": [
+  {"prefix": "ores_iam_"},
+  {"prefix": "ores_refdata_parties"}
+]
+
+// compute service entry — added:
+{"table": "ores_dq_change_reasons_tbl"}
+#+end_src
+
+Commits:
+- ~c6e6d5aad~ — [sql] Grant IAM service SELECT on variability system settings table
+- ~79e2db2e3~ — [sql] Fix missing cross-service DB grants for IAM and compute services
+
+Grants were also applied directly to the live WSL database without a full
+recreate.
+
+* The Unresolved Question
+
+The grants have been missing since ~532dc2bd6~ (2026-03-28). The other
+(regular Linux) machine was running the same code 2-3 days before this
+investigation and successfully completing the full provisioning wizard flow.
+This is inconsistent with the missing grants.
+
+** What was ruled out
+
+- The grants were absent in every committed version of the file, confirmed
+  via ~git log~ through all 8 commits touching the file.
+- The ~recreate_database.sh~ script runs cleanly on WSL with no errors or
+  silent failures — confirmed by capturing the full output.
+- The ~ores_iam_provision_tenant_fn~ is ~SECURITY DEFINER~ and runs as the
+  DDL user — so the SQL-function path for tenant INSERT works regardless.
+  But the C++ ~account_party_repository~ calls that follow do not go through
+  this function and require explicit grants.
+- The code in ~bootstrap_handler.hpp~ calling ~party_repository~ directly
+  pre-dates the least-privilege commit by over six weeks.
+
+** Remaining hypotheses
+
+The most plausible outstanding explanation is a difference in PostgreSQL
+connection method between the two machines:
+
+- On regular Debian Linux, services may connect via Unix socket. PostgreSQL
+  ~pg_hba.conf~ on Debian defaults to ~peer~ authentication for local socket
+  connections. Depending on the OS user running the service, this may
+  resolve to a user with broader privileges.
+- On WSL, services connect via TCP to ~localhost:5432~. TCP connections use
+  ~scram-sha-256~ and enforce table-level grants strictly.
+
+To confirm: compare ~pg_hba.conf~ on both machines and check whether the
+service processes on regular Linux connect via socket or TCP.
+
+* Related Issues Found During Investigation
+
+** populate files diverge from the service registry model
+
+~projects/ores.sql/populate/iam/iam_service_accounts_populate.sql~ and
+~iam_service_account_roles_populate.sql~ contain entries for ~http_user~,
+~wt_user~, and ~compute_wrapper_user~ that are NOT in the service registry
+model. These users are infrastructure users created in
+~recreate_database.sql~ directly, outside the codegen flow. Because they
+are absent from the model, every codegen regeneration silently removes their
+IAM account and role-assignment entries from the generated populate files.
+
+These entries must be either:
+1. Moved to a static (non-generated) SQL file not managed by codegen, or
+2. Restored in the model with appropriate metadata to distinguish them from
+   domain services.
+
+Until fixed, any full codegen regeneration followed by a ~recreate_database.sh~
+run on a fresh machine will produce a DB where ~http_user~, ~wt_user~, and
+~compute_wrapper_user~ have no IAM accounts or role assignments.
+
+** Cross-service direct DB access is architectural debt
+
+The IAM service directly queries ~ores_variability_system_settings_tbl~
+(by linking ~ores.variability.core~) and ~ores_refdata_parties_tbl~ (via
+~refdata::repository::party_repository~). The architectural intent was that
+services should not access other services' tables directly; all cross-domain
+reads should go via NATS. These direct accesses are technical debt that
+should be refactored to use NATS-based service calls.

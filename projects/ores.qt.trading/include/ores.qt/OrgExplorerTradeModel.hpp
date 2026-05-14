@@ -113,11 +113,6 @@ public:
      */
     const trading::domain::trade* get_trade(int row) const;
 
-    /**
-     * @brief Get the trade bundle (trade + instrument) at the given row.
-     */
-    const trading::messaging::trade_export_item* get_trade_bundle(int row) const;
-
 signals:
     void dataLoaded();
     void loadError(const QString& error_message, const QString& details = {});
@@ -128,7 +123,7 @@ private slots:
 private:
     struct FetchResult {
         bool success;
-        std::vector<trading::messaging::trade_export_item> items;
+        std::vector<trading::domain::trade> trades;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
@@ -137,7 +132,7 @@ private:
     void fetch_trades(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<trading::messaging::trade_export_item> items_;
+    std::vector<trading::domain::trade> items_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};

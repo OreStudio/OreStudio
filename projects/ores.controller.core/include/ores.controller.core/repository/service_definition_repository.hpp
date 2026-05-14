@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::repository {
 
@@ -34,7 +35,7 @@ namespace ores::controller::repository {
  * The underlying table is bitemporal (valid_from/valid_to) but has no
  * tenant_id — it is a system-level table managed by the controller daemon.
  */
-class service_definition_repository {
+class ORES_CONTROLLER_CORE_EXPORT service_definition_repository {
 private:
     inline static std::string_view logger_name =
         "ores.controller.repository.service_definition_repository";

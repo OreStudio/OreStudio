@@ -1,0 +1,27 @@
+<Portfolio>
+  <Trade id="CPI_Cap_Leg">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>CPI</LegType>
+        <Currency>EUR</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-02-03</StartDate>
+            <EndDate>2043-02-03</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

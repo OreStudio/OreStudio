@@ -61,11 +61,6 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # installing.
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
-if(WIN32 AND (MSVC OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-    # Export all symbols on windows for now. Bit of a hack.
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-
 if(UNIX)
     #
     # Note sure why, but this cannot be within the packaging configuration.

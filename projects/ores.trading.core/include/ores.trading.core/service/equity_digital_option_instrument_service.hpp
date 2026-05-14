@@ -21,14 +21,16 @@
 #define ORES_TRADING_SERVICE_EQUITY_DIGITAL_OPTION_INSTRUMENT_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
-class equity_digital_option_instrument_service {
+class ORES_TRADING_CORE_EXPORT equity_digital_option_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_digital_option_instrument_service";
@@ -44,7 +46,13 @@ public:
 
     explicit equity_digital_option_instrument_service(context ctx);
 
+    std::optional<domain::equity_digital_option_instrument>
+    get_equity_digital_option_instrument(const std::string& id);
+
     void save_equity_digital_option_instrument(const domain::equity_digital_option_instrument& v);
+
+    std::vector<domain::equity_digital_option_instrument>
+    get_equity_digital_option_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

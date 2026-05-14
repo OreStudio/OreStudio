@@ -95,4 +95,11 @@ inflation_swap_instrument_service::get_inflation_swap_instrument_history(
     return repo_.read_all(ctx_, id);
 }
 
+
+std::vector<domain::inflation_swap_instrument>
+inflation_swap_instrument_service::get_inflation_swap_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
+}
+
 }

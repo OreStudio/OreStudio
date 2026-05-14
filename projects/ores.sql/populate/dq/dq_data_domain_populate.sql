@@ -30,11 +30,12 @@
  * - Market Data: Pricing and market information
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Data Domains
 -- =============================================================================
 
-\echo '--- Data Quality Data Domains ---'
+\qecho '--- Data Quality Data Domains ---'
 
 select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Reference Data',
@@ -55,9 +56,10 @@ select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Data Domains' as entity, count(*) as count
 from ores_dq_data_domains_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

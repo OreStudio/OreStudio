@@ -23,13 +23,14 @@
 #include "ores.workflow/domain/workflow_instance.hpp"
 #include "ores.workflow/repository/workflow_instance_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Maps workflow_instance domain entities to data storage layer and vice-versa.
  */
-class workflow_instance_mapper {
+class ORES_WORKFLOW_EXPORT workflow_instance_mapper  {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.repository.workflow_instance_mapper";

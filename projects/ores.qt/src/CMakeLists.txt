@@ -46,8 +46,13 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${ORES_QT_DIR}/include
-    # Expose AUTOUIC-generated ui_*.h headers so consumers (exe) can find them.
+    ${ORES_QT_DIR}/include)
+# AUTOUIC headers are only consumed by .cpp files in ores.qt itself —
+# MainWindow and AboutDialog hold their Ui::* pimpl-style (forward-declared
+# in the .hpp, included in the .cpp). Keeping this dir PRIVATE stops stale
+# ui_*.h copies from leaking to plugin libs (and previously shadowing the
+# fresh ones at their own autogen dirs).
+target_include_directories(${lib_target_name} PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
 target_link_libraries(${lib_target_name}
     PUBLIC

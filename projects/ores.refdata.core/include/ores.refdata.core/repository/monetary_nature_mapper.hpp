@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.core/repository/monetary_nature_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps monetary_nature domain entities to data storage layer and vice-versa.
  */
-class monetary_nature_mapper {
+class ORES_REFDATA_CORE_EXPORT monetary_nature_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.monetary_nature_mapper";

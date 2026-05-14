@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/trade_identifier.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the trade_identifier to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const trade_identifier& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const trade_identifier& v);
 
 }
 

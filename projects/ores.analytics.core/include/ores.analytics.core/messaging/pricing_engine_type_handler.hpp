@@ -31,6 +31,7 @@
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
 #include "ores.analytics.core/service/pricing_engine_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -54,7 +55,7 @@ using namespace ores::logging;
  * Pricing engine types are system-owned global entities; list and history
  * operations use the system tenant context.
  */
-class pricing_engine_type_handler {
+class ORES_ANALYTICS_CORE_EXPORT pricing_engine_type_handler {
 public:
     pricing_engine_type_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

@@ -1,0 +1,13 @@
+<Portfolio>
+  <Trade id="ConvertibleBond#2">
+    <TradeType>ConvertibleBond</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <ConvertibleBondData>
+      <BondData>
+        <SecurityId>ISIN:US531229AR32</SecurityId>
+      </BondData>
+    </ConvertibleBondData>
+  </Trade>
+</Portfolio>

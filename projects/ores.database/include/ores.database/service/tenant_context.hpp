@@ -23,6 +23,7 @@
 #include <string>
 #include "ores.database/domain/context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database::service {
 
@@ -34,7 +35,7 @@ namespace ores::database::service {
  * operations must be performed within a tenant context to ensure proper
  * row-level security enforcement.
  */
-class tenant_context final {
+class ORES_DATABASE_EXPORT tenant_context final {
 public:
     /**
      * @brief The UUID of the system tenant (max UUID per RFC 9562).

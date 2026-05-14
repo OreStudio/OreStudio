@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts rounding_types to the table format.
  */
-std::string convert_to_table(const std::vector<rounding_type>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<rounding_type>& v);
 
 }
 

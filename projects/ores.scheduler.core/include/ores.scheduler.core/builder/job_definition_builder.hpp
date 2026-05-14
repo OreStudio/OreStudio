@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::builder {
 
@@ -48,7 +49,7 @@ namespace ores::scheduler::builder {
  *       .build();
  * @endcode
  */
-class job_definition_builder final {
+class ORES_SCHEDULER_CORE_EXPORT job_definition_builder final {
 public:
     job_definition_builder() = default;
 

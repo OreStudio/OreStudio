@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the badge_definition to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const badge_definition& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const badge_definition& v);
 
 }
 

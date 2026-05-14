@@ -21,6 +21,7 @@
 #define ORES_IAM_GENERATORS_ROLE_GENERATOR_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::iam::generators {
 /**
  * @brief Generates a synthetic role.
  */
-domain::role generate_synthetic_role(
+ORES_IAM_API_EXPORT domain::role generate_synthetic_role(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic roles.
  */
-std::vector<domain::role>
+ORES_IAM_API_EXPORT std::vector<domain::role>
 generate_synthetic_roles(std::size_t n,
     utility::generation::generation_context& ctx);
 

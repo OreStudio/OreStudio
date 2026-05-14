@@ -28,13 +28,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes FSM transitions to data storage.
  */
-class fsm_transition_repository {
+class ORES_DQ_CORE_EXPORT fsm_transition_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.fsm_transition_repository";

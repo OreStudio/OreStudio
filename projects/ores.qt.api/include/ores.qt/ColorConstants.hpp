@@ -21,7 +21,6 @@
 #define ORES_QT_COLOR_CONSTANTS_HPP
 
 #include <QColor>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

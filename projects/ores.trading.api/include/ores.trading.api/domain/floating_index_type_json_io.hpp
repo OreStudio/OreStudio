@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/floating_index_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the floating_index_type to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const floating_index_type& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const floating_index_type& v);
 
 }
 

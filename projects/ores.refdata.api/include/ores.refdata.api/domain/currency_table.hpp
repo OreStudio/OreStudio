@@ -23,18 +23,19 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts a single currency to table format string.
  */
-std::string convert_to_table(const currency& c);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const currency& c);
 
 /**
  * @brief Converts a vector of currencies to table format string.
  */
-std::string convert_to_table(const std::vector<currency>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency>& v);
 
 }
 

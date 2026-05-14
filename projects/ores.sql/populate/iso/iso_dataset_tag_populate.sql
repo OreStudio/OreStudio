@@ -25,11 +25,12 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 -- =============================================================================
 -- ISO Standards Dataset Tags
 -- =============================================================================
 
-\echo '--- ISO Standards Dataset Tags ---'
+\qecho '--- ISO Standards Dataset Tags ---'
 
 select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ISO Coding Schemes',
@@ -54,4 +55,4 @@ select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
     'currency',
     'Currency reference data'
 );
-
+\o

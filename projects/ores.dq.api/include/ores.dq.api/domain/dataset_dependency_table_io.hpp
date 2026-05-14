@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.dq.api/domain/dataset_dependency.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Outputs dataset dependencies as a formatted table.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<dataset_dependency>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<dataset_dependency>& v);
 
 }
 

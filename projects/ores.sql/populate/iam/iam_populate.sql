@@ -39,3 +39,11 @@
 
 \echo '--- IAM Service Account Role Assignments ---'
 \ir iam_service_account_roles_populate.sql
+
+-- =============================================================================
+-- Infrastructure Account Role Assignments (not managed by service registry
+-- codegen — editing this file is safe across codegen regeneration runs)
+-- =============================================================================
+
+\echo '--- Infrastructure Account Role Assignments ---'
+\ir iam_infrastructure_accounts_populate.sql

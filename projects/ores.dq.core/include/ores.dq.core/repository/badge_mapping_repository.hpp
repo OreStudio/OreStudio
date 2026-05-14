@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
@@ -34,7 +35,7 @@ namespace ores::dq::repository {
  * Returns the complete set of active badge mappings for the tenant, used to
  * populate BadgeCache at client startup.
  */
-class badge_mapping_repository {
+class ORES_DQ_CORE_EXPORT badge_mapping_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.badge_mapping_repository";

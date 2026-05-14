@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_REGISTRAR_HPP
 
 #include <vector>
+#include "ores.iam.core/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
@@ -28,7 +29,7 @@
 
 namespace ores::iam::messaging {
 
-class registrar {
+class ORES_IAM_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,

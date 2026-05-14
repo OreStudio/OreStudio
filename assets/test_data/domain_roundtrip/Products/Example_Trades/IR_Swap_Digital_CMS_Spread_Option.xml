@@ -1,0 +1,40 @@
+<Portfolio>
+  <Trade id="Swap_Digital_CMS_Spread_Option">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>DigitalCMSSpread</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>800000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CMSSpread</LegType>
+        <Currency>USD</Currency>
+        <Notionals>
+          <Notional>800000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

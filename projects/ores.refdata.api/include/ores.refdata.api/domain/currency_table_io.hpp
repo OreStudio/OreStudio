@@ -23,18 +23,19 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Prints currencies to a stream in table format.
  */
-void print_currency_table(std::ostream& s, const std::vector<currency>& v);
+ORES_REFDATA_API_EXPORT void print_currency_table(std::ostream& s, const std::vector<currency>& v);
 
 /**
  * @brief Dumps the currency object to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<currency>& v);
 
 }
 

@@ -21,6 +21,7 @@
 
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.core/service/action_handler.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -33,7 +34,7 @@ namespace ores::scheduler::service {
  * The message body is empty — the subject alone is sufficient to trigger
  * fire-and-forget compute operations such as the stale-result reaper.
  */
-class nats_publish_action_handler final : public action_handler {
+class ORES_SCHEDULER_CORE_EXPORT nats_publish_action_handler final : public action_handler {
 public:
     explicit nats_publish_action_handler(ores::nats::service::client& nats);
 

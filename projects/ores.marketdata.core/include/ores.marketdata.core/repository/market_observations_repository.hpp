@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::repository {
 
@@ -38,7 +39,7 @@ namespace ores::marketdata::repository {
  * Bulk writes are the primary ingestion path; individual reads filter
  * by series and optionally by date range.
  */
-class market_observations_repository {
+class ORES_MARKETDATA_CORE_EXPORT market_observations_repository {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.repository.market_observations_repository";

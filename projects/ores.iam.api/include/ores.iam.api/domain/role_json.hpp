@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/role.hpp"
 
 namespace ores::iam::domain {
@@ -30,8 +31,8 @@ namespace ores::iam::domain {
  * @brief Dumps the role object to a stream in JSON format.
  */
 /**@{*/
-std::string convert_to_json(const role& v);
-std::string convert_to_json(const std::vector<role>& v);
+ORES_IAM_API_EXPORT std::string convert_to_json(const role& v);
+ORES_IAM_API_EXPORT std::string convert_to_json(const std::vector<role>& v);
 /**@}*/
 
 }

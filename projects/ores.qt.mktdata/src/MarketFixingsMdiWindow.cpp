@@ -79,6 +79,7 @@ void MarketFixingsMdiWindow::setupUi() {
             this, &MarketFixingsMdiWindow::onDataLoaded);
     connect(model_.get(), &ClientMarketSeriesModel::loadError,
             this, &MarketFixingsMdiWindow::onLoadError);
+    connectModel(model_.get());
     connect(tableView_, &QTableView::doubleClicked,
             this, &MarketFixingsMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(),
@@ -125,7 +126,7 @@ void MarketFixingsMdiWindow::setupToolbar() {
         Icon::ArrowSync, iconColor));
     reloadAction_->setToolTip(tr("Refresh fixing series"));
     connect(reloadAction_, &QAction::triggered,
-            this, &MarketFixingsMdiWindow::doReload);
+            this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 

@@ -31,6 +31,16 @@ using namespace ores::logging;
 equity_digital_option_instrument_service::equity_digital_option_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
+std::optional<domain::equity_digital_option_instrument>
+equity_digital_option_instrument_service::get_equity_digital_option_instrument(
+    const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting equity_digital_option_instrument: " << id;
+    auto results = repo_.read_latest(ctx_, id);
+    if (results.empty()) return std::nullopt;
+    return results.front();
+}
+
 void equity_digital_option_instrument_service::save_equity_digital_option_instrument(
     const domain::equity_digital_option_instrument& v) {
     if (v.instrument_id.is_nil())
@@ -42,6 +52,13 @@ void equity_digital_option_instrument_service::save_equity_digital_option_instru
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved equity_digital_option_instrument: "
                               << t.instrument_id;
+}
+
+
+std::vector<domain::equity_digital_option_instrument>
+equity_digital_option_instrument_service::get_equity_digital_option_instruments(
+    const std::vector<std::string>& ids) {
+    return repo_.read_latest(ctx_, ids);
 }
 
 }

@@ -25,13 +25,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.api/domain/report_definition_template.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
 /**
  * @brief Service for reading report definition templates from the DQ artefact table.
  */
-class report_definition_template_service {
+class ORES_REPORTING_CORE_EXPORT report_definition_template_service {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.report_definition_template_service";

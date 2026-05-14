@@ -27,6 +27,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -41,7 +42,7 @@ namespace ores::reporting::messaging {
  *  reporting.v1.report.finalise       — marks instance as completed
  *  reporting.v1.report.fail           — marks instance as failed (compensation)
  */
-class report_execution_handler {
+class ORES_REPORTING_CORE_EXPORT report_execution_handler {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.messaging.report_execution_handler";

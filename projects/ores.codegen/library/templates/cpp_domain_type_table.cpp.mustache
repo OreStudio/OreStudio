@@ -2,10 +2,27 @@
 {{#domain_entity}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_table.hpp"
 
+{{#cpp.has_optional_table_display}}
+#include <sstream>
+{{/cpp.has_optional_table_display}}
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::{{component}}::domain {
+
+{{#cpp.has_optional_table_display}}
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o) return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
+{{/cpp.has_optional_table_display}}
 
 std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
     fort::char_table table;
@@ -14,7 +31,7 @@ std::string convert_to_table(const std::vector<{{entity_singular}}>& v) {
     table << fort::header{{#cpp.table_display}} << "{{header}}"{{/cpp.table_display}} << fort::endr;
 
     for (const auto& {{cpp.iterator_var}} : v) {
-        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}} << {{iter_var}}.{{column}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
+        table{{#cpp.table_display}}{{#is_uuid}} << boost::uuids::to_string({{iter_var}}.{{column}}){{/is_uuid}}{{^is_uuid}}{{#is_optional}} << opt_str({{iter_var}}.{{column}}){{/is_optional}}{{^is_optional}} << {{iter_var}}.{{column}}{{/is_optional}}{{/is_uuid}}{{/cpp.table_display}} << fort::endr;
     }
     return table.to_string();
 }

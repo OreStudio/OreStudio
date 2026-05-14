@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.core/repository/tenant_type_repository.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
 /**
  * @brief Service for managing tenant types.
  */
-class tenant_type_service {
+class ORES_IAM_CORE_EXPORT tenant_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.tenant_type_service";

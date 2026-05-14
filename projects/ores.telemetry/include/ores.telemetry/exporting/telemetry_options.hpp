@@ -25,6 +25,7 @@
 #include <iosfwd>
 #include <string>
 #include <filesystem>
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -102,7 +103,7 @@ struct telemetry_options final {
     std::chrono::seconds flush_interval{5};
 };
 
-std::ostream& operator<<(std::ostream& s, const telemetry_options& v);
+ORES_TELEMETRY_EXPORT std::ostream& operator<<(std::ostream& s, const telemetry_options& v);
 
 }
 

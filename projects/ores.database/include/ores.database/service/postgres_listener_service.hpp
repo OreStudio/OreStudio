@@ -31,6 +31,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database::service {
 
@@ -44,7 +45,7 @@ namespace ores::database::service {
  * The service maintains its own dedicated connection separate from any
  * connection pool, as LISTEN/NOTIFY requires a persistent connection.
  */
-class postgres_listener_service final {
+class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

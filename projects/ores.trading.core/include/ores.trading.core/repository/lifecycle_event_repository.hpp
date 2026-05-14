@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes lifecycle events to data storage.
  */
-class lifecycle_event_repository {
+class ORES_TRADING_CORE_EXPORT lifecycle_event_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.lifecycle_event_repository";

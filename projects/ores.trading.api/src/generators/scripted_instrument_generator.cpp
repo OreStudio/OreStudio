@@ -34,7 +34,7 @@ domain::scripted_instrument generate_synthetic_scripted_instrument(
 
     domain::scripted_instrument r;
     r.version = 1;
-    r.id = boost::uuids::random_generator()();
+    r.instrument_id = boost::uuids::random_generator()();
     r.trade_type_code = "ScriptedTrade";
     r.script_name = "Autocallable";
     r.description = std::string(faker::lorem::sentence());

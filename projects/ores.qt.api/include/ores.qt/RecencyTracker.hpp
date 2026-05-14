@@ -25,7 +25,6 @@
 #include <unordered_set>
 #include <QDateTime>
 #include <ores.platform/attributes.hpp>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

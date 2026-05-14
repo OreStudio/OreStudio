@@ -32,6 +32,7 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/export.hpp"
 
 namespace ores::nats::service { class client; }
 
@@ -69,7 +70,7 @@ namespace ores::nats::service {
  *
  * The two paths are mutually exclusive on a given instance.
  */
-class nats_client {
+class ORES_NATS_EXPORT nats_client {
 private:
     inline static std::string_view logger_name = "ores.nats.service.nats_client";
 
@@ -260,7 +261,7 @@ private:
  * Used by handlers to obtain the inbound user JWT for forwarding via
  * nats_client::with_delegation.
  */
-[[nodiscard]] std::string extract_bearer(const ores::nats::message& msg);
+[[nodiscard]] ORES_NATS_EXPORT std::string extract_bearer(const ores::nats::message& msg);
 
 } // namespace ores::nats::service
 

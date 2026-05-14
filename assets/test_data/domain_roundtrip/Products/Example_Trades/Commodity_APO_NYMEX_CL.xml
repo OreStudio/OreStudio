@@ -1,0 +1,29 @@
+<Portfolio>
+  <Trade id="Commodity_APO_NYMEX_CSX">
+    <TradeType>CommodityAveragePriceOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommodityAveragePriceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2025-06-17</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:CL</Name>
+      <Currency>USD</Currency>
+      <Quantity>6144</Quantity>
+      <Strike>64.5500031</Strike>
+      <PriceType>FutureSettlement</PriceType>
+      <StartDate>2025-05-18</StartDate>
+      <EndDate>2025-06-17</EndDate>
+      <PaymentCalendar>US-NYSE</PaymentCalendar>
+      <PaymentLag>5</PaymentLag>
+      <PaymentConvention>Following</PaymentConvention>
+      <PricingCalendar>US-NYSE</PricingCalendar>
+    </CommodityAveragePriceOptionData>
+  </Trade>
+</Portfolio>

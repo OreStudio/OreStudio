@@ -1,0 +1,41 @@
+<Portfolio>
+  <Trade id="INDEX_CDS_OPTION">
+    <TradeType>IndexCreditDefaultSwapOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <IndexCreditDefaultSwapOptionData>
+      <Strike>1</Strike>
+      <OptionData>
+        <LongShort></LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2025-07-26</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <IndexCreditDefaultSwapData>
+        <CreditCurveId>RED:2I65BYEG6</CreditCurveId>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <Notionals>
+            <Notional>10000000</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate></StartDate>
+              <EndDate>2030-07-25</EndDate>
+              <Tenor>3M</Tenor>
+              <Convention>F</Convention>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.00499999989</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </IndexCreditDefaultSwapData>
+    </IndexCreditDefaultSwapOptionData>
+  </Trade>
+</Portfolio>

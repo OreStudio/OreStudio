@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,7 +37,7 @@ namespace ores::trading::service {
  * activity type.  Throws std::logic_error if the transition is not allowed
  * from the current status.
  */
-class trade_status_service {
+class ORES_TRADING_CORE_EXPORT trade_status_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.trade_status_service";

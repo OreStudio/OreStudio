@@ -22,9 +22,15 @@
 #define ORES_QT_ABOUT_DIALOG_HPP
 
 #include <QWidget>
-#include "ui_AboutDialog.h"
+#include <memory>
 #include "ores.qt/LogoLabel.hpp"
 #include "ores.logging/make_logger.hpp"
+
+namespace Ui {
+
+class AboutDialog;
+
+}
 
 namespace ores::qt {
 
@@ -68,7 +74,10 @@ private:
      * is available.
      */
     void populateSystemInfo();
-    Ui::AboutDialog ui_;
+    // Held by unique_ptr so the ui_AboutDialog.h include can live in the
+    // .cpp; keeps the generated header out of every consumer that links
+    // ores.qt.lib and would otherwise inherit it via PUBLIC autogen leak.
+    std::unique_ptr<Ui::AboutDialog> ui_;
     LogoLabel* logoLabel_;
     ClientManager* clientManager_;
 };

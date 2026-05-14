@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/asio/ip/address.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::faker {
 
 /*
  * @brief Extensions to generates fake data related to the internet.
  */
-class internet {
+class ORES_UTILITY_EXPORT internet {
 public:
     /**
      * @brief Generates a random IPv4 address and a port number.

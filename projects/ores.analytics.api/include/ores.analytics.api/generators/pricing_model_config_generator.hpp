@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::analytics::generators {
@@ -35,7 +36,7 @@ namespace ores::analytics::generators {
  * @param n Number of configs to generate. If n is 0 or greater than the
  *          available set, returns all available fictional configs.
  */
-std::vector<domain::pricing_model_config> generate_fictional_pricing_model_configs(
+ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_model_config> generate_fictional_pricing_model_configs(
     std::size_t n, utility::generation::generation_context& ctx);
 
 }

@@ -25,11 +25,12 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
+\o /dev/null
 -- =============================================================================
 -- ISO Coding Schemes Dataset
 -- =============================================================================
 
-\echo '--- ISO Coding Schemes Dataset ---'
+\qecho '--- ISO Coding Schemes Dataset ---'
 
 -- ISO Coding Schemes
 select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
@@ -50,4 +51,4 @@ select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
     'CC BY-SA 3.0',
     'coding_schemes'
 );
-
+\o

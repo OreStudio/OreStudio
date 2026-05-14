@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the change_reason objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<change_reason>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<change_reason>& v);
 
 }
 

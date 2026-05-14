@@ -1,0 +1,376 @@
+#+title: ORE Domain Roundtrip Check (Thing 3)
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+note: Type bridge section updated 2026-05-06 — import/export cleanup (PR #728)
+#+      unified instrument carriers; trade_import_item and trade_export_item now
+#+      both use trade_instrument, so the bridge is a trivial struct copy.
+
+* Overview
+
+The existing "Thing 2" check (=ore_coverage_check.py=) compares element
+/names/ in manually-maintained golden files against ORE example files.
+It catches structural coverage gaps but has two blind spots: it only
+covers =Products/Example_Trades/= (~198 files) and it never exercises
+the C++ mapper code, so a field declared in the golden file but silently
+dropped by the mapper goes undetected.
+
+"Thing 3" closes both gaps by exercising the full mapper roundtrip using
+the same =ores.ore= import and export code the server-side workflow uses:
+
+#+begin_example
+  external/ore/examples/**/*.xml
+       │
+       │  importer::import_portfolio_with_context(path)
+       │    → vector<trade_import_item>  (instrument_mapping_result)
+       │
+       │  to_export_result() bridge
+       │    → vector<trade_export_item>  (instrument_export_result)
+       │
+       │  exporter::export_portfolio(items)
+       │    → XML string
+       │
+       │  written to mirrored path under output_dir
+       ▼
+  assets/test_data/domain_roundtrip/**/*.xml   ← committed to repo
+       │
+       │  python3 scripts/ore_domain_roundtrip_check.py
+       │  (diff committed outputs against originals — pure Python, no binary)
+       ▼
+  CI report: per-trade-type fidelity, field gaps, coverage %
+#+end_example
+
+The import and export functions are exactly what the server-side ORE
+import workflow calls; the only new code is the in-memory bridge between
+them (bypassing the DB that normally sits in between) and a thin CLI
+entry point. The committed output files also serve as a regression net:
+any PR that changes a mapper produces a visible diff on those files.
+
+CI runs the Python diff only — no C++ build required — so it replaces
+Thing 2 at zero additional CI cost.
+
+* Goals
+
+1. Add a =to_export_result()= bridge in =ores.ore= that converts
+   =instrument_mapping_result= (import-side type) to
+   =instrument_export_result= (export-side type) entirely in memory,
+   enabling the two existing halves to be composed without touching the
+   DB.
+2. Add =exporter::roundtrip_portfolio(input_dir, output_dir)= which
+   composes =importer::import_portfolio_with_context()= + bridge +
+   =exporter::export_portfolio()= and writes mirrored outputs.
+3. Wire =ores.cli ore roundtrip <input-dir> --output-dir <dir>= in
+   =host.cpp= as a DB-free command that calls the above. Minimum
+   CLI-specific code: one call, print summary, return.
+4. Write =scripts/ore_domain_roundtrip_check.py= (Thing 3): Python
+   script that diffs committed outputs against ORE originals and reports
+   per-file and per-trade-type fidelity.
+5. Add CMake target =ore-domain-roundtrip= for dev regeneration.
+6. Generate and commit the initial baseline outputs for all 1501 example
+   files.
+7. Replace =ore_coverage_check.py= (Thing 2) with Thing 3 in CI and
+   delete the old script and its golden dataset.
+
+* Non-goals
+
+- No changes to the mapper logic itself (separate per-family work).
+- No database involvement: the roundtrip is purely a file-level
+  operation.
+- No automatic regeneration in CI: CI only diffs committed files;
+  regeneration is a dev action.
+
+* Constraints and decisions
+
+- *Use existing import and export code*: =importer::import_portfolio_with_context=
+  and =exporter::export_portfolio= are called unmodified. No
+  roundtrip-specific mapping logic is written; the bridge is purely a
+  type-adaptation layer between two structs that hold identical inner
+  data.
+- *Minimum CLI code*: =host.cpp= calls one function
+  (=exporter::roundtrip_portfolio=) and prints the returned summary.
+  All logic lives in =ores.ore=, not =ores.cli=.
+- *Unmapped trades pass through unchanged*: for any trade whose type is
+  =std::monostate= in the =instrument_mapping_result=, the original XSD
+  trade is written unmodified into the output portfolio. This keeps the
+  output structurally complete and lets the Python diff distinguish
+  passthrough trades from mapper-touched ones.
+- *Non-portfolio XMLs are skipped silently*: files whose root element
+  is not =<Portfolio>= are ignored; no output file is written.
+- *Output tree mirrors input tree*: the path under =output_dir=
+  replicates the path relative to =input_dir=. For example:
+  =external/ore/examples/Products/Example_Trades/FX_Forward.xml= →
+  =assets/test_data/domain_roundtrip/Products/Example_Trades/FX_Forward.xml=.
+- *CI is non-strict initially*: the Python check reports gaps but does
+  not fail the build. =--strict= is added once agreed coverage
+  thresholds are reached.
+- *Thing 2 is retired in full*: =ore_coverage_check.py=, its golden
+  dataset (=assets/test_data/golden_dataset/=), and the CI step that
+  invokes it are all deleted in Phase 6.
+
+* Type bridge rationale
+
+As of PR #728 (import/export cleanup), the import and export sides
+share a single unified instrument carrier type:
+
+#+begin_example
+  trade_instrument = std::variant<
+      std::monostate,
+      swap_instrument_data,       // with_legs<rates_instrument_variant, swap_leg>
+      fx_instrument_variant,
+      bond_instrument,
+      credit_instrument,
+      equity_instrument_variant,
+      commodity_instrument,
+      composite_instrument_data,  // with_legs<composite_instrument, composite_leg>
+      scripted_instrument>
+#+end_example
+
+Both =trade_import_item= and =trade_export_item= carry a
+=trade_instrument= field. There is no longer any type conversion
+required between the import and export sides — the bridge is a trivial
+struct copy:
+
+#+begin_src cpp
+  trade_export_item ei;
+  ei.trade      = item.trade;
+  ei.instrument = item.instrument;
+#+end_src
+
+The original bridge design (with separate =*_mapping_result= /
+=*_export_result= types) is obsolete.
+
+* Phase plan
+
+** Phase 1 — =exporter::roundtrip_portfolio= in =ores.ore=
+
+No type bridge is needed (see updated rationale above).
+
+*** =projects/ores.ore/include/ores.ore/xml/exporter.hpp=
+
+Add public static method and return-type struct:
+
+#+begin_src cpp
+  struct roundtrip_summary {
+      int total_xml_files     = 0;
+      int skipped             = 0;   ///< non-portfolio or unreadable
+      int output_files_written = 0;
+      int trades_mapped       = 0;   ///< instrument in output differs from passthrough
+      int trades_passthrough  = 0;   ///< monostate — written unchanged
+  };
+
+  static roundtrip_summary roundtrip_portfolio(
+      const std::filesystem::path& input_dir,
+      const std::filesystem::path& output_dir);
+#+end_src
+
+*** =projects/ores.ore/src/xml/exporter.cpp= (implementation)
+
+Implement =roundtrip_portfolio=:
+
+1. Recursively walk =input_dir= for all =*.xml= files.
+2. For each file:
+   a. Call =importer::import_portfolio_with_context(path)= — if it
+      throws (non-portfolio XML, parse error), skip and increment
+      =skipped=; continue.
+   b. Build =std::vector<trade_export_item>=: for each
+      =trade_import_item= do a trivial struct copy:
+      #+begin_src cpp
+        trade_export_item ei;
+        ei.trade      = item.trade;
+        ei.instrument = item.instrument;  // same trade_instrument type
+        if (std::holds_alternative<std::monostate>(item.instrument))
+            ++summary.trades_passthrough;
+        else
+            ++summary.trades_mapped;
+        export_items.push_back(std::move(ei));
+      #+end_src
+   c. Call =exporter::export_portfolio(export_items)= → XML string.
+   d. Compute mirrored output path:
+      =output_dir / std::filesystem::relative(file, input_dir)=.
+   e. Create parent directories; write XML to file.
+   f. Increment =output_files_written=.
+3. Return =roundtrip_summary=.
+
+The =importer= header (=ores.ore/xml/importer.hpp=) must be included
+in =exporter.cpp=.
+
+** Phase 2 — =ores.cli ore roundtrip= subcommand
+
+*** =projects/ores.cli/include/ores.cli/config/domain.hpp=
+
+Add options struct:
+
+#+begin_src cpp
+  struct ore_roundtrip_options {
+      std::filesystem::path input_dir;
+      std::filesystem::path output_dir;
+  };
+#+end_src
+
+Add =ore_roundtrip_options ore_roundtrip= field to the main options struct.
+
+*** =projects/ores.cli/src/config/parser.cpp=
+
+Register the =ore roundtrip <input-dir> --output-dir <dir>= subcommand.
+The =--output-dir= option is required (no implicit default — the caller
+must be explicit about where outputs go).
+
+*** =projects/ores.cli/src/app/host.cpp=
+
+After logging and before constructing =application= (which requires the
+DB), intercept the DB-free subcommand:
+
+#+begin_src cpp
+  if (cfg.command == "ore" && cfg.subcommand == "roundtrip") {
+      const auto s = ore::xml::exporter::roundtrip_portfolio(
+          cfg.ore_roundtrip.input_dir,
+          cfg.ore_roundtrip.output_dir);
+      std_output
+          << "XML files found:      " << s.total_xml_files << "\n"
+          << "Skipped:              " << s.skipped << "\n"
+          << "Outputs written:      " << s.output_files_written << "\n"
+          << "Trades mapped:        " << s.trades_mapped << "\n"
+          << "Trades passthrough:   " << s.trades_passthrough << "\n";
+      return EXIT_SUCCESS;
+  }
+#+end_src
+
+This is all the CLI-specific code for this feature.
+
+** Phase 3 — =scripts/ore_domain_roundtrip_check.py= (Thing 3)
+
+New Python script. Follows the conventions of =ore_coverage_check.py=.
+
+*** Inputs
+
+- =external/ore/examples/= — ORE originals, 1501 files
+- =assets/test_data/domain_roundtrip/= — committed roundtrip outputs,
+  same tree structure
+
+*** Logic
+
+For each XML file present in the output tree:
+1. Parse both original and output as XML.
+2. Find all =<Trade>= elements in each, matched by =id= attribute.
+3. For each matched trade pair:
+   a. Collect all element names (recursive) in the original trade.
+   b. Collect all element names in the output trade.
+   c. =missing= = in original, not in output (mapper dropped them).
+   d. Fidelity % = (original_elements - missing) / original_elements × 100.
+4. Classify:
+   - 100%: *full* roundtrip
+   - 0% or output identical to original byte-for-byte: *passthrough*
+     (unmapped)
+   - 0% < fidelity < 100%: *partial*
+
+For each file present only in the original (no output file): *missing*.
+
+*** Report
+
+#+begin_example
+  === ORE Domain Roundtrip Report ===
+  Original files:         1501
+  Output files:           N
+  Missing outputs:        M    (non-portfolio or skipped)
+
+  Trade fidelity:
+    Full     (100%):      A  (X%)
+    Partial  (<100%):     B  (Y%)
+    Passthrough:          C  (Z%)
+
+  --- Partial fidelity detail ---
+  Products/Example_Trades/FX_Barrier_Option.xml  FxBarrierOption  87%
+    missing: BarrierLevel, BarrierStyle
+  ...
+#+end_example
+
+*** Flags
+
+#+begin_src
+  python3 scripts/ore_domain_roundtrip_check.py [--repo-root <path>] [--strict]
+#+end_src
+
+=--strict= exits 1 on any partial or missing outputs; reserved for use
+once baseline coverage thresholds are agreed.
+
+** Phase 4 — CMake target =ore-domain-roundtrip=
+
+In =projects/ores.cli/CMakeLists.txt=, add:
+
+#+begin_src cmake
+  add_custom_target(ore-domain-roundtrip
+      COMMAND $<TARGET_FILE:ores.cli.exe>
+              ore roundtrip
+              ${CMAKE_SOURCE_DIR}/external/ore/examples
+              --output-dir ${CMAKE_SOURCE_DIR}/assets/test_data/domain_roundtrip
+      DEPENDS ores.cli.exe
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMENT "Regenerating ORE domain roundtrip outputs"
+  )
+#+end_src
+
+Running =cmake --build --preset linux-clang-debug-ninja --target ore-domain-roundtrip=
+regenerates all output files ready for commit.
+
+** Phase 5 — Generate and commit initial baseline
+
+Developer action (not CI):
+
+1. Build =ores.cli= (debug or release).
+2. Run:
+   #+begin_src sh
+     cmake --build --preset linux-clang-debug-ninja --target ore-domain-roundtrip
+   #+end_src
+3. Review =git diff assets/test_data/domain_roundtrip/= — check for
+   unexpected field drops, parse failures, or obviously wrong content.
+4. Commit:
+   #+begin_src
+     [ore] Add initial ORE domain roundtrip baseline (Thing 3)
+   #+end_src
+
+This commit establishes the baseline. Subsequent mapper changes produce
+diffs on these files that appear in PR reviews.
+
+** Phase 6 — Replace Thing 2 with Thing 3 in CI
+
+*** =.github/workflows/ore_coverage.yml=
+
+Replace:
+
+#+begin_src yaml
+  - name: Run ORE coverage gap check
+    run: python3 scripts/ore_coverage_check.py --strict
+#+end_src
+
+With:
+
+#+begin_src yaml
+  - name: Run ORE domain roundtrip check
+    run: python3 scripts/ore_domain_roundtrip_check.py
+#+end_src
+
+*** Delete =scripts/ore_coverage_check.py=
+
+Remove the file. Update any documentation that references it.
+
+*** Delete golden dataset
+
+Remove =assets/test_data/golden_dataset/= and any files maintained
+solely for Thing 2. The roundtrip outputs in
+=assets/test_data/domain_roundtrip/= supersede them entirely.
+
+* Verification
+
+- =ores.ore= builds clean with the new bridge function and
+  =roundtrip_portfolio= method.
+- =ores.cli= builds clean with the new subcommand.
+- Running:
+  #+begin_src sh
+    ores.cli ore roundtrip external/ore/examples \
+        --output-dir assets/test_data/domain_roundtrip
+  #+end_src
+  produces output files for all portfolio XMLs and prints a sensible
+  summary.
+- =ore_domain_roundtrip_check.py= runs without error against the
+  committed baseline and produces a readable coverage report.
+- CI passes on the PR that introduces Phase 6.
+- =ore_coverage_check.py= and =assets/test_data/golden_dataset/= are
+  gone from the repo.

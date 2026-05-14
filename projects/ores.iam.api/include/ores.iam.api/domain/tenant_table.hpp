@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
 
 namespace ores::iam::domain {
@@ -29,7 +30,7 @@ namespace ores::iam::domain {
 /**
  * @brief Converts tenants to the table format.
  */
-std::string convert_to_table(const std::vector<tenant>& v);
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<tenant>& v);
 
 }
 

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ImageCache.hpp"
 
 #include <optional>
 #include <filesystem>
@@ -61,11 +62,13 @@ TradeController::TradeController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ChangeReasonCache* changeReasonCache,
+    ImageCache* imageCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           trade_event_name, parent),
       changeReasonCache_(changeReasonCache),
+      imageCache_(imageCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -147,15 +150,22 @@ void TradeController::reloadListWindow() {
     }
 }
 
-void TradeController::openEdit(
-    const trading::messaging::trade_export_item& bundle) {
-    showDetailWindow(bundle);
+void TradeController::openEdit(const trading::domain::trade& trade) {
+    onShowDetails(trade);
 }
 
-void TradeController::onShowDetails(
-    const trading::messaging::trade_export_item& bundle) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << bundle.trade.external_id;
-    showDetailWindow(bundle);
+void TradeController::onShowDetails(const trading::domain::trade& trade) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;
+    const auto id = boost::uuids::to_string(trade.id);
+    auto bundle_opt = clientManager_->getTradeDetail(id);
+    if (!bundle_opt) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch detail for trade: " << trade.external_id;
+        emit errorMessage(tr("Could not load instrument data for trade '%1'.")
+            .arg(QString::fromStdString(trade.external_id)));
+        return;
+    }
+    showDetailWindow(*bundle_opt);
 }
 
 void TradeController::onAddNewRequested() {
@@ -316,6 +326,8 @@ void TradeController::showAddWindow() {
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (imageCache_)
+        detailDialog->setImageCache(imageCache_);
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &TradeDetailDialog::statusMessage,
@@ -361,6 +373,8 @@ void TradeController::showDetailWindow(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (imageCache_)
+        detailDialog->setImageCache(imageCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setTradeBundle(bundle);
 
@@ -485,6 +499,8 @@ void TradeController::onOpenVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (imageCache_)
+        detailDialog->setImageCache(imageCache_);
     // Historical versions don't carry an instrument bundle: the history
     // endpoint returns bare trades, and point-in-time instrument retrieval
     // is a separate concern. Pass monostate so the form clears rather than
@@ -538,6 +554,8 @@ void TradeController::onRevertVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (imageCache_)
+        detailDialog->setImageCache(imageCache_);
     trading::messaging::trade_export_item bundle{.trade = trade, .instrument = {}};
     detailDialog->setTradeBundle(bundle);
     detailDialog->setCreateMode(false);

@@ -1,0 +1,18 @@
+<Portfolio>
+  <Trade id="FX_VARIANCE_SWAP_EURUSD">
+    <TradeType>FxVarianceSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <FxVarianceSwapData>
+      <StartDate>2025-10-22</StartDate>
+      <EndDate>2026-04-26</EndDate>
+      <Currency>USD</Currency>
+      <Name>TR20H-EUR-USD</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.0199999996</Strike>
+      <Notional>50000</Notional>
+      <Calendar>TARGET</Calendar>
+    </FxVarianceSwapData>
+  </Trade>
+</Portfolio>

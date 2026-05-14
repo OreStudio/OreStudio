@@ -22,6 +22,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 
 namespace ores::reporting::domain {
@@ -29,7 +30,7 @@ namespace ores::reporting::domain {
 /**
  * @brief Dumps the concurrency_policy objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<concurrency_policy>& v);
+ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<concurrency_policy>& v);
 
 }
 

@@ -1,0 +1,32 @@
+<Portfolio>
+  <Trade id="OIS">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>100000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-01-31</StartDate>
+            <EndDate>2028-02-01</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EONIA</Index>
+          <Spreads>
+            <Spread>0.000121999998</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

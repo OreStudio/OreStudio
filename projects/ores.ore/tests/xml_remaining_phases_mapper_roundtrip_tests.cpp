@@ -51,16 +51,16 @@ const std::string tags(
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
-using ores::ore::domain::fx_mapping_result;
+using ores::trading::domain::fx_instrument_variant;
 using ores::trading::domain::fx_barrier_option_instrument;
 using ores::ore::domain::equity_instrument_mapper;
-using ores::ore::domain::equity_mapping_result;
+using ores::trading::domain::equity_instrument_variant;
 using ores::ore::domain::scripted_instrument_mapper;
-using ores::ore::domain::scripted_mapping_result;
+using ores::trading::domain::scripted_instrument;
 using ores::ore::domain::composite_instrument_mapper;
-using ores::ore::domain::composite_mapping_result;
+using ores::trading::domain::composite_instrument_data;
 using ores::ore::domain::bond_instrument_mapper;
-using ores::ore::domain::bond_mapping_result;
+using ores::trading::domain::bond_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -68,7 +68,7 @@ std::filesystem::path example_path(const std::string& filename) {
         "external/ore/examples/Products/Example_Trades/" + filename);
 }
 
-fx_mapping_result load_and_map_fx(const std::string& filename) {
+fx_instrument_variant load_and_map_fx(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -80,7 +80,7 @@ fx_mapping_result load_and_map_fx(const std::string& filename) {
     return *r;
 }
 
-equity_mapping_result load_and_map_equity(const std::string& filename) {
+equity_instrument_variant load_and_map_equity(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -92,7 +92,7 @@ equity_mapping_result load_and_map_equity(const std::string& filename) {
     return *r;
 }
 
-scripted_mapping_result load_and_map_scripted(const std::string& filename) {
+scripted_instrument load_and_map_scripted(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -104,7 +104,7 @@ scripted_mapping_result load_and_map_scripted(const std::string& filename) {
     return *r;
 }
 
-composite_mapping_result load_and_map_composite(const std::string& filename) {
+composite_instrument_data load_and_map_composite(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -116,7 +116,7 @@ composite_mapping_result load_and_map_composite(const std::string& filename) {
     return *r;
 }
 
-bond_mapping_result load_and_map_bond(const std::string& filename,
+bond_instrument load_and_map_bond(const std::string& filename,
         std::size_t index = 0) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
@@ -138,7 +138,7 @@ bond_mapping_result load_and_map_bond(const std::string& filename,
 TEST_CASE("fx_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxDoubleBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -151,7 +151,7 @@ TEST_CASE("fx_double_barrier_option_forward", tags) {
 TEST_CASE("fx_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     const auto rt = fx_instrument_mapper::reverse_fx_double_barrier_option(instr);
     REQUIRE(rt.FxDoubleBarrierOptionData.operator bool());
@@ -166,7 +166,7 @@ TEST_CASE("fx_double_barrier_option_reverse", tags) {
 TEST_CASE("fx_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxEuropeanBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -178,7 +178,7 @@ TEST_CASE("fx_european_barrier_option_forward", tags) {
 TEST_CASE("fx_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     const auto rt = fx_instrument_mapper::reverse_fx_european_barrier_option(instr);
     REQUIRE(rt.FxEuropeanBarrierOptionData.operator bool());
@@ -193,7 +193,7 @@ TEST_CASE("fx_european_barrier_option_reverse", tags) {
 TEST_CASE("fx_kiko_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "FxKIKOBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -204,7 +204,7 @@ TEST_CASE("fx_kiko_barrier_option_forward", tags) {
 TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r.instrument);
+    const auto& instr = std::get<fx_barrier_option_instrument>(r);
 
     const auto rt = fx_instrument_mapper::reverse_fx_kiko_barrier_option(instr);
     REQUIRE(rt.FxKIKOBarrierOptionData.operator bool());
@@ -219,10 +219,12 @@ TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
 TEST_CASE("equity_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    CHECK(r.instrument.trade_type_code == "EquityDoubleBarrierOption");
-    CHECK(!r.instrument.option_type.empty());
-    CHECK(!r.instrument.underlying_code.empty());
+    CHECK(instr.trade_type_code == "EquityDoubleBarrierOption");
+    CHECK(!instr.option_type.empty());
+    CHECK(!instr.underlying_name.empty());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption forward test passed";
 }
@@ -230,9 +232,11 @@ TEST_CASE("equity_double_barrier_option_forward", tags) {
 TEST_CASE("equity_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
     const auto rt = equity_instrument_mapper::reverse_equity_double_barrier_option(
-        r.instrument);
+        instr);
     REQUIRE(rt.EquityDoubleBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption reverse test passed";
@@ -246,9 +250,11 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     // Reuse EquityBarrierOption file (same structure, different trade type)
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    CHECK(r.instrument.trade_type_code == "EquityEuropeanBarrierOption");
-    CHECK(!r.instrument.option_type.empty());
+    CHECK(instr.trade_type_code == "EquityEuropeanBarrierOption");
+    CHECK(!instr.option_type.empty());
 
     BOOST_LOG_SEV(lg, info) << "EquityEuropeanBarrierOption forward test passed";
 }
@@ -256,9 +262,11 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
 TEST_CASE("equity_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
+    const auto& instr =
+        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
     const auto rt = equity_instrument_mapper::reverse_equity_european_barrier_option(
-        r.instrument);
+        instr);
     REQUIRE(rt.EquityEuropeanBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityEuropeanBarrierOption reverse test passed";
@@ -272,20 +280,19 @@ TEST_CASE("double_digital_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_Double_Digital_Option.xml");
 
-    CHECK(r.instrument.trade_type_code == "DoubleDigitalOption");
-    CHECK(!r.instrument.underlyings_json.empty());
-    CHECK(!r.instrument.parameters_json.empty());
+    CHECK(r.trade_type_code == "DoubleDigitalOption");
+    CHECK(!r.underlyings_json.empty());
+    CHECK(!r.parameters_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "DoubleDigitalOption forward test passed. "
-                            << "underlyings=" << r.instrument.underlyings_json;
+                            << "underlyings=" << r.underlyings_json;
 }
 
 TEST_CASE("double_digital_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_Double_Digital_Option.xml");
 
-    const auto rt = scripted_instrument_mapper::reverse_double_digital_option(
-        r.instrument);
+    const auto rt = scripted_instrument_mapper::reverse_double_digital_option(r);
     REQUIRE(rt.DoubleDigitalOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "DoubleDigitalOption reverse test passed";
@@ -299,20 +306,19 @@ TEST_CASE("performance_option_01_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_PerformanceOption_01_FX.xml");
 
-    CHECK(r.instrument.trade_type_code == "PerformanceOption_01");
-    CHECK(!r.instrument.underlyings_json.empty());
-    CHECK(!r.instrument.parameters_json.empty());
+    CHECK(r.trade_type_code == "PerformanceOption_01");
+    CHECK(!r.underlyings_json.empty());
+    CHECK(!r.parameters_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "PerformanceOption_01 forward test passed. "
-                            << "underlyings=" << r.instrument.underlyings_json;
+                            << "underlyings=" << r.underlyings_json;
 }
 
 TEST_CASE("performance_option_01_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_PerformanceOption_01_FX.xml");
 
-    const auto rt = scripted_instrument_mapper::reverse_performance_option_01(
-        r.instrument);
+    const auto rt = scripted_instrument_mapper::reverse_performance_option_01(r);
     REQUIRE(rt.PerformanceOption01Data.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "PerformanceOption_01 reverse test passed";
@@ -326,19 +332,18 @@ TEST_CASE("knock_out_swap_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_KnockOutSwap.xml");
 
-    CHECK(r.instrument.trade_type_code == "KnockOutSwap");
-    CHECK(!r.instrument.parameters_json.empty());
+    CHECK(r.trade_type_code == "KnockOutSwap");
+    CHECK(!r.parameters_json.empty());
 
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward test passed. "
-                            << "params=" << r.instrument.parameters_json;
+                            << "params=" << r.parameters_json;
 }
 
 TEST_CASE("knock_out_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_scripted("Exotic_KnockOutSwap.xml");
 
-    const auto rt = scripted_instrument_mapper::reverse_knock_out_swap(
-        r.instrument);
+    const auto rt = scripted_instrument_mapper::reverse_knock_out_swap(r);
     REQUIRE(rt.KnockOutSwapData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap reverse test passed";
@@ -402,18 +407,18 @@ TEST_CASE("bond_repo_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
 
-    CHECK(r.instrument.trade_type_code == "BondRepo");
-    CHECK(!r.instrument.security_id.empty());
+    CHECK(r.trade_type_code == "BondRepo");
+    CHECK(!r.security_id.empty());
 
     BOOST_LOG_SEV(lg, info) << "BondRepo forward test passed. "
-                            << "security_id=" << r.instrument.security_id;
+                            << "security_id=" << r.security_id;
 }
 
 TEST_CASE("bond_repo_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
 
-    const auto rt = bond_instrument_mapper::reverse_bond_repo(r.instrument);
+    const auto rt = bond_instrument_mapper::reverse_bond_repo(r);
     REQUIRE(rt.BondRepoData.operator bool());
     CHECK(!std::string(rt.BondRepoData->BondData.SecurityId).empty());
 

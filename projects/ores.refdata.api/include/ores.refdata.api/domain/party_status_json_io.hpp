@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/party_status.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the party_status to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const party_status& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const party_status& v);
 
 }
 

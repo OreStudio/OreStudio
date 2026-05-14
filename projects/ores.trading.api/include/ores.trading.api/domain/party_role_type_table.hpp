@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/party_role_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts party_role_types to the table format.
  */
-std::string convert_to_table(const std::vector<party_role_type>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<party_role_type>& v);
 
 }
 

@@ -52,7 +52,7 @@ begin
     delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating images for dataset: %', 'Country Flag Images';
+    raise debug 'Populating images for dataset: %', 'Country Flag Images';
 
     -- Insert images
     insert into ores_dq_images_artefact_tbl (
@@ -12035,5 +12035,5 @@ begin
 </svg>$svg$
     );
 
-    raise notice 'Successfully populated % images for dataset: %', 276, 'Country Flag Images';
+    raise debug 'Successfully populated % images for dataset: %', 276, 'Country Flag Images';
 end $$;

@@ -23,13 +23,14 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps balance_guaranteed_swap_instrument domain entities to data storage layer and vice-versa.
  */
-class balance_guaranteed_swap_instrument_mapper {
+class ORES_TRADING_CORE_EXPORT balance_guaranteed_swap_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.balance_guaranteed_swap_instrument_mapper";

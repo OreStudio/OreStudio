@@ -1,0 +1,16 @@
+<Portfolio>
+  <Trade id="ConvertibleBondTRS">
+    <TradeType>TotalReturnSwap</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <TotalReturnSwapData>
+      <UnderlyingData/>
+      <ReturnData>
+        <Payer>false</Payer>
+        <Currency>AED</Currency>
+        <ScheduleData/>
+      </ReturnData>
+    </TotalReturnSwapData>
+  </Trade>
+</Portfolio>

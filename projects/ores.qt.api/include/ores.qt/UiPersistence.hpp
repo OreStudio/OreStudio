@@ -27,6 +27,7 @@
 class QWidget;
 class QSplitter;
 class QHeaderView;
+class QMdiSubWindow;
 
 namespace ores::qt {
 
@@ -90,6 +91,19 @@ public:
      */
     static bool restoreHeader(const QString& group, QHeaderView* h,
                               int version = 1);
+
+    /**
+     * @brief Save MDI sub-window geometry (position and size within the MDI
+     *        area) to settings.
+     */
+    static void saveMdiGeometry(const QString& group, const QMdiSubWindow* w);
+
+    /**
+     * @brief Restore saved MDI sub-window geometry.
+     *
+     * @return true if saved state was applied; false if no saved state.
+     */
+    static bool restoreMdiGeometry(const QString& group, QMdiSubWindow* w);
 };
 
 }

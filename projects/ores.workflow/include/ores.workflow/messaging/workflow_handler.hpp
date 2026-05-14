@@ -25,6 +25,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -35,7 +36,7 @@ namespace ores::workflow::messaging {
  * dispatches one start_workflow_message per item to the engine via NATS
  * (fire-and-forget).  Replies immediately with pre-generated IDs.
  */
-class workflow_handler {
+class ORES_WORKFLOW_EXPORT workflow_handler  {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.messaging.workflow_handler";

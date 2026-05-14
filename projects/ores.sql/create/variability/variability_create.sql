@@ -20,3 +20,4 @@
 
 \ir ./variability_system_settings_create.sql
 \ir ./variability_system_settings_notify_trigger_create.sql
+\ir ./variability_system_settings_functions_create.sql

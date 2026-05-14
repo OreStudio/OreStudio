@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::serialization {
 
@@ -34,7 +35,7 @@ namespace ores::utility::serialization {
  * Provides static methods to serialize various data types into a byte buffer.
  * All multi-byte integers are written in big-endian (network) byte order.
  */
-class writer {
+class ORES_UTILITY_EXPORT writer {
 public:
     /**
      * @brief Write a single byte.

@@ -1,0 +1,11 @@
+<Portfolio>
+  <Trade id="EQ_SYNTHETIC_FORWARD_RIC:.SPX">
+    <TradeType>CompositeTrade</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CompositeTradeData>
+      <Currency>USD</Currency>
+    </CompositeTradeData>
+  </Trade>
+</Portfolio>

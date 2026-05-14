@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Portfolio>
+    <Trade id="FX_DOUBLE_ONE_TOUCH_OPTION_JPYUSD">
+        <TradeType>FxDoubleTouchOption</TradeType>
+        <Envelope>
+            <CounterParty>CPTY</CounterParty>
+            <NettingSetId>NS</NettingSetId>
+            <AdditionalFields>
+                <party_id>party</party_id>
+                <valuation_date>2025-02-10</valuation_date>
+            </AdditionalFields>
+        </Envelope>
+        <FxDoubleTouchOptionData>
+            <OptionData>
+                <LongShort>Long</LongShort>
+                <PayOffAtExpiry>true</PayOffAtExpiry>
+                <ExerciseDates>
+                    <ExerciseDate>2026-02-12</ExerciseDate>
+                </ExerciseDates>
+            </OptionData>
+            <BarrierData>
+                <Type>KnockIn</Type>
+                <Levels>
+                    <Level>0.00800</Level>
+                    <Level>0.01025</Level>
+                </Levels>
+            </BarrierData>
+            <ForeignCurrency>JPY</ForeignCurrency>
+            <DomesticCurrency>USD</DomesticCurrency>
+            <PayoffCurrency>USD</PayoffCurrency>
+            <PayoffAmount>10000000</PayoffAmount>
+        </FxDoubleTouchOptionData>
+    </Trade>
+</Portfolio>

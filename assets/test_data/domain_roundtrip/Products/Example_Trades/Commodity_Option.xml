@@ -1,0 +1,22 @@
+<Portfolio>
+  <Trade id="CommodityOption">
+    <TradeType>CommodityOption</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CommodityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-04-19</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:CL</Name>
+      <Currency>USD</Currency>
+      <Strike>70</Strike>
+      <Quantity>500000</Quantity>
+    </CommodityOptionData>
+  </Trade>
+</Portfolio>

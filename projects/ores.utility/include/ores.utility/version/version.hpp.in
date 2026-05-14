@@ -21,6 +21,7 @@
 
 #include <string>
 #include <cstdint>
+#include "ores.utility/export.hpp"
 
 #define ORES_VERSION_MAJOR @OreStudio_VERSION_MAJOR@
 #define ORES_VERSION_MINOR @OreStudio_VERSION_MINOR@
@@ -47,7 +48,7 @@ namespace ores::utility::version {
  * local builds, or CI provider/number/commit/timestamp for CI builds.
  * Implemented in a generated .cpp so only that one TU recompiles per build.
  */
-const char* build_info();
+ORES_UTILITY_EXPORT const char* build_info();
 
 /**
  * @brief Returns the vcpkg target triplet this binary was built for.
@@ -56,17 +57,17 @@ const char* build_info();
  * runtime (e.g. when the triplet needs to be included in a heartbeat
  * payload sent to a service).
  */
-const char* platform_triplet();
+ORES_UTILITY_EXPORT const char* platform_triplet();
 
 /**
  * @brief Formats a startup message with version and build info.
  */
-std::string format_startup_message(const std::string& service_name);
+ORES_UTILITY_EXPORT std::string format_startup_message(const std::string& service_name);
 
 /**
  * @brief Formats a startup message with version, protocol, and build info.
  */
-std::string format_startup_message(const std::string& service_name,
+ORES_UTILITY_EXPORT std::string format_startup_message(const std::string& service_name,
     std::uint16_t protocol_major, std::uint16_t protocol_minor);
 
 }

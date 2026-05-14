@@ -79,4 +79,43 @@ calendar_adjustment_mapper::map(const calendaradjustment& v) {
     return r;
 }
 
+newcalendar calendar_adjustment_mapper::reverse(
+        const refdata::domain::calendar_adjustment& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping calendar: " << v.calendar_name;
+
+    newcalendar r;
+    r.name = v.calendar_name;
+
+    if (v.base_calendar)
+        r.BaseCalendar = *v.base_calendar;
+
+    if (!v.additional_holidays.empty()) {
+        Dates dates;
+        for (const auto& d : v.additional_holidays)
+            dates.Date.push_back(d);
+        r.AdditionalHolidays = dates;
+    }
+
+    if (!v.additional_business_days.empty()) {
+        Dates dates;
+        for (const auto& d : v.additional_business_days)
+            dates.Date.push_back(d);
+        r.AdditionalBusinessDays = dates;
+    }
+
+    return r;
+}
+
+calendaradjustment calendar_adjustment_mapper::reverse(
+        const std::vector<refdata::domain::calendar_adjustment>& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping " << v.size()
+                               << " calendar adjustments.";
+
+    calendaradjustment r;
+    r.Calendar.reserve(v.size());
+    for (const auto& ca : v)
+        r.Calendar.push_back(calendar_adjustment_mapper::reverse(ca));
+    return r;
+}
+
 }

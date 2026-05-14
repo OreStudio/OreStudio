@@ -1,0 +1,9 @@
+{{! Template to generate SQL drop script for a domain entity table }}
+{{{sql_license}}}
+{{#domain_entity}}
+
+drop rule if exists {{product}}_{{component}}_{{entity_plural}}_delete_rule on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_insert_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
+drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
+{{/domain_entity}}

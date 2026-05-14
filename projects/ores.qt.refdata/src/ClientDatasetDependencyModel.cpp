@@ -31,7 +31,7 @@ using namespace ores::logging;
 
 ClientDatasetDependencyModel::ClientDatasetDependencyModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager) {
 }
 

@@ -186,26 +186,6 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
--- Equity Instruments
--- -----------------------------------------------------------------------------
-alter table ores_trading_equity_instruments_tbl enable row level security;
-
-create policy ores_trading_equity_instruments_tenant_isolation_policy on ores_trading_equity_instruments_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-create policy ores_trading_equity_instruments_party_isolation_policy
-on ores_trading_equity_instruments_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
 -- Equity Option Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_equity_option_instruments_tbl enable row level security;

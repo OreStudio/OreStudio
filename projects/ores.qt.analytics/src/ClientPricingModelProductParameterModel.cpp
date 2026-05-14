@@ -38,7 +38,7 @@ namespace {
 
 ClientPricingModelProductParameterModel::ClientPricingModelProductParameterModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(pricing_model_product_parameter_key_extractor),

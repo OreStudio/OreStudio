@@ -25,7 +25,6 @@
 namespace ores::ore::domain {
 
 using namespace ores::logging;
-using ores::trading::domain::equity_instrument;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -61,17 +60,8 @@ std::vector<std::string> parse_json_string_array(const std::string& json) {
     return result;
 }
 
-equity_instrument make_base(const std::string& trade_type_code) {
-    equity_instrument r;
-    r.trade_type_code = trade_type_code;
-    r.modified_by = "ores";
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
-    return r;
-}
-
-optionData make_option_data(const equity_instrument& instr) {
+template<typename T>
+optionData make_option_data(const T& instr) {
     optionData od;
     static_cast<std::string&>(od.LongShort) = "Long";
     if (!instr.option_type.empty()) {
@@ -79,15 +69,17 @@ optionData make_option_data(const equity_instrument& instr) {
         static_cast<std::string&>(ot) = instr.option_type;
         od.OptionType = std::move(ot);
     }
-    if (!instr.exercise_type.empty()) {
-        optionData_Style_t st;
-        static_cast<std::string&>(st) = instr.exercise_type;
-        od.Style = std::move(st);
+    if constexpr (requires { instr.exercise_type; }) {
+        if (!instr.exercise_type.empty()) {
+            optionData_Style_t st;
+            static_cast<std::string&>(st) = instr.exercise_type;
+            od.Style = std::move(st);
+        }
     }
-    if (!instr.maturity_date.empty()) {
+    if (!instr.expiry_date.empty()) {
         _ExerciseDates_t exd;
         date ed;
-        static_cast<std::string&>(ed) = instr.maturity_date;
+        static_cast<std::string&>(ed) = instr.expiry_date;
         exd.ExerciseDate.push_back(ed);
         exerciseDatesGroup_group_t eg;
         eg.ExerciseDates = std::move(exd);
@@ -292,23 +284,28 @@ std::string equity_instrument_mapper::underlyings_to_json(
 // Forward: EquityOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityOptionData) return result;
     const auto& d = *t.EquityOptionData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = std::string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.exercise_type = extract_exercise_style(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
     return result;
 }
 
@@ -316,21 +313,26 @@ equity_mapping_result equity_instrument_mapper::forward_equity_option(
 // Forward: EquityForward
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_forward(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_forward(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityForward: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityForward");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_forward_instrument>();
+    inst.trade_type_code = "EquityForward";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityForwardData) return result;
     const auto& d = *t.EquityForwardData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.maturity_date = std::string(d.Maturity);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = std::string(d.Currency);
+    inst.quantity = static_cast<double>(d.Quantity);
+    inst.forward_price = static_cast<double>(d.Strike);
+    inst.expiry_date = std::string(d.Maturity);
     return result;
 }
 
@@ -338,42 +340,47 @@ equity_mapping_result equity_instrument_mapper::forward_equity_forward(
 // Forward: EquitySwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_swap(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquitySwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquitySwap");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_swap_instrument>();
+    inst.trade_type_code = "EquitySwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquitySwapData) return result;
     const auto& d = *t.EquitySwapData;
 
     for (const auto& ld : d.LegData) {
         if (ld.legDataType && ld.legDataType->EquityLegData) {
             const auto& el = *ld.legDataType->EquityLegData;
-            result.instrument.underlying_code =
-                extract_underlying_name(el.underlyingTypes);
-            result.instrument.return_type = std::string(el.ReturnType);
+            inst.underlying_name = extract_underlying_name(el.underlyingTypes);
+            inst.return_type = std::string(el.ReturnType);
+            // The per-type struct has a single notional field that conflates
+            // the equity leg's share Quantity with the funding leg's
+            // dollar Notional. Non-equity leg still overwrites below —
+            // intentional: dollar-notional semantics dominate when both are
+            // present. Adding a separate quantity field on the per-type
+            // schema is future schema work.
             if (el.Quantity)
-                result.instrument.quantity =
-                    static_cast<double>(*el.Quantity);
+                inst.notional = static_cast<double>(*el.Quantity);
         } else {
-            // Non-equity leg provides currency/notional/schedule
+            // Non-equity leg provides currency/notional/schedule.
             if (ld.Currency)
-                result.instrument.currency = std::string(*ld.Currency);
+                inst.currency = std::string(*ld.Currency);
             if (ld.Notionals && !ld.Notionals->Notional.empty())
-                result.instrument.notional =
+                inst.notional =
                     static_cast<double>(ld.Notionals->Notional.front());
-            if (ld.DayCounter)
-                result.instrument.day_count_code =
-                    to_string(*ld.DayCounter);
             if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
                 const auto& rule = ld.ScheduleData->Rules.front();
-                result.instrument.start_date = std::string(rule.StartDate);
+                inst.start_date = std::string(rule.StartDate);
                 if (rule.EndDate)
-                    result.instrument.maturity_date =
-                        std::string(*rule.EndDate);
-                result.instrument.payment_frequency_code =
-                    std::string(rule.Tenor);
+                    inst.maturity_date = std::string(*rule.EndDate);
+                inst.payment_frequency = std::string(rule.Tenor);
             }
         }
     }
@@ -384,22 +391,27 @@ equity_mapping_result equity_instrument_mapper::forward_equity_swap(
 // Forward: EquityVarianceSwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_variance_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityVarianceSwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityVarianceSwap");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_variance_swap_instrument>();
+    inst.trade_type_code = "EquityVarianceSwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityVarianceSwapData) return result;
     const auto& d = *t.EquityVarianceSwapData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.variance_strike = static_cast<double>(d.Strike);
-    result.instrument.start_date = std::string(d.StartDate);
-    result.instrument.maturity_date = std::string(d.EndDate);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.variance_strike = static_cast<double>(d.Strike);
+    inst.start_date = std::string(d.StartDate);
+    inst.maturity_date = std::string(d.EndDate);
     return result;
 }
 
@@ -407,28 +419,33 @@ equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
 // Forward: EquityBarrierOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityBarrierOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityBarrierOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_barrier_option_instrument>();
+    inst.trade_type_code = "EquityBarrierOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityBarrierOptionData) return result;
     const auto& d = *t.EquityBarrierOptionData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
-    if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.exercise_type = extract_exercise_style(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
+    inst.lower_barrier_type = barrier_type_str(d.BarrierData);
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
+    const auto upper = second_barrier_level(d.BarrierData);
+    if (upper > 0.0)
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -436,24 +453,30 @@ equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
 // Forward: EquityAsianOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_asian_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAsianOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityAsianOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_asian_option_instrument>();
+    inst.trade_type_code = "EquityAsianOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityAsianOptionData) return result;
     const auto& d = *t.EquityAsianOptionData;
 
     if (d.Underlying)
-        result.instrument.underlying_code = std::string(d.Underlying->Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
+        inst.underlying_name = std::string(d.Underlying->Name);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
     if (d.ObservationDates && !d.ObservationDates->Rules.empty())
-        result.instrument.averaging_start_date =
+        inst.averaging_start_date =
             std::string(d.ObservationDates->Rules.front().StartDate);
     return result;
 }
@@ -462,24 +485,28 @@ equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
 // Forward: EquityDigitalOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_digital_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDigitalOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityDigitalOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_digital_option_instrument>();
+    inst.trade_type_code = "EquityDigitalOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityDigitalOptionData) return result;
     const auto& d = *t.EquityDigitalOptionData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = static_cast<double>(d.Strike);
-    result.instrument.notional = static_cast<double>(d.PayoffAmount);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = static_cast<double>(d.Strike);
+    inst.notional = static_cast<double>(d.PayoffAmount);
     if (d.PayoffCurrency)
-        result.instrument.currency = to_string(*d.PayoffCurrency);
+        inst.currency = to_string(*d.PayoffCurrency);
     return result;
 }
 
@@ -487,25 +514,30 @@ equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
 // Forward: EquityTouchOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_touch_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTouchOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityTouchOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_digital_option_instrument>();
+    inst.trade_type_code = "EquityTouchOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityTouchOptionData) return result;
     const auto& d = *t.EquityTouchOptionData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.PayoffCurrency);
-    result.instrument.notional = static_cast<double>(d.PayoffAmount);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.PayoffCurrency);
+    inst.notional = static_cast<double>(d.PayoffAmount);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.barrier_type = barrier_type_str(d.BarrierData);
+    const auto lb = first_barrier_level(d.BarrierData);
+    if (lb > 0.0)
+        inst.barrier_level = lb;
     return result;
 }
 
@@ -513,28 +545,34 @@ equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
 // Forward: EquityOutperformanceOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_outperformance_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOutperformanceOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityOutperformanceOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityOutperformanceOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityOutperformanceOptionData) return result;
     const auto& d = *t.EquityOutperformanceOptionData;
 
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = static_cast<double>(d.StrikeReturn);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = static_cast<double>(d.StrikeReturn);
 
-    // Store both underlyings as a JSON array
+    // Both underlyings join as a slash-separated name since the per-type
+    // option struct has no basket field. Preserves round-trip visibility
+    // of the pair; lossless basket support lives on equity_swap_instrument.
     const std::string n1 = std::string(d.Underlying1.Name);
     const std::string n2 = std::string(d.Underlying2.Name);
-    result.instrument.basket_json =
-        "[\"" + json_escape(n1) + "\",\"" + json_escape(n2) + "\"]";
-    result.instrument.underlying_code = n1;
+    inst.underlying_name = n1 + "/" + n2;
     return result;
 }
 
@@ -542,23 +580,28 @@ equity_instrument_mapper::forward_equity_outperformance_option(
 // Forward: EquityAccumulator
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_accumulator(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAccumulator: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityAccumulator");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_accumulator_instrument>();
+    inst.trade_type_code = "EquityAccumulator";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityAccumulatorData) return result;
     const auto& d = *t.EquityAccumulatorData;
 
-    result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.accumulation_amount =
-        static_cast<double>(d.FixingAmount);
+    inst.underlying_name = std::string(d.Underlying.Name);
+    inst.currency = to_string(d.Currency);
+    inst.fixing_amount = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
+        inst.strike = static_cast<double>(*d.Strike);
     if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
+        inst.start_date = std::string(*d.StartDate);
 
     // Capture first knock-out barrier
     if (d.Barriers) {
@@ -566,7 +609,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
             const auto btype = to_string(bd.Type);
             if ((btype == "DownAndOut" || btype == "UpAndOut") &&
                     !bd.Levels.Level.empty()) {
-                result.instrument.knock_out_barrier =
+                inst.knock_out_level =
                     static_cast<double>(bd.Levels.Level.front());
                 break;
             }
@@ -579,26 +622,31 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
 // Forward: EquityTaRF
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_tarf(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTaRF: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityTaRF");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_accumulator_instrument>();
+    inst.trade_type_code = "EquityTaRF";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityTaRFData) return result;
     const auto& d = *t.EquityTaRFData;
 
-    result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.accumulation_amount =
-        static_cast<double>(d.FixingAmount);
+    inst.underlying_name = std::string(d.Underlying.Name);
+    inst.currency = to_string(d.Currency);
+    inst.fixing_amount = static_cast<double>(d.FixingAmount);
     if (d.Strike)
-        result.instrument.strike_price = static_cast<double>(*d.Strike);
+        inst.strike = static_cast<double>(*d.Strike);
 
     // Capture FixingCap barrier level as knock_out
     for (const auto& bd : d.Barriers.BarrierData) {
         if (to_string(bd.Type) == "FixingCap" && !bd.Levels.Level.empty()) {
-            result.instrument.knock_out_barrier =
+            inst.knock_out_level =
                 static_cast<double>(bd.Levels.Level.front());
             break;
         }
@@ -610,29 +658,34 @@ equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
 // Forward: EquityCliquetOption
 // ---------------------------------------------------------------------------
 
-equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
+trading::domain::equity_instrument_variant equity_instrument_mapper::forward_equity_cliquet_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityCliquetOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityCliquetOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_option_instrument>();
+    inst.trade_type_code = "EquityCliquetOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityCliquetOptionData) return result;
     const auto& d = *t.EquityCliquetOptionData;
 
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.notional = static_cast<double>(d.Notional);
-    result.instrument.option_type = to_string(d.OptionType);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Notional);
+    inst.option_type = to_string(d.OptionType);
 
     // Extract tenor from schedule rules if available
     if (!d.ScheduleData.Rules.empty())
-        result.instrument.cliquet_frequency_code =
+        inst.cliquet_frequency =
             std::string(d.ScheduleData.Rules.front().Tenor);
     else if (!d.ScheduleData.Dates.empty() &&
              d.ScheduleData.Dates.front().Dates.Date.size() >= 2) {
         // For date-based schedules store the maturity date
-        result.instrument.maturity_date = std::string(
+        inst.expiry_date = std::string(
             d.ScheduleData.Dates.front().Dates.Date.back());
     }
     return result;
@@ -642,22 +695,27 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
 // Forward: EquityWorstOfBasketSwap
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_worst_of_basket_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityWorstOfBasketSwap: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityWorstOfBasketSwap");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_swap_instrument>();
+    inst.trade_type_code = "EquityWorstOfBasketSwap";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityWorstOfBasketSwapData) return result;
     const auto& d = *t.EquityWorstOfBasketSwapData;
 
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.basket_json = underlyings_to_json(d.Underlyings);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.basket_json = underlyings_to_json(d.Underlyings);
     if (!d.Underlyings.Underlying.empty())
-        result.instrument.underlying_code =
-            std::string(d.Underlyings.Underlying.front().Name);
+        inst.underlying_name = std::string(d.Underlyings.Underlying.front().Name);
     return result;
 }
 
@@ -666,18 +724,18 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityOption";
     trade t;
     t.TradeType = oreTradeType::EquityOption;
     equityOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.Currency) = instr.currency;
-    d.Quantity = static_cast<float>(instr.quantity);
-    if (instr.strike_price != 0.0) {
+    d.Quantity = static_cast<float>(instr.notional);
+    if (instr.strike != 0.0) {
         _Strike_t s;
-        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        static_cast<std::string&>(s) = std::to_string(instr.strike);
         d.strikeGroup.Strike = std::move(s);
     }
     t.EquityOptionData = std::move(d);
@@ -689,16 +747,16 @@ trade equity_instrument_mapper::reverse_equity_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_forward(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_forward_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityForward";
     trade t;
     t.TradeType = oreTradeType::EquityForward;
     equityForwardData d;
     d.LongShort = longShort::Long;
-    static_cast<std::string&>(d.Maturity) = instr.maturity_date;
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    static_cast<std::string&>(d.Maturity) = instr.expiry_date;
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.Currency) = instr.currency;
-    d.Strike = static_cast<float>(instr.strike_price);
+    d.Strike = static_cast<float>(instr.forward_price.value_or(0.0));
     d.Quantity = static_cast<float>(instr.quantity);
     t.EquityForwardData = std::move(d);
     return t;
@@ -709,7 +767,7 @@ trade equity_instrument_mapper::reverse_equity_forward(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_swap(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_swap_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquitySwap";
     trade t;
     t.TradeType = oreTradeType::EquitySwap;
@@ -720,10 +778,13 @@ trade equity_instrument_mapper::reverse_equity_swap(
     eqLeg.LegType = legType::Equity;
     eqLeg.Payer = true;
     _EquityLegData_t el;
-    el.underlyingTypes = make_underlying_type(instr.underlying_code);
+    el.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(el.ReturnType) = instr.return_type;
-    if (instr.quantity != 0.0)
-        el.Quantity = static_cast<float>(instr.quantity);
+    // The per-type schema conflates equity-leg Quantity and funding-leg
+    // Notional into a single notional field. Export replays the same
+    // value into both legs so downstream XSD fields stay populated.
+    if (instr.notional != 0.0)
+        el.Quantity = static_cast<float>(instr.notional);
     legDataType_group_t ldt;
     ldt.EquityLegData = std::move(el);
     eqLeg.legDataType = std::move(ldt);
@@ -753,7 +814,7 @@ trade equity_instrument_mapper::reverse_equity_swap(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_variance_swap(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_variance_swap_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityVarianceSwap";
     trade t;
     t.TradeType = oreTradeType::EquityVarianceSwap;
@@ -761,7 +822,7 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
     static_cast<std::string&>(d.StartDate) = instr.start_date;
     static_cast<std::string&>(d.EndDate) = instr.maturity_date;
     d.Currency = parse_currency_code(instr.currency);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.LongShort) = "Long";
     d.Strike = static_cast<float>(instr.variance_strike);
     d.Notional = static_cast<float>(instr.notional);
@@ -775,32 +836,32 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_barrier_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_barrier_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityBarrierOption";
     trade t;
     t.TradeType = oreTradeType::EquityBarrierOption;
     eqBarrierOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     d.Currency = parse_currency_code(instr.currency);
-    d.Quantity = static_cast<float>(instr.quantity);
-    if (instr.strike_price != 0.0) {
+    d.Quantity = static_cast<float>(instr.notional);
+    if (instr.strike != 0.0) {
         _Strike_t s;
-        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        static_cast<std::string&>(s) = std::to_string(instr.strike);
         d.strikeGroup.Strike = std::move(s);
     }
-    if (!instr.barrier_type.empty()) {
+    if (!instr.lower_barrier_type.empty()) {
         barrierData bd;
-        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
-        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
-        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
-        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
-        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
-        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
+        if (instr.lower_barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.lower_barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.lower_barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.lower_barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.lower_barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.lower_barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_barrier_option: unrecognized barrier type '"
-                + instr.barrier_type + "'");
+                + instr.lower_barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(
                 static_cast<float>(instr.lower_barrier));
@@ -815,22 +876,22 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_asian_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_asian_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityAsianOption";
     trade t;
     t.TradeType = oreTradeType::EquityAsianOption;
     singleUnderlyingAsianOptionData d;
     d.OptionData = make_option_data(instr);
     d.Currency = parse_currency_code(instr.currency);
-    d.Quantity = static_cast<float>(instr.quantity);
-    if (instr.strike_price != 0.0) {
+    d.Quantity = static_cast<float>(instr.notional);
+    if (instr.strike != 0.0) {
         _StrikeData_t sd;
-        sd.Value = static_cast<float>(instr.strike_price);
+        sd.Value = static_cast<float>(instr.strike);
         d.strikeGroup.StrikeData = std::move(sd);
     }
-    if (!instr.underlying_code.empty()) {
+    if (!instr.underlying_name.empty()) {
         underlying u;
-        static_cast<std::string&>(u.Name) = instr.underlying_code;
+        static_cast<std::string&>(u.Name) = instr.underlying_name;
         static_cast<std::string&>(u.Type) = "Equity";
         d.Underlying = std::move(u);
     }
@@ -843,16 +904,15 @@ trade equity_instrument_mapper::reverse_equity_asian_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_digital_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_digital_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityDigitalOption";
     trade t;
     t.TradeType = oreTradeType::EquityDigitalOption;
     eqDigitalOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
-    d.Strike = static_cast<float>(instr.strike_price);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
+    d.Strike = static_cast<float>(instr.strike.value_or(0.0));
     d.PayoffAmount = static_cast<float>(instr.notional);
-    d.Quantity = static_cast<float>(instr.quantity);
     t.EquityDigitalOptionData = std::move(d);
     return t;
 }
@@ -862,13 +922,13 @@ trade equity_instrument_mapper::reverse_equity_digital_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_touch_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_digital_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityTouchOption";
     trade t;
     t.TradeType = oreTradeType::EquityTouchOption;
     eqTouchOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     d.PayoffCurrency = parse_currency_code(instr.currency);
     d.PayoffAmount = static_cast<float>(instr.notional);
     if (!instr.barrier_type.empty()) {
@@ -881,8 +941,9 @@ trade equity_instrument_mapper::reverse_equity_touch_option(
             bd.Type = barrierType::DownAndIn;
         else
             bd.Type = barrierType::DownAndOut;
-        if (instr.lower_barrier != 0.0)
-            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
+        if (instr.barrier_level.has_value())
+            bd.Levels.Level.push_back(
+                static_cast<float>(*instr.barrier_level));
         d.BarrierData = std::move(bd);
     }
     t.EquityTouchOptionData = std::move(d);
@@ -894,7 +955,7 @@ trade equity_instrument_mapper::reverse_equity_touch_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_outperformance_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityOutperformanceOption";
     trade t;
     t.TradeType = oreTradeType::EquityOutperformanceOption;
@@ -902,11 +963,14 @@ trade equity_instrument_mapper::reverse_equity_outperformance_option(
     d.OptionData = make_option_data(instr);
     d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
-    d.StrikeReturn = static_cast<float>(instr.strike_price);
-    // Reconstruct underlyings from basket_json
-    const auto names = parse_json_string_array(instr.basket_json);
-    const std::string u1 = names.size() > 0 ? names[0] : instr.underlying_code;
-    const std::string u2 = names.size() > 1 ? names[1] : u1;
+    d.StrikeReturn = static_cast<float>(instr.strike);
+    // Two underlyings are carried in underlying_name as "n1/n2" because the
+    // per-type option struct has no basket field. Split back on '/'.
+    const auto sep = instr.underlying_name.find('/');
+    const std::string u1 = sep == std::string::npos
+        ? instr.underlying_name : instr.underlying_name.substr(0, sep);
+    const std::string u2 = sep == std::string::npos
+        ? u1 : instr.underlying_name.substr(sep + 1);
     static_cast<std::string&>(d.Underlying1.Name) = u1;
     static_cast<std::string&>(d.Underlying1.Type) = "Equity";
     static_cast<std::string&>(d.Underlying2.Name) = u2;
@@ -920,16 +984,16 @@ trade equity_instrument_mapper::reverse_equity_outperformance_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_accumulator(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_accumulator_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityAccumulator";
     trade t;
     t.TradeType = oreTradeType::EquityAccumulator;
     accumulatorData d;
     d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(instr.accumulation_amount);
-    if (instr.strike_price != 0.0)
-        d.Strike = static_cast<float>(instr.strike_price);
-    static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
+    d.FixingAmount = static_cast<float>(instr.fixing_amount);
+    if (instr.strike != 0.0)
+        d.Strike = static_cast<float>(instr.strike);
+    static_cast<std::string&>(d.Underlying.Name) = instr.underlying_name;
     static_cast<std::string&>(d.Underlying.Type) = "Equity";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
     if (!instr.start_date.empty()) {
@@ -952,16 +1016,16 @@ trade equity_instrument_mapper::reverse_equity_accumulator(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_tarf(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_accumulator_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityTaRF";
     trade t;
     t.TradeType = oreTradeType::EquityTaRF;
     tarfData2 d;
     d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(instr.accumulation_amount);
-    if (instr.strike_price != 0.0)
-        d.Strike = static_cast<float>(instr.strike_price);
-    static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
+    d.FixingAmount = static_cast<float>(instr.fixing_amount);
+    if (instr.strike != 0.0)
+        d.Strike = static_cast<float>(instr.strike);
+    static_cast<std::string&>(d.Underlying.Name) = instr.underlying_name;
     static_cast<std::string&>(d.Underlying.Type) = "Equity";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
     // Minimal schedule
@@ -977,12 +1041,12 @@ trade equity_instrument_mapper::reverse_equity_tarf(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_cliquet_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityCliquetOption";
     trade t;
     t.TradeType = oreTradeType::EquityCliquetOption;
     cliquetOptionData d;
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
     d.LongShort = longShort::Long;
@@ -996,10 +1060,9 @@ trade equity_instrument_mapper::reverse_equity_cliquet_option(
             + instr.option_type + "'");
     d.Moneyness = 1.0f;
     // Schedule
-    if (!instr.cliquet_frequency_code.empty()) {
+    if (!instr.cliquet_frequency.empty()) {
         scheduleData_Rules_t rule;
-        static_cast<std::string&>(rule.Tenor) =
-            instr.cliquet_frequency_code;
+        static_cast<std::string&>(rule.Tenor) = instr.cliquet_frequency;
         d.ScheduleData.Rules.push_back(std::move(rule));
     }
     t.EquityCliquetOptionData = std::move(d);
@@ -1011,14 +1074,14 @@ trade equity_instrument_mapper::reverse_equity_cliquet_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_swap_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityWorstOfBasketSwap";
     trade t;
     t.TradeType = oreTradeType::EquityWorstOfBasketSwap;
     worstOfBasketSwapData2 d;
     d.LongShort = longShort::Long;
     d.Currency = parse_currency_code(instr.currency);
-    d.Quantity = static_cast<float>(instr.quantity);
+    d.Quantity = static_cast<float>(instr.notional);
     d.FixedRate = 0.0f;
     static_cast<std::string&>(d.FloatingIndex) = "EUR-EURIBOR-3M";
     d.FloatingDayCountFraction = dayCounter::Actual_360;
@@ -1031,9 +1094,9 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
             static_cast<std::string&>(u.Type) = "Equity";
             d.Underlyings.Underlying.push_back(std::move(u));
         }
-    } else if (!instr.underlying_code.empty()) {
+    } else if (!instr.underlying_name.empty()) {
         underlying u;
-        static_cast<std::string&>(u.Name) = instr.underlying_code;
+        static_cast<std::string&>(u.Name) = instr.underlying_name;
         static_cast<std::string&>(u.Type) = "Equity";
         d.Underlyings.Underlying.push_back(std::move(u));
     }
@@ -1050,28 +1113,33 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
 // Forward: EquityDoubleBarrierOption (same struct as EquityBarrierOption)
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_double_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDoubleBarrierOption: "
                                << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityDoubleBarrierOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_barrier_option_instrument>();
+    inst.trade_type_code = "EquityDoubleBarrierOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityDoubleBarrierOptionData) return result;
     const auto& d = *t.EquityDoubleBarrierOptionData;
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
-    if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.exercise_type = extract_exercise_style(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
+    inst.lower_barrier_type = barrier_type_str(d.BarrierData);
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
+    const auto upper = second_barrier_level(d.BarrierData);
+    if (upper > 0.0)
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -1079,29 +1147,34 @@ equity_instrument_mapper::forward_equity_double_barrier_option(
 // Forward: EquityEuropeanBarrierOption (same struct as EquityBarrierOption)
 // ---------------------------------------------------------------------------
 
-equity_mapping_result
+trading::domain::equity_instrument_variant
 equity_instrument_mapper::forward_equity_european_barrier_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug)
         << "Forward-mapping EquityEuropeanBarrierOption: "
         << std::string(t.id);
-    equity_mapping_result result;
-    result.instrument = make_base("EquityEuropeanBarrierOption");
+    trading::domain::equity_instrument_variant result;
+    auto& inst = result.emplace<
+        ores::trading::domain::equity_barrier_option_instrument>();
+    inst.trade_type_code = "EquityEuropeanBarrierOption";
+    inst.modified_by = "ores";
+    inst.performed_by = "ores";
+    inst.change_reason_code = "system.external_data_import";
+    inst.change_commentary = "Imported from ORE XML";
     if (!t.EquityEuropeanBarrierOptionData) return result;
     const auto& d = *t.EquityEuropeanBarrierOptionData;
-    result.instrument.underlying_code =
-        extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = to_string(d.Currency);
-    result.instrument.quantity = static_cast<double>(d.Quantity);
-    result.instrument.option_type = extract_option_type(d.OptionData);
-    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
-    result.instrument.maturity_date = first_exercise_date(d.OptionData);
-    result.instrument.strike_price = extract_strike(d.strikeGroup);
-    if (d.StartDate)
-        result.instrument.start_date = std::string(*d.StartDate);
-    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
-    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
-    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+    inst.underlying_name = extract_underlying_name(d.underlyingTypes);
+    inst.currency = to_string(d.Currency);
+    inst.notional = static_cast<double>(d.Quantity);
+    inst.option_type = extract_option_type(d.OptionData);
+    inst.exercise_type = extract_exercise_style(d.OptionData);
+    inst.expiry_date = first_exercise_date(d.OptionData);
+    inst.strike = extract_strike(d.strikeGroup);
+    inst.lower_barrier_type = barrier_type_str(d.BarrierData);
+    inst.lower_barrier = first_barrier_level(d.BarrierData);
+    const auto upper = second_barrier_level(d.BarrierData);
+    if (upper > 0.0)
+        inst.upper_barrier = upper;
     return result;
 }
 
@@ -1110,36 +1183,36 @@ equity_instrument_mapper::forward_equity_european_barrier_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_double_barrier_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_barrier_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityDoubleBarrierOption";
     trade t;
     t.TradeType = oreTradeType::EquityDoubleBarrierOption;
     eqBarrierOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     d.Currency = parse_currency_code(instr.currency);
-    d.Quantity = static_cast<float>(instr.quantity);
-    if (instr.strike_price != 0.0) {
+    d.Quantity = static_cast<float>(instr.notional);
+    if (instr.strike != 0.0) {
         _Strike_t s;
-        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        static_cast<std::string&>(s) = std::to_string(instr.strike);
         d.strikeGroup.Strike = std::move(s);
     }
-    if (!instr.barrier_type.empty()) {
+    if (!instr.lower_barrier_type.empty()) {
         barrierData bd;
-        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
-        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
-        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
-        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
-        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
-        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
+        if (instr.lower_barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.lower_barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.lower_barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.lower_barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.lower_barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.lower_barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_double_barrier_option: unrecognized barrier type '"
-                + instr.barrier_type + "'");
+                + instr.lower_barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
-        if (instr.upper_barrier != 0.0)
-            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
+        if (instr.upper_barrier.has_value())
+            bd.Levels.Level.push_back(static_cast<float>(*instr.upper_barrier));
         d.BarrierData = std::move(bd);
     }
     t.EquityDoubleBarrierOptionData = std::move(d);
@@ -1151,37 +1224,37 @@ trade equity_instrument_mapper::reverse_equity_double_barrier_option(
 // ---------------------------------------------------------------------------
 
 trade equity_instrument_mapper::reverse_equity_european_barrier_option(
-        const equity_instrument& instr) {
+        const ores::trading::domain::equity_barrier_option_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reverse-mapping EquityEuropeanBarrierOption";
     trade t;
     t.TradeType = oreTradeType::EquityEuropeanBarrierOption;
     eqBarrierOptionData d;
     d.OptionData = make_option_data(instr);
-    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.underlyingTypes = make_underlying_type(instr.underlying_name);
     d.Currency = parse_currency_code(instr.currency);
-    d.Quantity = static_cast<float>(instr.quantity);
-    if (instr.strike_price != 0.0) {
+    d.Quantity = static_cast<float>(instr.notional);
+    if (instr.strike != 0.0) {
         _Strike_t s;
-        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        static_cast<std::string&>(s) = std::to_string(instr.strike);
         d.strikeGroup.Strike = std::move(s);
     }
-    if (!instr.barrier_type.empty()) {
+    if (!instr.lower_barrier_type.empty()) {
         barrierData bd;
-        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
-        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
-        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
-        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
-        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
-        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
+        if (instr.lower_barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.lower_barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.lower_barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.lower_barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.lower_barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.lower_barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_european_barrier_option: unrecognized barrier type '"
-                + instr.barrier_type + "'");
+                + instr.lower_barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
-        if (instr.upper_barrier != 0.0)
-            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
+        if (instr.upper_barrier.has_value())
+            bd.Levels.Level.push_back(static_cast<float>(*instr.upper_barrier));
         d.BarrierData = std::move(bd);
     }
     t.EquityEuropeanBarrierOptionData = std::move(d);

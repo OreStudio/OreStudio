@@ -18,6 +18,26 @@
  *
  */
 
+-- ORE conventions (no dependants, drop first)
+\ir ./refdata_cds_conventions_notify_trigger_drop.sql
+\ir ./refdata_cds_conventions_drop.sql
+\ir ./refdata_fx_conventions_notify_trigger_drop.sql
+\ir ./refdata_fx_conventions_drop.sql
+\ir ./refdata_overnight_index_conventions_notify_trigger_drop.sql
+\ir ./refdata_overnight_index_conventions_drop.sql
+\ir ./refdata_ibor_index_conventions_notify_trigger_drop.sql
+\ir ./refdata_ibor_index_conventions_drop.sql
+\ir ./refdata_fra_conventions_notify_trigger_drop.sql
+\ir ./refdata_fra_conventions_drop.sql
+\ir ./refdata_ois_conventions_notify_trigger_drop.sql
+\ir ./refdata_ois_conventions_drop.sql
+\ir ./refdata_swap_conventions_notify_trigger_drop.sql
+\ir ./refdata_swap_conventions_drop.sql
+\ir ./refdata_zero_conventions_notify_trigger_drop.sql
+\ir ./refdata_zero_conventions_drop.sql
+\ir ./refdata_deposit_conventions_notify_trigger_drop.sql
+\ir ./refdata_deposit_conventions_drop.sql
+
 -- Books, portfolios, and business units (drop first, depend on parties and lookup tables)
 \ir ./refdata_books_notify_trigger_drop.sql
 \ir ./refdata_books_drop.sql

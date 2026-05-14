@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_TENANT_STATUS_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the tenant_status to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const tenant_status& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const tenant_status& v);
 
 }
 

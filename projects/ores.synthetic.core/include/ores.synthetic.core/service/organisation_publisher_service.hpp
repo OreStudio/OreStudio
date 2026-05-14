@@ -25,6 +25,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/generated_organisation.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::service {
 
@@ -48,7 +49,7 @@ struct generate_organisation_result {
  * using the refdata repositories. Entities are written in FK order to
  * satisfy foreign key constraints.
  */
-class organisation_publisher_service final {
+class ORES_SYNTHETIC_CORE_EXPORT organisation_publisher_service final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

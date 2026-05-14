@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes coding_schemes to data storage.
  */
-class coding_scheme_repository {
+class ORES_DQ_CORE_EXPORT coding_scheme_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.coding_scheme_repository";

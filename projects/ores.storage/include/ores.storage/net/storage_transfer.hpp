@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include "ores.storage/export.hpp"
 
 namespace ores::storage::net {
 
@@ -42,7 +43,7 @@ namespace ores::storage::net {
  * All operations log at DEBUG level including bucket, key, bytes transferred,
  * and wall-clock duration.
  */
-class storage_transfer {
+class ORES_STORAGE_EXPORT storage_transfer {
 public:
     /**
      * @brief Constructs a transfer client.

@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing vanilla swap instruments.
  */
-class vanilla_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT vanilla_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.vanilla_swap_instrument_service";
@@ -65,6 +66,9 @@ public:
 
     std::vector<domain::vanilla_swap_instrument>
     get_vanilla_swap_instrument_history(const std::string& id);
+
+    std::vector<domain::vanilla_swap_instrument>
+    get_vanilla_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

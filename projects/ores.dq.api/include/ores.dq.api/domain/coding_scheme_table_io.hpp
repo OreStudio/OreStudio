@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the coding_scheme objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<coding_scheme>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<coding_scheme>& v);
 
 }
 

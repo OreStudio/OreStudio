@@ -1,0 +1,26 @@
+<Portfolio>
+  <Trade id="Inflation_ZC_Cap_AUCPI">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <LegType>CPI</LegType>
+        <Currency>AUD</Currency>
+        <DayCounter>ACT/365</DayCounter>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate></StartDate>
+            <Tenor></Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

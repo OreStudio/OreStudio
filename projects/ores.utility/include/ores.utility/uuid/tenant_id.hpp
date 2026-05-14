@@ -25,6 +25,7 @@
 #include <expected>
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::uuid {
 
@@ -63,7 +64,7 @@ inline constexpr char max_uuid_str[] = "ffffffff-ffff-ffff-ffff-ffffffffffff";
  *
  * @see <a href="https://www.rfc-editor.org/rfc/rfc9562.html">RFC 9562 - UUIDs</a>
  */
-class tenant_id final {
+class ORES_UTILITY_EXPORT tenant_id final {
 public:
     /**
      * @brief Creates a tenant_id representing the system tenant.

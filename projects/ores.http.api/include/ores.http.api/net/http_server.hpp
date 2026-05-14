@@ -31,13 +31,14 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::net {
 
 /**
  * @brief HTTP server built on Boost.Beast.
  */
-class http_server final {
+class ORES_HTTP_API_EXPORT http_server final {
 public:
     explicit http_server(boost::asio::io_context& io_ctx,
         const http_server_options& options);

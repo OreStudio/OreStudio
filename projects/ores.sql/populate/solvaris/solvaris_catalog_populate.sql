@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 
+\o /dev/null
 -- =============================================================================
 -- Data Quality Slovaris Catalogs
 -- =============================================================================
 
-\echo '--- Data Quality Slovaris Catalogs ---'
+\qecho '--- Data Quality Slovaris Catalogs ---'
 
 select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Slovaris',
@@ -39,9 +40,10 @@ select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
 -- Summary
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\qecho ''
+\qecho '--- Summary ---'
 
 select 'Data Quality Total Catalogs' as entity, count(*) as count
 from ores_dq_catalogs_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
+\o

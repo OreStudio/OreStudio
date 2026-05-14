@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -36,7 +37,7 @@ namespace ores::refdata::generators {
  * @param n Number of business centres to generate. If n is 0 or greater than
  *          the available set (20), returns all available fictional centres.
  */
-std::vector<domain::business_centre>
+ORES_REFDATA_API_EXPORT std::vector<domain::business_centre>
 generate_fictional_business_centres(std::size_t n,
     utility::generation::generation_context& ctx);
 

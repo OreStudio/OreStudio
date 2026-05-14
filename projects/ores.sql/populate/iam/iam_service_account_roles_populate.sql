@@ -30,7 +30,8 @@
  * This script is idempotent.
  */
 
-\echo '--- Service Account Role Assignments ---'
+\o /dev/null
+\qecho '--- Service Account Role Assignments ---'
 
 select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'iam_service_user', 'IamService');
@@ -80,18 +81,10 @@ select ores_iam_account_role_assign_fn(
 select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'analytics_service_user', 'AnalyticsService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'http_user', 'HttpService');
-
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'wt_user', 'WtService');
-
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'compute_wrapper_user', 'ComputeWrapperService');
-
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count
 from ores_iam_account_roles_tbl ar
 join ores_iam_accounts_tbl a on a.id = ar.account_id
 where a.account_type != 'user'
   and ar.valid_to = ores_utility_infinity_timestamp_fn();
+\o

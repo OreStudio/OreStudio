@@ -24,6 +24,7 @@
 #include <vector>
 #include "ores.http.api/domain/route.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::openapi {
 
@@ -51,7 +52,7 @@ struct server_info final {
 /**
  * @brief Registry for API endpoints that generates OpenAPI specification.
  */
-class endpoint_registry final {
+class ORES_HTTP_API_EXPORT endpoint_registry final {
 public:
     endpoint_registry();
 

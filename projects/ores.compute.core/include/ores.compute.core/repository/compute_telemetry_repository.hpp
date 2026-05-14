@@ -27,6 +27,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/grid_sample.hpp"
 #include "ores.compute.api/domain/node_sample.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
@@ -36,7 +37,7 @@ namespace ores::compute::repository {
  * Writes to ores_compute_grid_samples_tbl and
  * ores_compute_node_samples_tbl (TimescaleDB hypertables).
  */
-class compute_telemetry_repository {
+class ORES_COMPUTE_CORE_EXPORT compute_telemetry_repository {
 private:
     inline static std::string_view logger_name =
         "ores.compute.repository.compute_telemetry_repository";

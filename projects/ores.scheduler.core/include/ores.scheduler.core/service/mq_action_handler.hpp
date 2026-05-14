@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ores.scheduler.core/service/action_handler.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -29,7 +30,7 @@ namespace ores::scheduler::service {
  * Handles jobs with action_type == "send_mq_message". The action_payload JSON
  * must contain: {"queue_id":"<uuid>","message_type":"<str>","payload":{...}}.
  */
-class mq_action_handler final : public action_handler {
+class ORES_SCHEDULER_CORE_EXPORT mq_action_handler final : public action_handler {
 public:
     [[nodiscard]] std::string_view action_type() const noexcept override {
         return "send_mq_message";

@@ -30,6 +30,7 @@
 #include "ores.workflow/repository/workflow_step_repository.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/workflow_registry.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -46,7 +47,7 @@ namespace ores::workflow::service {
  * is shared across all queue-group subscribers, protected by the NATS
  * library's serialisation guarantees.
  */
-class workflow_engine {
+class ORES_WORKFLOW_EXPORT workflow_engine  {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.service.workflow_engine";

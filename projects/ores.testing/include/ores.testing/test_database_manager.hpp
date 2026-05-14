@@ -24,6 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -37,7 +39,7 @@ namespace ores::testing {
  * Tenant isolation uses PostgreSQL Row Level Security (RLS) to ensure
  * complete data separation between test suites.
  */
-class test_database_manager {
+class ORES_TESTING_EXPORT test_database_manager {
 private:
     inline static std::string_view logger_name =
         "ores.testing.test_database_manager";
@@ -118,10 +120,10 @@ private:
     static std::string get_test_tenant_id_env();
 
     /**
-     * @brief System tenant ID constant (max UUID per RFC 9562).
+     * @brief System tenant ID constant (canonical source: tenant_context).
      */
     static constexpr auto system_tenant_id =
-        "ffffffff-ffff-ffff-ffff-ffffffffffff";
+        ores::database::service::tenant_context::system_tenant_id;
 };
 
 }

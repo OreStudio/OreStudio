@@ -32,11 +32,14 @@ namespace ores::compute::net {
  * All compute artifacts live under a single "compute" bucket with
  * hierarchical keys:
  *
- *   packages/{app_version_id}[.ext]                   — single-platform bundle
- *   packages/{app_version_id}/{platform_code}[.ext]   — per-triplet bundle
- *   input/{workunit_id}[.ext]                         — workunit input archive
- *   config/{workunit_id}[.ext]                        — workunit configuration file
- *   output/{result_id}.tar.gz                         — result output archive
+ *   packages/{app_version_id}[.ext]
+ *       single-platform bundle (legacy, used by AppProvisionerWizard)
+ *   packages/{app_name}/{version}/{app_name}-{version}-{platform_code}[.ext]
+ *       per-triplet bundle; matches the SQL seed convention so blobs are
+ *       browseable by hand ("this is ORE 1.8.15.0 for x64-linux")
+ *   input/{workunit_id}[.ext]    — workunit input archive
+ *   config/{workunit_id}[.ext]   — workunit configuration file
+ *   output/{result_id}.tar.gz    — result output archive
  *
  * Use @c storage_paths::make_object_path / @c make_object_url to build
  * the full HTTP path or URL from the helpers below.
@@ -64,19 +67,28 @@ struct compute_storage {
     /**
      * @brief Key for a per-platform application package binary.
      *
-     * @param id             App version UUID as string.
-     * @param platform_code  vcpkg triplet code (e.g. "x64-linux").
+     * @param app_name       App name, e.g. "ore".
+     * @param version        Engine version, e.g. "1.8.15.0".
+     * @param platform_code  vcpkg triplet code, e.g. "x64-linux".
      * @param ext            File extension including the leading dot.
      *
-     * Per-platform bundles live one level deeper than the single-platform
-     * key so both layouts can coexist during migration.
+     * Uses a human-readable layout so admins browsing the storage bucket
+     * can identify blobs by sight, and the SQL seed (which hand-writes
+     * this path) round-trips through the same helper.
      */
-    static std::string package_key(std::string_view id,
+    static std::string package_key(std::string_view app_name,
+        std::string_view version,
         std::string_view platform_code,
         std::string_view ext) {
         std::string k = "packages/";
-        k += id;
+        k += app_name;
         k += '/';
+        k += version;
+        k += '/';
+        k += app_name;
+        k += '-';
+        k += version;
+        k += '-';
         k += platform_code;
         k += ext;
         return k;
@@ -137,11 +149,12 @@ struct compute_storage {
      * when populating ores_compute_app_version_platforms_tbl.package_uri so
      * clients don't have to synthesise the path inline.
      */
-    static std::string package_path(std::string_view id,
+    static std::string package_path(std::string_view app_name,
+        std::string_view version,
         std::string_view platform_code,
         std::string_view ext) {
         return ores::storage::net::storage_paths::make_object_path(
-            bucket, package_key(id, platform_code, ext));
+            bucket, package_key(app_name, version, platform_code, ext));
     }
 
     static std::string input_path(std::string_view workunit_id,

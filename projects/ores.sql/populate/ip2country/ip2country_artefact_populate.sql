@@ -52,11 +52,11 @@ begin
         raise exception 'Dataset not found: IP to Country IPv4 Ranges';
     end if;
 
-    raise notice 'Dataset ID: %', v_dataset_id;
+    raise debug 'Dataset ID: %', v_dataset_id;
 
     -- Clear existing artefact data for this dataset
     delete from ores_dq_ip2country_artefact_tbl where dataset_id = v_dataset_id;
-    raise notice 'Cleared existing artefact data';
+    raise debug 'Cleared existing artefact data';
 
     -- Create temporary staging table for TSV import
     create temp table staging_ip2country (

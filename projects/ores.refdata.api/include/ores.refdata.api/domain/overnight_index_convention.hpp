@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_OVERNIGHT_INDEX_CONVENTION_HPP
-#define ORES_REFDATA_API_DOMAIN_OVERNIGHT_INDEX_CONVENTION_HPP
+#ifndef ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_HPP
+#define ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_HPP
 
 #include <chrono>
 #include <string>
@@ -30,12 +30,8 @@ namespace ores::refdata::domain {
  * @brief Conventions for an overnight index (e.g. EONIA, SONIA, SOFR).
  *
  * Defines the fixing calendar, day count, and settlement lag for a risk-free
- * overnight rate index. Overnight indices differ from IBOR indices in that
- * they are published daily and have no term structure of their own — the OIS
- * convention governs how they are used in swap products.
- *
- * Corresponds to the @c <OvernightIndex> element in @c conventions.xml.
- * Aligns with the FpML @c OvernightIndex concept.
+ * overnight rate index. Corresponds to the <OvernightIndex> element in
+ * ORE conventions.xml.
  */
 struct overnight_index_convention final {
     /**
@@ -49,17 +45,19 @@ struct overnight_index_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Unique index identifier (e.g. "EUR-EONIA", "USD-SOFR", "GBP-SONIA").
+     * @brief Unique index identifier.
+     *
+     * Examples: 'EUR-EONIA', 'USD-SOFR', 'GBP-SONIA'.
      */
     std::string id;
 
     /**
-     * @brief Calendar used to determine valid fixing dates (e.g. "TARGET").
+     * @brief Calendar used to determine valid fixing dates (e.g. 'TARGET').
      */
     std::string fixing_calendar;
 
     /**
-     * @brief Day count fraction for accrual (canonical FpML, e.g. "ACT/360").
+     * @brief Day count fraction for accrual (canonical FpML, e.g. 'ACT/360').
      */
     std::string day_count_fraction;
 
@@ -69,12 +67,19 @@ struct overnight_index_convention final {
     int settlement_days = 0;
 
     /**
-     * @brief Username of the person who recorded this version.
+     * @brief Username of the person who last modified this overnight index convention.
      */
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -82,11 +87,6 @@ struct overnight_index_convention final {
      * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
-
-    /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
 
     /**
      * @brief Timestamp when this version of the record was recorded.

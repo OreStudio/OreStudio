@@ -62,7 +62,7 @@ begin
     delete from ores_dq_books_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating books for dataset: testdata.books';
+    raise debug 'Populating books for dataset: testdata.books';
 
     insert into ores_dq_books_artefact_tbl (
         dataset_id, tenant_id, id, version, name,
@@ -201,7 +201,7 @@ begin
          'GL-REG-003', 'CC-RISK', 'Closed', 1);
 
     get diagnostics v_count = row_count;
-    raise notice 'Successfully populated % books', v_count;
+    raise debug 'Successfully populated % books', v_count;
 end $$;
 
 -- =============================================================================

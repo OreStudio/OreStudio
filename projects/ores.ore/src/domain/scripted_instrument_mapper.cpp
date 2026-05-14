@@ -150,19 +150,18 @@ parse_json_object(const std::string& json) {
 // Forward: ScriptedTrade
 // ---------------------------------------------------------------------------
 
-scripted_mapping_result scripted_instrument_mapper::forward_scripted_trade(
+trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripted_trade(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ScriptedTrade: "
                                << std::string(t.id);
-    scripted_mapping_result result;
-    result.instrument = make_base("ScriptedTrade");
+    trading::domain::scripted_instrument result = make_base("ScriptedTrade");
 
     // Named scripted product: AsianBasketOptionData
     if (t.AsianBasketOptionData) {
         const auto& d = *t.AsianBasketOptionData;
-        result.instrument.script_name = "AsianBasketOption";
-        result.instrument.underlyings_json = index_vector_to_json(d.Underlyings);
-        result.instrument.parameters_json = make_params_json(
+        result.script_name = "AsianBasketOption";
+        result.underlyings_json = index_vector_to_json(d.Underlyings);
+        result.parameters_json = make_params_json(
             std::string(d.PutCall),
             static_cast<float>(d.Notional),
             static_cast<float>(d.Strike));
@@ -172,9 +171,9 @@ scripted_mapping_result scripted_instrument_mapper::forward_scripted_trade(
     // Named scripted product: AverageStrikeBasketOptionData
     if (t.AverageStrikeBasketOptionData) {
         const auto& d = *t.AverageStrikeBasketOptionData;
-        result.instrument.script_name = "AverageStrikeBasketOption";
-        result.instrument.underlyings_json = index_vector_to_json(d.Underlyings);
-        result.instrument.parameters_json = make_params_json(
+        result.script_name = "AverageStrikeBasketOption";
+        result.underlyings_json = index_vector_to_json(d.Underlyings);
+        result.parameters_json = make_params_json(
             std::string(d.PutCall),
             static_cast<float>(d.Notional),
             0.0f);
@@ -185,9 +184,9 @@ scripted_mapping_result scripted_instrument_mapper::forward_scripted_trade(
     if (t.ScriptedTradeData) {
         const auto& d = *t.ScriptedTradeData;
         if (d.ScriptName)
-            result.instrument.script_name = std::string(*d.ScriptName);
+            result.script_name = std::string(*d.ScriptName);
         if (d.Script)
-            result.instrument.script_body = std::string(d.Script->Code);
+            result.script_body = std::string(d.Script->Code);
         // Encode Number parameters into parameters_json
         if (!d.Data.Number.empty()) {
             std::string params = "{";
@@ -201,7 +200,7 @@ scripted_mapping_result scripted_instrument_mapper::forward_scripted_trade(
                 first = false;
             }
             params += "}";
-            result.instrument.parameters_json = params;
+            result.parameters_json = params;
         }
         // Encode Index entries into underlyings_json
         if (!d.Data.Index.empty()) {
@@ -215,7 +214,7 @@ scripted_mapping_result scripted_instrument_mapper::forward_scripted_trade(
                 first = false;
             }
             underlyings += "]";
-            result.instrument.underlyings_json = underlyings;
+            result.underlyings_json = underlyings;
         }
         return result;
     }
@@ -283,15 +282,14 @@ trade scripted_instrument_mapper::reverse_scripted_trade(
 // Forward: DoubleDigitalOption
 // ---------------------------------------------------------------------------
 
-scripted_mapping_result scripted_instrument_mapper::forward_double_digital_option(
+trading::domain::scripted_instrument scripted_instrument_mapper::forward_double_digital_option(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping DoubleDigitalOption: "
                                << std::string(t.id);
-    scripted_mapping_result result;
-    result.instrument = make_base("DoubleDigitalOption");
+    trading::domain::scripted_instrument result = make_base("DoubleDigitalOption");
     if (!t.DoubleDigitalOptionData) return result;
     const auto& d = *t.DoubleDigitalOptionData;
-    result.instrument.script_name = "DoubleDigitalOption";
+    result.script_name = "DoubleDigitalOption";
 
     // Underlyings from Underlying1/Underlying2
     std::string underlyings = "[";
@@ -306,9 +304,9 @@ scripted_mapping_result scripted_instrument_mapper::forward_double_digital_optio
         first = false;
     }
     underlyings += "]";
-    result.instrument.underlyings_json = underlyings;
+    result.underlyings_json = underlyings;
 
-    result.instrument.parameters_json =
+    result.parameters_json =
         "{\"BinaryPayout\":" + std::to_string(d.BinaryPayout) +
         ",\"BinaryLevel1\":" + std::to_string(d.BinaryLevel1) +
         ",\"BinaryLevel2\":" + std::to_string(d.BinaryLevel2) +
@@ -326,15 +324,14 @@ scripted_mapping_result scripted_instrument_mapper::forward_double_digital_optio
 // Forward: PerformanceOption_01
 // ---------------------------------------------------------------------------
 
-scripted_mapping_result scripted_instrument_mapper::forward_performance_option_01(
+trading::domain::scripted_instrument scripted_instrument_mapper::forward_performance_option_01(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping PerformanceOption_01: "
                                << std::string(t.id);
-    scripted_mapping_result result;
-    result.instrument = make_base("PerformanceOption_01");
+    trading::domain::scripted_instrument result = make_base("PerformanceOption_01");
     if (!t.PerformanceOption01Data) return result;
     const auto& d = *t.PerformanceOption01Data;
-    result.instrument.script_name = "PerformanceOption_01";
+    result.script_name = "PerformanceOption_01";
 
     // Underlyings
     std::string underlyings = "[";
@@ -345,9 +342,9 @@ scripted_mapping_result scripted_instrument_mapper::forward_performance_option_0
         first = false;
     }
     underlyings += "]";
-    result.instrument.underlyings_json = underlyings;
+    result.underlyings_json = underlyings;
 
-    result.instrument.parameters_json =
+    result.parameters_json =
         "{\"NotionalAmount\":" + std::to_string(d.NotionalAmount) +
         ",\"ParticipationRate\":" + std::to_string(d.ParticipationRate) +
         ",\"Strike\":" + std::to_string(d.Strike) +
@@ -363,15 +360,14 @@ scripted_mapping_result scripted_instrument_mapper::forward_performance_option_0
 // Forward: KnockOutSwap
 // ---------------------------------------------------------------------------
 
-scripted_mapping_result scripted_instrument_mapper::forward_knock_out_swap(
+trading::domain::scripted_instrument scripted_instrument_mapper::forward_knock_out_swap(
         const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: "
                                << std::string(t.id);
-    scripted_mapping_result result;
-    result.instrument = make_base("KnockOutSwap");
+    trading::domain::scripted_instrument result = make_base("KnockOutSwap");
     if (!t.KnockOutSwapData) return result;
     const auto& d = *t.KnockOutSwapData;
-    result.instrument.script_name = "KnockOutSwap";
+    result.script_name = "KnockOutSwap";
 
     std::string params =
         "{\"BarrierType\":\"" + to_string(d.BarrierData.Type) + "\"" +
@@ -380,7 +376,7 @@ scripted_mapping_result scripted_instrument_mapper::forward_knock_out_swap(
         params += ",\"BarrierLevel\":" +
             std::to_string(d.BarrierData.Levels.Level.front());
     params += "}";
-    result.instrument.parameters_json = params;
+    result.parameters_json = params;
     return result;
 }
 

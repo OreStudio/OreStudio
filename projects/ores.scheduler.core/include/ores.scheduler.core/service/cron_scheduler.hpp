@@ -27,6 +27,7 @@
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -45,7 +46,7 @@ namespace ores::scheduler::service {
  * Thread safety: not thread-safe. Each request should create its own instance
  * (or use a per-request database context).
  */
-class cron_scheduler final {
+class ORES_SCHEDULER_CORE_EXPORT cron_scheduler final {
 public:
     using context = ores::database::context;
 

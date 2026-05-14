@@ -23,6 +23,7 @@
 #include <vector>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
@@ -34,10 +35,10 @@ namespace ores::qt {
 /**
  * @brief Model for displaying pricing model configurations fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches pricing model configuration
+ * This model extends AbstractClientModel and fetches pricing model configuration
  * data asynchronously using the ores.comms client.
  */
-class ClientPricingModelConfigModel final : public QAbstractTableModel {
+class ClientPricingModelConfigModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -107,17 +108,6 @@ public:
      * @brief Get the total number of records available on the server.
      */
     std::uint32_t total_available_count() const { return total_available_count_; }
-
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-    void dataLoaded();
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onConfigsLoaded();

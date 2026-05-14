@@ -1,0 +1,28 @@
+<Portfolio>
+  <Trade id="Commodity_Spread_PERFORMANCEOPTION_01">
+    <TradeType>PerformanceOption_01</TradeType>
+    <Envelope>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <PerformanceOption01Data>
+      <NotionalAmount>1000000</NotionalAmount>
+      <ParticipationRate>1</ParticipationRate>
+      <ValuationDate>2025-05-16</ValuationDate>
+      <SettlementDate>2025-05-18</SettlementDate>
+      <Underlyings>
+        <Underlying>
+          <Type></Type>
+          <Name>NYMEX:CL</Name>
+        </Underlying>
+        <Underlying>
+          <Type></Type>
+          <Name>ICE:B</Name>
+        </Underlying>
+      </Underlyings>
+      <StrikePrices/>
+      <Strike>-10</Strike>
+      <Position>Long</Position>
+      <PayCcy>USD</PayCcy>
+    </PerformanceOption01Data>
+  </Trade>
+</Portfolio>

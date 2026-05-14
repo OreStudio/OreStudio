@@ -21,6 +21,7 @@
 #define ORES_REPORTING_DOMAIN_REPORT_DEFINITION_TEMPLATE_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_definition_template.hpp"
 
 namespace ores::reporting::domain {
@@ -28,7 +29,7 @@ namespace ores::reporting::domain {
 /**
  * @brief Dumps the report_definition_template to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const report_definition_template& v);
+ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const report_definition_template& v);
 
 }
 

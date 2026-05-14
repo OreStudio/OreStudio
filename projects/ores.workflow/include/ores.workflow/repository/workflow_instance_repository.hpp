@@ -28,13 +28,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.workflow/domain/workflow_instance.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Repository for workflow instances (non-temporal, append-mostly).
  */
-class workflow_instance_repository {
+class ORES_WORKFLOW_EXPORT workflow_instance_repository  {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.repository.workflow_instance_repository";

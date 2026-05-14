@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_PARTY_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the account_party to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const account_party& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const account_party& v);
 
 }
 

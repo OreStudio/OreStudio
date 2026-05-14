@@ -18,6 +18,7 @@
 #
 
 set -e
+set -o pipefail
 
 # Source .env if present (local development). In CI, env vars are exported directly.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,6 +30,10 @@ if [[ -f "${ENV_FILE}" ]]; then
     source "${ENV_FILE}"
     set +o allexport
 fi
+
+# Validate .env version before touching anything.
+# shellcheck source=utility/validate_env_version.sh
+source "${SCRIPT_DIR}/utility/validate_env_version.sh"
 
 # Default values
 DEFAULT_DB_NAME="${ORES_DATABASE_NAME:-ores_frosty_leaf}"
@@ -156,6 +161,9 @@ if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
     exit 1
 fi
 
+_current_phase="(startup)"
+trap 'echo "" >&2; echo "=== FATAL: recreate_database.sh failed in phase: ${_current_phase} ===" >&2' ERR
+
 echo "=== ORE Studio Database Recreation ==="
 echo "Database name: ${DB_NAME}"
 echo "Assume yes: ${ASSUME_YES:-no}"
@@ -196,6 +204,30 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
+# Derive env_label from ORES_DB_OWNER_ROLE (e.g. "ores_local1_owner" → "local1")
+env_label="${ORES_DB_OWNER_ROLE#ores_}"
+env_label="${env_label%_owner}"
+if [[ -z "${env_label}" ]]; then
+    echo "Error: Could not derive env_label from ORES_DB_OWNER_ROLE: ${ORES_DB_OWNER_ROLE}" >&2
+    exit 1
+fi
+
+# Phase 0a: Drop target database (required before role drops)
+_current_phase="Phase 0a: drop database"
+echo "--- Dropping target database: ${DB_NAME} ---"
+PGPASSWORD="${PGPASSWORD}" psql \
+    -h "${ORES_DB_HOST}" -U postgres \
+    -c "DROP DATABASE IF EXISTS \"${DB_NAME}\";"
+echo ""
+
+# Phase 0b: Drop environment roles (mandatory for reproducible cluster state)
+_current_phase="Phase 0b: drop roles"
+PGPASSWORD="${PGPASSWORD}" psql \
+    -h "${ORES_DB_HOST}" -U postgres \
+    -v env_label="${env_label}" \
+    -f ./drop_roles.sql
+echo ""
+
 # Build psql -v args for each domain service user/password.
 # SERVICE_NAMES is sourced from the generated service_vars.sh above.
 _SVC_PSQL_ARGS=()
@@ -207,10 +239,13 @@ for _svc in "${SERVICE_NAMES[@]}"; do
     _SVC_PSQL_ARGS+=(-v "${_svc}_service_password=${!_pvar:-}")
 done
 
-# Phase 1: Drop database, recreate roles and users (postgres superuser)
+# Phase 1: Recreate roles and users (postgres superuser).
+# DB drop already done in Phase 0a; the DROP DATABASE IF EXISTS in
+# recreate_database.sql is now a guaranteed no-op.
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
+_current_phase="Phase 1: recreate roles and users"
 PGPASSWORD="${PGPASSWORD}" psql \
     -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -f ./recreate_database.sql \
@@ -239,6 +274,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v db_name="${DB_NAME}"
 
 # Phases 2–4: Create database, schema, and metadata via shared helper
+_current_phase="Phases 2-4: setup_database.sh"
 SKIP_ARG=""
 [[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
 export ORES_DB_DDL_PASSWORD="${ORES_DB_DDL_PASSWORD}"

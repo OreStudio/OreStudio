@@ -19,7 +19,10 @@
  */
 #include "ores.qt/TradeDetailDialog.hpp"
 
+#include <algorithm>
 #include <QComboBox>
+#include <QScreen>
+#include <QShowEvent>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QtConcurrent>
@@ -64,6 +67,10 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     setupUi();
     setupConnections();
 
+    // Cap dialog height so the scroll area in the Instrument tab actually
+    // scrolls for tall forms instead of letting the dialog grow off-screen.
+    // 700px fits ~10 form rows comfortably; taller content scrolls.
+
     // Zero-interval timer coalesces rapid tradeTypeEdit keystrokes so the
     // form selection logic runs at most once per event-loop cycle.
     createTypeTimer_ = new QTimer(this);
@@ -73,39 +80,38 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
         applyCreateTradeType();
     });
 
-    // Build a stack page per registered IInstrumentForm. formMap_ is
-    // populated here so setTradeBundle() can reach any form in O(1).
+    // Build a stack page per registered IInstrumentForm. formMap_ and
+    // typeFormMap_ are populated here so setTradeBundle() reaches any form O(1).
     register_default_forms(instrumentFormRegistry_);
     for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
         IInstrumentForm* form =
             instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
         ui_->instrumentStack->addWidget(form);
         formMap_[pt] = form;
-
-        connect(form, &IInstrumentForm::changed, this,
-                &TradeDetailDialog::onInstrumentFieldChanged);
-        connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
-            instrumentLoaded_ = true;
-            ui_->instrumentProvenanceGroup->setVisible(true);
-            updateSaveButtonState();
-        });
-        connect(form, &IInstrumentForm::loadFailed, this,
-                [](const QString& err) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Instrument load failed: " << err.toStdString();
-        });
-        connect(form, &IInstrumentForm::provenanceChanged, this,
-                [this](const InstrumentProvenance& p) {
-            ui_->instrumentProvenanceWidget->populate(
-                p.version, p.modified_by, p.performed_by,
-                p.recorded_at, p.change_reason_code, p.change_commentary);
-            ui_->instrumentProvenanceGroup->setVisible(true);
-        });
+        connectFormSignals(form);
+    }
+    for (const auto& code : instrumentFormRegistry_.registeredTypeCodes()) {
+        IInstrumentForm* form =
+            instrumentFormRegistry_.createTypeForm(code, ui_->instrumentStack);
+        ui_->instrumentStack->addWidget(form);
+        typeFormMap_[code.toStdString()] = form;
+        connectFormSignals(form);
     }
 }
 
 TradeDetailDialog::~TradeDetailDialog() {
     delete ui_;
+}
+
+void TradeDetailDialog::showEvent(QShowEvent* event) {
+    DetailDialogBase::showEvent(event);
+    // Cap height to 75% of the available screen so the instrument scroll area
+    // actually scrolls for tall forms. Done here (not the constructor) because
+    // screen() is guaranteed non-null once the widget is being shown.
+    if (maximumHeight() == QWIDGETSIZE_MAX) {
+        const int cap = screen()->availableGeometry().height() * 3 / 4;
+        setMaximumHeight(std::max(cap, minimumHeight()));
+    }
 }
 
 QTabWidget*       TradeDetailDialog::tabWidget()        const { return ui_->tabWidget; }
@@ -339,6 +345,43 @@ void TradeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void TradeDetailDialog::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
+}
+
+void TradeDetailDialog::connectFormSignals(IInstrumentForm* form) {
+    connect(form, &IInstrumentForm::changed, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
+        instrumentLoaded_ = true;
+        ui_->instrumentProvenanceGroup->setVisible(true);
+        updateSaveButtonState();
+    });
+    connect(form, &IInstrumentForm::loadFailed, this,
+            [this](const QString& err) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Instrument load failed: " << err.toStdString();
+        MessageBoxHelper::warning(this, tr("Instrument Load Failed"), err);
+        emit errorMessage(err);
+    });
+    connect(form, &IInstrumentForm::provenanceChanged, this,
+            [this](const InstrumentProvenance& p) {
+        ui_->instrumentProvenanceWidget->populate(
+            p.version, p.modified_by, p.performed_by,
+            p.recorded_at, p.change_reason_code, p.change_commentary);
+        ui_->instrumentProvenanceGroup->setVisible(true);
+    });
+}
+
+IInstrumentForm* TradeDetailDialog::findForm(
+    trading::domain::product_type pt, const std::string& trade_type_code) {
+    auto ttIt = typeFormMap_.find(trade_type_code);
+    if (ttIt != typeFormMap_.end()) return ttIt->second;
+    auto ptIt = formMap_.find(pt);
+    if (ptIt != formMap_.end()) return ptIt->second;
+    return nullptr;
+}
+
 // Selects @p form on the stack, sets client manager, username, and trade
 // type flags from the cache.  Does not trigger load or clear — caller does
 // that immediately after.
@@ -351,6 +394,8 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
 
     form->setClientManager(clientManager_);
     form->setUsername(username_);
+    if (imageCache_)
+        form->setImageCache(imageCache_);
 
     bool has_options = false, has_extension = false;
     auto it = tradeTypeCache_.find(tradeTypeCode);
@@ -365,18 +410,70 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
 void TradeDetailDialog::setTradeBundle(
     const trading::messaging::trade_export_item& bundle) {
     trade_ = bundle.trade;
+
+    const bool has_instrument = !std::holds_alternative<std::monostate>(bundle.instrument);
+    const std::string instrument_id_str = bundle.trade.instrument_id
+        ? boost::uuids::to_string(*bundle.trade.instrument_id) : "<none>";
+
+    BOOST_LOG_SEV(lg(), debug)
+        << "setTradeBundle: trade=" << bundle.trade.external_id
+        << " product_type=" << std::string(
+            ores::trading::domain::to_string(bundle.trade.product_type))
+        << " trade_type=" << bundle.trade.trade_type
+        << " instrument_id=" << instrument_id_str
+        << " instrument=" << (has_instrument
+            ? ("present (index=" + std::to_string(bundle.instrument.index()) + ")")
+            : "monostate");
+
     updateUiFromTrade();
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    auto it = formMap_.find(trade_.product_type);
-    if (it != formMap_.end()) {
-        activateForm(it->second, trade_.trade_type);
-        if (std::holds_alternative<std::monostate>(bundle.instrument)) {
-            activeForm_->clear();
+    auto* form = findForm(trade_.product_type, trade_.trade_type);
+    if (!form) {
+        const QString msg = tr("No instrument form registered for trade '%1' "
+            "(product_type=%2, trade_type=%3). "
+            "Check that the instrument form plugin is loaded.")
+            .arg(QString::fromStdString(bundle.trade.external_id))
+            .arg(QString::fromStdString(std::string(
+                ores::trading::domain::to_string(bundle.trade.product_type))))
+            .arg(QString::fromStdString(bundle.trade.trade_type));
+        BOOST_LOG_SEV(lg(), warn)
+            << "setTradeBundle: " << msg.toStdString();
+        MessageBoxHelper::warning(this, tr("Instrument Form Missing"), msg);
+        emit errorMessage(msg);
+        return;
+    }
+
+    activateForm(form, trade_.trade_type);
+    if (!has_instrument) {
+        if (bundle.trade.instrument_id) {
+            // Server had an instrument_id but returned monostate — something
+            // went wrong during instrument lookup on the server side.
+            const QString msg = tr("Instrument data could not be loaded for trade '%1' "
+                "(instrument_id=%2, trade_type=%3). "
+                "The server returned no instrument data despite a linked instrument. "
+                "Check the trading service log for details.")
+                .arg(QString::fromStdString(bundle.trade.external_id))
+                .arg(QString::fromStdString(instrument_id_str))
+                .arg(QString::fromStdString(bundle.trade.trade_type));
+            BOOST_LOG_SEV(lg(), error)
+                << "setTradeBundle: instrument_id set but got monostate"
+                << " trade=" << bundle.trade.external_id
+                << " instrument_id=" << instrument_id_str;
+            MessageBoxHelper::warning(this, tr("Instrument Load Failed"), msg);
+            emit errorMessage(msg);
         } else {
-            activeForm_->setInstrument(bundle.instrument);
+            BOOST_LOG_SEV(lg(), debug)
+                << "setTradeBundle: no instrument linked, clearing form for trade="
+                << bundle.trade.external_id;
         }
+        activeForm_->clear();
+    } else {
+        BOOST_LOG_SEV(lg(), debug)
+            << "setTradeBundle: calling setInstrument for trade=" << bundle.trade.external_id
+            << " instrument_id=" << instrument_id_str;
+        activeForm_->setInstrument(bundle.instrument);
     }
 }
 
@@ -525,17 +622,17 @@ void TradeDetailDialog::applyCreateTradeType() {
         return;
     }
 
-    auto formIt = formMap_.find(ttIt->second.product_type);
-    if (formIt == formMap_.end()) {
+    auto* form = findForm(ttIt->second.product_type, code);
+    if (!form) {
         ui_->tabWidget->setTabVisible(
             ui_->tabWidget->indexOf(ui_->instrumentTab), false);
         activeForm_ = nullptr;
         return;
     }
 
-    // Only reset the form when the product family changes.
-    if (activeForm_ != formIt->second) {
-        activateForm(formIt->second, code);
+    // Only reset the form when the active form changes.
+    if (activeForm_ != form) {
+        activateForm(form, code);
         activeForm_->clear();
     }
 }

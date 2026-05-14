@@ -22,6 +22,7 @@
 
 #include <string>
 #include "ores.logging/make_logger.hpp"
+#include "ores.security/export.hpp"
 
 namespace ores::security::crypto {
 
@@ -33,7 +34,7 @@ namespace ores::security::crypto {
  * function from OpenSSL to generate and validate password hashes, ensuring
  * strong security through configurable CPU/memory cost parameters.
  */
-class password_hasher {
+class ORES_SECURITY_EXPORT password_hasher {
 private:
     inline static std::string_view logger_name =
         "ores.security.crypto.password_hasher";

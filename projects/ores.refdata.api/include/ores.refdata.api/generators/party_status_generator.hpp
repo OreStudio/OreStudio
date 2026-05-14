@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/party_status.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic party_status.
  */
-domain::party_status generate_synthetic_party_status(
+ORES_REFDATA_API_EXPORT domain::party_status generate_synthetic_party_status(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_statuses.
  */
-std::vector<domain::party_status>
+ORES_REFDATA_API_EXPORT std::vector<domain::party_status>
 generate_synthetic_party_statuses(std::size_t n,
     utility::generation::generation_context& ctx);
 

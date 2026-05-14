@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes change_reasons to data storage.
  */
-class change_reason_repository {
+class ORES_DQ_CORE_EXPORT change_reason_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.change_reason_repository";

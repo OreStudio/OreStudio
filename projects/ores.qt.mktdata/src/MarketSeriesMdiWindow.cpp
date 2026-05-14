@@ -87,6 +87,7 @@ void MarketSeriesMdiWindow::setupUi() {
             this, &MarketSeriesMdiWindow::onDataLoaded);
     connect(model_.get(), &ClientMarketSeriesModel::loadError,
             this, &MarketSeriesMdiWindow::onLoadError);
+    connectModel(model_.get());
     connect(tableView_, &QTableView::doubleClicked,
             this, &MarketSeriesMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(),
@@ -138,7 +139,7 @@ void MarketSeriesMdiWindow::setupToolbar() {
         Icon::ArrowSync, iconColor));
     reloadAction_->setToolTip(tr("Refresh market series"));
     connect(reloadAction_, &QAction::triggered,
-            this, &MarketSeriesMdiWindow::doReload);
+            this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 

@@ -19,6 +19,7 @@ name: Continuous Linux
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -86,12 +87,19 @@ jobs:
           version: "19"
           arch: x64
 
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
       - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.22
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 2000M
+          save: false
 
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh
@@ -143,7 +151,7 @@ jobs:
           ./projects/ores.sql/recreate_database.sh -y -D ores_ci
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.3.1
+        uses: lukka/get-cmake@v4.3.2
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v5
@@ -157,6 +165,13 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           doNotCache: false
+
+      - name: Restore cmake build cache
+        if: matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        uses: actions/cache/restore@v5
+        with:
+          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
+          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Run CTest workflow
         run: |
@@ -175,16 +190,41 @@ jobs:
           fi
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Delete cmake cache entry
+        if: success() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
+            || true
+
+      - name: Save cmake build cache
+        if: success() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        uses: actions/cache/save@v5
+        with:
+          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
+          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
+      - name: Delete sccache entry
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
+            || true
+
+      - name: Save sccache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
       - name: Show sccache statistics
         if: always()
         run: sccache --show-stats
-
-      - name: Save cmake build cache
-        uses: actions/cache/save@v5
-        if: always() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
-          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.1

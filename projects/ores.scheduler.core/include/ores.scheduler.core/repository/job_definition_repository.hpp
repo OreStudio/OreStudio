@@ -28,13 +28,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::repository {
 
 /**
  * @brief Reads and writes job definitions to data storage.
  */
-class job_definition_repository {
+class ORES_SCHEDULER_CORE_EXPORT job_definition_repository {
 private:
     inline static std::string_view logger_name =
         "ores.scheduler.repository.job_definition_repository";

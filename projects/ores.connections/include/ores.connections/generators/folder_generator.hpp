@@ -24,26 +24,27 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic folder (root level, no parent).
  */
-domain::folder generate_synthetic_folder(
+ORES_CONNECTIONS_EXPORT domain::folder generate_synthetic_folder(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic folder with a specific parent.
  */
-domain::folder generate_synthetic_folder(
+ORES_CONNECTIONS_EXPORT domain::folder generate_synthetic_folder(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& parent_id);
 
 /**
  * @brief Generates N synthetic root folders.
  */
-std::vector<domain::folder> generate_synthetic_folders(std::size_t n,
+ORES_CONNECTIONS_EXPORT std::vector<domain::folder> generate_synthetic_folders(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

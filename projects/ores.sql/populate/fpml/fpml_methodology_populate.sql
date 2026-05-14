@@ -6,13 +6,14 @@
  * This script is idempotent.
  */
 
+\o /dev/null
 
 
 -- =============================================================================
 -- FPML Data Sourcing Methodology
 -- =============================================================================
 
-\echo '--- FPML Methodology ---'
+\qecho '--- FPML Methodology ---'
 
 select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
     'FpML Genericode Download',
@@ -62,3 +63,4 @@ enriches them with hardcoded metadata in fpml_parser.py:
 This enrichment is necessary because FPML only publishes currency codes,
 not the full currency metadata needed for financial applications.'
 );
+\o

@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.core/repository/workflow_batch_link_entity.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
@@ -35,7 +36,7 @@ namespace ores::compute::repository {
  * Used by report_submit_handler (create) and batch_workflow_bridge
  * (find_all / remove).
  */
-class workflow_batch_link_repository {
+class ORES_COMPUTE_CORE_EXPORT workflow_batch_link_repository {
 private:
     inline static std::string_view logger_name =
         "ores.compute.repository.workflow_batch_link_repository";

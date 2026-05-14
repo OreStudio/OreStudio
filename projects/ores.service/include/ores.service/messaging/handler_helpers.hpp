@@ -25,6 +25,7 @@
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
+#include <rfl/AddTagsToVariants.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -146,13 +147,16 @@ inline const std::string& delegated_actor(const ores::database::context& ctx) {
 }
 
 // Serialise resp to JSON and publish to the message's reply subject.
+// AddTagsToVariants ensures each std::variant alternative carries a type-name
+// discriminant so the client can unambiguously select the right alternative.
+// Without it, std::monostate (zero required fields) always matches first.
 // No-op if the message has no reply subject.
 template<typename Resp>
 void reply(ores::nats::service::client& nats,
     const ores::nats::message& msg,
     const Resp& resp) {
     if (msg.reply_subject.empty()) return;
-    const auto json = rfl::json::write(resp);
+    const auto json = rfl::json::write<rfl::AddTagsToVariants>(resp);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
     nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
 }

@@ -30,7 +30,8 @@
  * This script is idempotent.
  */
 
-\echo '--- System Tenant ---'
+\o /dev/null
+\qecho '--- System Tenant ---'
 
 -- Helper function for idempotent system tenant creation
 create or replace function ores_seed_system_tenant_fn()
@@ -69,9 +70,9 @@ begin
             'system.initial_load',
             'Initial system tenant creation'
         );
-        raise notice 'Created system tenant';
+        raise debug 'Created system tenant';
     else
-        raise notice 'System tenant already exists';
+        raise debug 'System tenant already exists';
     end if;
 end;
 $$ language plpgsql;
@@ -84,3 +85,4 @@ drop function ores_seed_system_tenant_fn();
 select 'Tenants' as entity, count(*) as count
 from ores_iam_tenants_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
+\o

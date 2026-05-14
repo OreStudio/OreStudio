@@ -29,6 +29,7 @@
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
 #include "ores.telemetry/log/database_sink_backend.hpp"
 #include "ores.telemetry/domain/resource.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::log {
 
@@ -45,7 +46,7 @@ using ores::logging::logging_options;
  * Note: this class uses boost shared_ptr due to legacy reasons (boost log does
  * not support std::shared_ptr).
  */
-class lifecycle_manager final : public ores::logging::lifecycle_manager {
+class ORES_TELEMETRY_EXPORT lifecycle_manager final : public ores::logging::lifecycle_manager {
 private:
     using telemetry_sink_type = boost::log::sinks::asynchronous_sink<
         telemetry_sink_backend>;

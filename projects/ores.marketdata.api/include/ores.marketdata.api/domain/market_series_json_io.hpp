@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/export.hpp"
 
 namespace ores::marketdata::domain {
 
 /**
  * @brief Serialises a market_series to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const market_series& v);
+ORES_MARKETDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const market_series& v);
 
 }
 

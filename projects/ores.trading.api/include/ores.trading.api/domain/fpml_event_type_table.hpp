@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts fpml_event_types to the table format.
  */
-std::string convert_to_table(const std::vector<fpml_event_type>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<fpml_event_type>& v);
 
 }
 

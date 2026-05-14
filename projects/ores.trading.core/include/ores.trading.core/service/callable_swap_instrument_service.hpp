@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing callable swap instruments.
  */
-class callable_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT callable_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.callable_swap_instrument_service";
@@ -65,6 +66,9 @@ public:
 
     std::vector<domain::callable_swap_instrument>
     get_callable_swap_instrument_history(const std::string& id);
+
+    std::vector<domain::callable_swap_instrument>
+    get_callable_swap_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

@@ -125,7 +125,7 @@ public:
         }
     }
 
-    void del(ores::nats::message msg) {
+    void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(counterparty_identifier_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(

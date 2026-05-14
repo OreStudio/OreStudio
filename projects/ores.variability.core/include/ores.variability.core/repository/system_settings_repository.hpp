@@ -23,17 +23,19 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <unordered_map>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.core/export.hpp"
 
 namespace ores::variability::repository {
 
 /**
  * @brief Reads and writes system settings from data storage.
  */
-class system_settings_repository {
+class ORES_VARIABILITY_CORE_EXPORT system_settings_repository {
 private:
     inline static std::string_view logger_name =
         "ores.variability.repository.system_settings_repository";
@@ -88,6 +90,15 @@ public:
     std::vector<domain::system_setting> read_all(context ctx,
         const std::string& name);
     /**@}*/
+
+    /**
+     * @brief Reads active settings for a tenant via a SECURITY DEFINER function.
+     *
+     * Returns a name→value map by calling ores_variability_get_system_settings_fn.
+     * Used by service contexts that hold no direct SELECT grant on the table.
+     */
+    std::unordered_map<std::string, std::string>
+    read_for_tenant(context ctx, const std::string& tenant_id);
 
     /**
      * @brief Logically deletes a setting by closing its temporal validity.

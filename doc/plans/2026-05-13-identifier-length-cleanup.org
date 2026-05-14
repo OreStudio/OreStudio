@@ -33,7 +33,7 @@ a latent correctness risk and pollutes every DB recreation run with noise.
 | Index names | ~160 | Mix of codegen-generated and hand-written SQL |
 
 After applying the convention change below, three index names remain over 63
-chars and require targeted abbreviation (see [[*Special Cases]]).
+chars and require targeted abbreviation (see [[*Phase 5 — Special Cases]]).
 
 * Convention Change
 
@@ -72,7 +72,7 @@ Examples:
 - ~ores_analytics_pricing_model_product_parameters_version_uniq_idx~ (65) → ~pricing_model_product_parameters_version_uniq_idx~ (50) ✓
 
 After stripping the prefix, ~157 of the ~160 over-limit names fit within 63
-chars. Three require additional targeted abbreviation (see [[*Special Cases]]).
+chars. Three require additional targeted abbreviation (see [[*Phase 5 — Special Cases]]).
 
 * Codegen Impact
 
@@ -164,7 +164,7 @@ with
 
 In ~sql_schema_artefact_create.mustache~: the ~dq_~ prefix remains; the two
 over-limit custom index names are fixed via their entity JSON files (see
-[[*Special Cases]]).
+[[*Phase 5 — Special Cases]]).
 
 After template edits: re-run codegen to regenerate all affected
 ~*_create.sql~ files. No other action is needed for the generated outputs.

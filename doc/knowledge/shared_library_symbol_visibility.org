@@ -116,18 +116,25 @@ library.  Mark every class and free function in the public headers with
 Export *only* the registration entry point.
 
 =ores.X.core= contains the implementation: repositories, services,
-mappers, and NATS message handlers.  These are internal.  The only
-symbol a legitimate consumer (the service executable or =ores.cli=)
-needs from core is the handler-registration function, typically:
+mappers, and NATS message handlers.
+
+Export every symbol that crosses a shared-library boundary, determined
+empirically by linker =undefined reference= errors.  In practice this
+includes repositories, services, and any helper classes used directly
+by service executables, test binaries, or =ores.cli=.  Entity structs
+and mapper helpers that remain internal to the =.core= library itself
+do not need export annotations.
+
+The handler-registration entry point is always exported:
 
 #+begin_src c++
 ORES_X_CORE_EXPORT void register_message_handlers(
     ores::nats::connection&);
 #+end_src
 
-Everything else — repositories, services, entity structs, mappers —
-must *not* be exported.  They must never be linked directly by Qt
-plugins, HTTP handlers, or any other DLL that is not the owning service.
+Entity structs (DB row types) and mapper classes are internal
+implementation details and should *not* be exported unless a linker
+error proves otherwise.
 
 ** Qt plugin DLLs (=ores.qt.X=)
 

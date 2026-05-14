@@ -870,10 +870,9 @@ void OreTradeImportPage::onImportFinished() {
         appendLog(tr("Step 2/2: Import service accepted the request."));
 
         if (!resp.workflow_instance_id.empty()) {
-            // Asynchronous path: import is running in the background.
-            appendLog(tr("Import submitted asynchronously (workflow ID: %1).")
-                .arg(QString::fromStdString(resp.workflow_instance_id)));
-            statusLabel_->setText(tr("Import submitted. It is running in the background."));
+            // Asynchronous path: import is processing in the workflow engine.
+            statusLabel_->setText(
+                tr("Import submitted. Click Next to track step-by-step progress."));
             BOOST_LOG_SEV(lg(), info) << "ORE import submitted async: instance="
                 << resp.workflow_instance_id << " corr=" << resp.correlation_id;
         } else {
@@ -953,14 +952,6 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     summaryLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     layout->addWidget(summaryLabel_);
 
-    // Error banner (shown when a workflow step fails)
-    errorBanner_ = new QLabel(this);
-    errorBanner_->setWordWrap(true);
-    errorBanner_->setStyleSheet(
-        QStringLiteral("color: #cc3333; font-weight: bold; padding: 4px;"));
-    errorBanner_->hide();
-    layout->addWidget(errorBanner_);
-
     // Selectable ID rows
     QPushButton* workflowCopyBtn = nullptr;
     workflowIdRow_ = makeIdRow(tr("Workflow ID"), workflowIdEdit_, workflowCopyBtn, this);
@@ -979,8 +970,17 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
         QGuiApplication::clipboard()->setText(correlIdEdit_->text());
     });
 
+    // Error banner (shown when a workflow step fails)
+    errorBanner_ = new QLabel(this);
+    errorBanner_->setWordWrap(true);
+    errorBanner_->setStyleSheet(
+        QStringLiteral("color: #cc3333; font-weight: bold; padding: 4px;"));
+    errorBanner_->hide();
+    layout->addWidget(errorBanner_);
+
     // Step progress widget — hidden until an async import provides a workflow ID
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     stepsWidget_->hide();
     connect(stepsWidget_, &WorkflowStepsWidget::stepFailed,
             this, &OreDonePage::onStepFailed);
@@ -1001,7 +1001,10 @@ void OreDonePage::initializePage() {
         QString html;
 
         if (!resp.workflow_instance_id.empty()) {
-            // Asynchronous path: import is running in the background.
+            // Asynchronous path: import is running in the workflow engine.
+            setTitle(tr("Import Progress"));
+            setSubTitle(tr("Monitoring workflow execution steps."));
+
             html += tr("<p><b>Import submitted successfully.</b></p>");
             html += tr("<p>Step progress is shown below. "
                        "You can also open <b>Workflows &rarr; Execution List</b> "
@@ -1015,6 +1018,9 @@ void OreDonePage::initializePage() {
             stepsWidget_->show();
         } else {
             // Synchronous path (legacy / direct).
+            setTitle(tr("Import Complete"));
+            setSubTitle(tr("The ORE import has finished."));
+
             const auto& errors = resp.item_errors;
             const int n_errors = static_cast<int>(errors.size());
 
@@ -1036,15 +1042,17 @@ void OreDonePage::initializePage() {
                 }
                 html += QStringLiteral("</ul>");
             }
-        }
 
-        if (!resp.correlation_id.empty()) {
-            correlIdEdit_->setText(QString::fromStdString(resp.correlation_id));
-            correlIdRow_->show();
+            if (!resp.correlation_id.empty()) {
+                correlIdEdit_->setText(QString::fromStdString(resp.correlation_id));
+                correlIdRow_->show();
+            }
         }
 
         summaryLabel_->setText(html);
     } else {
+        setTitle(tr("Import Complete"));
+        setSubTitle(tr("The ORE import has finished."));
         summaryLabel_->setText(
             tr("<p><b>Import failed.</b></p><p>%1</p>")
             .arg(wizard_->importError().isEmpty()

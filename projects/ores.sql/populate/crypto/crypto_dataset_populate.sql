@@ -26,71 +26,73 @@
  * This must be run before populating the artefact tables.
  */
 
-\o /dev/null
+DO $$
+BEGIN
 
--- =============================================================================
--- Cryptocurrency Datasets
--- =============================================================================
+    -- =============================================================================
+    -- Cryptocurrency Datasets
+    -- =============================================================================
 
-\qecho '--- Cryptocurrency Datasets ---'
+    -- --- Cryptocurrency Datasets ---
 
--- Cryptocurrency Icon Images
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'assets.crypto_icons',
-    'Cryptocurrency',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrency Icons Download',
-    'Cryptocurrency Icon Images',
-    'SVG icon images for cryptocurrency symbols from the cryptocurrency-icons project.',
-    'spothq/cryptocurrency-icons',
-    'Visual assets for cryptocurrency displays',
-    '2024-01-15'::date,
-    'MIT License',
-    'images'
-);
+    -- Cryptocurrency Icon Images
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'assets.crypto_icons',
+        'Cryptocurrency',
+        'Cryptocurrencies',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GitHub Cryptocurrency Icons Download',
+        'Cryptocurrency Icon Images',
+        'SVG icon images for cryptocurrency symbols from the cryptocurrency-icons project.',
+        'spothq/cryptocurrency-icons',
+        'Visual assets for cryptocurrency displays',
+        '2024-01-15'::date,
+        'MIT License',
+        'images'
+    );
 
--- Cryptocurrencies Large
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'crypto.large',
-    'Cryptocurrency',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrencies Large',
-    'Complete list of ~12,243 cryptocurrencies with symbol and name.',
-    'crypti/cryptocurrencies',
-    'Full cryptocurrency reference data (~12K coins)',
-    '2026-01-20'::date,
-    'Public Domain',
-    'currencies'
-);
+    -- Cryptocurrencies Large
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'crypto.large',
+        'Cryptocurrency',
+        'Cryptocurrencies',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GitHub Cryptocurrencies JSON Download',
+        'Cryptocurrencies Large',
+        'Complete list of ~12,243 cryptocurrencies with symbol and name.',
+        'crypti/cryptocurrencies',
+        'Full cryptocurrency reference data (~12K coins)',
+        '2026-01-20'::date,
+        'Public Domain',
+        'currencies'
+    );
 
--- Cryptocurrencies Small
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'crypto.small',
-    'Cryptocurrency',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrencies Small',
-    'Top 100 cryptocurrencies by market capitalization.',
-    'crypti/cryptocurrencies',
-    'Top 100 cryptocurrency reference data by market cap',
-    '2026-01-20'::date,
-    'Public Domain',
-    'currencies'
-);
-\o
+    -- Cryptocurrencies Small
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'crypto.small',
+        'Cryptocurrency',
+        'Cryptocurrencies',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GitHub Cryptocurrencies JSON Download',
+        'Cryptocurrencies Small',
+        'Top 100 cryptocurrencies by market capitalization.',
+        'crypti/cryptocurrencies',
+        'Top 100 cryptocurrency reference data by market cap',
+        '2026-01-20'::date,
+        'Public Domain',
+        'currencies'
+    );
+END $$;
+

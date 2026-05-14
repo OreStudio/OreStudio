@@ -30,12 +30,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
-\qecho '--- System Party ---'
-
--- Use a helper function for idempotent creation
-create or replace function ores_seed_system_party_fn()
-returns void as $$
+DO $$
 begin
     if not exists (
         select 1 from ores_refdata_parties_tbl
@@ -59,15 +54,10 @@ begin
         raise debug 'System party already exists for system tenant';
     end if;
 end;
-$$ language plpgsql;
-
-select ores_seed_system_party_fn();
-
-drop function ores_seed_system_party_fn();
+$$;
 
 -- Summary
 select 'refdata_parties (system)' as entity, count(*) as count
 from ores_refdata_parties_tbl
 where tenant_id = ores_iam_system_tenant_id_fn()
 and valid_to = ores_utility_infinity_timestamp_fn();
-\o

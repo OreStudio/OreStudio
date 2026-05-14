@@ -30,56 +30,76 @@
  * This script is idempotent.
  */
 
-\o /dev/null
-\qecho '--- Service Account Role Assignments ---'
+SET "ores.iam_service_user"         = :'iam_service_user';
+SET "ores.refdata_service_user"     = :'refdata_service_user';
+SET "ores.dq_service_user"          = :'dq_service_user';
+SET "ores.variability_service_user" = :'variability_service_user';
+SET "ores.assets_service_user"      = :'assets_service_user';
+SET "ores.scheduler_service_user"   = :'scheduler_service_user';
+SET "ores.reporting_service_user"   = :'reporting_service_user';
+SET "ores.telemetry_service_user"   = :'telemetry_service_user';
+SET "ores.trading_service_user"     = :'trading_service_user';
+SET "ores.compute_service_user"     = :'compute_service_user';
+SET "ores.synthetic_service_user"   = :'synthetic_service_user';
+SET "ores.workflow_service_user"    = :'workflow_service_user';
+SET "ores.ore_service_user"         = :'ore_service_user';
+SET "ores.marketdata_service_user"  = :'marketdata_service_user';
+SET "ores.controller_service_user"  = :'controller_service_user';
+SET "ores.analytics_service_user"   = :'analytics_service_user';
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'iam_service_user', 'IamService');
+DO $$
+BEGIN
+    -- --- Service Account Role Assignments ---
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'refdata_service_user', 'RefdataService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.iam_service_user'), 'IamService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'dq_service_user', 'DqService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.refdata_service_user'), 'RefdataService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'variability_service_user', 'VariabilityService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.dq_service_user'), 'DqService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'assets_service_user', 'AssetsService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.variability_service_user'), 'VariabilityService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'scheduler_service_user', 'SchedulerService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.assets_service_user'), 'AssetsService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'reporting_service_user', 'ReportingService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.scheduler_service_user'), 'SchedulerService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'telemetry_service_user', 'TelemetryService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.reporting_service_user'), 'ReportingService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'trading_service_user', 'TradingService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.telemetry_service_user'), 'TelemetryService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'compute_service_user', 'ComputeService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.trading_service_user'), 'TradingService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'synthetic_service_user', 'SyntheticService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.compute_service_user'), 'ComputeService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'workflow_service_user', 'WorkflowService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.synthetic_service_user'), 'SyntheticService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'ore_service_user', 'OreService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.workflow_service_user'), 'WorkflowService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'marketdata_service_user', 'MarketdataService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.ore_service_user'), 'OreService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'controller_service_user', 'ControllerService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.marketdata_service_user'), 'MarketdataService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'analytics_service_user', 'AnalyticsService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.controller_service_user'), 'ControllerService');
+
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.analytics_service_user'), 'AnalyticsService');
+END $$;
+
 
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count
@@ -87,4 +107,3 @@ from ores_iam_account_roles_tbl ar
 join ores_iam_accounts_tbl a on a.id = ar.account_id
 where a.account_type != 'user'
   and ar.valid_to = ores_utility_infinity_timestamp_fn();
-\o

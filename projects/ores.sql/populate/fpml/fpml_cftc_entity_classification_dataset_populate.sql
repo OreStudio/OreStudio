@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Cftc Entity Classification Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Cftc Entity Classification Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Cftc Entity Classification Dataset ---'
+    -- --- FpML Cftc Entity Classification Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.cftc_entity_classification',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_CFTC_ENTITY_CLASSIFICATION',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Cftc Entity Classification',
-    'Financial Entity Indicator as defined by the CFTC.',
-    'FPML',
-    'Reference data for FpML Cftc Entity Classification (version 1-0)',
-    '2022-11-18'::date,
-    'FpML Public License 2.0',
-    'entity_classifications'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.cftc_entity_classification',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_CFTC_ENTITY_CLASSIFICATION',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Cftc Entity Classification',
+        'Financial Entity Indicator as defined by the CFTC.',
+        'FPML',
+        'Reference data for FpML Cftc Entity Classification (version 1-0)',
+        '2022-11-18'::date,
+        'FpML Public License 2.0',
+        'entity_classifications'
+    );
+END $$;
+

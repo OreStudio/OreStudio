@@ -29,47 +29,47 @@
  * - Derived: Data transformed, aggregated, or calculated via code
  */
 
-\o /dev/null
--- =============================================================================
--- Migration: Rename Source to Primary
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Migration: Rename Source to Primary
+    -- =============================================================================
 
--- Update existing 'Source' records to 'Primary'
-update ores_dq_origin_dimensions_tbl
-set code = 'Primary', name = 'Primary Data'
-where code = 'Source';
+    -- Update existing 'Source' records to 'Primary'
+    update ores_dq_origin_dimensions_tbl
+    set code = 'Primary', name = 'Primary Data'
+    where code = 'Source';
 
--- Update any datasets referencing 'Source' to use 'Primary'
-update ores_dq_datasets_tbl
-set origin_code = 'Primary'
-where origin_code = 'Source';
+    -- Update any datasets referencing 'Source' to use 'Primary'
+    update ores_dq_datasets_tbl
+    set origin_code = 'Primary'
+    where origin_code = 'Source';
 
--- =============================================================================
--- Data Quality Origin Dimensions
--- =============================================================================
+    -- =============================================================================
+    -- Data Quality Origin Dimensions
+    -- =============================================================================
 
-\qecho '--- Data Quality Origin Dimensions ---'
+    -- --- Data Quality Origin Dimensions ---
 
-select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Primary',
-    'Primary Data',
-    'Raw data ingested directly from the origin without transformations.'
-);
+    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Primary',
+        'Primary Data',
+        'Raw data ingested directly from the origin without transformations.'
+    );
 
-select ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Derived',
-    'Derived Data',
-    'Data transformed, aggregated, or calculated via code.'
-);
+    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Derived',
+        'Derived Data',
+        'Data transformed, aggregated, or calculated via code.'
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
 
-\qecho ''
 \qecho '--- Summary ---'
 
 select 'Data Quality Origin Dimensions' as entity, count(*) as count
 from ores_dq_origin_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
-\o

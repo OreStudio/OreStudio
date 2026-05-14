@@ -35,146 +35,146 @@
  * - internal: Proprietary identifiers
  */
 
-\o /dev/null
--- =============================================================================
--- Data Quality Coding Schemes
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Data Quality Coding Schemes
+    -- =============================================================================
 
-\qecho '--- Data Quality Coding Schemes ---'
+    -- --- Data Quality Coding Schemes ---
 
--- Party identification schemes (official - ISO standards)
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'LEI',
-    'Legal Entity Identifier',
-    'official',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso17442',
-    'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
-);
+    -- Party identification schemes (official - ISO standards)
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'LEI',
+        'Legal Entity Identifier',
+        'official',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/iso17442',
+        'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'BIC',
-    'Business Identifier Code',
-    'official',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso9362',
-    'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'BIC',
+        'Business Identifier Code',
+        'official',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/iso9362',
+        'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'MIC',
-    'Market Identifier Code',
-    'official',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso10383',
-    'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'MIC',
+        'Market Identifier Code',
+        'official',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/iso10383',
+        'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'NATIONAL_ID',
-    'National Identifier',
-    'official',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/national-id',
-    'National identifiers (e.g., passport number, tax ID, SIREN, ORI, national ID card). Covers MiFID II client identification requirements.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'NATIONAL_ID',
+        'National Identifier',
+        'official',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/national-id',
+        'National identifiers (e.g., passport number, tax ID, SIREN, ORI, national ID card). Covers MiFID II client identification requirements.'
+    );
 
--- Party identification schemes (industry - regulatory/consortium standards)
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'CEDB',
-    'CFTC Entity Directory',
-    'industry',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/cedb',
-    'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
-);
+    -- Party identification schemes (industry - regulatory/consortium standards)
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'CEDB',
+        'CFTC Entity Directory',
+        'industry',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/cedb',
+        'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ACER',
-    'EU Agency for Energy Regulation',
-    'industry',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/acer-code',
-    'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ACER',
+        'EU Agency for Energy Regulation',
+        'industry',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/acer-code',
+        'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'DTCC_PARTICIPANT_ID',
-    'Depository Trust & Clearing Corporation Participant ID',
-    'industry',
-    'Parties',
-    'Reference Data',
-    null,
-    'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'DTCC_PARTICIPANT_ID',
+        'Depository Trust & Clearing Corporation Participant ID',
+        'industry',
+        'Parties',
+        'Reference Data',
+        null,
+        'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'MPID',
-    'Market Participant Identifier',
-    'industry',
-    'Parties',
-    'Reference Data',
-    null,
-    'Also known as AII (ATS Identification Indicator). A four-character alphanumeric code assigned by FINRA to broker-dealers and alternative trading systems (ATSs) operating in U.S. equities markets. Used to identify the originating or executing firm in trade reports (e.g., in OATS, TRACE, or consolidated tape reporting). Required for all SEC-registered trading venues and participants in U.S. equity and options markets.'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'MPID',
+        'Market Participant Identifier',
+        'industry',
+        'Parties',
+        'Reference Data',
+        null,
+        'Also known as AII (ATS Identification Indicator). A four-character alphanumeric code assigned by FINRA to broker-dealers and alternative trading systems (ATSs) operating in U.S. equities markets. Used to identify the originating or executing firm in trade reports (e.g., in OATS, TRACE, or consolidated tape reporting). Required for all SEC-registered trading venues and participants in U.S. equity and options markets.'
+    );
 
--- Party identification schemes (internal - proprietary)
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'NATURAL_PERSON',
-    'Natural Person',
-    'internal',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/person-id',
-    'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
-);
+    -- Party identification schemes (internal - proprietary)
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'NATURAL_PERSON',
+        'Natural Person',
+        'internal',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/person-id',
+        'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
+    );
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'INTERNAL',
-    'Internal',
-    'internal',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/party-id-internal',
-    'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).'
-);
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'INTERNAL',
+        'Internal',
+        'internal',
+        'Parties',
+        'Reference Data',
+        'http://www.fpml.org/coding-scheme/external/party-id-internal',
+        'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).'
+    );
 
--- General schemes (internal - placeholder)
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'NONE',
-    'No Coding Scheme',
-    'internal',
-    'General',
-    'Reference Data',
-    null,
-    'Placeholder for datasets that do not follow a formal coding scheme. Used when data uses ad-hoc or proprietary identifiers without a standardized format.'
-);
+    -- General schemes (internal - placeholder)
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'NONE',
+        'No Coding Scheme',
+        'internal',
+        'General',
+        'Reference Data',
+        null,
+        'Placeholder for datasets that do not follow a formal coding scheme. Used when data uses ad-hoc or proprietary identifiers without a standardized format.'
+    );
 
--- ORE asset class coding scheme
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ORE_ASSET_CLASS',
-    'ORE Asset Class',
-    'industry',
-    'Market Data',
-    'Reference Data',
-    'https://ore.opensourcerisk.org',
-    'Open Risk Engine (ORE) asset class codes. Eight codes cover all ORE-supported asset classes: fx, rates, credit, equity, commodity, inflation, bond, cross_asset. Used for classifying market data series and trades.'
-);
+    -- ORE asset class coding scheme
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ORE_ASSET_CLASS',
+        'ORE Asset Class',
+        'industry',
+        'Market Data',
+        'Reference Data',
+        'https://ore.opensourcerisk.org',
+        'Open Risk Engine (ORE) asset class codes. Eight codes cover all ORE-supported asset classes: fx, rates, credit, equity, commodity, inflation, bond, cross_asset. Used for classifying market data series and trades.'
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
 
-\qecho ''
 \qecho '--- Summary ---'
 
 select 'Coding Schemes' as entity, count(*) as count
 from ores_dq_coding_schemes_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
-\o

@@ -25,34 +25,36 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- ISO Standards Dataset Tags
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Dataset Tags
+    -- =============================================================================
 
-\qecho '--- ISO Standards Dataset Tags ---'
+    -- --- ISO Standards Dataset Tags ---
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ISO Coding Schemes',
-    'General',
-    'Reference Data',
-    'coding_scheme',
-    'ISO coding scheme definitions'
-);
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ISO Coding Schemes',
+        'General',
+        'Reference Data',
+        'coding_scheme',
+        'ISO coding scheme definitions'
+    );
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ISO 3166 Country Codes',
-    'Countries',
-    'Reference Data',
-    'country',
-    'Country reference data'
-);
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ISO 3166 Country Codes',
+        'Countries',
+        'Reference Data',
+        'country',
+        'Country reference data'
+    );
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ISO 4217 Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Currency reference data'
-);
-\o
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ISO 4217 Currency Codes',
+        'Currencies',
+        'Reference Data',
+        'currency',
+        'Currency reference data'
+    );
+END $$;
+

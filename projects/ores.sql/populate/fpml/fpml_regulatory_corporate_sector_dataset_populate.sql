@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Regulatory Corporate Sector Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Regulatory Corporate Sector Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Regulatory Corporate Sector Dataset ---'
+    -- --- FpML Regulatory Corporate Sector Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.regulatory_corporate_sector',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_REGULATORY_CORPORATE_SECTOR',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Regulatory Corporate Sector',
-    'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.',
-    'FPML',
-    'Reference data for FpML Regulatory Corporate Sector (version 1-2)',
-    '2016-06-13'::date,
-    'FpML Public License 2.0',
-    'regulatory_corporate_sectors'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.regulatory_corporate_sector',
+        'FpML Standards',
+        'Regulatory',
+        'Reference Data',
+        'FPML_REGULATORY_CORPORATE_SECTOR',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Regulatory Corporate Sector',
+        'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.',
+        'FPML',
+        'Reference data for FpML Regulatory Corporate Sector (version 1-2)',
+        '2016-06-13'::date,
+        'FpML Public License 2.0',
+        'regulatory_corporate_sectors'
+    );
+END $$;
+

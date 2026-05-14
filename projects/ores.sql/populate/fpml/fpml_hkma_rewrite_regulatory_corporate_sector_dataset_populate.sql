@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Hkma Rewrite Regulatory Corporate Sector Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Hkma Rewrite Regulatory Corporate Sector Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Hkma Rewrite Regulatory Corporate Sector Dataset ---'
+    -- --- FpML Hkma Rewrite Regulatory Corporate Sector Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.hkma_rewrite_regulatory_corporate_sector',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Hkma Rewrite Regulatory Corporate Sector',
-    'Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.',
-    'FPML',
-    'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector (version 1-0)',
-    '2025-04-25'::date,
-    'FpML Public License 2.0',
-    'regulatory_corporate_sectors'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.hkma_rewrite_regulatory_corporate_sector',
+        'FpML Standards',
+        'Regulatory',
+        'Reference Data',
+        'FPML_HKMA_REWRITE_REGULATORY_CORPORATE_SECTOR',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Hkma Rewrite Regulatory Corporate Sector',
+        'Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.',
+        'FPML',
+        'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector (version 1-0)',
+        '2025-04-25'::date,
+        'FpML Public License 2.0',
+        'regulatory_corporate_sectors'
+    );
+END $$;
+

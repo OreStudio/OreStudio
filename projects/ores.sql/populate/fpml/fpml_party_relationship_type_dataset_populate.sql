@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Party Relationship Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Party Relationship Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Party Relationship Type Dataset ---'
+    -- --- FpML Party Relationship Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.party_relationship_type',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_PARTY_RELATIONSHIP_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Party Relationship Type',
-    'A type is containing a code representing how two parties are related, e.g. Affiliated, Intragroup.',
-    'FPML',
-    'Reference data for FpML Party Relationship Type (version 1-1)',
-    '2015-05-10'::date,
-    'FpML Public License 2.0',
-    'party_relationships'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.party_relationship_type',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_PARTY_RELATIONSHIP_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Party Relationship Type',
+        'A type is containing a code representing how two parties are related, e.g. Affiliated, Intragroup.',
+        'FPML',
+        'Reference data for FpML Party Relationship Type (version 1-1)',
+        '2015-05-10'::date,
+        'FpML Public License 2.0',
+        'party_relationships'
+    );
+END $$;
+

@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Non Iso Currency Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Non Iso Currency Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Non Iso Currency Dataset ---'
+    -- --- FpML Non Iso Currency Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.non_iso_currency',
-    'FpML Standards',
-    'Currencies',
-    'Reference Data',
-    'FPML_NON_ISO_CURRENCY',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Non Iso Currency',
-    'Includes the currency codes to expand the ISO 4217 currency list, including the offshore and historical currencies.',
-    'FPML',
-    'Reference data for FpML Non Iso Currency (version 1-1)',
-    '2023-11-03'::date,
-    'FpML Public License 2.0',
-    'currencies'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.non_iso_currency',
+        'FpML Standards',
+        'Currencies',
+        'Reference Data',
+        'FPML_NON_ISO_CURRENCY',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Non Iso Currency',
+        'Includes the currency codes to expand the ISO 4217 currency list, including the offshore and historical currencies.',
+        'FPML',
+        'Reference data for FpML Non Iso Currency (version 1-1)',
+        '2023-11-03'::date,
+        'FpML Public License 2.0',
+        'currencies'
+    );
+END $$;
+

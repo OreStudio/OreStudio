@@ -25,70 +25,72 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- Test Data Datasets
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Test Data Datasets
+    -- =============================================================================
 
-\qecho '--- Test Data Datasets ---'
+    -- --- Test Data Datasets ---
 
--- Business Units
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'testdata.business_units',
-    'Test Data',
-    'Organisation',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Synthetic',
-    'Raw',
-    'OreStudio Test Data Generation',
-    'Test Business Units',
-    'Manufactured business unit hierarchy for a fictitious global markets organisation.',
-    'ORESTUDIO',
-    'Test data for exercising business unit tables',
-    current_date,
-    'Internal Use Only',
-    'business_units'
-);
+    -- Business Units
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'testdata.business_units',
+        'Test Data',
+        'Organisation',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Test Data Generation',
+        'Test Business Units',
+        'Manufactured business unit hierarchy for a fictitious global markets organisation.',
+        'ORESTUDIO',
+        'Test data for exercising business unit tables',
+        current_date,
+        'Internal Use Only',
+        'business_units'
+    );
 
--- Portfolios
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'testdata.portfolios',
-    'Test Data',
-    'Organisation',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Synthetic',
-    'Raw',
-    'OreStudio Test Data Generation',
-    'Test Portfolios',
-    'Manufactured portfolio tree for a fictitious global markets organisation.',
-    'ORESTUDIO',
-    'Test data for exercising portfolio tables',
-    current_date,
-    'Internal Use Only',
-    'portfolios'
-);
+    -- Portfolios
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'testdata.portfolios',
+        'Test Data',
+        'Organisation',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Test Data Generation',
+        'Test Portfolios',
+        'Manufactured portfolio tree for a fictitious global markets organisation.',
+        'ORESTUDIO',
+        'Test data for exercising portfolio tables',
+        current_date,
+        'Internal Use Only',
+        'portfolios'
+    );
 
--- Books
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'testdata.books',
-    'Test Data',
-    'Organisation',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Synthetic',
-    'Raw',
-    'OreStudio Test Data Generation',
-    'Test Books',
-    'Manufactured trading books as leaf nodes of the portfolio tree.',
-    'ORESTUDIO',
-    'Test data for exercising book tables',
-    current_date,
-    'Internal Use Only',
-    'books'
-);
-\o
+    -- Books
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'testdata.books',
+        'Test Data',
+        'Organisation',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Test Data Generation',
+        'Test Books',
+        'Manufactured trading books as leaf nodes of the portfolio tree.',
+        'ORESTUDIO',
+        'Test data for exercising book tables',
+        current_date,
+        'Internal Use Only',
+        'books'
+    );
+END $$;
+

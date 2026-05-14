@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Account Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Account Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Account Type Dataset ---'
+    -- --- FpML Account Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.account_type',
-    'FpML Standards',
-    'Trading',
-    'Reference Data',
-    'FPML_ACCOUNT_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Account Type',
-    'Contains a code representing the type of an account, for example in a clearing or exchange model.',
-    'FPML',
-    'Reference data for FpML Account Type (version 1-1)',
-    '2016-06-13'::date,
-    'FpML Public License 2.0',
-    'account_types'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.account_type',
+        'FpML Standards',
+        'Trading',
+        'Reference Data',
+        'FPML_ACCOUNT_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Account Type',
+        'Contains a code representing the type of an account, for example in a clearing or exchange model.',
+        'FPML',
+        'Reference data for FpML Account Type (version 1-1)',
+        '2016-06-13'::date,
+        'FpML Public License 2.0',
+        'account_types'
+    );
+END $$;
+

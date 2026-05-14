@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Benchmark Rate Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Benchmark Rate Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Benchmark Rate Dataset ---'
+    -- --- FpML Benchmark Rate Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.benchmark_rate',
-    'FpML Standards',
-    'Market Data',
-    'Reference Data',
-    'FPML_BENCHMARK_RATE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Benchmark Rate',
-    'FpML Benchmark rates',
-    'FPML',
-    'Reference data for FpML Benchmark Rate (version 1-4)',
-    '2025-09-26'::date,
-    'FpML Public License 2.0',
-    'benchmark_rates'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.benchmark_rate',
+        'FpML Standards',
+        'Market Data',
+        'Reference Data',
+        'FPML_BENCHMARK_RATE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Benchmark Rate',
+        'FpML Benchmark rates',
+        'FPML',
+        'Reference data for FpML Benchmark Rate (version 1-4)',
+        '2025-09-26'::date,
+        'FpML Public License 2.0',
+        'benchmark_rates'
+    );
+END $$;
+

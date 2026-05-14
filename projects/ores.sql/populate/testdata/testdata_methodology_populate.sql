@@ -25,19 +25,21 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- Test Data Methodology
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Test Data Methodology
+    -- =============================================================================
 
-\qecho '--- Test Data Methodology ---'
+    -- --- Test Data Methodology ---
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'OreStudio Test Data Generation',
-    'Manufactured test data generated for exercising reference data entities.',
-    null,
-    'Test data is manually crafted to create realistic hierarchical structures
-for business units, portfolios, and books. Data represents a fictitious
-global markets organisation with regional trading desks.'
-);
-\o
+    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'OreStudio Test Data Generation',
+        'Manufactured test data generated for exercising reference data entities.',
+        null,
+        'Test data is manually crafted to create realistic hierarchical structures
+    for business units, portfolios, and books. Data represents a fictitious
+    global markets organisation with regional trading desks.'
+    );
+END $$;
+

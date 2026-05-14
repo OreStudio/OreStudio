@@ -23,29 +23,30 @@
  * To modify, update the template and regenerate.
  */
 
-\o /dev/null
--- =============================================================================
--- Data Quality Slovaris Dataset Dependencies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Data Quality Slovaris Dataset Dependencies
+    -- =============================================================================
 
-\qecho '--- Data Quality Slovaris Dataset Dependencies ---'
+    -- --- Data Quality Slovaris Dataset Dependencies ---
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'slovaris.countries',
-    'slovaris.country_flags',
-    'visual_assets'
-);
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'slovaris.currencies',
-    'slovaris.country_flags',
-    'visual_assets'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'slovaris.countries',
+        'slovaris.country_flags',
+        'visual_assets'
+    );
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'slovaris.currencies',
+        'slovaris.country_flags',
+        'visual_assets'
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
 
-\qecho ''
 \qecho '--- Summary ---'
 
 select dataset_code, dependency_code, role
@@ -53,4 +54,3 @@ from ores_dq_dataset_dependencies_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
   and dataset_code like 'slovaris.%'
 order by dataset_code, dependency_code;
-\o

@@ -25,16 +25,18 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- GLEIF LEI Catalog
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Catalog
+    -- =============================================================================
 
-\qecho '--- GLEIF LEI Catalog ---'
+    -- --- GLEIF LEI Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'GLEIF Standards',
-    'Legal entity identification and corporate hierarchy data from GLEIF.',
-    'Reference Data Team'
-);
-\o
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'GLEIF Standards',
+        'Legal entity identification and corporate hierarchy data from GLEIF.',
+        'Reference Data Team'
+    );
+END $$;
+

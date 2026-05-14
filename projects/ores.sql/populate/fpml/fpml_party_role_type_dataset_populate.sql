@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Party Role Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Party Role Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Party Role Type Dataset ---'
+    -- --- FpML Party Role Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.party_role_type',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_PARTY_ROLE_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Party Role Type',
-    'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.',
-    'FPML',
-    'Reference data for FpML Party Role Type (version 1-0)',
-    '2011-04-24'::date,
-    'FpML Public License 2.0',
-    'party_roles'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.party_role_type',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_PARTY_ROLE_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Party Role Type',
+        'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.',
+        'FPML',
+        'Reference data for FpML Party Role Type (version 1-0)',
+        '2011-04-24'::date,
+        'FpML Public License 2.0',
+        'party_roles'
+    );
+END $$;
+

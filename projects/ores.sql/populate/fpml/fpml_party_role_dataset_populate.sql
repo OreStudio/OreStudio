@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Party Role Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Party Role Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Party Role Dataset ---'
+    -- --- FpML Party Role Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.party_role',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_PARTY_ROLE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Party Role',
-    'Contains a code representing a related party role. This can be extended to provide custom roles.',
-    'FPML',
-    'Reference data for FpML Party Role (version 4-1)',
-    '2025-11-10'::date,
-    'FpML Public License 2.0',
-    'party_roles'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.party_role',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_PARTY_ROLE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Party Role',
+        'Contains a code representing a related party role. This can be extended to provide custom roles.',
+        'FPML',
+        'Reference data for FpML Party Role (version 4-1)',
+        '2025-11-10'::date,
+        'FpML Public License 2.0',
+        'party_roles'
+    );
+END $$;
+

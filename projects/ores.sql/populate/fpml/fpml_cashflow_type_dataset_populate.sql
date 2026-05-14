@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Cashflow Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Cashflow Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Cashflow Type Dataset ---'
+    -- --- FpML Cashflow Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.cashflow_type',
-    'FpML Standards',
-    'Trading',
-    'Reference Data',
-    'FPML_CASHFLOW_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Cashflow Type',
-    'The type of cash flows associated with OTC derivatives contracts and their lifecycle events.',
-    'FPML',
-    'Reference data for FpML Cashflow Type (version 2-0)',
-    current_date,
-    'FpML Public License 2.0',
-    'cashflow_types'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.cashflow_type',
+        'FpML Standards',
+        'Trading',
+        'Reference Data',
+        'FPML_CASHFLOW_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Cashflow Type',
+        'The type of cash flows associated with OTC derivatives contracts and their lifecycle events.',
+        'FPML',
+        'Reference data for FpML Cashflow Type (version 2-0)',
+        current_date,
+        'FpML Public License 2.0',
+        'cashflow_types'
+    );
+END $$;
+

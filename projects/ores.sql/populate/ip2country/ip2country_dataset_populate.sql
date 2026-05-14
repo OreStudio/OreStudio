@@ -26,30 +26,32 @@
  * This must be run before populating the artefact tables.
  */
 
-\o /dev/null
--- =============================================================================
--- IP Geolocation Datasets
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- IP Geolocation Datasets
+    -- =============================================================================
 
-\qecho '--- IP Geolocation Datasets ---'
+    -- --- IP Geolocation Datasets ---
 
--- IP to Country IPv4 Ranges
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'geo.ip2country',
-    'IP Geolocation',
-    'IP Address to Country maps',
-    'Reference Data',
-    'ISO_3166_1_ALPHA_2',
-    'Primary',
-    'Actual',
-    'Raw',
-    'iptoasn.com IP to Country Database',
-    'IP to Country IPv4 Ranges',
-    'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes.',
-    'iptoasn.com',
-    'Geographic IP lookup for network analysis',
-    '2025-01-21'::date,
-    'PDDL v1.0',
-    'ip2country'
-);
-\o
+    -- IP to Country IPv4 Ranges
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'geo.ip2country',
+        'IP Geolocation',
+        'IP Address to Country maps',
+        'Reference Data',
+        'ISO_3166_1_ALPHA_2',
+        'Primary',
+        'Actual',
+        'Raw',
+        'iptoasn.com IP to Country Database',
+        'IP to Country IPv4 Ranges',
+        'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes.',
+        'iptoasn.com',
+        'Geographic IP lookup for network analysis',
+        '2025-01-21'::date,
+        'PDDL v1.0',
+        'ip2country'
+    );
+END $$;
+

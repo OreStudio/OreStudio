@@ -25,28 +25,30 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- ISO Standards Methodologies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Methodologies
+    -- =============================================================================
 
-\qecho '--- ISO Standards Methodologies ---'
+    -- --- ISO Standards Methodologies ---
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Wikipedia ISO 3166 Extraction',
-    'Data extracted from Wikipedia page listing ISO 3166 country codes',
-    'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
-    'Data sourced from https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Wikipedia ISO 3166 Extraction',
+        'Data extracted from Wikipedia page listing ISO 3166 country codes',
+        'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
+        'Data sourced from https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
 
-See methodology documentation for detailed steps.'
-);
+    See methodology documentation for detailed steps.'
+    );
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Wikipedia ISO 4217 Extraction',
-    'Data extracted from Wikipedia page listing ISO 4217 currency codes',
-    'https://en.wikipedia.org/wiki/ISO_4217',
-    'Data sourced from https://en.wikipedia.org/wiki/ISO_4217
+    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Wikipedia ISO 4217 Extraction',
+        'Data extracted from Wikipedia page listing ISO 4217 currency codes',
+        'https://en.wikipedia.org/wiki/ISO_4217',
+        'Data sourced from https://en.wikipedia.org/wiki/ISO_4217
 
-See methodology documentation for detailed steps.'
-);
-\o
+    See methodology documentation for detailed steps.'
+    );
+END $$;
+

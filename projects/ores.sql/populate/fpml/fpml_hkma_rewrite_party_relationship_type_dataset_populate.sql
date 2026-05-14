@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Hkma Rewrite Party Relationship Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Hkma Rewrite Party Relationship Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Hkma Rewrite Party Relationship Type Dataset ---'
+    -- --- FpML Hkma Rewrite Party Relationship Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.hkma_rewrite_party_relationship_type',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Hkma Rewrite Party Relationship Type',
-    'Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.',
-    'FPML',
-    'Reference data for FpML Hkma Rewrite Party Relationship Type (version 1-0)',
-    '2025-04-25'::date,
-    'FpML Public License 2.0',
-    'party_relationships'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.hkma_rewrite_party_relationship_type',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_HKMA_REWRITE_PARTY_RELATIONSHIP_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Hkma Rewrite Party Relationship Type',
+        'Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.',
+        'FPML',
+        'Reference data for FpML Hkma Rewrite Party Relationship Type (version 1-0)',
+        '2025-04-25'::date,
+        'FpML Public License 2.0',
+        'party_relationships'
+    );
+END $$;
+

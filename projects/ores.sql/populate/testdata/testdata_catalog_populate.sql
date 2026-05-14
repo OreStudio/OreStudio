@@ -26,16 +26,18 @@
  * This script is idempotent.
  */
 
-\o /dev/null
--- =============================================================================
--- Test Data Catalog
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Test Data Catalog
+    -- =============================================================================
 
-\qecho '--- Test Data Catalog ---'
+    -- --- Test Data Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Test Data',
-    'Manufactured test data for exercising reference data tables including business units, portfolios, and books.',
-    'Development Team'
-);
-\o
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Test Data',
+        'Manufactured test data for exercising reference data tables including business units, portfolios, and books.',
+        'Development Team'
+    );
+END $$;
+

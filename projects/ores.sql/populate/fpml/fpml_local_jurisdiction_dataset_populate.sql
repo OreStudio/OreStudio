@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Local Jurisdiction Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Local Jurisdiction Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Local Jurisdiction Dataset ---'
+    -- --- FpML Local Jurisdiction Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.local_jurisdiction',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_LOCAL_JURISDICTION',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Local Jurisdiction',
-    'This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.',
-    'FPML',
-    'Reference data for FpML Local Jurisdiction (version 1-1)',
-    '2013-01-15'::date,
-    'FpML Public License 2.0',
-    'local_jurisdictions'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.local_jurisdiction',
+        'FpML Standards',
+        'Regulatory',
+        'Reference Data',
+        'FPML_LOCAL_JURISDICTION',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Local Jurisdiction',
+        'This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.',
+        'FPML',
+        'Reference data for FpML Local Jurisdiction (version 1-1)',
+        '2013-01-15'::date,
+        'FpML Public License 2.0',
+        'local_jurisdictions'
+    );
+END $$;
+

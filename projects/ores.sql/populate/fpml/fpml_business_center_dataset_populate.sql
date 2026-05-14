@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Business Center Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Business Center Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Business Center Dataset ---'
+    -- --- FpML Business Center Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.business_center',
-    'FpML Standards',
-    'Trading',
-    'Reference Data',
-    'FPML_BUSINESS_CENTER',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Business Center',
-    'The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.',
-    'FPML',
-    'Reference data for FpML Business Center (version 9-4)',
-    '2025-04-25'::date,
-    'FpML Public License 2.0',
-    'business_centres'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.business_center',
+        'FpML Standards',
+        'Trading',
+        'Reference Data',
+        'FPML_BUSINESS_CENTER',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Business Center',
+        'The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.',
+        'FPML',
+        'Reference data for FpML Business Center (version 9-4)',
+        '2025-04-25'::date,
+        'FpML Public License 2.0',
+        'business_centres'
+    );
+END $$;
+

@@ -40,24 +40,31 @@
  *                                         ComputeWrapperService already exist)
  */
 
-\o /dev/null
-\qecho '--- Infrastructure Account Role Assignments ---'
+SET "ores.compute_wrapper_user" = :'compute_wrapper_user';
+SET "ores.http_user"            = :'http_user';
+SET "ores.wt_user"             = :'wt_user';
 
--- compute_wrapper_user: no DB password — authenticates via session at startup.
-select ores_iam_service_accounts_upsert_fn(
-    :'compute_wrapper_user',
-    'compute_wrapper@system.ores',
-    'System service account for Compute Wrapper worker service'
-);
+DO $$
+BEGIN
+    -- --- Infrastructure Account Role Assignments ---
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'compute_wrapper_user', 'ComputeWrapperService');
+    -- compute_wrapper_user: no DB password — authenticates via session at startup.
+    PERFORM ores_iam_service_accounts_upsert_fn(
+        current_setting('ores.compute_wrapper_user'),
+        'compute_wrapper@system.ores',
+        'System service account for Compute Wrapper worker service'
+    );
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'http_user', 'HttpService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.compute_wrapper_user'), 'ComputeWrapperService');
 
-select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'wt_user', 'WtService');
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.http_user'), 'HttpService');
+
+    PERFORM ores_iam_account_role_assign_fn(
+        ores_iam_system_tenant_id_fn(), current_setting('ores.wt_user'), 'WtService');
+END $$;
+
 
 -- Summary
 select 'Infrastructure Account Roles' as entity, count(*) as count
@@ -69,4 +76,3 @@ where a.email in (
     'wt@system.ores'
 )
   and ar.valid_to = ores_utility_infinity_timestamp_fn();
-\o

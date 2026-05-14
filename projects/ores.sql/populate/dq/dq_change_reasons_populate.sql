@@ -46,297 +46,298 @@
  *       requires_commentary, display_order)
  */
 
-\o /dev/null
--- =============================================================================
--- Change Reason Categories
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Change Reason Categories
+    -- =============================================================================
 
-\qecho '--- Change Reason Categories ---'
+    -- --- Change Reason Categories ---
 
-select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system',
-    'System-generated reasons for automatic operations (not user-selectable)'
-);
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system',
+        'System-generated reasons for automatic operations (not user-selectable)'
+    );
 
-select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common',
-    'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
-);
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common',
+        'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
+    );
 
-select ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade',
-    'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
-);
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade',
+        'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
+    );
 
--- =============================================================================
--- Change Reasons: System Category
--- =============================================================================
+    -- =============================================================================
+    -- Change Reasons: System Category
+    -- =============================================================================
 
-\qecho ''
-\qecho '--- Change Reasons: System ---'
 
--- System reasons (auto-assigned, not user-selectable)
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.initial_load',
-    'Initial system bootstrap or migration',
-    'system',
-    true,   -- applies to new
-    false,  -- not for amend
-    false,  -- not for delete
-    false,  -- no commentary required
-    0       -- display order
-);
+    -- --- Change Reasons: System ---
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.new_record',
-    'New record created during normal operations',
-    'system',
-    true,   -- applies to new
-    false,  -- not for amend
-    false,  -- not for delete
-    false,  -- no commentary required
-    10      -- display order
-);
+    -- System reasons (auto-assigned, not user-selectable)
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.initial_load',
+        'Initial system bootstrap or migration',
+        'system',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        0       -- display order
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.external_data_import',
-    'External data import (requires data lineage)',
-    'system',
-    false,  -- not for new
-    true,   -- applies to amend (imports can update existing records)
-    false,  -- not for delete
-    true,   -- commentary REQUIRED (data lineage)
-    20      -- display order
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.new_record',
+        'New record created during normal operations',
+        'system',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        10      -- display order
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.test',
-    'Test data for automated testing',
-    'system',
-    true,   -- applies to new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- no commentary required
-    30      -- display order
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.external_data_import',
+        'External data import (requires data lineage)',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (imports can update existing records)
+        false,  -- not for delete
+        true,   -- commentary REQUIRED (data lineage)
+        20      -- display order
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.import',
-    'Data imported via CLI import command',
-    'system',
-    true,   -- applies to new
-    true,   -- applies to amend
-    false,  -- not for delete
-    false,  -- no commentary required
-    40      -- display order
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.test',
+        'Test data for automated testing',
+        'system',
+        true,   -- applies to new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- no commentary required
+        30      -- display order
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'system.tenant_terminated',
-    'Tenant marked as terminated',
-    'system',
-    false,  -- not for new
-    true,   -- applies to amend (termination is updating status)
-    false,  -- not for delete
-    false,  -- no commentary required
-    50      -- display order
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.import',
+        'Data imported via CLI import command',
+        'system',
+        true,   -- applies to new
+        true,   -- applies to amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        40      -- display order
+    );
 
--- =============================================================================
--- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
--- =============================================================================
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'system.tenant_terminated',
+        'Tenant marked as terminated',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (termination is updating status)
+        false,  -- not for delete
+        false,  -- no commentary required
+        50      -- display order
+    );
 
-\qecho ''
-\qecho '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
+    -- =============================================================================
+    -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
+    -- =============================================================================
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.non_material_update',
-    'Non-material update (Touch)',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    false,  -- not for delete
-    false,  -- commentary optional
-    10
-);
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.rectification',
-    'User/Booking Error',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    20
-);
+    -- --- Change Reasons: Common (BCBS 239 / FRTB) ---
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.duplicate',
-    'Duplicate Record',
-    'common',
-    false,  -- not for new
-    false,  -- not for amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    30
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.non_material_update',
+        'Non-material update (Touch)',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        false,  -- not for delete
+        false,  -- commentary optional
+        10
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.stale_data',
-    'Data not updated within required liquidity horizon',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    40
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.rectification',
+        'User/Booking Error',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        20
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.outlier_correction',
-    'Manual override after plausibility check failure',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    50
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.duplicate',
+        'Duplicate Record',
+        'common',
+        false,  -- not for new
+        false,  -- not for amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        30
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.feed_failure',
-    'Upstream vendor/API data issue',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    60
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.stale_data',
+        'Data not updated within required liquidity horizon',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        40
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.mapping_error',
-    'Incorrect ID translation (e.g., ISIN to FIGI)',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    70
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.outlier_correction',
+        'Manual override after plausibility check failure',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        50
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.judgmental_override',
-    'Expert judgment when market prices unavailable',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    80
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.feed_failure',
+        'Upstream vendor/API data issue',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        60
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.regulatory',
-    'Mandatory compliance adjustment',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    90
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.mapping_error',
+        'Incorrect ID translation (e.g., ISIN to FIGI)',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        70
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'common.other',
-    'Exceptional (requires audit note)',
-    'common',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    1000    -- display last
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.judgmental_override',
+        'Expert judgment when market prices unavailable',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        80
+    );
 
--- =============================================================================
--- Change Reasons: Trade Category (FINRA / MiFID II aligned)
--- =============================================================================
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.regulatory',
+        'Mandatory compliance adjustment',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        90
+    );
 
-\qecho ''
-\qecho '--- Change Reasons: Trade (FINRA / MiFID II) ---'
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'common.other',
+        'Exceptional (requires audit note)',
+        'common',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        1000    -- display last
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.fat_finger',
-    'Erroneous execution (wrong quantity/price)',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    10
-);
+    -- =============================================================================
+    -- Change Reasons: Trade Category (FINRA / MiFID II aligned)
+    -- =============================================================================
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.system_malfunction',
-    'Technical glitch or algorithm issue',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    20
-);
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.corporate_action',
-    'Stock split, dividend, or merger adjustment',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    30
-);
+    -- --- Change Reasons: Trade (FINRA / MiFID II) ---
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.allocation_swap',
-    'House to client sub-account reallocation',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    false,  -- commentary optional
-    40
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.fat_finger',
+        'Erroneous execution (wrong quantity/price)',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        10
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.re_booking',
-    'Wrong legal entity correction',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    50
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.system_malfunction',
+        'Technical glitch or algorithm issue',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        20
+    );
 
-select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'trade.other',
-    'Exceptional (requires audit note)',
-    'trade',
-    false,  -- not for new
-    true,   -- applies to amend
-    true,   -- applies to delete
-    true,   -- commentary REQUIRED
-    1000    -- display last
-);
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.corporate_action',
+        'Stock split, dividend, or merger adjustment',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        30
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.allocation_swap',
+        'House to client sub-account reallocation',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        false,  -- commentary optional
+        40
+    );
 
-\qecho ''
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.re_booking',
+        'Wrong legal entity correction',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        50
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'trade.other',
+        'Exceptional (requires audit note)',
+        'trade',
+        false,  -- not for new
+        true,   -- applies to amend
+        true,   -- applies to delete
+        true,   -- commentary REQUIRED
+        1000    -- display last
+    );
+
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
+
 \qecho '--- Summary ---'
 
 select 'Change Reason Categories' as entity, count(*) as count
@@ -351,4 +352,3 @@ union all
 select 'Change Reasons (trade)', count(*)
 from ores_dq_change_reasons_tbl where category_code = 'trade' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
-\o

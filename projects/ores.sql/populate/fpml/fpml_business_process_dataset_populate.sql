@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
--- =============================================================================
--- FpML Business Process Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Business Process Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Business Process Dataset ---'
+    -- --- FpML Business Process Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.business_process',
-    'FpML Standards',
-    'Trading',
-    'Reference Data',
-    'FPML_BUSINESS_PROCESS',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Business Process',
-    'Contains a code representing the type of business process a message (e.g. a status request) applies to.',
-    'FPML',
-    'Reference data for FpML Business Process (version 1-0)',
-    '2011-09-29'::date,
-    'FpML Public License 2.0',
-    'business_processes'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.business_process',
+        'FpML Standards',
+        'Trading',
+        'Reference Data',
+        'FPML_BUSINESS_PROCESS',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Business Process',
+        'Contains a code representing the type of business process a message (e.g. a status request) applies to.',
+        'FPML',
+        'Reference data for FpML Business Process (version 1-0)',
+        '2011-09-29'::date,
+        'FpML Public License 2.0',
+        'business_processes'
+    );
+END $$;
+

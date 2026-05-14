@@ -4,6 +4,7 @@
     "component": "workflow",
     "entity_singular": "workflow_step",
     "entity_plural": "workflow_steps",
+    "entity_singular_title": "Workflow Step",
     "entity_title": "Workflow Step",
     "has_tenant_id": false,
     "brief": "A single step within a workflow instance.",
@@ -31,22 +32,21 @@
         "type": "integer",
         "cpp_type": "int",
         "nullable": false,
-        "description": "Zero-based ordinal position of this step within the workflow."
+        "description": "Zero-based ordinal position of this step within the workflow. Negative values denote compensation steps."
       },
       {
         "name": "name",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Human-readable step name, e.g. 'create_account'."
+        "description": "Human-readable step name, e.g. 'save_party'."
       },
       {
-        "name": "status",
-        "type": "text",
-        "cpp_type": "std::string",
+        "name": "state_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
         "nullable": false,
-        "default": "'pending'",
-        "description": "Step status: pending, in_progress, completed, failed, compensated."
+        "description": "FK to the FSM state record (ores_dq_fsm_states_tbl) for this step."
       },
       {
         "name": "request_json",
@@ -68,6 +68,53 @@
         "cpp_type": "std::string",
         "nullable": true,
         "description": "Human-readable error message if the step failed."
+      },
+      {
+        "name": "command_subject",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "NATS subject to which the step command was published."
+      },
+      {
+        "name": "command_json",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "Serialised JSON command payload published to the domain service."
+      },
+      {
+        "name": "command_published_at",
+        "type": "timestamptz",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "Timestamp when the step command was published to NATS."
+      },
+      {
+        "name": "idempotency_key",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "Idempotency key (echoes the step UUID) sent as X-Workflow-Step-Id header."
+      },
+      {
+        "name": "compensation_subject",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "NATS subject for the compensation command. Empty if this step has no compensation."
+      },
+      {
+        "name": "compensation_json",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "''",
+        "description": "Serialised JSON compensation command payload, populated when compensation is triggered."
       },
       {
         "name": "started_at",

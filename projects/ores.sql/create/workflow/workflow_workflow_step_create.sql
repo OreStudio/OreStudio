@@ -22,7 +22,7 @@
  * Template: sql_schema_non_temporal_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Workflow Step Table
  *
  * Records the execution of one step in a saga workflow, including the step
  * index, name, status, request/response payloads, and timing. Steps reference

@@ -186,6 +186,27 @@ jobs:
           path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
           key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
 
+      - name: Cleanup stale caches
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          repo="${{ github.repository }}"
+          # Delete all but the newest sccache entry for this matrix combination
+          sccache_prefix="sccache-${{ matrix.family }}-${{ matrix.compiler }}-${{ matrix.buildtype }}-ninja-"
+          gh api "/repos/${repo}/actions/caches?per_page=100" \
+            --jq "[.actions_caches[] | select(.key | startswith(\"${sccache_prefix}\"))]
+                  | sort_by(.created_at) | reverse | .[1:] | .[].id" \
+            | xargs -r -I{} gh api --method DELETE "/repos/${repo}/actions/caches/{}"
+          # Delete all but the newest cmake build cache entry (gcc+debug only)
+          if [[ "${{ matrix.compiler }}" == "gcc" && "${{ matrix.buildtype }}" == "debug" ]]; then
+            cmake_prefix="cmake-build-${{ matrix.family }}-${{ matrix.compiler }}-${{ matrix.buildtype }}-ninja-"
+            gh api "/repos/${repo}/actions/caches?per_page=100" \
+              --jq "[.actions_caches[] | select(.key | startswith(\"${cmake_prefix}\"))]
+                    | sort_by(.created_at) | reverse | .[1:] | .[].id" \
+              | xargs -r -I{} gh api --method DELETE "/repos/${repo}/actions/caches/{}"
+          fi
+
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.1
         with:

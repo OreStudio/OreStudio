@@ -187,3 +187,15 @@ jobs:
       - name: Show sccache statistics
         if: always()
         run: sccache --show-stats
+
+      - name: Cleanup stale sccache entries
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          repo="${{ github.repository }}"
+          sccache_prefix="sccache-${{ matrix.family }}-${{ matrix.compiler }}-${{ matrix.buildtype }}-ninja-"
+          gh api "/repos/${repo}/actions/caches?per_page=100" \
+            --jq "[.actions_caches[] | select(.key | startswith(\"${sccache_prefix}\"))]
+                  | sort_by(.created_at) | reverse | .[1:] | .[].id" \
+            | xargs -r -I{} gh api --method DELETE "/repos/${repo}/actions/caches/{}"

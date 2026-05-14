@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
 /**
  * @brief Reads and writes app versions to data storage.
  */
-class app_version_repository {
+class ORES_COMPUTE_CORE_EXPORT app_version_repository {
 private:
     inline static std::string_view logger_name =
         "ores.compute.repository.app_version_repository";

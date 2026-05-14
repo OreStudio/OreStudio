@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes currency asset classes to data storage.
  */
-class monetary_nature_repository {
+class ORES_REFDATA_CORE_EXPORT monetary_nature_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.monetary_nature_repository";

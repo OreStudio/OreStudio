@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes currency market tiers to data storage.
  */
-class currency_market_tier_repository {
+class ORES_REFDATA_CORE_EXPORT currency_market_tier_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.currency_market_tier_repository";

@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes portfolios to data storage.
  */
-class portfolio_repository {
+class ORES_REFDATA_CORE_EXPORT portfolio_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.portfolio_repository";

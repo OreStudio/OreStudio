@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes counterparty identifiers to data storage.
  */
-class counterparty_identifier_repository {
+class ORES_REFDATA_CORE_EXPORT counterparty_identifier_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.counterparty_identifier_repository";

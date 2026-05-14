@@ -25,10 +25,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/compute_platform.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
-class platform_repository {
+class ORES_COMPUTE_CORE_EXPORT platform_repository {
 private:
     inline static std::string_view logger_name =
         "ores.compute.repository.platform_repository";

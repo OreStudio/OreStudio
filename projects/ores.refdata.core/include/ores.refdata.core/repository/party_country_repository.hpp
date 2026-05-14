@@ -27,10 +27,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
-class party_country_repository {
+class ORES_REFDATA_CORE_EXPORT party_country_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.party_country_repository";

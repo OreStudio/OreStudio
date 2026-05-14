@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes FRA conventions to data storage.
  */
-class fra_convention_repository {
+class ORES_REFDATA_CORE_EXPORT fra_convention_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.fra_convention_repository";

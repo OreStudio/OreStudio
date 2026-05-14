@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes contact types to data storage.
  */
-class contact_type_repository {
+class ORES_REFDATA_CORE_EXPORT contact_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.contact_type_repository";

@@ -78,7 +78,7 @@ begin
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
     -- Validate account_type
-    new.account_type := ores_iam_validate_account_type_fn(new.account_type);
+    new.account_type := ores_iam_validate_account_type_fn(new.tenant_id, new.account_type);
 
     select version into current_version
     from ores_iam_accounts_tbl

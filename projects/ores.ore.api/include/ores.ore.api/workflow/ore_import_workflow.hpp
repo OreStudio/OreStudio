@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_SERVICE_ORE_IMPORT_DEFINITIONS_HPP
-#define ORES_WORKFLOW_SERVICE_ORE_IMPORT_DEFINITIONS_HPP
+#ifndef ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
+#define ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
-#include "ores.workflow/service/workflow_definition.hpp"
-#include "ores.workflow/service/workflow_registry.hpp"
+#include "ores.workflow.api/service/workflow_definition.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 
-namespace ores::workflow::service {
+namespace ores::ore::workflow {
 
 /**
  * @brief Registers the ore_import_workflow definition.
@@ -45,7 +45,11 @@ namespace ores::workflow::service {
  * the saved entity IDs from the ore_import_execute_result stored as
  * the step's response_json and builds an ore_import_rollback_request.
  */
-inline void register_ore_import_workflow(workflow_registry& registry) {
+inline void register_ore_import_workflow(
+    ores::workflow::service::workflow_registry& registry) {
+
+    using namespace ores::workflow::service;
+
     workflow_definition def;
     def.type_name = "ore_import_workflow";
     def.description = "Imports an ORE XML tarball: downloads from storage, "

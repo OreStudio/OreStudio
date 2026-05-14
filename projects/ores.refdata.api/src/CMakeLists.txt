@@ -42,7 +42,9 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.eventing.lib
+        ores.iam.api.lib
         ores.platform.lib
+        ores.workflow.api.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx

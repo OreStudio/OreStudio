@@ -17,33 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_SERVICE_REPORT_EXECUTION_DEFINITIONS_HPP
-#define ORES_WORKFLOW_SERVICE_REPORT_EXECUTION_DEFINITIONS_HPP
+#ifndef ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
+#define ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
-#include "ores.workflow/service/workflow_definition.hpp"
-#include "ores.workflow/service/workflow_registry.hpp"
+#include "ores.workflow.api/service/workflow_definition.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 
-namespace ores::workflow::service {
+namespace ores::reporting::workflow {
 
 /**
  * @brief Registers the report_execution_workflow definition.
  *
- * Initial implementation: 3 steps.
- *   0. gather_trades     — fetch trades by book scope (ores.reporting.service)
- *   1. assemble_bundle   — persist aggregated input data (ores.reporting.service)
- *   2. finalise          — mark report instance completed (ores.reporting.service)
+ * Steps:
+ *   0. gather_trades           — fetch trades by book scope
+ *   1. gather_market_data      — fetch market data price series
+ *   2. assemble_bundle         — persist aggregated input bundle
+ *   3. prepare_ore_package     — package trades and market data into ORE XML
+ *   4. submit_compute          — submit ORE packages to compute grid
+ *   5. collect_compute_results — aggregate compute grid results
+ *   6. finalise                — mark report instance completed
  *
- * Additional steps (gather_market_data, prepare_ore_package,
- * submit_compute) are wired in as they are implemented.
- *
- * Compensation: gather_trades is read-only (no compensation).
- * assemble_bundle compensation deletes the bundle row.
- * On any failure, fail_report marks the instance as failed.
+ * Compensation: fail_report marks the instance as failed on any step failure.
  */
-inline void register_report_execution_workflow(workflow_registry& registry) {
+inline void register_report_execution_workflow(
+    ores::workflow::service::workflow_registry& registry) {
+
+    using namespace ores::workflow::service;
     using namespace ores::reporting::messaging;
 
     workflow_definition def;
@@ -181,7 +183,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
         }
 
         // ----------------------------------------------------------------
-        // Step 3: ORE package preparation (ore.service)
+        // Step 3: ORE package preparation
         // ----------------------------------------------------------------
         {
             workflow_step_def s;
@@ -234,7 +236,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
         }
 
         // ----------------------------------------------------------------
-        // Step 4: submit to compute grid (compute.service)
+        // Step 4: submit to compute grid
         // ----------------------------------------------------------------
         {
             workflow_step_def s;
@@ -277,7 +279,7 @@ inline void register_report_execution_workflow(workflow_registry& registry) {
         }
 
         // ----------------------------------------------------------------
-        // Step 5: collect compute results (stub pass-through — Phase 3.11)
+        // Step 5: collect compute results
         // ----------------------------------------------------------------
         {
             workflow_step_def s;

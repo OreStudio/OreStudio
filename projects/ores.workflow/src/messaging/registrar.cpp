@@ -29,10 +29,10 @@
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/workflow_engine.hpp"
-#include "ores.workflow/service/workflow_registry.hpp"
-#include "ores.workflow/service/provision_parties_definitions.hpp"
-#include "ores.workflow/service/ore_import_definitions.hpp"
-#include "ores.workflow/service/report_execution_definitions.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
+#include "ores.ore.api/workflow/ore_import_workflow.hpp"
+#include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -68,9 +68,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Build workflow registry (one entry per known workflow type).
     // ----------------------------------------------------------------
     auto registry = std::make_shared<service::workflow_registry>();
-    service::register_provision_parties_workflow(*registry);
-    service::register_ore_import_workflow(*registry);
-    service::register_report_execution_workflow(*registry);
+    refdata::workflow::register_provision_parties_workflow(*registry);
+    ore::workflow::register_ore_import_workflow(*registry);
+    reporting::workflow::register_report_execution_workflow(*registry);
 
     // ----------------------------------------------------------------
     // Create the engine (shared across all engine subscriptions).

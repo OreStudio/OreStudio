@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_SERVICE_WORKFLOW_DEFINITION_HPP
-#define ORES_WORKFLOW_SERVICE_WORKFLOW_DEFINITION_HPP
+#ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
+#define ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 
 #include <functional>
 #include <string>
 #include <vector>
-#include "ores.workflow/export.hpp"
+#include "ores.workflow.api/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -33,7 +33,7 @@ namespace ores::workflow::service {
  * The workflow engine uses these descriptors to build and dispatch commands
  * without needing bespoke executor classes per workflow type.
  */
-struct ORES_WORKFLOW_EXPORT workflow_step_def  {
+struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
     /**
      * @brief Human-readable step name stored in workflow_step.name.
      */
@@ -92,7 +92,7 @@ struct ORES_WORKFLOW_EXPORT workflow_step_def  {
  * the step sequence is preserved across service restarts, even when
  * build_steps is non-deterministic.
  */
-struct materialised_step {
+struct ORES_WORKFLOW_API_EXPORT materialised_step {
     std::string name;
     std::string command_subject;
     std::string compensation_subject;
@@ -104,7 +104,7 @@ struct materialised_step {
  * Registered once at startup in the workflow_registry. The engine calls
  * build_steps once per instance at start time to determine the step sequence.
  */
-struct ORES_WORKFLOW_EXPORT workflow_definition  {
+struct ORES_WORKFLOW_API_EXPORT workflow_definition {
     /**
      * @brief Unique type name matching workflow_instance.type.
      *

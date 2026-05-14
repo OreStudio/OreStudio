@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_SERVICE_WORKFLOW_REGISTRY_HPP
-#define ORES_WORKFLOW_SERVICE_WORKFLOW_REGISTRY_HPP
+#ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
+#define ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
 
 #include <string>
 #include <unordered_map>
-#include "ores.workflow/service/workflow_definition.hpp"
-#include "ores.workflow/export.hpp"
+#include "ores.workflow.api/export.hpp"
+#include "ores.workflow.api/service/workflow_definition.hpp"
 
 namespace ores::workflow::service {
 
@@ -33,14 +33,16 @@ namespace ores::workflow::service {
  * Populated at startup before the NATS subscriptions are registered.
  * The workflow engine looks up definitions by type_name to drive execution.
  */
-class ORES_WORKFLOW_EXPORT workflow_registry  {
+class ORES_WORKFLOW_API_EXPORT workflow_registry {
 public:
     /**
      * @brief Register a workflow definition.
      *
      * Overwrites any existing definition with the same type_name.
      */
-    void register_definition(workflow_definition def);
+    void register_definition(workflow_definition def) {
+        definitions_.insert_or_assign(def.type_name, std::move(def));
+    }
 
     /**
      * @brief Look up a workflow definition by type name.
@@ -48,7 +50,10 @@ public:
      * @return Pointer to the definition, or nullptr if not registered.
      */
     [[nodiscard]] const workflow_definition*
-    find(const std::string& type_name) const;
+    find(const std::string& type_name) const {
+        const auto it = definitions_.find(type_name);
+        return it != definitions_.end() ? &it->second : nullptr;
+    }
 
     /**
      * @brief Returns all registered workflow definitions.

@@ -30,7 +30,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
-#include "ores.workflow/service/workflow_registry.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow/repository/workflow_instance_repository.hpp"
 #include "ores.workflow/repository/workflow_step_repository.hpp"
 #include "ores.workflow/export.hpp"

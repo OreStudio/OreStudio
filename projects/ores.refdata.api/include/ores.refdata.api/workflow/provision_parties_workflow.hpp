@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKFLOW_SERVICE_PROVISION_PARTIES_DEFINITIONS_HPP
-#define ORES_WORKFLOW_SERVICE_PROVISION_PARTIES_DEFINITIONS_HPP
+#ifndef ORES_REFDATA_API_WORKFLOW_PROVISION_PARTIES_WORKFLOW_HPP
+#define ORES_REFDATA_API_WORKFLOW_PROVISION_PARTIES_WORKFLOW_HPP
 
 #include <chrono>
 #include <rfl/json.hpp>
@@ -31,10 +31,10 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
-#include "ores.workflow/service/workflow_definition.hpp"
-#include "ores.workflow/service/workflow_registry.hpp"
+#include "ores.workflow.api/service/workflow_definition.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 
-namespace ores::workflow::service {
+namespace ores::refdata::workflow {
 
 /**
  * @brief Registers the provision_parties workflow definition.
@@ -53,7 +53,12 @@ namespace ores::workflow::service {
  * its request_json.  The build_command functions deserialise that struct
  * and construct the correct per-step command payload.
  */
-inline void register_provision_parties_workflow(workflow_registry& registry) {
+inline void register_provision_parties_workflow(
+    ores::workflow::service::workflow_registry& registry) {
+
+    using namespace ores::workflow::service;
+    namespace wf = ores::workflow::messaging;
+
     workflow_definition def;
     def.type_name = "provision_parties_workflow";
     def.description = "Provisions a new party with associated IAM account. "
@@ -80,7 +85,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
                 const std::vector<std::string>&) -> std::string {
 
                 auto wr = rfl::json::read<
-                    messaging::provision_party_workflow_request>(request_json);
+                    wf::provision_party_workflow_request>(request_json);
                 if (!wr) return "{}";
                 const auto& r = *wr;
 
@@ -130,7 +135,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
                 const std::vector<std::string>&) -> std::string {
 
                 auto wr = rfl::json::read<
-                    messaging::provision_party_workflow_request>(request_json);
+                    wf::provision_party_workflow_request>(request_json);
                 if (!wr) return "{}";
                 const auto& r = *wr;
 
@@ -173,7 +178,7 @@ inline void register_provision_parties_workflow(workflow_registry& registry) {
                 if (prev.size() < 2) return "{}";
 
                 auto wr = rfl::json::read<
-                    messaging::provision_party_workflow_request>(request_json);
+                    wf::provision_party_workflow_request>(request_json);
                 if (!wr) return "{}";
 
                 auto ar = rfl::json::read<

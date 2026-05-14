@@ -953,6 +953,14 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     summaryLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     layout->addWidget(summaryLabel_);
 
+    // Error banner (shown when a workflow step fails)
+    errorBanner_ = new QLabel(this);
+    errorBanner_->setWordWrap(true);
+    errorBanner_->setStyleSheet(
+        QStringLiteral("color: #cc3333; font-weight: bold; padding: 4px;"));
+    errorBanner_->hide();
+    layout->addWidget(errorBanner_);
+
     // Selectable ID rows
     QPushButton* workflowCopyBtn = nullptr;
     workflowIdRow_ = makeIdRow(tr("Workflow ID"), workflowIdEdit_, workflowCopyBtn, this);
@@ -971,6 +979,13 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
         QGuiApplication::clipboard()->setText(correlIdEdit_->text());
     });
 
+    // Step progress widget — hidden until an async import provides a workflow ID
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->hide();
+    connect(stepsWidget_, &WorkflowStepsWidget::stepFailed,
+            this, &OreDonePage::onStepFailed);
+    layout->addWidget(stepsWidget_);
+
     layout->addStretch();
 }
 
@@ -979,6 +994,8 @@ void OreDonePage::initializePage() {
 
     workflowIdRow_->hide();
     correlIdRow_->hide();
+    errorBanner_->hide();
+    stepsWidget_->hide();
 
     if (wizard_->importSuccess()) {
         QString html;
@@ -986,12 +1003,16 @@ void OreDonePage::initializePage() {
         if (!resp.workflow_instance_id.empty()) {
             // Asynchronous path: import is running in the background.
             html += tr("<p><b>Import submitted successfully.</b></p>");
-            html += tr("<p>The import is processing in the background. "
-                       "Use the Workflow ID below to track progress, or open "
-                       "<b>Workflows &rarr; Execution List</b> to monitor all "
-                       "active workflows.</p>");
-            workflowIdEdit_->setText(QString::fromStdString(resp.workflow_instance_id));
+            html += tr("<p>Step progress is shown below. "
+                       "You can also open <b>Workflows &rarr; Execution List</b> "
+                       "to monitor all active workflows.</p>");
+            const QString wfId =
+                QString::fromStdString(resp.workflow_instance_id);
+            workflowIdEdit_->setText(wfId);
             workflowIdRow_->show();
+
+            stepsWidget_->setInstance(QUuid::fromString(wfId));
+            stepsWidget_->show();
         } else {
             // Synchronous path (legacy / direct).
             const auto& errors = resp.item_errors;
@@ -1029,6 +1050,12 @@ void OreDonePage::initializePage() {
             .arg(wizard_->importError().isEmpty()
                  ? tr("Unknown error") : wizard_->importError()));
     }
+}
+
+void OreDonePage::onStepFailed(int stepIndex, const QString& errorMessage) {
+    errorBanner_->setText(
+        tr("Step %1 failed: %2").arg(stepIndex + 1).arg(errorMessage));
+    errorBanner_->show();
 }
 
 }

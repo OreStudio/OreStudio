@@ -56,7 +56,8 @@ target_include_directories(${lib_target_name} PRIVATE
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include")
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include"
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt.workflow/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -70,7 +71,8 @@ target_link_libraries(${lib_target_name}
         ores.storage.lib
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.
-        ores.qt.lib)
+        ores.qt.lib
+        ores.qt.workflow.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

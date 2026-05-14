@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute applications.
  */
-class app_service {
+class ORES_COMPUTE_CORE_EXPORT app_service  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.app_service";

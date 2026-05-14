@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute batches.
  */
-class batch_service {
+class ORES_COMPUTE_CORE_EXPORT batch_service  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.batch_service";

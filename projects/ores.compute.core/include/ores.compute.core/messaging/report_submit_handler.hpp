@@ -25,6 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -40,7 +41,7 @@ namespace ores::compute::messaging {
  * change this to an async bridge where the assimilator fires
  * step_completed when the batch terminates.
  */
-class report_submit_handler {
+class ORES_COMPUTE_CORE_EXPORT report_submit_handler  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.messaging.report_submit_handler";

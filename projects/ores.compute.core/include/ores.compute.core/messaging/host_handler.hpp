@@ -32,6 +32,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -50,7 +51,7 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class host_handler {
+class ORES_COMPUTE_CORE_EXPORT host_handler  {
 public:
     host_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

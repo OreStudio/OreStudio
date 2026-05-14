@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.compute.core/repository/workunit_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute workunits.
  */
-class workunit_service {
+class ORES_COMPUTE_CORE_EXPORT workunit_service  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.workunit_service";

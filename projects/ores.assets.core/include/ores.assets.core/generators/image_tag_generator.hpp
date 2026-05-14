@@ -31,13 +31,13 @@ namespace ores::assets::generators {
 /**
  * @brief Generates a synthetic image-tag association.
  */
-domain::image_tag generate_synthetic_image_tag(
+ORES_ASSETS_CORE_EXPORT domain::image_tag generate_synthetic_image_tag(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic image-tag with specific IDs.
  */
-domain::image_tag generate_synthetic_image_tag(
+ORES_ASSETS_CORE_EXPORT domain::image_tag generate_synthetic_image_tag(
     utility::generation::generation_context& ctx,
     const boost::uuids::uuid& image_id,
     const boost::uuids::uuid& tag_id);
@@ -45,7 +45,7 @@ domain::image_tag generate_synthetic_image_tag(
 /**
  * @brief Generates N synthetic image-tag associations. May contain duplicates.
  */
-std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n,
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

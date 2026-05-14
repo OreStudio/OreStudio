@@ -30,19 +30,19 @@ namespace ores::assets::generators {
 /**
  * @brief Generates a synthetic image.
  */
-domain::image generate_synthetic_image(
+ORES_ASSETS_CORE_EXPORT domain::image generate_synthetic_image(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images. May contain duplicates.
  */
-std::vector<domain::image> generate_synthetic_images(std::size_t n,
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image> generate_synthetic_images(std::size_t n,
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images with unique keys.
  */
-std::vector<domain::image> generate_unique_synthetic_images(std::size_t n,
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image> generate_unique_synthetic_images(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

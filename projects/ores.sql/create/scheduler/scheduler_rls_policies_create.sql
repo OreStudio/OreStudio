@@ -42,11 +42,11 @@ create policy job_definitions_tenant_isolation_policy
 on ores_scheduler_job_definitions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
@@ -59,7 +59,7 @@ on ores_scheduler_job_definitions_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -73,12 +73,12 @@ on ores_scheduler_job_instances_tbl
 for all using (
     tenant_id is null
     OR tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id is null
     OR tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
@@ -93,5 +93,5 @@ as restrictive
 for select using (
     party_id is null
     OR party_id = ANY(ores_iam_visible_party_ids_fn())
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

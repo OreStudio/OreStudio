@@ -33,13 +33,13 @@ insert into ores_refdata_party_statuses_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'Active', 0, 'Active',
+    (ores_utility_system_tenant_id_fn(), 'Active', 0, 'Active',
      'The party is currently active and available for use in transactions and reporting.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of party statuses'),
-    (ores_iam_system_tenant_id_fn(), 'Inactive', 0, 'Inactive',
+    (ores_utility_system_tenant_id_fn(), 'Inactive', 0, 'Inactive',
      'The party is no longer active. Existing references are preserved but no new transactions should reference this party.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of party statuses'),
-    (ores_iam_system_tenant_id_fn(), 'Suspended', 0, 'Suspended',
+    (ores_utility_system_tenant_id_fn(), 'Suspended', 0, 'Suspended',
      'The party is temporarily suspended pending review or investigation. May be reactivated.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of party statuses')
 on conflict (tenant_id, code)

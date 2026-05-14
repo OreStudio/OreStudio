@@ -54,7 +54,7 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_iam_system_tenant_id_fn())
+    check ("id" <> ores_utility_system_tenant_id_fn())
 );
 
 -- Unique code for active records
@@ -117,7 +117,7 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

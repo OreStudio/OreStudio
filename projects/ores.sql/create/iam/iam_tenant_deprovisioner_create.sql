@@ -59,7 +59,7 @@ declare
     v_total_soft_deleted integer := 0;
     v_sql text;
 begin
-    v_system_tenant_id := ores_iam_system_tenant_id_fn();
+    v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Cannot deprovision system tenant
     if p_tenant_id = v_system_tenant_id then

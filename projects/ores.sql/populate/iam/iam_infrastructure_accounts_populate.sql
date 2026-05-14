@@ -56,13 +56,13 @@ BEGIN
     );
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.compute_wrapper_user'), 'ComputeWrapperService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.compute_wrapper_user'), 'ComputeWrapperService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.http_user'), 'HttpService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.http_user'), 'HttpService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.wt_user'), 'WtService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.wt_user'), 'WtService');
 END $$;
 
 

@@ -1406,7 +1406,7 @@
               "is_pk": false,
               "is_fk": false,
               "is_unique": false,
-              "default": "ores_iam_system_tenant_id_fn()",
+              "default": "ores_utility_system_tenant_id_fn()",
               "references": null
             },
             {

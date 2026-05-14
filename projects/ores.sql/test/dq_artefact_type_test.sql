@@ -40,7 +40,7 @@ select plan(7);
 
 -- Test 1: NULL raises 23502 exception
 select throws_ok(
-    $$select ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), NULL)$$,
+    $$select ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), NULL)$$,
     '23502',
     NULL,
     'artefact_type: NULL raises 23502 exception'
@@ -48,7 +48,7 @@ select throws_ok(
 
 -- Test 2: Empty string raises 23502 exception
 select throws_ok(
-    $$select ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), '')$$,
+    $$select ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), '')$$,
     '23502',
     NULL,
     'artefact_type: empty string raises 23502 exception'
@@ -60,28 +60,28 @@ select throws_ok(
 
 -- Test 3: Valid value 'none' returns itself
 select is(
-    ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), 'none'),
+    ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), 'none'),
     'none',
     'artefact_type: valid value none returns itself'
 );
 
 -- Test 4: Valid value 'currencies' returns itself
 select is(
-    ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), 'currencies'),
+    ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), 'currencies'),
     'currencies',
     'artefact_type: valid value currencies returns itself'
 );
 
 -- Test 5: Valid value 'countries' returns itself
 select is(
-    ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), 'countries'),
+    ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), 'countries'),
     'countries',
     'artefact_type: valid value countries returns itself'
 );
 
 -- Test 6: Valid value 'images' returns itself
 select is(
-    ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), 'images'),
+    ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), 'images'),
     'images',
     'artefact_type: valid value images returns itself'
 );
@@ -92,7 +92,7 @@ select is(
 
 -- Test 7: Invalid value raises 23503 exception
 select throws_ok(
-    $$select ores_dq_validate_artefact_type_fn(ores_iam_system_tenant_id_fn(), 'INVALID_ARTEFACT')$$,
+    $$select ores_dq_validate_artefact_type_fn(ores_utility_system_tenant_id_fn(), 'INVALID_ARTEFACT')$$,
     '23503',
     NULL,
     'artefact_type: invalid value raises 23503 exception'

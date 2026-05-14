@@ -34,7 +34,7 @@ BEGIN
 
     -- --- Cryptocurrency Catalog ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Cryptocurrency',
         'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
         'Digital Assets Team'

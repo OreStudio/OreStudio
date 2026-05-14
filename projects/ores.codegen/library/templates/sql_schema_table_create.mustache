@@ -196,7 +196,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return new;
 end;
@@ -256,7 +256,7 @@ begin
     if not exists (
         select 1 from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
 {{#entity.system_tenant_validation}}
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
 {{/entity.system_tenant_validation}}
 {{^entity.system_tenant_validation}}
         where tenant_id = p_tenant_id
@@ -268,7 +268,7 @@ begin
             select string_agg({{entity.primary_key.column}}::text, ', ' order by {{#entity.has_display_order}}display_order{{/entity.has_display_order}}{{^entity.has_display_order}}{{entity.primary_key.column}}{{/entity.has_display_order}})
             from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
 {{#entity.system_tenant_validation}}
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
 {{/entity.system_tenant_validation}}
 {{^entity.system_tenant_validation}}
             where tenant_id = p_tenant_id

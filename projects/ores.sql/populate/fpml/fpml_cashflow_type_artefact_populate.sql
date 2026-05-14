@@ -62,7 +62,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'AmendmentFee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -74,7 +74,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'AssignmentFee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -86,7 +86,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Coupon',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -98,7 +98,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'CreditEvent',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -110,7 +110,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'DividendReturn',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -122,7 +122,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'ExerciseFee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -134,7 +134,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Fee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -146,7 +146,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'IncreaseFee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -158,7 +158,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'InterestReturn',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -170,7 +170,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'PartialTerminationFee',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -182,7 +182,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Premium',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -194,7 +194,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'PriceReturn',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -206,7 +206,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'PrincipalExchange',
         1,
         'FPML_CASHFLOW_TYPE',
@@ -218,7 +218,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'TerminationFee',
         1,
         'FPML_CASHFLOW_TYPE',

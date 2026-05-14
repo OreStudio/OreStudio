@@ -14,13 +14,13 @@ BEGIN
 
     -- --- FPML Dataset Dependencies ---
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.non_iso_currency',
         'assets.country_flags',
         'visual_assets'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.business_center',
         'assets.country_flags',
         'visual_assets'

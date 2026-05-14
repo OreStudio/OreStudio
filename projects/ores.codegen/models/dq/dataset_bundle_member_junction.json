@@ -45,6 +45,16 @@
         "description": "Order in which this dataset should be displayed or processed.",
         "detail": "Lower numbers appear first. Used for controlling installation order\nand UI presentation.",
         "generator_expr": "faker::number::integer(1, 100)"
+      },
+      {
+        "name": "optional",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "default": "false",
+        "description": "Whether this dataset is optional in the bundle.",
+        "detail": "Optional datasets are skipped if not available during bundle installation.",
+        "generator_expr": "faker::datatype::boolean()"
       }
     ],
 

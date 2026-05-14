@@ -31,21 +31,21 @@ BEGIN
 
     -- --- Data Quality Slovaris Tags ---
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Solvaris Countries',
         'Countries',
         'Reference Data',
         'country',
         'Country reference data'
     );
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Solvaris Currencies',
         'Currencies',
         'Reference Data',
         'currency',
         'Currency reference data'
     );
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Solvaris Country Flag Images',
         'Country Flags',
         'Reference Data',

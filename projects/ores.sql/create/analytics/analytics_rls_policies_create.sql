@@ -34,7 +34,7 @@ create policy pricing_engine_types_tenant_isolation_policy
 on ores_analytics_pricing_engine_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system engine types visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system engine types visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

@@ -37,7 +37,7 @@ BEGIN
 
     -- --- FpML Regulatory Corporate Sector Dataset ---
 
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.regulatory_corporate_sector',
         'FpML Standards',
         'Regulatory',

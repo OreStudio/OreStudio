@@ -34,23 +34,23 @@ insert into ores_trading_fpml_event_types_tbl (
     modified_by, change_reason_code, change_commentary
 ) values
     ('New',
-     ores_iam_system_tenant_id_fn(), 0,
+     ores_utility_system_tenant_id_fn(), 0,
      'Initial booking of a new trade.',
      current_user, 'system.initial_load', 'Seed FpML event types'),
     ('Amendment',
-     ores_iam_system_tenant_id_fn(), 0,
+     ores_utility_system_tenant_id_fn(), 0,
      'Change to trade economics or terms.',
      current_user, 'system.initial_load', 'Seed FpML event types'),
     ('Novation',
-     ores_iam_system_tenant_id_fn(), 0,
+     ores_utility_system_tenant_id_fn(), 0,
      'Transfer of a trade to a new counterparty.',
      current_user, 'system.initial_load', 'Seed FpML event types'),
     ('PartialTermination',
-     ores_iam_system_tenant_id_fn(), 0,
+     ores_utility_system_tenant_id_fn(), 0,
      'Reduction of notional on an existing trade.',
      current_user, 'system.initial_load', 'Seed FpML event types'),
     ('FullTermination',
-     ores_iam_system_tenant_id_fn(), 0,
+     ores_utility_system_tenant_id_fn(), 0,
      'Full termination of a trade prior to maturity.',
      current_user, 'system.initial_load', 'Seed FpML event types')
 on conflict (tenant_id, code)

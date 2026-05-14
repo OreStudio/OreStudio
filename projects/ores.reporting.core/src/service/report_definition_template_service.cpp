@@ -60,9 +60,9 @@ report_definition_template_service::list_templates(
         " FROM ores_dq_report_definitions_artefact_tbl a"
         " JOIN ores_dq_datasets_tbl d ON d.id = a.dataset_id"
         "   AND d.valid_to = ores_utility_infinity_timestamp_fn()"
-        "   AND d.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND d.tenant_id = ores_utility_system_tenant_id_fn()"
         " JOIN ores_dq_dataset_bundle_members_tbl m ON m.dataset_code = d.code"
-        "   AND m.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND m.tenant_id = ores_utility_system_tenant_id_fn()"
         " WHERE m.bundle_code = $1"
         " ORDER BY a.display_order, a.name",
         {bundle_code},

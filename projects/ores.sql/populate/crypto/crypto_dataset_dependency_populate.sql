@@ -35,13 +35,13 @@ BEGIN
 
     -- --- Cryptocurrency Dataset Dependencies ---
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto.large',
         'assets.crypto_icons',
         'visual_assets'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto.small',
         'assets.crypto_icons',
         'visual_assets'

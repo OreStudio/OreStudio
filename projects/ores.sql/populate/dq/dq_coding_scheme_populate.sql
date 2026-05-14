@@ -44,7 +44,7 @@ BEGIN
     -- --- Data Quality Coding Schemes ---
 
     -- Party identification schemes (official - ISO standards)
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'LEI',
         'Legal Entity Identifier',
         'official',
@@ -54,7 +54,7 @@ BEGIN
         'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'BIC',
         'Business Identifier Code',
         'official',
@@ -64,7 +64,7 @@ BEGIN
         'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'MIC',
         'Market Identifier Code',
         'official',
@@ -74,7 +74,7 @@ BEGIN
         'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'NATIONAL_ID',
         'National Identifier',
         'official',
@@ -85,7 +85,7 @@ BEGIN
     );
 
     -- Party identification schemes (industry - regulatory/consortium standards)
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'CEDB',
         'CFTC Entity Directory',
         'industry',
@@ -95,7 +95,7 @@ BEGIN
         'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ACER',
         'EU Agency for Energy Regulation',
         'industry',
@@ -105,7 +105,7 @@ BEGIN
         'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'DTCC_PARTICIPANT_ID',
         'Depository Trust & Clearing Corporation Participant ID',
         'industry',
@@ -115,7 +115,7 @@ BEGIN
         'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'MPID',
         'Market Participant Identifier',
         'industry',
@@ -126,7 +126,7 @@ BEGIN
     );
 
     -- Party identification schemes (internal - proprietary)
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'NATURAL_PERSON',
         'Natural Person',
         'internal',
@@ -136,7 +136,7 @@ BEGIN
         'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
     );
 
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'INTERNAL',
         'Internal',
         'internal',
@@ -147,7 +147,7 @@ BEGIN
     );
 
     -- General schemes (internal - placeholder)
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'NONE',
         'No Coding Scheme',
         'internal',
@@ -158,7 +158,7 @@ BEGIN
     );
 
     -- ORE asset class coding scheme
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE_ASSET_CLASS',
         'ORE Asset Class',
         'industry',

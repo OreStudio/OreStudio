@@ -40,7 +40,7 @@ select plan(6);
 
 -- Test 1: NULL raises 23502 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), NULL)$$,
+    $$select ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), NULL)$$,
     '23502',
     NULL,
     'tenant_type: NULL raises 23502 exception'
@@ -48,7 +48,7 @@ select throws_ok(
 
 -- Test 2: Empty string raises 23502 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), '')$$,
+    $$select ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), '')$$,
     '23502',
     NULL,
     'tenant_type: empty string raises 23502 exception'
@@ -60,21 +60,21 @@ select throws_ok(
 
 -- Test 3: Valid value 'system' returns itself
 select is(
-    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'system'),
+    ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), 'system'),
     'system',
     'tenant_type: valid value system returns itself'
 );
 
 -- Test 4: Valid value 'production' returns itself
 select is(
-    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'production'),
+    ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), 'production'),
     'production',
     'tenant_type: valid value production returns itself'
 );
 
 -- Test 5: Valid value 'evaluation' returns itself
 select is(
-    ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'evaluation'),
+    ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), 'evaluation'),
     'evaluation',
     'tenant_type: valid value evaluation returns itself'
 );
@@ -85,7 +85,7 @@ select is(
 
 -- Test 6: Invalid value raises 23503 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_type_fn(ores_iam_system_tenant_id_fn(), 'INVALID_TYPE')$$,
+    $$select ores_iam_validate_tenant_type_fn(ores_utility_system_tenant_id_fn(), 'INVALID_TYPE')$$,
     '23503',
     NULL,
     'tenant_type: invalid value raises 23503 exception'

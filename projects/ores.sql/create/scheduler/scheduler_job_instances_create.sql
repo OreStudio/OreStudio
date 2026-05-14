@@ -85,5 +85,5 @@ create policy job_instances_read_policy
 on ores_scheduler_job_instances_tbl for select using (
     tenant_id is null  -- system jobs visible to all
     or tenant_id = ores_iam_current_tenant_id_fn()
-    or ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    or ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );

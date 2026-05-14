@@ -34,31 +34,31 @@ BEGIN
 
     -- --- Dataset Bundles ---
 
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'solvaris',
         'Solvaris',
         'Synthetic reference data for development and testing - an isolated fantasy world with its own countries, currencies, and reference data.'
     );
 
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'base',
         'Base System',
         'Industry-standard reference data (ISO + FpML) for production use. Includes country codes, currency codes, and financial market standards.'
     );
 
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto',
         'Crypto',
         'Base System plus cryptocurrency reference data. Extends the production dataset with cryptocurrency symbols and icons.'
     );
 
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'organisation',
         'Organisation',
         'Sample organisational hierarchy data for development and testing. Includes business units, portfolios, and trading books.'
     );
 
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore_analytics',
         'ORE Analytics',
         'Default ORE analytics report definitions. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) for use during party provisioning.'

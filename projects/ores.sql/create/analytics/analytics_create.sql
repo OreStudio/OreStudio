@@ -28,6 +28,7 @@
 -- - ores.trading (for trade_types reference in pricing_engine_types)
 
 -- Reference data (pricing engine type taxonomy)
+\ir ./analytics_pricing_engine_types_functions_create.sql
 \ir ./analytics_pricing_engine_types_create.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_create.sql
 

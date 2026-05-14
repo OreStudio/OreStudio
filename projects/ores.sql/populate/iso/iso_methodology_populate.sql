@@ -33,7 +33,7 @@ BEGIN
 
     -- --- ISO Standards Methodologies ---
 
-    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Wikipedia ISO 3166 Extraction',
         'Data extracted from Wikipedia page listing ISO 3166 country codes',
         'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
@@ -42,7 +42,7 @@ BEGIN
     See methodology documentation for detailed steps.'
     );
 
-    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Wikipedia ISO 4217 Extraction',
         'Data extracted from Wikipedia page listing ISO 4217 currency codes',
         'https://en.wikipedia.org/wiki/ISO_4217',

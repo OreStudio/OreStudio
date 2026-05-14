@@ -37,7 +37,7 @@ BEGIN
 
     -- --- FpML Hkma Rewrite Regulatory Corporate Sector Dataset ---
 
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.hkma_rewrite_regulatory_corporate_sector',
         'FpML Standards',
         'Regulatory',

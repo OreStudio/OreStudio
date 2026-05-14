@@ -59,7 +59,7 @@ begin
         from ores_dq_lei_entities_artefact_tbl e
         where e.tenant_id in (
                   ores_iam_current_tenant_id_fn(),
-                  ores_iam_system_tenant_id_fn()
+                  ores_utility_system_tenant_id_fn()
               )
           and e.entity_entity_status = 'ACTIVE'
           and not exists (
@@ -67,7 +67,7 @@ begin
               from ores_dq_lei_relationships_artefact_tbl r
               where r.tenant_id in (
                         ores_iam_current_tenant_id_fn(),
-                        ores_iam_system_tenant_id_fn()
+                        ores_utility_system_tenant_id_fn()
                     )
                 and r.relationship_start_node_node_id = e.lei
                 and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
@@ -118,7 +118,7 @@ begin
         from ores_dq_lei_entities_artefact_tbl e
         where e.tenant_id in (
                   ores_iam_current_tenant_id_fn(),
-                  ores_iam_system_tenant_id_fn()
+                  ores_utility_system_tenant_id_fn()
               )
           and e.entity_legal_address_country = p_country
           and e.entity_entity_status = 'ACTIVE'
@@ -127,7 +127,7 @@ begin
               from ores_dq_lei_relationships_artefact_tbl r
               where r.tenant_id in (
                         ores_iam_current_tenant_id_fn(),
-                        ores_iam_system_tenant_id_fn()
+                        ores_utility_system_tenant_id_fn()
                     )
                 and r.relationship_start_node_node_id = e.lei
                 and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'

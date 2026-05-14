@@ -35,7 +35,7 @@ BEGIN
 
     -- --- Cryptocurrency Dataset Tags ---
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Cryptocurrency Icon Images',
         'Cryptocurrencies',
         'Reference Data',
@@ -43,7 +43,7 @@ BEGIN
         'Cryptocurrency icon images'
     );
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Cryptocurrencies Large',
         'Cryptocurrencies',
         'Reference Data',
@@ -51,7 +51,7 @@ BEGIN
         'Cryptocurrency reference data (~12K coins)'
     );
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Cryptocurrencies Small',
         'Cryptocurrencies',
         'Reference Data',

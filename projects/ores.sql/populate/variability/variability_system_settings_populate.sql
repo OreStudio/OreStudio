@@ -31,35 +31,35 @@ BEGIN
     -- -----------------------------------------------------------------------------
     -- Seed system settings with their default values (insert-if-absent)
     -- -----------------------------------------------------------------------------
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.bootstrap_mode',
         'true',
         'boolean',
         'Indicates whether the system is in bootstrap mode (waiting for initial admin account).'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.user_signups',
         'false',
         'boolean',
         'Controls whether user self-registration is allowed.'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.signup_requires_authorization',
         'false',
         'boolean',
         'Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.disable_password_validation',
         'false',
         'boolean',
         'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.synthetic_data_generation',
         'false',
         'boolean',
@@ -69,28 +69,28 @@ BEGIN
     -- -----------------------------------------------------------------------------
     -- IAM token lifetime settings
     -- -----------------------------------------------------------------------------
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iam.token.access_lifetime_seconds',
         '1800',
         'integer',
         'Lifetime in seconds of every issued JWT access token. Default is 1800 (30 minutes).'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iam.token.party_selection_lifetime_seconds',
         '300',
         'integer',
         'Lifetime in seconds of the short-lived party-selection step token. Default is 300 (5 minutes).'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iam.token.max_session_seconds',
         '28800',
         'integer',
         'Hard ceiling in seconds after which a session must re-authenticate regardless of refresh activity. Default is 28800 (8 hours).'
     );
 
-    PERFORM ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iam.token.refresh_threshold_pct',
         '80',
         'integer',

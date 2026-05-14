@@ -44,7 +44,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     ),
 {{/domain_entity.has_tenant_id}}
     check ("valid_from" < "valid_to"){{#domain_entity.primary_key.is_uuid}},
-    check ("{{domain_entity.primary_key.column}}" <> ores_iam_system_tenant_id_fn()){{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
+    check ("{{domain_entity.primary_key.column}}" <> ores_utility_system_tenant_id_fn()){{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
     check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}
 );
 {{#domain_entity.natural_keys}}
@@ -132,7 +132,7 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
 {{#domain_entity.has_tenant_id}}
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

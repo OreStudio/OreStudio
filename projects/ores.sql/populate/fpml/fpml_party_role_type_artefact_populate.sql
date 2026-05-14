@@ -62,7 +62,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'AllPositions',
         1,
         'FPML_PARTY_ROLE_TYPE',
@@ -74,7 +74,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'SomePositions',
         1,
         'FPML_PARTY_ROLE_TYPE',

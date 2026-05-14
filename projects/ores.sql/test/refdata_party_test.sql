@@ -49,7 +49,7 @@ insert into ores_refdata_parties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'a0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'TBH', 'Bank',
+    ores_utility_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'TBH', 'Bank',
     NULL, NULL, 'Active',
     current_user, current_user, 'system.test', 'Test party insert'
 );
@@ -91,7 +91,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000090'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Bad Category Corp', 'BCC', 'INVALID_CATEGORY', 'Bank',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Category Corp', 'BCC', 'INVALID_CATEGORY', 'Bank',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -110,7 +110,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000099'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Bad Type Corp', 'BTC', 'INVALID_TYPE',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Type Corp', 'BTC', 'INVALID_TYPE',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -129,7 +129,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000098'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Bad Status Corp', 'BSC', 'Bank', 'INVALID_STATUS',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Status Corp', 'BSC', 'Bank', 'INVALID_STATUS',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -148,7 +148,7 @@ insert into ores_refdata_parties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'a0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0, 'Test Bank UK', 'TBUK', 'Bank',
+    ores_utility_system_tenant_id_fn(), 0, 'Test Bank UK', 'TBUK', 'Bank',
     'a0000000-0000-0000-0000-000000000001'::uuid,
     current_user, current_user, 'system.test', 'Test child party'
 );
@@ -169,7 +169,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000097'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Orphan Corp', 'OC', 'Bank',
+        ores_utility_system_tenant_id_fn(), 0, 'Orphan Corp', 'OC', 'Bank',
         'deadbeef-0000-0000-0000-000000000000'::uuid,
         current_user, current_user, 'system.test', 'Test'
     )$$,
@@ -190,7 +190,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000096'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Second Root Corp', 'SRC', 'Bank',
+        ores_utility_system_tenant_id_fn(), 0, 'Second Root Corp', 'SRC', 'Bank',
         NULL,
         current_user, current_user, 'system.test', 'Test'
     )$$,
@@ -211,7 +211,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000095'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'UNIQUE', 'Bank',
+        ores_utility_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'UNIQUE', 'Bank',
         'a0000000-0000-0000-0000-000000000001'::uuid,
         current_user, current_user, 'system.test', 'Test'
     )$$,

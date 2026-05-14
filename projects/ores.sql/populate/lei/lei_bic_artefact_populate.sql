@@ -61,7 +61,7 @@ begin
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         v.lei,
         0,
         v.bic

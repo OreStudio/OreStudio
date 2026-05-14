@@ -32,19 +32,19 @@ insert into ores_trading_business_day_convention_types_tbl (
     code, tenant_id, version, description,
     modified_by, change_reason_code, change_commentary
 ) values
-    ('Following',         ores_iam_system_tenant_id_fn(), 0, 'Following: adjust to next good business day',
+    ('Following',         ores_utility_system_tenant_id_fn(), 0, 'Following: adjust to next good business day',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('ModifiedFollowing', ores_iam_system_tenant_id_fn(), 0, 'Modified Following: next good day unless it crosses month end',
+    ('ModifiedFollowing', ores_utility_system_tenant_id_fn(), 0, 'Modified Following: next good day unless it crosses month end',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('Preceding',         ores_iam_system_tenant_id_fn(), 0, 'Preceding: adjust to previous good business day',
+    ('Preceding',         ores_utility_system_tenant_id_fn(), 0, 'Preceding: adjust to previous good business day',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('ModifiedPreceding', ores_iam_system_tenant_id_fn(), 0, 'Modified Preceding: previous good day unless it crosses month start',
+    ('ModifiedPreceding', ores_utility_system_tenant_id_fn(), 0, 'Modified Preceding: previous good day unless it crosses month start',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('Unadjusted',        ores_iam_system_tenant_id_fn(), 0, 'Unadjusted: no business day adjustment applied',
+    ('Unadjusted',        ores_utility_system_tenant_id_fn(), 0, 'Unadjusted: no business day adjustment applied',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('HalfMonthModifiedFollowing', ores_iam_system_tenant_id_fn(), 0, 'Half-Month Modified Following',
+    ('HalfMonthModifiedFollowing', ores_utility_system_tenant_id_fn(), 0, 'Half-Month Modified Following',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types'),
-    ('Nearest',           ores_iam_system_tenant_id_fn(), 0, 'Nearest: adjust to nearest good business day',
+    ('Nearest',           ores_utility_system_tenant_id_fn(), 0, 'Nearest: adjust to nearest good business day',
      'ores_trading_service', 'system.initial_load', 'Seed business day convention types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

@@ -22,15 +22,6 @@
 -- Tenant Validation and Helper Functions
 -- =============================================================================
 
--- System tenant ID constant (max UUID per RFC 9562 sentinel value)
--- Using max UUID instead of nil UUID prevents confusion with uninitialized UUIDs
-create or replace function ores_iam_system_tenant_id_fn()
-returns uuid as $$
-begin
-    return 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid;
-end;
-$$ language plpgsql immutable;
-
 -- Get current tenant ID from session variable
 create or replace function ores_iam_current_tenant_id_fn()
 returns uuid as $$
@@ -57,7 +48,7 @@ declare
 begin
     -- Use provided tenant_id or fall back to session tenant
     -- Treat system tenant ID (nil UUID) as placeholder meaning "use session tenant"
-    if p_tenant_id is not null and p_tenant_id != ores_iam_system_tenant_id_fn() then
+    if p_tenant_id is not null and p_tenant_id != ores_utility_system_tenant_id_fn() then
         v_tenant_id := p_tenant_id;
     else
         v_tenant_id := ores_iam_current_tenant_id_fn();
@@ -65,8 +56,8 @@ begin
 
     -- If still null/system tenant after fallback, accept it for reference data
     -- This allows population scripts running with system tenant session
-    if v_tenant_id is null or v_tenant_id = ores_iam_system_tenant_id_fn() then
-        return ores_iam_system_tenant_id_fn();
+    if v_tenant_id is null or v_tenant_id = ores_utility_system_tenant_id_fn() then
+        return ores_utility_system_tenant_id_fn();
     end if;
 
     -- Allow during initial bootstrap when tenants table might be empty
@@ -147,7 +138,7 @@ declare
     v_name text;
 begin
     -- Return 'System' for the system tenant
-    if p_tenant_id = ores_iam_system_tenant_id_fn() then
+    if p_tenant_id = ores_utility_system_tenant_id_fn() then
         return 'System';
     end if;
 
@@ -380,7 +371,7 @@ begin
     -- Fall back to system tenant if no session tenant is set.
     v_tenant_id := coalesce(
         ores_iam_current_tenant_id_fn(),
-        ores_iam_system_tenant_id_fn()
+        ores_utility_system_tenant_id_fn()
     );
 
     -- During bootstrap for this tenant (no user accounts exist yet),

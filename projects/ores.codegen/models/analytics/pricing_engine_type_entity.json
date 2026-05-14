@@ -33,6 +33,10 @@
       {
         "column": "change_reason_code",
         "validation_function": "ores_dq_validate_change_reason_fn"
+      },
+      {
+        "column": "instrument_type_code",
+        "validation_function": "ores_analytics_validate_pricing_engine_instrument_type_fn"
       }
     ],
     "indexes": []

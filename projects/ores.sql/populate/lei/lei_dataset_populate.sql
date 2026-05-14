@@ -34,7 +34,7 @@ BEGIN
     -- --- GLEIF LEI Datasets ---
 
     -- GLEIF LEI Entities (Small)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_entities.small',
         'GLEIF Standards',
         'Parties',
@@ -54,7 +54,7 @@ BEGIN
     );
 
     -- GLEIF LEI Entities (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_entities.large',
         'GLEIF Standards',
         'Parties',
@@ -74,7 +74,7 @@ BEGIN
     );
 
     -- GLEIF LEI Parties (Small)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_parties.small',
         'GLEIF Standards',
         'Parties',
@@ -94,7 +94,7 @@ BEGIN
     );
 
     -- GLEIF LEI Parties (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_parties.large',
         'GLEIF Standards',
         'Parties',
@@ -114,7 +114,7 @@ BEGIN
     );
 
     -- GLEIF LEI BIC Mappings
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_bic',
         'GLEIF Standards',
         'Parties',
@@ -134,7 +134,7 @@ BEGIN
     );
 
     -- GLEIF LEI Counterparties (Small)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_counterparties.small',
         'GLEIF Standards',
         'Parties',
@@ -154,7 +154,7 @@ BEGIN
     );
 
     -- GLEIF LEI Counterparties (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_counterparties.large',
         'GLEIF Standards',
         'Parties',
@@ -174,7 +174,7 @@ BEGIN
     );
 
     -- GLEIF LEI Relationships (Small)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_relationships.small',
         'GLEIF Standards',
         'Parties',
@@ -194,7 +194,7 @@ BEGIN
     );
 
     -- GLEIF LEI Relationships (Large)
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'gleif.lei_relationships.large',
         'GLEIF Standards',
         'Parties',

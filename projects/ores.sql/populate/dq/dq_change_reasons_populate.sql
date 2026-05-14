@@ -54,17 +54,17 @@ BEGIN
 
     -- --- Change Reason Categories ---
 
-    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system',
         'System-generated reasons for automatic operations (not user-selectable)'
     );
 
-    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common',
         'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
     );
 
-    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade',
         'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
     );
@@ -77,7 +77,7 @@ BEGIN
     -- --- Change Reasons: System ---
 
     -- System reasons (auto-assigned, not user-selectable)
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.initial_load',
         'Initial system bootstrap or migration',
         'system',
@@ -88,7 +88,7 @@ BEGIN
         0       -- display order
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.new_record',
         'New record created during normal operations',
         'system',
@@ -99,7 +99,7 @@ BEGIN
         10      -- display order
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.external_data_import',
         'External data import (requires data lineage)',
         'system',
@@ -110,7 +110,7 @@ BEGIN
         20      -- display order
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.test',
         'Test data for automated testing',
         'system',
@@ -121,7 +121,7 @@ BEGIN
         30      -- display order
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.import',
         'Data imported via CLI import command',
         'system',
@@ -132,7 +132,7 @@ BEGIN
         40      -- display order
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.tenant_terminated',
         'Tenant marked as terminated',
         'system',
@@ -150,7 +150,7 @@ BEGIN
 
     -- --- Change Reasons: Common (BCBS 239 / FRTB) ---
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.non_material_update',
         'Non-material update (Touch)',
         'common',
@@ -161,7 +161,7 @@ BEGIN
         10
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.rectification',
         'User/Booking Error',
         'common',
@@ -172,7 +172,7 @@ BEGIN
         20
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.duplicate',
         'Duplicate Record',
         'common',
@@ -183,7 +183,7 @@ BEGIN
         30
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.stale_data',
         'Data not updated within required liquidity horizon',
         'common',
@@ -194,7 +194,7 @@ BEGIN
         40
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.outlier_correction',
         'Manual override after plausibility check failure',
         'common',
@@ -205,7 +205,7 @@ BEGIN
         50
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.feed_failure',
         'Upstream vendor/API data issue',
         'common',
@@ -216,7 +216,7 @@ BEGIN
         60
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.mapping_error',
         'Incorrect ID translation (e.g., ISIN to FIGI)',
         'common',
@@ -227,7 +227,7 @@ BEGIN
         70
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.judgmental_override',
         'Expert judgment when market prices unavailable',
         'common',
@@ -238,7 +238,7 @@ BEGIN
         80
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.regulatory',
         'Mandatory compliance adjustment',
         'common',
@@ -249,7 +249,7 @@ BEGIN
         90
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'common.other',
         'Exceptional (requires audit note)',
         'common',
@@ -267,7 +267,7 @@ BEGIN
 
     -- --- Change Reasons: Trade (FINRA / MiFID II) ---
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.fat_finger',
         'Erroneous execution (wrong quantity/price)',
         'trade',
@@ -278,7 +278,7 @@ BEGIN
         10
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.system_malfunction',
         'Technical glitch or algorithm issue',
         'trade',
@@ -289,7 +289,7 @@ BEGIN
         20
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.corporate_action',
         'Stock split, dividend, or merger adjustment',
         'trade',
@@ -300,7 +300,7 @@ BEGIN
         30
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.allocation_swap',
         'House to client sub-account reallocation',
         'trade',
@@ -311,7 +311,7 @@ BEGIN
         40
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.re_booking',
         'Wrong legal entity correction',
         'trade',
@@ -322,7 +322,7 @@ BEGIN
         50
     );
 
-    PERFORM ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'trade.other',
         'Exceptional (requires audit note)',
         'trade',

@@ -39,22 +39,22 @@ BEGIN
 
     -- --- Badge Severities ---
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'secondary', 'Secondary', 'Muted or neutral state. No special attention required.', 1);
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'info', 'Info', 'Informational state. General context, no action needed.', 2);
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'success', 'Success', 'Positive or active state. Everything is in order.', 3);
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'warning', 'Warning', 'Caution state. Attention may be required.', 4);
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'danger', 'Danger', 'Error or critical state. Immediate attention required.', 5);
 
-    PERFORM ores_dq_badge_severities_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_severities_upsert_fn(ores_utility_system_tenant_id_fn(),
         'primary', 'Primary', 'Highlighted or primary action state.', 6);
 
     -- =============================================================================
@@ -63,59 +63,59 @@ BEGIN
 
     -- --- Code Domains ---
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Party Status',
         'Lifecycle status codes for party and counterparty records.', 1);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Book Status',
         'Lifecycle status codes for book records.', 2);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Portfolio Status',
         'Lifecycle status codes for portfolio records.', 3);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_type', 'Portfolio Type',
         'Type codes for portfolio records (Virtual, Physical).', 4);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_type', 'Book Type',
         'Type codes for book records (Trading, Banking).', 5);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_status', 'Login Status',
         'Login activity status for user accounts (Never, Old, Recent, Online).', 6);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_locked', 'Account Locked',
         'Account lock status (Locked, Unlocked).', 7);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_state', 'Compute Task State',
         'State codes for compute task records.', 8);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_outcome', 'Compute Task Outcome',
         'Outcome codes for completed compute tasks.', 9);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_concurrency_policy', 'Report Concurrency Policy',
         'Concurrency policy codes for report definitions (Skip, Queue, Fail).', 10);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Report FSM State',
         'FSM lifecycle state codes for report definitions.', 11);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_origin', 'DQ Origin',
         'Data quality origin dimension codes.', 12);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_nature', 'DQ Nature',
         'Data quality nature dimension codes.', 13);
 
-    PERFORM ores_dq_code_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_treatment', 'DQ Treatment',
         'Data quality treatment dimension codes.', 14);
 
@@ -128,107 +128,107 @@ BEGIN
     -- --- Badge Definitions ---
 
     -- Status: Active
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'active', 'Active', 'Record is active and operational.',
         '#22c55e', '#ffffff', 'success', 'badge bg-success', 1);
 
     -- Status: Inactive / Closed
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'inactive', 'Inactive', 'Record is inactive or not operational.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 2);
 
     -- Status: Frozen
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'frozen', 'Frozen', 'Record is frozen; no changes permitted.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 3);
 
     -- Status: Pending
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'pending', 'Pending', 'Record is awaiting processing or approval.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 4);
 
     -- Entity type: Virtual / Portfolio
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'type_virtual', 'Virtual', 'Entity is a virtual construct.',
         '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 5);
 
     -- Entity type: Physical / Trading
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'type_physical', 'Physical', 'Entity is a physical construct.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 6);
 
     -- Login status: Online
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_online', 'Online', 'User is currently logged in.',
         '#22c55e', '#ffffff', 'success', 'badge bg-success', 7);
 
     -- Login status: Recent
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_recent', 'Recent', 'User logged in recently.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 8);
 
     -- Login status: Old
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_old', 'Old', 'User has not logged in for a long time.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 9);
 
     -- Login status: Never
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_never', 'Never', 'User has never logged in.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 10);
 
     -- Account: Locked
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_locked', 'Locked', 'Account is locked and cannot be used.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 11);
 
     -- Account: Unlocked
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_unlocked', 'Unlocked', 'Account is unlocked and accessible.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 12);
 
     -- Compute task outcome: Success
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'outcome_success', 'Success', 'Task completed successfully.',
         '#22c55e', '#ffffff', 'success', 'badge bg-success', 13);
 
     -- Compute task outcome: Failed
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'outcome_failed', 'Failed', 'Task failed to complete.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 14);
 
     -- Compute task outcome: No Reply
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'outcome_no_reply', 'No Reply', 'Task received no reply from worker.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 15);
 
     -- Compute task state: Running
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'state_running', 'Running', 'Task is currently executing.',
         '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 16);
 
     -- Compute task state: Done / Inactive
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'state_done', 'Done', 'Task has completed.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 17);
 
     -- Concurrency policy: Skip
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'policy_skip', 'Skip', 'Skip overlapping executions.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 18);
 
     -- Concurrency policy: Queue
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'policy_queue', 'Queue', 'Queue overlapping executions.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 19);
 
     -- Concurrency policy: Fail
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'policy_fail', 'Fail', 'Fail on overlapping executions.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 20);
 
     -- Report FSM: Draft
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fsm_draft', 'Draft', 'Report definition is in draft state.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 21);
 
@@ -236,52 +236,52 @@ BEGIN
     -- (mapped via badge_mappings to existing 'active' badge)
 
     -- Report FSM: Suspended
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fsm_suspended', 'Suspended', 'Report definition is suspended.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 22);
 
     -- Report FSM: Archived
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fsm_archived', 'Archived', 'Report definition has been archived.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 23);
 
     -- DQ Origin: Primary
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'origin_primary', 'Primary', 'Data originates from a primary source.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 24);
 
     -- DQ Origin: Derived
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'origin_derived', 'Derived', 'Data is derived from another source.',
         '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 25);
 
     -- DQ Nature: Actual
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'nature_actual', 'Actual', 'Real-world data.',
         '#22c55e', '#ffffff', 'success', 'badge bg-success', 26);
 
     -- DQ Nature: Estimated
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'nature_estimated', 'Estimated', 'Data is an estimation.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 27);
 
     -- DQ Nature: Simulated
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'nature_simulated', 'Simulated', 'Data is simulated.',
         '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 28);
 
     -- DQ Treatment: Raw
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'treatment_raw', 'Raw', 'Data has not been processed.',
         '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 29);
 
     -- DQ Treatment: Cleaned
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'treatment_cleaned', 'Cleaned', 'Data has been cleaned.',
         '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 30);
 
     -- DQ Treatment: Enriched
-    PERFORM ores_dq_badge_definitions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'treatment_enriched', 'Enriched', 'Data has been enriched with additional context.',
         '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 31);
 
@@ -292,127 +292,127 @@ BEGIN
     -- --- Badge Mappings ---
 
     -- party_status
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Active', 'active');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Inactive', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Closed', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Frozen', 'frozen');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_status', 'Pending', 'pending');
 
     -- book_status
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Active', 'active');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Inactive', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Closed', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Frozen', 'frozen');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_status', 'Pending', 'pending');
 
     -- portfolio_status
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Active', 'active');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Inactive', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Closed', 'inactive');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Frozen', 'frozen');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_status', 'Pending', 'pending');
 
     -- portfolio_type
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_type', 'Virtual', 'type_virtual');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'portfolio_type', 'Physical', 'type_physical');
 
     -- book_type
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_type', 'Trading', 'type_virtual');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'book_type', 'Banking', 'type_physical');
 
     -- login_status
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_status', 'Online', 'login_online');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_status', 'Recent', 'login_recent');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_status', 'Old', 'login_old');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'login_status', 'Never', 'login_never');
 
     -- account_locked
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_locked', 'Locked', 'account_locked');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_locked', 'Unlocked', 'account_unlocked');
 
     -- compute_task_outcome
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_outcome', 'Success', 'outcome_success');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_outcome', 'Failed', 'outcome_failed');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_outcome', 'No Reply', 'outcome_no_reply');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_outcome', 'Pending', 'pending');
 
     -- compute_task_state
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_state', 'Running', 'state_running');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_state', 'Unsent', 'pending');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_state', 'Done', 'state_done');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'compute_task_state', 'Inactive', 'inactive');
 
     -- report_concurrency_policy
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_concurrency_policy', 'Skip', 'policy_skip');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_concurrency_policy', 'Queue', 'policy_queue');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_concurrency_policy', 'Fail', 'policy_fail');
 
     -- report_fsm_state
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Active', 'active');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Draft', 'fsm_draft');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Suspended', 'fsm_suspended');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Archived', 'fsm_archived');
 
     -- dq_origin
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_origin', 'Primary', 'origin_primary');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_origin', 'Derived', 'origin_derived');
 
     -- dq_nature
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_nature', 'Actual', 'nature_actual');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_nature', 'Estimated', 'nature_estimated');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_nature', 'Simulated', 'nature_simulated');
 
     -- dq_treatment
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_treatment', 'Raw', 'treatment_raw');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_treatment', 'Cleaned', 'treatment_cleaned');
-    PERFORM ores_dq_badge_mappings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_treatment', 'Enriched', 'treatment_enriched');
 
     -- =============================================================================

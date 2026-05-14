@@ -99,7 +99,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return new;
 end;
@@ -144,14 +144,14 @@ begin
     -- Validate against reference data
     if not exists (
         select 1 from ores_trading_trade_id_types_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id_type: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by code)
             from ores_trading_trade_id_types_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

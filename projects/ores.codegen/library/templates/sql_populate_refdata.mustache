@@ -46,7 +46,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         '{{code}}',
         1,
         '{{coding_scheme_code}}',

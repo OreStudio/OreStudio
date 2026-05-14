@@ -33,7 +33,7 @@ BEGIN
 
     -- --- Test Data Methodology ---
 
-    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'OreStudio Test Data Generation',
         'Manufactured test data generated for exercising reference data entities.',
         null,

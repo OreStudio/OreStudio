@@ -31,16 +31,16 @@ insert into ores_iam_tenant_types_tbl (
     tenant_id, type, version, name, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
-    (ores_iam_system_tenant_id_fn(), 'system', 0, 'System',
+    (ores_utility_system_tenant_id_fn(), 'system', 0, 'System',
      'Platform administration and shared governance data. One per deployment.', 0,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
-    (ores_iam_system_tenant_id_fn(), 'production', 0, 'Production',
+    (ores_utility_system_tenant_id_fn(), 'production', 0, 'Production',
      'Real customer organisation with strict operational controls (four-eyes, KYC).', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
-    (ores_iam_system_tenant_id_fn(), 'evaluation', 0, 'Evaluation',
+    (ores_utility_system_tenant_id_fn(), 'evaluation', 0, 'Evaluation',
      'Realistic environment for demos, QA, and evaluation. Relaxed controls.', 20,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types'),
-    (ores_iam_system_tenant_id_fn(), 'automation', 0, 'Automation',
+    (ores_utility_system_tenant_id_fn(), 'automation', 0, 'Automation',
      'Automated test infrastructure for unit, integration, and load testing.', 30,
      current_user, current_user, 'system.initial_load', 'Initial population of tenant types')
 on conflict (tenant_id, type)

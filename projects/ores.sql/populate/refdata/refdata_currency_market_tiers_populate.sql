@@ -35,19 +35,19 @@ insert into ores_refdata_currency_market_tiers_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'g10', 0, 'G10 / Majors',
+    (ores_utility_system_tenant_id_fn(), 'g10', 0, 'G10 / Majors',
      'Major currencies with deep liquidity and tight spreads',
      1, current_user, current_user, 'system.initial_load', 'Initial population of currency market tiers'),
-    (ores_iam_system_tenant_id_fn(), 'emerging', 0, 'Emerging',
+    (ores_utility_system_tenant_id_fn(), 'emerging', 0, 'Emerging',
      'Currencies from developing economies with moderate liquidity',
      2, current_user, current_user, 'system.initial_load', 'Initial population of currency market tiers'),
-    (ores_iam_system_tenant_id_fn(), 'exotic', 0, 'Exotic',
+    (ores_utility_system_tenant_id_fn(), 'exotic', 0, 'Exotic',
      'Thinly traded currencies with wide spreads',
      3, current_user, current_user, 'system.initial_load', 'Initial population of currency market tiers'),
-    (ores_iam_system_tenant_id_fn(), 'frontier', 0, 'Frontier',
+    (ores_utility_system_tenant_id_fn(), 'frontier', 0, 'Frontier',
      'Currencies from frontier markets with limited convertibility',
      4, current_user, current_user, 'system.initial_load', 'Initial population of currency market tiers'),
-    (ores_iam_system_tenant_id_fn(), 'historical', 0, 'Historical',
+    (ores_utility_system_tenant_id_fn(), 'historical', 0, 'Historical',
      'Currencies no longer in active use',
      5, current_user, current_user, 'system.initial_load', 'Initial population of currency market tiers')
 on conflict (tenant_id, code)

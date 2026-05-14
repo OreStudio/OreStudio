@@ -33,7 +33,7 @@ BEGIN
 
     -- --- ISO Standards Dataset Tags ---
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ISO Coding Schemes',
         'General',
         'Reference Data',
@@ -41,7 +41,7 @@ BEGIN
         'ISO coding scheme definitions'
     );
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ISO 3166 Country Codes',
         'Countries',
         'Reference Data',
@@ -49,7 +49,7 @@ BEGIN
         'Country reference data'
     );
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ISO 4217 Currency Codes',
         'Currencies',
         'Reference Data',

@@ -37,11 +37,11 @@ create policy workflow_instances_tenant_isolation_policy
 on ores_workflow_workflow_instances_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ alter table ores_workflow_workflow_steps_tbl enable row level security;
 create policy workflow_steps_tenant_isolation_policy
 on ores_workflow_workflow_steps_tbl
 for all using (
-    ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
     OR exists (
         select 1
         from ores_workflow_workflow_instances_tbl i

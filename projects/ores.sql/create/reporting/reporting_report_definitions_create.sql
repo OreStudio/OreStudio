@@ -128,7 +128,7 @@ begin
     if new.fsm_state_id is not null then
         if not exists (
             select 1 from ores_dq_fsm_states_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and id = new.fsm_state_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

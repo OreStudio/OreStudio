@@ -50,7 +50,7 @@ declare
     v_state_failed     uuid;
     v_state_cancelled  uuid;
     v_state_skipped    uuid;
-    v_sys_tenant       uuid := ores_iam_system_tenant_id_fn();
+    v_sys_tenant       uuid := ores_utility_system_tenant_id_fn();
 begin
     -- -------------------------------------------------------------------------
     -- Machine

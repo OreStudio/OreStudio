@@ -43,7 +43,7 @@ insert into ores_refdata_books_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'VIEW-TEST-BOOK', 'Test book for view tests',
     'f0000000-0000-0000-0000-000000000010'::uuid,
     current_user, current_user, 'system.test', 'Test book'
@@ -54,7 +54,7 @@ insert into ores_refdata_portfolios_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000010'::uuid,
     'VIEW-TEST-PORTFOLIO', 'Test portfolio for view tests',
     current_user, current_user, 'system.test', 'Test portfolio'
@@ -66,7 +66,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f2000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'Alpha Bank', 'ALPHA', 'Corporate', 'GBLO', 'Active',
     current_user, current_user, 'system.test', 'Counterparty A'
 );
@@ -77,7 +77,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f2000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'Beta Bank', 'BETA', 'Corporate', 'GBLO', 'Active',
     current_user, current_user, 'system.test', 'Counterparty B'
 );
@@ -91,7 +91,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'f1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-VIEW-001', 'new_booking', s.id,
@@ -111,7 +111,7 @@ insert into ores_trading_party_roles_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f3000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f1000000-0000-0000-0000-000000000001'::uuid,
     'f2000000-0000-0000-0000-000000000001'::uuid,
     'Counterparty',
@@ -125,7 +125,7 @@ insert into ores_trading_party_roles_tbl (
 select is(
     (select count(*)::integer from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     1,
     'view: returns one row for booked trade'
 );
@@ -137,7 +137,7 @@ select is(
 select is(
     (select counterparty from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     'Alpha Bank',
     'view: counterparty resolved to Alpha Bank'
 );
@@ -149,7 +149,7 @@ select is(
 select is(
     (select trade_type || '|' || netting_set_id from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     'Swap|NS-VIEW-001',
     'view: trade_type and netting_set_id correct'
 );
@@ -167,7 +167,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'f1000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-VIEW-002', 'new_booking', s.id,
@@ -183,7 +183,7 @@ where m.name = 'trade_status'
 select is(
     (select count(*)::integer from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000002'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     0,
     'view: trade without Counterparty role excluded'
 );
@@ -201,7 +201,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'f1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-VIEW-001', 'novation', s.id,
@@ -217,7 +217,7 @@ where m.name = 'trade_status'
 -- Soft-delete Alpha Bank's Counterparty role
 delete from ores_trading_party_roles_tbl
 where id = 'f3000000-0000-0000-0000-000000000001'::uuid
-  and tenant_id = ores_iam_system_tenant_id_fn();
+  and tenant_id = ores_utility_system_tenant_id_fn();
 
 -- Assign Counterparty role to Beta Bank
 insert into ores_trading_party_roles_tbl (
@@ -226,7 +226,7 @@ insert into ores_trading_party_roles_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'f3000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'f1000000-0000-0000-0000-000000000001'::uuid,
     'f2000000-0000-0000-0000-000000000002'::uuid,
     'Counterparty',
@@ -236,7 +236,7 @@ insert into ores_trading_party_roles_tbl (
 select is(
     (select counterparty from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     'Beta Bank',
     'view: after novation, counterparty updated to Beta Bank'
 );
@@ -248,7 +248,7 @@ select is(
 select is(
     (select activity_type_code from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()),
+       and tenant_id = ores_utility_system_tenant_id_fn()),
     'novation',
     'view: activity_type_code shows novation after novation event'
 );

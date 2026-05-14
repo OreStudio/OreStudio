@@ -35,7 +35,7 @@ create policy platforms_tenant_isolation_policy
 on ores_compute_platforms_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system platforms visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system platforms visible to all
 );
 
 -- -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ create policy app_version_platforms_tenant_isolation_policy
 on ores_compute_app_version_platforms_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app version platforms visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system app version platforms visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -62,7 +62,7 @@ create policy apps_tenant_isolation_policy
 on ores_compute_apps_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system apps visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system apps visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -77,7 +77,7 @@ create policy app_versions_tenant_isolation_policy
 on ores_compute_app_versions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app versions visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system app versions visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

@@ -31,13 +31,13 @@ insert into ores_trading_party_role_types_tbl (
     code, tenant_id, version, description,
     modified_by, change_reason_code, change_commentary
 ) values
-    ('Counterparty',       ores_iam_system_tenant_id_fn(), 0, 'The other side of the trade',
+    ('Counterparty',       ores_utility_system_tenant_id_fn(), 0, 'The other side of the trade',
      current_user, 'system.initial_load', 'Seed trade party role types'),
-    ('CalculationAgent',   ores_iam_system_tenant_id_fn(), 0, 'Determines fixings and payments',
+    ('CalculationAgent',   ores_utility_system_tenant_id_fn(), 0, 'Determines fixings and payments',
      current_user, 'system.initial_load', 'Seed trade party role types'),
-    ('ExecutingBroker',    ores_iam_system_tenant_id_fn(), 0, 'Broker executing the trade',
+    ('ExecutingBroker',    ores_utility_system_tenant_id_fn(), 0, 'Broker executing the trade',
      current_user, 'system.initial_load', 'Seed trade party role types'),
-    ('NovationTransferee', ores_iam_system_tenant_id_fn(), 0, 'New counterparty in a novation',
+    ('NovationTransferee', ores_utility_system_tenant_id_fn(), 0, 'New counterparty in a novation',
      current_user, 'system.initial_load', 'Seed trade party role types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

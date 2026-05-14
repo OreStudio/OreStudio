@@ -44,7 +44,7 @@ declare
     v_state_active uuid;
     v_state_suspended uuid;
     v_state_archived  uuid;
-    v_sys_tenant   uuid := ores_iam_system_tenant_id_fn();
+    v_sys_tenant   uuid := ores_utility_system_tenant_id_fn();
 begin
     -- -------------------------------------------------------------------------
     -- Machine

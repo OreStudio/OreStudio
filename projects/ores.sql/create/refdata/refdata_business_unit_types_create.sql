@@ -83,7 +83,7 @@ begin
     -- Validate coding_scheme_code (soft FK against dq_coding_schemes)
     if not exists (
         select 1 from ores_dq_coding_schemes_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = NEW.coding_scheme_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

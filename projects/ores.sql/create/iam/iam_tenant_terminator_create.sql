@@ -45,7 +45,7 @@ declare
     v_system_tenant_id uuid;
     v_tenant_code text;
 begin
-    v_system_tenant_id := ores_iam_system_tenant_id_fn();
+    v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Cannot terminate system tenant
     if p_tenant_id = v_system_tenant_id then

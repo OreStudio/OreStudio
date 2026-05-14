@@ -52,52 +52,52 @@ BEGIN
     -- --- Service Account Role Assignments ---
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.iam_service_user'), 'IamService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.iam_service_user'), 'IamService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.refdata_service_user'), 'RefdataService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.refdata_service_user'), 'RefdataService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.dq_service_user'), 'DqService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.dq_service_user'), 'DqService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.variability_service_user'), 'VariabilityService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.variability_service_user'), 'VariabilityService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.assets_service_user'), 'AssetsService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.assets_service_user'), 'AssetsService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.scheduler_service_user'), 'SchedulerService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.scheduler_service_user'), 'SchedulerService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.reporting_service_user'), 'ReportingService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.reporting_service_user'), 'ReportingService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.telemetry_service_user'), 'TelemetryService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.telemetry_service_user'), 'TelemetryService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.trading_service_user'), 'TradingService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.trading_service_user'), 'TradingService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.compute_service_user'), 'ComputeService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.compute_service_user'), 'ComputeService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.synthetic_service_user'), 'SyntheticService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.synthetic_service_user'), 'SyntheticService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.workflow_service_user'), 'WorkflowService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.workflow_service_user'), 'WorkflowService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.ore_service_user'), 'OreService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.ore_service_user'), 'OreService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.marketdata_service_user'), 'MarketdataService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.marketdata_service_user'), 'MarketdataService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.controller_service_user'), 'ControllerService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.controller_service_user'), 'ControllerService');
 
     PERFORM ores_iam_account_role_assign_fn(
-        ores_iam_system_tenant_id_fn(), current_setting('ores.analytics_service_user'), 'AnalyticsService');
+        ores_utility_system_tenant_id_fn(), current_setting('ores.analytics_service_user'), 'AnalyticsService');
 END $$;
 
 

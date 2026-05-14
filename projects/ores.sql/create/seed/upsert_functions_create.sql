@@ -666,7 +666,7 @@ begin
     )
     values (
         gen_random_uuid(),
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         0,
         'service',
         p_username,
@@ -695,7 +695,7 @@ begin
         update ores_iam_accounts_tbl
         set service_password_hash = encode(sha256(p_password::bytea), 'hex')
         where username  = p_username
-          and tenant_id = ores_iam_system_tenant_id_fn()
+          and tenant_id = ores_utility_system_tenant_id_fn()
           and valid_to  = ores_utility_infinity_timestamp_fn();
         raise debug 'Set service_password_hash for: %', p_username;
     end if;

@@ -62,7 +62,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Commodity',
         1,
         'FPML_ASSET_CLASS',
@@ -74,7 +74,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Credit',
         1,
         'FPML_ASSET_CLASS',
@@ -86,7 +86,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Equity',
         1,
         'FPML_ASSET_CLASS',
@@ -98,7 +98,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'ForeignExchange',
         1,
         'FPML_ASSET_CLASS',
@@ -110,7 +110,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'InterestRate',
         1,
         'FPML_ASSET_CLASS',
@@ -122,7 +122,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'SecuritiesFinancing',
         1,
         'FPML_ASSET_CLASS',
@@ -134,7 +134,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Inflation',
         1,
         'FPML_ASSET_CLASS',
@@ -146,7 +146,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Bond',
         1,
         'FPML_ASSET_CLASS',

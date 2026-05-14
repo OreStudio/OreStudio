@@ -31,7 +31,7 @@ BEGIN
 
     -- --- Data Quality Slovaris Catalogs ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Slovaris',
         'Imaginary world to test all system functions.',
         'Testing Team'

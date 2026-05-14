@@ -33,16 +33,16 @@ insert into ores_refdata_purpose_types_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'Risk', 0, 'Risk',
+    (ores_utility_system_tenant_id_fn(), 'Risk', 0, 'Risk',
      'Portfolio used for risk aggregation and risk management reporting.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of purpose types'),
-    (ores_iam_system_tenant_id_fn(), 'Regulatory', 0, 'Regulatory',
+    (ores_utility_system_tenant_id_fn(), 'Regulatory', 0, 'Regulatory',
      'Portfolio used for regulatory capital and compliance reporting.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of purpose types'),
-    (ores_iam_system_tenant_id_fn(), 'ClientReporting', 0, 'Client Reporting',
+    (ores_utility_system_tenant_id_fn(), 'ClientReporting', 0, 'Client Reporting',
      'Portfolio used for client-facing reporting and statements.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of purpose types'),
-    (ores_iam_system_tenant_id_fn(), 'Internal', 0, 'Internal',
+    (ores_utility_system_tenant_id_fn(), 'Internal', 0, 'Internal',
      'Portfolio used for internal management reporting and P&L attribution.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of purpose types')
 on conflict (tenant_id, code)

@@ -31,12 +31,12 @@ BEGIN
 
     -- --- Data Quality Slovaris Dataset Dependencies ---
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'slovaris.countries',
         'slovaris.country_flags',
         'visual_assets'
     );
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'slovaris.currencies',
         'slovaris.country_flags',
         'visual_assets'

@@ -46,7 +46,7 @@
         "type": "uuid",
         "cpp_type": "boost::uuids::uuid",
         "nullable": false,
-        "description": "FK to the FSM state record (ores_dq_fsm_states_tbl) for this step."
+        "description": "FK to the FSM state record (ores_workflow_fsm_states_tbl) for this step."
       },
       {
         "name": "request_json",

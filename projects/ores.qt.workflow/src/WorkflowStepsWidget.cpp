@@ -195,7 +195,7 @@ void WorkflowStepsWidget::refresh() {
                 return {false, QString::fromStdString(resp->message), {}};
             return {true, {}, std::move(resp->steps)};
         } catch (const std::exception& e) {
-            return {false, QString::fromLatin1(e.what()), {}};
+            return {false, QString::fromUtf8(e.what()), {}};
         } catch (...) {
             return {false, QStringLiteral("Unknown error loading steps"), {}};
         }
@@ -234,11 +234,10 @@ void WorkflowStepsWidget::populateSteps(
                     visible.size()) - maxVisibleSteps_);
     }
 
-    stepsTable_->setRowCount(0);
+    stepsTable_->setRowCount(static_cast<int>(visible.size()));
 
+    int row = 0;
     for (const auto& step : visible) {
-        const int row = stepsTable_->rowCount();
-        stepsTable_->insertRow(row);
 
         stepsTable_->setItem(row, static_cast<int>(Col::Index),
             make_item(QString::number(step.step_index)));
@@ -259,6 +258,7 @@ void WorkflowStepsWidget::populateSteps(
                 : QStringLiteral("—")));
         stepsTable_->setItem(row, static_cast<int>(Col::Error),
             make_item(QString::fromStdString(step.error)));
+        ++row;
     }
 
     stepsTable_->resizeColumnsToContents();

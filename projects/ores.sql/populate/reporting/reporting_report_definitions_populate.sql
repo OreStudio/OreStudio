@@ -33,49 +33,52 @@
  * This script is idempotent.
  */
 
-\o :null_dev
 -- =============================================================================
 -- Catalog Registration
 -- =============================================================================
 
-\qecho '--- ORE Analytics Catalog ---'
+-- --- ORE Analytics Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ORE Analytics',
-    'ORE risk analytics seed data including report definition templates for provisioning new parties.',
-    'OreStudio Development Team'
-);
-
+DO $$
+BEGIN
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ORE Analytics',
+        'ORE risk analytics seed data including report definition templates for provisioning new parties.',
+        'OreStudio Development Team'
+    );
+END $$;
 -- =============================================================================
 -- Dataset Registration
 -- =============================================================================
 
-\qecho '--- ORE Analytics: Report Definitions Dataset ---'
+-- --- ORE Analytics: Report Definitions Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ore.report_definitions',
-    'ORE Analytics',
-    'Trading',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Synthetic',
-    'Raw',
-    'OreStudio Code Generation Methodology',
-    'ORE Analytics Report Definitions',
-    'Default set of 27 ORE risk analytics report definitions covering calibration, valuation, sensitivities, counterparty credit risk, market risk, scenario analysis, and regulatory capital.',
-    'ORESTUDIO',
-    'Seed data for party provisioning wizard report setup',
-    current_date,
-    'Internal Use Only',
-    'report_definitions'
-);
-
+DO $$
+BEGIN
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ore.report_definitions',
+        'ORE Analytics',
+        'Trading',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ORE Analytics Report Definitions',
+        'Default set of 27 ORE risk analytics report definitions covering calibration, valuation, sensitivities, counterparty credit risk, market risk, scenario analysis, and regulatory capital.',
+        'ORESTUDIO',
+        'Seed data for party provisioning wizard report setup',
+        current_date,
+        'Internal Use Only',
+        'report_definitions'
+    );
+END $$;
 -- =============================================================================
 -- Artefact Seed Data
 -- =============================================================================
 
-\qecho '--- ORE Report Definition Artefacts ---'
+-- --- ORE Report Definition Artefacts ---
 
 do $$
 declare
@@ -233,6 +236,7 @@ begin
 end;
 $$ language plpgsql;
 
+
 -- =============================================================================
 -- Summary
 -- =============================================================================
@@ -242,4 +246,3 @@ from ores_dq_report_definitions_artefact_tbl a
 join ores_dq_datasets_tbl d on d.id = a.dataset_id
 where d.code = 'ore.report_definitions'
   and d.valid_to = ores_utility_infinity_timestamp_fn();
-\o

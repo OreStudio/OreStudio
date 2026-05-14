@@ -26,30 +26,32 @@
  * This must be run before populating the artefact tables.
  */
 
-\o :null_dev
--- =============================================================================
--- Flag Icons Datasets
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Flag Icons Datasets
+    -- =============================================================================
 
-\qecho '--- Flag Icons Datasets ---'
+    -- --- Flag Icons Datasets ---
 
--- Country Flag Images
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'assets.country_flags',
-    'Visual Assets',
-    'Country Flags',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Flag Icons Download',
-    'Country Flag Images',
-    'SVG flag images for each ISO 3166-1 country.',
-    'lipis/flag-icons',
-    'Visual assets for countries',
-    '2024-12-29'::date,
-    'MIT License',
-    'images'
-);
-\o
+    -- Country Flag Images
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'assets.country_flags',
+        'Visual Assets',
+        'Country Flags',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GitHub Flag Icons Download',
+        'Country Flag Images',
+        'SVG flag images for each ISO 3166-1 country.',
+        'lipis/flag-icons',
+        'Visual assets for countries',
+        '2024-12-29'::date,
+        'MIT License',
+        'images'
+    );
+END $$;
+

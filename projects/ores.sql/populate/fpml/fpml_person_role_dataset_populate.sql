@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o :null_dev
--- =============================================================================
--- FpML Person Role Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Person Role Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Person Role Dataset ---'
+    -- --- FpML Person Role Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.person_role',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_PERSON_ROLE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Person Role',
-    'Indicates the role of a person in a transaction.',
-    'FPML',
-    'Reference data for FpML Person Role (version 1-3)',
-    '2019-10-31'::date,
-    'FpML Public License 2.0',
-    'person_roles'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.person_role',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_PERSON_ROLE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Person Role',
+        'Indicates the role of a person in a transaction.',
+        'FPML',
+        'Reference data for FpML Person Role (version 1-3)',
+        '2019-10-31'::date,
+        'FpML Public License 2.0',
+        'person_roles'
+    );
+END $$;
+

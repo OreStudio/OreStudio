@@ -26,50 +26,53 @@
  * This script is idempotent.
  */
 
-\o :null_dev
--- =============================================================================
--- General Methodologies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- General Methodologies
+    -- =============================================================================
 
-\qecho '--- General Methodologies ---'
+    -- --- General Methodologies ---
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Synthetic Data Generation',
-    'Test data generated programmatically using the ores.synthetic library with seeded random generation',
-    'https://github.com/cieslarmichal/faker-cxx',
-    'Data Generation Approach:
+    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Synthetic Data Generation',
+        'Test data generated programmatically using the ores.synthetic library with seeded random generation',
+        'https://github.com/cieslarmichal/faker-cxx',
+        'Data Generation Approach:
 
-1. LIBRARY
-   Component: ores.synthetic
-   Dependencies: faker-cxx library for realistic random data generation
+    1. LIBRARY
+       Component: ores.synthetic
+       Dependencies: faker-cxx library for realistic random data generation
 
-2. GENERATION PROCESS
-   - Uses seeded random number generator for reproducibility
-   - Generates coherent datasets with proper entity relationships
-   - All foreign key references point to valid entities
-   - Timestamps and audit fields populated consistently
+    2. GENERATION PROCESS
+       - Uses seeded random number generator for reproducibility
+       - Generates coherent datasets with proper entity relationships
+       - All foreign key references point to valid entities
+       - Timestamps and audit fields populated consistently
 
-3. REPRODUCIBILITY
-   - Same seed produces identical output
-   - Seed value should be tracked by caller for reproducibility
-   - Default uses random seed if not specified
+    3. REPRODUCIBILITY
+       - Same seed produces identical output
+       - Seed value should be tracked by caller for reproducibility
+       - Default uses random seed if not specified
 
-4. USAGE
-   Code: ores::synthetic::service::catalog_generator_service
-   Options: ores::synthetic::domain::generation_options
+    4. USAGE
+       Code: ores::synthetic::service::catalog_generator_service
+       Options: ores::synthetic::domain::generation_options
 
-This methodology is used for all programmatically generated test data.
-The specific seed and generation parameters are tracked separately from
-the methodology itself.'
-);
+    This methodology is used for all programmatically generated test data.
+    The specific seed and generation parameters are tracked separately from
+    the methodology itself.'
+    );
 
-select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ORE Internal',
-    'Reference data defined internally by the ORE (Open Risk Engine) project and maintained as part of the OreStudio system configuration',
-    'https://ore.opensourcerisk.org',
-    'Authoritative ORE codes hand-curated from the ORE documentation and source code.
-Updated when a new ORE version introduces new codes or deprecates existing ones.'
-);
+    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ORE Internal',
+        'Reference data defined internally by the ORE (Open Risk Engine) project and maintained as part of the OreStudio system configuration',
+        'https://ore.opensourcerisk.org',
+        'Authoritative ORE codes hand-curated from the ORE documentation and source code.
+    Updated when a new ORE version introduces new codes or deprecates existing ones.'
+    );
+END $$;
+
 
 -- =============================================================================
 -- Summary
@@ -78,4 +81,3 @@ Updated when a new ORE version introduces new codes or deprecates existing ones.
 select 'dq_methodologies' as entity, count(*) as count
 from ores_dq_methodologies_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
-\o

@@ -30,39 +30,39 @@
  * - Anonymized: Irreversibly altered to prevent re-identification
  */
 
-\o :null_dev
--- =============================================================================
--- Data Quality Treatment Dimensions
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Data Quality Treatment Dimensions
+    -- =============================================================================
 
-\qecho '--- Data Quality Treatment Dimensions ---'
+    -- --- Data Quality Treatment Dimensions ---
 
-select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Raw',
-    'Raw Data',
-    'Untouched, identifiable data.'
-);
+    PERFORM ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Raw',
+        'Raw Data',
+        'Untouched, identifiable data.'
+    );
 
-select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Masked',
-    'Masked Data',
-    'PII has been redacted or obfuscated (replaces "Obfuscated").'
-);
+    PERFORM ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Masked',
+        'Masked Data',
+        'PII has been redacted or obfuscated (replaces "Obfuscated").'
+    );
 
-select ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Anonymized',
-    'Anonymized Data',
-    'Irreversibly altered to prevent re-identification.'
-);
+    PERFORM ores_dq_treatment_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Anonymized',
+        'Anonymized Data',
+        'Irreversibly altered to prevent re-identification.'
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
 
-\qecho ''
 \qecho '--- Summary ---'
 
 select 'Data Quality Treatment Dimensions' as entity, count(*) as count
 from ores_dq_treatment_dimensions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
-\o

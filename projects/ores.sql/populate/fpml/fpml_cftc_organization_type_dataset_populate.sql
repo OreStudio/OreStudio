@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o :null_dev
--- =============================================================================
--- FpML Cftc Organization Type Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Cftc Organization Type Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Cftc Organization Type Dataset ---'
+    -- --- FpML Cftc Organization Type Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.cftc_organization_type',
-    'FpML Standards',
-    'Parties',
-    'Reference Data',
-    'FPML_CFTC_ORGANIZATION_TYPE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Cftc Organization Type',
-    'Indicates whether a counterparty is an entity established pursuant to a U.S. federal law, including CFTC Amendments to Part 45 (2020).',
-    'FPML',
-    'Reference data for FpML Cftc Organization Type (version 2-0)',
-    '2022-11-18'::date,
-    'FpML Public License 2.0',
-    'entity_classifications'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.cftc_organization_type',
+        'FpML Standards',
+        'Parties',
+        'Reference Data',
+        'FPML_CFTC_ORGANIZATION_TYPE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Cftc Organization Type',
+        'Indicates whether a counterparty is an entity established pursuant to a U.S. federal law, including CFTC Amendments to Part 45 (2020).',
+        'FPML',
+        'Reference data for FpML Cftc Organization Type (version 2-0)',
+        '2022-11-18'::date,
+        'FpML Public License 2.0',
+        'entity_classifications'
+    );
+END $$;
+

@@ -30,36 +30,36 @@
  * - Market Data: Pricing and market information
  */
 
-\o :null_dev
--- =============================================================================
--- Data Quality Data Domains
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Data Quality Data Domains
+    -- =============================================================================
 
-\qecho '--- Data Quality Data Domains ---'
+    -- --- Data Quality Data Domains ---
 
-select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Reference Data',
-    'Standardized data used across the system.'
-);
+    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Reference Data',
+        'Standardized data used across the system.'
+    );
 
-select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Trade Data',
-    'Transaction and position data.'
-);
+    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Trade Data',
+        'Transaction and position data.'
+    );
 
-select ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Market Data',
-    'Pricing and market information.'
-);
+    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Market Data',
+        'Pricing and market information.'
+    );
 
--- =============================================================================
--- Summary
--- =============================================================================
+    -- =============================================================================
+    -- Summary
+    -- =============================================================================
+END $$;
 
-\qecho ''
 \qecho '--- Summary ---'
 
 select 'Data Quality Data Domains' as entity, count(*) as count
 from ores_dq_data_domains_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;
-\o

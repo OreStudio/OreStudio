@@ -27,20 +27,21 @@
  * This script is idempotent.
  */
 
-\o :null_dev
-\qecho '--- Business Unit Types: coding scheme ---'
+-- --- Business Unit Types: coding scheme ---
 
-select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ORES-ORG',
-    'ORE Studio Organisational Hierarchy',
-    'internal',
-    'Parties',
-    'Reference Data',
-    '',
-    'Internal coding scheme for ORE Studio organisational unit classification.'
-);
-
-\qecho '--- Business Unit Types: seed types ---'
+DO $$
+BEGIN
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ORES-ORG',
+        'ORE Studio Organisational Hierarchy',
+        'internal',
+        'Parties',
+        'Reference Data',
+        '',
+        'Internal coding scheme for ORE Studio organisational unit classification.'
+    );
+END $$;
+-- --- Business Unit Types: seed types ---
 
 -- Helper: insert one business unit type, skipping if the natural key already exists.
 do $$
@@ -84,8 +85,8 @@ begin
 end;
 $$;
 
+
 -- Summary
 select 'refdata_business_unit_types' as entity, count(*) as count
 from ores_refdata_business_unit_types_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
-\o

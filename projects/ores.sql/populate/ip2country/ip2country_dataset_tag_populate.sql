@@ -26,18 +26,20 @@
  * Must be run after ip2country_dataset_populate.sql.
  */
 
-\o :null_dev
--- =============================================================================
--- IP Geolocation Dataset Tags
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- IP Geolocation Dataset Tags
+    -- =============================================================================
 
-\qecho '--- IP Geolocation Dataset Tags ---'
+    -- --- IP Geolocation Dataset Tags ---
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'IP to Country IPv4 Ranges',
-    'IP Address to Country maps',
-    'Reference Data',
-    'geolocation',
-    'IP address geolocation data'
-);
-\o
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'IP to Country IPv4 Ranges',
+        'IP Address to Country maps',
+        'Reference Data',
+        'geolocation',
+        'IP address geolocation data'
+    );
+END $$;
+

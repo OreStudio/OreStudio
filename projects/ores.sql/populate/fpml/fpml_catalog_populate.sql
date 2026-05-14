@@ -6,18 +6,20 @@
  * This script is idempotent.
  */
 
-\o :null_dev
+DO $$
+BEGIN
 
 
--- =============================================================================
--- FpML Standards Catalog
--- =============================================================================
+    -- =============================================================================
+    -- FpML Standards Catalog
+    -- =============================================================================
 
-\qecho '--- FpML Standards Catalog ---'
+    -- --- FpML Standards Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'FpML Standards',
-    'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
-    'Reference Data Team'
-);
-\o
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'FpML Standards',
+        'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
+        'Reference Data Team'
+    );
+END $$;
+

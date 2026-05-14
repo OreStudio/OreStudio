@@ -129,13 +129,6 @@ for _svc in "${SERVICE_NAMES[@]}"; do
     _SVC_PSQL_ARGS+=(-v "${_svc}_service_user=${!_uvar:-}")
 done
 
-# Detect platform null device (/dev/null on Unix, NUL on Windows/MINGW)
-if [[ -e /dev/null ]]; then
-    _null_dev="/dev/null"
-else
-    _null_dev="NUL"
-fi
-
 # Phase 2: Create tables, populate seed data, grant permissions (DDL user)
 _current_phase="Phase 2: setup schema"
 echo "--- Phase 2: Setting up schema ---"
@@ -145,7 +138,6 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -d "${DB_NAME}" \
     --set ON_ERROR_STOP=on \
     -v skip_validation="${SKIP_VALIDATION}" \
-    -v null_dev="${_null_dev}" \
     -v owner_role="${OWNER_ROLE}" \
     -v rw_role="${RW_ROLE}" \
     -v ro_role="${RO_ROLE}" \

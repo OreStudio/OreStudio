@@ -25,16 +25,18 @@
  * This script is idempotent.
  */
 
-\o :null_dev
--- =============================================================================
--- IP Geolocation Catalog
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- IP Geolocation Catalog
+    -- =============================================================================
 
-\qecho '--- IP Geolocation Catalog ---'
+    -- --- IP Geolocation Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'IP Geolocation',
-    'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
-    'Reference Data Team'
-);
-\o
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'IP Geolocation',
+        'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
+        'Reference Data Team'
+    );
+END $$;
+

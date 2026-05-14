@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o :null_dev
--- =============================================================================
--- FpML Supervisory Body Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Supervisory Body Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Supervisory Body Dataset ---'
+    -- --- FpML Supervisory Body Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.supervisory_body',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_SUPERVISORY_BODY',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Supervisory Body',
-    'Contains a code representing a supervisory-body that may be supervising this transaction.',
-    'FPML',
-    'Reference data for FpML Supervisory Body (version 2-1)',
-    '2022-06-10'::date,
-    'FpML Public License 2.0',
-    'supervisory_bodies'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.supervisory_body',
+        'FpML Standards',
+        'Regulatory',
+        'Reference Data',
+        'FPML_SUPERVISORY_BODY',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Supervisory Body',
+        'Contains a code representing a supervisory-body that may be supervising this transaction.',
+        'FPML',
+        'Reference data for FpML Supervisory Body (version 2-1)',
+        '2022-06-10'::date,
+        'FpML Public License 2.0',
+        'supervisory_bodies'
+    );
+END $$;
+

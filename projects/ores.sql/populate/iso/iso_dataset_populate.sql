@@ -27,50 +27,52 @@
  * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
-\o :null_dev
--- =============================================================================
--- ISO Standards Datasets
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Datasets
+    -- =============================================================================
 
-\qecho '--- ISO Standards Datasets ---'
+    -- --- ISO Standards Datasets ---
 
--- ISO 3166 Country Codes
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.countries',
-    'ISO Standards',
-    'Countries',
-    'Reference Data',
-    'ISO_3166_1_ALPHA_2',
-    'Primary',
-    'Actual',
-    'Raw',
-    'Wikipedia ISO 3166 Extraction',
-    'ISO 3166 Country Codes',
-    'ISO 3166-1 alpha-2 country codes and official names.',
-    'WIKIPEDIA',
-    'Reference data for country codes',
-    current_date,
-    'CC BY-SA 3.0',
-    'countries'
-);
+    -- ISO 3166 Country Codes
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.countries',
+        'ISO Standards',
+        'Countries',
+        'Reference Data',
+        'ISO_3166_1_ALPHA_2',
+        'Primary',
+        'Actual',
+        'Raw',
+        'Wikipedia ISO 3166 Extraction',
+        'ISO 3166 Country Codes',
+        'ISO 3166-1 alpha-2 country codes and official names.',
+        'WIKIPEDIA',
+        'Reference data for country codes',
+        current_date,
+        'CC BY-SA 3.0',
+        'countries'
+    );
 
--- ISO 4217 Currency Codes
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.currencies',
-    'ISO Standards',
-    'Currencies',
-    'Reference Data',
-    'ISO_4217',
-    'Primary',
-    'Actual',
-    'Raw',
-    'Wikipedia ISO 4217 Extraction',
-    'ISO 4217 Currency Codes',
-    'ISO 4217 alphabetic and numeric currency codes.',
-    'WIKIPEDIA',
-    'Reference data for currency codes',
-    current_date,
-    'CC BY-SA 3.0',
-    'currencies'
-);
-\o
+    -- ISO 4217 Currency Codes
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.currencies',
+        'ISO Standards',
+        'Currencies',
+        'Reference Data',
+        'ISO_4217',
+        'Primary',
+        'Actual',
+        'Raw',
+        'Wikipedia ISO 4217 Extraction',
+        'ISO 4217 Currency Codes',
+        'ISO 4217 alphabetic and numeric currency codes.',
+        'WIKIPEDIA',
+        'Reference data for currency codes',
+        current_date,
+        'CC BY-SA 3.0',
+        'currencies'
+    );
+END $$;
+

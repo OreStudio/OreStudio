@@ -25,34 +25,36 @@
  * This script is idempotent.
  */
 
-\o :null_dev
--- =============================================================================
--- ISO Standards Dataset Dependencies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Standards Dataset Dependencies
+    -- =============================================================================
 
-\qecho '--- ISO Standards Dataset Dependencies ---'
+    -- --- ISO Standards Dataset Dependencies ---
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.countries',
-    'iso.coding_schemes',
-    'coding_scheme'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.countries',
+        'iso.coding_schemes',
+        'coding_scheme'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.countries',
-    'assets.country_flags',
-    'visual_assets'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.countries',
+        'assets.country_flags',
+        'visual_assets'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.currencies',
-    'iso.coding_schemes',
-    'coding_scheme'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.currencies',
+        'iso.coding_schemes',
+        'coding_scheme'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.currencies',
-    'assets.country_flags',
-    'visual_assets'
-);
-\o
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.currencies',
+        'assets.country_flags',
+        'visual_assets'
+    );
+END $$;
+

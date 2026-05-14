@@ -25,30 +25,32 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
-\o :null_dev
--- =============================================================================
--- ISO Coding Schemes Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ISO Coding Schemes Dataset
+    -- =============================================================================
 
-\qecho '--- ISO Coding Schemes Dataset ---'
+    -- --- ISO Coding Schemes Dataset ---
 
--- ISO Coding Schemes
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'iso.coding_schemes',
-    'ISO Standards',
-    'General',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'Wikipedia ISO 3166 Extraction',
-    'ISO Coding Schemes',
-    'ISO coding scheme definitions for countries (ISO 3166) and currencies (ISO 4217).',
-    'WIKIPEDIA',
-    'Coding scheme metadata for ISO standards',
-    current_date,
-    'CC BY-SA 3.0',
-    'coding_schemes'
-);
-\o
+    -- ISO Coding Schemes
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'iso.coding_schemes',
+        'ISO Standards',
+        'General',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'Wikipedia ISO 3166 Extraction',
+        'ISO Coding Schemes',
+        'ISO coding scheme definitions for countries (ISO 3166) and currencies (ISO 4217).',
+        'WIKIPEDIA',
+        'Coding scheme metadata for ISO standards',
+        current_date,
+        'CC BY-SA 3.0',
+        'coding_schemes'
+    );
+END $$;
+

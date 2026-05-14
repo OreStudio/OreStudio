@@ -26,35 +26,37 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
-\o :null_dev
+DO $$
+BEGIN
 
--- =============================================================================
--- Cryptocurrency Dataset Tags
--- =============================================================================
+    -- =============================================================================
+    -- Cryptocurrency Dataset Tags
+    -- =============================================================================
 
-\qecho '--- Cryptocurrency Dataset Tags ---'
+    -- --- Cryptocurrency Dataset Tags ---
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Cryptocurrency Icon Images',
-    'Cryptocurrencies',
-    'Reference Data',
-    'cryptocurrency',
-    'Cryptocurrency icon images'
-);
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Cryptocurrency Icon Images',
+        'Cryptocurrencies',
+        'Reference Data',
+        'cryptocurrency',
+        'Cryptocurrency icon images'
+    );
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Cryptocurrencies Large',
-    'Cryptocurrencies',
-    'Reference Data',
-    'cryptocurrency',
-    'Cryptocurrency reference data (~12K coins)'
-);
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Cryptocurrencies Large',
+        'Cryptocurrencies',
+        'Reference Data',
+        'cryptocurrency',
+        'Cryptocurrency reference data (~12K coins)'
+    );
 
-select ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Cryptocurrencies Small',
-    'Cryptocurrencies',
-    'Reference Data',
-    'cryptocurrency',
-    'Top 100 cryptocurrencies by market cap'
-);
-\o
+    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Cryptocurrencies Small',
+        'Cryptocurrencies',
+        'Reference Data',
+        'cryptocurrency',
+        'Top 100 cryptocurrencies by market cap'
+    );
+END $$;
+

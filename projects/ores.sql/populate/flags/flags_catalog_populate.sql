@@ -25,16 +25,18 @@
  * This script is idempotent.
  */
 
-\o :null_dev
--- =============================================================================
--- Visual Assets Catalog
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- Visual Assets Catalog
+    -- =============================================================================
 
-\qecho '--- Visual Assets Catalog ---'
+    -- --- Visual Assets Catalog ---
 
-select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'Visual Assets',
-    'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
-    'Reference Data Team'
-);
-\o
+    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'Visual Assets',
+        'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
+        'Reference Data Team'
+    );
+END $$;
+

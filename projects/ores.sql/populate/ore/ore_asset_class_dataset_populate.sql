@@ -18,29 +18,31 @@
  *
  */
 
-\o :null_dev
--- =============================================================================
--- ORE Asset Class Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- ORE Asset Class Dataset
+    -- =============================================================================
 
-\qecho '--- ORE Asset Class Dataset ---'
+    -- --- ORE Asset Class Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'ore.asset_class',
-    'ORE',
-    'Market Data',
-    'Reference Data',
-    'ORE_ASSET_CLASS',
-    'Primary',
-    'Actual',
-    'Raw',
-    'ORE Internal',
-    'ORE Asset Class',
-    'Open Risk Engine asset class codes for classifying market data series and trades. The eight codes cover all ORE-supported asset classes: FX, Rates, Credit, Equity, Commodity, Inflation, Bond, and Cross Asset.',
-    'ORE',
-    'Reference data for ORE Asset Class (version 1.0)',
-    '2026-01-01'::date,
-    'Apache License 2.0',
-    'asset_classes'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'ore.asset_class',
+        'ORE',
+        'Market Data',
+        'Reference Data',
+        'ORE_ASSET_CLASS',
+        'Primary',
+        'Actual',
+        'Raw',
+        'ORE Internal',
+        'ORE Asset Class',
+        'Open Risk Engine asset class codes for classifying market data series and trades. The eight codes cover all ORE-supported asset classes: FX, Rates, Credit, Equity, Commodity, Inflation, Bond, and Cross Asset.',
+        'ORE',
+        'Reference data for ORE Asset Class (version 1.0)',
+        '2026-01-01'::date,
+        'Apache License 2.0',
+        'asset_classes'
+    );
+END $$;
+

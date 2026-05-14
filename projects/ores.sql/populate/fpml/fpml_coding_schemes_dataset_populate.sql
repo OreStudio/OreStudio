@@ -6,32 +6,34 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
-\o :null_dev
+DO $$
+BEGIN
 
 
--- =============================================================================
--- FPML Coding Schemes Dataset
--- =============================================================================
+    -- =============================================================================
+    -- FPML Coding Schemes Dataset
+    -- =============================================================================
 
-\qecho '--- FPML Coding Schemes Dataset ---'
+    -- --- FPML Coding Schemes Dataset ---
 
--- FpML Coding Schemes
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.coding_schemes',
-    'FpML Standards',
-    'General',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Coding Schemes',
-    'FpML coding scheme definitions for account types, asset classes, business centers, and other reference data.',
-    'FPML',
-    'Coding scheme metadata for FpML standards',
-    current_date,
-    'FpML License',
-    'coding_schemes'
-);
-\o
+    -- FpML Coding Schemes
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.coding_schemes',
+        'FpML Standards',
+        'General',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Coding Schemes',
+        'FpML coding scheme definitions for account types, asset classes, business centers, and other reference data.',
+        'FPML',
+        'Coding scheme metadata for FpML standards',
+        current_date,
+        'FpML License',
+        'coding_schemes'
+    );
+END $$;
+

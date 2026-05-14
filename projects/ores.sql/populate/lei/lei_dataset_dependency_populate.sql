@@ -25,130 +25,132 @@
  * This script is idempotent.
  */
 
-\o :null_dev
--- =============================================================================
--- GLEIF LEI Dataset Dependencies
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- GLEIF LEI Dataset Dependencies
+    -- =============================================================================
 
-\qecho '--- GLEIF LEI Dataset Dependencies ---'
+    -- --- GLEIF LEI Dataset Dependencies ---
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_relationships.small',
-    'gleif.lei_entities.small',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_relationships.small',
+        'gleif.lei_entities.small',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_relationships.large',
-    'gleif.lei_entities.large',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_relationships.large',
+        'gleif.lei_entities.large',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.small',
-    'fpml.business_center',
-    'business_centres'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.small',
+        'fpml.business_center',
+        'business_centres'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.small',
-    'gleif.lei_entities.small',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.small',
+        'gleif.lei_entities.small',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.small',
-    'gleif.lei_relationships.small',
-    'hierarchy'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.small',
+        'gleif.lei_relationships.small',
+        'hierarchy'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.small',
-    'gleif.lei_bic',
-    'bic_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.small',
+        'gleif.lei_bic',
+        'bic_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'fpml.business_center',
-    'business_centres'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'fpml.business_center',
+        'business_centres'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'gleif.lei_entities.small',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'gleif.lei_entities.small',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'gleif.lei_relationships.small',
-    'hierarchy'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'gleif.lei_relationships.small',
+        'hierarchy'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'gleif.lei_parties.small',
-    'party_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'gleif.lei_parties.small',
+        'party_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.small',
-    'gleif.lei_bic',
-    'bic_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.small',
+        'gleif.lei_bic',
+        'bic_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.large',
-    'fpml.business_center',
-    'business_centres'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.large',
+        'fpml.business_center',
+        'business_centres'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.large',
-    'gleif.lei_entities.large',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.large',
+        'gleif.lei_entities.large',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.large',
-    'gleif.lei_relationships.large',
-    'hierarchy'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.large',
+        'gleif.lei_relationships.large',
+        'hierarchy'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_parties.large',
-    'gleif.lei_bic',
-    'bic_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_parties.large',
+        'gleif.lei_bic',
+        'bic_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.large',
-    'fpml.business_center',
-    'business_centres'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'fpml.business_center',
+        'business_centres'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.large',
-    'gleif.lei_entities.large',
-    'entity_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'gleif.lei_entities.large',
+        'entity_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.large',
-    'gleif.lei_relationships.large',
-    'hierarchy'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'gleif.lei_relationships.large',
+        'hierarchy'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.large',
-    'gleif.lei_parties.large',
-    'party_reference'
-);
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'gleif.lei_parties.large',
+        'party_reference'
+    );
 
-select ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'gleif.lei_counterparties.large',
-    'gleif.lei_bic',
-    'bic_reference'
-);
-\o
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'gleif.lei_counterparties.large',
+        'gleif.lei_bic',
+        'bic_reference'
+    );
+END $$;
+

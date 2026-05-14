@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o :null_dev
--- =============================================================================
--- FpML Asset Measure Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Asset Measure Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Asset Measure Dataset ---'
+    -- --- FpML Asset Measure Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.asset_measure',
-    'FpML Standards',
-    'Market Data',
-    'Reference Data',
-    'FPML_ASSET_MEASURE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Asset Measure',
-    'The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.',
-    'FPML',
-    'Reference data for FpML Asset Measure (version 5-9)',
-    '2024-03-14'::date,
-    'FpML Public License 2.0',
-    'asset_measures'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.asset_measure',
+        'FpML Standards',
+        'Market Data',
+        'Reference Data',
+        'FPML_ASSET_MEASURE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Asset Measure',
+        'The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.',
+        'FPML',
+        'Reference data for FpML Asset Measure (version 5-9)',
+        '2024-03-14'::date,
+        'FpML Public License 2.0',
+        'asset_measures'
+    );
+END $$;
+

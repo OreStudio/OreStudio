@@ -29,29 +29,31 @@
  * This must be run before populating the artefact table.
  */
 
-\o :null_dev
--- =============================================================================
--- FpML Reporting Regime Dataset
--- =============================================================================
+DO $$
+BEGIN
+    -- =============================================================================
+    -- FpML Reporting Regime Dataset
+    -- =============================================================================
 
-\qecho '--- FpML Reporting Regime Dataset ---'
+    -- --- FpML Reporting Regime Dataset ---
 
-select ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
-    'fpml.reporting_regime',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_REPORTING_REGIME',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Reporting Regime',
-    'Contains a code representing a reporting regime under which this transaction may be reported.',
-    'FPML',
-    'Reference data for FpML Reporting Regime (version 2-0)',
-    '2025-09-26'::date,
-    'FpML Public License 2.0',
-    'reporting_regimes'
-);
-\o
+    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+        'fpml.reporting_regime',
+        'FpML Standards',
+        'Regulatory',
+        'Reference Data',
+        'FPML_REPORTING_REGIME',
+        'Primary',
+        'Actual',
+        'Raw',
+        'FpML Genericode Download',
+        'FpML Reporting Regime',
+        'Contains a code representing a reporting regime under which this transaction may be reported.',
+        'FPML',
+        'Reference data for FpML Reporting Regime (version 2-0)',
+        '2025-09-26'::date,
+        'FpML Public License 2.0',
+        'reporting_regimes'
+    );
+END $$;
+

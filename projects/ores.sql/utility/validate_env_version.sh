@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# validate_env_version.sh — Verify the .env file is compatible with the
+# current database scripts.  Sourced (not executed) by recreate_database.sh
+# so that it can read variables already loaded into the caller's environment.
+#
+# Fails with exit 1 and a clear explanation when ORES_ENV_VERSION is missing
+# or older than REQUIRED_ENV_VERSION.  Warns (no failure) when newer.
+#
+# To bump the version:
+#   1. Increment REQUIRED_ENV_VERSION below.
+#   2. Add one line to CHANGELOG for the new version number.
+#   3. Increment ENV_VERSION in build/scripts/init-environment.sh.
+#   4. Add the corresponding comment to the changelog block there too.
+
+set -euo pipefail
+
+REQUIRED_ENV_VERSION=1
+
+# One entry per version number (index 0 is a placeholder).
+CHANGELOG=(
+    ""
+    "1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER"
+)
+
+CURRENT_VERSION="${ORES_ENV_VERSION:-0}"
+
+if [[ "${CURRENT_VERSION}" -gt "${REQUIRED_ENV_VERSION}" ]]; then
+    echo "Warning: .env version ${CURRENT_VERSION} is newer than required ${REQUIRED_ENV_VERSION} — proceeding." >&2
+    return 0 2>/dev/null || true
+fi
+
+if [[ "${CURRENT_VERSION}" -lt "${REQUIRED_ENV_VERSION}" ]]; then
+    echo "" >&2
+    echo "=== ERROR: .env is out of date ===" >&2
+    echo "" >&2
+    echo "  Your .env:  version ${CURRENT_VERSION}" >&2
+    echo "  Required:   version ${REQUIRED_ENV_VERSION}" >&2
+    echo "" >&2
+    echo "Changes you are missing:" >&2
+    for (( v = CURRENT_VERSION + 1; v <= REQUIRED_ENV_VERSION; v++ )); do
+        echo "  ${CHANGELOG[$v]}" >&2
+    done
+    echo "" >&2
+    echo "Fix: re-run init-environment.sh to regenerate .env:" >&2
+    echo "  ./build/scripts/init-environment.sh --preset <preset> -y" >&2
+    echo "" >&2
+    exit 1
+fi

@@ -26,6 +26,7 @@
 #include "ores.workflow/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/workflow_engine.hpp"
 #include "ores.workflow/service/workflow_registry.hpp"
@@ -117,6 +118,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         list_workflow_definitions_request::nats_subject, qg,
         [qh](ores::nats::message msg) {
             qh->list_definitions(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        get_step_result_request::nats_subject, qg,
+        [qh](ores::nats::message msg) {
+            qh->get_step_result(std::move(msg));
         }));
 
     // ----------------------------------------------------------------

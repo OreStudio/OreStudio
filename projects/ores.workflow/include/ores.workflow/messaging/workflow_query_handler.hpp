@@ -92,6 +92,16 @@ public:
      */
     void list_definitions(ores::nats::message msg);
 
+    /**
+     * @brief Returns the cached result of a completed workflow step.
+     *
+     * Used by domain service handlers as an idempotency check before executing
+     * a workflow step command. Returns found=true with the original result if
+     * the step is in a terminal state; found=false if not found or in_progress.
+     * No authentication required.
+     */
+    void get_step_result(ores::nats::message msg);
+
 private:
     /**
      * @brief Maps a state UUID to its human-readable name.

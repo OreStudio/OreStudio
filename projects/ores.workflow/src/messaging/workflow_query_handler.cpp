@@ -26,6 +26,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -266,6 +267,48 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
         << "list_definitions returning " << resp.definitions.size()
         << " definition(s)";
     reply(nats_, msg, resp);
+}
+
+void workflow_query_handler::get_step_result(ores::nats::message msg) {
+    BOOST_LOG_SEV(lg(), debug) << "get_step_result request received";
+
+    auto req = decode<get_step_result_request>(msg);
+    if (!req || req->step_id.empty()) {
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
+
+    boost::uuids::uuid step_uuid;
+    try {
+        step_uuid = boost::lexical_cast<boost::uuids::uuid>(req->step_id);
+    } catch (...) {
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
+
+    const auto step = step_repo_.find_by_id(ctx_, step_uuid);
+    if (!step) {
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
+
+    // Return cached result only for terminal states; in_progress means the
+    // previous execution is still in flight (or was interrupted mid-publish).
+    const auto sname = state_name(step->state_id);
+    if (sname == "in_progress" || sname == "pending" || sname == "unknown") {
+        reply(nats_, msg, get_step_result_response{.found = false});
+        return;
+    }
+
+    const bool success = (sname == "completed");
+    BOOST_LOG_SEV(lg(), debug)
+        << "get_step_result: step=" << req->step_id
+        << " state=" << sname;
+    reply(nats_, msg, get_step_result_response{
+        .found         = true,
+        .success       = success,
+        .result_json   = success ? step->response_json : "",
+        .error_message = success ? "" : step->error});
 }
 
 }  // namespace ores::workflow::messaging

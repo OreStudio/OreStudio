@@ -96,6 +96,7 @@ public:
         using ores::service::messaging::is_workflow_command;
         using ores::service::messaging::extract_workflow_header;
         using ores::service::messaging::publish_step_completion;
+        using ores::service::messaging::check_step_idempotency;
         using ores::service::messaging::workflow_step_id_header;
         using ores::service::messaging::workflow_instance_id_header;
         using ores::service::messaging::workflow_tenant_id_header;
@@ -105,6 +106,13 @@ public:
             const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
             const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
             const auto tenant_id = extract_workflow_header(msg, workflow_tenant_id_header);
+
+            // Idempotency guard: replay cached result if this step already completed.
+            if (auto cached = check_step_idempotency(nats_, step_id)) {
+                publish_step_completion(nats_, step_id, inst_id,
+                    cached->success, cached->result_json, cached->error_message);
+                return;
+            }
 
             auto req = decode<save_party_request>(msg);
             if (!req) {

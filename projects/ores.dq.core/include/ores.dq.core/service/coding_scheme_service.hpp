@@ -28,7 +28,9 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 
@@ -39,7 +41,7 @@ namespace ores::dq::service {
  * - Managing coding schemes (CRUD operations)
  * - Filtering coding schemes by authority type
  */
-class coding_scheme_service {
+class ORES_DQ_CORE_EXPORT coding_scheme_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.coding_scheme_service";

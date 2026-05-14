@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle.hpp"
 #include "ores.dq.core/repository/dataset_bundle_repository.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 
@@ -37,7 +38,7 @@ namespace ores::dq::service {
  * This service provides functionality for:
  * - Managing dataset bundles (CRUD operations)
  */
-class dataset_bundle_service {
+class ORES_DQ_CORE_EXPORT dataset_bundle_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.dataset_bundle_service";

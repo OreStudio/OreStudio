@@ -32,9 +32,13 @@
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
 #include "ores.dq.core/repository/dataset_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/publication_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 
@@ -75,7 +79,7 @@ struct publish_bundle_result {
  * The service can be used from both the binary protocol handler
  * and HTTP endpoints.
  */
-class publication_service {
+class ORES_DQ_CORE_EXPORT publication_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.publication_service";

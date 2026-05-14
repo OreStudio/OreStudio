@@ -28,10 +28,14 @@
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.core/repository/badge_severity_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_definition_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/code_domain_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::service {
 
@@ -39,7 +43,7 @@ namespace ores::dq::service {
  * @brief Service for managing badges, badge severities, code domains, and
  * badge mappings.
  */
-class badge_service {
+class ORES_DQ_CORE_EXPORT badge_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.badge_service";

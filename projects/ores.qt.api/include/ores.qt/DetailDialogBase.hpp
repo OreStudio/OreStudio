@@ -26,7 +26,7 @@
 #include <string_view>
 #include <QWidget>
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 class QTabWidget;
 

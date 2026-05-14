@@ -47,7 +47,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

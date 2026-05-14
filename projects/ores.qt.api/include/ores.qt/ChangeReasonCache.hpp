@@ -28,7 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

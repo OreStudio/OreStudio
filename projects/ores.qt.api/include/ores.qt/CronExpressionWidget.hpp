@@ -23,7 +23,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QString>
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 class QPushButton;
 

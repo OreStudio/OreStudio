@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

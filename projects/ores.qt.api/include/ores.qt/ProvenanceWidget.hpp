@@ -23,7 +23,7 @@
 #include <chrono>
 #include <string>
 #include <QWidget>
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 namespace Ui {
 class ProvenanceWidget;

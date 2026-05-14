@@ -31,7 +31,7 @@
 #include "ores.qt/EntityDetailOperations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
-#include "ores.qt.api/export.hpp"
+#include "ores.qt/export.hpp"
 
 namespace Ui {
 class EntityDetailDialog;

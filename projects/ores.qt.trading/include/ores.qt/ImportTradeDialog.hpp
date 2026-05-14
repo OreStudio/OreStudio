@@ -35,7 +35,7 @@
 #include <QProgressBar>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid.hpp>
-#include "ores.ore/xml/importer.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.qt/ClientManager.hpp"

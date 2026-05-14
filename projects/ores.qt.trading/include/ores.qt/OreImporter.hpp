@@ -23,9 +23,9 @@
 #include <set>
 #include <string>
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore/planner/import_choices.hpp"
-#include "ores.ore/planner/ore_import_result.hpp"
-#include "ores.ore/scanner/scan_result.hpp"
+#include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.ore.core/planner/ore_import_result.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
 #include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {

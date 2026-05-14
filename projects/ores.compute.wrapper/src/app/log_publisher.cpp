@@ -25,7 +25,7 @@
 #include <vector>
 #include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore/log/ore_log_parser.hpp"
+#include "ores.ore.core/log/ore_log_parser.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 
 namespace ores::compute::wrapper::app {

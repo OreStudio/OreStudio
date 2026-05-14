@@ -27,7 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
-#include "ores.ore/xml/exporter.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
 
 namespace ores::cli::app {
 

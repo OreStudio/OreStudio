@@ -62,7 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib
         ores.refdata.api.lib
         ores.trading.api.lib
-        ores.ore.lib
+        ores.ore.core.lib
         ores.storage.lib
         ores.variability.api.lib
         ores.dq.api.lib

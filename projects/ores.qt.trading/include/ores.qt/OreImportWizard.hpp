@@ -42,9 +42,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WorkflowStepsWidget.hpp"
-#include "ores.ore/scanner/scan_result.hpp"
-#include "ores.ore/planner/import_choices.hpp"
-#include "ores.ore/planner/ore_import_plan.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
+#include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.ore.core/planner/ore_import_plan.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 

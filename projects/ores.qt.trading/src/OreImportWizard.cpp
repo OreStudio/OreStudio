@@ -32,9 +32,9 @@
 #include <QFutureWatcher>
 #include <QSizePolicy>
 #include <QtConcurrent>
-#include "ores.ore/scanner/ore_directory_scanner.hpp"
-#include "ores.ore/planner/ore_import_planner.hpp"
-#include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
+#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>

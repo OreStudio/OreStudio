@@ -45,7 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.lib
     PRIVATE
-        ores.ore.lib
+        ores.ore.core.lib
         ores.ore.api.lib
         ores.storage.lib
         ores.workflow.core.lib

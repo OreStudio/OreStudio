@@ -26,7 +26,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ores.ore/xml/importer.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 
 namespace ores::qt {
 

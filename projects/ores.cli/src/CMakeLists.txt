@@ -46,7 +46,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.iam.core.lib
         ores.dq.core.lib
-        ores.ore.lib
+        ores.ore.core.lib
         ores.refdata.core.lib
         ores.variability.core.lib
         ores.security.lib

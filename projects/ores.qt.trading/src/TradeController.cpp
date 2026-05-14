@@ -39,7 +39,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/TradeMdiWindow.hpp"
-#include "ores.ore/xml/importer.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/TradeDetailDialog.hpp"
 #include "ores.qt/TradeHistoryDialog.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"

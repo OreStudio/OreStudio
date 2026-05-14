@@ -60,7 +60,7 @@ target_link_libraries(${lib_target_name}
                                  # IPlugin, PluginRegistry, utilities, caches — pulls Qt6 core modules
         # Domain plugins (ores.qt.admin, .compute, .refdata, .party, .mktdata, .trading)
         # are loaded at runtime via QPluginLoader — no compile-time link needed.
-        ores.ore.lib
+        ores.ore.core.lib
         ores.ore.api.lib
         ores.storage.lib
         ores.marketdata.api.lib

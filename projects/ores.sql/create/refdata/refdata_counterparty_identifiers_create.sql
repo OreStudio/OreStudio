@@ -54,19 +54,19 @@ create table if not exists "ores_refdata_counterparty_identifiers_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_counterparty_identifiers_version_uniq_idx
+create unique index if not exists counterparty_identifiers_version_uniq_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_counterparty_identifiers_id_uniq_idx
+create unique index if not exists counterparty_identifiers_id_uniq_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_counterparty_identifiers_tenant_idx
+create index if not exists counterparty_identifiers_tenant_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_cpty_identifiers_scheme_value_uniq_idx
+create unique index if not exists cpty_identifiers_scheme_value_uniq_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id, counterparty_id, id_scheme, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -58,20 +58,20 @@ create table if not exists "ores_dq_code_domains_tbl" (
 );
 
 -- Unique name for active records
-create unique index if not exists ores_dq_code_domains_name_uniq_idx
+create unique index if not exists code_domains_name_uniq_idx
 on "ores_dq_code_domains_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_dq_code_domains_version_uniq_idx
+create unique index if not exists code_domains_version_uniq_idx
 on "ores_dq_code_domains_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_code_domains_id_uniq_idx
+create unique index if not exists code_domains_id_uniq_idx
 on "ores_dq_code_domains_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_code_domains_tenant_idx
+create index if not exists code_domains_tenant_idx
 on "ores_dq_code_domains_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

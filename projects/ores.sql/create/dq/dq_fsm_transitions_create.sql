@@ -51,27 +51,27 @@ create table if not exists "ores_dq_fsm_transitions_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_dq_fsm_transitions_version_uniq_idx
+create unique index if not exists fsm_transitions_version_uniq_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_dq_fsm_transitions_id_uniq_idx
+create unique index if not exists fsm_transitions_id_uniq_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Prevent duplicate transitions per machine (same from/to state pair)
-create unique index if not exists ores_dq_fsm_transitions_machine_states_uniq_idx
+create unique index if not exists fsm_transitions_machine_states_uniq_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, machine_id, from_state_id, to_state_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index for efficient filtering
-create index if not exists ores_dq_fsm_transitions_tenant_idx
+create index if not exists fsm_transitions_tenant_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Machine index for efficient transition lookups
-create index if not exists ores_dq_fsm_transitions_machine_idx
+create index if not exists fsm_transitions_machine_idx
 on "ores_dq_fsm_transitions_tbl" (tenant_id, machine_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

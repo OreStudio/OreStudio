@@ -45,15 +45,15 @@ create table if not exists "ores_assets_images_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists ores_assets_images_version_uniq_idx
+create unique index if not exists images_version_uniq_idx
 on "ores_assets_images_tbl" (tenant_id, image_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_assets_images_key_uniq_idx
+create unique index if not exists images_key_uniq_idx
 on "ores_assets_images_tbl" (tenant_id, key)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_assets_images_tenant_idx
+create index if not exists images_tenant_idx
 on "ores_assets_images_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -18,6 +18,6 @@
  *
  */
 
-drop policy if exists ores_marketdata_fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
-drop policy if exists ores_marketdata_observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
-drop policy if exists ores_marketdata_series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;
+drop policy if exists fixings_tbl_tenant_isolation_policy on ores_marketdata_fixings_tbl;
+drop policy if exists observations_tbl_tenant_isolation_policy on ores_marketdata_observations_tbl;
+drop policy if exists series_tbl_tenant_isolation_policy on ores_marketdata_series_tbl;

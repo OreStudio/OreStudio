@@ -26,17 +26,17 @@
 -- Workflow Instances: indexes for common query patterns
 -- -----------------------------------------------------------------------------
 
-create index if not exists ores_workflow_workflow_instances_tenant_id_idx
+create index if not exists workflow_instances_tenant_id_idx
 on ores_workflow_workflow_instances_tbl (tenant_id);
 
-create index if not exists ores_workflow_workflow_instances_state_id_idx
+create index if not exists workflow_instances_state_id_idx
 on ores_workflow_workflow_instances_tbl (state_id);
 
-create index if not exists ores_workflow_workflow_instances_correlation_id_idx
+create index if not exists workflow_instances_correlation_id_idx
 on ores_workflow_workflow_instances_tbl (correlation_id)
 where correlation_id is not null;
 
-create index if not exists ores_workflow_workflow_instances_tenant_type_idx
+create index if not exists workflow_instances_tenant_type_idx
 on ores_workflow_workflow_instances_tbl (tenant_id, type);
 
 -- -----------------------------------------------------------------------------
@@ -49,5 +49,5 @@ alter table ores_workflow_workflow_steps_tbl
     references ores_workflow_workflow_instances_tbl (id)
     on delete cascade;
 
-create index if not exists ores_workflow_workflow_steps_workflow_id_idx
+create index if not exists workflow_steps_workflow_id_idx
 on ores_workflow_workflow_steps_tbl (workflow_id);

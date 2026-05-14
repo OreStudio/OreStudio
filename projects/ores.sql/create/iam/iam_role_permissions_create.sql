@@ -37,20 +37,20 @@ create table if not exists ores_iam_role_permissions_tbl (
     check ("valid_from" < "valid_to")
 );
 
-create index if not exists ores_iam_role_permissions_tenant_idx
+create index if not exists role_permissions_tenant_idx
 on ores_iam_role_permissions_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_role_permissions_role_idx
+create index if not exists role_permissions_role_idx
 on ores_iam_role_permissions_tbl (role_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_role_permissions_permission_idx
+create index if not exists role_permissions_permission_idx
 on ores_iam_role_permissions_tbl (permission_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_iam_role_permissions_uniq_idx
+create unique index if not exists role_permissions_uniq_idx
 on ores_iam_role_permissions_tbl (tenant_id, role_id, permission_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

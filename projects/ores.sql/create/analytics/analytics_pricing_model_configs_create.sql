@@ -53,20 +53,20 @@ create table if not exists "ores_analytics_pricing_model_configs_tbl" (
 );
 
 -- Unique name for active records
-create unique index if not exists ores_analytics_pricing_model_configs_name_uniq_idx
+create unique index if not exists pricing_model_configs_name_uniq_idx
 on "ores_analytics_pricing_model_configs_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_analytics_pricing_model_configs_version_uniq_idx
+create unique index if not exists pricing_model_configs_version_uniq_idx
 on "ores_analytics_pricing_model_configs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_analytics_pricing_model_configs_id_uniq_idx
+create unique index if not exists pricing_model_configs_id_uniq_idx
 on "ores_analytics_pricing_model_configs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_analytics_pricing_model_configs_tenant_idx
+create index if not exists pricing_model_configs_tenant_idx
 on "ores_analytics_pricing_model_configs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

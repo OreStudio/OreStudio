@@ -24,25 +24,25 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- Trade Types
-drop policy if exists ores_trading_trade_types_tenant_isolation_policy on "ores_trading_trade_types_tbl";
+drop policy if exists trade_types_tenant_isolation_policy on "ores_trading_trade_types_tbl";
 
 -- FpML Event Types
-drop policy if exists ores_trading_fpml_event_types_tenant_isolation_policy on "ores_trading_fpml_event_types_tbl";
+drop policy if exists fpml_event_types_tenant_isolation_policy on "ores_trading_fpml_event_types_tbl";
 
 -- Activity Types
-drop policy if exists ores_trading_activity_types_tenant_isolation_policy on "ores_trading_activity_types_tbl";
+drop policy if exists activity_types_tenant_isolation_policy on "ores_trading_activity_types_tbl";
 
 -- Party Role Types
-drop policy if exists ores_trading_party_role_types_tenant_isolation_policy on "ores_trading_party_role_types_tbl";
+drop policy if exists party_role_types_tenant_isolation_policy on "ores_trading_party_role_types_tbl";
 
 -- Trade Identifier Types
-drop policy if exists ores_trading_trade_id_types_tenant_isolation_policy on "ores_trading_trade_id_types_tbl";
+drop policy if exists trade_id_types_tenant_isolation_policy on "ores_trading_trade_id_types_tbl";
 
 -- Trade Party Roles
-drop policy if exists ores_trading_party_roles_tenant_isolation_policy on "ores_trading_party_roles_tbl";
+drop policy if exists party_roles_tenant_isolation_policy on "ores_trading_party_roles_tbl";
 
 -- Trade Identifiers
-drop policy if exists ores_trading_identifiers_tenant_isolation_policy on "ores_trading_identifiers_tbl";
+drop policy if exists identifiers_tenant_isolation_policy on "ores_trading_identifiers_tbl";
 
 -- Trades
-drop policy if exists ores_trading_trades_tenant_isolation_policy on "ores_trading_trades_tbl";
+drop policy if exists trades_tenant_isolation_policy on "ores_trading_trades_tbl";

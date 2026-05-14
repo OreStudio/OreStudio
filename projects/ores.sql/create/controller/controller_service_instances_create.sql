@@ -49,8 +49,8 @@ create table if not exists "ores_controller_service_instances_tbl" (
 );
 
 -- Only one replica per index per service at a time.
-create unique index if not exists ores_controller_service_instances_name_replica_uniq_idx
+create unique index if not exists service_instances_name_replica_uniq_idx
 on ores_controller_service_instances_tbl (service_name, replica_index);
 
-create index if not exists ores_controller_service_instances_service_name_idx
+create index if not exists service_instances_service_name_idx
 on ores_controller_service_instances_tbl (service_name);

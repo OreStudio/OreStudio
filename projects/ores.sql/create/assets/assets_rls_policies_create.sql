@@ -30,7 +30,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_assets_images_tbl enable row level security;
 
-create policy ores_assets_images_tbl_tenant_isolation_policy on ores_assets_images_tbl
+create policy images_tbl_tenant_isolation_policy on ores_assets_images_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -43,7 +43,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_assets_tags_tbl enable row level security;
 
-create policy ores_assets_tags_tbl_tenant_isolation_policy on ores_assets_tags_tbl
+create policy tags_tbl_tenant_isolation_policy on ores_assets_tags_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -56,7 +56,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_assets_image_tags_tbl enable row level security;
 
-create policy ores_assets_image_tags_tbl_tenant_isolation_policy on ores_assets_image_tags_tbl
+create policy image_tags_tbl_tenant_isolation_policy on ores_assets_image_tags_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

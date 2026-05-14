@@ -60,24 +60,24 @@ create table if not exists "ores_refdata_books_tbl" (
 );
 
 -- Composite natural key: unique book name per party within tenant
-create unique index if not exists ores_refdata_books_party_name_uniq_idx
+create unique index if not exists books_party_name_uniq_idx
 on "ores_refdata_books_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_books_version_uniq_idx
+create unique index if not exists books_version_uniq_idx
 on "ores_refdata_books_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_books_id_uniq_idx
+create unique index if not exists books_id_uniq_idx
 on "ores_refdata_books_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_books_tenant_idx
+create index if not exists books_tenant_idx
 on "ores_refdata_books_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_books_owner_unit_idx
+create index if not exists books_owner_unit_idx
 on "ores_refdata_books_tbl" (tenant_id, owner_unit_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and owner_unit_id is not null;

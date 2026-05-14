@@ -41,21 +41,21 @@ create table if not exists ores_iam_sessions_tbl (
     primary key (id, start_time)
 );
 
-create index if not exists ores_iam_sessions_tenant_idx
+create index if not exists sessions_tenant_idx
 on ores_iam_sessions_tbl (tenant_id, start_time desc);
 
-create index if not exists ores_iam_sessions_account_id_idx
+create index if not exists sessions_account_id_idx
 on ores_iam_sessions_tbl (account_id, start_time desc);
 
-create index if not exists ores_iam_sessions_active_idx
+create index if not exists sessions_active_idx
 on ores_iam_sessions_tbl (account_id)
 where end_time = '';
 
-create index if not exists ores_iam_sessions_country_idx
+create index if not exists sessions_country_idx
 on ores_iam_sessions_tbl (country_code, start_time desc)
 where country_code != '';
 
-create index if not exists ores_iam_sessions_protocol_idx
+create index if not exists sessions_protocol_idx
 on ores_iam_sessions_tbl (protocol, start_time desc);
 
 do $$

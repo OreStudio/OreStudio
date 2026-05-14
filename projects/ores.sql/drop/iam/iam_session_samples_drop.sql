@@ -18,5 +18,5 @@
  *
  */
 
-drop index if exists ores_iam_session_samples_session_idx;
+drop index if exists session_samples_session_idx;
 drop table if exists ores_iam_session_samples_tbl;

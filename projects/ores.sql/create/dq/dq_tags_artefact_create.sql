@@ -26,20 +26,20 @@ create table if not exists "ores_dq_tags_artefact_tbl" (
     "description" text not null
 );
 
-create index if not exists ores_dq_tags_artefact_dataset_idx
+create index if not exists tags_artefact_dataset_idx
 on "ores_dq_tags_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_tags_artefact_tenant_idx
+create index if not exists tags_artefact_tenant_idx
 on "ores_dq_tags_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_tags_artefact_tag_idx
+create index if not exists tags_artefact_tag_idx
 on "ores_dq_tags_artefact_tbl" (tag_id);
 
-create index if not exists ores_dq_tags_artefact_name_idx
+create index if not exists tags_artefact_name_idx
 on "ores_dq_tags_artefact_tbl" (name);
 
 -- Unique index to prevent duplicate tag names per dataset per tenant
-create unique index if not exists ores_dq_tags_artefact_dataset_name_uniq_idx
+create unique index if not exists tags_artefact_dataset_name_uniq_idx
 on "ores_dq_tags_artefact_tbl" (tenant_id, dataset_id, name);
 
 -- Function to insert tags into the artifact table

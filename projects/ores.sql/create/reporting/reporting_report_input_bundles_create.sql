@@ -48,9 +48,9 @@ create table if not exists "ores_reporting_report_input_bundles_tbl" (
 );
 
 -- One bundle per report instance execution.
-create unique index if not exists ores_reporting_report_input_bundles_instance_uniq_idx
+create unique index if not exists report_input_bundles_instance_uniq_idx
 on "ores_reporting_report_input_bundles_tbl" (tenant_id, report_instance_id);
 
 -- Tenant index for listing all bundles within a tenant.
-create index if not exists ores_reporting_report_input_bundles_tenant_idx
+create index if not exists report_input_bundles_tenant_idx
 on "ores_reporting_report_input_bundles_tbl" (tenant_id);

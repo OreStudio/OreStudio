@@ -18,9 +18,9 @@
  *
  */
 
-drop index if exists ores_telemetry_logs_component_idx;
-drop index if exists ores_telemetry_logs_source_idx;
-drop index if exists ores_telemetry_logs_level_idx;
-drop index if exists ores_telemetry_logs_account_idx;
-drop index if exists ores_telemetry_logs_session_idx;
+drop index if exists logs_component_idx;
+drop index if exists logs_source_idx;
+drop index if exists logs_level_idx;
+drop index if exists logs_account_idx;
+drop index if exists logs_session_idx;
 drop table if exists ores_telemetry_logs_tbl;

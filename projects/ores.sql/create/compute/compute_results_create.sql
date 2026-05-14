@@ -58,27 +58,27 @@ create table if not exists "ores_compute_results_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_results_version_uniq_idx
+create unique index if not exists results_version_uniq_idx
 on "ores_compute_results_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_results_id_uniq_idx
+create unique index if not exists results_id_uniq_idx
 on "ores_compute_results_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_results_tenant_idx
+create index if not exists results_tenant_idx
 on "ores_compute_results_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_results_workunit_id_idx
+create index if not exists results_workunit_id_idx
 on "ores_compute_results_tbl" (tenant_id, workunit_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_results_host_id_idx
+create index if not exists results_host_id_idx
 on "ores_compute_results_tbl" (tenant_id, host_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_results_server_state_idx
+create index if not exists results_server_state_idx
 on "ores_compute_results_tbl" (tenant_id, server_state)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

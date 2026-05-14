@@ -59,25 +59,25 @@ create table if not exists "ores_refdata_counterparties_tbl" (
 -- Non-unique full_name index for search. Full names are not unique in
 -- real-world data (e.g. "CAISSE LOCALE CREDIT AGRICOLE" appears for
 -- multiple branches, each with a distinct LEI).
-create index if not exists ores_refdata_counterparties_full_name_idx
+create index if not exists counterparties_full_name_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, full_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique short_code for active records
-create unique index if not exists ores_refdata_counterparties_short_code_uniq_idx
+create unique index if not exists counterparties_short_code_uniq_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, short_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_counterparties_version_uniq_idx
+create unique index if not exists counterparties_version_uniq_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_counterparties_id_uniq_idx
+create unique index if not exists counterparties_id_uniq_idx
 on "ores_refdata_counterparties_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_counterparties_tenant_idx
+create index if not exists counterparties_tenant_idx
 on "ores_refdata_counterparties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

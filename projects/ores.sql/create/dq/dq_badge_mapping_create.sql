@@ -61,21 +61,21 @@ create table if not exists "ores_dq_badge_mappings_tbl" (
 );
 
 -- Index for looking up all mappings in a code domain
-create index if not exists ores_dq_badge_mappings_code_domain_idx
+create index if not exists badge_mappings_code_domain_idx
 on "ores_dq_badge_mappings_tbl" (code_domain_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding the badge for a specific entity code
-create index if not exists ores_dq_badge_mappings_entity_idx
+create index if not exists badge_mappings_entity_idx
 on "ores_dq_badge_mappings_tbl" (entity_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_dq_badge_mappings_uniq_idx
+create unique index if not exists badge_mappings_uniq_idx
 on "ores_dq_badge_mappings_tbl" (tenant_id, code_domain_code, entity_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_badge_mappings_tenant_idx
+create index if not exists badge_mappings_tenant_idx
 on "ores_dq_badge_mappings_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

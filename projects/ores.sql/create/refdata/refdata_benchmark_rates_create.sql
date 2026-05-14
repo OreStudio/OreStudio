@@ -50,19 +50,19 @@ create table if not exists "ores_refdata_benchmark_rates_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_refdata_benchmark_rates_version_uniq_idx
+create unique index if not exists benchmark_rates_version_uniq_idx
 on "ores_refdata_benchmark_rates_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_benchmark_rates_code_uniq_idx
+create unique index if not exists benchmark_rates_code_uniq_idx
 on "ores_refdata_benchmark_rates_tbl" (tenant_id, code, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_benchmark_rates_tenant_idx
+create index if not exists benchmark_rates_tenant_idx
 on "ores_refdata_benchmark_rates_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_benchmark_rates_coding_scheme_idx
+create index if not exists benchmark_rates_coding_scheme_idx
 on "ores_refdata_benchmark_rates_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

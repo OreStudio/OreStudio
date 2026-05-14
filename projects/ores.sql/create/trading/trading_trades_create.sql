@@ -67,49 +67,49 @@ create table if not exists "ores_trading_trades_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_trades_version_uniq_idx
+create unique index if not exists trades_version_uniq_idx
 on "ores_trading_trades_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_trades_id_uniq_idx
+create unique index if not exists trades_id_uniq_idx
 on "ores_trading_trades_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_trades_tenant_idx
+create index if not exists trades_tenant_idx
 on "ores_trading_trades_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Book index for portfolio lookups
-create index if not exists ores_trading_trades_book_idx
+create index if not exists trades_book_idx
 on "ores_trading_trades_tbl" (tenant_id, book_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Portfolio index
-create index if not exists ores_trading_trades_portfolio_idx
+create index if not exists trades_portfolio_idx
 on "ores_trading_trades_tbl" (tenant_id, portfolio_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Netting set index for ORE aggregation
-create index if not exists ores_trading_trades_netting_set_idx
+create index if not exists trades_netting_set_idx
 on "ores_trading_trades_tbl" (tenant_id, netting_set_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Trade type index for product filtering
-create index if not exists ores_trading_trades_trade_type_idx
+create index if not exists trades_trade_type_idx
 on "ores_trading_trades_tbl" (tenant_id, trade_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Product routing index (product_type + instrument_id used to open
 -- the associated instrument record from a trade)
-create index if not exists ores_trading_trades_instrument_idx
+create index if not exists trades_instrument_idx
 on "ores_trading_trades_tbl" (tenant_id, product_type, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and instrument_id is not null;
 
 -- Asset class index for filtering trades by asset class
-create index if not exists ores_trading_trades_asset_class_idx
+create index if not exists trades_asset_class_idx
 on "ores_trading_trades_tbl" (tenant_id, asset_class)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and asset_class is not null;

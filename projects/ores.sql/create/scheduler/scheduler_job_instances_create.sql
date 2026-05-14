@@ -81,7 +81,7 @@ end $$;
 
 alter table ores_scheduler_job_instances_tbl enable row level security;
 
-create policy ores_scheduler_job_instances_read_policy
+create policy job_instances_read_policy
 on ores_scheduler_job_instances_tbl for select using (
     tenant_id is null  -- system jobs visible to all
     or tenant_id = ores_iam_current_tenant_id_fn()

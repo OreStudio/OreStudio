@@ -47,10 +47,10 @@ create table if not exists ores_iam_auth_events_tbl (
     primary key (id, event_time)
 );
 
-create index if not exists ores_iam_auth_events_tenant_time_idx
+create index if not exists auth_events_tenant_time_idx
 on ores_iam_auth_events_tbl (tenant_id, event_time desc);
 
-create index if not exists ores_iam_auth_events_event_type_idx
+create index if not exists auth_events_event_type_idx
 on ores_iam_auth_events_tbl (event_type, event_time desc);
 
 do $$

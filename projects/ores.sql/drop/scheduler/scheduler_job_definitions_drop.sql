@@ -21,10 +21,10 @@
 drop rule if exists ores_scheduler_job_definitions_delete_rule on "ores_scheduler_job_definitions_tbl";
 drop trigger if exists ores_scheduler_job_definitions_insert_trg on "ores_scheduler_job_definitions_tbl";
 drop function if exists ores_scheduler_job_definitions_insert_fn;
-drop index if exists ores_scheduler_job_definitions_party_idx;
-drop index if exists ores_scheduler_job_definitions_tenant_idx;
-drop index if exists ores_scheduler_job_definitions_id_uniq_idx;
-drop index if exists ores_scheduler_job_definitions_version_uniq_idx;
-drop index if exists ores_scheduler_job_definitions_name_uniq_idx;
-drop index if exists ores_scheduler_job_definitions_cron_job_id_uniq_idx;
+drop index if exists job_definitions_party_idx;
+drop index if exists job_definitions_tenant_idx;
+drop index if exists job_definitions_id_uniq_idx;
+drop index if exists job_definitions_version_uniq_idx;
+drop index if exists job_definitions_name_uniq_idx;
+drop index if exists job_definitions_cron_job_id_uniq_idx;
 drop table if exists "ores_scheduler_job_definitions_tbl";

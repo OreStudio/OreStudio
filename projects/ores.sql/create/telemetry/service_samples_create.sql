@@ -34,7 +34,7 @@ create table if not exists ores_telemetry_service_samples_tbl (
     primary key (sampled_at, service_name, instance_id)
 );
 
-create index if not exists ores_telemetry_service_samples_name_idx
+create index if not exists service_samples_name_idx
     on ores_telemetry_service_samples_tbl (service_name, sampled_at desc);
 
 do $$

@@ -24,16 +24,16 @@ create table if not exists "ores_dq_image_tags_artefact_tbl" (
     "tag_id" uuid not null
 );
 
-create index if not exists ores_dq_image_tags_artefact_dataset_idx
+create index if not exists image_tags_artefact_dataset_idx
 on "ores_dq_image_tags_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_image_tags_artefact_tenant_idx
+create index if not exists image_tags_artefact_tenant_idx
 on "ores_dq_image_tags_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_image_tags_artefact_image_idx
+create index if not exists image_tags_artefact_image_idx
 on "ores_dq_image_tags_artefact_tbl" (image_id);
 
-create index if not exists ores_dq_image_tags_artefact_tag_idx
+create index if not exists image_tags_artefact_tag_idx
 on "ores_dq_image_tags_artefact_tbl" (tag_id);
 
 -- Function to insert image tags into the artifact table

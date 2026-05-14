@@ -55,25 +55,25 @@ create table if not exists "ores_analytics_pricing_model_product_parameters_tbl"
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_analytics_pricing_model_product_parameters_version_uniq_idx
+create unique index if not exists pricing_model_product_parameters_version_uniq_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_analytics_pricing_model_product_parameters_id_uniq_idx
+create unique index if not exists pricing_model_product_parameters_id_uniq_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_analytics_pricing_model_product_parameters_tenant_idx
+create index if not exists pricing_model_product_parameters_tenant_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FK lookup: all parameters for a config
-create index if not exists ores_analytics_pricing_model_product_parameters_config_idx
+create index if not exists pricing_model_product_parameters_config_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, pricing_model_config_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FK lookup: all parameters for a product
-create index if not exists ores_analytics_pricing_model_product_parameters_product_idx
+create index if not exists pricing_model_product_parameters_product_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, pricing_model_product_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -35,20 +35,20 @@ create table if not exists "ores_dq_currencies_artefact_tbl" (
     "image_id" uuid
 );
 
-create index if not exists ores_dq_currencies_artefact_dataset_idx
+create index if not exists currencies_artefact_dataset_idx
 on "ores_dq_currencies_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_currencies_artefact_tenant_idx
+create index if not exists currencies_artefact_tenant_idx
 on "ores_dq_currencies_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_currencies_artefact_iso_code_idx
+create index if not exists currencies_artefact_iso_code_idx
 on "ores_dq_currencies_artefact_tbl" (iso_code);
 
-create index if not exists ores_dq_currencies_artefact_numeric_code_idx
+create index if not exists currencies_artefact_numeric_code_idx
 on "ores_dq_currencies_artefact_tbl" (numeric_code);
 
-create index if not exists ores_dq_currencies_artefact_monetary_nature_idx
+create index if not exists currencies_artefact_monetary_nature_idx
 on "ores_dq_currencies_artefact_tbl" (monetary_nature);
 
-create index if not exists ores_dq_currencies_artefact_market_tier_idx
+create index if not exists currencies_artefact_market_tier_idx
 on "ores_dq_currencies_artefact_tbl" (market_tier);

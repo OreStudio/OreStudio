@@ -30,7 +30,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_definitions_tbl enable row level security;
 
-create policy ores_reporting_report_definitions_tenant_isolation_policy
+create policy report_definitions_tenant_isolation_policy
 on ores_reporting_report_definitions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -43,7 +43,7 @@ with check (
 -- When no party context is set (visible_party_ids is NULL), the policy
 -- passes through, preserving backward compatibility with service contexts
 -- that set only tenant context (e.g. report populators, test helpers).
-create policy ores_reporting_report_definitions_party_isolation_policy
+create policy report_definitions_party_isolation_policy
 on ores_reporting_report_definitions_tbl
 as restrictive
 for select using (
@@ -56,7 +56,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_configs_tbl enable row level security;
 
-create policy ores_reporting_risk_report_configs_tenant_isolation_policy
+create policy risk_report_configs_tenant_isolation_policy
 on ores_reporting_risk_report_configs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -65,7 +65,7 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-create policy ores_reporting_risk_report_configs_party_isolation_policy
+create policy risk_report_configs_party_isolation_policy
 on ores_reporting_risk_report_configs_tbl
 as restrictive
 for all using (
@@ -96,7 +96,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_config_portfolios_tbl enable row level security;
 
-create policy ores_reporting_risk_report_config_portfolios_tenant_isolation_policy
+create policy risk_report_config_portfolios_tenant_isolation_policy
 on ores_reporting_risk_report_config_portfolios_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -105,7 +105,7 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-create policy ores_reporting_risk_report_config_portfolios_party_isolation_policy
+create policy risk_report_config_portfolios_party_isolation_policy
 on ores_reporting_risk_report_config_portfolios_tbl
 as restrictive
 for all using (
@@ -144,7 +144,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_risk_report_config_books_tbl enable row level security;
 
-create policy ores_reporting_risk_report_config_books_tenant_isolation_policy
+create policy risk_report_config_books_tenant_isolation_policy
 on ores_reporting_risk_report_config_books_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -153,7 +153,7 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-create policy ores_reporting_risk_report_config_books_party_isolation_policy
+create policy risk_report_config_books_party_isolation_policy
 on ores_reporting_risk_report_config_books_tbl
 as restrictive
 for all using (
@@ -192,7 +192,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_instances_tbl enable row level security;
 
-create policy ores_reporting_report_instances_tenant_isolation_policy
+create policy report_instances_tenant_isolation_policy
 on ores_reporting_report_instances_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -204,7 +204,7 @@ with check (
 -- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
 -- Same null-bypass semantics as report_definitions: when no party context
 -- is set, the policy passes through for compatibility with service contexts.
-create policy ores_reporting_report_instances_party_isolation_policy
+create policy report_instances_party_isolation_policy
 on ores_reporting_report_instances_tbl
 as restrictive
 for select using (
@@ -217,7 +217,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_reporting_report_input_bundles_tbl enable row level security;
 
-create policy ores_reporting_report_input_bundles_tenant_isolation_policy
+create policy report_input_bundles_tenant_isolation_policy
 on ores_reporting_report_input_bundles_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()

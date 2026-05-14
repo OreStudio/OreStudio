@@ -43,15 +43,15 @@ create table if not exists "ores_trading_day_count_fraction_types_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_trading_day_count_fraction_types_version_uniq_idx
+create unique index if not exists day_count_fraction_types_version_uniq_idx
 on "ores_trading_day_count_fraction_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_trading_day_count_fraction_types_code_uniq_idx
+create unique index if not exists day_count_fraction_types_code_uniq_idx
 on "ores_trading_day_count_fraction_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_trading_day_count_fraction_types_tenant_idx
+create index if not exists day_count_fraction_types_tenant_idx
 on "ores_trading_day_count_fraction_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -57,12 +57,12 @@ create table if not exists "ores_controller_service_definitions_tbl" (
 );
 
 -- Unique service_name for active records
-create unique index if not exists ores_controller_service_definitions_service_name_uniq_idx
+create unique index if not exists service_definitions_service_name_uniq_idx
 on "ores_controller_service_definitions_tbl" (service_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_controller_service_definitions_version_uniq_idx
+create unique index if not exists service_definitions_version_uniq_idx
 on "ores_controller_service_definitions_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -29,11 +29,11 @@ create table if not exists "ores_dq_business_units_artefact_tbl" (
     "unit_type_code" text null
 );
 
-create index if not exists ores_dq_business_units_artefact_dataset_idx
+create index if not exists business_units_artefact_dataset_idx
 on "ores_dq_business_units_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_business_units_artefact_tenant_idx
+create index if not exists business_units_artefact_tenant_idx
 on "ores_dq_business_units_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_business_units_artefact_id_idx
+create index if not exists business_units_artefact_id_idx
 on "ores_dq_business_units_artefact_tbl" (id);

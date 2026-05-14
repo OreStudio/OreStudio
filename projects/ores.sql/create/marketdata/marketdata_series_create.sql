@@ -79,19 +79,19 @@ create table if not exists ores_marketdata_series_tbl (
 
 -- At most one current row per (tenant, type, metric, qualifier) triple —
 -- prevents duplicate series registrations.
-create unique index if not exists ores_marketdata_series_natural_key_uniq_idx
+create unique index if not exists series_natural_key_uniq_idx
 on ores_marketdata_series_tbl (tenant_id, series_type, metric, qualifier)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_marketdata_series_version_uniq_idx
+create unique index if not exists series_version_uniq_idx
 on ores_marketdata_series_tbl (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_marketdata_series_tenant_idx
+create index if not exists series_tenant_idx
 on ores_marketdata_series_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_marketdata_series_asset_class_idx
+create index if not exists series_asset_class_idx
 on ores_marketdata_series_tbl (tenant_id, asset_class, series_subclass)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

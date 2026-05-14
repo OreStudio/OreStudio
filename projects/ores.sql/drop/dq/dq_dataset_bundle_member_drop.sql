@@ -21,7 +21,7 @@
 drop rule if exists ores_dq_dataset_bundle_members_delete_rule on "ores_dq_dataset_bundle_members_tbl";
 drop trigger if exists ores_dq_dataset_bundle_members_insert_trg on "ores_dq_dataset_bundle_members_tbl";
 drop function if exists ores_dq_dataset_bundle_members_insert_fn();
-drop index if exists ores_dq_dataset_bundle_members_uniq_idx;
-drop index if exists ores_dq_dataset_bundle_members_dataset_idx;
-drop index if exists ores_dq_dataset_bundle_members_bundle_idx;
+drop index if exists dataset_bundle_members_uniq_idx;
+drop index if exists dataset_bundle_members_dataset_idx;
+drop index if exists dataset_bundle_members_bundle_idx;
 drop table if exists "ores_dq_dataset_bundle_members_tbl";

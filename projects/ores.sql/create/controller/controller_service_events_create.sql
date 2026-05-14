@@ -38,10 +38,10 @@ create table if not exists ores_controller_service_events_tbl (
     check ("event_id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
-create index if not exists ores_controller_service_events_name_idx
+create index if not exists service_events_name_idx
     on ores_controller_service_events_tbl (service_name, occurred_at desc);
 
-create index if not exists ores_controller_service_events_instance_idx
+create index if not exists service_events_instance_idx
     on ores_controller_service_events_tbl (instance_id, occurred_at desc)
     where instance_id is not null;
 

@@ -68,11 +68,11 @@ comment on table ores_dq_bundle_publications_tbl is
     'Audit table for tracking bundle publication history.';
 
 -- Index for querying by bundle
-create index if not exists ores_dq_bundle_publications_bundle_code_idx
+create index if not exists bundle_publications_bundle_code_idx
     on ores_dq_bundle_publications_tbl(bundle_code);
 
 -- Index for querying by time
-create index if not exists ores_dq_bundle_publications_published_at_idx
+create index if not exists bundle_publications_published_at_idx
     on ores_dq_bundle_publications_tbl(published_at);
 
 -- =============================================================================

@@ -24,5 +24,5 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- IP to Country
-drop policy if exists ores_geo_ip2country_tbl_modification_policy on "ores_geo_ip2country_tbl";
-drop policy if exists ores_geo_ip2country_tbl_read_policy on "ores_geo_ip2country_tbl";
+drop policy if exists ip2country_tbl_modification_policy on "ores_geo_ip2country_tbl";
+drop policy if exists ip2country_tbl_read_policy on "ores_geo_ip2country_tbl";

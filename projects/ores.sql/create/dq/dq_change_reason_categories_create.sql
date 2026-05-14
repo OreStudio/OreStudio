@@ -37,15 +37,15 @@ create table if not exists ores_dq_change_reason_categories_tbl (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_dq_change_reason_categories_version_uniq_idx
+create unique index if not exists change_reason_categories_version_uniq_idx
 on ores_dq_change_reason_categories_tbl (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_change_reason_categories_code_uniq_idx
+create unique index if not exists change_reason_categories_code_uniq_idx
 on ores_dq_change_reason_categories_tbl (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_change_reason_categories_tenant_idx
+create index if not exists change_reason_categories_tenant_idx
 on ores_dq_change_reason_categories_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

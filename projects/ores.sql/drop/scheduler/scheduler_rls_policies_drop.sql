@@ -18,5 +18,5 @@
  *
  */
 
-drop policy if exists ores_scheduler_job_definitions_party_isolation_policy on ores_scheduler_job_definitions_tbl;
-drop policy if exists ores_scheduler_job_definitions_tenant_isolation_policy on ores_scheduler_job_definitions_tbl;
+drop policy if exists job_definitions_party_isolation_policy on ores_scheduler_job_definitions_tbl;
+drop policy if exists job_definitions_tenant_isolation_policy on ores_scheduler_job_definitions_tbl;

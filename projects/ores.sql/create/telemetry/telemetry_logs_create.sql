@@ -40,24 +40,24 @@ create table if not exists ores_telemetry_logs_tbl (
     primary key (id, timestamp)
 );
 
-create index if not exists ores_telemetry_logs_tenant_idx
+create index if not exists logs_tenant_idx
 on ores_telemetry_logs_tbl (tenant_id, timestamp desc);
 
-create index if not exists ores_telemetry_logs_session_idx
+create index if not exists logs_session_idx
 on ores_telemetry_logs_tbl (session_id, timestamp desc)
 where session_id is not null;
 
-create index if not exists ores_telemetry_logs_account_idx
+create index if not exists logs_account_idx
 on ores_telemetry_logs_tbl (account_id, timestamp desc)
 where account_id is not null;
 
-create index if not exists ores_telemetry_logs_level_idx
+create index if not exists logs_level_idx
 on ores_telemetry_logs_tbl (level, timestamp desc);
 
-create index if not exists ores_telemetry_logs_source_idx
+create index if not exists logs_source_idx
 on ores_telemetry_logs_tbl (source, source_name, timestamp desc);
 
-create index if not exists ores_telemetry_logs_component_idx
+create index if not exists logs_component_idx
 on ores_telemetry_logs_tbl (component, timestamp desc)
 where component != '';
 

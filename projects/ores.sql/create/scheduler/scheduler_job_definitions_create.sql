@@ -69,31 +69,31 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
 
 -- Unique job_name per tenant among active records.
 -- System jobs (tenant_id IS NULL) are handled by a separate partial index.
-create unique index if not exists ores_scheduler_job_definitions_name_tenant_uniq_idx
+create unique index if not exists job_definitions_name_tenant_uniq_idx
 on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name)
 where valid_to = ores_utility_infinity_timestamp_fn() and tenant_id is not null;
 
-create unique index if not exists ores_scheduler_job_definitions_name_system_uniq_idx
+create unique index if not exists job_definitions_name_system_uniq_idx
 on "ores_scheduler_job_definitions_tbl" (job_name)
 where valid_to = ores_utility_infinity_timestamp_fn() and tenant_id is null;
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_scheduler_job_definitions_version_uniq_idx
+create unique index if not exists job_definitions_version_uniq_idx
 on "ores_scheduler_job_definitions_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_scheduler_job_definitions_id_uniq_idx
+create unique index if not exists job_definitions_id_uniq_idx
 on "ores_scheduler_job_definitions_tbl" (id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_scheduler_job_definitions_tenant_idx
+create index if not exists job_definitions_tenant_idx
 on "ores_scheduler_job_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for party-scoped lookups
-create index if not exists ores_scheduler_job_definitions_party_idx
+create index if not exists job_definitions_party_idx
 on "ores_scheduler_job_definitions_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

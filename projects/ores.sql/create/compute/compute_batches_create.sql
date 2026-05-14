@@ -52,20 +52,20 @@ create table if not exists "ores_compute_batches_tbl" (
 );
 
 -- Unique external_ref for active records
-create unique index if not exists ores_compute_batches_external_ref_uniq_idx
+create unique index if not exists batches_external_ref_uniq_idx
 on "ores_compute_batches_tbl" (tenant_id, external_ref)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_batches_version_uniq_idx
+create unique index if not exists batches_version_uniq_idx
 on "ores_compute_batches_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_batches_id_uniq_idx
+create unique index if not exists batches_id_uniq_idx
 on "ores_compute_batches_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_batches_tenant_idx
+create index if not exists batches_tenant_idx
 on "ores_compute_batches_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

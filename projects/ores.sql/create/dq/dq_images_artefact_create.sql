@@ -27,16 +27,16 @@ create table if not exists "ores_dq_images_artefact_tbl" (
     "svg_data" text not null
 );
 
-create index if not exists ores_dq_images_artefact_dataset_idx
+create index if not exists images_artefact_dataset_idx
 on "ores_dq_images_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_images_artefact_tenant_idx
+create index if not exists images_artefact_tenant_idx
 on "ores_dq_images_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_images_artefact_image_idx
+create index if not exists images_artefact_image_idx
 on "ores_dq_images_artefact_tbl" (image_id);
 
-create index if not exists ores_dq_images_artefact_key_idx
+create index if not exists images_artefact_key_idx
 on "ores_dq_images_artefact_tbl" (key);
 
 -- Function to insert images into the artifact table

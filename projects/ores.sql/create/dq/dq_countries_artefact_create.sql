@@ -29,19 +29,19 @@ create table if not exists "ores_dq_countries_artefact_tbl" (
     "image_id" uuid
 );
 
-create index if not exists ores_dq_countries_artefact_dataset_idx
+create index if not exists countries_artefact_dataset_idx
 on "ores_dq_countries_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_countries_artefact_tenant_idx
+create index if not exists countries_artefact_tenant_idx
 on "ores_dq_countries_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_countries_artefact_alpha2_idx
+create index if not exists countries_artefact_alpha2_idx
 on "ores_dq_countries_artefact_tbl" (alpha2_code);
 
-create index if not exists ores_dq_countries_artefact_alpha3_idx
+create index if not exists countries_artefact_alpha3_idx
 on "ores_dq_countries_artefact_tbl" (alpha3_code);
 
-create index if not exists ores_dq_countries_artefact_numeric_idx
+create index if not exists countries_artefact_numeric_idx
 on "ores_dq_countries_artefact_tbl" (numeric_code);
 
 -- Function to insert countries into the artifact table

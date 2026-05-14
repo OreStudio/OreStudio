@@ -29,10 +29,10 @@ create table if not exists ores_geo_ip2country_tbl (
     "country_code" text not null
 );
 
-create index if not exists ores_geo_ip2country_range_idx
+create index if not exists ip2country_range_idx
 on ores_geo_ip2country_tbl using gist (ip_range);
 
-create index if not exists ores_geo_ip2country_tenant_idx
+create index if not exists ip2country_tenant_idx
 on ores_geo_ip2country_tbl (tenant_id);
 
 create or replace function ores_geo_inet_to_bigint_fn(ip_address inet)

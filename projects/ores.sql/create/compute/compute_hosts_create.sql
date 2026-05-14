@@ -57,20 +57,20 @@ create table if not exists "ores_compute_hosts_tbl" (
 );
 
 -- Unique external_id for active records
-create unique index if not exists ores_compute_hosts_external_id_uniq_idx
+create unique index if not exists hosts_external_id_uniq_idx
 on "ores_compute_hosts_tbl" (tenant_id, external_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_hosts_version_uniq_idx
+create unique index if not exists hosts_version_uniq_idx
 on "ores_compute_hosts_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_hosts_id_uniq_idx
+create unique index if not exists hosts_id_uniq_idx
 on "ores_compute_hosts_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_hosts_tenant_idx
+create index if not exists hosts_tenant_idx
 on "ores_compute_hosts_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

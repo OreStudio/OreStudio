@@ -62,30 +62,30 @@ create table if not exists "ores_dq_coding_schemes_tbl" (
 );
 
 -- Unique indexes for current records
-create unique index if not exists ores_dq_coding_schemes_version_uniq_idx
+create unique index if not exists coding_schemes_version_uniq_idx
 on "ores_dq_coding_schemes_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_coding_schemes_code_uniq_idx
+create unique index if not exists coding_schemes_code_uniq_idx
 on "ores_dq_coding_schemes_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_coding_schemes_tenant_idx
+create index if not exists coding_schemes_tenant_idx
 on "ores_dq_coding_schemes_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for looking up schemes by subject area
-create index if not exists ores_dq_coding_schemes_subject_area_idx
+create index if not exists coding_schemes_subject_area_idx
 on "ores_dq_coding_schemes_tbl" (subject_area_name, domain_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for looking up schemes by URI
-create index if not exists ores_dq_coding_schemes_uri_idx
+create index if not exists coding_schemes_uri_idx
 on "ores_dq_coding_schemes_tbl" (uri)
 where valid_to = ores_utility_infinity_timestamp_fn() and uri is not null;
 
 -- Index for looking up schemes by authority type
-create index if not exists ores_dq_coding_schemes_authority_type_idx
+create index if not exists coding_schemes_authority_type_idx
 on "ores_dq_coding_schemes_tbl" (authority_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

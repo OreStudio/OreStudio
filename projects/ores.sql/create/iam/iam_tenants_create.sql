@@ -64,15 +64,15 @@ create table if not exists "ores_iam_tenants_tbl" (
 
 -- Unique indexes for active records
 -- Note: tenant_id is always system tenant, so not needed in uniqueness constraints
-create unique index if not exists ores_iam_tenants_code_uniq_idx
+create unique index if not exists tenants_code_uniq_idx
 on ores_iam_tenants_tbl (code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_tenants_hostname_uniq_idx
+create unique index if not exists tenants_hostname_uniq_idx
 on ores_iam_tenants_tbl (hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_tenants_version_uniq_idx
+create unique index if not exists tenants_version_uniq_idx
 on ores_iam_tenants_tbl (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

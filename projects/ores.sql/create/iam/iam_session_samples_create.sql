@@ -34,7 +34,7 @@ create table if not exists ores_iam_session_samples_tbl (
     primary key (session_id, sample_time)
 );
 
-create index if not exists ores_iam_session_samples_session_idx
+create index if not exists session_samples_session_idx
 on ores_iam_session_samples_tbl (session_id, sample_time desc);
 
 do $$

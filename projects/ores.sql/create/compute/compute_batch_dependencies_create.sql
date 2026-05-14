@@ -35,8 +35,8 @@ create table if not exists "ores_compute_batch_dependencies_tbl" (
     check ("parent_batch_id" <> "child_batch_id")
 );
 
-create index if not exists ores_compute_batch_dependencies_parent_idx
+create index if not exists batch_dependencies_parent_idx
 on "ores_compute_batch_dependencies_tbl" (tenant_id, parent_batch_id);
 
-create index if not exists ores_compute_batch_dependencies_child_idx
+create index if not exists batch_dependencies_child_idx
 on "ores_compute_batch_dependencies_tbl" (tenant_id, child_batch_id);

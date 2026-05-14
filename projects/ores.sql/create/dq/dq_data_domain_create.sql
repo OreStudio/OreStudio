@@ -44,15 +44,15 @@ create table if not exists "ores_dq_data_domains_tbl" (
     check ("name" <> '')
 );
 
-create unique index if not exists ores_dq_data_domains_version_uniq_idx
+create unique index if not exists data_domains_version_uniq_idx
 on "ores_dq_data_domains_tbl" (tenant_id, name, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_data_domains_name_uniq_idx
+create unique index if not exists data_domains_name_uniq_idx
 on "ores_dq_data_domains_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_data_domains_tenant_idx
+create index if not exists data_domains_tenant_idx
 on "ores_dq_data_domains_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

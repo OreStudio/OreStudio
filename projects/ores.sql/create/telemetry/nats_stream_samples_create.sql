@@ -34,7 +34,7 @@ create table if not exists ores_telemetry_nats_stream_samples_tbl (
     primary key (sampled_at, tenant_id, stream_name)
 );
 
-create index if not exists ores_telemetry_nats_stream_samples_name_idx
+create index if not exists nats_stream_samples_name_idx
 on ores_telemetry_nats_stream_samples_tbl (stream_name, sampled_at desc);
 
 do $$

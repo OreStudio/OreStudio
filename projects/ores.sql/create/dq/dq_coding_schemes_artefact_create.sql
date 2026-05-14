@@ -37,14 +37,14 @@ create table if not exists "ores_dq_coding_schemes_artefact_tbl" (
     "description" text not null
 );
 
-create index if not exists ores_dq_coding_schemes_artefact_dataset_idx
+create index if not exists coding_schemes_artefact_dataset_idx
 on "ores_dq_coding_schemes_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_coding_schemes_artefact_tenant_idx
+create index if not exists coding_schemes_artefact_tenant_idx
 on "ores_dq_coding_schemes_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_coding_schemes_artefact_code_idx
+create index if not exists coding_schemes_artefact_code_idx
 on "ores_dq_coding_schemes_artefact_tbl" (code);
 
-create index if not exists ores_dq_coding_schemes_artefact_authority_type_idx
+create index if not exists coding_schemes_artefact_authority_type_idx
 on "ores_dq_coding_schemes_artefact_tbl" (authority_type);

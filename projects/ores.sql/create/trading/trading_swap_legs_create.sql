@@ -66,27 +66,27 @@ create table if not exists "ores_trading_swap_legs_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_swap_legs_version_uniq_idx
+create unique index if not exists swap_legs_version_uniq_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_swap_legs_id_uniq_idx
+create unique index if not exists swap_legs_id_uniq_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_swap_legs_tenant_idx
+create index if not exists swap_legs_tenant_idx
 on "ores_trading_swap_legs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for RLS
-create index if not exists ores_trading_swap_legs_party_idx
+create index if not exists swap_legs_party_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Instrument index for leg lookups
-create index if not exists ores_trading_swap_legs_instrument_idx
+create index if not exists swap_legs_instrument_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

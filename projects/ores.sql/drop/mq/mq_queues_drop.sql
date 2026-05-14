@@ -19,7 +19,7 @@
  */
 
 drop function if exists ores_mq_queues_create_fn;
-drop index if exists ores_mq_queues_system_name_uniq_idx;
-drop index if exists ores_mq_queues_tenant_name_uniq_idx;
-drop index if exists ores_mq_queues_party_name_uniq_idx;
+drop index if exists queues_system_name_uniq_idx;
+drop index if exists queues_tenant_name_uniq_idx;
+drop index if exists queues_party_name_uniq_idx;
 drop table if exists ores_mq_queues_tbl cascade;

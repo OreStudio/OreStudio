@@ -66,27 +66,27 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_fx_variance_swap_instruments_version_uniq_idx
+create unique index if not exists fx_variance_swap_instruments_version_uniq_idx
 on "ores_trading_fx_variance_swap_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_fx_variance_swap_instruments_id_uniq_idx
+create unique index if not exists fx_variance_swap_instruments_id_uniq_idx
 on "ores_trading_fx_variance_swap_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_fx_variance_swap_instruments_tenant_idx
+create index if not exists fx_variance_swap_instruments_tenant_idx
 on "ores_trading_fx_variance_swap_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for RLS
-create index if not exists ores_trading_fx_variance_swap_instruments_party_idx
+create index if not exists fx_variance_swap_instruments_party_idx
 on "ores_trading_fx_variance_swap_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Soft FK back to trade
-create unique index if not exists ores_trading_fx_variance_swap_instruments_trade_id_idx
+create unique index if not exists fx_variance_swap_instruments_trade_id_idx
 on "ores_trading_fx_variance_swap_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;

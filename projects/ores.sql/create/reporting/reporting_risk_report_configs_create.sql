@@ -120,22 +120,22 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_reporting_risk_report_configs_version_uniq_idx
+create unique index if not exists risk_report_configs_version_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_reporting_risk_report_configs_id_uniq_idx
+create unique index if not exists risk_report_configs_id_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- One config per report definition (enforced on current records)
-create unique index if not exists ores_reporting_risk_report_configs_definition_uniq_idx
+create unique index if not exists risk_report_configs_definition_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, report_definition_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_reporting_risk_report_configs_tenant_idx
+create index if not exists risk_report_configs_tenant_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

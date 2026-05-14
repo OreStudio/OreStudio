@@ -87,17 +87,17 @@ comment on column ores_dq_dataset_publications_tbl.published_at is
     'Timestamp when the publication occurred.';
 
 -- Index for querying publication history by dataset
-create index if not exists ores_dq_dataset_publications_dataset_id_idx
+create index if not exists dataset_publications_dataset_id_idx
     on ores_dq_dataset_publications_tbl(dataset_id);
 
 -- Index for querying publication history by time
-create index if not exists ores_dq_dataset_publications_published_at_idx
+create index if not exists dataset_publications_published_at_idx
     on ores_dq_dataset_publications_tbl(published_at);
 
 -- Index for querying publication history by user
-create index if not exists ores_dq_dataset_publications_published_by_idx
+create index if not exists dataset_publications_published_by_idx
     on ores_dq_dataset_publications_tbl(published_by);
 
 -- Index for querying publication history by tenant
-create index if not exists ores_dq_dataset_publications_tenant_idx
+create index if not exists dataset_publications_tenant_idx
     on ores_dq_dataset_publications_tbl(tenant_id);

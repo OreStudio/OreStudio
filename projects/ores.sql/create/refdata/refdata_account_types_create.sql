@@ -50,19 +50,19 @@ create table if not exists "ores_refdata_account_types_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_refdata_account_types_version_uniq_idx
+create unique index if not exists account_types_version_uniq_idx
 on "ores_refdata_account_types_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_account_types_code_uniq_idx
+create unique index if not exists account_types_code_uniq_idx
 on "ores_refdata_account_types_tbl" (tenant_id, code, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_account_types_tenant_idx
+create index if not exists account_types_tenant_idx
 on "ores_refdata_account_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_account_types_coding_scheme_idx
+create index if not exists account_types_coding_scheme_idx
 on "ores_refdata_account_types_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

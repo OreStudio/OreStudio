@@ -22,8 +22,8 @@ drop trigger if exists ores_marketdata_observations_delete_trg on ores_marketdat
 drop trigger if exists ores_marketdata_observations_insert_trg on ores_marketdata_observations_tbl;
 drop function if exists ores_marketdata_observations_delete_fn;
 drop function if exists ores_marketdata_observations_insert_fn;
-drop index if exists ores_marketdata_observations_source_idx;
-drop index if exists ores_marketdata_observations_tenant_date_idx;
-drop index if exists ores_marketdata_observations_series_date_idx;
-drop index if exists ores_marketdata_observations_current_uniq_idx;
+drop index if exists observations_source_idx;
+drop index if exists observations_tenant_date_idx;
+drop index if exists observations_series_date_idx;
+drop index if exists observations_current_uniq_idx;
 drop table if exists ores_marketdata_observations_tbl;

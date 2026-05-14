@@ -50,19 +50,19 @@ create table if not exists "ores_refdata_party_roles_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_refdata_party_roles_version_uniq_idx
+create unique index if not exists party_roles_version_uniq_idx
 on "ores_refdata_party_roles_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_party_roles_code_uniq_idx
+create unique index if not exists party_roles_code_uniq_idx
 on "ores_refdata_party_roles_tbl" (tenant_id, code, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_party_roles_tenant_idx
+create index if not exists party_roles_tenant_idx
 on "ores_refdata_party_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_party_roles_coding_scheme_idx
+create index if not exists party_roles_coding_scheme_idx
 on "ores_refdata_party_roles_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

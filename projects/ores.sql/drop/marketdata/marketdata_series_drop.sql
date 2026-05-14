@@ -21,8 +21,8 @@
 drop trigger if exists ores_marketdata_series_insert_trg on ores_marketdata_series_tbl;
 drop rule if exists ores_marketdata_series_delete_rule on ores_marketdata_series_tbl;
 drop function if exists ores_marketdata_series_insert_fn;
-drop index if exists ores_marketdata_series_asset_class_idx;
-drop index if exists ores_marketdata_series_tenant_idx;
-drop index if exists ores_marketdata_series_version_uniq_idx;
-drop index if exists ores_marketdata_series_natural_key_uniq_idx;
+drop index if exists series_asset_class_idx;
+drop index if exists series_tenant_idx;
+drop index if exists series_version_uniq_idx;
+drop index if exists series_natural_key_uniq_idx;
 drop table if exists ores_marketdata_series_tbl;

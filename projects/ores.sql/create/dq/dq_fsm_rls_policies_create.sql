@@ -28,7 +28,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_dq_fsm_machines_tbl enable row level security;
 
-create policy ores_dq_fsm_machines_tenant_isolation_policy on ores_dq_fsm_machines_tbl
+create policy fsm_machines_tenant_isolation_policy on ores_dq_fsm_machines_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -41,7 +41,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_dq_fsm_states_tbl enable row level security;
 
-create policy ores_dq_fsm_states_tenant_isolation_policy on ores_dq_fsm_states_tbl
+create policy fsm_states_tenant_isolation_policy on ores_dq_fsm_states_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -54,7 +54,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_dq_fsm_transitions_tbl enable row level security;
 
-create policy ores_dq_fsm_transitions_tenant_isolation_policy on ores_dq_fsm_transitions_tbl
+create policy fsm_transitions_tenant_isolation_policy on ores_dq_fsm_transitions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

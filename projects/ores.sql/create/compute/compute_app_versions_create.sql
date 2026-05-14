@@ -55,19 +55,19 @@ create table if not exists "ores_compute_app_versions_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_app_versions_version_uniq_idx
+create unique index if not exists app_versions_version_uniq_idx
 on "ores_compute_app_versions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_app_versions_id_uniq_idx
+create unique index if not exists app_versions_id_uniq_idx
 on "ores_compute_app_versions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_app_versions_tenant_idx
+create index if not exists app_versions_tenant_idx
 on "ores_compute_app_versions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_app_versions_app_id_idx
+create index if not exists app_versions_app_id_idx
 on "ores_compute_app_versions_tbl" (tenant_id, app_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

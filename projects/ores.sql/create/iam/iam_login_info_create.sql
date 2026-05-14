@@ -37,13 +37,13 @@ create table if not exists ores_iam_login_info_tbl (
     primary key (account_id)
 );
 
-create index if not exists ores_iam_login_info_tenant_idx
+create index if not exists login_info_tenant_idx
 on ores_iam_login_info_tbl (tenant_id);
 
-create index if not exists ores_iam_login_info_account_id_idx
+create index if not exists login_info_account_id_idx
 on ores_iam_login_info_tbl (account_id);
 
-create index if not exists ores_iam_login_info_locked_idx
+create index if not exists login_info_locked_idx
 on ores_iam_login_info_tbl (locked)
 where locked = 0;
 

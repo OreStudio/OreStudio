@@ -45,20 +45,20 @@ create table if not exists ores_marketdata_fixings_tbl (
 );
 
 -- Current-row uniqueness per (tenant, series, fixing date).
-create unique index if not exists ores_marketdata_fixings_current_uniq_idx
+create unique index if not exists fixings_current_uniq_idx
 on ores_marketdata_fixings_tbl (tenant_id, series_id, fixing_date)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Lookup by series + date range.
-create index if not exists ores_marketdata_fixings_series_date_idx
+create index if not exists fixings_series_date_idx
 on ores_marketdata_fixings_tbl (tenant_id, series_id, fixing_date desc);
 
 -- Lookup by tenant across all series.
-create index if not exists ores_marketdata_fixings_tenant_date_idx
+create index if not exists fixings_tenant_date_idx
 on ores_marketdata_fixings_tbl (tenant_id, fixing_date desc);
 
 -- Lookup by source.
-create index if not exists ores_marketdata_fixings_source_idx
+create index if not exists fixings_source_idx
 on ores_marketdata_fixings_tbl (tenant_id, source, fixing_date desc)
 where source is not null;
 

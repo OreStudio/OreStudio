@@ -53,22 +53,22 @@ create table if not exists "ores_refdata_business_unit_types_tbl" (
 );
 
 -- Natural key: unique code per coding scheme within tenant
-create unique index if not exists ores_refdata_business_unit_types_natural_key_uniq_idx
+create unique index if not exists business_unit_types_natural_key_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, coding_scheme_code, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_business_unit_types_version_uniq_idx
+create unique index if not exists business_unit_types_version_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- ID uniqueness for active records
-create unique index if not exists ores_refdata_business_unit_types_id_uniq_idx
+create unique index if not exists business_unit_types_id_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index for efficient tenant-scoped queries
-create index if not exists ores_refdata_business_unit_types_tenant_idx
+create index if not exists business_unit_types_tenant_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

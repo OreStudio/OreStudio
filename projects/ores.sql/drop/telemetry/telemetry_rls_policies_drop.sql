@@ -24,4 +24,4 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- Logs
-drop policy if exists ores_telemetry_logs_tbl_tenant_isolation_policy on "ores_telemetry_logs_tbl";
+drop policy if exists logs_tbl_tenant_isolation_policy on "ores_telemetry_logs_tbl";

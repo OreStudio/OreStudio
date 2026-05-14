@@ -70,32 +70,32 @@ create table if not exists "ores_reporting_report_instances_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_reporting_report_instances_version_uniq_idx
+create unique index if not exists report_instances_version_uniq_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_reporting_report_instances_id_uniq_idx
+create unique index if not exists report_instances_id_uniq_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Natural key: unique instance name per tenant
-create unique index if not exists ores_reporting_report_instances_name_uniq_idx
+create unique index if not exists report_instances_name_uniq_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_reporting_report_instances_tenant_idx
+create index if not exists report_instances_tenant_idx
 on "ores_reporting_report_instances_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Definition index for listing instances per definition
-create index if not exists ores_reporting_report_instances_definition_idx
+create index if not exists report_instances_definition_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, definition_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FSM state index for state-based filtering (e.g. "find all running instances")
-create index if not exists ores_reporting_report_instances_fsm_state_idx
+create index if not exists report_instances_fsm_state_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, fsm_state_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

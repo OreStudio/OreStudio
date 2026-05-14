@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_MAPPER_HPP
 
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/code_domain_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

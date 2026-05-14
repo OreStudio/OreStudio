@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_MAPPER_HPP
 
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

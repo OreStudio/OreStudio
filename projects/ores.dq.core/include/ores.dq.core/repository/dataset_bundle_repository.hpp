@@ -27,13 +27,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes dataset bundles to data storage.
  */
-class dataset_bundle_repository {
+class ORES_DQ_CORE_EXPORT dataset_bundle_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.dataset_bundle_repository";

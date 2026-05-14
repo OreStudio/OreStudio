@@ -27,6 +27,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
@@ -36,7 +37,7 @@ namespace ores::dq::repository {
  * This is a simple lookup table repository - read-only operations.
  * Data is populated via SQL scripts.
  */
-class artefact_type_repository {
+class ORES_DQ_CORE_EXPORT artefact_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.artefact_type_repository";

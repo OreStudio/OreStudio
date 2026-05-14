@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_REPOSITORY_METHODOLOGY_MAPPER_HPP
 
 #include "ores.dq.api/domain/methodology.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/methodology_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 

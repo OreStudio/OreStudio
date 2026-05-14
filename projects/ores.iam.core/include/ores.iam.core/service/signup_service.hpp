@@ -32,6 +32,7 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -59,7 +60,7 @@ struct signup_result {
  * - Email uniqueness and format
  * - Password policy compliance
  */
-class signup_service {
+class ORES_IAM_CORE_EXPORT  {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.signup_service";

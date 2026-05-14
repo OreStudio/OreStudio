@@ -24,6 +24,7 @@
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -48,7 +49,7 @@ namespace ores::iam::service {
  *   - Production/C++ provisioning: generate_database_name(true) with suffix
  *   - Guaranteed unique: generate_unique_database_name()
  */
-class database_name_service {
+class ORES_IAM_CORE_EXPORT  {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.database_name_service";

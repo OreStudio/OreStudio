@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.core/repository/system_settings_repository.hpp"
+#include "ores.variability.core/export.hpp"
 
 namespace ores::variability::service {
 
@@ -38,7 +39,7 @@ namespace ores::variability::service {
  * (get_bool, get_int, get_string, get_json) that return compile-time defaults
  * from the registry when a setting is absent from the DB.
  */
-class system_settings_service {
+class ORES_VARIABILITY_CORE_EXPORT  {
 private:
     inline static std::string_view logger_name =
         "ores.variability.service.system_settings_service";

@@ -27,6 +27,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -36,7 +37,7 @@ namespace ores::iam::service {
  * This service provides functionality for:
  * - Managing account parties (CRUD operations)
  */
-class account_party_service {
+class ORES_IAM_CORE_EXPORT  {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.account_party_service";

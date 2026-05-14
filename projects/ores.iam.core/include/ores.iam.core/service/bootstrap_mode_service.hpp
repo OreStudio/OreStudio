@@ -27,6 +27,7 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -47,7 +48,7 @@ namespace ores::iam::service {
  * - Initialize bootstrap state on system startup
  * - Transition from bootstrap mode to secure mode
  */
-class bootstrap_mode_service {
+class ORES_IAM_CORE_EXPORT  {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.bootstrap_mode_service";

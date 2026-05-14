@@ -1,0 +1,632 @@
+#+TITLE: DQ Publish Pattern — Architecture and Decision
+#+SUBTITLE: Reconciling bulk artefact publishing with strict service table isolation
+#+DATE: 2026-05-14
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSAL
+#+OPTIONS: toc:t num:nil
+
+* Background
+
+** Origin
+
+During the Party Setup wizard work (branch
+~feature/cli-conventions-import~), a permission error surfaced on the
+Report Definitions page:
+
+#+BEGIN_EXAMPLE
+Failed to load templates: Query execution failed:
+ERROR: permission denied for table ores_dq_report_definitions_artefact_tbl
+#+END_EXAMPLE
+
+Root cause: ~report_definition_template_service::list_templates()~ in
+~ores.reporting.core~ issues a direct SQL query against three DQ-owned
+tables (~ores_dq_report_definitions_artefact_tbl~, ~ores_dq_datasets_tbl~,
+~ores_dq_dataset_bundle_members_tbl~), but ~reporting_service_user~
+holds no SELECT grant on ~ores_dq_*~ tables (strict service table
+isolation invariant).
+
+Investigating the fix surfaced two related but distinct concerns:
+
+1. *Listing available report definition templates.* The wizard's Report
+   Setup page needs to show the user which report types are available
+   in the ~ore_analytics~ DQ bundle. Today this is routed through the
+   reporting service, which queries DQ tables directly — a clear
+   boundary violation. The correct owner of this data is the DQ
+   service.
+
+2. *Installing (creating) report definitions for a party.* Once the
+   user confirms their selection, the wizard creates actual report
+   definitions in ~ores_reporting_report_definitions_tbl~ for the
+   current party. The current path is ~dq.v1.bundles.publish~ which
+   invokes a ~SECURITY DEFINER~ function that writes across service
+   boundaries at the database level.
+
+The two concerns are special cases of the same underlying violation:
+read-side and write-side cross-service coupling in the publish path.
+
+** Architectural context
+
+The strict service table isolation invariant — established in
+[[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+and tracked in
+[[file:2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]]
+— stipulates that a domain service user holds DML privileges on its own
+component tables only (~ores_<service>_*~). Cross-component validation
+runs through ~SECURITY DEFINER~ functions owned by the defining
+service, and the three remaining cross-component DML grants
+(IAM→refdata parties, workflow→IAM/refdata, ORE→workflow) are queued
+for migration to NATS write APIs.
+
+The DQ publish mechanism predates that invariant. It originated when
+the system was a monolith and "publish" was a convenient DDL-owner-level
+bulk operation that could freely read any table and write to any
+table. Today, each ~ores_dq_*_publish_fn~ remains a ~SECURITY DEFINER~
+function that writes into tables owned by other services. This is not
+yet tracked in either isolation plan, but it is the same class of
+architectural debt and is now visible to users via the
+permission-denied error above.
+
+This document proposes a way forward.
+
+* What "Publish" Does Today
+
+** Entry point
+
+A single NATS subject ~dq.v1.bundles.publish~ (declared in
+~projects/ores.dq.api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp~)
+is consumed by ~publication_service::publish_bundle~ in
+~projects/ores.dq.core/src/service/publication_service.cpp~. It executes a
+single SQL call:
+
+#+BEGIN_SRC sql
+SELECT * FROM ores_dq_bundles_publish_fn(
+    p_bundle_code, p_target_tenant_id, p_mode, p_published_by,
+    p_atomic, p_params::jsonb);
+#+END_SRC
+
+This call is made as ~dq_service_user~, which holds DML grants only on
+~ores_dq_*~ tables.
+
+** Bundle orchestrator
+
+~ores_dq_bundles_publish_fn~ (~SECURITY DEFINER~, in
+~projects/ores.sql/create/dq/dq_bundle_publication_create.sql~):
+
+1. Loads the bundle's dataset members in ~display_order~.
+2. For each member, looks up its ~artefact_type~ in
+   ~ores_dq_artefact_types_tbl~ to find a registered ~populate_function~.
+3. Dynamically invokes ~populate_function(dataset_id, target_tenant_id,
+   mode, params)~ via ~EXECUTE~.
+4. Aggregates ~inserted/updated/skipped/deleted~ counts into a per-bundle
+   audit row in ~ores_dq_bundle_publications_tbl~.
+
+** Per-artefact publish functions
+
+Each artefact type has its own ~ores_dq_<entity>_publish_fn~. All are
+~SECURITY DEFINER~. They follow the same shape: read from
+~ores_dq_<entity>_artefact_tbl~ and ~INSERT~ into the target table. The
+full set of cross-service writes from DQ publish functions today:
+
+| Publish function                              | Writes to                                      | Owner service |
+|-----------------------------------------------+------------------------------------------------+---------------|
+| ~ores_dq_lei_counterparties_publish_fn~       | ~ores_refdata_counterparties_tbl~,             | refdata       |
+|                                               | ~ores_refdata_counterparty_identifiers_tbl~    |               |
+| ~ores_dq_lei_parties_publish_fn~              | ~ores_refdata_parties_tbl~,                    | refdata       |
+|                                               | ~ores_refdata_party_identifiers_tbl~           |               |
+| ~ores_dq_business_units_publish_fn~           | ~ores_refdata_business_units_tbl~,             | refdata       |
+|                                               | ~ores_refdata_business_unit_types_tbl~         |               |
+| ~ores_dq_portfolios_publish_fn~               | ~ores_refdata_portfolios_tbl~                  | refdata       |
+| ~ores_dq_books_publish_fn~                    | ~ores_refdata_books_tbl~                       | refdata       |
+| ~ores_dq_report_definitions_publish_fn~       | ~ores_reporting_report_definitions_tbl~        | reporting     |
+| ~ores_dq_account_types_publish_fn~            | ~ores_refdata_account_types_tbl~               | refdata       |
+| ~ores_dq_benchmark_rates_publish_fn~          | ~ores_refdata_benchmark_rates_tbl~             | refdata       |
+| ~ores_dq_cashflow_types_publish_fn~           | ~ores_refdata_cashflow_types_tbl~              | refdata       |
+| ~ores_dq_party_relationships_publish_fn~      | ~ores_refdata_party_relationships_tbl~         | refdata       |
+| ~ores_dq_reporting_regimes_publish_fn~        | ~ores_refdata_reporting_regimes_tbl~           | refdata       |
+| ~ores_dq_regulatory_corporate_sectors_publish_fn~ | ~ores_refdata_regulatory_corporate_sectors_tbl~ | refdata    |
+| ~ores_dq_asset_classes_publish_fn~            | ~ores_refdata_asset_classes_tbl~               | refdata       |
+| ~ores_dq_asset_measures_publish_fn~           | ~ores_refdata_asset_measures_tbl~              | refdata       |
+| ~ores_dq_entity_classifications_publish_fn~   | ~ores_refdata_entity_classifications_tbl~      | refdata       |
+| ~ores_dq_local_jurisdictions_publish_fn~      | ~ores_refdata_local_jurisdictions_tbl~         | refdata       |
+| ~ores_dq_business_centres_publish_fn~         | ~ores_refdata_business_centres_tbl~            | refdata       |
+| ~ores_dq_business_processes_publish_fn~       | ~ores_refdata_business_processes_tbl~          | refdata       |
+| ~ores_dq_countries_publish_fn~                | ~ores_refdata_countries_tbl~                   | refdata       |
+| ~ores_dq_currencies_publish_fn~               | ~ores_refdata_currencies_tbl~                  | refdata       |
+| ~ores_dq_person_roles_publish_fn~             | ~ores_refdata_person_roles_tbl~                | refdata       |
+| ~ores_dq_supervisory_bodies_publish_fn~       | ~ores_refdata_supervisory_bodies_tbl~          | refdata       |
+| ~ores_dq_party_roles_publish_fn~              | ~ores_refdata_party_roles_tbl~                 | refdata       |
+| ~ores_dq_coding_schemes_publish_fn~           | ~ores_refdata_coding_schemes_tbl~              | refdata       |
+| ~ores_dq_images_publish_fn~                   | ~ores_assets_images_tbl~                       | assets        |
+
+Two distinct seed-time inversions also exist (separate from the publish
+path), where another service's populate script writes into DQ artefact
+tables — for example
+~projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql~
+inserts into ~ores_dq_report_definitions_artefact_tbl~. Those run as the
+DDL user at setup time and are not in scope here; they are addressed in
+"Open questions" below.
+
+** Current state on this branch
+
+The following uncommitted changes were made during the analysis session
+that led to this document; they implement a tactical workaround for the
+listing concern only and are *not* the proposed way forward. The
+implementation plan below supersedes them in a single PR:
+
+- ~projects/ores.sql/create/dq/dq_functions_create.sql~ — adds
+  ~ores_dq_get_report_definition_templates_fn~ (~SECURITY DEFINER~).
+- ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~ —
+  ~GRANT EXECUTE~ on the above function to ~reporting_service_user~.
+- ~projects/ores.reporting.core/src/service/report_definition_template_service.cpp~ —
+  updated to call the ~SECURITY DEFINER~ function rather than the
+  direct cross-service ~SELECT~.
+
+These three changes should be reverted as part of the implementation
+PR; the proper ~dq.v1.report-definition-templates.list~ NATS endpoint
+replaces them.
+
+* What the Pattern Violates
+
+The publish pattern violates the strict isolation invariant in three
+distinct ways:
+
+1. *Cross-service writes hidden behind ~SECURITY DEFINER~.* The grants file
+   (~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~) shows
+   ~dq_service_user~ with no DML grant on ~ores_refdata_*~ or
+   ~ores_reporting_*~. The publish path nonetheless writes to those tables
+   because each ~ores_dq_*_publish_fn~ is owned by the DDL user and runs
+   with owner privilege. Static analysis of grants does not reveal the
+   coupling — auditing requires reading every ~SECURITY DEFINER~ function
+   body.
+
+2. *Ownership inversion.* The publish *operation* logically belongs to the
+   target service (it constructs a new row in that service's table, with
+   the target service's column constraints, validation rules, and
+   triggers). It currently lives in the DQ schema. A change to the shape
+   of ~ores_refdata_books_tbl~ requires editing
+   ~dq_books_publish_create.sql~, owned by a different domain. There is no
+   compile-time or grant-time signal that the two are coupled; only a
+   migration test failure would catch it.
+
+3. *No service-level mediation.* The publish path makes a SQL call from
+   the DQ service straight into another service's storage. The target
+   service is never invoked. Trigger-based invariants and LISTEN/NOTIFY
+   eventing inside the target service's tables still fire, but
+   service-layer logic (cache invalidation, projection updates,
+   per-service authorisation checks) is bypassed. This is the same shape
+   of coupling that ~auth_handler~'s direct read of
+   ~ores_refdata_parties_tbl~ has (queued for migration in 4.3 of the
+   write-decoupling plan), only in the write direction.
+
+The two concerns identified in "Origin" above are special cases:
+
+- *Listing templates*: the reporting service queries DQ artefact tables
+  directly (a read-side violation; the same shape, opposite direction).
+- *Installing templates*: the publish path writes to a reporting table
+  from the DQ schema (the canonical violation).
+
+* Options for the Way Forward
+
+** Option A — Status quo, with the exception codified
+
+Keep ~SECURITY DEFINER~ publish functions in the DQ schema. Add an explicit
+clause to the isolation invariant: "DQ publish functions are a documented
+exception, justified by bulk-write performance."
+
+Pros:
+- Zero implementation work.
+- Bulk INSERT remains a single round-trip per dataset.
+
+Cons:
+- The exception is broad ("any publish function may write anywhere"). New
+  publish functions inherit the exemption without review.
+- Grants stop being the source of truth for who can write where. Audit
+  must read every ~SECURITY DEFINER~ body, every time.
+- Cross-service writes remain invisible to the target service's
+  application layer — caches, projections, and event listeners cannot
+  observe the change without polling the DB.
+- The ownership inversion remains: refdata column additions force edits
+  in the DQ schema.
+
+** Option B — Move publish ownership to the target service
+
+Each target service exposes a NATS publish endpoint of the form
+~<service>.v1.<entity>.publish-from-dataset~. The endpoint is implemented
+in that service's component (e.g., ~ores.refdata.core~,
+~ores.reporting.core~). Internally, the endpoint calls a SECURITY DEFINER
+SQL function that:
+
+- Reads from ~ores_dq_<entity>_artefact_tbl~ (cross-service read, same
+  shape as today's validators).
+- Writes to its own ~ores_<service>_<entity>_tbl~ (intra-service, normal
+  grant model).
+
+The function lives in the target service's SQL tree (e.g.,
+~projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql~),
+owned and reviewed by that service's owners.
+
+The DQ bundle orchestrator (~dq.v1.bundles.publish~) keeps the bundle
+abstraction: it iterates the bundle's dataset list and dispatches each
+dataset to the appropriate target-service NATS endpoint, aggregating the
+results. The dispatch table replaces ~ores_dq_artefact_types_tbl~'s
+~populate_function~ column with a ~target_subject~ column (or a registry
+keyed by artefact type).
+
+Pros:
+- Each service owns the writes to its own tables. The ownership inversion
+  is removed.
+- Grants remain the source of truth: refdata SQL writes only refdata
+  tables, reporting writes only reporting, etc.
+- The target service's application layer sees the publish event. It can
+  invalidate caches, fire projections, and emit ~*.changed~ events
+  consistently with all other writes to that table.
+- Bulk performance is preserved: each NATS round-trip still triggers a
+  single bulk INSERT inside the target service.
+
+Cons:
+- Adds N NATS endpoints (one per artefact type) instead of one DQ-side
+  call. Significant boilerplate, but mechanical.
+- Adds N NATS round-trips per bundle publish (typically <30 datasets per
+  bundle; trivial cost relative to the DB work each call does).
+- The transactional boundary is no longer a single DB transaction; the
+  bundle's all-or-nothing ~p_atomic~ mode (currently a single transaction
+  inside ~ores_dq_bundles_publish_fn~) becomes harder to enforce. Mitigation
+  options are discussed under "Atomicity" below.
+
+** Option C — Per-record NATS calls
+
+The DQ service reads artefact rows and posts each row individually to the
+target service's normal CRUD endpoint (e.g.,
+~refdata.v1.counterparties.save~). No bulk path at all.
+
+Pros:
+- The cleanest decoupling: no special "publish" surface, no SECURITY
+  DEFINER, no cross-service reads. Every write goes through the target
+  service's normal write API.
+
+Cons:
+- Prohibitive cost for large datasets. LEI dataset members can reach
+  ~hundreds of thousands of rows; counterparties alone is into the tens
+  of thousands. N round-trips and N service-side transactions for a single
+  publish is not viable.
+- Triggers per-row replays of validation, projection, and event work that
+  the bulk publish elides.
+
+Rejected.
+
+* Recommended Way Forward
+
+*Adopt Option B: publish ownership moves to the target service.*
+
+This makes "an exception to the strict isolation rule is acceptable
+when justified by performance" architecturally precise. The exception
+must be:
+
+1. Bounded by the target service. The function that writes to
+   ~ores_refdata_books_tbl~ lives in ~refdata~'s SQL tree, is reviewed by
+   ~refdata~ owners, and is exposed via a ~refdata.v1.*~ NATS subject. No
+   service writes to another service's tables in SQL.
+
+2. Bounded by direction. Bulk *reads* of artefacts from
+   ~ores_dq_*_artefact_tbl~ remain the exception. Bulk *writes* to a
+   target service's tables happen only via that service's own SECURITY
+   DEFINER functions.
+
+3. Bounded by purpose. The exception covers only the "install template
+   data for a tenant/party" use case. Steady-state CRUD continues to flow
+   through the service's normal write API.
+
+** New architectural rule
+
+Add to ~projects/modeling/system_model.org~ alongside the existing
+isolation-invariant section:
+
+#+BEGIN_QUOTE
+*Publish exception.* For the narrow case of bulk-installing template data
+from a DQ artefact table into a target service's storage, the target
+service may expose a NATS subject of the form
+~<service>.v1.<entity>.publish-from-dq~. The handler invokes a SECURITY
+DEFINER SQL function (~ores_<service>_publish_<entity>_from_dq_fn~) defined
+in the target service's SQL tree. The function reads from
+~ores_dq_<entity>_artefact_tbl~ and writes only to tables owned by the
+target service. No other cross-service write is permitted.
+#+END_QUOTE
+
+** Permission model under the recommendation
+
+The grant model becomes uniform across all services:
+
+| Privilege                                                                  | Holder                  |
+|----------------------------------------------------------------------------+-------------------------|
+| DML on ~ores_<service>_*~                                                  | ~<service>_service_user~ |
+| ~SELECT~ on ~ores_dq_<entity>_artefact_tbl~ (read inside the SECURITY DEFINER fn) | function owner (DDL user) |
+| ~EXECUTE~ on ~ores_<service>_publish_<entity>_from_dq_fn~                  | ~<service>_service_user~ |
+| ~EXECUTE~ on ~ores_dq_bundles_publish_fn~ (orchestrator only)              | ~dq_service_user~        |
+
+Critically:
+
+- ~dq_service_user~ gains *no* DML on any target service's tables. Its only
+  privilege over them is "publish, via the target service's NATS API".
+- Each target service's user gains *no* DML on DQ artefact tables. Reads
+  inside the publish function run with DDL-owner privilege, the same as
+  today's validator pattern.
+- The grants file (~iam_service_db_grants_create.sql~) remains the source
+  of truth for "who can write to what". Auditing cross-service writes
+  reduces to "search for ~publish_<entity>_from_dq_fn~" — a single naming
+  convention.
+
+** Orchestration: workflow service, not bespoke saga
+
+The publish bundle is a multi-step, halt-on-failure cross-service saga
+with synchronous, fast steps. That is exactly the shape the workflow
+engine generalisation
+([[file:2026-04-05-workflow-engine-generalisation.org][workflow-engine-generalisation.org]])
+is built for. Rather than invent bespoke orchestration in
+~publication_service.cpp~, model publish as a workflow definition.
+
+The engine needs a small extension first — see
+[[file:2026-05-14-workflow-engine-hardening.org][workflow-engine-hardening.org]]
+for the prerequisite work (dynamic step lists, definition relocation,
+idempotency guards, reusable step widget). That PR ships before this
+one; this proposal assumes its changes are in place.
+
+Mapping:
+
+- *Workflow type*: ~bundle_publish~ (registered in the workflow
+  definition registry, with the definition file living in
+  ~projects/ores.dq.api/include/.../workflow/~ once the hardening PR
+  has relocated definitions to owning service APIs).
+- *Workflow input*: ~{bundle_code, target_tenant_id, target_party_id,
+  mode, params, published_by}~.
+- *Steps*: dynamic — derived at workflow start from the bundle's
+  ~ores_dq_dataset_bundle_members_tbl~ rows in ~display_order~. Each
+  step corresponds to one dataset and is bound to that dataset's target
+  NATS subject (resolved via ~ores_dq_artefact_types_tbl.target_subject~,
+  the new column replacing ~populate_function~).
+- *Step command*: ~<service>.v1.<entity>.publish-from-dq~ with
+  ~{dataset_id, target_tenant_id, target_party_id, mode, params}~ and an
+  ~X-Workflow-Step-Id~ header for idempotency.
+- *Step completion event*: ~workflow.v1.events.step-completed~ carrying
+  ~{success, records_inserted/updated/skipped/deleted, error}~, exactly
+  per the engine generalisation contract.
+- *On step failure*: workflow engine halts the saga and marks the
+  instance ~failed~ (no compensation; partially-installed templates are
+  left in place — see "Idempotency and retry" below).
+- *On success*: workflow marks the instance ~completed~. The audit row
+  in ~ores_dq_bundle_publications_tbl~ is written by the workflow's
+  finalise step (still DQ-owned data).
+
+The DQ NATS subject ~dq.v1.bundles.publish~ becomes a thin wrapper that
+starts the workflow and returns the workflow_instance_id. Callers (wizard,
+librarian) subscribe to workflow step events on
+~ores.workflow.workflow_instance_changed~ via the reusable
+~WorkflowStepsWidget~ (also delivered by the hardening PR) to drive the
+step-progress UI.
+
+The bundle-publication audit row (~ores_dq_bundle_publications_tbl~)
+stays in DQ; per-step audit moves to the workflow engine's
+~workflow_step~ table.
+
+*Why workflow service over bespoke orchestration*
+
+- Step state is already a first-class concept in the engine; no need to
+  invent a new ~dq.v1.bundles.publish.progress~ NATS stream.
+- Both UI consumers consume the same workflow status feed — no
+  duplicated step-rendering plumbing.
+- Halt-on-failure is the engine's default behaviour.
+- Durability comes for free (a long LEI publish surviving a service
+  restart is a real benefit).
+- The engine's idempotency contract (~X-Workflow-Step-Id~) is exactly
+  the property we need at each target service to allow safe retry.
+- Aligns the publish path with ~provision_parties~ and ~ore_import~,
+  giving operators one unified workflow monitor instead of N bespoke
+  progress dialogs.
+
+** Atomicity model
+
+Bundle-level atomicity is dropped. The ~p_atomic~ parameter on
+~ores_dq_bundles_publish_fn~ is removed (the SQL function itself is
+removed). The new contract:
+
+- *Each step is atomic.* A step is a single NATS call to one target
+  service. Inside the handler, the SECURITY DEFINER publish function
+  runs in a single DB transaction: either the dataset's rows are fully
+  inserted into the target service's table or none are.
+- *Bundles are not atomic.* If step K of N fails, steps 1..K-1 are left
+  installed and steps K+1..N are skipped. The workflow halts at K.
+- *Halt-on-failure is mandatory.* There is no "continue past failure"
+  mode. If any step fails, the workflow ends in ~failed~ state and no
+  further steps run.
+
+This matches what the wizards already practically need (a failed step
+mid-bundle leaves the user in an awkward partial state regardless of the
+~p_atomic~ flag; the only honest fix is to halt and surface the failure
+clearly).
+
+** Idempotency and retry
+
+Every step's publish function is already idempotent (each
+~ores_dq_*_publish_fn~ short-circuits on an ~EXISTS~ check against the
+target table scoped by party). Combined with the workflow engine's
+~X-Workflow-Step-Id~ check, a failed publish can be re-driven by either:
+
+1. *Restart the workflow.* Re-issuing ~dq.v1.bundles.publish~ with the
+   same bundle/tenant/party starts a new workflow instance; each step's
+   ~EXISTS~ check skips already-installed datasets, and only the failed
+   step's work is retried.
+
+2. *Resume the workflow.* The engine's startup recovery path re-issues
+   the failed step command using the same ~X-Workflow-Step-Id~. The
+   target handler dedupes via the idempotency guard delivered by the
+   hardening PR (replays the cached completion event instead of
+   re-running the operation).
+
+Both modes are safe. The UI offers "Retry" on a failed step.
+
+* Implementation Scope
+
+This change ships as a single PR. There is no incremental migration,
+no fallback path, and no backwards-compatible shim. On merge:
+
+- Every ~ores_dq_*_publish_fn~ that writes to a non-DQ table is deleted
+  from DQ's SQL tree.
+- Equivalent functions ~ores_<service>_publish_<entity>_from_dq_fn~ are
+  created in the target service's SQL tree
+  (~projects/ores.sql/create/<service>/<service>_publish_from_dq_create.sql~),
+  reading from ~ores_dq_<entity>_artefact_tbl~ and writing only into
+  ~ores_<service>_*~ tables.
+- Each target service exposes a NATS subject
+  ~<service>.v1.<entity>.publish-from-dq~. The handler invokes the
+  corresponding SECURITY DEFINER function. ~ores.reporting.core~,
+  ~ores.refdata.core~ (multiple subjects), and ~ores.assets.core~
+  each gain new handlers in a single change.
+- ~ores_dq_artefact_types_tbl~ has its ~populate_function~ column
+  renamed/replaced by ~target_subject~ (the NATS subject to dispatch
+  the dataset to). The bundle orchestrator reads this column.
+- The SQL function ~ores_dq_bundles_publish_fn~ is deleted. The bundle
+  abstraction is reimplemented as a ~bundle_publish~ workflow
+  definition (located in ~ores.dq.api~ per the relocation rule from
+  the hardening PR). The NATS subject ~dq.v1.bundles.publish~ stays,
+  but its handler now starts a workflow instance and returns the
+  instance id.
+- DQ exposes ~dq.v1.<entity>-templates.list~ read endpoints for any
+  artefact type that non-DQ services need to list (the immediate
+  symptom that triggered this review: report definition templates for
+  the Party Setup wizard).
+- The cross-service ~SELECT~ in
+  ~report_definition_template_service::list_templates~ is removed.
+  Reporting consumes ~dq.v1.report-definition-templates.list~ instead.
+- The grants file (~iam_service_db_grants_create.sql~) is regenerated:
+  no service user gains a new cross-component grant; DQ-side grants on
+  populate functions are removed.
+- The three uncommitted SECURITY DEFINER changes listed under "Current
+  state on this branch" above are reverted in the same PR.
+
+The PR is large but mechanical. Roughly:
+
+- ~25 new SECURITY DEFINER functions (one per artefact type, relocated
+  to the target service's SQL tree).
+- ~25 deletions of the existing DQ-side publish functions.
+- ~25 new NATS handlers across ~ores.refdata.core~, ~ores.reporting.core~,
+  ~ores.assets.core~ (most share a common helper).
+- New ~bundle_publish~ workflow definition (one workflow_definition struct +
+  registration call).
+- Updated dispatch in ~publication_service.cpp~ (start a workflow
+  instead of executing SQL).
+- UI changes in the two consumers (see "UI Requirements" below).
+- Schema validation, grants regeneration, smoke tests.
+
+* UI Requirements
+
+Both consumers must move from a single rolling status label to a
+step-by-step view, driven by the reusable ~WorkflowStepsWidget~ delivered
+by the workflow hardening PR.
+
+** Wizard integration
+
+The three publish-driven wizards
+(~PartyProvisioningWizard~, ~TenantProvisioningWizard~,
+~PublishBundleWizard~ in ~ores.qt.refdata~) currently have a final page
+holding a single ~statusLabel_~ showing "Publishing bundle...". Replace
+this label with a ~WorkflowStepsWidget~ bound to the workflow instance id
+returned by ~dq.v1.bundles.publish~.
+
+Required wizard behaviour:
+
+- The "Next" / "Finish" button is disabled until the workflow reaches a
+  terminal state.
+- On ~completed~: enable "Finish" and show a success banner above the
+  step list.
+- On ~failed~: enable "Retry" (within the wizard page) and keep "Back"
+  disabled (the previous pages may have collected state the workflow
+  depends on). Provide a "Cancel" that exits the wizard without
+  rolling back; partial state stays per the atomicity model.
+- The wizard does not synthesise its own step list; it lets the workflow
+  instance drive what is shown. For wizards that publish two bundles
+  sequentially (e.g., ~PartyProvisioningWizard~ publishes the LEI
+  bundle and then the organisation bundle), two workflow instances run
+  in sequence and the widget shows them concatenated.
+
+** Data Librarian integration
+
+~DataLibrarianWindow~ launches ~PublishDatasetsDialog~ when the user
+selects datasets and clicks Publish. That dialog currently shows a
+single combined success/failure summary.
+
+Required librarian behaviour:
+
+- Replace the dialog body with ~WorkflowStepsWidget~. The dialog is
+  modal during execution and remains open in the terminal state so the
+  operator can read errors.
+- On terminal state, the dialog's primary button switches from "Cancel"
+  to "Close" (and "Retry" appears in the failed case).
+- The publication history view (~PublicationHistoryDialog~) gains a
+  link from each row to the underlying workflow instance, so an
+  operator can drill into per-step results from the history.
+
+** Workflow monitor
+
+A side benefit: any operator-facing workflow monitor (planned in
+~doc/plans/2026-04-10-workflow-monitor-design.org~) automatically gains
+visibility into in-flight publishes, with no additional wiring. The
+publish path is no longer a special case.
+
+* Open Questions
+
+1. *Seed-time inversions.* Some populate scripts owned by service S
+   (e.g., ~projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql~)
+   seed data into DQ artefact tables. This runs as the DDL user at setup
+   time so no service-user grant is at stake, but it is a directional
+   inversion (reporting populating a DQ table). Out of scope here; should
+   be addressed by reorganising the populate tree so that artefact seed
+   data lives under ~populate/dq/~ regardless of which domain the data
+   describes.
+
+2. *Per-record selection granularity.* The wizard's Report Definitions
+   page wants per-row checkboxes (install template X but not Y). The
+   current publish function is all-or-nothing per dataset. Under the new
+   ~reporting.v1.report-definitions.publish-from-dq~, the request payload
+   can carry an optional list of artefact IDs to install. This moves the
+   per-row decision from "filter the SELECT inside the function" to
+   "filter the SELECT against a request-provided ID list," a trivial
+   change that unblocks the wizard's UX. Land it inside the same PR if
+   the wizard already needs it.
+
+3. *Bundle-level audit.* ~ores_dq_bundle_publications_tbl~ currently
+   records a single audit row per bundle publish. The workflow instance
+   is the new source of truth for in-flight state; the bundle audit row
+   is written by the workflow's finalise step (still DQ-owned data).
+   Per-dataset audit (~ores_dq_dataset_publications_tbl~) is redundant
+   with ~workflow_step~ rows — decide whether to retain it for
+   DQ-internal reporting or drop it.
+
+4. *RLS interaction.* The publish path uses ~SECURITY DEFINER~ partly to
+   bypass RLS on the target table (writes happen at DDL-owner privilege).
+   Under the new model, writes still happen at DDL-owner privilege inside
+   the target service's function, so RLS bypass remains intact. Verify
+   per target table that this is the intent.
+
+5. *Workflow service startup ordering.* The publish path now depends on
+   ~ores.workflow~ being available. The current bootstrap order (system
+   provisioning) must guarantee workflow is up before any publish runs.
+   Verify; adjust startup gating if not.
+
+* File Pointers
+
+| Concern                                | File                                                                                          |
+|----------------------------------------+-----------------------------------------------------------------------------------------------|
+| Bundle orchestrator (SQL)              | ~projects/ores.sql/create/dq/dq_bundle_publication_create.sql~                                |
+| Per-artefact publish fns               | ~projects/ores.sql/create/dq/dq_*_publish_create.sql~, ~dq_*_population_functions_create.sql~ |
+| Publish service (C++)                  | ~projects/ores.dq.core/src/service/publication_service.cpp~                                    |
+| Publish NATS protocol                  | ~projects/ores.dq.api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp~              |
+| Wizard callers                         | ~projects/ores.qt/src/PartyProvisioningWizard.cpp~, ~TenantProvisioningWizard.cpp~,            |
+|                                        | ~projects/ores.qt.refdata/src/PublishBundleWizard.cpp~                                         |
+| Librarian publish UI                   | ~projects/ores.qt.refdata/src/DataLibrarianWindow.cpp~,                                       |
+|                                        | ~projects/ores.qt.refdata/src/PublishDatasetsDialog.cpp~                                      |
+| Grants file                            | ~projects/ores.sql/create/iam/iam_service_db_grants_create.sql~                               |
+| Isolation invariant                    | ~projects/modeling/system_model.org~ (to be amended with the publish exception)               |
+| Workflow engine                        | ~projects/ores.workflow/include/ores.workflow/service/workflow_engine.hpp~                    |
+| Prerequisite plan                      | ~doc/plans/2026-05-14-workflow-engine-hardening.org~                                          |
+| Workflow engine origin                 | ~doc/plans/2026-04-05-workflow-engine-generalisation.org~                                     |
+| Sibling isolation plan                 | ~doc/plans/2026-05-12-strict-service-table-isolation.org~                                     |
+| Sibling write-decoupling plan          | ~doc/plans/2026-05-13-cross-service-write-decoupling.org~                                     |

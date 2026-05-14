@@ -1,0 +1,482 @@
+#+TITLE: Workflow Engine Hardening
+#+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
+#+DATE: 2026-05-14
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSAL
+#+OPTIONS: toc:t num:nil
+
+* Context
+
+[[file:2026-04-05-workflow-engine-generalisation.org][workflow-engine-generalisation.org]]
+landed the persistent, event-driven workflow engine in ~ores.workflow~.
+Phases 1 (engine infrastructure), 2 (~provision_parties~ and
+~ore_import~), and the bulk of 3 (~report_execution~) are in place:
+
+- ~workflow_definition~ / ~workflow_step_def~ /
+  ~workflow_registry~ /
+  ~workflow_engine~ implemented in
+  ~projects/ores.workflow/include/ores.workflow/service/~.
+- JetStream subscriptions for ~workflow.v1.events.step-completed~ and
+  ~workflow.v1.start~ wired in ~ores.workflow/src/messaging/registrar.cpp~.
+- DB columns (~current_step_index~, ~step_count~, ~command_subject~,
+  ~command_json~, ~command_published_at~, ~idempotency_key~,
+  ~compensation_subject~, ~compensation_json~) and the 6-state FSM
+  (~pending~, ~in_progress~, ~completed~, ~failed~, ~compensating~,
+  ~compensated~) all present.
+- Domain-side helper ~publish_step_completion~ in
+  ~ores.service/messaging/workflow_helpers.hpp~ used by the IAM, refdata,
+  and ORE handlers.
+- ~ores.qt.workflow~ ships a workflow monitor with
+  ~WorkflowMdiWindow~ (subscribes to
+  ~ores.workflow.workflow_instance_changed~ via ~markAsStale()~) and
+  ~WorkflowInstanceDetailDialog~ (per-step table with status badges).
+
+Three pieces are missing or fragile, and they all need to be addressed
+before we layer the
+[[file:2026-05-14-dq-publish-pattern.org][DQ publish pattern]]
+on top of the engine. This plan addresses them in one PR.
+
+* Goals
+
+1. *Make step lists always dynamic.* A workflow's step sequence is
+   determined when the instance starts, from the request payload, by a
+   builder owned by the workflow definition. The current static
+   ~std::vector<workflow_step_def>~ is removed; every workflow goes
+   through the dynamic path, including the three that exist today.
+
+2. *Move definitions to the owning service's API package.* Each
+   workflow's step builders, command_subject choices, and compensation
+   logic live with the service whose domain the workflow is about. The
+   workflow engine stays domain-agnostic.
+
+3. *Lock down the idempotency guard.* Domain handlers must look up the
+   step_id before executing. A repeated dispatch (after a restart) must
+   replay the cached completion event, not re-run the operation.
+
+4. *Factor the per-step view into a reusable widget.* The step table
+   inside ~WorkflowInstanceDetailDialog~ becomes ~WorkflowStepsWidget~,
+   embeddable anywhere. ORE import's dialog adopts it inline so users
+   no longer need to open the workflow monitor to see step state.
+
+* Non-goals
+
+- A runtime workflow-type registration meta-endpoint
+  (~workflow.v1.types.register~). See "Open questions" for the
+  rationale. The current compile-time registration approach is kept,
+  with definitions relocated.
+- Persisting workflow type definitions to the database. Types stay in
+  code; the registry is rebuilt on every workflow service start.
+- Any change to existing DB schemas, FSM states, or audit-table shapes.
+- Compensation semantics (the existing ~begin_compensation~ /
+  ~check_compensation_complete~ flow continues unchanged).
+
+* Item 1 — Dynamic step lists (mandatory, no static path)
+
+** Current shape
+
+#+begin_src cpp
+struct workflow_definition {
+    std::string type_name;
+    std::string description;
+    std::vector<workflow_step_def> steps;   // ← fixed at registration time
+};
+#+end_src
+
+The engine reads ~steps[i]~ at each dispatch. Fine for fixed
+3-step sagas; useless for a bundle publish where the step count
+depends on which datasets are opted in.
+
+** New shape
+
+#+begin_src cpp
+struct workflow_definition {
+    std::string type_name;
+    std::string description;
+
+    // Builds the full step list once at instance start, from the
+    // request_json. The returned vector size is persisted as
+    // workflow_instance.step_count and never changes for that instance.
+    std::function<std::vector<workflow_step_def>(
+        const std::string& request_json)> build_steps;
+};
+#+end_src
+
+There is no separate static path. ~build_steps~ is required.
+
+** Engine changes
+
+- ~workflow_engine::on_start_workflow~ calls
+  ~definition.build_steps(request_json)~, persists the materialised
+  step list onto a new column ~workflow_instance.materialised_steps_json~
+  (one row, the full definition snapshot for this instance), and sets
+  ~workflow_instance.step_count~ to the resulting size.
+- ~workflow_engine::dispatch_next_step~ deserialises the
+  materialised list (cached on the engine's per-instance handler) and
+  picks ~steps[current_step_index]~ — no registry lookup beyond start.
+- ~workflow_engine::recover_in_progress~ reads
+  ~materialised_steps_json~ on restart; the registry's build_steps is
+  not called again. This is important: a restart cannot reshape an
+  in-flight workflow.
+
+** Why materialise to DB
+
+Without persistence, a workflow service restart followed by a
+non-deterministic ~build_steps~ (e.g. one that consults the bundle
+table state at start) could produce a different step list than the
+one in flight. Persisting the materialised list keeps each instance
+internally consistent across restarts. ~build_steps~ is allowed to be
+non-deterministic precisely because of this.
+
+** Migration of existing workflows
+
+The three existing definitions become trivial dynamic builders that
+return their previously-static lists. For example:
+
+#+begin_src cpp
+def.build_steps = [](const std::string& /*request_json*/) {
+    std::vector<workflow_step_def> steps;
+    steps.push_back(make_save_party_step());
+    steps.push_back(make_save_account_step());
+    steps.push_back(make_link_account_party_step());
+    return steps;
+};
+#+end_src
+
+No behavioural change for ~provision_parties~, ~ore_import~, or
+~report_execution~; only the registration path is rewritten.
+
+* Item 2 — Move definitions to the owning service's API package
+
+** Current shape
+
+All three workflow definitions live under
+~projects/ores.workflow/include/ores.workflow/service/~ and
+include the owning service's API headers (e.g. ~report_execution_definitions.hpp~
+includes ~ores.reporting.api/messaging/report_execution_protocol.hpp~).
+The workflow service therefore has a compile-time dependency on every
+domain it orchestrates.
+
+** New layout
+
+Each workflow's definition moves to the API of the service whose domain
+it primarily concerns:
+
+| Workflow                        | New location                                                   |
+|---------------------------------+----------------------------------------------------------------|
+| ~provision_parties_workflow~    | ~projects/ores.refdata.api/include/.../workflow/~              |
+| ~ore_import_workflow~           | ~projects/ores.ore.api/include/.../workflow/~                  |
+| ~report_execution_workflow~     | ~projects/ores.reporting.api/include/.../workflow/~            |
+| ~bundle_publish_workflow~ (new) | ~projects/ores.dq.api/include/.../workflow/~                   |
+
+Each file exposes a single function
+~register_<name>_workflow(workflow_registry&)~ declared and
+defined inline against the (already API-only) ~workflow_definition~
+struct in ~ores.workflow.api~.
+
+** Engine side
+
+~workflow_definition~ and ~workflow_step_def~ structs move from
+~ores.workflow~ to ~ores.workflow.api~ (they are pure data types
+needed by every service that registers a workflow).
+~workflow_registry~ stays in ~ores.workflow~ since only the workflow
+service holds the live registry.
+
+~ores.workflow/src/messaging/registrar.cpp~ no longer calls
+~register_provision_parties_workflow~, ~register_ore_import_workflow~,
+~register_report_execution_workflow~ directly. Instead, each owning
+service's CMake target exports an object library that contains its
+~register_*_workflow~ symbol, and the workflow service links all of
+them. Registration in ~registrar.cpp~ becomes the four (now)
+calls — same shape as today, just resolved through linker dependencies
+instead of header includes from ~ores.workflow~.
+
+This is still compile-time coupling, but in the correct direction:
+~ores.workflow~ depends on each ~ores.<service>.api~ (for the
+registration symbol), and each api package owns its own workflow
+declarations.
+
+* Item 3 — Idempotency guard contract
+
+** Current behaviour
+
+Domain handlers extract ~X-Workflow-Step-Id~, execute the operation,
+then publish the completion event. If the workflow engine re-dispatches
+the same command after a restart (because the previous completion event
+was lost), the operation runs twice.
+
+Three handlers exhibit this gap today:
+~refdata.party_handler::save~,
+~iam.account_handler::save~,
+~iam.account_party_handler::save~. (~ore_import_execute_handler~ is
+fine because the underlying ORE import flow is transactional and
+re-runs are detectable by import id; ~report_execution~ handlers
+similarly guard via the report_instance_id.)
+
+** New contract
+
+Every workflow-command handler executes the following sequence:
+
+1. Extract ~X-Workflow-Step-Id~ from the message headers.
+2. Query the workflow engine for the step's current state via a new
+   NATS request/reply subject ~workflow.v1.steps.get-result~
+   ~{step_id} → {found, success, result_json, error_message}~.
+3. If ~found = true~: publish the same completion event again and
+   return. The engine deduplicates on the engine side too (it already
+   guards against duplicate step-completed events by checking
+   ~step.state != in_progress~).
+4. If ~found = false~ or the step is still ~in_progress~: execute the
+   operation, then publish the completion.
+
+A helper in ~ores.service/messaging/workflow_helpers.hpp~ wraps this
+sequence so each handler reduces to:
+
+#+begin_src cpp
+if (auto cached = check_step_idempotency(nats_, step_id)) {
+    publish_step_completion(nats_, *cached);
+    return;
+}
+// ... execute ...
+publish_step_completion(nats_, step_id, inst_id, success, result, err);
+#+end_src
+
+The ~workflow.v1.steps.get-result~ subject is served by a new
+handler in the workflow service (cheap: one ~workflow_step~ lookup by
+step_id).
+
+** Why query the engine, not store a local column
+
+The original generalisation plan proposed adding ~workflow_step_id~
+columns to each entity touched by a workflow (e.g.
+~refdata_parties.workflow_step_id~). That approach works but spreads
+the idempotency concern across every domain schema. The
+engine-side query keeps the contract in one place and avoids per-table
+schema churn. Lookup cost is one indexed query per workflow command —
+trivial relative to the work the command does.
+
+** Audit
+
+The existing ~workflow_step.workflow_step_id~ column already serves as
+the idempotency key inside the engine. No new column needed; the new
+endpoint just exposes a read.
+
+* Item 4 — Reusable step widget
+
+** Factor out
+
+Extract the per-step rendering from
+~projects/ores.qt.workflow/src/WorkflowInstanceDetailDialog.cpp~ (lines
+177-263 roughly: the ~stepsTable_~ creation, ~populateSteps~ method,
+~Col~ enum, ~status_color~ helper, and ~BadgeDelegate~ usage) into a
+new widget:
+
+- ~projects/ores.qt.workflow/include/ores.qt/WorkflowStepsWidget.hpp~
+- ~projects/ores.qt.workflow/src/WorkflowStepsWidget.cpp~
+
+Public surface:
+
+#+begin_src cpp
+class WorkflowStepsWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit WorkflowStepsWidget(
+        ClientManager* clientManager, QWidget* parent = nullptr);
+
+    // Tell the widget which workflow instance to render.
+    // Pass an empty QUuid to clear.
+    void setInstance(const QUuid& instanceId);
+
+    // Force refresh from workflow.v1.steps.get on the bound instance.
+    void refresh();
+
+    // Optional: filter to show only the last N steps (default: all).
+    void setMaxVisibleSteps(int n);
+
+signals:
+    void instanceReachedTerminalState(bool success);
+    void stepFailed(int stepIndex, const QString& errorMessage);
+};
+#+end_src
+
+The widget owns its own subscription to
+~ores.workflow.workflow_instance_changed~; when an event arrives for
+the bound instance id, it refreshes. Consumers do not need to wire any
+NATS plumbing.
+
+** Reuse sites in one PR
+
+1. ~WorkflowInstanceDetailDialog~ — replace its inline step table with
+   a ~WorkflowStepsWidget~.
+2. ~ores.ore.qt/OreImportDialog~ (or whichever Qt class owns the import
+   modal; verify by inspection) — embed the widget below the existing
+   import progress label so the user sees step state inline without
+   opening the workflow monitor.
+3. The new ~PublishStepProgressWidget~ proposed in the
+   [[file:2026-05-14-dq-publish-pattern.org][DQ publish decision
+   document]] *becomes* this widget. The DQ publish PR does not need to
+   add a second per-step component; it uses the one this PR ships.
+
+** Visual contract
+
+- One row per step, columns: ~#~, ~Name~, ~Status~ (badge),
+  ~Result/Error~, ~Completed at~.
+- Status badges: ~pending~ (grey ●), ~in_progress~ (blue ◐ animated),
+  ~completed~ (green ✓), ~failed~ (red ✗), ~compensating~ (amber ↻),
+  ~compensated~ (grey —). Reuses the existing ~BadgeDelegate~ and
+  ~status_color~ logic.
+- Failed rows expand on click to show the full error message
+  (selectable, copyable).
+- Header: ~"Step K of N: <name>"~ while running; ~"Completed"~ /
+  ~"Failed at step K of N"~ in terminal state.
+
+** Wiring into the ORE import dialog
+
+The ORE import handler already returns a workflow instance id in its
+synchronous response (per the engine generalisation contract). The
+dialog stores that id and binds it to a ~WorkflowStepsWidget~. On
+~instanceReachedTerminalState(true)~ the dialog enables its Close
+button; on ~stepFailed~ it surfaces a banner above the widget.
+
+* Item 5 — End-to-end verification
+
+Smoke tests added in the same PR:
+
+1. *Dynamic build_steps determinism under restart.* Start
+   ~provision_parties~, kill workflow service mid-step, restart.
+   Assert: ~materialised_steps_json~ is read from DB, the workflow
+   resumes with the same step list, no second invocation of
+   ~build_steps~.
+
+2. *Idempotency guard end-to-end.* Send a save_party command with a
+   known step_id, complete it. Re-send the same command (simulate a
+   recovery re-dispatch). Assert: ~refdata_parties~ has exactly one
+   row, the second send produces a duplicate completion event that the
+   engine discards.
+
+3. *Widget event flow.* Start a ~provision_parties~ workflow, observe
+   that a ~WorkflowStepsWidget~ bound to its instance id updates row
+   states as completion events arrive, without manual refresh.
+
+4. *ORE import dialog.* Trigger an import; verify the dialog renders
+   step state inline (without opening the workflow monitor) and
+   transitions to its terminal state correctly.
+
+5. *Builder argument plumbing.* For ~report_execution_workflow~, verify
+   ~build_steps~ receives the original request JSON and that each
+   step's ~build_command~ still receives the prior step_results in
+   index order.
+
+* Implementation Scope
+
+Single PR. Touching:
+
+- ~projects/ores.workflow.api/include/ores.workflow.api/service/~ —
+  new home for ~workflow_definition~ / ~workflow_step_def~.
+- ~projects/ores.workflow/include/ores.workflow/service/workflow_engine.hpp~,
+  ~workflow_engine.cpp~ — drop static path, read
+  ~materialised_steps_json~ from DB at start and at recover.
+- ~projects/ores.workflow/include/ores.workflow/service/workflow_registry.hpp~ —
+  unchanged interface; populated by external registrar calls now.
+- ~projects/ores.workflow/include/ores.workflow/service/ore_import_definitions.hpp~,
+  ~provision_parties_definitions.hpp~,
+  ~report_execution_definitions.hpp~ — deleted; equivalent files
+  appear under each owning service's api package, rewritten as
+  ~build_steps~ callbacks.
+- New file ~projects/ores.refdata.api/include/ores.refdata.api/workflow/provision_parties_workflow.hpp~,
+  ~projects/ores.ore.api/include/ores.ore.api/workflow/ore_import_workflow.hpp~,
+  ~projects/ores.reporting.api/include/ores.reporting.api/workflow/report_execution_workflow.hpp~.
+- ~projects/ores.workflow/src/messaging/registrar.cpp~ —
+  registration calls reference the API headers above; the workflow
+  service links all owning api libraries.
+- ~projects/ores.sql/create/workflow/workflow_workflow_instances_create.sql~ —
+  add ~materialised_steps_json text not null default ''~.
+- ~projects/ores.workflow.api/include/ores.workflow.api/messaging/~ —
+  new ~steps_query_protocol.hpp~ for ~workflow.v1.steps.get-result~.
+- ~projects/ores.workflow/include/ores.workflow/messaging/~,
+  ~src/messaging/~ — add a handler for the new subject.
+- ~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~ —
+  add ~check_step_idempotency~ helper.
+- ~projects/ores.refdata.core/include/ores.refdata.core/messaging/party_handler.hpp~,
+  ~projects/ores.iam.core/include/ores.iam.core/messaging/account_handler.hpp~,
+  ~account_party_handler.hpp~ — adopt the idempotency guard.
+- ~projects/ores.qt.workflow/~ — new ~WorkflowStepsWidget~;
+  ~WorkflowInstanceDetailDialog~ refactored to use it.
+- The ORE import dialog (location to confirm during implementation) —
+  embed the widget.
+- Tests under each affected project's ~tests/~ tree.
+
+Roughly 12–15 SQL/header touches, ~3–4 new files, ~1 schema column
+addition. Risk concentrated in the engine changes (~workflow_engine.cpp~)
+and the registrar relocation. The widget extraction is pure
+refactoring.
+
+* Open Questions
+
+** Meta-endpoint for runtime workflow type declaration
+
+Considered and rejected. The argument for would be: each service
+publishes its workflow types to ~workflow.v1.types.register~ at
+startup, the workflow service holds them in memory (or in DB), and
+~ores.workflow~ never gains a build-time dependency on any domain.
+
+Against:
+
+- ~build_steps~ and ~build_command~ are arbitrary JSON
+  transformations expressed today as C++ lambdas. To carry them across
+  NATS they would need either a transformation DSL (large new surface)
+  or a per-step NATS round-trip back to the owning service to build the
+  command (latency cost across every step of every workflow).
+- The relocation in Item 2 already gives us the inversion of ownership
+  benefit: each workflow's logic lives in the owning service's API,
+  the workflow service merely links them. Adding the workflow type
+  registry is a one-line ~register_*~ call in ~registrar.cpp~ — the
+  same cost as adding a NATS subscription.
+- No runtime requirement exists for workflows to appear or disappear
+  during a service lifetime. Type registry is a startup-only concern.
+- The runtime registry would still need a deployment-time review (a
+  new workflow has to be tested against the engine before being shipped).
+  The "freedom" gained is illusory.
+
+If a future workflow needs hot-reloadable definitions (e.g. an
+operator-configurable saga), revisit then. For now, compile-time
+registration with definitions owned by the API package of the relevant
+service is the right shape.
+
+** Builder arguments shape
+
+~build_steps~ currently takes only ~request_json~. Consider whether it
+should also receive ~tenant_id~ and ~correlation_id~ (already on the
+~start_workflow_message~). Likely yes for the bundle publish use case
+where the step list depends on tenant-scoped bundle membership; add
+those as separate parameters rather than expecting them to be embedded
+in the request payload.
+
+** Engine recovery and obsolete materialised step lists
+
+If a workflow definition's step structure changes between releases
+(e.g. ~report_execution~ gains a new step), in-flight instances
+created before the change continue with the old step list because
+they read ~materialised_steps_json~. This is correct behaviour
+(don't reshape live workflows) but may be surprising. Worth a
+log line on recovery: "instance X using materialised step list with N
+steps (definition currently declares M)."
+
+* File Pointers
+
+| Concern                          | File                                                                                |
+|----------------------------------+-------------------------------------------------------------------------------------|
+| Generalisation predecessor       | ~doc/plans/2026-04-05-workflow-engine-generalisation.org~                           |
+| DQ publish consumer              | ~doc/plans/2026-05-14-dq-publish-pattern.org~                                       |
+| Engine                           | ~projects/ores.workflow/include/ores.workflow/service/workflow_engine.hpp~,         |
+|                                  | ~projects/ores.workflow/src/service/workflow_engine.cpp~                            |
+| Definition struct (to move)      | ~projects/ores.workflow/include/ores.workflow/service/workflow_definition.hpp~      |
+| Registry                         | ~projects/ores.workflow/include/ores.workflow/service/workflow_registry.hpp~        |
+| Registrar                        | ~projects/ores.workflow/src/messaging/registrar.cpp~                                |
+| Existing definitions (to relocate)| ~ores.workflow/include/ores.workflow/service/{provision_parties,ore_import,report_execution}_definitions.hpp~ |
+| Domain helpers                   | ~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~         |
+| Refdata handler (idempotency)    | ~projects/ores.refdata.core/include/ores.refdata.core/messaging/party_handler.hpp~  |
+| IAM handlers (idempotency)       | ~projects/ores.iam.core/include/ores.iam.core/messaging/account_handler.hpp~,       |
+|                                  | ~projects/ores.iam.core/include/ores.iam.core/messaging/account_party_handler.hpp~  |
+| Qt step rendering (to factor out)| ~projects/ores.qt.workflow/src/WorkflowInstanceDetailDialog.cpp~                    |
+| Qt monitor wiring (reuse target) | ~projects/ores.qt.workflow/src/WorkflowMdiWindow.cpp~                                |
+| Workflow schema                  | ~projects/ores.sql/create/workflow/workflow_workflow_instances_create.sql~,         |
+|                                  | ~projects/ores.sql/create/workflow/workflow_workflow_steps_create.sql~              |

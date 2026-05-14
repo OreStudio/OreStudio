@@ -19,6 +19,7 @@ name: Canary Linux
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
@@ -63,6 +64,12 @@ jobs:
         run: |
           pip install --quiet pystache
           ./projects/ores.sql/utility/validate_schemas.sh
+
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-linux-gcc-debug-ninja
 
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.23
@@ -142,9 +149,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: build/output/linux-gcc-debug-ninja/projects
-          key: cmake-build-linux-gcc-debug-ninja-${{ github.sha }}
-          restore-keys: |
-            cmake-build-linux-gcc-debug-ninja-
+          key: cmake-build-linux-gcc-debug-ninja
 
       - name: Ensure modified source files will be rebuilt
         run: |
@@ -166,24 +171,37 @@ jobs:
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
-      - name: Save cmake build cache
-        uses: actions/cache/save@v5
-        if: always()
-        with:
-          path: build/output/linux-gcc-debug-ninja/projects
-          key: cmake-build-linux-gcc-debug-ninja-${{ github.sha }}
-
-      - name: Cleanup stale cmake build cache entries
-        if: always()
+      - name: Delete cmake cache entry
+        if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          repo="${{ github.repository }}"
-          cmake_prefix="cmake-build-linux-gcc-debug-ninja-"
-          gh api "/repos/${repo}/actions/caches?per_page=100" \
-            --jq "[.actions_caches[] | select(.key | startswith(\"${cmake_prefix}\"))]
-                  | sort_by(.created_at) | reverse | .[1:] | .[].id" \
-            | xargs -r -I{} gh api --method DELETE "/repos/${repo}/actions/caches/{}"
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=cmake-build-linux-gcc-debug-ninja" \
+            || true
+
+      - name: Save cmake build cache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: build/output/linux-gcc-debug-ninja/projects
+          key: cmake-build-linux-gcc-debug-ninja
+
+      - name: Delete sccache entry
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=sccache-linux-gcc-debug-ninja" \
+            || true
+
+      - name: Save sccache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-linux-gcc-debug-ninja
 
       - name: Show sccache statistics
         if: always()

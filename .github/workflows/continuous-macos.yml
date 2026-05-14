@@ -19,6 +19,7 @@ name: Continuous MacOS
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -53,12 +54,19 @@ jobs:
         with:
           submodules: true
 
+      - name: Restore sccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 2000M
+          save: false
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -140,21 +148,25 @@ jobs:
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
-      - name: Show sccache statistics
-        if: always()
-        run: sccache --show-stats
-
-      - name: Cleanup stale sccache entries
-        if: always()
+      - name: Delete sccache entry
+        if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          repo="${{ github.repository }}"
-          sccache_prefix="sccache-${{ matrix.family }}-${{ matrix.compiler }}-${{ matrix.buildtype }}-ninja-"
-          gh api "/repos/${repo}/actions/caches?per_page=100" \
-            --jq "[.actions_caches[] | select(.key | startswith(\"${sccache_prefix}\"))]
-                  | sort_by(.created_at) | reverse | .[1:] | .[].id" \
-            | xargs -r -I{} gh api --method DELETE "/repos/${repo}/actions/caches/{}"
+          gh api --method DELETE \
+            "/repos/${{ github.repository }}/actions/caches?key=sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja" \
+            || true
+
+      - name: Save sccache
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.SCCACHE_DIR }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.1

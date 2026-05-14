@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
     "description" text not null,
     "coding_scheme_code" text null,
     "display_order" integer not null default 0,
+    "max_cardinality" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -48,7 +49,8 @@ create table if not exists "ores_refdata_party_id_schemes_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> '')
+    check ("code" <> ''),
+    check ("max_cardinality" is null or "max_cardinality" > 0)
 );
 
 create unique index if not exists party_id_schemes_version_uniq_idx
@@ -73,6 +75,9 @@ begin
 
     -- Validate change_reason_code
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate coding_scheme_code
+    new.coding_scheme_code := ores_refdata_validate_party_id_scheme_coding_scheme_fn(new.tenant_id, new.coding_scheme_code);
 
     select version into current_version
     from "ores_refdata_party_id_schemes_tbl"

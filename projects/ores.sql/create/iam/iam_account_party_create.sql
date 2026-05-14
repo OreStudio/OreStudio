@@ -77,6 +77,28 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- Validate account_id (soft FK)
+    if not exists (
+        select 1 from ores_iam_accounts_tbl
+        where tenant_id = new.tenant_id and id = new.account_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid account_id: %. No account found with this id.',
+            new.account_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate party_id (soft FK)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = new.tenant_id and id = new.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.',
+            new.party_id
+            using errcode = '23503';
+    end if;
+
     -- Version management
     select version into current_version
     from "ores_iam_account_parties_tbl"

@@ -70,6 +70,7 @@
 \ir ./refdata_party_types_notify_trigger_create.sql
 \ir ./refdata_party_statuses_create.sql
 \ir ./refdata_party_statuses_notify_trigger_create.sql
+\ir ./refdata_party_id_scheme_functions_create.sql
 \ir ./refdata_party_id_schemes_create.sql
 \ir ./refdata_party_id_schemes_notify_trigger_create.sql
 \ir ./refdata_contact_types_create.sql

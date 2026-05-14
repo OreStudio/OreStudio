@@ -22,4 +22,5 @@ drop rule if exists ores_refdata_party_id_schemes_delete_rule on "ores_refdata_p
 drop trigger if exists ores_refdata_party_id_schemes_insert_trg on "ores_refdata_party_id_schemes_tbl";
 drop function if exists ores_refdata_party_id_schemes_insert_fn;
 drop function if exists ores_refdata_validate_party_id_scheme_fn;
+drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 drop table if exists "ores_refdata_party_id_schemes_tbl";

@@ -54,7 +54,8 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_system_tenant_id_fn())
+    check ("id" <> ores_utility_system_tenant_id_fn()),
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
 -- Unique code for active records

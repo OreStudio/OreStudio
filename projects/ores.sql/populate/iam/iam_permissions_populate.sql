@@ -35,7 +35,7 @@
  * - "component::*" grants all permissions within a component
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- IAM Component Permissions
 -- =============================================================================

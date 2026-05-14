@@ -26,7 +26,7 @@
  * duplicate entries or overwrite existing values.
  */
 
-\o /dev/null
+\o :null_dev
 -- -----------------------------------------------------------------------------
 -- Seed system settings with their default values (insert-if-absent)
 -- -----------------------------------------------------------------------------

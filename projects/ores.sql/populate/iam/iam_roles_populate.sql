@@ -39,7 +39,7 @@
  * - permissions_populate.sql must be run first
  */
 
-\o /dev/null
+\o :null_dev
 -- Create platform-level admin roles
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SuperAdmin', 'Platform super administrator with tenant management access');
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TenantAdmin', 'Tenant administrator with full access within a tenant');

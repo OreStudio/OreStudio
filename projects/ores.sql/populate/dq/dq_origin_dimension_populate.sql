@@ -29,7 +29,7 @@
  * - Derived: Data transformed, aggregated, or calculated via code
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- Migration: Rename Source to Primary
 -- =============================================================================

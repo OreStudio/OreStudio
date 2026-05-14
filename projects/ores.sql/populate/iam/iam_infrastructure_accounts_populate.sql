@@ -40,7 +40,7 @@
  *                                         ComputeWrapperService already exist)
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- Infrastructure Account Role Assignments ---'
 
 -- compute_wrapper_user: no DB password — authenticates via session at startup.

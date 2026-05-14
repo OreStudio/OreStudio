@@ -30,7 +30,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- System Business Centre ---'
 
 -- Use a helper function for idempotent creation

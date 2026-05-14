@@ -27,7 +27,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- Business Unit Types: coding scheme ---'
 
 select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),

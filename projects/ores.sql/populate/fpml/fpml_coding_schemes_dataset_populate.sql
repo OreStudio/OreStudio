@@ -6,7 +6,7 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
-\o /dev/null
+\o :null_dev
 
 
 -- =============================================================================

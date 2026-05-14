@@ -30,7 +30,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- Service Account Role Assignments ---'
 
 select ores_iam_account_role_assign_fn(

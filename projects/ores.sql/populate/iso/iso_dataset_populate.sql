@@ -27,7 +27,7 @@
  * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- ISO Standards Datasets
 -- =============================================================================

@@ -30,7 +30,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- System Tenant ---'
 
 -- Helper function for idempotent system tenant creation

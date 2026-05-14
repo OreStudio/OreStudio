@@ -34,7 +34,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- Service Accounts ---'
 
 -- Capture service DB passwords from the environment so they are never stored

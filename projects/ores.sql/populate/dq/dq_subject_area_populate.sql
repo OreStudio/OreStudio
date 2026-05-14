@@ -38,7 +38,7 @@
  * - Organisation: Business units, portfolios, books, and organisational hierarchy
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- Data Quality Subject Areas
 -- =============================================================================

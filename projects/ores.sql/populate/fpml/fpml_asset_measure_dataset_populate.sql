@@ -29,7 +29,7 @@
  * This must be run before populating the artefact table.
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- FpML Asset Measure Dataset
 -- =============================================================================

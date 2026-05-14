@@ -26,7 +26,7 @@
  * Must be run after crypto_dataset_populate.sql.
  */
 
-\o /dev/null
+\o :null_dev
 
 -- =============================================================================
 -- Cryptocurrency Dataset Tags

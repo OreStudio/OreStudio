@@ -26,7 +26,7 @@
  * This must be run before populating the artefact tables.
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- IP Geolocation Datasets
 -- =============================================================================

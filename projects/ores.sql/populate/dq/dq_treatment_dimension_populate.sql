@@ -30,7 +30,7 @@
  * - Anonymized: Irreversibly altered to prevent re-identification
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- Data Quality Treatment Dimensions
 -- =============================================================================

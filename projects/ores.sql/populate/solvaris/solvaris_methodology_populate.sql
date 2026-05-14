@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
-\o /dev/null
+\o :null_dev
 -- =============================================================================
 -- Data Quality Slovaris Methodologies
 -- =============================================================================

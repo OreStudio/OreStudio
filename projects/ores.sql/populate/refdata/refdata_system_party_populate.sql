@@ -30,7 +30,7 @@
  * This script is idempotent.
  */
 
-\o /dev/null
+\o :null_dev
 \qecho '--- System Party ---'
 
 -- Use a helper function for idempotent creation

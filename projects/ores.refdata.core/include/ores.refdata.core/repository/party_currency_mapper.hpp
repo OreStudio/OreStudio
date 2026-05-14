@@ -23,10 +23,11 @@
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.core/repository/party_currency_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
-class party_currency_mapper {
+class ORES_REFDATA_CORE_EXPORT party_currency_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.party_currency_mapper";

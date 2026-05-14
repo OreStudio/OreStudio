@@ -23,13 +23,14 @@
 #include <vector>
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
  * @brief Generates a synthetic DQ dataset.
  */
-dq::domain::dataset generate_synthetic_dataset(
+ORES_SYNTHETIC_CORE_EXPORT dq::domain::dataset generate_synthetic_dataset(
     utility::generation::generation_context& ctx);
 
 /**

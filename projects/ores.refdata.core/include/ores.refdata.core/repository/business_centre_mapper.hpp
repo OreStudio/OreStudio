@@ -23,13 +23,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.core/repository/business_centre_entity.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-class business_centre_mapper {
+class ORES_REFDATA_CORE_EXPORT business_centre_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.business_centre_mapper";

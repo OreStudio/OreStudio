@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.core/repository/contact_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps contact_type domain entities to data storage layer and vice-versa.
  */
-class contact_type_mapper {
+class ORES_REFDATA_CORE_EXPORT contact_type_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.contact_type_mapper";

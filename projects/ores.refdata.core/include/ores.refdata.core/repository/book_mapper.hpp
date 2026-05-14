@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.core/repository/book_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps book domain entities to data storage layer and vice-versa.
  */
-class book_mapper {
+class ORES_REFDATA_CORE_EXPORT book_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.book_mapper";

@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.core/repository/business_unit_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps business_unit_type domain entities to data storage layer and vice-versa.
  */
-class business_unit_type_mapper {
+class ORES_REFDATA_CORE_EXPORT business_unit_type_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.business_unit_type_mapper";

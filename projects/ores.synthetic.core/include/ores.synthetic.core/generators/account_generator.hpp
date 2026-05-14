@@ -23,13 +23,14 @@
 #include <vector>
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
  * @brief Generates a synthetic IAM account with controlled randomness.
  */
-iam::domain::account generate_synthetic_account(
+ORES_SYNTHETIC_CORE_EXPORT iam::domain::account generate_synthetic_account(
     utility::generation::generation_context& ctx);
 
 /**

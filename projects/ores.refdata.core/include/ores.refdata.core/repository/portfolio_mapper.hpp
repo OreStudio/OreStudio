@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.core/repository/portfolio_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps portfolio domain entities to data storage layer and vice-versa.
  */
-class portfolio_mapper {
+class ORES_REFDATA_CORE_EXPORT portfolio_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.portfolio_mapper";

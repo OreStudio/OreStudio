@@ -34,7 +34,7 @@ namespace ores::iam::service {
 /**
  * @brief Service for managing tenant types.
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT tenant_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.tenant_type_service";

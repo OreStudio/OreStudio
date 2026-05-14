@@ -37,7 +37,7 @@ namespace ores::iam::service {
 /**
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT account_service {
 private:
    inline static std::string_view logger_name =
         "ores.iam.service.account_service";

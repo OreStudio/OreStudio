@@ -49,7 +49,7 @@ namespace ores::iam::service {
  *   - Production/C++ provisioning: generate_database_name(true) with suffix
  *   - Guaranteed unique: generate_unique_database_name()
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT database_name_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.database_name_service";

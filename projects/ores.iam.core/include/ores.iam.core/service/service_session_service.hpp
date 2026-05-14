@@ -39,7 +39,7 @@ namespace ores::iam::service {
  * They create sessions directly at startup and end them on shutdown.
  * This service provides a simplified interface for managing these sessions.
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT service_session_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.service_session_service";

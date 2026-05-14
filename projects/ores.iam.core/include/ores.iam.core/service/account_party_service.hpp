@@ -37,7 +37,7 @@ namespace ores::iam::service {
  * This service provides functionality for:
  * - Managing account parties (CRUD operations)
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT account_party_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.account_party_service";

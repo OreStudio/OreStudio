@@ -48,7 +48,7 @@ namespace ores::iam::service {
  * - Initialize bootstrap state on system startup
  * - Transition from bootstrap mode to secure mode
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT bootstrap_mode_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.bootstrap_mode_service";

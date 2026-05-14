@@ -60,7 +60,7 @@ struct signup_result {
  * - Email uniqueness and format
  * - Password policy compliance
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT signup_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.signup_service";

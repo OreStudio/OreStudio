@@ -52,7 +52,7 @@ namespace ores::iam::service {
  * Events are published when role assignments change, allowing other
  * components (such as session management) to react to permission changes.
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT authorization_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.authorization_service";

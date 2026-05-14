@@ -40,7 +40,7 @@ namespace ores::iam::service {
  * Use this service instead of calling account_service::create_account()
  * directly to ensure accounts are properly initialized with roles.
  */
-class ORES_IAM_CORE_EXPORT  {
+class ORES_IAM_CORE_EXPORT account_setup_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.account_setup_service";

@@ -24,10 +24,11 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/environment_tag.hpp"
 #include "ores.connections/repository/sqlite_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 
-class environment_tag_repository final {
+class ORES_CONNECTIONS_EXPORT environment_tag_repository final {
 public:
     explicit environment_tag_repository(sqlite_context& ctx);
 

@@ -25,13 +25,14 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/repository/sqlite_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 
 /**
  * @brief Repository for managing folders in the SQLite database.
  */
-class folder_repository final {
+class ORES_CONNECTIONS_EXPORT folder_repository final {
 public:
     explicit folder_repository(sqlite_context& ctx);
 

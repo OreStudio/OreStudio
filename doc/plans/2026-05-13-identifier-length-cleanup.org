@@ -1,0 +1,256 @@
+#+TITLE: PostgreSQL Identifier Length Cleanup
+#+SUBTITLE: Eliminate NAMEDATALEN truncation warnings for RLS policies and indexes
+#+DATE: 2026-05-13
+#+AUTHOR: ORE Studio Team
+#+STATUS: PLANNED
+#+OPTIONS: toc:t num:nil
+
+* Problem
+
+PostgreSQL's ~NAMEDATALEN~ constant limits all object identifiers to 63 bytes.
+This is a compile-time constant — there is no runtime configuration parameter
+to increase it.
+
+During ~recreate_database.sh~ the following class of NOTICE is emitted ~190+~
+times:
+
+#+begin_example
+NOTICE: identifier "ores_trading_equity_digital_option_instruments_tenant_isolation_policy"
+        will be truncated to "ores_trading_equity_digital_option_instruments_tenant_isolation_p"
+#+end_example
+
+PostgreSQL silently truncates the name and continues. The resulting object is
+created under the truncated name, which means ~DROP POLICY~ / ~DROP INDEX~
+statements using the original long name will silently succeed (because
+PostgreSQL truncates that name too before the lookup), but the inconsistency is
+a latent correctness risk and pollutes every DB recreation run with noise.
+
+** Scope
+
+| Category | Over-limit count | Root |
+|----------+------------------+------|
+| RLS policy names | 27 | Hand-written SQL only |
+| Index names | ~160 | Mix of codegen-generated and hand-written SQL |
+
+After applying the convention change below, three index names remain over 63
+chars and require targeted abbreviation (see [[*Phase 5 — Special Cases]]).
+
+* Convention Change
+
+** RLS Policies
+
+PostgreSQL scopes policy names per table. ~DROP POLICY name ON table~ and
+~ALTER POLICY name ON table~ always require the table operand, so the
+service-level namespace prefix is redundant.
+
+| Before | After |
+|--------+-------|
+| ~ores_<service>_<table>_<type>_policy~ | ~<table>_<type>_policy~ |
+
+Examples:
+- ~ores_trading_equity_digital_option_instruments_tenant_isolation_policy~ (70)
+  → ~equity_digital_option_instruments_tenant_isolation_policy~ (57) ✓
+- ~ores_analytics_pricing_model_product_parameters_tenant_isolation_policy~ (71)
+  → ~pricing_model_product_parameters_tenant_isolation_policy~ (56) ✓
+
+After stripping the prefix, all 27 over-limit names fit within 63 chars.
+No codegen template generates ~CREATE POLICY~ — policies are entirely
+hand-written.
+
+** Indexes
+
+Index names are schema-scoped (unique within ~public~), not table-scoped.
+However, the table name is embedded in every index name, so schema-level
+uniqueness is preserved after dropping the prefix.
+
+| Before | After |
+|--------+-------|
+| ~ores_<service>_<table>_<cols>_idx~ | ~<table>_<cols>_idx~ |
+
+Examples:
+- ~ores_trading_equity_digital_option_instruments_tenant_idx~ (57) → ~equity_digital_option_instruments_tenant_idx~ (44) ✓
+- ~ores_analytics_pricing_model_product_parameters_version_uniq_idx~ (65) → ~pricing_model_product_parameters_version_uniq_idx~ (50) ✓
+
+After stripping the prefix, ~157 of the ~160 over-limit names fit within 63
+chars. Three require additional targeted abbreviation (see [[*Phase 5 — Special Cases]]).
+
+* Codegen Impact
+
+** Templates that generate index names
+
+Four Mustache templates in ~ores.codegen/library/templates/~ emit ~CREATE
+INDEX~ statements:
+
+| Template | Pattern generated |
+|----------+-------------------|
+| ~sql_schema_domain_entity_create.mustache~ | ~{{product}}_{{component}}_{{entity_plural}}_*_idx~ |
+| ~sql_schema_table_create.mustache~ | ~{{product}}_{{component}}_{{entity_plural}}_*_idx~ |
+| ~sql_schema_junction_create.mustache~ | ~{{product}}_{{component}}_{{entity_plural}}_*_idx~ |
+| ~sql_schema_artefact_create.mustache~ | ~dq_{{entity_plural}}_artefact_*_idx~ |
+
+The first three use the ~{{product}}_{{component}}_~ prefix (resolving to
+~ores_<service>_~). These templates must be updated to drop that prefix from
+all index name patterns.
+
+The artefact template already uses the shorter ~dq_~ prefix and does not use
+~ores_<service>_~. However, two artefact index names are still over 63 chars
+after the template update due to long custom ~name~ fields in the entity JSON.
+These are resolved as special cases below.
+
+** No templates generate policies
+
+~CREATE POLICY~ statements do not appear in any Mustache template. All RLS
+policy files are hand-written. Codegen regeneration has no effect on Phase 1.
+
+** Regeneration scope
+
+After updating the four templates, codegen must be re-run. The output files are
+determined by ~profiles.json~:
+
+- ~projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql~
+  — one file per domain entity, junction, and table entity
+- The number of regenerated files is in the tens; all over-limit index names
+  in those files will be fixed automatically by the template change.
+
+** Drop files
+
+Codegen-generated drop files (~sql_schema_domain_entity_drop.mustache~ etc.)
+drop the table only; PostgreSQL automatically drops associated indexes when the
+table is dropped. There are therefore no ~DROP INDEX~ statements in
+codegen-generated drop files and no template change is needed for drops.
+
+Hand-written ~DROP INDEX~ statements (if any) in the ~ores.sql/drop/~ tree
+must be updated manually to match the renamed indexes.
+
+* Phases
+
+** Phase 1 — RLS Policy Names (hand-written SQL only)
+
+*Files to update:* 19 create files + 12 drop files (all under
+~projects/ores.sql/create/*/~ and ~projects/ores.sql/drop/*/~).
+
+Domains affected: ~analytics~, ~assets~, ~compute~, ~controller~, ~dq~,
+~geo~, ~iam~, ~marketdata~, ~mq~, ~refdata~, ~reporting~, ~scheduler~,
+~telemetry~, ~trading~, ~variability~, ~workflow~.
+
+Mechanical transform (applied per file):
+#+begin_src sh
+sed -i 's/\(create policy\) ores_[a-z]*_/\1 /g' <file>
+sed -i 's/\(drop policy[^o]*\) ores_[a-z]*_/\1 /g' <file>
+#+end_src
+
+Validate: after the sed pass, no policy name in any file should exceed 63
+chars.
+
+** Phase 2 — Codegen Template Updates
+
+*Files to update:* 4 Mustache templates.
+
+In each of ~sql_schema_domain_entity_create.mustache~,
+~sql_schema_table_create.mustache~, and ~sql_schema_junction_create.mustache~:
+replace every occurrence of
+
+#+begin_example
+{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_
+#+end_example
+
+with
+
+#+begin_example
+{{domain_entity.entity_plural}}_
+#+end_example
+
+(and equivalently for the junction / table variant field names).
+
+In ~sql_schema_artefact_create.mustache~: the ~dq_~ prefix remains; the two
+over-limit custom index names are fixed via their entity JSON files (see
+[[*Phase 5 — Special Cases]]).
+
+After template edits: re-run codegen to regenerate all affected
+~*_create.sql~ files. No other action is needed for the generated outputs.
+
+** Phase 3 — Hand-written Index Files
+
+Some ~*_create.sql~ files are hand-written (not driven by codegen). These
+contain ~CREATE INDEX~ statements with the ~ores_<service>_~ prefix and must
+be updated manually.
+
+Identify them by diffing the output of:
+#+begin_src sh
+grep -rl "create.*index.*ores_" projects/ores.sql/create/
+#+end_src
+against the set of files in ~profiles.json~ ~output~ entries. Files present
+in the former but not driven by a codegen template are hand-written.
+
+Apply the same mechanical prefix-strip sed as Phase 1 (adapted for ~index~).
+
+** Phase 4 — Drop File Consistency
+
+Search for explicit ~DROP INDEX~ statements that reference the old names:
+#+begin_src sh
+grep -r "drop index.*ores_\|drop index if exists ores_" projects/ores.sql/drop/
+#+end_src
+Update any found to use the new (shorter) names.
+
+** Phase 5 — Special Cases
+
+Three names remain over 63 chars even after prefix removal.
+
+*** ~counterparty_contact_informations_counterparty_contact_type_uniq_idx~ (68 chars)
+
+Origin: codegen-generated from the ~refdata~ domain entity
+~counterparty_contact_informations~ with natural-key column
+~counterparty_contact_type~.
+
+Fix: add an explicit ~index_name_override~ field (or equivalent) to the entity
+JSON, or rename the column reference in the natural-key declaration to use
+the abbreviation ~cpty_contact_type~. Target name:
+
+~counterparty_contact_info_cpty_contact_type_uniq_idx~ (52 chars) ✓
+
+*** ~dq_lei_relationships_artefact_relationship_start_node_node_id_idx~ (65 chars)
+
+Origin: ~sql_schema_artefact_create.mustache~ with entity
+~lei_relationships~, custom index ~name~ field = ~relationship_start_node_node_id~.
+
+Fix: shorten the ~name~ field in the entity JSON to ~start_node_id~.
+Result: ~dq_lei_relationships_artefact_start_node_id_idx~ (49 chars) ✓
+
+*** ~dq_lei_relationships_artefact_relationship_relationship_type_idx~ (64 chars)
+
+Origin: same template, custom index ~name~ = ~relationship_relationship_type~
+(note the doubled "relationship" — an existing naming error).
+
+Fix: shorten the ~name~ field to ~rel_type~.
+Result: ~dq_lei_relationships_artefact_rel_type_idx~ (43 chars) ✓
+
+** Phase 6 — Validation
+
+#+begin_src sh
+projects/ores.sql/utility/validate_schemas.sh
+projects/ores.sql/recreate_database.sh
+#+end_src
+
+Expected outcome: zero NOTICE lines of the form "identifier … will be
+truncated". Any remaining truncation notices indicate a missed file.
+
+* Execution Order
+
+1. Phase 2 (template edits) first — regenerating before hand-editing avoids
+   conflicts.
+2. Phase 3 after codegen run — only update files codegen did not touch.
+3. Phases 1 and 4 independently (no ordering dependency between policies and
+   drop files).
+4. Phase 5 at any point after Phase 2 (entity JSON edits drive the next
+   codegen run, or can be patched directly in the regenerated file as a
+   stop-gap before a formal codegen update).
+5. Phase 6 last.
+
+* Non-Goals
+
+- Changing table names or column names. The rename is at the index/policy
+  object name level only.
+- Modifying the ~NAMEDATALEN~ compile-time constant in a custom PostgreSQL
+  build.
+- Renaming the ~ores_~ prefix on tables, sequences, functions, triggers, or
+  types — only index and policy names are in scope.

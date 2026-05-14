@@ -24,10 +24,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.core/repository/risk_report_config_entity.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
-class risk_report_config_mapper {
+class ORES_REPORTING_CORE_EXPORT risk_report_config_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.repository.risk_report_config_mapper";

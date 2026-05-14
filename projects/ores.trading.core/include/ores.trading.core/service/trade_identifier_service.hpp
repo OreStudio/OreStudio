@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing trade identifiers.
  */
-class trade_identifier_service {
+class ORES_TRADING_CORE_EXPORT trade_identifier_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.trade_identifier_service";

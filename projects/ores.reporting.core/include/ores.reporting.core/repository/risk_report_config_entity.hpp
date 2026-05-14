@@ -24,6 +24,7 @@
 #include <string>
 #include "sqlgen/PrimaryKey.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 

@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
 /**
  * @brief Service for managing report instances.
  */
-class report_instance_service {
+class ORES_REPORTING_CORE_EXPORT report_instance_service {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.report_instance_service";

@@ -31,6 +31,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
@@ -43,7 +44,7 @@ namespace ores::reporting::service {
  *  2. On-demand scheduling: called by the schedule/unschedule NATS handlers
  *     to create or remove scheduler jobs for specific definitions.
  */
-class report_scheduling_service {
+class ORES_REPORTING_CORE_EXPORT report_scheduling_service {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.report_scheduling_service";

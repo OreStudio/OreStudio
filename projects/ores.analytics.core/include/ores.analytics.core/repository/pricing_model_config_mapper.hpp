@@ -23,13 +23,14 @@
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::repository {
 
 /**
  * @brief Maps pricing_model_config domain entities to data storage layer and vice-versa.
  */
-class pricing_model_config_mapper {
+class ORES_ANALYTICS_CORE_EXPORT pricing_model_config_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.analytics.repository.pricing_model_config_mapper";

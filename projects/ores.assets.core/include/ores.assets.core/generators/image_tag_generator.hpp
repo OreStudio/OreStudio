@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.assets.api/domain/image_tag.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::generators {
 

@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::repository {
 
 /**
  * @brief Reads and writes pricing engine types to data storage.
  */
-class pricing_engine_type_repository {
+class ORES_ANALYTICS_CORE_EXPORT pricing_engine_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.analytics.repository.pricing_engine_type_repository";

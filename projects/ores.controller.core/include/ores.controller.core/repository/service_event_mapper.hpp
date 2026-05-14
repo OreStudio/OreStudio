@@ -24,10 +24,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.controller.api/domain/service_event.hpp"
 #include "ores.controller.core/repository/service_event_entity.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::repository {
 
-class service_event_mapper {
+class ORES_CONTROLLER_CORE_EXPORT service_event_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.controller.repository.service_event_mapper";

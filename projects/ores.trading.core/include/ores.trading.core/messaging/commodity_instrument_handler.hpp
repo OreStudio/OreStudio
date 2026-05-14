@@ -30,6 +30,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -47,7 +48,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class commodity_instrument_handler {
+class ORES_TRADING_CORE_EXPORT commodity_instrument_handler {
 public:
     commodity_instrument_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

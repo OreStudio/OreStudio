@@ -23,6 +23,7 @@
 #include <vector>
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::generators {
 

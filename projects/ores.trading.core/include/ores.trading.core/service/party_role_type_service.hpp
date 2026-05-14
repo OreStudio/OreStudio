@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.core/repository/party_role_type_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing party role types.
  */
-class party_role_type_service {
+class ORES_TRADING_CORE_EXPORT party_role_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.party_role_type_service";

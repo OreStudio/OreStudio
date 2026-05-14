@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes day count fraction types to data storage.
  */
-class day_count_fraction_type_repository {
+class ORES_TRADING_CORE_EXPORT day_count_fraction_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.day_count_fraction_type_repository";

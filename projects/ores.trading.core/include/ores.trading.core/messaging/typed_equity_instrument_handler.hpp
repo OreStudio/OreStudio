@@ -38,6 +38,7 @@
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/equity_position_instrument_service.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -94,7 +95,7 @@ void handle_typed_equity_save(
     }
 }
 
-class typed_equity_instrument_handler {
+class ORES_TRADING_CORE_EXPORT typed_equity_instrument_handler {
 public:
     typed_equity_instrument_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

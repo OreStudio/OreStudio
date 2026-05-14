@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::repository {
 
@@ -36,7 +37,7 @@ namespace ores::marketdata::repository {
  *
  * Backed by a TimescaleDB hypertable partitioned by fixing_date.
  */
-class market_fixings_repository {
+class ORES_MARKETDATA_CORE_EXPORT market_fixings_repository {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.repository.market_fixings_repository";

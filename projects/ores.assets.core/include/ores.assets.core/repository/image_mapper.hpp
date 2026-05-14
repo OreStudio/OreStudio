@@ -24,13 +24,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.core/repository/image_entity.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::repository {
 
 /**
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-class image_mapper {
+class ORES_ASSETS_CORE_EXPORT image_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.assets.repository.image_mapper";

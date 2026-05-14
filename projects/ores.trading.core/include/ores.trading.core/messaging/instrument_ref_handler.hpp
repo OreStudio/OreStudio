@@ -41,6 +41,7 @@
 #include "ores.trading.core/service/leg_type_service.hpp"
 #include "ores.trading.core/service/trade_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -58,7 +59,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class instrument_ref_handler {
+class ORES_TRADING_CORE_EXPORT instrument_ref_handler {
 public:
     instrument_ref_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

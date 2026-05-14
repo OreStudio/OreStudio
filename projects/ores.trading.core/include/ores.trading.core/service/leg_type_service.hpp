@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/leg_type.hpp"
 #include "ores.trading.core/repository/leg_type_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing leg types.
  */
-class leg_type_service {
+class ORES_TRADING_CORE_EXPORT leg_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.leg_type_service";

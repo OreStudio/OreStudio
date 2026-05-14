@@ -23,6 +23,7 @@
 #include <string>
 #include <optional>
 #include "ores.database/repository/db_types.hpp"
+#include "ores.assets.core/export.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::assets::repository {

@@ -30,6 +30,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -47,7 +48,7 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
-class concurrency_policy_handler {
+class ORES_REPORTING_CORE_EXPORT concurrency_policy_handler {
 public:
     concurrency_policy_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

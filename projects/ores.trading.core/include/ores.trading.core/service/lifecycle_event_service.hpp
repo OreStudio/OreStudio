@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.core/repository/lifecycle_event_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing lifecycle events.
  */
-class lifecycle_event_service {
+class ORES_TRADING_CORE_EXPORT lifecycle_event_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.lifecycle_event_service";

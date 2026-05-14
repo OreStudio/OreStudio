@@ -23,13 +23,14 @@
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.core/repository/pricing_engine_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::repository {
 
 /**
  * @brief Maps pricing_engine_type domain entities to data storage layer and vice-versa.
  */
-class pricing_engine_type_mapper {
+class ORES_ANALYTICS_CORE_EXPORT pricing_engine_type_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.analytics.repository.pricing_engine_type_mapper";

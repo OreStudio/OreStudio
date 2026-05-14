@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::service {
 
 /**
  * @brief Service for managing pricing model configurations.
  */
-class pricing_model_config_service {
+class ORES_ANALYTICS_CORE_EXPORT pricing_model_config_service {
 private:
     inline static std::string_view logger_name =
         "ores.analytics.service.pricing_model_config_service";

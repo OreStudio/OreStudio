@@ -33,6 +33,7 @@
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -52,7 +53,7 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::delegated_actor;
 using namespace ores::logging;
 
-class report_definition_handler {
+class ORES_REPORTING_CORE_EXPORT report_definition_handler {
 public:
     report_definition_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

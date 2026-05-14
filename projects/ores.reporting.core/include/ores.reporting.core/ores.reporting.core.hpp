@@ -36,4 +36,5 @@
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.reporting.core/export.hpp"
 

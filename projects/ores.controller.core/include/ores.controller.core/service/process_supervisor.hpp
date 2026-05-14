@@ -34,6 +34,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_definition.hpp"
 #include "ores.utility/concurrency/retry_strategy.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::service {
 

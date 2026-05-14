@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes composite legs to data storage.
  */
-class composite_leg_repository {
+class ORES_TRADING_CORE_EXPORT composite_leg_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.composite_leg_repository";

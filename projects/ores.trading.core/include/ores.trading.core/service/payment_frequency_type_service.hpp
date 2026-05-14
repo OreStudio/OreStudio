@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/payment_frequency_type.hpp"
 #include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing payment frequency types.
  */
-class payment_frequency_type_service {
+class ORES_TRADING_CORE_EXPORT payment_frequency_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.payment_frequency_type_service";

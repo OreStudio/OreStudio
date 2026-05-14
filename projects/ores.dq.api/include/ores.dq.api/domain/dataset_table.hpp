@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts datasets to the table format.
  */
-std::string convert_to_table(const std::vector<dataset>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<dataset>& v);
 
 }
 

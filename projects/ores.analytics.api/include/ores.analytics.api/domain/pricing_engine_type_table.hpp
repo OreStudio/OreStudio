@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.api/export.hpp"
 
 namespace ores::analytics::domain {
 
 /**
  * @brief Converts pricing_engine_types to the table format.
  */
-std::string convert_to_table(const std::vector<pricing_engine_type>& v);
+ORES_ANALYTICS_API_EXPORT std::string convert_to_table(const std::vector<pricing_engine_type>& v);
 
 }
 

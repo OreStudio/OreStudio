@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include "ores.iam.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 
 namespace ores::nats::service { class client; }
@@ -43,7 +44,7 @@ namespace ores::iam::client {
  * @param password        Service account plaintext database password.
  * @param refresh_margin  Proactively refresh this far before token expiry.
  */
-ores::nats::service::nats_client::token_provider
+ORES_IAM_CLIENT_EXPORT ores::nats::service::nats_client::token_provider
 make_service_token_provider(
     ores::nats::service::client& nats,
     std::string username,

@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/party_role_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the party_role_type to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const party_role_type& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const party_role_type& v);
 
 }
 

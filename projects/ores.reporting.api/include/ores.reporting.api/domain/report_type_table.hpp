@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
 
 namespace ores::reporting::domain {
@@ -29,7 +30,7 @@ namespace ores::reporting::domain {
 /**
  * @brief Converts report_types to the table format.
  */
-std::string convert_to_table(const std::vector<report_type>& v);
+ORES_REPORTING_API_EXPORT std::string convert_to_table(const std::vector<report_type>& v);
 
 }
 

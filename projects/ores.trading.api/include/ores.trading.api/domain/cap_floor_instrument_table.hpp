@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts cap_floor_instruments to the table format.
  */
-std::string convert_to_table(const std::vector<cap_floor_instrument>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<cap_floor_instrument>& v);
 
 }
 

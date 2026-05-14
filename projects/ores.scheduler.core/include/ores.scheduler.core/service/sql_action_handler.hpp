@@ -20,6 +20,7 @@
 #pragma once
 
 #include "ores.scheduler.core/service/action_handler.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -29,7 +30,7 @@ namespace ores::scheduler::service {
  * Handles jobs with action_type == "execute_sql". The SQL to run comes from
  * job_definition::command.
  */
-class sql_action_handler final : public action_handler {
+class ORES_SCHEDULER_CORE_EXPORT sql_action_handler final : public action_handler {
 public:
     [[nodiscard]] std::string_view action_type() const noexcept override {
         return "execute_sql";

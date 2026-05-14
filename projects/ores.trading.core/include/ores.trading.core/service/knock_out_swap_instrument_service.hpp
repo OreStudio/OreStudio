@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing knock-out swap instruments.
  */
-class knock_out_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT knock_out_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.knock_out_swap_instrument_service";

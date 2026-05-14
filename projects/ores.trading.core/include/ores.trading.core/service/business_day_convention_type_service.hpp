@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
 #include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing business day convention types.
  */
-class business_day_convention_type_service {
+class ORES_TRADING_CORE_EXPORT business_day_convention_type_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.business_day_convention_type_service";

@@ -31,6 +31,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.core/repository/platform_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -47,7 +48,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using namespace ores::logging;
 
-class platform_handler {
+class ORES_COMPUTE_CORE_EXPORT platform_handler  {
 public:
     platform_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

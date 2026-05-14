@@ -22,6 +22,7 @@
 
 #include <span>
 #include <vector>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::compression {
 
@@ -32,7 +33,7 @@ namespace ores::utility::compression {
  * @return Gzip-compressed bytes.
  * @throws std::runtime_error on compression failure.
  */
-[[nodiscard]] std::vector<char> gzip_compress(std::span<const char> input);
+[[nodiscard]] ORES_UTILITY_EXPORT std::vector<char> gzip_compress(std::span<const char> input);
 
 /**
  * @brief Decompresses gzip data.
@@ -41,7 +42,7 @@ namespace ores::utility::compression {
  * @return Decompressed raw bytes.
  * @throws std::runtime_error on decompression failure.
  */
-[[nodiscard]] std::vector<char> gzip_decompress(std::span<const char> input);
+[[nodiscard]] ORES_UTILITY_EXPORT std::vector<char> gzip_decompress(std::span<const char> input);
 
 }
 

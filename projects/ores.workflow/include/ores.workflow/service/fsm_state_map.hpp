@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <boost/uuid/uuid.hpp>
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -57,7 +58,7 @@ struct fsm_state_map {
  * Sends a dq.v1.fsm-states.list request and builds the name→UUID map.
  * Throws std::runtime_error on NATS error or if the response indicates failure.
  */
-[[nodiscard]] fsm_state_map load_fsm_states(
+[[nodiscard]] ORES_WORKFLOW_EXPORT fsm_state_map load_fsm_states(
     ores::nats::service::nats_client& nats,
     const std::string& machine_name);
 

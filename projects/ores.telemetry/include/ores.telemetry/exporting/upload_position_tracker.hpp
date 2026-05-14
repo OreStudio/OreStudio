@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <mutex>
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -40,7 +41,7 @@ namespace ores::telemetry::exporting {
  *
  * Thread-safe: all public methods are protected by a mutex.
  */
-class upload_position_tracker final {
+class ORES_TELEMETRY_EXPORT upload_position_tracker final {
 public:
     /**
      * @brief Constructs a tracker for the specified log file.

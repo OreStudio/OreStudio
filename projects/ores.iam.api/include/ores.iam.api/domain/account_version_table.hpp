@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_TABLE_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_version.hpp"
 
 namespace ores::iam::domain {
@@ -28,7 +29,7 @@ namespace ores::iam::domain {
 /**
  * @brief Converts account version to table format.
  */
-std::string convert_to_table(const std::vector<account_version>& v);
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<account_version>& v);
 
 }
 

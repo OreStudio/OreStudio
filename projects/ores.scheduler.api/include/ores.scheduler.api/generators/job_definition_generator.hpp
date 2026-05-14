@@ -21,6 +21,7 @@
 
 #include <optional>
 #include <boost/uuid/uuid.hpp>
+#include "ores.scheduler.api/export.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::scheduler::generators {
@@ -34,7 +35,7 @@ namespace ores::scheduler::generators {
  * @param tenant_id Tenant to assign the generated definition to (nullopt = system job).
  * @param party_id  Party to assign the generated definition to (nullopt = system job).
  */
-[[nodiscard]] domain::job_definition
+[[nodiscard]] ORES_SCHEDULER_API_EXPORT domain::job_definition
 generate_synthetic_job_definition(
     const std::optional<boost::uuids::uuid>& tenant_id = std::nullopt,
     const std::optional<boost::uuids::uuid>& party_id = std::nullopt);

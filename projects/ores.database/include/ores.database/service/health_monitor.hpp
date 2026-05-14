@@ -31,6 +31,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database {
 
@@ -56,7 +57,7 @@ namespace ores::database {
  *     co_await monitor.run(io_context);
  * @endcode
  */
-class health_monitor final {
+class ORES_DATABASE_EXPORT health_monitor final {
 private:
     using severity_level = boost::log::trivial::severity_level;
     using logger_type = boost::log::sources::severity_channel_logger_mt<

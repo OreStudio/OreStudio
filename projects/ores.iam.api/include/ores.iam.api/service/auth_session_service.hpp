@@ -26,6 +26,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -36,7 +37,7 @@ namespace ores::iam::service {
  *
  * Maps Bearer tokens to session data for fast in-process auth checks.
  */
-class auth_session_service {
+class ORES_IAM_API_EXPORT auth_session_service {
 public:
     void add_session(const std::string& token, ores::iam::domain::session session);
     void remove_session(const std::string& token);

@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts coding_schemes to the table format.
  */
-std::string convert_to_table(const std::vector<coding_scheme>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<coding_scheme>& v);
 
 }
 

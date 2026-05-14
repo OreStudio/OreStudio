@@ -26,6 +26,7 @@
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/jwt/jwt_error.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.security/export.hpp"
 
 namespace ores::security::jwt {
 
@@ -42,7 +43,7 @@ namespace ores::security::jwt {
  *   - create_rs256_signer()  — RS256 signing (IAM service only)
  *   - create_rs256_verifier()— RS256 verification (all other services)
  */
-class jwt_authenticator final {
+class ORES_SECURITY_EXPORT jwt_authenticator final {
 public:
     /**
      * @brief Creates an authenticator using a symmetric secret (HS256).

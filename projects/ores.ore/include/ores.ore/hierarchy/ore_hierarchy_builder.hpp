@@ -25,6 +25,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.ore/hierarchy/import_node.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -40,7 +41,7 @@ namespace ores::ore::hierarchy {
  * 3. Intermediate segments become de-duplicated portfolio nodes.
  * 4. The leaf segment (file stem) becomes a book node referencing the file.
  */
-class ore_hierarchy_builder {
+class ORES_ORE_EXPORT ore_hierarchy_builder {
 private:
     inline static std::string_view logger_name =
         "ores.ore.hierarchy.ore_hierarchy_builder";

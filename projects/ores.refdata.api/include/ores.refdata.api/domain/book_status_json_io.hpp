@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the book_status to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const book_status& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const book_status& v);
 
 }
 

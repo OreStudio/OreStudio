@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
 /**
  * @brief Reads and writes tenant types to data storage.
  */
-class tenant_type_repository {
+class ORES_IAM_CORE_EXPORT tenant_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.tenant_type_repository";

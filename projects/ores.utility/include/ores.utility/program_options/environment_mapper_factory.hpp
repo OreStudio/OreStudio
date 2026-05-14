@@ -22,6 +22,7 @@
 
 #include <string>
 #include <functional>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::program_options {
 
@@ -30,7 +31,7 @@ namespace ores::utility::program_options {
  *
  * @note Logging is not available during configuration.
  */
-class environment_mapper_factory {
+class ORES_UTILITY_EXPORT environment_mapper_factory {
 public:
     /**
      * @brief Creates an environment variable name mapping function.

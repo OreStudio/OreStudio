@@ -40,6 +40,7 @@
 #   (plus all service user names — see init-environment.sh)
 
 set -e
+set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -85,6 +86,9 @@ if [[ -z "${DDL_PASSWORD}" ]]; then
     exit 1
 fi
 
+_current_phase="(unknown)"
+trap 'echo "" >&2; echo "=== FATAL: setup_database.sh failed in phase: ${_current_phase} ===" >&2' ERR
+
 # Role names (required for GRANT statements in setup_schema.sql)
 OWNER_ROLE="${ORES_DB_OWNER_ROLE:-}"
 RW_ROLE="${ORES_DB_RW_ROLE:-}"
@@ -98,6 +102,7 @@ for var_name in OWNER_ROLE RW_ROLE RO_ROLE SERVICE_ROLE; do
 done
 
 # Phase 1: Create database, extensions, and schema grants (postgres superuser)
+_current_phase="Phase 1: create database"
 echo "--- Phase 1: Creating database ${DB_NAME} ---"
 psql \
     -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
@@ -125,6 +130,7 @@ for _svc in "${SERVICE_NAMES[@]}"; do
 done
 
 # Phase 2: Create tables, populate seed data, grant permissions (DDL user)
+_current_phase="Phase 2: setup schema"
 echo "--- Phase 2: Setting up schema ---"
 PGPASSWORD="${DDL_PASSWORD}" psql \
     -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
@@ -147,6 +153,7 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -f "${SCRIPT_DIR}/setup_schema.sql"
 
 # Phase 3: Insert database metadata (schema version, build info, git info)
+_current_phase="Phase 3: database metadata"
 echo "--- Phase 3: Populating database metadata ---"
 
 SCHEMA_VERSION=$(grep -oP 'project\(OreStudio VERSION \K[0-9]+\.[0-9]+\.[0-9]+' \

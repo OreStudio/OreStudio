@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts swap_legs to the table format.
  */
-std::string convert_to_table(const std::vector<swap_leg>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<swap_leg>& v);
 
 }
 

@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes FpML event types to data storage.
  */
-class fpml_event_type_repository {
+class ORES_TRADING_CORE_EXPORT fpml_event_type_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.fpml_event_type_repository";

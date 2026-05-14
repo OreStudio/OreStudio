@@ -24,6 +24,7 @@
 #include <boost/asio/awaitable.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -41,7 +42,7 @@ struct action_context {
  *
  * Implementations execute one action_type (e.g., "execute_sql", "send_mq_message").
  */
-class action_handler {
+class ORES_SCHEDULER_CORE_EXPORT action_handler {
 public:
     virtual ~action_handler() = default;
 

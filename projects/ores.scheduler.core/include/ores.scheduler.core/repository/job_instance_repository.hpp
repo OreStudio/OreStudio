@@ -29,13 +29,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::repository {
 
 /**
  * @brief Reads and writes job instance records to ores_scheduler_job_instances_tbl.
  */
-class job_instance_repository final {
+class ORES_SCHEDULER_CORE_EXPORT job_instance_repository final {
 private:
     inline static std::string_view logger_name =
         "ores.scheduler.repository.job_instance_repository";

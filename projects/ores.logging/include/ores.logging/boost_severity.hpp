@@ -24,6 +24,7 @@
 #include <ostream>
 #include <stdexcept>
 #include "ores.logging/severity_level.hpp"
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
@@ -52,7 +53,7 @@ enum boost_severity {
  * @return Corresponding boost_severity value.
  * @throws std::invalid_argument if the string is not a valid severity.
  */
-boost_severity to_boost_severity(const std::string& s);
+ORES_LOGGING_EXPORT boost_severity to_boost_severity(const std::string& s);
 
 /**
  * @brief Converts domain severity_level to internal boost_severity.
@@ -60,7 +61,7 @@ boost_severity to_boost_severity(const std::string& s);
  * @param level The domain severity level.
  * @return Corresponding boost_severity value.
  */
-boost_severity to_boost_severity(severity_level level);
+ORES_LOGGING_EXPORT boost_severity to_boost_severity(severity_level level);
 
 /**
  * @brief Converts internal boost_severity to domain severity_level.
@@ -68,7 +69,7 @@ boost_severity to_boost_severity(severity_level level);
  * @param sev The boost severity.
  * @return Corresponding domain severity_level value.
  */
-severity_level to_domain_severity(boost_severity sev);
+ORES_LOGGING_EXPORT severity_level to_domain_severity(boost_severity sev);
 
 /**
  * @brief Inserter for boost_severity enum.

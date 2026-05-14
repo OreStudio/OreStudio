@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
 /**
  * @brief Reads and writes compute hosts to data storage.
  */
-class host_repository {
+class ORES_COMPUTE_CORE_EXPORT host_repository {
 private:
     inline static std::string_view logger_name =
         "ores.compute.repository.host_repository";

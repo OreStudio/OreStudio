@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::domain {
 
 /**
  * @brief Converts badge_definitions to the table format.
  */
-std::string convert_to_table(const std::vector<badge_definition>& v);
+ORES_DQ_API_EXPORT std::string convert_to_table(const std::vector<badge_definition>& v);
 
 }
 

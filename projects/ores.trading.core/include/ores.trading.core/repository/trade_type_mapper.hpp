@@ -23,13 +23,14 @@
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.core/repository/trade_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps trade_type domain entities to data storage layer and vice-versa.
  */
-class trade_type_mapper {
+class ORES_TRADING_CORE_EXPORT trade_type_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.trade_type_mapper";

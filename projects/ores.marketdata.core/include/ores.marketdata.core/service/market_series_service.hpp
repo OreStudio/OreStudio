@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::service {
 
 /**
  * @brief Service for managing market data series catalog entries.
  */
-class market_series_service {
+class ORES_MARKETDATA_CORE_EXPORT market_series_service {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.service.market_series_service";

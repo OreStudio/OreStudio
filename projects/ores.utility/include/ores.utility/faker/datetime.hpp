@@ -22,13 +22,14 @@
 
 #include <chrono>
 #include <string>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::faker {
 
 /**
  * @brief Generates fake datetime values for testing purposes.
  */
-class datetime final {
+class ORES_UTILITY_EXPORT datetime final {
 public:
     /**
      * @brief Generates a random past datetime as a time_point.

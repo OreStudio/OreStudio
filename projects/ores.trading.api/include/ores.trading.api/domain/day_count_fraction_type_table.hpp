@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts day_count_fraction_types to the table format.
  */
-std::string convert_to_table(const std::vector<day_count_fraction_type>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<day_count_fraction_type>& v);
 
 }
 

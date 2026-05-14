@@ -32,6 +32,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -49,7 +50,7 @@ using ores::service::messaging::decode;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class batch_handler {
+class ORES_COMPUTE_CORE_EXPORT batch_handler  {
 public:
     batch_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

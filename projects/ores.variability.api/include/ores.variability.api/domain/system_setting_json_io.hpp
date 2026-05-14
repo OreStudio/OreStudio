@@ -23,6 +23,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include "ores.variability.api/export.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 
 namespace ores::variability::domain {
@@ -30,14 +31,14 @@ namespace ores::variability::domain {
 /**
  * @brief Dumps a system_setting object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const system_setting& v);
+ORES_VARIABILITY_API_EXPORT std::ostream& operator<<(std::ostream& s, const system_setting& v);
 
 /**
  * @brief Converts a system_setting to a JSON string.
  */
 /**@{*/
-std::string convert_to_json(const system_setting& v);
-std::string convert_to_json(const std::vector<system_setting>& v);
+ORES_VARIABILITY_API_EXPORT std::string convert_to_json(const system_setting& v);
+ORES_VARIABILITY_API_EXPORT std::string convert_to_json(const std::vector<system_setting>& v);
 /**@}*/
 
 }

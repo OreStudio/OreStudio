@@ -21,6 +21,7 @@
 #define ORES_REPORTING_GENERATORS_REPORT_INSTANCE_GENERATOR_HPP
 
 #include <vector>
+#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::reporting::generators {
 /**
  * @brief Generates a synthetic report_instance.
  */
-domain::report_instance generate_synthetic_report_instance(
+ORES_REPORTING_API_EXPORT domain::report_instance generate_synthetic_report_instance(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic report_instances.
  */
-std::vector<domain::report_instance>
+ORES_REPORTING_API_EXPORT std::vector<domain::report_instance>
 generate_synthetic_report_instances(std::size_t n,
     utility::generation::generation_context& ctx);
 

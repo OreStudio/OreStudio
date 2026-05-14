@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_SESSION_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/session.hpp"
 
 namespace ores::iam::domain {
@@ -28,12 +29,12 @@ namespace ores::iam::domain {
 /**
  * @brief Dumps the session object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const session& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session& v);
 
 /**
  * @brief Dumps the session_statistics object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const session_statistics& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const session_statistics& v);
 
 }
 

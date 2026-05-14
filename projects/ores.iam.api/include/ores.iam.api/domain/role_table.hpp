@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/role.hpp"
 
 namespace ores::iam::domain {
@@ -29,7 +30,7 @@ namespace ores::iam::domain {
 /**
  * @brief Converts roles to the table format.
  */
-std::string convert_to_table(const std::vector<role>& v);
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<role>& v);
 
 }
 

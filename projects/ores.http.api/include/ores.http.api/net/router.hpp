@@ -27,13 +27,14 @@
 #include <rfl/json.hpp>
 #include "ores.http.api/domain/route.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::net {
 
 /**
  * @brief Route builder for fluent route registration.
  */
-class route_builder final {
+class ORES_HTTP_API_EXPORT route_builder final {
 public:
     route_builder(domain::http_method method, const std::string& pattern);
 
@@ -160,7 +161,7 @@ private:
 /**
  * @brief HTTP request router that matches requests to handlers.
  */
-class router final {
+class ORES_HTTP_API_EXPORT router final {
 public:
     router();
 

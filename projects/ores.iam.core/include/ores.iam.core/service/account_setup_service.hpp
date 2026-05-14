@@ -26,6 +26,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::service {
 
@@ -39,7 +40,7 @@ namespace ores::iam::service {
  * Use this service instead of calling account_service::create_account()
  * directly to ensure accounts are properly initialized with roles.
  */
-class account_setup_service {
+class ORES_IAM_CORE_EXPORT account_setup_service {
 private:
     inline static std::string_view logger_name =
         "ores.iam.service.account_setup_service";

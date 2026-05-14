@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.connections/domain/environment_tag.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::domain {
 
 /**
  * @brief Dumps the environment_tag object to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const environment_tag& v);
+ORES_CONNECTIONS_EXPORT std::ostream& operator<<(std::ostream& s, const environment_tag& v);
 
 }
 

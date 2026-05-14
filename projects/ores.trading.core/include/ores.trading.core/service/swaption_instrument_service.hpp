@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing swaption instruments.
  */
-class swaption_instrument_service {
+class ORES_TRADING_CORE_EXPORT swaption_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.swaption_instrument_service";

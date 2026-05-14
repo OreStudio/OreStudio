@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_FX_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_FX_INSTRUMENT_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
@@ -54,7 +55,7 @@ namespace ores::ore::domain {
  *   - FxAccumulator          → fx_accumulator_instrument
  *   - FxVarianceSwap         → fx_variance_swap_instrument
  */
-class fx_instrument_mapper {
+class ORES_ORE_EXPORT fx_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.fx_instrument_mapper";

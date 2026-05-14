@@ -22,6 +22,7 @@
 
 #include "ores.synthetic.api/domain/organisation_generation_options.hpp"
 #include "ores.synthetic.api/domain/generated_organisation.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::service {
 
@@ -60,7 +61,7 @@ namespace ores::synthetic::service {
  * auto org2 = service.generate(opts);
  * @endcode
  */
-class organisation_generator_service final {
+class ORES_SYNTHETIC_CORE_EXPORT organisation_generator_service final {
 public:
     /**
      * @brief Generates a complete organisational hierarchy.

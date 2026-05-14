@@ -26,6 +26,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
+#include "ores.service/export.hpp"
 
 namespace ores::service::service {
 
@@ -47,7 +48,7 @@ namespace ores::service::service {
  * @param msg       Inbound NATS message whose headers may carry a Bearer token.
  * @param verifier  JWT authenticator. If empty, @p base_ctx is returned as-is.
  */
-std::expected<ores::database::context, ores::service::error_code>
+ORES_SERVICE_EXPORT std::expected<ores::database::context, ores::service::error_code>
 make_request_context(
     const ores::database::context& base_ctx,
     const ores::nats::message& msg,
@@ -68,7 +69,7 @@ make_request_context(
  * @param token     Raw JWT Bearer token (without the "Bearer " prefix).
  * @param verifier  JWT authenticator used to validate the token.
  */
-std::expected<ores::database::context, ores::service::error_code>
+ORES_SERVICE_EXPORT std::expected<ores::database::context, ores::service::error_code>
 make_context_from_jwt(
     const ores::database::context& base_ctx,
     const std::string& token,

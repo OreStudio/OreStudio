@@ -22,6 +22,7 @@
 #include <random>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::uuid {
 
@@ -47,7 +48,7 @@ namespace ores::utility::uuid {
  * href="https://www.rfc-editor.org/rfc/rfc9562.html#name-uuid-version-7">RFC
  * 9562 - UUID Version 7</a>
  */
-class uuid_v7_generator {
+class ORES_UTILITY_EXPORT uuid_v7_generator {
 public:
     /**
      * @brief Constructs a new UUID v7 generator.

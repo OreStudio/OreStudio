@@ -22,13 +22,14 @@
 
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include <vector>
+#include "ores.eventing/export.hpp"
 
 namespace ores::eventing::generators {
 
 /**
  * @brief Generates random entity change event instances for testing.
  */
-class entity_change_event_generator final {
+class ORES_EVENTING_EXPORT entity_change_event_generator final {
 public:
     /**
      * @brief Generates a single random entity change event.

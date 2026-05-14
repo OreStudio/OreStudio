@@ -23,13 +23,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.core/repository/country_entity.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps domain model entities to data storage layer and vice-versa.
  */
-class country_mapper {
+class ORES_REFDATA_CORE_EXPORT country_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.country_mapper";

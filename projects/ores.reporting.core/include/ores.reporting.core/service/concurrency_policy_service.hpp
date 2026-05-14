@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_repository.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
 /**
  * @brief Service for managing concurrency policies.
  */
-class concurrency_policy_service {
+class ORES_REPORTING_CORE_EXPORT concurrency_policy_service {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.service.concurrency_policy_service";

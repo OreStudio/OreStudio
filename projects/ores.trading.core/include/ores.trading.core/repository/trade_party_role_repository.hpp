@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/trade_party_role.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes trade party roles to data storage.
  */
-class trade_party_role_repository {
+class ORES_TRADING_CORE_EXPORT trade_party_role_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.trade_party_role_repository";

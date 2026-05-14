@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.eventing/export.hpp"
 
 namespace ores::eventing::domain {
 
 /**
  * @brief Dumps the entity change event objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>& v);
+ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>& v);
 
 }
 

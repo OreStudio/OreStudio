@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic monetary_nature.
  */
-domain::monetary_nature generate_synthetic_monetary_nature(
+ORES_REFDATA_API_EXPORT domain::monetary_nature generate_synthetic_monetary_nature(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic monetary_natures.
  */
-std::vector<domain::monetary_nature>
+ORES_REFDATA_API_EXPORT std::vector<domain::monetary_nature>
 generate_synthetic_monetary_natures(std::size_t n,
     utility::generation::generation_context& ctx);
 

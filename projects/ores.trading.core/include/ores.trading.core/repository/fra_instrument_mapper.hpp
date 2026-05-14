@@ -23,13 +23,14 @@
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.core/repository/fra_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Maps fra_instrument domain entities to data storage layer and vice-versa.
  */
-class fra_instrument_mapper {
+class ORES_TRADING_CORE_EXPORT fra_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.fra_instrument_mapper";

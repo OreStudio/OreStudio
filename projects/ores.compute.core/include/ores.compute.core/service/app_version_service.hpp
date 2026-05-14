@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute application versions.
  */
-class app_version_service {
+class ORES_COMPUTE_CORE_EXPORT app_version_service  {
 private:
     inline static std::string_view logger_name =
         "ores.compute.service.app_version_service";

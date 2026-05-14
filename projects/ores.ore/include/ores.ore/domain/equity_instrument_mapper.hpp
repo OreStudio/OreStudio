@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_DOMAIN_EQUITY_INSTRUMENT_MAPPER_HPP
 
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
@@ -56,7 +57,7 @@ namespace ores::ore::domain {
  *     - EquityCliquetOption
  *     - EquityWorstOfBasketSwap
  */
-class equity_instrument_mapper {
+class ORES_ORE_EXPORT equity_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.equity_instrument_mapper";

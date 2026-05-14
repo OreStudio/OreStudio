@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
 #include "ores.synthetic.core/service/organisation_publisher_service.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::messaging {
 
@@ -49,7 +50,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class organisation_handler {
+class ORES_SYNTHETIC_CORE_EXPORT organisation_handler {
 public:
     organisation_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

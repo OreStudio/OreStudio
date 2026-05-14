@@ -28,13 +28,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.core/export.hpp"
 
 namespace ores::variability::repository {
 
 /**
  * @brief Reads and writes system settings from data storage.
  */
-class system_settings_repository {
+class ORES_VARIABILITY_CORE_EXPORT system_settings_repository {
 private:
     inline static std::string_view logger_name =
         "ores.variability.repository.system_settings_repository";

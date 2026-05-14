@@ -31,6 +31,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/service/action_handler.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -44,7 +45,7 @@ namespace ores::scheduler::service {
  * Call reload() to signal the loop that the job table has changed; it will
  * reload definitions on the next tick.
  */
-class scheduler_loop final {
+class ORES_SCHEDULER_CORE_EXPORT scheduler_loop final {
 public:
     static constexpr std::string_view job_instance_events_subject =
         "scheduler.v1.job-instance-events";

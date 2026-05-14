@@ -23,6 +23,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -32,7 +33,7 @@ namespace ores::workflow::service {
  * The workflow engine uses these descriptors to build and dispatch commands
  * without needing bespoke executor classes per workflow type.
  */
-struct workflow_step_def {
+struct ORES_WORKFLOW_EXPORT workflow_step_def  {
     /**
      * @brief Human-readable step name stored in workflow_step.name.
      */
@@ -91,7 +92,7 @@ struct workflow_step_def {
  * the definition by type_name to know the step sequence and how to build
  * each command.
  */
-struct workflow_definition {
+struct ORES_WORKFLOW_EXPORT workflow_definition  {
     /**
      * @brief Unique type name matching workflow_instance.type.
      *

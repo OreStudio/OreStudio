@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes treatment_dimensions to data storage.
  */
-class treatment_dimension_repository {
+class ORES_DQ_CORE_EXPORT treatment_dimension_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.treatment_dimension_repository";

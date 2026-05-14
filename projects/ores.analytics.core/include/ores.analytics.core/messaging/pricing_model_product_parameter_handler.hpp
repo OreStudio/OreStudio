@@ -31,6 +31,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.core/service/pricing_model_product_parameter_service.hpp"
+#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -51,7 +52,7 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for pricing model product parameter operations.
  */
-class pricing_model_product_parameter_handler {
+class ORES_ANALYTICS_CORE_EXPORT pricing_model_product_parameter_handler {
 public:
     pricing_model_product_parameter_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

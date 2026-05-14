@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes OIS conventions to data storage.
  */
-class ois_convention_repository {
+class ORES_REFDATA_CORE_EXPORT ois_convention_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.ois_convention_repository";

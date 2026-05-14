@@ -23,13 +23,14 @@
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Maps ibor_index_convention domain entities to data storage layer and vice-versa.
  */
-class ibor_index_convention_mapper {
+class ORES_REFDATA_CORE_EXPORT ibor_index_convention_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.ibor_index_convention_mapper";

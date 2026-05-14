@@ -26,10 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
-class fx_digital_option_instrument_service {
+class ORES_TRADING_CORE_EXPORT fx_digital_option_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.fx_digital_option_instrument_service";

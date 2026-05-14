@@ -25,6 +25,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
@@ -37,7 +38,7 @@ namespace ores::iam::repository {
  * This is a system-level audit log: no RLS is applied. The caller must
  * ensure that the context has write access to the auth events table.
  */
-class auth_event_repository {
+class ORES_IAM_CORE_EXPORT auth_event_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.auth_event_repository";

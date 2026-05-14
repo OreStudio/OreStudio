@@ -24,6 +24,7 @@
 #include <vector>
 #include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 
@@ -37,7 +38,7 @@ namespace ores::compute::repository {
  * the save_app_version handler to sync the junction rows for an app version
  * in one pass.
  */
-class app_version_platform_repository {
+class ORES_COMPUTE_CORE_EXPORT app_version_platform_repository {
 public:
     /**
      * @brief Return all active junction rows for a given app version, with

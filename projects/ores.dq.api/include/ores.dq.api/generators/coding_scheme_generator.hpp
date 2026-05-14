@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic coding_scheme.
  */
-domain::coding_scheme generate_synthetic_coding_scheme(
+ORES_DQ_API_EXPORT domain::coding_scheme generate_synthetic_coding_scheme(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic coding_schemes.
  */
-std::vector<domain::coding_scheme>
+ORES_DQ_API_EXPORT std::vector<domain::coding_scheme>
 generate_synthetic_coding_schemes(std::size_t n,
     utility::generation::generation_context& ctx);
 

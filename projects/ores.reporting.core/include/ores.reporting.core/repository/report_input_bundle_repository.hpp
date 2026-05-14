@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
@@ -33,7 +34,7 @@ namespace ores::reporting::repository {
  *
  * Bundles are write-once artifacts; no update path is provided.
  */
-class report_input_bundle_repository {
+class ORES_REPORTING_CORE_EXPORT report_input_bundle_repository {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.repository.report_input_bundle_repository";

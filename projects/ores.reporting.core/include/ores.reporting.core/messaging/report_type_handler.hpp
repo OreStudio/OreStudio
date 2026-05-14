@@ -31,6 +31,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -48,7 +49,7 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
-class report_type_handler {
+class ORES_REPORTING_CORE_EXPORT report_type_handler {
 public:
     report_type_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

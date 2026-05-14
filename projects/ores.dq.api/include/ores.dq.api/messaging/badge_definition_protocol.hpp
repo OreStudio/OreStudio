@@ -26,6 +26,7 @@
 #include <expected>
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::messaging {
 
@@ -36,19 +37,19 @@ namespace ores::dq::messaging {
 /**
  * @brief Request to retrieve all badge definitions.
  */
-struct get_badge_definitions_request final {
+struct ORES_DQ_API_EXPORT get_badge_definitions_request final {
     std::vector<std::byte> serialize() const;
     static std::expected<get_badge_definitions_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_definitions_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_definitions_request& v);
 
 /**
  * @brief Response containing all badge definitions.
  */
-struct get_badge_definitions_response final {
+struct ORES_DQ_API_EXPORT get_badge_definitions_response final {
     std::vector<domain::badge_definition> definitions;
 
     std::vector<std::byte> serialize() const;
@@ -57,12 +58,12 @@ struct get_badge_definitions_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_definitions_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_definitions_response& v);
 
 /**
  * @brief Request to save a badge definition (create or update).
  */
-struct save_badge_definition_request final {
+struct ORES_DQ_API_EXPORT save_badge_definition_request final {
     domain::badge_definition definition;
 
     std::vector<std::byte> serialize() const;
@@ -71,12 +72,12 @@ struct save_badge_definition_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_badge_definition_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_badge_definition_request& v);
 
 /**
  * @brief Response confirming badge definition save operation.
  */
-struct save_badge_definition_response final {
+struct ORES_DQ_API_EXPORT save_badge_definition_response final {
     bool success;
     std::string message;
 
@@ -86,23 +87,23 @@ struct save_badge_definition_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_badge_definition_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const save_badge_definition_response& v);
 
 /**
  * @brief Result for a single badge definition deletion.
  */
-struct delete_badge_definition_result final {
+struct ORES_DQ_API_EXPORT delete_badge_definition_result final {
     std::string code;  ///< Primary key
     bool success;
     std::string message;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_definition_result& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_definition_result& v);
 
 /**
  * @brief Request to delete one or more badge definitions.
  */
-struct delete_badge_definition_request final {
+struct ORES_DQ_API_EXPORT delete_badge_definition_request final {
     std::vector<std::string> codes;  ///< Primary keys
 
     std::vector<std::byte> serialize() const;
@@ -111,12 +112,12 @@ struct delete_badge_definition_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_definition_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_definition_request& v);
 
 /**
  * @brief Response confirming badge definition deletion(s).
  */
-struct delete_badge_definition_response final {
+struct ORES_DQ_API_EXPORT delete_badge_definition_response final {
     std::vector<delete_badge_definition_result> results;
 
     std::vector<std::byte> serialize() const;
@@ -125,12 +126,12 @@ struct delete_badge_definition_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_badge_definition_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const delete_badge_definition_response& v);
 
 /**
  * @brief Request to retrieve version history for a badge definition.
  */
-struct get_badge_definition_history_request final {
+struct ORES_DQ_API_EXPORT get_badge_definition_history_request final {
     std::string code;  ///< Primary key
 
     std::vector<std::byte> serialize() const;
@@ -139,12 +140,12 @@ struct get_badge_definition_history_request final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_definition_history_request& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_definition_history_request& v);
 
 /**
  * @brief Response containing badge definition version history.
  */
-struct get_badge_definition_history_response final {
+struct ORES_DQ_API_EXPORT get_badge_definition_history_response final {
     bool success;
     std::string message;
     std::vector<domain::badge_definition> versions;
@@ -155,7 +156,7 @@ struct get_badge_definition_history_response final {
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_badge_definition_history_response& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const get_badge_definition_history_response& v);
 
 }
 

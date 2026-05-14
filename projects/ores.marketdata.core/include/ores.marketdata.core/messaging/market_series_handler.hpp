@@ -36,6 +36,7 @@
 #include "ores.storage/net/storage_transfer.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::messaging {
 
@@ -54,7 +55,7 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class market_series_handler {
+class ORES_MARKETDATA_CORE_EXPORT market_series_handler {
 public:
     market_series_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

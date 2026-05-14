@@ -30,6 +30,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.controller.api/messaging/service_definition_protocol.hpp"
 #include "ores.controller.core/repository/service_definition_repository.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::messaging {
 
@@ -48,7 +49,7 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
-class service_definition_handler {
+class ORES_CONTROLLER_CORE_EXPORT service_definition_handler {
 public:
     service_definition_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

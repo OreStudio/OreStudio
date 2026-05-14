@@ -23,6 +23,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include "ores.variability.api/export.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 
 namespace ores::variability::domain {
@@ -30,12 +31,12 @@ namespace ores::variability::domain {
 /**
  * @brief Converts system settings to ASCII table format.
  */
-std::string convert_to_table(const std::vector<system_setting>& v);
+ORES_VARIABILITY_API_EXPORT std::string convert_to_table(const std::vector<system_setting>& v);
 
 /**
  * @brief Dumps system settings to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<system_setting>& v);
+ORES_VARIABILITY_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<system_setting>& v);
 
 }
 

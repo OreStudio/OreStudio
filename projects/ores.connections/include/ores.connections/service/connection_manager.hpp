@@ -38,6 +38,7 @@
 #include "ores.connections/repository/connection_tag_repository.hpp"
 #include "ores.connections/repository/environment_repository.hpp"
 #include "ores.connections/repository/environment_tag_repository.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::service {
 
@@ -50,7 +51,7 @@ namespace ores::connections::service {
  * - Folder organization and tag-based categorization
  * - Encrypted password storage
  */
-class connection_manager final {
+class ORES_CONNECTIONS_EXPORT connection_manager final {
 public:
     /**
      * @brief Resolved connection details for opening a login dialog.

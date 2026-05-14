@@ -24,6 +24,7 @@
 #include <string>
 #include <rfl.hpp>
 #include <sqlgen/postgres.hpp>
+#include "ores.database/export.hpp"
 
 namespace ores::database {
 
@@ -60,7 +61,7 @@ struct database_options final {
     std::string tenant;
 };
 
-std::ostream& operator<<(std::ostream& s, const database_options& v);
+ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);
 
 /**
  * @brief Converts database_options to sqlgen::postgres::Credentials.
@@ -68,7 +69,7 @@ std::ostream& operator<<(std::ostream& s, const database_options& v);
  * @param opts The database options to convert.
  * @return The corresponding sqlgen credentials.
  */
-sqlgen::postgres::Credentials to_credentials(const database_options& opts);
+ORES_DATABASE_EXPORT sqlgen::postgres::Credentials to_credentials(const database_options& opts);
 
 }
 

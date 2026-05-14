@@ -39,6 +39,7 @@
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -57,7 +58,7 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
-class result_handler {
+class ORES_COMPUTE_CORE_EXPORT result_handler  {
 public:
     result_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

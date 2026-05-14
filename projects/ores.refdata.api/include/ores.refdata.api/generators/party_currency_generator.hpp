@@ -22,14 +22,15 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/party_currency.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
 
-domain::party_currency generate_synthetic_party_currency(
+ORES_REFDATA_API_EXPORT domain::party_currency generate_synthetic_party_currency(
     utility::generation::generation_context& ctx);
 
-std::vector<domain::party_currency>
+ORES_REFDATA_API_EXPORT std::vector<domain::party_currency>
 generate_synthetic_party_currencies(std::size_t n,
     utility::generation::generation_context& ctx);
 

@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic coding_scheme_authority_type.
  */
-domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
+ORES_DQ_API_EXPORT domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic coding_scheme_authority_types.
  */
-std::vector<domain::coding_scheme_authority_type>
+ORES_DQ_API_EXPORT std::vector<domain::coding_scheme_authority_type>
 generate_synthetic_coding_scheme_authority_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

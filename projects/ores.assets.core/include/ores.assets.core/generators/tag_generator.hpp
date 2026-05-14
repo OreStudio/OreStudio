@@ -23,25 +23,26 @@
 #include <vector>
 #include "ores.assets.api/domain/tag.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::generators {
 
 /**
  * @brief Generates a synthetic tag.
  */
-domain::tag generate_synthetic_tag(
+ORES_ASSETS_CORE_EXPORT domain::tag generate_synthetic_tag(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tags. May contain duplicates.
  */
-std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
+ORES_ASSETS_CORE_EXPORT std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tags with unique names.
  */
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
+ORES_ASSETS_CORE_EXPORT std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

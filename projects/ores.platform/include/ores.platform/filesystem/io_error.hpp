@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::filesystem {
 
 /**
  * @brief An error occurred whilst performing an IO operation.
  */
-class io_error : public virtual std::exception,
+class ORES_PLATFORM_EXPORT io_error : public virtual std::exception,
                  public virtual boost::exception {
 public:
     io_error() = default;

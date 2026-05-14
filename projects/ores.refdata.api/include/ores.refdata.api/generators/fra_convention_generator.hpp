@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic fra_convention.
  */
-domain::fra_convention generate_synthetic_fra_convention(
+ORES_REFDATA_API_EXPORT domain::fra_convention generate_synthetic_fra_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic fra_conventions.
  */
-std::vector<domain::fra_convention>
+ORES_REFDATA_API_EXPORT std::vector<domain::fra_convention>
 generate_synthetic_fra_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

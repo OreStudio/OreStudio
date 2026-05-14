@@ -30,6 +30,7 @@
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.refdata.core/repository/party_country_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::service {
 
@@ -39,7 +40,7 @@ namespace ores::refdata::service {
  * Provides a higher-level interface for country operations, wrapping
  * the underlying repository.
  */
-class country_service {
+class ORES_REFDATA_CORE_EXPORT country_service {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.service.country_service";

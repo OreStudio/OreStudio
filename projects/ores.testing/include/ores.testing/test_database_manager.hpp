@@ -25,6 +25,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -38,7 +39,7 @@ namespace ores::testing {
  * Tenant isolation uses PostgreSQL Row Level Security (RLS) to ensure
  * complete data separation between test suites.
  */
-class test_database_manager {
+class ORES_TESTING_EXPORT test_database_manager {
 private:
     inline static std::string_view logger_name =
         "ores.testing.test_database_manager";

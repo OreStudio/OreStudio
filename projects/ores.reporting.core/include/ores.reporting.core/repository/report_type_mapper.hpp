@@ -23,13 +23,14 @@
 #include "ores.reporting.api/domain/report_type.hpp"
 #include "ores.reporting.core/repository/report_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
 /**
  * @brief Maps report_type domain entities to data storage layer and vice-versa.
  */
-class report_type_mapper {
+class ORES_REPORTING_CORE_EXPORT report_type_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.repository.report_type_mapper";

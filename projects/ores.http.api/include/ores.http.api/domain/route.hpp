@@ -29,6 +29,7 @@
 #include "ores.http.api/domain/http_method.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/export.hpp"
 
 namespace ores::http::domain {
 
@@ -80,7 +81,7 @@ using request_handler = std::function<
 /**
  * @brief Represents a registered route with pattern matching.
  */
-struct route final {
+struct ORES_HTTP_API_EXPORT route final {
     /**
      * @brief HTTP method for this route.
      */

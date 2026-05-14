@@ -33,6 +33,7 @@
 #include "ores.workflow/service/workflow_registry.hpp"
 #include "ores.workflow/repository/workflow_instance_repository.hpp"
 #include "ores.workflow/repository/workflow_step_repository.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -46,7 +47,7 @@ namespace ores::workflow::messaging {
  * Both handlers validate the Bearer JWT, scope the database query to the
  * authenticated tenant via RLS, and return JSON responses.
  */
-class workflow_query_handler {
+class ORES_WORKFLOW_EXPORT workflow_query_handler  {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.messaging.workflow_query_handler";

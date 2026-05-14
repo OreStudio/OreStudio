@@ -36,6 +36,7 @@
 #include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -91,7 +92,7 @@ void handle_typed_fx_save(
     }
 }
 
-class typed_fx_instrument_handler {
+class ORES_TRADING_CORE_EXPORT typed_fx_instrument_handler {
 public:
     typed_fx_instrument_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

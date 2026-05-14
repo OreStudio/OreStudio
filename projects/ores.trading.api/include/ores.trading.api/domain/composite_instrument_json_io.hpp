@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the composite_instrument to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const composite_instrument& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const composite_instrument& v);
 
 }
 

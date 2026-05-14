@@ -38,6 +38,7 @@
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/rpa_instrument_service.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -61,7 +62,7 @@ using namespace ores::logging;
  * Covers FRA, VanillaSwap, CapFloor, Swaption, BalanceGuaranteedSwap,
  * CallableSwap, KnockOutSwap, InflationSwap, and RPA instruments.
  */
-class rates_instrument_handler {
+class ORES_TRADING_CORE_EXPORT rates_instrument_handler {
 public:
     rates_instrument_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

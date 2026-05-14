@@ -21,6 +21,7 @@
 #define ORES_UTILITY_PROGRAM_OPTIONS_COMMON_CONFIGURATION_HPP
 
 #include <boost/program_options.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::program_options {
 
@@ -42,7 +43,7 @@ struct common_options {
  *   -v, --version  Display version and exit
  *       --verbose  Enable verbose output
  */
-class common_configuration final {
+class ORES_UTILITY_EXPORT common_configuration final {
 public:
     common_configuration() = delete;
 

@@ -25,7 +25,6 @@
 #include <exception>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.logging/boost_severity.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

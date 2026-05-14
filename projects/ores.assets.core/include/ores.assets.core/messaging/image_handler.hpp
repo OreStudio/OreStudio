@@ -33,6 +33,7 @@
 #include "ores.assets.core/service/assets_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::messaging {
 
@@ -51,7 +52,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class image_handler {
+class ORES_ASSETS_CORE_EXPORT image_handler {
 public:
     image_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

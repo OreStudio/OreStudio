@@ -24,6 +24,7 @@
 #include <optional>
 #include <boost/program_options.hpp>
 #include "ores.logging/logging_options.hpp"
+#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
@@ -33,7 +34,7 @@ namespace ores::logging {
  * Provides utilities for creating command-line option descriptions,
  * reading configuration from parsed options.
  */
-class logging_configuration final {
+class ORES_LOGGING_EXPORT logging_configuration final {
 public:
     logging_configuration() = delete;
 

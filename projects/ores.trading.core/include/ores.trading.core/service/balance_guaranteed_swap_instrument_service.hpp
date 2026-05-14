@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing balance guaranteed swap instruments.
  */
-class balance_guaranteed_swap_instrument_service {
+class ORES_TRADING_CORE_EXPORT balance_guaranteed_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.balance_guaranteed_swap_instrument_service";

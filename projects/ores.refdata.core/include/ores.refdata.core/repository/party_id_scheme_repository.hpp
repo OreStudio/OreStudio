@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::repository {
 
 /**
  * @brief Reads and writes party ID schemes to data storage.
  */
-class party_id_scheme_repository {
+class ORES_REFDATA_CORE_EXPORT party_id_scheme_repository {
 private:
     inline static std::string_view logger_name =
         "ores.refdata.repository.party_id_scheme_repository";

@@ -22,10 +22,11 @@
 
 #include <iosfwd>
 #include "ores.controller.api/domain/service_instance.hpp"
+#include "ores.controller.api/export.hpp"
 
 namespace ores::controller::api::domain {
 
-std::ostream& operator<<(std::ostream& s, const service_instance& v);
+ORES_CONTROLLER_API_EXPORT std::ostream& operator<<(std::ostream& s, const service_instance& v);
 
 }
 

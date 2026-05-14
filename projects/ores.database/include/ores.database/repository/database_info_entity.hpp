@@ -24,6 +24,7 @@
 #include <optional>
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
+#include "ores.database/export.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::database::repository {
@@ -45,7 +46,7 @@ struct database_info_entity {
     std::optional<db_timestamp> created_at;
 };
 
-std::ostream& operator<<(std::ostream& s, const database_info_entity& v);
+ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_info_entity& v);
 
 }
 

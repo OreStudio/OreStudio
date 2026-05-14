@@ -22,10 +22,11 @@
 
 #include <iosfwd>
 #include "ores.assets.api/domain/tag.hpp"
+#include "ores.assets.api/export.hpp"
 
 namespace ores::assets::domain {
 
-std::ostream& operator<<(std::ostream& s, const tag& v);
+ORES_ASSETS_API_EXPORT std::ostream& operator<<(std::ostream& s, const tag& v);
 
 }
 

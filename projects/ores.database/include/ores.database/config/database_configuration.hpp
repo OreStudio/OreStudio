@@ -22,6 +22,7 @@
 
 #include <boost/program_options.hpp>
 #include "ores.database/domain/database_options.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database {
 
@@ -32,7 +33,7 @@ namespace ores::database {
  * reading configuration from parsed options, and mapping environment
  * variables.
  */
-class database_configuration final {
+class ORES_DATABASE_EXPORT database_configuration final {
 public:
     database_configuration() = delete;
 

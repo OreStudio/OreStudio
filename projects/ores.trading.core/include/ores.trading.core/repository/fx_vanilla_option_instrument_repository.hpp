@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes FX vanilla option instruments to data storage.
  */
-class fx_vanilla_option_instrument_repository {
+class ORES_TRADING_CORE_EXPORT fx_vanilla_option_instrument_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.fx_vanilla_option_instrument_repository";

@@ -27,6 +27,7 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.http.core/export.hpp"
 
 namespace ores::http_server::routes {
 
@@ -38,7 +39,7 @@ namespace ores::http_server::routes {
  * System Settings:
  * - GET /api/v1/system-settings - list_settings_request
  */
-class variability_routes final {
+class ORES_HTTP_CORE_EXPORT variability_routes final {
 public:
     variability_routes(database::context ctx,
         std::shared_ptr<variability::service::system_settings_service> system_settings,

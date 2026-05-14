@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the cds_convention to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const cds_convention& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const cds_convention& v);
 
 }
 

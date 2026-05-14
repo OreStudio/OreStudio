@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.dq.api/export.hpp"
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic code_domain.
  */
-domain::code_domain generate_synthetic_code_domain(
+ORES_DQ_API_EXPORT domain::code_domain generate_synthetic_code_domain(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic code_domains.
  */
-std::vector<domain::code_domain>
+ORES_DQ_API_EXPORT std::vector<domain::code_domain>
 generate_synthetic_code_domains(std::size_t n,
     utility::generation::generation_context& ctx);
 

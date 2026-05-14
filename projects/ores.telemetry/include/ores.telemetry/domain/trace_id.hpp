@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -39,7 +40,7 @@ namespace ores::telemetry::domain {
  * - Bytes 6-7: 16-bit machine identifier (locally derived)
  * - Bytes 8-15: 64-bit random component for uniqueness
  */
-struct trace_id final {
+struct ORES_TELEMETRY_EXPORT trace_id final {
     /**
      * @brief The raw 128-bit identifier.
      */
@@ -71,7 +72,7 @@ struct trace_id final {
 /**
  * @brief Stream output operator for trace_id.
  */
-std::ostream& operator<<(std::ostream& os, const trace_id& id);
+ORES_TELEMETRY_EXPORT std::ostream& operator<<(std::ostream& os, const trace_id& id);
 
 }
 

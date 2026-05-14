@@ -18,6 +18,15 @@ file(GLOB_RECURSE files RELATIVE
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_IAM_API_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
+if(WIN32)
+    set_target_properties(${lib_target_name} PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}

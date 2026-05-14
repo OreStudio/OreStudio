@@ -22,6 +22,7 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic currency.
  */
-domain::currency generate_synthetic_currency(
+ORES_REFDATA_API_EXPORT domain::currency generate_synthetic_currency(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic currency from the unicode set.
  */
-std::vector<domain::currency> generate_synthetic_unicode_currencies(
+ORES_REFDATA_API_EXPORT std::vector<domain::currency> generate_synthetic_unicode_currencies(
     utility::generation::generation_context& ctx);
 
 /**
@@ -43,7 +44,7 @@ std::vector<domain::currency> generate_synthetic_unicode_currencies(
  *
  * @note c++ 23 generators are not supported on all compilers.
  */
-std::vector<domain::currency>
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_synthetic_currencies(std::size_t n,
     utility::generation::generation_context& ctx);
 
@@ -52,7 +53,7 @@ generate_synthetic_currencies(std::size_t n,
  *
  * @note c++ 23 generators are not supported on all compilers.
  */
-std::vector<domain::currency>
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_unique_synthetic_currencies(std::size_t n,
     utility::generation::generation_context& ctx);
 
@@ -66,7 +67,7 @@ generate_unique_synthetic_currencies(std::size_t n,
  * @param n Number of currencies to generate. If n is 0 or greater than the
  *          available set (50), returns all available fictional currencies.
  */
-std::vector<domain::currency>
+ORES_REFDATA_API_EXPORT std::vector<domain::currency>
 generate_fictional_currencies(std::size_t n,
     utility::generation::generation_context& ctx);
 

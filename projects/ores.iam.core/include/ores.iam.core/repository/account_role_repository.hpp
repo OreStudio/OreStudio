@@ -28,13 +28,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
 /**
  * @brief Reads and writes account-role assignments to data storage.
  */
-class account_role_repository {
+class ORES_IAM_CORE_EXPORT account_role_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.account_role_repository";

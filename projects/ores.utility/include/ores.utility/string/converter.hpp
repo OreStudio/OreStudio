@@ -21,13 +21,14 @@
 #define ORES_UTILITY_STRING_CONVERTER_HPP
 
 #include <string>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::string {
 
 /**
  * @brief Type conversion utilities.
  */
-class converter {
+class ORES_UTILITY_EXPORT converter {
 public:
     /**
      * @brief Converts a string into an integer.

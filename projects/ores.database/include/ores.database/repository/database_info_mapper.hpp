@@ -23,13 +23,14 @@
 #include "ores.database/domain/database_info.hpp"
 #include "ores.database/repository/database_info_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.database/export.hpp"
 
 namespace ores::database::repository {
 
 /**
  * @brief Maps database_info domain entities to data storage layer and vice-versa.
  */
-class database_info_mapper {
+class ORES_DATABASE_EXPORT database_info_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.database.repository.database_info_mapper";

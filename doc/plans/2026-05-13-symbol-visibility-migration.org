@@ -1,0 +1,259 @@
+:PROPERTIES:
+:ID: F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B
+:END:
+#+title: Symbol Visibility Migration
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+The root =CMakeLists.txt= sets =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON=, which
+causes every symbol compiled into any shared library to appear in the Windows
+PE export table.  As the codebase grows this eventually exceeds the PE
+hard limit of *65 535 named exports per DLL*.
+
+The immediate failure (2026-05-13) is =ores.refdata.core.dll=, which reached
+73 721 exported symbols after the convention-types work (PRs #728, #733, #734).
+The Linux and macOS builds are unaffected by the symbol count but will benefit
+from the resulting ABI hygiene.
+
+* Solution
+
+Apply explicit visibility annotations to every shared library following the
+pattern already established in =ores.qt.api= (see [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol
+Visibility]]):
+
+1. Each library gains an =export.hpp= using =boost/config.hpp= macros.
+2. Public types are annotated with =ORES_X_COMPONENT_EXPORT=.
+3. =-fvisibility=hidden= is set per-target on GCC/Clang.
+4. =WINDOWS_EXPORT_ALL_SYMBOLS OFF= is set on the target on Windows.
+5. =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON= is removed from the root
+   =CMakeLists.txt= once all libraries carry annotations.
+
+* Approach
+
+Each component is migrated independently:
+
+1. Add =include/ores.X.COMPONENT/export.hpp=.
+2. Annotate every exported class and free function in public headers.
+3. Update =src/CMakeLists.txt=: add compile definition, visibility flags,
+   and =WINDOWS_EXPORT_ALL_SYMBOLS OFF=.
+4. Build the target locally: =make -C build/output/linux-clang-debug-make
+   -j$(nproc) ores.X.COMPONENT.lib= (or equivalent target name).
+5. Run the component's tests.
+6. Move to the next component.
+
+Deliver as a single PR.  The PR description documents which components were
+migrated and what changed.  After the PR is merged, perform a full manual
+bootstrap to verify the complete system runs correctly.
+
+** Per-CMakeLists.txt template
+
+#+begin_src cmake
+# In src/CMakeLists.txt, after add_library(...)
+
+# Explicit symbol visibility — only exported types are visible to consumers.
+target_compile_definitions(${lib_target_name} PRIVATE
+    ORES_X_COMPONENT_LIBRARY)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
+
+if(WIN32)
+    set_target_properties(${lib_target_name} PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+endif()
+#+end_src
+
+** Export header template
+
+Each library gets =include/ores.X.COMPONENT/export.hpp=:
+
+#+begin_src c++
+#pragma once
+#include <boost/config.hpp>
+
+#ifdef ORES_X_COMPONENT_LIBRARY
+#  define ORES_X_COMPONENT_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_X_COMPONENT_EXPORT BOOST_SYMBOL_IMPORT
+#endif
+#+end_src
+
+** What to annotate
+
+| Library type | Annotate |
+|--------------+----------------------------------------------------|
+| =ores.X.api= | All public structs, enums, free functions, classes |
+| =ores.X.core= | Registration entry point only (=register_message_handlers=) |
+| Qt plugin DLL | Nothing explicit; Qt macro handles plugin factory |
+| Infrastructure / Foundation | All public types and functions |
+
+* Component checklist
+
+Components are listed in bottom-up build order.  Tick each item as it is
+completed.
+
+** Foundation layer
+
+These libraries have no ores dependencies; annotation effort is low.
+
+- [ ] =ores.utility=   → export macro =ORES_UTILITY_EXPORT=
+- [ ] =ores.platform=  → export macro =ORES_PLATFORM_EXPORT=
+- [ ] =ores.logging=   → export macro =ORES_LOGGING_EXPORT=
+- [ ] =ores.telemetry= → export macro =ORES_TELEMETRY_EXPORT=
+- [ ] =ores.database=  → export macro =ORES_DATABASE_EXPORT=
+- [ ] =ores.security=  → export macro =ORES_SECURITY_EXPORT=
+- [ ] =ores.geo=       → export macro =ORES_GEO_EXPORT=
+
+** Infrastructure layer
+
+- [ ] =ores.nats=        → export macro =ORES_NATS_EXPORT=
+- [ ] =ores.eventing=    → export macro =ORES_EVENTING_EXPORT=
+- [ ] =ores.testing=     → export macro =ORES_TESTING_EXPORT=
+- [ ] =ores.service=     → export macro =ORES_SERVICE_EXPORT=
+- [ ] =ores.storage=     → export macro =ORES_STORAGE_EXPORT=
+- [ ] =ores.connections= → export macro =ORES_CONNECTIONS_EXPORT=
+- [ ] =ores.http.api=    → export macro =ORES_HTTP_API_EXPORT=
+- [ ] =ores.telemetry.database= → export macro =ORES_TELEMETRY_DATABASE_EXPORT=
+
+** Variability
+
+- [ ] =ores.variability.api=  → export macro =ORES_VARIABILITY_API_EXPORT=
+- [ ] =ores.variability.core= → export macro =ORES_VARIABILITY_CORE_EXPORT= (registration only)
+
+** Domain — reference data
+
+- [ ] =ores.refdata.api=  → export macro =ORES_REFDATA_API_EXPORT= (all domain/messaging/generator types)
+- [ ] =ores.refdata.core= → export macro =ORES_REFDATA_CORE_EXPORT= (=register_message_handlers= only)
+
+  Consumers to switch from =core= → =api=: =ores.qt.analytics=,
+  =ores.qt.refdata=, =ores.qt=, =ores.qt.mktdata=, =ores.qt.party=,
+  =ores.qt.trading=.  Consumers that use core internals directly (=ores.http.core=,
+  =ores.synthetic.core=, =ores.wt.service=, =ores.iam.core=) are addressed
+  separately in their own steps below.
+
+** Domain — IAM
+
+- [ ] =ores.iam.api=    → export macro =ORES_IAM_API_EXPORT= (all public types)
+- [ ] =ores.iam.client= → export macro =ORES_IAM_CLIENT_EXPORT=
+- [ ] =ores.iam.core=   → export macro =ORES_IAM_CORE_EXPORT= (registration only)
+
+  =ores.iam.core= currently includes =party_repository.hpp= from =ores.refdata.core=.
+  Before hiding refdata.core internals, audit whether the IAM handlers should
+  call the refdata service over NATS instead of accessing the repository directly.
+
+** Domain — FpML / ORE
+
+- [ ] =ores.fpml=    → export macro =ORES_FPML_EXPORT=
+- [ ] =ores.ore.api= → export macro =ORES_ORE_API_EXPORT=
+- [ ] =ores.ore=     → export macro =ORES_ORE_EXPORT=
+
+** Domain — trading
+
+- [ ] =ores.trading.api=  → export macro =ORES_TRADING_API_EXPORT=
+- [ ] =ores.trading.core= → already STATIC on Windows; add =-fvisibility=hidden=
+  on GCC/Clang and annotate the registration entry point.
+
+** Domain — market data
+
+- [ ] =ores.marketdata.api=  → export macro =ORES_MARKETDATA_API_EXPORT=
+- [ ] =ores.marketdata.core= → export macro =ORES_MARKETDATA_CORE_EXPORT= (registration only)
+
+** Domain — analytics
+
+- [ ] =ores.analytics.api=  → export macro =ORES_ANALYTICS_API_EXPORT=
+- [ ] =ores.analytics.core= → export macro =ORES_ANALYTICS_CORE_EXPORT= (registration only)
+
+** Domain — data quality
+
+- [ ] =ores.dq.api=  → export macro =ORES_DQ_API_EXPORT=
+- [ ] =ores.dq.core= → export macro =ORES_DQ_CORE_EXPORT= (registration only)
+
+** Domain — reporting
+
+- [ ] =ores.reporting.api=  → export macro =ORES_REPORTING_API_EXPORT=
+- [ ] =ores.reporting.core= → export macro =ORES_REPORTING_CORE_EXPORT= (registration only)
+
+** Domain — scheduler
+
+- [ ] =ores.scheduler.api=  → export macro =ORES_SCHEDULER_API_EXPORT=
+- [ ] =ores.scheduler.core= → export macro =ORES_SCHEDULER_CORE_EXPORT= (registration only)
+
+** Domain — workflow
+
+- [ ] =ores.workflow.api= → export macro =ORES_WORKFLOW_API_EXPORT=
+- [ ] =ores.workflow=     → export macro =ORES_WORKFLOW_EXPORT= (registration only)
+
+** Domain — synthetic
+
+- [ ] =ores.synthetic.api=  → export macro =ORES_SYNTHETIC_API_EXPORT=
+- [ ] =ores.synthetic.core= → export macro =ORES_SYNTHETIC_CORE_EXPORT= (registration only)
+
+  =ores.synthetic.core= currently uses =party_mapper.hpp= from =ores.refdata.core=
+  directly.  Evaluate whether synthetic data generation should call the refdata
+  service instead.
+
+** Domain — compute
+
+- [ ] =ores.compute.api=  → export macro =ORES_COMPUTE_API_EXPORT=
+- [ ] =ores.compute.core= → export macro =ORES_COMPUTE_CORE_EXPORT= (registration only)
+
+** Domain — controller
+
+- [ ] =ores.controller.api=  → export macro =ORES_CONTROLLER_API_EXPORT=
+- [ ] =ores.controller.core= → export macro =ORES_CONTROLLER_CORE_EXPORT= (registration only)
+
+** Domain — assets
+
+- [ ] =ores.assets.api=  → export macro =ORES_ASSETS_API_EXPORT=
+- [ ] =ores.assets.core= → export macro =ORES_ASSETS_CORE_EXPORT= (registration only)
+
+** Application — HTTP
+
+- [ ] =ores.http.core= → export macro =ORES_HTTP_CORE_EXPORT=
+
+  Audited uses of =ores.refdata.core= (=currency_service=): consider routing
+  through NATS or accept the core dependency as intentional.
+
+** Application — Qt (already done)
+
+- [X] =ores.qt.api= — already uses =ORES_QT_API= with =boost/config.hpp=.
+
+** Application — Qt plugins
+
+For each plugin DLL, add =-fvisibility=hidden= and
+=WINDOWS_EXPORT_ALL_SYMBOLS OFF=.  Qt plugin factory export is handled by
+=Q_PLUGIN_METADATA= / =Q_EXPORT_PLUGIN2=; no manual annotation needed.
+
+- [ ] =ores.qt.admin=
+- [ ] =ores.qt.analytics=
+- [ ] =ores.qt.compute=
+- [ ] =ores.qt.data_transfer=
+- [ ] =ores.qt.mktdata=
+- [ ] =ores.qt.party=
+- [ ] =ores.qt.refdata=
+- [ ] =ores.qt.scheduler=
+- [ ] =ores.qt.trading=
+- [ ] =ores.qt.workflow=
+
+** Final step — remove global flag
+
+- [ ] Delete =set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)= from root
+  =CMakeLists.txt=.
+- [ ] Full local build (all platforms).
+- [ ] All tests green.
+- [ ] Manual full bootstrap.
+
+* Success criteria
+
+- Windows CI green; no DLL exceeds 65 535 exported symbols.
+- No library exports internal types (repositories, mappers, entities, services).
+- Consumers of =ores.X.core= are limited to service executables, =ores.cli=,
+  and test executables, except where an explicit architectural decision permits
+  cross-boundary access.
+- =CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS= is absent from the build system.
+- Full bootstrap passes manually after the PR is merged.

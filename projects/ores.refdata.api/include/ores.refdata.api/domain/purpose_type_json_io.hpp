@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/purpose_type.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the purpose_type to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const purpose_type& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const purpose_type& v);
 
 }
 

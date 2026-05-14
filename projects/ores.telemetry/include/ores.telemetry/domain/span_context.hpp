@@ -23,6 +23,7 @@
 #include <cstdint>
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -34,7 +35,7 @@ namespace ores::telemetry::domain {
  * This is the core data structure used for distributed tracing context
  * propagation, compatible with W3C Trace Context.
  */
-struct span_context final {
+struct ORES_TELEMETRY_EXPORT span_context final {
     /**
      * @brief The trace identifier. All spans in a trace share this ID.
      */

@@ -25,10 +25,11 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/connection.hpp"
 #include "ores.connections/repository/sqlite_context.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 
-class connection_repository final {
+class ORES_CONNECTIONS_EXPORT connection_repository final {
 public:
     explicit connection_repository(sqlite_context& ctx);
 

@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the swap_convention to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const swap_convention& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const swap_convention& v);
 
 }
 

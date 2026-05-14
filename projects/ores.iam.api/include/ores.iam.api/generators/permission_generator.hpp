@@ -21,6 +21,7 @@
 #define ORES_IAM_GENERATORS_PERMISSION_GENERATOR_HPP
 
 #include <vector>
+#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::iam::generators {
 /**
  * @brief Generates a synthetic permission.
  */
-domain::permission generate_synthetic_permission(
+ORES_IAM_API_EXPORT domain::permission generate_synthetic_permission(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic permissions.
  */
-std::vector<domain::permission>
+ORES_IAM_API_EXPORT std::vector<domain::permission>
 generate_synthetic_permissions(std::size_t n,
     utility::generation::generation_context& ctx);
 

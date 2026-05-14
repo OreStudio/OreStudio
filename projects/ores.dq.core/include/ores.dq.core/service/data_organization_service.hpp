@@ -30,6 +30,7 @@
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/repository/catalog_repository.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
@@ -43,7 +44,7 @@ namespace ores::dq::service {
  * - Managing catalogs (CRUD operations)
  * - Managing subject areas and their associated domains
  */
-class data_organization_service {
+class ORES_DQ_CORE_EXPORT data_organization_service {
 private:
     inline static std::string_view logger_name =
         "ores.dq.service.data_organization_service";

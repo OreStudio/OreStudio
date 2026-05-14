@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.refdata.api/domain/contact_type.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts contact_types to the table format.
  */
-std::string convert_to_table(const std::vector<contact_type>& v);
+ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<contact_type>& v);
 
 }
 

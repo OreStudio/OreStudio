@@ -66,6 +66,7 @@
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -83,7 +84,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class trade_handler {
+class ORES_TRADING_CORE_EXPORT trade_handler {
 public:
     trade_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

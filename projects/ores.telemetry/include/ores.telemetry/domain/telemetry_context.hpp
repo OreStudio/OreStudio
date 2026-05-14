@@ -26,6 +26,7 @@
 #include "ores.telemetry/domain/span_kind.hpp"
 #include "ores.telemetry/domain/span.hpp"
 #include "ores.telemetry/domain/resource.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -47,7 +48,7 @@ namespace ores::telemetry::domain {
  * }
  * @endcode
  */
-class telemetry_context final {
+class ORES_TELEMETRY_EXPORT telemetry_context final {
 public:
     /**
      * @brief Constructs a telemetry context.

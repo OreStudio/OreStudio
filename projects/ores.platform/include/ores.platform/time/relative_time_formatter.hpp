@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
@@ -67,7 +68,7 @@ enum class time_unit {
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat
  */
-class relative_time_formatter final {
+class ORES_PLATFORM_EXPORT relative_time_formatter final {
 public:
     /**
      * @brief Constructs a formatter with the specified numeric style.

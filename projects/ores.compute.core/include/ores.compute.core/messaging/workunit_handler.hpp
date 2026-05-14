@@ -40,6 +40,7 @@
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
+#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::messaging {
 
@@ -59,7 +60,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class workunit_handler {
+class ORES_COMPUTE_CORE_EXPORT workunit_handler  {
 public:
     workunit_handler(ores::nats::service::client& nats,
         ores::database::context ctx,

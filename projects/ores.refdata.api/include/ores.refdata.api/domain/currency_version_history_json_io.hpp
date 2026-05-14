@@ -22,10 +22,11 @@
 
 #include <iosfwd>
 #include "ores.refdata.api/domain/currency_version_history.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
-std::ostream& operator<<(std::ostream& s, const currency_version_history& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const currency_version_history& v);
 
 }
 

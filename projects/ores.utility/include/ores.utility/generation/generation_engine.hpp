@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -38,7 +39,7 @@ namespace ores::utility::generation {
  * timestamps, and alphanumeric strings. All random values are derived from
  * a single mt19937_64 engine seeded at construction.
  */
-class generation_engine final {
+class ORES_UTILITY_EXPORT generation_engine final {
 public:
     /**
      * @brief Constructs an engine with a specific seed.

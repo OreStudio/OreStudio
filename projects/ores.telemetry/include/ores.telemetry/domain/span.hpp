@@ -29,6 +29,7 @@
 #include "ores.telemetry/domain/span_status.hpp"
 #include "ores.telemetry/domain/span_link.hpp"
 #include "ores.telemetry/domain/attribute_value.hpp"
+#include "ores.telemetry/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -42,7 +43,7 @@ namespace ores::telemetry::domain {
  *
  * This structure is designed to be compatible with OpenTelemetry's span model.
  */
-struct span final {
+struct ORES_TELEMETRY_EXPORT span final {
     /**
      * @brief The span's identity (trace_id + span_id + flags).
      */

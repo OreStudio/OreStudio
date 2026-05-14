@@ -27,13 +27,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.core/repository/rpa_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
 /**
  * @brief Service for managing RPA instruments.
  */
-class rpa_instrument_service {
+class ORES_TRADING_CORE_EXPORT rpa_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.rpa_instrument_service";

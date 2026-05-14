@@ -27,10 +27,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_instance.hpp"
+#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::repository {
 
-class service_instance_repository {
+class ORES_CONTROLLER_CORE_EXPORT service_instance_repository {
 private:
     inline static std::string_view logger_name =
         "ores.controller.repository.service_instance_repository";

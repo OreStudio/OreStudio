@@ -26,10 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
-class equity_accumulator_instrument_service {
+class ORES_TRADING_CORE_EXPORT equity_accumulator_instrument_service {
 private:
     inline static std::string_view logger_name =
         "ores.trading.service.equity_accumulator_instrument_service";

@@ -21,6 +21,7 @@
 #define ORES_ORE_DOMAIN_SWAP_INSTRUMENT_MAPPER_HPP
 
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/domain/domain.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
@@ -61,7 +62,7 @@ namespace ores::ore::domain {
  * ORES domain. The reconstruction is complete only for the fields captured by
  * the forward mapping.
  */
-class swap_instrument_mapper {
+class ORES_ORE_EXPORT swap_instrument_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.ore.domain.swap_instrument_mapper";

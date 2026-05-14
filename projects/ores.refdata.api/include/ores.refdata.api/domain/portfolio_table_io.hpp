@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the portfolio objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<portfolio>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<portfolio>& v);
 
 }
 

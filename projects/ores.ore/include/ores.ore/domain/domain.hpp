@@ -2,6 +2,7 @@
 #pragma once
 
 #include "domain_xsd.hpp"
+#include "ores.ore/export.hpp"
 
 namespace ores {
 namespace ore {
@@ -1900,7 +1901,7 @@ enum class oreTradeType
     EquityStrikeResettableOption,
 };
 
-std::string to_string(oreTradeType);
+ORES_ORE_EXPORT std::string to_string(oreTradeType);
 
 struct trade
 {
@@ -2290,7 +2291,7 @@ enum class currencyCode
     ZUG,
 };
 
-std::string to_string(currencyCode);
+ORES_ORE_EXPORT std::string to_string(currencyCode);
 
 struct crossAssetModel_Currencies_t
 {
@@ -2304,7 +2305,7 @@ enum class measureType
     _,
 };
 
-std::string to_string(measureType);
+ORES_ORE_EXPORT std::string to_string(measureType);
 
 enum class discretizationType
 {
@@ -2312,7 +2313,7 @@ enum class discretizationType
     Euler,
 };
 
-std::string to_string(discretizationType);
+ORES_ORE_EXPORT std::string to_string(discretizationType);
 
 enum class salvagingAlgoType
 {
@@ -2323,7 +2324,7 @@ enum class salvagingAlgoType
     Higham,
 };
 
-std::string to_string(salvagingAlgoType);
+ORES_ORE_EXPORT std::string to_string(salvagingAlgoType);
 
 enum class bool_
 {
@@ -2342,7 +2343,7 @@ enum class bool_
     _,
 };
 
-std::string to_string(bool_);
+ORES_ORE_EXPORT std::string to_string(bool_);
 
 struct crossAssetModel_InterestRateModels_t
 {
@@ -2522,7 +2523,7 @@ enum class parConversionMatrixRegularisation
     Disable,
 };
 
-std::string to_string(parConversionMatrixRegularisation);
+ORES_ORE_EXPORT std::string to_string(parConversionMatrixRegularisation);
 
 struct discountcurves
 {
@@ -2622,7 +2623,7 @@ enum class roundingType
     Ceiling,
 };
 
-std::string to_string(roundingType);
+ORES_ORE_EXPORT std::string to_string(roundingType);
 
 struct currencyDefinition
 {
@@ -2663,7 +2664,7 @@ enum class settlementType
     Cash,
 };
 
-std::string to_string(settlementType);
+ORES_ORE_EXPORT std::string to_string(settlementType);
 
 struct swapData
 {
@@ -2692,7 +2693,7 @@ enum class type_t
     dayCounter,
 };
 
-std::string to_string(type_t);
+ORES_ORE_EXPORT std::string to_string(type_t);
 
 struct stFreeStyleLongShort : xsd::string
 {
@@ -2772,7 +2773,7 @@ enum class momentType
     Volatility,
 };
 
-std::string to_string(momentType);
+ORES_ORE_EXPORT std::string to_string(momentType);
 
 struct varianceSwapData
 {
@@ -2798,7 +2799,7 @@ enum class longShort
     Short,
 };
 
-std::string to_string(longShort);
+ORES_ORE_EXPORT std::string to_string(longShort);
 
 struct forwardRateAgreementData
 {
@@ -2858,7 +2859,7 @@ enum class settlementMethod
     ParYieldCurve,
 };
 
-std::string to_string(settlementMethod);
+ORES_ORE_EXPORT std::string to_string(settlementMethod);
 
 typedef xsd::string premiumCurrencyCode;
 
@@ -3011,7 +3012,7 @@ enum class legType
     DurationAdjustedCMS,
 };
 
-std::string to_string(legType);
+ORES_ORE_EXPORT std::string to_string(legType);
 
 enum class dayCounter
 {
@@ -3088,7 +3089,7 @@ enum class dayCounter
     Month,
 };
 
-std::string to_string(dayCounter);
+ORES_ORE_EXPORT std::string to_string(dayCounter);
 
 enum class businessDayConvention
 {
@@ -3121,7 +3122,7 @@ enum class businessDayConvention
     _,
 };
 
-std::string to_string(businessDayConvention);
+ORES_ORE_EXPORT std::string to_string(businessDayConvention);
 
 typedef xsd::string paymentLag;
 
@@ -3222,7 +3223,7 @@ enum class barrierType
     FixingFloor,
 };
 
-std::string to_string(barrierType);
+ORES_ORE_EXPORT std::string to_string(barrierType);
 
 enum class barrierCompare
 {
@@ -3231,7 +3232,7 @@ enum class barrierCompare
     _2,
 };
 
-std::string to_string(barrierCompare);
+ORES_ORE_EXPORT std::string to_string(barrierCompare);
 
 enum class barrierStyle
 {
@@ -3239,7 +3240,7 @@ enum class barrierStyle
     European,
 };
 
-std::string to_string(barrierStyle);
+ORES_ORE_EXPORT std::string to_string(barrierStyle);
 
 struct barrierData_Levels_t
 {
@@ -3252,7 +3253,7 @@ enum class barrierData_RebatePayTime_t
     atExpiry,
 };
 
-std::string to_string(barrierData_RebatePayTime_t);
+ORES_ORE_EXPORT std::string to_string(barrierData_RebatePayTime_t);
 
 struct barrierData
 {
@@ -3319,7 +3320,7 @@ enum class optionType
     Put,
 };
 
-std::string to_string(optionType);
+ORES_ORE_EXPORT std::string to_string(optionType);
 
 struct cliquetOptionData
 {
@@ -3350,7 +3351,7 @@ enum class bondPriceType
     Dirty,
 };
 
-std::string to_string(bondPriceType);
+ORES_ORE_EXPORT std::string to_string(bondPriceType);
 
 struct bondData
 {
@@ -3487,7 +3488,7 @@ enum class creditDefaultSwapOptionData_StrikeType_t
     Spread,
 };
 
-std::string to_string(creditDefaultSwapOptionData_StrikeType_t);
+ORES_ORE_EXPORT std::string to_string(creditDefaultSwapOptionData_StrikeType_t);
 
 struct creditDefaultSwapOptionData
 {
@@ -3546,7 +3547,7 @@ enum class priceType
     FutureSettlement,
 };
 
-std::string to_string(priceType);
+ORES_ORE_EXPORT std::string to_string(priceType);
 
 typedef double positiveDecimal;
 
@@ -3559,7 +3560,7 @@ enum class commodityQuantityFrequencyType
     PerHourAndCalendarDay,
 };
 
-std::string to_string(commodityQuantityFrequencyType);
+ORES_ORE_EXPORT std::string to_string(commodityQuantityFrequencyType);
 
 enum class commodityPayRelativeToType
 {
@@ -3569,7 +3570,7 @@ enum class commodityPayRelativeToType
     TerminationDate,
 };
 
-std::string to_string(commodityPayRelativeToType);
+ORES_ORE_EXPORT std::string to_string(commodityPayRelativeToType);
 
 struct commodityDigitalAveragePriceOptionData
 {
@@ -3730,7 +3731,7 @@ enum class trsFxConversion
     End,
 };
 
-std::string to_string(trsFxConversion);
+ORES_ORE_EXPORT std::string to_string(trsFxConversion);
 
 struct totalReturnData
 {
@@ -3828,7 +3829,7 @@ enum class cdsOptionstrikeType
     Price,
 };
 
-std::string to_string(cdsOptionstrikeType);
+ORES_ORE_EXPORT std::string to_string(cdsOptionstrikeType);
 
 struct indexCreditDefaultSwapOptionData
 {
@@ -3999,7 +4000,7 @@ enum class notionalCalculation
     Override,
 };
 
-std::string to_string(notionalCalculation);
+ORES_ORE_EXPORT std::string to_string(notionalCalculation);
 
 struct compositeTradeData
 {
@@ -4609,7 +4610,7 @@ enum class genericBarrierOptionData_Barriers_t_KikoType_t
     KoAfterKi,
 };
 
-std::string to_string(genericBarrierOptionData_Barriers_t_KikoType_t);
+ORES_ORE_EXPORT std::string to_string(genericBarrierOptionData_Barriers_t_KikoType_t);
 
 struct genericBarrierOptionData_Barriers_t
 {
@@ -5607,7 +5608,7 @@ enum class strikeResettableOptionData2_TriggerType_t
     Down,
 };
 
-std::string to_string(strikeResettableOptionData2_TriggerType_t);
+ORES_ORE_EXPORT std::string to_string(strikeResettableOptionData2_TriggerType_t);
 
 struct strikeResettableOptionData2
 {
@@ -5644,7 +5645,7 @@ enum class sequenceType
     Burley2020SobolBrownianBridge,
 };
 
-std::string to_string(sequenceType);
+ORES_ORE_EXPORT std::string to_string(sequenceType);
 
 enum class SobolBrownianGeneratorOrdering
 {
@@ -5653,7 +5654,7 @@ enum class SobolBrownianGeneratorOrdering
     Diagonal,
 };
 
-std::string to_string(SobolBrownianGeneratorOrdering);
+ORES_ORE_EXPORT std::string to_string(SobolBrownianGeneratorOrdering);
 
 enum class SobolRsgDirectionIntegers
 {
@@ -5669,7 +5670,7 @@ enum class SobolRsgDirectionIntegers
     Kuo3,
 };
 
-std::string to_string(SobolRsgDirectionIntegers);
+ORES_ORE_EXPORT std::string to_string(SobolRsgDirectionIntegers);
 
 enum class mporMode
 {
@@ -5677,7 +5678,7 @@ enum class mporMode
     StickyDate,
 };
 
-std::string to_string(mporMode);
+ORES_ORE_EXPORT std::string to_string(mporMode);
 
 struct parameters
 {
@@ -5776,7 +5777,7 @@ enum class calibrationTypeType
     StatisticalWithRiskNeutralVolatility,
 };
 
-std::string to_string(calibrationTypeType);
+ORES_ORE_EXPORT std::string to_string(calibrationTypeType);
 
 enum class volatilityTypeType
 {
@@ -5784,7 +5785,7 @@ enum class volatilityTypeType
     HullWhite,
 };
 
-std::string to_string(volatilityTypeType);
+ORES_ORE_EXPORT std::string to_string(volatilityTypeType);
 
 enum class paramTypeType
 {
@@ -5792,7 +5793,7 @@ enum class paramTypeType
     Piecewise,
 };
 
-std::string to_string(paramTypeType);
+ORES_ORE_EXPORT std::string to_string(paramTypeType);
 
 struct lgm_Volatility_t_TimeGrid_t : xsd::string
 {
@@ -5817,7 +5818,7 @@ enum class reversionTypeType
     HullWhite,
 };
 
-std::string to_string(reversionTypeType);
+ORES_ORE_EXPORT std::string to_string(reversionTypeType);
 
 struct lgm_Reversion_t_TimeGrid_t : xsd::string
 {
@@ -5849,7 +5850,7 @@ enum class floatSpreadMappingType
     Simple,
 };
 
-std::string to_string(floatSpreadMappingType);
+ORES_ORE_EXPORT std::string to_string(floatSpreadMappingType);
 
 struct lgm
 {
@@ -6083,7 +6084,7 @@ enum class compounding
     _,
 };
 
-std::string to_string(compounding);
+ORES_ORE_EXPORT std::string to_string(compounding);
 
 enum class frequencyType
 {
@@ -6107,7 +6108,7 @@ enum class frequencyType
     Daily,
 };
 
-std::string to_string(frequencyType);
+ORES_ORE_EXPORT std::string to_string(frequencyType);
 
 struct zeroType
 {
@@ -6151,7 +6152,7 @@ enum class dateRule
     _,
 };
 
-std::string to_string(dateRule);
+ORES_ORE_EXPORT std::string to_string(dateRule);
 
 struct cdsConventionsType
 {
@@ -6199,7 +6200,7 @@ enum class futureDateGenerationRule
     SecondThursday,
 };
 
-std::string to_string(futureDateGenerationRule);
+ORES_ORE_EXPORT std::string to_string(futureDateGenerationRule);
 
 enum class overnightIndexFutureNettingType
 {
@@ -6207,7 +6208,7 @@ enum class overnightIndexFutureNettingType
     Compounding,
 };
 
-std::string to_string(overnightIndexFutureNettingType);
+ORES_ORE_EXPORT std::string to_string(overnightIndexFutureNettingType);
 
 struct futureType
 {
@@ -6271,7 +6272,7 @@ enum class subPeriodsCouponType
     Averaging,
 };
 
-std::string to_string(subPeriodsCouponType);
+ORES_ORE_EXPORT std::string to_string(subPeriodsCouponType);
 
 struct swapType
 {
@@ -6566,7 +6567,7 @@ enum class publicationRoll
     AfterPublicationDate,
 };
 
-std::string to_string(publicationRoll);
+ORES_ORE_EXPORT std::string to_string(publicationRoll);
 
 struct inflationswapType
 {
@@ -6657,7 +6658,7 @@ enum class monthType
     Dec,
 };
 
-std::string to_string(monthType);
+ORES_ORE_EXPORT std::string to_string(monthType);
 
 typedef int64_t dayOfMonth;
 
@@ -6672,7 +6673,7 @@ enum class weekdayType
     Sun,
 };
 
-std::string to_string(weekdayType);
+ORES_ORE_EXPORT std::string to_string(weekdayType);
 
 struct commodityFutureType
 {
@@ -7181,7 +7182,7 @@ enum class riskFactorKeyType
     CPR,
 };
 
-std::string to_string(riskFactorKeyType);
+ORES_ORE_EXPORT std::string to_string(riskFactorKeyType);
 
 struct setRiskFactorKeyTypes
 {
@@ -7282,7 +7283,7 @@ enum class tradeActionType
     Conversion,
 };
 
-std::string to_string(tradeActionType);
+ORES_ORE_EXPORT std::string to_string(tradeActionType);
 
 enum class tradeActionOwner
 {
@@ -7291,7 +7292,7 @@ enum class tradeActionOwner
     Bought,
 };
 
-std::string to_string(tradeActionOwner);
+ORES_ORE_EXPORT std::string to_string(tradeActionOwner);
 
 struct tradeAction
 {
@@ -7834,7 +7835,7 @@ enum class pricingDateRuleType
     None,
 };
 
-std::string to_string(pricingDateRuleType);
+ORES_ORE_EXPORT std::string to_string(pricingDateRuleType);
 
 struct _CommodityFloatingLegData_t
 {
@@ -8083,7 +8084,7 @@ enum class cdsTierType
     PREFT1,
 };
 
-std::string to_string(cdsTierType);
+ORES_ORE_EXPORT std::string to_string(cdsTierType);
 
 enum class cdsDocClauseType
 {
@@ -8097,7 +8098,7 @@ enum class cdsDocClauseType
     XR14,
 };
 
-std::string to_string(cdsDocClauseType);
+ORES_ORE_EXPORT std::string to_string(cdsDocClauseType);
 
 struct _ReferenceInformation_t
 {
@@ -8847,7 +8848,7 @@ enum class trsNotionalType
     Fixed,
 };
 
-std::string to_string(trsNotionalType);
+ORES_ORE_EXPORT std::string to_string(trsNotionalType);
 
 struct trsFundingData
 {
@@ -9113,7 +9114,7 @@ enum class ycInterpolation
     LinearZero,
 };
 
-std::string to_string(ycInterpolation);
+ORES_ORE_EXPORT std::string to_string(ycInterpolation);
 
 enum class ycExtrapolation
 {
@@ -9134,7 +9135,7 @@ enum class ycExtrapolation
     _,
 };
 
-std::string to_string(ycExtrapolation);
+ORES_ORE_EXPORT std::string to_string(ycExtrapolation);
 
 struct market_YieldCurves_t_Configuration_t
 {
@@ -9176,7 +9177,7 @@ enum class defaultCurveExtrapolation
     FlatZero,
 };
 
-std::string to_string(defaultCurveExtrapolation);
+ORES_ORE_EXPORT std::string to_string(defaultCurveExtrapolation);
 
 struct market_DefaultCurves_t
 {
@@ -9212,7 +9213,7 @@ enum class timeDecayType
     ConstantVariance,
 };
 
-std::string to_string(timeDecayType);
+ORES_ORE_EXPORT std::string to_string(timeDecayType);
 
 struct market_SwaptionVolatilities_t_Expiries_t : xsd::string
 {
@@ -10002,7 +10003,7 @@ enum class dimensionType
     Constant,
 };
 
-std::string to_string(dimensionType);
+ORES_ORE_EXPORT std::string to_string(dimensionType);
 
 enum class smileType
 {
@@ -10012,7 +10013,7 @@ enum class smileType
     Absolute,
 };
 
-std::string to_string(smileType);
+ORES_ORE_EXPORT std::string to_string(smileType);
 
 enum class fxVolInterpolation
 {
@@ -10023,7 +10024,7 @@ enum class fxVolInterpolation
     Cubic,
 };
 
-std::string to_string(fxVolInterpolation);
+ORES_ORE_EXPORT std::string to_string(fxVolInterpolation);
 
 enum class extrapolationType
 {
@@ -10033,7 +10034,7 @@ enum class extrapolationType
     None,
 };
 
-std::string to_string(extrapolationType);
+ORES_ORE_EXPORT std::string to_string(extrapolationType);
 
 struct fxVolatility
 {
@@ -10076,7 +10077,7 @@ enum class volatilityType
     ShiftedLognormal,
 };
 
-std::string to_string(volatilityType);
+ORES_ORE_EXPORT std::string to_string(volatilityType);
 
 struct swaptionVolatility
 {
@@ -10155,7 +10156,7 @@ enum class capFloorVolatility_InterpolationMethod_t
     BicubicSpline,
 };
 
-std::string to_string(capFloorVolatility_InterpolationMethod_t);
+ORES_ORE_EXPORT std::string to_string(capFloorVolatility_InterpolationMethod_t);
 
 enum class capFloorVolatility_InterpolateOn_t
 {
@@ -10163,7 +10164,7 @@ enum class capFloorVolatility_InterpolateOn_t
     OptionletVolatilities,
 };
 
-std::string to_string(capFloorVolatility_InterpolateOn_t);
+ORES_ORE_EXPORT std::string to_string(capFloorVolatility_InterpolateOn_t);
 
 enum class capFloorVolatility_TimeInterpolation_t
 {
@@ -10174,7 +10175,7 @@ enum class capFloorVolatility_TimeInterpolation_t
     CubicFlat,
 };
 
-std::string to_string(capFloorVolatility_TimeInterpolation_t);
+ORES_ORE_EXPORT std::string to_string(capFloorVolatility_TimeInterpolation_t);
 
 enum class capFloorVolatility_StrikeInterpolation_t
 {
@@ -10189,7 +10190,7 @@ enum class capFloorVolatility_StrikeInterpolation_t
     FlochKennedy,
 };
 
-std::string to_string(capFloorVolatility_StrikeInterpolation_t);
+ORES_ORE_EXPORT std::string to_string(capFloorVolatility_StrikeInterpolation_t);
 
 enum class capFloorVolatility_InputType_t
 {
@@ -10197,7 +10198,7 @@ enum class capFloorVolatility_InputType_t
     OptionletVolatilities,
 };
 
-std::string to_string(capFloorVolatility_InputType_t);
+ORES_ORE_EXPORT std::string to_string(capFloorVolatility_InputType_t);
 
 struct capFloorVolatility
 {
@@ -10278,7 +10279,7 @@ enum class defaultCurveType
     Null,
 };
 
-std::string to_string(defaultCurveType);
+ORES_ORE_EXPORT std::string to_string(defaultCurveType);
 
 struct defaultCurve
 {
@@ -10345,7 +10346,7 @@ enum class interpolationVariableType
     Forward,
 };
 
-std::string to_string(interpolationVariableType);
+ORES_ORE_EXPORT std::string to_string(interpolationVariableType);
 
 enum class interpolationMethodType
 {
@@ -10379,7 +10380,7 @@ enum class interpolationMethodType
     ForwardFlat,
 };
 
-std::string to_string(interpolationMethodType);
+ORES_ORE_EXPORT std::string to_string(interpolationMethodType);
 
 struct yieldCurve
 {
@@ -10417,7 +10418,7 @@ enum class inflationType
     YY,
 };
 
-std::string to_string(inflationType);
+ORES_ORE_EXPORT std::string to_string(inflationType);
 
 struct inflationCurve_Lag_t : xsd::string
 {
@@ -10526,7 +10527,7 @@ enum class equityType
     NoDividends,
 };
 
-std::string to_string(equityType);
+ORES_ORE_EXPORT std::string to_string(equityType);
 
 enum class exerciseStyle
 {
@@ -10535,7 +10536,7 @@ enum class exerciseStyle
     American,
 };
 
-std::string to_string(exerciseStyle);
+ORES_ORE_EXPORT std::string to_string(exerciseStyle);
 
 struct equityCurve_SpotQuote_t : xsd::string
 {
@@ -10694,7 +10695,7 @@ enum class commVolQuoteSuffix
     P,
 };
 
-std::string to_string(commVolQuoteSuffix);
+ORES_ORE_EXPORT std::string to_string(commVolQuoteSuffix);
 
 struct commodityVolatility
 {
@@ -10735,7 +10736,7 @@ enum class correlationType
     Generic,
 };
 
-std::string to_string(correlationType);
+ORES_ORE_EXPORT std::string to_string(correlationType);
 
 enum class correlationQuoteType
 {
@@ -10744,7 +10745,7 @@ enum class correlationQuoteType
     NULL_,
 };
 
-std::string to_string(correlationQuoteType);
+ORES_ORE_EXPORT std::string to_string(correlationQuoteType);
 
 struct correlation
 {
@@ -10910,7 +10911,7 @@ enum class averagingDataPeriodType
     ExpiryToExpiry,
 };
 
-std::string to_string(averagingDataPeriodType);
+ORES_ORE_EXPORT std::string to_string(averagingDataPeriodType);
 
 struct averagingDataType_PricingCalendar_t : xsd::string
 {
@@ -11041,7 +11042,7 @@ enum class csaType
     PostOnly,
 };
 
-std::string to_string(csaType);
+ORES_ORE_EXPORT std::string to_string(csaType);
 
 typedef double non_negative_decimal;
 
@@ -11285,7 +11286,7 @@ enum class shiftType
     Absolute,
 };
 
-std::string to_string(shiftType);
+ORES_ORE_EXPORT std::string to_string(shiftType);
 
 struct shiftTypeEntry : xsd::base<domain::shiftType>
 {
@@ -11308,7 +11309,7 @@ enum class shiftScheme
     Central,
 };
 
-std::string to_string(shiftScheme);
+ORES_ORE_EXPORT std::string to_string(shiftScheme);
 
 struct shiftSchemeEntry : xsd::base<domain::shiftScheme>
 {
@@ -11699,7 +11700,7 @@ enum class creditQualityType
     NR,
 };
 
-std::string to_string(creditQualityType);
+ORES_ORE_EXPORT std::string to_string(creditQualityType);
 
 struct counterparty
 {
@@ -11781,7 +11782,7 @@ enum class optionPayRelativeTo
     Exercise,
 };
 
-std::string to_string(optionPayRelativeTo);
+ORES_ORE_EXPORT std::string to_string(optionPayRelativeTo);
 
 struct optionPaymentData_Rules_t
 {
@@ -12059,7 +12060,7 @@ enum class amortizationType
     LinearToMaturity,
 };
 
-std::string to_string(amortizationType);
+ORES_ORE_EXPORT std::string to_string(amortizationType);
 
 struct amortizationData
 {
@@ -13477,7 +13478,7 @@ enum class directSegmentTypeType
     Discount,
 };
 
-std::string to_string(directSegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(directSegmentTypeType);
 
 struct directSegmentType
 {
@@ -13499,7 +13500,7 @@ enum class simpleSegmentTypeType
     BMA_Basis_Swap,
 };
 
-std::string to_string(simpleSegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(simpleSegmentTypeType);
 
 struct simpleSegmentType_Conventions_t : xsd::string
 {
@@ -13546,7 +13547,7 @@ enum class tenorBasisSegmentTypeType
     Tenor_Basis_Two_Swaps,
 };
 
-std::string to_string(tenorBasisSegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(tenorBasisSegmentTypeType);
 
 struct tenorBasisSegmentType_Conventions_t : xsd::string
 {
@@ -13573,7 +13574,7 @@ enum class crossCurrencySegmentTypeType
     FX_Forward,
 };
 
-std::string to_string(crossCurrencySegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(crossCurrencySegmentTypeType);
 
 struct crossCurrencySegmentType_Conventions_t : xsd::string
 {
@@ -13606,7 +13607,7 @@ enum class zeroSpreadSegmentTypeType
     Zero_Spread,
 };
 
-std::string to_string(zeroSpreadSegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(zeroSpreadSegmentTypeType);
 
 struct zeroSpreadType_Conventions_t : xsd::string
 {
@@ -13632,7 +13633,7 @@ enum class discountRatioTypeType
     Discount_Ratio,
 };
 
-std::string to_string(discountRatioTypeType);
+ORES_ORE_EXPORT std::string to_string(discountRatioTypeType);
 
 struct discountRatioCurveElement : xsd::string
 {
@@ -13847,7 +13848,7 @@ enum class strikeMoneynessType
     Fwd,
 };
 
-std::string to_string(strikeMoneynessType);
+ORES_ORE_EXPORT std::string to_string(strikeMoneynessType);
 
 struct volatilityMoneynessSurfaceConfig_MoneynessLevels_t : xsd::string
 {
@@ -13884,7 +13885,7 @@ enum class strikeDeltaType
     PaFwd,
 };
 
-std::string to_string(strikeDeltaType);
+ORES_ORE_EXPORT std::string to_string(strikeDeltaType);
 
 enum class strikeAtmType
 {
@@ -13896,7 +13897,7 @@ enum class strikeAtmType
     AtmPutCall50,
 };
 
-std::string to_string(strikeAtmType);
+ORES_ORE_EXPORT std::string to_string(strikeAtmType);
 
 struct volatilityDeltaSurfaceConfig_PutDeltas_t : xsd::string
 {
@@ -14145,7 +14146,7 @@ enum class independentAmountType
     FIXED,
 };
 
-std::string to_string(independentAmountType);
+ORES_ORE_EXPORT std::string to_string(independentAmountType);
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t
 {
@@ -14773,7 +14774,7 @@ enum class capFloor
     Floor,
 };
 
-std::string to_string(capFloor);
+ORES_ORE_EXPORT std::string to_string(capFloor);
 
 struct calibrationCpiCapFloor_Maturity_t : xsd::string
 {
@@ -14890,7 +14891,7 @@ enum class parametricVolatilityParameterCalibration
     Implied,
 };
 
-std::string to_string(parametricVolatilityParameterCalibration);
+ORES_ORE_EXPORT std::string to_string(parametricVolatilityParameterCalibration);
 
 struct parametricSmileConfigParameter
 {
@@ -15176,7 +15177,7 @@ enum class priceSegmentTypeType
     OffPeakPowerDaily,
 };
 
-std::string to_string(priceSegmentTypeType);
+ORES_ORE_EXPORT std::string to_string(priceSegmentTypeType);
 
 struct priceSegmentType_Conventions_t : xsd::string
 {
@@ -15415,95 +15416,95 @@ struct defaultCurve_Configurations_t_Configuration_t_SwitchDates_t_SwitchDate_t 
 {
 };
 
-void load_file(const std::string& file, portfolio& Portfolio);
-void load_data(const std::string& data, portfolio& Portfolio);
-void save_file(const std::string& file, const portfolio& Portfolio);
-std::string save_data(const portfolio& Portfolio);
+ORES_ORE_EXPORT void load_file(const std::string& file, portfolio& Portfolio);
+ORES_ORE_EXPORT void load_data(const std::string& data, portfolio& Portfolio);
+ORES_ORE_EXPORT void save_file(const std::string& file, const portfolio& Portfolio);
+ORES_ORE_EXPORT std::string save_data(const portfolio& Portfolio);
 
-void load_file(const std::string& file, trade& Trade);
-void load_data(const std::string& data, trade& Trade);
-void save_file(const std::string& file, const trade& Trade);
-std::string save_data(const trade& Trade);
+ORES_ORE_EXPORT void load_file(const std::string& file, trade& Trade);
+ORES_ORE_EXPORT void load_data(const std::string& data, trade& Trade);
+ORES_ORE_EXPORT void save_file(const std::string& file, const trade& Trade);
+ORES_ORE_EXPORT std::string save_data(const trade& Trade);
 
-void load_file(const std::string& file, simulation& Simulation);
-void load_data(const std::string& data, simulation& Simulation);
-void save_file(const std::string& file, const simulation& Simulation);
-std::string save_data(const simulation& Simulation);
+ORES_ORE_EXPORT void load_file(const std::string& file, simulation& Simulation);
+ORES_ORE_EXPORT void load_data(const std::string& data, simulation& Simulation);
+ORES_ORE_EXPORT void save_file(const std::string& file, const simulation& Simulation);
+ORES_ORE_EXPORT std::string save_data(const simulation& Simulation);
 
-void load_file(const std::string& file, crossAssetModel& CrossAssetModel);
-void load_data(const std::string& data, crossAssetModel& CrossAssetModel);
-void save_file(const std::string& file, const crossAssetModel& CrossAssetModel);
-std::string save_data(const crossAssetModel& CrossAssetModel);
+ORES_ORE_EXPORT void load_file(const std::string& file, crossAssetModel& CrossAssetModel);
+ORES_ORE_EXPORT void load_data(const std::string& data, crossAssetModel& CrossAssetModel);
+ORES_ORE_EXPORT void save_file(const std::string& file, const crossAssetModel& CrossAssetModel);
+ORES_ORE_EXPORT std::string save_data(const crossAssetModel& CrossAssetModel);
 
-void load_file(const std::string& file, creditsimulation& CreditSimulation);
-void load_data(const std::string& data, creditsimulation& CreditSimulation);
-void save_file(const std::string& file, const creditsimulation& CreditSimulation);
-std::string save_data(const creditsimulation& CreditSimulation);
+ORES_ORE_EXPORT void load_file(const std::string& file, creditsimulation& CreditSimulation);
+ORES_ORE_EXPORT void load_data(const std::string& data, creditsimulation& CreditSimulation);
+ORES_ORE_EXPORT void save_file(const std::string& file, const creditsimulation& CreditSimulation);
+ORES_ORE_EXPORT std::string save_data(const creditsimulation& CreditSimulation);
 
-void load_file(const std::string& file, curveconfiguration& CurveConfiguration);
-void load_data(const std::string& data, curveconfiguration& CurveConfiguration);
-void save_file(const std::string& file, const curveconfiguration& CurveConfiguration);
-std::string save_data(const curveconfiguration& CurveConfiguration);
+ORES_ORE_EXPORT void load_file(const std::string& file, curveconfiguration& CurveConfiguration);
+ORES_ORE_EXPORT void load_data(const std::string& data, curveconfiguration& CurveConfiguration);
+ORES_ORE_EXPORT void save_file(const std::string& file, const curveconfiguration& CurveConfiguration);
+ORES_ORE_EXPORT std::string save_data(const curveconfiguration& CurveConfiguration);
 
-void load_file(const std::string& file, conventions& Conventions);
-void load_data(const std::string& data, conventions& Conventions);
-void save_file(const std::string& file, const conventions& Conventions);
-std::string save_data(const conventions& Conventions);
+ORES_ORE_EXPORT void load_file(const std::string& file, conventions& Conventions);
+ORES_ORE_EXPORT void load_data(const std::string& data, conventions& Conventions);
+ORES_ORE_EXPORT void save_file(const std::string& file, const conventions& Conventions);
+ORES_ORE_EXPORT std::string save_data(const conventions& Conventions);
 
-void load_file(const std::string& file, collateralBalances& CollateralBalances);
-void load_data(const std::string& data, collateralBalances& CollateralBalances);
-void save_file(const std::string& file, const collateralBalances& CollateralBalances);
-std::string save_data(const collateralBalances& CollateralBalances);
+ORES_ORE_EXPORT void load_file(const std::string& file, collateralBalances& CollateralBalances);
+ORES_ORE_EXPORT void load_data(const std::string& data, collateralBalances& CollateralBalances);
+ORES_ORE_EXPORT void save_file(const std::string& file, const collateralBalances& CollateralBalances);
+ORES_ORE_EXPORT std::string save_data(const collateralBalances& CollateralBalances);
 
-void load_file(const std::string& file, nettingsetdefinitions& NettingSetDefinitions);
-void load_data(const std::string& data, nettingsetdefinitions& NettingSetDefinitions);
-void save_file(const std::string& file, const nettingsetdefinitions& NettingSetDefinitions);
-std::string save_data(const nettingsetdefinitions& NettingSetDefinitions);
+ORES_ORE_EXPORT void load_file(const std::string& file, nettingsetdefinitions& NettingSetDefinitions);
+ORES_ORE_EXPORT void load_data(const std::string& data, nettingsetdefinitions& NettingSetDefinitions);
+ORES_ORE_EXPORT void save_file(const std::string& file, const nettingsetdefinitions& NettingSetDefinitions);
+ORES_ORE_EXPORT std::string save_data(const nettingsetdefinitions& NettingSetDefinitions);
 
-void load_file(const std::string& file, pricingengines& PricingEngines);
-void load_data(const std::string& data, pricingengines& PricingEngines);
-void save_file(const std::string& file, const pricingengines& PricingEngines);
-std::string save_data(const pricingengines& PricingEngines);
+ORES_ORE_EXPORT void load_file(const std::string& file, pricingengines& PricingEngines);
+ORES_ORE_EXPORT void load_data(const std::string& data, pricingengines& PricingEngines);
+ORES_ORE_EXPORT void save_file(const std::string& file, const pricingengines& PricingEngines);
+ORES_ORE_EXPORT std::string save_data(const pricingengines& PricingEngines);
 
-void load_file(const std::string& file, todaysmarket& TodaysMarket);
-void load_data(const std::string& data, todaysmarket& TodaysMarket);
-void save_file(const std::string& file, const todaysmarket& TodaysMarket);
-std::string save_data(const todaysmarket& TodaysMarket);
+ORES_ORE_EXPORT void load_file(const std::string& file, todaysmarket& TodaysMarket);
+ORES_ORE_EXPORT void load_data(const std::string& data, todaysmarket& TodaysMarket);
+ORES_ORE_EXPORT void save_file(const std::string& file, const todaysmarket& TodaysMarket);
+ORES_ORE_EXPORT std::string save_data(const todaysmarket& TodaysMarket);
 
-void load_file(const std::string& file, sensitivityanalysis& SensitivityAnalysis);
-void load_data(const std::string& data, sensitivityanalysis& SensitivityAnalysis);
-void save_file(const std::string& file, const sensitivityanalysis& SensitivityAnalysis);
-std::string save_data(const sensitivityanalysis& SensitivityAnalysis);
+ORES_ORE_EXPORT void load_file(const std::string& file, sensitivityanalysis& SensitivityAnalysis);
+ORES_ORE_EXPORT void load_data(const std::string& data, sensitivityanalysis& SensitivityAnalysis);
+ORES_ORE_EXPORT void save_file(const std::string& file, const sensitivityanalysis& SensitivityAnalysis);
+ORES_ORE_EXPORT std::string save_data(const sensitivityanalysis& SensitivityAnalysis);
 
-void load_file(const std::string& file, stresstesting& StressTesting);
-void load_data(const std::string& data, stresstesting& StressTesting);
-void save_file(const std::string& file, const stresstesting& StressTesting);
-std::string save_data(const stresstesting& StressTesting);
+ORES_ORE_EXPORT void load_file(const std::string& file, stresstesting& StressTesting);
+ORES_ORE_EXPORT void load_data(const std::string& data, stresstesting& StressTesting);
+ORES_ORE_EXPORT void save_file(const std::string& file, const stresstesting& StressTesting);
+ORES_ORE_EXPORT std::string save_data(const stresstesting& StressTesting);
 
-void load_file(const std::string& file, ore& ORE);
-void load_data(const std::string& data, ore& ORE);
-void save_file(const std::string& file, const ore& ORE);
-std::string save_data(const ore& ORE);
+ORES_ORE_EXPORT void load_file(const std::string& file, ore& ORE);
+ORES_ORE_EXPORT void load_data(const std::string& data, ore& ORE);
+ORES_ORE_EXPORT void save_file(const std::string& file, const ore& ORE);
+ORES_ORE_EXPORT std::string save_data(const ore& ORE);
 
-void load_file(const std::string& file, calendaradjustment& CalendarAdjustments);
-void load_data(const std::string& data, calendaradjustment& CalendarAdjustments);
-void save_file(const std::string& file, const calendaradjustment& CalendarAdjustments);
-std::string save_data(const calendaradjustment& CalendarAdjustments);
+ORES_ORE_EXPORT void load_file(const std::string& file, calendaradjustment& CalendarAdjustments);
+ORES_ORE_EXPORT void load_data(const std::string& data, calendaradjustment& CalendarAdjustments);
+ORES_ORE_EXPORT void save_file(const std::string& file, const calendaradjustment& CalendarAdjustments);
+ORES_ORE_EXPORT std::string save_data(const calendaradjustment& CalendarAdjustments);
 
-void load_file(const std::string& file, currencyConfig& CurrencyConfig);
-void load_data(const std::string& data, currencyConfig& CurrencyConfig);
-void save_file(const std::string& file, const currencyConfig& CurrencyConfig);
-std::string save_data(const currencyConfig& CurrencyConfig);
+ORES_ORE_EXPORT void load_file(const std::string& file, currencyConfig& CurrencyConfig);
+ORES_ORE_EXPORT void load_data(const std::string& data, currencyConfig& CurrencyConfig);
+ORES_ORE_EXPORT void save_file(const std::string& file, const currencyConfig& CurrencyConfig);
+ORES_ORE_EXPORT std::string save_data(const currencyConfig& CurrencyConfig);
 
-void load_file(const std::string& file, currencyDefinition& Currency);
-void load_data(const std::string& data, currencyDefinition& Currency);
-void save_file(const std::string& file, const currencyDefinition& Currency);
-std::string save_data(const currencyDefinition& Currency);
+ORES_ORE_EXPORT void load_file(const std::string& file, currencyDefinition& Currency);
+ORES_ORE_EXPORT void load_data(const std::string& data, currencyDefinition& Currency);
+ORES_ORE_EXPORT void save_file(const std::string& file, const currencyDefinition& Currency);
+ORES_ORE_EXPORT std::string save_data(const currencyDefinition& Currency);
 
-void load_file(const std::string& file, counterpartyInformation& CounterpartyInformation);
-void load_data(const std::string& data, counterpartyInformation& CounterpartyInformation);
-void save_file(const std::string& file, const counterpartyInformation& CounterpartyInformation);
-std::string save_data(const counterpartyInformation& CounterpartyInformation);
+ORES_ORE_EXPORT void load_file(const std::string& file, counterpartyInformation& CounterpartyInformation);
+ORES_ORE_EXPORT void load_data(const std::string& data, counterpartyInformation& CounterpartyInformation);
+ORES_ORE_EXPORT void save_file(const std::string& file, const counterpartyInformation& CounterpartyInformation);
+ORES_ORE_EXPORT std::string save_data(const counterpartyInformation& CounterpartyInformation);
 
 }
 }

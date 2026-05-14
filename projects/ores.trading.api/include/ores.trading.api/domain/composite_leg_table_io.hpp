@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps composite_legs to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<composite_leg>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<composite_leg>& v);
 
 }
 

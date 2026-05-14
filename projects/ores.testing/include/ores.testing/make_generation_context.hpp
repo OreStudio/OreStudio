@@ -24,6 +24,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
@@ -32,13 +33,13 @@ namespace ores::testing {
  *
  * Populates modified_by from db_user() and tenant_id from the test tenant.
  */
-utility::generation::generation_context
+ORES_TESTING_EXPORT utility::generation::generation_context
 make_generation_context(database_helper& h);
 
 /**
  * @brief Creates a generation context with a specific seed.
  */
-utility::generation::generation_context
+ORES_TESTING_EXPORT utility::generation::generation_context
 make_generation_context(database_helper& h, std::uint64_t seed);
 
 /**
@@ -46,13 +47,13 @@ make_generation_context(database_helper& h, std::uint64_t seed);
  *
  * Populates modified_by from db_user() and tenant_id from the test tenant.
  */
-utility::generation::generation_context
+ORES_TESTING_EXPORT utility::generation::generation_context
 make_generation_context(scoped_database_helper& h);
 
 /**
  * @brief Creates a generation context with a specific seed.
  */
-utility::generation::generation_context
+ORES_TESTING_EXPORT utility::generation::generation_context
 make_generation_context(scoped_database_helper& h, std::uint64_t seed);
 
 }

@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
@@ -35,7 +36,7 @@ namespace ores::reporting::repository {
  * Provides read-only access to the risk_report_config table and the
  * associated book/portfolio scope junction tables.
  */
-class risk_report_config_repository {
+class ORES_REPORTING_CORE_EXPORT risk_report_config_repository {
 private:
     inline static std::string_view logger_name =
         "ores.reporting.repository.risk_report_config_repository";

@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the deposit_convention objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<deposit_convention>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<deposit_convention>& v);
 
 }
 

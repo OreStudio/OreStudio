@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include "ores.security/export.hpp"
 
 namespace ores::security::crypto {
 
@@ -37,7 +38,7 @@ namespace ores::security::crypto {
  * - tag: 16 bytes authentication tag
  * - ciphertext: variable length encrypted data
  */
-class encryption final {
+class ORES_SECURITY_EXPORT encryption final {
 public:
     static constexpr size_t SALT_LEN = 16;
     static constexpr size_t IV_LEN = 12;

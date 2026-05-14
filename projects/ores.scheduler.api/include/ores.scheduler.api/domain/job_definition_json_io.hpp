@@ -21,6 +21,7 @@
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
 
 #include <iosfwd>
+#include "ores.scheduler.api/export.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::scheduler::domain {
@@ -28,7 +29,7 @@ namespace ores::scheduler::domain {
 /**
  * @brief Dumps the job_definition to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const job_definition& v);
+ORES_SCHEDULER_API_EXPORT std::ostream& operator<<(std::ostream& s, const job_definition& v);
 
 }
 

@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the day_count_fraction_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<day_count_fraction_type>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<day_count_fraction_type>& v);
 
 }
 

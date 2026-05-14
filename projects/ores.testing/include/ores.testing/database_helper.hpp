@@ -26,13 +26,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.testing/export.hpp"
 
 namespace ores::testing {
 
 /**
  * @brief Provides database setup and cleanup utilities for tests.
  */
-class database_helper {
+class ORES_TESTING_EXPORT database_helper {
 private:
     inline static std::string_view logger_name =
         "ores.testing.database_helper";

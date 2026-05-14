@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::generators {
 
 /**
  * @brief Generates a synthetic DQ catalog.
  */
-dq::domain::catalog generate_synthetic_catalog(
+ORES_SYNTHETIC_CORE_EXPORT dq::domain::catalog generate_synthetic_catalog(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic DQ catalogs.
  */
-std::vector<dq::domain::catalog>
+ORES_SYNTHETIC_CORE_EXPORT std::vector<dq::domain::catalog>
 generate_synthetic_catalogs(std::size_t n,
     utility::generation::generation_context& ctx);
 

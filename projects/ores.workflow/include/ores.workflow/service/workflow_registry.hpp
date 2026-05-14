@@ -23,6 +23,7 @@
 #include <string>
 #include <unordered_map>
 #include "ores.workflow/service/workflow_definition.hpp"
+#include "ores.workflow/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -32,7 +33,7 @@ namespace ores::workflow::service {
  * Populated at startup before the NATS subscriptions are registered.
  * The workflow engine looks up definitions by type_name to drive execution.
  */
-class workflow_registry {
+class ORES_WORKFLOW_EXPORT workflow_registry  {
 public:
     /**
      * @brief Register a workflow definition.

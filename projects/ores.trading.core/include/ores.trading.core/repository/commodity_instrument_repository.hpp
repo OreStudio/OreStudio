@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::repository {
 
 /**
  * @brief Reads and writes commodity instruments to data storage.
  */
-class commodity_instrument_repository {
+class ORES_TRADING_CORE_EXPORT commodity_instrument_repository {
 private:
     inline static std::string_view logger_name =
         "ores.trading.repository.commodity_instrument_repository";

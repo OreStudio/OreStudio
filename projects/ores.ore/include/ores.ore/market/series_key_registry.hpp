@@ -22,6 +22,7 @@
 
 #include <optional>
 #include <string>
+#include "ores.ore/export.hpp"
 
 namespace ores::ore::market {
 
@@ -80,7 +81,7 @@ struct decomposed_key {
  * @throws std::invalid_argument if the key has fewer than two slash-separated
  *         segments (missing type or metric).
  */
-decomposed_key decompose_key(const std::string& key);
+ORES_ORE_EXPORT decomposed_key decompose_key(const std::string& key);
 
 /**
  * @brief Reconstructs the ORE key string from its decomposed components.
@@ -88,7 +89,7 @@ decomposed_key decompose_key(const std::string& key);
  * Inverse of decompose_key; used by the serializer so that the key field
  * is never stored separately from the decomposed fields.
  */
-std::string reconstruct_key(const decomposed_key& dk);
+ORES_ORE_EXPORT std::string reconstruct_key(const decomposed_key& dk);
 
 }
 

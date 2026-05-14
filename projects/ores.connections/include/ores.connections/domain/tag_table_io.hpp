@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.connections/domain/tag.hpp"
+#include "ores.connections/export.hpp"
 
 namespace ores::connections::domain {
 
 /**
  * @brief Dumps a collection of tag objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<tag>& v);
+ORES_CONNECTIONS_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<tag>& v);
 
 }
 

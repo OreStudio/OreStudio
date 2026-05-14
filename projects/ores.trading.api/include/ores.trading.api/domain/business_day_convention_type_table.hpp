@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts business_day_convention_types to the table format.
  */
-std::string convert_to_table(const std::vector<business_day_convention_type>& v);
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<business_day_convention_type>& v);
 
 }
 

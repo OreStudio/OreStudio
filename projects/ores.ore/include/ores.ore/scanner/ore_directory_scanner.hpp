@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include "ores.ore/export.hpp"
 #include "ores.ore/scanner/scan_result.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -37,7 +38,7 @@ namespace ores::ore::scanner {
  * - portfolio_files: filename starts with "portfolio" and ends with ".xml"
  * - ignored_files:   everything else, and files under excluded directories
  */
-class ore_directory_scanner {
+class ORES_ORE_EXPORT ore_directory_scanner {
 private:
     inline static std::string_view logger_name =
         "ores.ore.scanner.ore_directory_scanner";

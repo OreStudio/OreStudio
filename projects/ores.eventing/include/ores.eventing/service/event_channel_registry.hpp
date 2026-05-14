@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include "ores.eventing/domain/event_channel_info.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing/export.hpp"
 
 namespace ores::eventing::service {
 
@@ -51,7 +52,7 @@ namespace ores::eventing::service {
  *     auto channels = registry.get_channels();
  * @endcode
  */
-class event_channel_registry final {
+class ORES_EVENTING_EXPORT event_channel_registry final {
 public:
     event_channel_registry() = default;
     ~event_channel_registry() = default;

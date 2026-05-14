@@ -28,13 +28,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::service {
 
 /**
  * @brief Service for managing historical index fixings.
  */
-class market_fixing_service {
+class ORES_MARKETDATA_CORE_EXPORT market_fixing_service {
 private:
     inline static std::string_view logger_name =
         "ores.marketdata.service.market_fixing_service";

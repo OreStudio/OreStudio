@@ -26,13 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.dq.core/export.hpp"
 
 namespace ores::dq::repository {
 
 /**
  * @brief Reads and writes code domains to data storage.
  */
-class code_domain_repository {
+class ORES_DQ_CORE_EXPORT code_domain_repository {
 private:
     inline static std::string_view logger_name =
         "ores.dq.repository.code_domain_repository";

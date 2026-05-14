@@ -36,7 +36,7 @@ ORES_SYNTHETIC_CORE_EXPORT dq::domain::dataset generate_synthetic_dataset(
 /**
  * @brief Generates N synthetic DQ datasets.
  */
-std::vector<dq::domain::dataset>
+ORES_SYNTHETIC_CORE_EXPORT std::vector<dq::domain::dataset>
 generate_synthetic_datasets(std::size_t n,
     utility::generation::generation_context& ctx);
 

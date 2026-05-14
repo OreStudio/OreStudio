@@ -36,7 +36,7 @@ ORES_SYNTHETIC_CORE_EXPORT iam::domain::account generate_synthetic_account(
 /**
  * @brief Generates N synthetic IAM accounts with controlled randomness.
  */
-std::vector<iam::domain::account>
+ORES_SYNTHETIC_CORE_EXPORT std::vector<iam::domain::account>
 generate_synthetic_accounts(std::size_t n,
     utility::generation::generation_context& ctx);
 

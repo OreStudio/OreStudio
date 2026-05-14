@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::repository {
 
@@ -37,7 +38,7 @@ namespace ores::iam::repository {
  * Handles CRUD operations for session records stored in a TimescaleDB
  * hypertable. Supports time-range queries and statistics aggregation.
  */
-class session_repository {
+class ORES_IAM_CORE_EXPORT session_repository {
 private:
     inline static std::string_view logger_name =
         "ores.iam.repository.session_repository";

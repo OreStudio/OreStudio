@@ -41,7 +41,7 @@ add_compile_options(
 #
 # Catch2 args: common args, reporters specified per test target.
 #
-set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
+set(ORES_CATCH2_ARGS --allow-running-no-tests --durations yes --filenames-as-tags -r compact)
 
 #
 # Projects

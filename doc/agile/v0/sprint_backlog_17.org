@@ -314,6 +314,38 @@ Story is BLOCKED pending:
 Branch: =feature/fix-refdata-rls-validate-fn=
 Pull Request: [[https://github.com/OreStudio/OreStudio/pull/750][#750]]
 
+*** BLOCKED Qt plugin isolation (Category 2 cross-plugin dependencies)  :code:
+CLOSED: [2026-05-15 Thu 00:00]
+:LOGBOOK:
+CLOCK: [2026-05-15 Thu 00:00]--[2026-05-15 Thu 00:00] =>  0:00
+:END:
+
+Implement Phase 1 of =doc/plans/2026-05-15-qt-plugin-isolation.org=.
+
+Break the two Category 2 cross-plugin compile-time dependencies that were
+exposed when =-fvisibility=hidden= was applied to plugin shared libraries.
+
+***** Tasks
+
+- [X] Add =IBusinessUnitBrowser= abstract interface to =ores.qt.api=
+- [X] =BusinessUnitController= implements =IBusinessUnitBrowser=
+- [X] Replace =BusinessUnitController*= with =IBusinessUnitBrowser*= in =OrgExplorerMdiWindow=
+- [X] Remove =ores.qt.party.lib= from =ores.qt.trading= PUBLIC link deps
+- [X] Move 8 DQ catalogue controllers from =DataTransferPlugin= to =RefdataPlugin=
+- [X] =RefdataPlugin::setup_menus()= builds Data Catalogue submenu on =data_transfer_menu=
+- [X] =DataTransferPlugin= reduced to thin shell owning only the menu handle
+- [X] Remove =ores.qt.refdata.lib= from =ores.qt.data_transfer= link deps
+- [X] Commit and push; create PR
+
+***** Notes
+
+Story is BLOCKED pending:
+- User build verification (=make -C build/output/linux-clang-debug-make -j$(nproc)=)
+- Runtime testing (login, Data Catalogue menu, Org Explorer)
+- Pull request review
+
+Branch: =feature/qt-plugin-isolation=
+
 *** Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

@@ -79,6 +79,7 @@ enum class Col {
     Steps,
     CreatedBy,
     CreatedAt,
+    CompletedAt,
     WorkflowId,
     Count
 };
@@ -363,7 +364,7 @@ void WorkflowMdiWindow::setupExecutionListTab(QWidget* tab) {
     instanceTable_ = new QTableWidget(0, static_cast<int>(Col::Count), tab);
     instanceTable_->setHorizontalHeaderLabels(
         {tr("Status"), tr("Type"), tr("Steps"),
-         tr("Created By"), tr("Created At"), tr("Workflow ID")});
+         tr("Created By"), tr("Created At"), tr("Completed At"), tr("Workflow ID")});
     instanceTable_->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
     instanceTable_->horizontalHeader()->setStretchLastSection(true);
@@ -587,6 +588,11 @@ void WorkflowMdiWindow::populateExecutionList(
 
         instanceTable_->setItem(row, static_cast<int>(Col::CreatedAt),
             make_item(QString::fromStdString(inst.created_at)));
+
+        instanceTable_->setItem(row, static_cast<int>(Col::CompletedAt),
+            make_item(inst.completed_at
+                ? QString::fromStdString(*inst.completed_at)
+                : QStringLiteral("—")));
 
         instanceTable_->setItem(row, static_cast<int>(Col::WorkflowId),
             make_item(id));

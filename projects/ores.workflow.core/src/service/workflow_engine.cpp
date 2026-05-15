@@ -376,7 +376,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         break;
     case outcome::failed:
         step_repo_.update_state(ctx_, step_id,
-            step_states_.require("failed"), "", event.error_message, "");
+            step_states_.require("failed"), "", event.error_message, log_json);
         break;
     }
 

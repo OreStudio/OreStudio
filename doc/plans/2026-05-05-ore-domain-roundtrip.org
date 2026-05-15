@@ -1,4 +1,5 @@
 #+title: ORE Domain Roundtrip Check (Thing 3)
+#+STATUS: COMPLETE
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+note: Type bridge section updated 2026-05-06 — import/export cleanup (PR #728)
 #+      unified instrument carriers; trade_import_item and trade_export_item now

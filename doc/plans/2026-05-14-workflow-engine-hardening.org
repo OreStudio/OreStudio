@@ -2,8 +2,91 @@
 #+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSAL
+#+STATUS: IN PROGRESS
 #+OPTIONS: toc:t num:nil
+
+* Progress
+
+Items 3 and 4 from the original plan are complete. Items 1 and 2 remain
+pending. Additional hardening work was done on branches
+~feature/workflow-step-log~ and ~feature/dq-publish-pattern-microservices~
+that is closely related to this plan but addresses bugs surfaced during
+integration testing.
+
+** Completed — Error surfacing pipeline fixes
+
+Three bugs prevented workflow step errors from appearing in the UI.
+All three are now fixed:
+
+1. ~workflow_step_context::fail()~ was discarding the accumulated log
+   (fixed in commit ~db41924b1~, ~feature/workflow-step-log~).
+
+2. ~workflow_engine.cpp~ ~on_step_completed~: the ~failed~ outcome
+   branch was passing ~""~ for ~step_log_json~ in
+   ~step_repo_.update_state()~, silently dropping the log on DB write
+   even when it was correctly forwarded by the handler (fixed in commit
+   ~90fb7eb12~, ~feature/workflow-step-log~):
+
+   #+begin_src cpp
+   // Before (log discarded):
+   case outcome::failed:
+       step_repo_.update_state(ctx_, step_id,
+           step_states_.require("failed"), "", event.error_message, "");
+   // After:
+   case outcome::failed:
+       step_repo_.update_state(ctx_, step_id,
+           step_states_.require("failed"), "", event.error_message, log_json);
+   #+end_src
+
+3. ~trade_status_service~ was calling ~dq::repository::fsm_transition_repository~
+   directly, causing permission-denied errors in the trading service user.
+   Resolved as part of Phase 3a service isolation (see below).
+
+** Completed — Phase 3a: trading service isolation (NATS)
+
+~trade_status_service.cpp~ was bypassing service table isolation by
+directly calling the DQ ~fsm_transition_repository~. Fixed on branch
+~feature/dq-publish-pattern-microservices~ (commit ~ff3c1b505~):
+
+- ~trade_handler::fetch_fsm_transitions()~ fetches the full FSM
+  transition map from ~dq.v1.fsm-transitions.list~ via NATS, with a
+  5-minute process-level static cache to avoid one NATS call per trade
+  during bulk imports.
+- The map is passed through ~trade_service::save_trades()~ →
+  ~trade_status_service::resolve_status()~.
+- ~ores.dq.core.lib~ removed from ~ores.trading.core~'s CMake link
+  libraries; replaced with ~ores.dq.api.lib~.
+- Phase 3a in
+  [[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+  marked COMPLETE.
+
+** Completed — Workflow instance list: Completed At column
+
+~WorkflowMdiWindow~ now shows a ~Completed At~ column. The
+~workflow_instance_summary.completed_at~ field was already populated by
+~workflow_query_handler.cpp~; only the UI column was missing.
+
+** Completed — Item 3: Idempotency guard
+
+~check_step_idempotency~ is implemented in
+~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~
+alongside the existing ~publish_step_completion~ helper. Handlers call
+it to replay the cached completion event on re-dispatch rather than
+re-executing the operation.
+
+** Completed — Item 4: Reusable step widget
+
+~WorkflowStepsWidget~ and ~WorkflowStepLogWidget~ exist in
+~projects/ores.qt.workflow/~. ~WorkflowInstanceDetailDialog~ uses the
+factored-out widget. The DQ publish pattern PR can embed the widget
+directly without adding a new per-step component.
+
+** Pending — Items 1 and 2
+
+Dynamic step lists (Item 1) and relocation of workflow definitions to
+owning service API packages (Item 2) remain unimplemented. These are
+prerequisites for the bundle publish workflow. See the original item
+sections below for the design.
 
 * Context
 
@@ -70,7 +153,7 @@ on top of the engine. This plan addresses them in one PR.
 - Compensation semantics (the existing ~begin_compensation~ /
   ~check_compensation_complete~ flow continues unchanged).
 
-* Item 1 — Dynamic step lists (mandatory, no static path)
+* Item 1 — Dynamic step lists (mandatory, no static path) [PENDING]
 
 ** Current shape
 
@@ -145,7 +228,7 @@ def.build_steps = [](const std::string& /*request_json*/) {
 No behavioural change for ~provision_parties~, ~ore_import~, or
 ~report_execution~; only the registration path is rewritten.
 
-* Item 2 — Move definitions to the owning service's API package
+* Item 2 — Move definitions to the owning service's API package [PENDING]
 
 ** Current shape
 
@@ -195,7 +278,7 @@ This is still compile-time coupling, but in the correct direction:
 registration symbol), and each api package owns its own workflow
 declarations.
 
-* Item 3 — Idempotency guard contract
+* Item 3 — Idempotency guard contract [DONE]
 
 ** Current behaviour
 
@@ -259,7 +342,7 @@ The existing ~workflow_step.workflow_step_id~ column already serves as
 the idempotency key inside the engine. No new column needed; the new
 endpoint just exposes a read.
 
-* Item 4 — Reusable step widget
+* Item 4 — Reusable step widget [DONE]
 
 ** Factor out
 
@@ -336,7 +419,7 @@ dialog stores that id and binds it to a ~WorkflowStepsWidget~. On
 ~instanceReachedTerminalState(true)~ the dialog enables its Close
 button; on ~stepFailed~ it surfaces a banner above the widget.
 
-* Item 5 — End-to-end verification
+* Item 5 — End-to-end verification [PENDING]
 
 Smoke tests added in the same PR:
 

@@ -190,7 +190,6 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 -- ---------------------------------------------------------------------------
 -- ore_service: ORE Import domain service
 -- ---------------------------------------------------------------------------
-select _ores_grant_dml_fn('ores_workflow_', :'ore_service_user');
 
 -- ---------------------------------------------------------------------------
 -- marketdata_service: Market Data domain service

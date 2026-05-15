@@ -151,13 +151,24 @@ workflow NATS write API.
 Blocked on Phase 5.2: the workflow NATS API surface from 5.2 establishes
 conventions that 5.3 must follow.
 
+** Implementation note
+
+When Phase 5.3 was implemented it turned out that steps 1–2 were already
+complete: the ORE service already routes workflow submission through NATS
+(~nats_.js_publish(start_workflow_message::nats_subject, data)~) and
+~ores.ore.service~ links only API and service packages, never
+~ores.workflow.core~. The ~ores_workflow_*~ DML grant in the service registry
+and the ~ores.workflow.core.lib~ CMake link were dead leftovers. Step 3
+(removing the grant, removing the CMake link, and regenerating) was all that
+was needed.
+
 * Sequencing and Effort
 
 | Phase | Title                                    | Effort | Risk   | Blocked by | Status   |
 |-------+------------------------------------------+--------+--------+------------+----------|
 | 4.3   | IAM party cache (NATS-backed)            | L      | Medium | —          | COMPLETE |
 | 5.2   | Workflow→IAM/refdata NATS write APIs     | L      | High   | 4.3        | COMPLETE |
-| 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        | —        |
+| 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        | COMPLETE |
 
 All phases here begin after the isolation plan invariant is locked (Phase 4 of
 [[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]).

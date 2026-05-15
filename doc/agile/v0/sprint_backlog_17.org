@@ -345,6 +345,7 @@ Story is BLOCKED pending:
 - Pull request review
 
 Branch: =feature/qt-plugin-isolation=
+Pull Request: [[https://github.com/OreStudio/OreStudio/pull/749][#749]]
 
 *** Footer
 

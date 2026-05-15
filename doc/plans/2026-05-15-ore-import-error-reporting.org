@@ -93,8 +93,39 @@ struct step_completed_event {
 };
 #+end_src
 
-The log is persisted in a new =step_log_json= column on the workflow step record
-(JSON array).  The steps query protocol returns it so the UI can display it.
+*** Serialisation: level as string, not integer
+
+=step_log_level= must serialise to its name string (="info"=, ="warn"=, ="error"=)
+rather than its numeric value, using rfl's =rfl::json::write= with a custom
+enum-to-string mapping (or rfl's =REFLTYPE= approach).
+
+This ensures the =step_log_json= column in the DB stores human-readable entries:
+
+#+begin_example
+[
+  {"level": "info",  "message": "Saved 12 trades",          "context": ""},
+  {"level": "warn",  "message": "Trade save failed",         "context": "FX_FORWARD"},
+  {"level": "error", "message": "permission denied for ...", "context": "FX_BARRIER"}
+]
+#+end_example
+
+Operators can then query directly without a lookup table:
+
+#+begin_src sql
+-- all steps with at least one error entry
+select step_id, step_log_json
+from ores_workflow_steps_tbl
+where step_log_json @> '[{"level": "error"}]';
+
+-- entries for a specific trade
+select entry
+from ores_workflow_steps_tbl,
+     jsonb_array_elements(step_log_json) as entry
+where entry->>'context' = 'FX_FORWARD';
+#+end_src
+
+The same string mapping is used when deserialising back to C++ so the UI
+receives typed =step_log_level= values.
 
 *** Why not reuse the service's own logger?
 

@@ -36,6 +36,9 @@
 \ir ./trading_fpml_event_types_create.sql
 \ir ./trading_fpml_event_types_notify_trigger_create.sql
 
+\ir ./trading_lifecycle_events_create.sql
+\ir ./trading_lifecycle_events_notify_trigger_create.sql
+
 \ir ./trading_activity_types_create.sql
 \ir ./trading_activity_types_notify_trigger_create.sql
 
@@ -89,8 +92,8 @@
 \ir ./trading_inflation_swap_instruments_create.sql
 \ir ./trading_inflation_swap_instruments_notify_trigger_create.sql
 
-\ir ./trading_risk_participation_agreement_instruments_create.sql
-\ir ./trading_risk_participation_agreement_instruments_notify_trigger_create.sql
+\ir ./trading_rpa_instruments_create.sql
+\ir ./trading_rpa_instruments_notify_trigger_create.sql
 
 -- Per-type FX instrument tables (depends on reference data above)
 \ir ./trading_fx_forward_instruments_create.sql
@@ -163,11 +166,11 @@
 \ir ./trading_trades_notify_trigger_create.sql
 
 -- Trade junction tables (depend on trades)
-\ir ./trading_identifiers_create.sql
-\ir ./trading_identifiers_notify_trigger_create.sql
+\ir ./trading_trade_identifiers_create.sql
+\ir ./trading_trade_identifiers_notify_trigger_create.sql
 
-\ir ./trading_party_roles_create.sql
-\ir ./trading_party_roles_notify_trigger_create.sql
+\ir ./trading_trade_party_roles_create.sql
+\ir ./trading_trade_party_roles_notify_trigger_create.sql
 
 -- ORE envelope view (depends on trades + party roles)
 \ir ./trading_ore_envelope_view_create.sql

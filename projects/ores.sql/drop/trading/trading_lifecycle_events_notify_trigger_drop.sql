@@ -18,5 +18,5 @@
  *
  */
 
-\ir ./database_database_infos_create.sql
-\ir ./database_info_fn_create.sql
+drop trigger if exists ores_trading_lifecycle_events_notify_trg on "ores_trading_lifecycle_events_tbl";
+drop function if exists ores_trading_lifecycle_events_notify_fn;

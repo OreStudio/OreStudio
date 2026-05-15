@@ -27,11 +27,11 @@
 \ir ./trading_ore_envelope_view_drop.sql
 
 -- Trade junction tables (depend on trades, drop after view)
-\ir ./trading_party_roles_notify_trigger_drop.sql
-\ir ./trading_party_roles_drop.sql
+\ir ./trading_trade_party_roles_notify_trigger_drop.sql
+\ir ./trading_trade_party_roles_drop.sql
 
-\ir ./trading_identifiers_notify_trigger_drop.sql
-\ir ./trading_identifiers_drop.sql
+\ir ./trading_trade_identifiers_notify_trigger_drop.sql
+\ir ./trading_trade_identifiers_drop.sql
 
 -- Rates instruments (depend on reference data, drop before reference data)
 \ir ./trading_swap_legs_notify_trigger_drop.sql
@@ -45,7 +45,7 @@
 \ir ./trading_callable_swap_instruments_drop.sql
 \ir ./trading_knock_out_swap_instruments_drop.sql
 \ir ./trading_inflation_swap_instruments_drop.sql
-\ir ./trading_risk_participation_agreement_instruments_drop.sql
+\ir ./trading_rpa_instruments_drop.sql
 
 \ir ./trading_instruments_notify_trigger_drop.sql
 \ir ./trading_instruments_drop.sql
@@ -101,6 +101,9 @@
 
 \ir ./trading_fpml_event_types_notify_trigger_drop.sql
 \ir ./trading_fpml_event_types_drop.sql
+
+\ir ./trading_lifecycle_events_notify_trigger_drop.sql
+\ir ./trading_lifecycle_events_drop.sql
 
 \ir ./trading_trade_types_notify_trigger_drop.sql
 \ir ./trading_trade_types_drop.sql

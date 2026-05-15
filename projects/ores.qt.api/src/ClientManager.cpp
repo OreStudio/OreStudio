@@ -528,7 +528,7 @@ void ClientManager::disconnect() {
         QMetaObject::invokeMethod(refresh_timer_, &QTimer::stop, Qt::QueuedConnection);
     nats_subscriptions_.clear();
     if (session_.is_logged_in()) {
-        logout();
+        logout(std::chrono::seconds(3));
     }
     if (session_.is_connected()) {
         session_.disconnect();
@@ -549,14 +549,15 @@ void ClientManager::disconnect() {
     QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
 }
 
-bool ClientManager::logout() {
+bool ClientManager::logout(std::chrono::milliseconds timeout) {
     BOOST_LOG_SEV(lg(), info) << "Logging out";
     if (!session_.is_logged_in()) {
         return false;
     }
 
     try {
-        auto result = process_authenticated_request(iam::messaging::logout_request{});
+        auto result = process_authenticated_request(
+            iam::messaging::logout_request{}, timeout);
         session_.clear_auth();
         http_base_url_.clear();
         return result && result->success;

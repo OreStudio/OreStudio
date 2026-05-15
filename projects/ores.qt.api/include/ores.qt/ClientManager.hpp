@@ -201,8 +201,12 @@ public:
 
     /**
      * @brief Logout the current user without disconnecting.
+     *
+     * @param timeout  How long to wait for the server acknowledgement.
+     *                 Pass a short value (e.g. 3 s) when called from
+     *                 disconnect() so the UI does not block on a dead server.
      */
-    bool logout();
+    bool logout(std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief Check if currently connected.

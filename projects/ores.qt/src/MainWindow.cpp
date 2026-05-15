@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <functional>
+#include <QtConcurrent>
 #include <QDebug>
 #include <QTimer>
 #include <QApplication>
@@ -720,14 +721,9 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 MainWindow::~MainWindow() {
     BOOST_LOG_SEV(lg(), debug) << "MainWindow destructor called";
-    // ClientManager and Controllers are children, so they will be destroyed automatically.
-    // However, we want to ensure windows are closed properly.
-    // No manual deletion loop needed as ClientManager ensures IO context lives long enough
-    // for normal Qt object destruction if we just let it happen.
-    // But explicitly disconnecting client is good practice.
-    if (clientManager_) {
-        clientManager_->disconnect();
-    }
+    // ClientManager is a child QObject and is destroyed automatically.
+    // Its own destructor calls session_.disconnect() directly (no logout NATS
+    // call), so there is nothing to do here.
 }
 
 void MainWindow::onLoginTriggered() {
@@ -801,8 +797,18 @@ void MainWindow::performDisconnectCleanup() {
     // Menus remain in the menubar (disabled by updateMenuState).
     // They are re-enabled on next login without being recreated.
 
-    if (clientManager_)
-        clientManager_->disconnect();
+    if (!clientManager_)
+        return;
+
+    // Run disconnect on a background thread so the logout NATS call (capped at
+    // 3 s by ClientManager::disconnect) does not block the UI thread.
+    // The disconnected() signal is emitted via QueuedConnection from inside
+    // disconnect(), so all UI state updates land on the main thread regardless.
+    QPointer<ClientManager> cm = clientManager_;
+    QtConcurrent::run([cm]() {
+        if (cm)
+            cm->disconnect();
+    });
 }
 
 bool MainWindow::initializeConnectionManager() {

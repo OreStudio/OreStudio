@@ -25,8 +25,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <boost/container_hash/hash.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -36,13 +36,11 @@
 
 namespace ores::iam::service {
 
-namespace {
 inline auto& party_cache_lg() {
     static auto instance = ores::logging::make_logger(
         "ores.iam.service.party_cache");
     return instance;
 }
-} // namespace
 
 /**
  * @brief In-process per-tenant cache of refdata party data.
@@ -52,6 +50,21 @@ inline auto& party_cache_lg() {
  * Eliminates direct cross-service DB reads from IAM to refdata party tables.
  */
 class party_cache {
+    using uuid_hash = boost::hash<boost::uuids::uuid>;
+    using party_map = std::unordered_map<
+        boost::uuids::uuid,
+        ores::refdata::domain::party,
+        uuid_hash>;
+    using children_map = std::unordered_map<
+        boost::uuids::uuid,
+        std::vector<boost::uuids::uuid>,
+        uuid_hash>;
+
+    struct partition_t {
+        party_map   parties;
+        children_map children;  // parent_id → [child_id, ...]
+    };
+
 public:
     explicit party_cache(ores::nats::service::client& nats)
         : nats_(nats) {}
@@ -75,13 +88,16 @@ public:
                     << ": " << msg;
                 return;
             }
-            std::unordered_map<std::string, ores::refdata::domain::party> partition;
-            partition.reserve(resp->parties.size());
-            for (auto& p : resp->parties)
-                partition.emplace(boost::uuids::to_string(p.id), std::move(p));
+            partition_t data;
+            data.parties.reserve(resp->parties.size());
+            for (auto& p : resp->parties) {
+                if (p.parent_party_id)
+                    data.children[*p.parent_party_id].push_back(p.id);
+                data.parties.emplace(p.id, std::move(p));
+            }
             {
                 std::unique_lock lock(mutex_);
-                cache_[tenant_id] = std::move(partition);
+                cache_[tenant_id] = std::move(data);
             }
             BOOST_LOG_SEV(party_cache_lg(), debug)
                 << "Loaded " << resp->parties.size()
@@ -100,8 +116,8 @@ public:
         const auto t_it = cache_.find(tenant_id);
         if (t_it == cache_.end())
             return std::nullopt;
-        const auto p_it = t_it->second.find(boost::uuids::to_string(party_id));
-        if (p_it == t_it->second.end())
+        const auto p_it = t_it->second.parties.find(party_id);
+        if (p_it == t_it->second.parties.end())
             return std::nullopt;
         return p_it->second;
     }
@@ -113,30 +129,27 @@ public:
         const auto t_it = cache_.find(tenant_id);
         if (t_it == cache_.end())
             return {root_id};
-        const auto& partition = t_it->second;
         std::vector<boost::uuids::uuid> result;
-        collect_subtree(partition, root_id, result);
+        collect_subtree(t_it->second.children, root_id, result);
         if (result.empty())
             return {root_id};
         return result;
     }
 
 private:
-    void collect_subtree(
-        const std::unordered_map<std::string, ores::refdata::domain::party>& partition,
-        const boost::uuids::uuid& node_id,
-        std::vector<boost::uuids::uuid>& out) const {
-        out.push_back(node_id);
-        for (const auto& [id_str, p] : partition) {
-            if (p.parent_party_id && *p.parent_party_id == node_id)
-                collect_subtree(partition, p.id, out);
-        }
+    void collect_subtree(const children_map& children,
+                         const boost::uuids::uuid& node,
+                         std::vector<boost::uuids::uuid>& out) const {
+        out.push_back(node);
+        const auto it = children.find(node);
+        if (it != children.end())
+            for (const auto& child : it->second)
+                collect_subtree(children, child, out);
     }
 
     ores::nats::service::client& nats_;
     mutable std::shared_mutex mutex_;
-    std::unordered_map<std::string,
-        std::unordered_map<std::string, ores::refdata::domain::party>> cache_;
+    std::unordered_map<std::string, partition_t> cache_;
 };
 
 } // namespace ores::iam::service

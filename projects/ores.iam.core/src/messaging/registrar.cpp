@@ -20,6 +20,7 @@
 #include "ores.iam.core/messaging/registrar.hpp"
 
 #include <memory>
+#include <thread>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -93,8 +94,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
             using ores::eventing::domain::entity_change_event;
             auto evt = rfl::json::read<entity_change_event>(
                 ores::nats::as_string_view(msg.data));
-            if (evt && !evt->tenant_id.empty())
-                pc->load(evt->tenant_id);
+            if (evt && !evt->tenant_id.empty()) {
+                // Offload to a detached thread: load() calls request_sync,
+                // which would block the NATS callback thread if called inline.
+                std::thread([pc, tid = evt->tenant_id]() {
+                    pc->load(tid);
+                }).detach();
+            }
         }));
 
     // --- Auth ---

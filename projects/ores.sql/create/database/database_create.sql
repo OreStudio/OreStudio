@@ -19,3 +19,4 @@
  */
 
 \ir ./database_info_create.sql
+\ir ./database_info_fn_create.sql

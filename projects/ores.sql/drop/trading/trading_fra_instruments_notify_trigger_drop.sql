@@ -18,7 +18,5 @@
  *
  */
 
-drop rule if exists ores_reporting_report_instances_delete_rule on "ores_reporting_report_instances_tbl";
-drop trigger if exists ores_reporting_report_instances_insert_trg on "ores_reporting_report_instances_tbl";
-drop function if exists ores_reporting_report_instances_insert_fn;
-drop table if exists "ores_reporting_report_instances_tbl";
+drop trigger if exists ores_trading_fra_instruments_notify_trg on "ores_trading_fra_instruments_tbl";
+drop function if exists ores_trading_fra_instruments_notify_fn;

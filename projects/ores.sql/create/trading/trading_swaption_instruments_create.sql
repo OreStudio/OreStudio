@@ -17,23 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Swaption Instruments Table
---
--- Option to enter an interest rate swap. ORE product type: Swaption.
--- The underlying swap legs live in ores_trading_swap_legs_tbl linked by
--- instrument_id. start_date and maturity_date are the underlying swap
--- dates (nullable for cash-settled swaptions where they may not apply).
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
+ *
+ * Represents a swaption — an option granting the right to enter into an
+ * interest rate swap at a future date. Exercise type may be European,
+ * Bermudan, or American.
+ */
 
 create table if not exists "ores_trading_swaption_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "expiry_date" date not null,
     "exercise_type" text not null,
     "settlement_type" text not null,
@@ -58,11 +60,7 @@ create table if not exists "ores_trading_swaption_instruments_tbl" (
     check ("exercise_type" in ('European', 'Bermudan', 'American')),
     check ("settlement_type" in ('Cash', 'Physical')),
     check ("long_short" in ('Long', 'Short')),
-    check (
-        "maturity_date" is null
-        or "start_date" is null
-        or "maturity_date" > "start_date"
-    )
+    check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date")
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -70,22 +68,18 @@ create unique index if not exists swaption_instruments_version_uniq_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists swaption_instruments_id_uniq_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists swaption_instruments_tenant_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists swaption_instruments_party_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists swaption_instruments_trade_id_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -104,9 +98,6 @@ begin
 
     -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
-
-    -- Validate change_reason_code
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -138,6 +129,8 @@ begin
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     return NEW;
 end;

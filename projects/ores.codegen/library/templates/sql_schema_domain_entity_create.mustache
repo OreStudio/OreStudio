@@ -44,8 +44,9 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     ),
 {{/domain_entity.has_tenant_id}}
     check ("valid_from" < "valid_to"){{#domain_entity.primary_key.is_uuid}},
-    check ("{{domain_entity.primary_key.column}}" <> ores_utility_system_tenant_id_fn()){{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
-    check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}
+    check ("{{domain_entity.primary_key.column}}" <> {{domain_entity.primary_key.uuid_check_fn}}){{/domain_entity.primary_key.is_uuid}}{{#domain_entity.primary_key.is_text}},
+    check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}{{#domain_entity.sql.extra_checks}},
+    check ({{{.}}}){{/domain_entity.sql.extra_checks}}
 );
 {{#domain_entity.natural_keys}}
 
@@ -85,7 +86,8 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.entity_plural}}_{{name}}_idx
 on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
-where valid_to = ores_utility_infinity_timestamp_fn(){{/current_only}};
+where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
+  and {{where_extra}}{{/where_extra}}{{/current_only}};
 {{/domain_entity.indexes}}
 
 create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
@@ -98,6 +100,11 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
 {{/domain_entity.has_tenant_id}}
+{{#domain_entity.sql.party_id_from_session}}
+    -- Set party_id from session context
+    NEW.party_id := current_setting('app.current_party_id')::uuid;
+
+{{/domain_entity.sql.party_id_from_session}}
 {{#domain_entity.validations}}
     -- Validate {{column}}
     NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
@@ -143,7 +150,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer{{/domain_entity.sql.security_definer}};
 
 create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
 before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"

@@ -1339,6 +1339,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk_type = pk.get('type', 'uuid')
             pk['is_uuid'] = pk_type == 'uuid'
             pk['is_text'] = pk_type == 'text'
+            if pk['is_uuid'] and 'uuid_check_fn' not in pk:
+                pk['uuid_check_fn'] = 'ores_utility_system_tenant_id_fn()'
             # Ensure cpp_type is set with sensible defaults
             if 'cpp_type' not in pk:
                 if pk['is_uuid']:

@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "entity_singular": "trade",
     "entity_plural": "trades",
@@ -65,6 +66,38 @@
         "generator_expr": "std::string(\"Swap\")"
       },
       {
+        "name": "counterparty_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional counterparty (soft FK to ores_refdata_counterparties_tbl).",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "product_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "ORE product type discriminator.",
+        "generator_expr": "std::string(\"Swap\")"
+      },
+      {
+        "name": "instrument_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional instrument record for this trade.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "asset_class",
+        "type": "text",
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Asset class code for the trade.",
+        "generator_expr": "std::nullopt"
+      },
+      {
         "name": "netting_set_id",
         "type": "text",
         "cpp_type": "std::string",
@@ -74,13 +107,20 @@
         "generator_expr": "std::string(\"NS-001\")"
       },
       {
-        "name": "lifecycle_event",
+        "name": "activity_type_code",
         "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Lifecycle event type (e.g. New, Amendment, Novation, Termination).",
-        "detail": "Soft FK to ores_trading_lifecycle_events_tbl.",
-        "generator_expr": "std::string(\"New\")"
+        "cpp_type": "std::optional<std::string>",
+        "nullable": true,
+        "description": "Activity type code (soft FK to ores_trading_activity_types_tbl).",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "status_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Current FSM state (soft FK to ores_dq_fsm_states_tbl).",
+        "generator_expr": "std::nullopt"
       },
       {
         "name": "trade_date",
@@ -93,7 +133,7 @@
       },
       {
         "name": "execution_timestamp",
-        "type": "text",
+        "type": "timestamp with time zone",
         "cpp_type": "std::string",
         "nullable": false,
         "description": "Timestamp when the trade was executed (with timezone).",
@@ -162,7 +202,6 @@
       "detail_fields": [
         {"field": "external_id", "label": "External ID", "widget": "externalIdEdit", "type": "line_edit", "is_key": true, "placeholder": "Enter external trade ID (e.g., UTI)"},
         {"field": "trade_type", "label": "Trade Type", "widget": "tradeTypeEdit", "type": "line_edit", "is_required": true, "placeholder": "e.g., Swap, FxForward"},
-        {"field": "lifecycle_event", "label": "Lifecycle Event", "widget": "lifecycleEventEdit", "type": "line_edit", "is_required": true, "placeholder": "e.g., New, Amendment"},
         {"field": "netting_set_id", "label": "Netting Set", "widget": "nettingSetIdEdit", "type": "line_edit", "placeholder": "e.g., NS-001"},
         {"field": "trade_date", "label": "Trade Date", "widget": "tradeDateEdit", "type": "line_edit", "is_required": true, "placeholder": "YYYY-MM-DD"},
         {"field": "effective_date", "label": "Effective Date", "widget": "effectiveDateEdit", "type": "line_edit", "is_required": true, "placeholder": "YYYY-MM-DD"},
@@ -172,7 +211,6 @@
       "columns": [
         {"enum_name": "ExternalId", "field": "external_id", "header": "External ID", "is_string": true, "width": 180},
         {"enum_name": "TradeType", "field": "trade_type", "header": "Type", "is_string": true, "width": 120},
-        {"enum_name": "LifecycleEvent", "field": "lifecycle_event", "header": "Event", "is_string": true, "width": 120},
         {"enum_name": "TradeDate", "field": "trade_date", "header": "Trade Date", "is_string": true, "width": 110},
         {"enum_name": "EffectiveDate", "field": "effective_date", "header": "Effective", "is_string": true, "width": 110},
         {"enum_name": "TerminationDate", "field": "termination_date", "header": "Termination", "is_string": true, "width": 110},

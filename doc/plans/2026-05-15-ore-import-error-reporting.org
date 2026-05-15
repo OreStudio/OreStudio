@@ -1,0 +1,159 @@
+#+title: ORE Import Error Reporting and Step Warning State
+#+date: 2026-05-15
+#+author: Marco Craveiro
+
+* Problem
+
+When an ORE import saves zero trades due to a permission error (or any other
+per-item failure), the wizard completes silently with an empty trade list.  The
+workflow step publishes =success=true= because the handler treats individual
+trade save failures as non-fatal warnings and never inspects =item_errors= before
+calling =publish_step_completion=.  The user has no way to know that anything
+went wrong.
+
+Two structural gaps:
+
+1. *No warning state.* =step_completed_event= is binary (=success= / fail).
+   There is no way to express "step ran to completion but with partial failures".
+
+2. *No error surface in the UI.* =ore_import_execute_result.item_errors= is
+   accumulated by the handler and serialised into the step result JSON, but
+   nothing in the wizard or =WorkflowStepsWidget= reads or displays it.
+
+* Current Architecture
+
+#+begin_example
+step_completed_event  →  success: bool
+                      →  result_json: string   (serialised ore_import_execute_result)
+                      →  error_message: string (only set on fatal failure)
+
+ore_import_execute_result:
+    item_errors: vector<ore_import_item_error>
+        { trade_id, source_file, error }
+    saved_trade_ids, saved_instrument_ids, ...
+
+publish_step_completion(nats, step_id, inst_id,
+    /*success=*/true,        ← always true if handler doesn't throw
+    result_json,             ← contains item_errors but UI never reads it
+    /*error_msg=*/"")
+#+end_example
+
+The =WorkflowStepsWidget= reads step state from the workflow engine (completed /
+failed / running) but has no concept of warnings and never reads the
+=result_json= payload.
+
+* Target Architecture
+
+** Item 1 — Add a =warning= outcome to =step_completed_event=
+
+Replace the =bool success= field with a tri-state outcome:
+
+#+begin_src cpp
+enum class step_outcome : uint8_t {
+    completed          = 0,   // success, no issues
+    completed_with_warnings = 1,  // ran to completion, some items failed
+    failed             = 2    // fatal, compensation triggered
+};
+#+end_src
+
+Update =workflow_step_context= to add a =warn(result_json)= helper alongside
+=complete()= and =fail()=.  The workflow engine's step handler maps the new
+outcome to a distinct DB state (=completed_with_warnings=) which is terminal
+(does not trigger compensation) but is visually distinct from =completed=.
+
+Touches:
+- =ores.workflow.api/messaging/workflow_events.hpp= — new outcome enum
+- =ores.service/messaging/workflow_helpers.hpp= — =workflow_step_context::warn()=
+- Workflow engine step handler — recognise new outcome, persist new state name
+- SQL FSM state seeding — add =completed_with_warnings= terminal state
+
+** Item 2 — Add a generic =warnings= list to =step_completed_event=
+
+To avoid coupling the workflow engine to ORE-specific result types, add a
+generic list to the event itself:
+
+#+begin_src cpp
+struct step_item_warning {
+    std::string item_id;    // trade_id, ISO code, etc.
+    std::string source;     // filename or context
+    std::string message;    // human-readable error
+};
+
+struct step_completed_event {
+    // ...existing fields...
+    step_outcome outcome = step_outcome::completed;
+    std::vector<step_item_warning> warnings;  // populated on completed_with_warnings
+};
+#+end_src
+
+This keeps the workflow engine display-capable without it needing to understand
+=ore_import_execute_result=.
+
+** Item 3 — =ore_import_execute= handler: publish warning on partial failure
+
+After step 7 (trade saves), evaluate:
+
+- =item_errors= empty          → =complete(result_json)= (no change)
+- =item_errors= non-empty,
+  =saved_trade_ids= non-empty  → =warn(result_json)= with item warnings mapped
+- =item_errors= non-empty,
+  =saved_trade_ids= empty      → =fail("All N trades failed to save: …")=
+
+Map each =ore_import_item_error= to a =step_item_warning= before publishing.
+The threshold for full failure (0 trades saved) vs warning (partial) is explicit
+policy: the handler should document this as a named constant.
+
+** Item 4 — =WorkflowStepsWidget=: display warning state and item list
+
+=WorkflowStepsWidget= currently polls =workflow.v1.instances.steps= and shows
+a row per step with its state name.  Extend it to:
+
+- Colour =completed_with_warnings= rows amber (distinct from green =completed=
+  and red =failed=).
+- When a step is in =completed_with_warnings= state, show an expandable section
+  below the step row listing the item warnings (item_id, source, message).
+  The warning list comes from =step_item_warning= fields returned by the step
+  query response.
+
+This requires extending =workflow_step_summary= (steps query protocol) to carry
+=warnings= in its response, which the workflow engine reads from the persisted
+step result JSON.
+
+** Item 5 — =OreImportWizard= done page: show import summary
+
+The done page (=OreImportDonePage= or equivalent) currently shows a success or
+failure state.  Extend it to show:
+
+- A summary line: "Imported N trades (M failed — see details below)"
+- An expandable error table with columns: Trade ID | Source file | Error
+- The data is read from the =step_results= already carried in the wizard state
+  (the =ore_import_execute_result= JSON stored as the step result).
+
+This is a UI-only change: no new NATS messages or DB changes required.
+
+* Implementation Order
+
+1. Item 1 — =step_outcome= enum + workflow engine DB state + FSM seeding
+2. Item 2 — =step_item_warning= in =step_completed_event=
+3. Item 3 — handler threshold logic
+4. Item 4 — =WorkflowStepsWidget= warning row + item list
+5. Item 5 — done page summary table
+
+Items 1–3 are backend-only and can be done and tested independently.
+Items 4–5 are UI and depend on items 1–3 being in place.
+
+* What This Does NOT Fix
+
+The underlying =permission denied for table ores_dq_fsm_transitions_tbl= error
+is a DB permissions gap tracked separately.  This plan only improves the
+*observability* of that failure so users see a clear error report instead of an
+empty trade list.  Fix the root cause after this plan is complete.
+
+* Acceptance Criteria
+
+- An ORE import where all trades fail produces a =failed= step with a
+  human-readable error summary; the wizard done page shows a red outcome.
+- An ORE import where some trades fail produces a =completed_with_warnings=
+  step; the done page shows amber with a per-trade error table.
+- An ORE import where all trades succeed is unchanged.
+- =WorkflowStepsWidget= renders the three states visually distinctly.

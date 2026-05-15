@@ -342,14 +342,8 @@ endif()
 #
 # Step: code coverage
 #
-if(WITH_COVERAGE)
-    set(cov_result "")
-    set(cov_capture_result "")
-    ctest_coverage(RETURN_VALUE cov_result
-        CAPTURE_CMAKE_ERROR cov_capture_result
-        QUIET)
-    message(STATUS "Result: ${cov_result}")
-    message(STATUS "Cov capture result: ${cov_capture_result}")
+if(WITH_COVERAGE AND configure_result EQUAL 0 AND build_result EQUAL 0)
+    ctest_coverage(QUIET)
 endif()
 
 #

@@ -81,12 +81,36 @@ re-executing the operation.
 factored-out widget. The DQ publish pattern PR can embed the widget
 directly without adding a new per-step component.
 
+** Completed — SQL-level service isolation for workflow and ORE (Phases 5.2 and 5.3)
+
+Landed on main in PRs #745 and #746:
+
+- *Phase 5.2* (~feature/workflow-iam-refdata-write-apis~): Removed dead
+  ~ores_iam_*~ and ~ores_refdata_parties~ DML grants from the workflow service
+  registry. The ~provision_parties~ workflow already routes all writes
+  through NATS (~refdata.v1.parties.save~, ~iam.v1.accounts.save~,
+  ~iam.v1.account-parties.save~). The grants were dead leftovers.
+
+- *Phase 5.3* (~feature/ore-workflow-write-decoupling~): Removed dead
+  ~ores_workflow_*~ DML grant from the workflow service registry and the
+  ~ores.workflow.core.lib~ CMake link from ~ores.ore.service~. The ORE
+  import handler already submits workflows via NATS (~nats_.js_publish~)
+  and never called workflow.core directly.
+
+The runtime (SQL) isolation between the workflow service and all domain
+services is now clean. What remains for Item 2 is the *compile-time*
+dependency: workflow definition headers (for ~ore_import~,
+~provision_parties~, ~report_execution~) still live inside ~ores.workflow~
+and include domain API headers, keeping the dependency direction inverted.
+
 ** Pending — Items 1 and 2
 
 Dynamic step lists (Item 1) and relocation of workflow definitions to
 owning service API packages (Item 2) remain unimplemented. These are
-prerequisites for the bundle publish workflow. See the original item
-sections below for the design.
+prerequisites for the bundle publish workflow. The SQL-level isolation
+(Phases 5.2/5.3 above) is the runtime half of the work Item 2 describes;
+the remaining half is the compile-time restructuring. See the original
+item sections below for the design.
 
 * Context
 

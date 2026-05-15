@@ -1333,6 +1333,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
+        sql_section = domain_entity.get('sql', {})
+        domain_entity['index_name_prefix'] = sql_section.get(
+            'index_prefix', domain_entity.get('entity_plural', 'unknown'))
         # Add computed properties for primary key type detection
         if 'primary_key' in domain_entity:
             pk = domain_entity['primary_key']

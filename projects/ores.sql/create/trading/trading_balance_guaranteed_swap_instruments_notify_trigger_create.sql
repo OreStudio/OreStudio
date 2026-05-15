@@ -47,7 +47,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_balance_guaranteed_swap_instruments', notification_payload::text);
+    perform pg_notify('ores_trading_balance_guaranteed_swap_instruments', notification_payload::text);
 
     return null;
 end;

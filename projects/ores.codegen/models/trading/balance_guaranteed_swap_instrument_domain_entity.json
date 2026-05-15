@@ -81,6 +81,7 @@
     ],
     "sql": {
       "tablename": "ores_trading_balance_guaranteed_swap_instruments_tbl",
+      "index_prefix": "bgs_instruments",
       "security_definer": true,
       "party_id_from_session": true,
       "extra_checks": [

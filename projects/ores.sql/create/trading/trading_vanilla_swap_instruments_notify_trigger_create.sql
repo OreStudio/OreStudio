@@ -47,7 +47,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_vanilla_swap_instruments', notification_payload::text);
+    perform pg_notify('ores_trading_vanilla_swap_instruments', notification_payload::text);
 
     return null;
 end;

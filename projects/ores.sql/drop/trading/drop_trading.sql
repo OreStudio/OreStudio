@@ -119,15 +119,20 @@
 -- Trading instrument reference data types
 \ir ./trading_day_count_fraction_types_notify_trigger_drop.sql
 \ir ./trading_day_count_fraction_types_drop.sql
+\ir ./trading_day_count_fraction_types_validate_fn_drop.sql
 
 \ir ./trading_business_day_convention_types_notify_trigger_drop.sql
 \ir ./trading_business_day_convention_types_drop.sql
+\ir ./trading_business_day_convention_types_validate_fn_drop.sql
 
 \ir ./trading_floating_index_types_notify_trigger_drop.sql
 \ir ./trading_floating_index_types_drop.sql
+\ir ./trading_floating_index_types_validate_fn_drop.sql
 
 \ir ./trading_payment_frequency_types_notify_trigger_drop.sql
 \ir ./trading_payment_frequency_types_drop.sql
+\ir ./trading_payment_frequency_types_validate_fn_drop.sql
 
 \ir ./trading_leg_types_notify_trigger_drop.sql
 \ir ./trading_leg_types_drop.sql
+\ir ./trading_leg_types_validate_fn_drop.sql

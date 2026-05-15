@@ -54,7 +54,7 @@ create unique index if not exists leg_types_version_uniq_idx
 on "ores_trading_leg_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists leg_types_id_uniq_idx
+create unique index if not exists leg_types_code_uniq_idx
 on "ores_trading_leg_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -69,6 +69,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -100,8 +103,6 @@ begin
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     return NEW;
 end;

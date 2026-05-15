@@ -58,23 +58,23 @@ create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists balance_guaranteed_swap_instruments_version_uniq_idx
+create unique index if not exists bgs_instruments_version_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists balance_guaranteed_swap_instruments_id_uniq_idx
+create unique index if not exists bgs_instruments_id_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists balance_guaranteed_swap_instruments_tenant_idx
+create index if not exists bgs_instruments_tenant_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists balance_guaranteed_swap_instruments_party_idx
+create index if not exists bgs_instruments_party_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists balance_guaranteed_swap_instruments_trade_id_idx
+create unique index if not exists bgs_instruments_trade_id_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
@@ -92,6 +92,9 @@ begin
 
     -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -123,8 +126,6 @@ begin
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     return NEW;
 end;

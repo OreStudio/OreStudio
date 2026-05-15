@@ -335,6 +335,8 @@ exposed when =-fvisibility=hidden= was applied to plugin shared libraries.
 - [X] =RefdataPlugin::setup_menus()= builds Data Catalogue submenu on =data_transfer_menu=
 - [X] =DataTransferPlugin= reduced to thin shell owning only the menu handle
 - [X] Remove =ores.qt.refdata.lib= from =ores.qt.data_transfer= link deps
+- [X] Remove =ORES_QT_REFDATA_EXPORT= from 8 DQ catalogue controllers
+- [X] Remove =ORES_QT_PARTY_EXPORT= from =BusinessUnitController=
 - [X] Commit and push; create PR
 
 ***** Notes

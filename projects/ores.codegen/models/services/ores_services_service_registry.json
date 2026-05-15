@@ -9,8 +9,7 @@
         "description": "IAM",
         "email": "iam_service@system.ores",
         "dml_prefixes": [
-          {"prefix": "ores_iam_"},
-          {"prefix": "ores_refdata_parties"}
+          {"prefix": "ores_iam_"}
         ],
         "select_tables": [],
         "select_prefixes": []

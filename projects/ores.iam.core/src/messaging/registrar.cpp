@@ -20,9 +20,13 @@
 #include "ores.iam.core/messaging/registrar.hpp"
 
 #include <memory>
+#include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/account_handler.hpp"
@@ -66,8 +70,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.iam.service";
 
+    // --- Party cache ---
+    // Populated from refdata service via NATS; invalidated on change events.
+    auto pc = std::make_shared<service::party_cache>(nats);
+    subs.push_back(nats.subscribe(
+        "refdata.v1.parties.changed",
+        [pc](ores::nats::message msg) {
+            using ores::eventing::domain::entity_change_event;
+            auto evt = rfl::json::read<entity_change_event>(
+                ores::nats::as_string_view(msg.data));
+            if (evt && !evt->tenant_id.empty())
+                pc->load(evt->tenant_id);
+        }));
+
     // --- Auth ---
-    auto ah = std::make_shared<auth_handler>(nats, ctx, signer);
+    auto ah = std::make_shared<auth_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         signup_request::nats_subject, qg,
         [ah](ores::nats::message msg) { ah->signup(std::move(msg)); }));
@@ -100,7 +117,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [bh](ores::nats::message msg) { bh->provision_tenant(std::move(msg)); }));
 
     // --- Accounts ---
-    auto acth = std::make_shared<account_handler>(nats, ctx, signer);
+    auto acth = std::make_shared<account_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         get_accounts_request_typed::nats_subject, qg,
         [acth](ores::nats::message msg) { acth->list(std::move(msg)); }));

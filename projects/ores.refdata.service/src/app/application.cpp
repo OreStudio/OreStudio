@@ -31,6 +31,7 @@
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.refdata.api/eventing/book_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -111,6 +112,8 @@ application::run(boost::asio::io_context& io_ctx,
 
     ev::service::registrar::register_mapping<rdev::book_changed_event>(
         event_source, "ores.refdata.book", "ores_books");
+    ev::service::registrar::register_mapping<rdev::party_changed_event>(
+        event_source, "ores.refdata.party_changed", "ores_parties");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
         event_source, "ores.refdata.portfolio", "ores_portfolios");
 
@@ -119,6 +122,17 @@ application::run(boost::asio::io_context& io_ctx,
             publish_entity_event(nats, "ores.refdata.book_changed",
                 ev::domain::entity_change_event{
                     .entity     = "ores.refdata.book",
+                    .timestamp  = e.timestamp,
+                    .entity_ids = e.ids,
+                    .tenant_id  = e.tenant_id
+                });
+        });
+
+    auto party_sub = event_bus.subscribe<rdev::party_changed_event>(
+        [&nats](const rdev::party_changed_event& e) {
+            publish_entity_event(nats, "refdata.v1.parties.changed",
+                ev::domain::entity_change_event{
+                    .entity     = "ores.refdata.party_changed",
                     .timestamp  = e.timestamp,
                     .entity_ids = e.ids,
                     .tenant_id  = e.tenant_id

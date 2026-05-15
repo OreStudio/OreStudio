@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
 
 #include <chrono>
+#include <memory>
 #include <stdexcept>
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -42,7 +43,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
@@ -74,36 +75,17 @@ inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
 }
 
 inline std::vector<boost::uuids::uuid> auth_compute_visible_party_ids(
-    const ores::database::context& ctx,
+    const service::party_cache& cache,
+    const std::string& tenant_id,
     const boost::uuids::uuid& party_id) {
-    try {
-        refdata::repository::party_repository repo(ctx);
-        auto ids = repo.read_descendants(party_id);
-        if (ids.empty())
-            return {party_id};
-        return ids;
-    } catch (const std::exception& e) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
-            << "Failed to compute visible party IDs: " << e.what();
-        return {party_id};
-    }
+    return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
 inline std::optional<refdata::domain::party> auth_lookup_party(
-    const ores::database::context& ctx,
+    const service::party_cache& cache,
+    const std::string& tenant_id,
     const boost::uuids::uuid& party_id) {
-    try {
-        refdata::repository::party_repository repo(ctx);
-        auto parties = repo.read_latest(party_id);
-        if (!parties.empty())
-            return parties.front();
-    } catch (const std::exception& e) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
-            << "Failed to look up party: " << e.what();
-    }
-    return std::nullopt;
+    return cache.lookup_party(tenant_id, party_id);
 }
 
 inline std::string auth_lookup_tenant_name(
@@ -166,8 +148,10 @@ class auth_handler {
 public:
     auth_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {
+        ores::security::jwt::jwt_authenticator signer,
+        std::shared_ptr<service::party_cache> party_cache)
+        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)),
+          party_cache_(std::move(party_cache)) {
         reload_token_settings();
     }
 
@@ -299,7 +283,7 @@ public:
                 const auto& party_id =
                     account_parties.front().party_id;
                 auto visible = auth_compute_visible_party_ids(
-                    login_ctx, party_id);
+                    *party_cache_, acct.tenant_id.to_string(), party_id);
 
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
@@ -329,7 +313,8 @@ public:
                 resp.access_lifetime_s = token_settings_.access_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(login_ctx, ap.party_id);
+                    auto p = auth_lookup_party(
+                        *party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     if (ap.party_id == party_id)
                         resp.party_setup_required =
                             p && p->status == "Inactive";
@@ -380,7 +365,8 @@ public:
                 resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(login_ctx, ap.party_id);
+                    auto p = auth_lookup_party(
+                        *party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
@@ -689,6 +675,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    std::shared_ptr<service::party_cache> party_cache_;
     domain::token_settings token_settings_;
 };
 

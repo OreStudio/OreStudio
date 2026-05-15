@@ -36,11 +36,13 @@
 
 namespace ores::iam::service {
 
+namespace {
 inline auto& party_cache_lg() {
     static auto instance = ores::logging::make_logger(
         "ores.iam.service.party_cache");
     return instance;
 }
+} // namespace
 
 /**
  * @brief In-process per-tenant cache of refdata party data.

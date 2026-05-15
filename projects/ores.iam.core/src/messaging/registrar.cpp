@@ -21,12 +21,14 @@
 
 #include <memory>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.iam.core/service/party_cache.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/account_handler.hpp"
@@ -71,8 +73,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     constexpr auto qg = "ores.iam.service";
 
     // --- Party cache ---
-    // Populated from refdata service via NATS; invalidated on change events.
+    // Warm the cache at startup for all known active tenants, then subscribe
+    // to change events so each affected tenant is reloaded on any mutation.
     auto pc = std::make_shared<service::party_cache>(nats);
+    try {
+        repository::tenant_repository tenant_repo(ctx);
+        const auto tenants = tenant_repo.read_latest();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Warming party cache for " << tenants.size() << " tenant(s)";
+        for (const auto& t : tenants)
+            pc->load(boost::uuids::to_string(t.id));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Party cache warm-up failed: " << e.what();
+    }
     subs.push_back(nats.subscribe(
         "refdata.v1.parties.changed",
         [pc](ores::nats::message msg) {

@@ -26,7 +26,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
-#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -40,7 +39,7 @@ class ChangeReasonCache;
  * Manages the lifecycle of nature dimension list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class ORES_QT_REFDATA_EXPORT NatureDimensionController final : public EntityController {
+class NatureDimensionController final : public EntityController {
     Q_OBJECT
 
 private:

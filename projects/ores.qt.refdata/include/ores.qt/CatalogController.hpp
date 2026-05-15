@@ -26,7 +26,6 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -37,7 +36,7 @@ class ChangeReasonCache;
 /**
  * @brief Controller for managing catalog-related windows.
  */
-class ORES_QT_REFDATA_EXPORT CatalogController : public EntityController {
+class CatalogController : public EntityController {
     Q_OBJECT
 
 private:

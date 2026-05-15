@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_map>
 #include <boost/uuid/uuid.hpp>
+#include <boost/container_hash/hash.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
@@ -40,7 +41,7 @@ namespace ores::trading::service {
 using fsm_transition_map = std::unordered_map<
     boost::uuids::uuid,
     ores::dq::domain::fsm_transition,
-    std::hash<boost::uuids::uuid>>;
+    boost::hash<boost::uuids::uuid>>;
 
 /**
  * @brief Resolves trade status transitions via the FSM.

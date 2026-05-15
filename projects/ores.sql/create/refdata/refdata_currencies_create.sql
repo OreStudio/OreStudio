@@ -170,17 +170,19 @@ begin
         return p_value;
     end if;
 
-    -- Validate against tenant's reference data
+    -- Validate against the tenant's currencies and the system tenant's currencies.
+    -- System-tenant currencies are the standard reference set (published once);
+    -- tenant-specific currencies extend them after bundle publish.
     if not exists (
         select 1 from ores_refdata_currencies_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and iso_code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid currency: %. Must be one of: %', p_value, (
             select string_agg(iso_code::text, ', ' order by iso_code)
             from ores_refdata_currencies_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

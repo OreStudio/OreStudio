@@ -728,7 +728,7 @@ private:
             const auto reply = nats_.request_sync(
                 get_fsm_transitions_request::nats_subject,
                 std::span<const std::byte>(p, json.size()),
-                {}, std::chrono::seconds(10));
+                {}, std::chrono::seconds(2));
             const std::string_view sv(
                 reinterpret_cast<const char*>(reply.data.data()),
                 reply.data.size());

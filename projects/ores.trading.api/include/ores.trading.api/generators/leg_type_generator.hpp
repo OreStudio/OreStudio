@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/leg_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic leg_type.
  */
-domain::leg_type generate_synthetic_leg_type(
+ORES_TRADING_API_EXPORT domain::leg_type generate_synthetic_leg_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic leg_types.
  */
-std::vector<domain::leg_type>
+ORES_TRADING_API_EXPORT std::vector<domain::leg_type>
 generate_synthetic_leg_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

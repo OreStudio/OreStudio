@@ -24,13 +24,14 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic swap_leg for the given instrument_id.
  */
-domain::swap_leg generate_synthetic_swap_leg(
+ORES_TRADING_API_EXPORT domain::swap_leg generate_synthetic_swap_leg(
     const boost::uuids::uuid& instrument_id,
     int leg_number,
     utility::generation::generation_context& ctx);
@@ -38,7 +39,7 @@ domain::swap_leg generate_synthetic_swap_leg(
 /**
  * @brief Generates a synthetic fixed+floating leg pair for an instrument.
  */
-std::vector<domain::swap_leg>
+ORES_TRADING_API_EXPORT std::vector<domain::swap_leg>
 generate_synthetic_swap_legs(const boost::uuids::uuid& instrument_id,
     utility::generation::generation_context& ctx);
 

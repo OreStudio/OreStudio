@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic trade_party_role.
  */
-domain::trade_party_role generate_synthetic_trade_party_role(
+ORES_TRADING_API_EXPORT domain::trade_party_role generate_synthetic_trade_party_role(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic trade_party_roles.
  */
-std::vector<domain::trade_party_role>
+ORES_TRADING_API_EXPORT std::vector<domain::trade_party_role>
 generate_synthetic_trade_party_roles(std::size_t n,
     utility::generation::generation_context& ctx);
 

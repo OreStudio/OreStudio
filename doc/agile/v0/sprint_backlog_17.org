@@ -179,6 +179,38 @@ print(p)
 [[file:sprint_backlog_17_tags.png]]
 
 
+*** BLOCKED IAM party cache via NATS (Phase 4.3 cross-service decoupling)  :code:
+CLOSED: [2026-05-15 Thu 00:00]
+:LOGBOOK:
+CLOCK: [2026-05-15 Thu 00:00]--[2026-05-15 Thu 00:00] =>  0:00
+:END:
+
+Implement Phase 4.3 of =doc/plans/2026-05-13-cross-service-write-decoupling.org=.
+
+Replace direct IAM→refdata DB reads with an in-process party_cache backed by
+NATS so the IAM service no longer requires cross-service DB grants on refdata
+party tables.
+
+***** Tasks
+
+- [X] Add =read_parties_for_cache_request/response= to =party_protocol.hpp=
+- [X] Add =read_for_cache= handler to =party_handler.hpp=; register subject in refdata registrar
+- [X] Wire =party_changed_event= publish to =refdata.v1.parties.changed= in refdata service
+- [X] Create =ores.iam.core/service/party_cache.hpp= with NATS-backed per-tenant cache
+- [X] Update =auth_handler.hpp=: replace party_repository with party_cache
+- [X] Update =account_handler.hpp=: replace party_repository with party_cache
+- [X] Update IAM registrar: create party_cache, subscribe to changes, pass to handlers
+- [X] Remove =ores_refdata_parties= from IAM dml_prefixes in service registry
+
+***** Notes
+
+Story is BLOCKED pending:
+- User build verification (=make -C build/output/linux-clang-debug-make -j$(nproc)=)
+- Runtime testing (login + select_party flows)
+- Pull request review
+
+All implementation is complete and committed to =feature/cross-service-write-decoupling=.
+
 *** Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

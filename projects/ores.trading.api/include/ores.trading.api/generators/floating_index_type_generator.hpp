@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/floating_index_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic floating_index_type.
  */
-domain::floating_index_type generate_synthetic_floating_index_type(
+ORES_TRADING_API_EXPORT domain::floating_index_type generate_synthetic_floating_index_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic floating_index_types.
  */
-std::vector<domain::floating_index_type>
+ORES_TRADING_API_EXPORT std::vector<domain::floating_index_type>
 generate_synthetic_floating_index_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

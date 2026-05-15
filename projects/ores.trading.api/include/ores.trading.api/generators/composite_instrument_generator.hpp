@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic composite_instrument.
  */
-domain::composite_instrument generate_synthetic_composite_instrument(
+ORES_TRADING_API_EXPORT domain::composite_instrument generate_synthetic_composite_instrument(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic composite_instruments.
  */
-std::vector<domain::composite_instrument>
+ORES_TRADING_API_EXPORT std::vector<domain::composite_instrument>
 generate_synthetic_composite_instruments(std::size_t n,
     utility::generation::generation_context& ctx);
 

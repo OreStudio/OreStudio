@@ -72,6 +72,24 @@ struct get_party_history_response {
     std::vector<ores::refdata::domain::party> history;
 };
 
+/**
+ * @brief Reads all active parties for a tenant — used by IAM party cache.
+ *
+ * Returns the full, unpaginated party set for the given tenant so that
+ * consumers can build an in-process cache without multiple round-trips.
+ */
+struct read_parties_for_cache_request {
+    using response_type = struct read_parties_for_cache_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.parties.read";
+    std::string tenant_id;
+};
+
+struct read_parties_for_cache_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::refdata::domain::party> parties;
+};
+
 }
 
 #endif

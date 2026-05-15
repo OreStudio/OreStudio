@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic trade_type.
  */
-domain::trade_type generate_synthetic_trade_type(
+ORES_TRADING_API_EXPORT domain::trade_type generate_synthetic_trade_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic trade_types.
  */
-std::vector<domain::trade_type>
+ORES_TRADING_API_EXPORT std::vector<domain::trade_type>
 generate_synthetic_trade_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

@@ -20,9 +20,16 @@
 #include "ores.iam.core/messaging/registrar.hpp"
 
 #include <memory>
+#include <thread>
+#include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/bootstrap_handler.hpp"
 #include "ores.iam.core/messaging/account_handler.hpp"
@@ -66,8 +73,38 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.iam.service";
 
+    // --- Party cache ---
+    // Warm the cache at startup for all known active tenants, then subscribe
+    // to change events so each affected tenant is reloaded on any mutation.
+    auto pc = std::make_shared<service::party_cache>(nats);
+    try {
+        repository::tenant_repository tenant_repo(ctx);
+        const auto tenants = tenant_repo.read_latest();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Warming party cache for " << tenants.size() << " tenant(s)";
+        for (const auto& t : tenants)
+            pc->load(boost::uuids::to_string(t.id));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Party cache warm-up failed: " << e.what();
+    }
+    subs.push_back(nats.subscribe(
+        "refdata.v1.parties.changed",
+        [pc](ores::nats::message msg) {
+            using ores::eventing::domain::entity_change_event;
+            auto evt = rfl::json::read<entity_change_event>(
+                ores::nats::as_string_view(msg.data));
+            if (evt && !evt->tenant_id.empty()) {
+                // Offload to a detached thread: load() calls request_sync,
+                // which would block the NATS callback thread if called inline.
+                std::thread([pc, tid = evt->tenant_id]() {
+                    pc->load(tid);
+                }).detach();
+            }
+        }));
+
     // --- Auth ---
-    auto ah = std::make_shared<auth_handler>(nats, ctx, signer);
+    auto ah = std::make_shared<auth_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         signup_request::nats_subject, qg,
         [ah](ores::nats::message msg) { ah->signup(std::move(msg)); }));
@@ -100,7 +137,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [bh](ores::nats::message msg) { bh->provision_tenant(std::move(msg)); }));
 
     // --- Accounts ---
-    auto acth = std::make_shared<account_handler>(nats, ctx, signer);
+    auto acth = std::make_shared<account_handler>(nats, ctx, signer, pc);
     subs.push_back(nats.queue_subscribe(
         get_accounts_request_typed::nats_subject, qg,
         [acth](ores::nats::message msg) { acth->list(std::move(msg)); }));

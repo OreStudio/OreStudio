@@ -22,13 +22,14 @@
 
 #include <iosfwd>
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the equity_barrier_option_instrument to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const equity_barrier_option_instrument& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const equity_barrier_option_instrument& v);
 
 }
 

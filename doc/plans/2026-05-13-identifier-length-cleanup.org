@@ -2,7 +2,7 @@
 #+SUBTITLE: Eliminate NAMEDATALEN truncation warnings for RLS policies and indexes
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team
-#+STATUS: PLANNED
+#+STATUS: COMPLETE
 #+OPTIONS: toc:t num:nil
 
 * Problem

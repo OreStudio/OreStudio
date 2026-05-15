@@ -2,7 +2,7 @@
 #+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS
+#+STATUS: COMPLETE
 #+OPTIONS: toc:t num:nil
 
 * Progress
@@ -103,14 +103,32 @@ dependency: workflow definition headers (for ~ore_import~,
 ~provision_parties~, ~report_execution~) still live inside ~ores.workflow~
 and include domain API headers, keeping the dependency direction inverted.
 
-** Pending — Items 1 and 2
+** Completed — Item 1: Dynamic step lists
 
-Dynamic step lists (Item 1) and relocation of workflow definitions to
-owning service API packages (Item 2) remain unimplemented. These are
-prerequisites for the bundle publish workflow. The SQL-level isolation
-(Phases 5.2/5.3 above) is the runtime half of the work Item 2 describes;
-the remaining half is the compile-time restructuring. See the original
-item sections below for the design.
+~workflow_definition~ in ~ores.workflow.api~ already uses ~build_steps~ as
+a ~std::function~ callback (signature:
+~(request_json, tenant_id, correlation_id) → vector<workflow_step_def>~).
+~materialised_step~ struct and ~workflow_instance.materialised_steps_json~
+column both exist. ~workflow_engine.cpp~ calls ~def->build_steps(...)~ at
+instance start, recovery, and dispatch. No static step path remains.
+
+** Completed — Item 2: Definitions moved to owning service API packages
+
+All three definitions already live in their respective owning API packages:
+
+| Workflow               | Location                                                     |
+|------------------------+--------------------------------------------------------------|
+| ~provision_parties~    | ~ores.refdata.api/workflow/provision_parties_workflow.hpp~   |
+| ~ore_import~           | ~ores.ore.api/workflow/ore_import_workflow.hpp~              |
+| ~report_execution~     | ~ores.reporting.api/workflow/report_execution_workflow.hpp~  |
+
+~registrar.cpp~ calls ~refdata::workflow::register_provision_parties_workflow~,
+~ore::workflow::register_ore_import_workflow~, and
+~reporting::workflow::register_report_execution_workflow~. The ~ores.workflow~
+package no longer includes domain headers directly for these definitions.
+
+The SQL-level isolation (Phases 5.2/5.3 above) is the runtime complement:
+DML grants are gone and all domain writes go through NATS.
 
 * Context
 

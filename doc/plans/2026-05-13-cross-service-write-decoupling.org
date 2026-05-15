@@ -119,6 +119,18 @@ Phase 4.3 must be fully landed before 5.2 ships, because the refdata parties
 NATS write API (step 2) is the same surface that Phase 4.3's party cache reads
 will rely on for change notifications.
 
+** Implementation note
+
+When Phase 5.2 was implemented it turned out that steps 1–3 were already
+complete: the ~provision_parties~ workflow was already routing all writes
+through NATS (~refdata.v1.parties.save~, ~iam.v1.accounts.save~,
+~iam.v1.account-parties.save~), and ~ores.workflow.core~ links only against
+API packages, not ~ores.iam.core~ or ~ores.refdata.core~. The
+~workflow_handler::provision_parties()~ entry point only publishes a
+JetStream message and never writes to IAM or refdata tables directly. The
+DML grants in the service registry were therefore dead leftovers. Step 4
+(removing the grants and regenerating) was all that was needed.
+
 * Phase 5.3 — ORE Write API (Workflow)
 
 *Effort: M. Risk: Medium.*
@@ -141,11 +153,11 @@ conventions that 5.3 must follow.
 
 * Sequencing and Effort
 
-| Phase | Title                                    | Effort | Risk   | Blocked by |
-|-------+------------------------------------------+--------+--------+------------|
-| 4.3   | IAM party cache (NATS-backed)            | L      | Medium | —          |
-| 5.2   | Workflow→IAM/refdata NATS write APIs     | L      | High   | 4.3        |
-| 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        |
+| Phase | Title                                    | Effort | Risk   | Blocked by | Status   |
+|-------+------------------------------------------+--------+--------+------------+----------|
+| 4.3   | IAM party cache (NATS-backed)            | L      | Medium | —          | COMPLETE |
+| 5.2   | Workflow→IAM/refdata NATS write APIs     | L      | High   | 4.3        | COMPLETE |
+| 5.3   | ORE→workflow NATS write API              | M      | Medium | 5.2        | —        |
 
 All phases here begin after the isolation plan invariant is locked (Phase 4 of
 [[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]).

@@ -88,6 +88,19 @@ inline std::optional<refdata::domain::party> auth_lookup_party(
     return cache.lookup_party(tenant_id, party_id);
 }
 
+inline void auth_ensure_parties_cached(
+    service::party_cache& cache,
+    const std::string& tenant_id,
+    const std::vector<ores::iam::domain::account_party>& account_parties) {
+    for (const auto& ap : account_parties) {
+        if (!cache.lookup_party(tenant_id, ap.party_id)) {
+            // Cache miss: reload from refdata (handles bootstrap and startup race).
+            cache.load(tenant_id);
+            break;
+        }
+    }
+}
+
 inline std::string auth_lookup_tenant_name(
     const ores::database::context& ctx,
     const boost::uuids::uuid& tenant_id) {
@@ -256,6 +269,12 @@ public:
                     "Account has no party assignment. "
                     "Please contact your administrator.");
             }
+
+            // Ensure party details are in the cache. Bootstrap parties are
+            // created directly via SQL (no NATS event), so the cache may be
+            // cold even though the account-party association exists in the DB.
+            auth_ensure_parties_cached(
+                *party_cache_, acct.tenant_id.to_string(), account_parties);
 
             // Create a session record so that analytics, session listings,
             // and logout end-time tracking all work correctly.

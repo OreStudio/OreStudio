@@ -1608,9 +1608,11 @@ void MainWindow::onLoginSuccess(const QString& username) {
 
     // Warn if no party context — the account is misconfigured.
     // Under normal circumstances the server rejects logins with no party, so
-    // this is a last-resort defensive check.
+    // this is a last-resort defensive check. Guard on the party ID being nil,
+    // not the display name: the name can be blank on a cold cache (bootstrap)
+    // even though the party is correctly assigned.
     if (clientManager_ && clientManager_->isConnected() &&
-        party_name_.isEmpty()) {
+        clientManager_->currentPartyId().is_nil()) {
         MessageBoxHelper::warning(this, "No Party Assigned",
             "Your account has no party context.\n\n"
             "This is a configuration error — please contact your tenant "

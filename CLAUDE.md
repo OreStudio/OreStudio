@@ -46,10 +46,9 @@ invariant. Key rules:
 - **New trigger validation functions** that SELECT from another service's tables
   must be `SECURITY DEFINER` with `SET search_path = public, pg_temp`.
 
-The remaining cross-component grants (IAM↔variability, IAM/workflow↔refdata,
-ORE↔workflow, trading↔refdata) are tracked in
-`doc/plans/2026-05-12-strict-service-table-isolation.org` with phase targets
-for removal.
+All tracked cross-component grants have been removed (Phases 4.3, 5.2, 5.3
+complete). The strict service table isolation invariant is now fully enforced.
+See `doc/plans/2026-05-13-cross-service-write-decoupling.org` for history.
 
 ## Testing
 

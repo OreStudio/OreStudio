@@ -72,7 +72,10 @@ on "ores_refdata_countries_tbl" (numeric_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_countries_insert_fn()
-returns trigger as $$
+returns trigger
+security definer
+set search_path = public, pg_temp
+as $$
 declare
     current_version integer;
 begin

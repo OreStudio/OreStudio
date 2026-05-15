@@ -17,6 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_table_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
 -- Account Types - Valid account type classifications
 -- =============================================================================
@@ -29,9 +35,9 @@ create table if not exists "ores_iam_account_types_tbl" (
     "description" text not null,
     "display_order" integer not null default 0,
     "modified_by" text not null,
+    "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
-    "performed_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (tenant_id, type, valid_from, valid_to),
@@ -44,15 +50,15 @@ create table if not exists "ores_iam_account_types_tbl" (
     check ("type" <> '')
 );
 
-create unique index if not exists ores_iam_account_types_version_uniq_idx
+create unique index if not exists account_types_version_uniq_idx
 on "ores_iam_account_types_tbl" (tenant_id, type, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_account_types_type_uniq_idx
+create unique index if not exists account_types_type_uniq_idx
 on "ores_iam_account_types_tbl" (tenant_id, type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_account_types_tenant_idx
+create index if not exists account_types_tenant_idx
 on "ores_iam_account_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -118,16 +124,18 @@ do instead
 -- =============================================================================
 -- Validation function for account_type
 -- Validates that a type exists in the account_types table.
--- Returns the validated value, or raises an exception if invalid.
+-- Returns the validated value, or default if null/empty.
 -- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_iam_validate_account_type_fn(
+    p_tenant_id uuid,
     p_value text
 ) returns text as $$
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
-        return 'user';
+        raise exception 'Invalid account_type: value cannot be null or empty'
+            using errcode = '23502';
     end if;
 
     -- Allow pass-through during bootstrap (empty table)
@@ -138,14 +146,14 @@ begin
     -- Validate against reference data
     if not exists (
         select 1 from ores_iam_account_types_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and type = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid account_type: %. Must be one of: %', p_value, (
             select string_agg(type::text, ', ' order by display_order)
             from ores_iam_account_types_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

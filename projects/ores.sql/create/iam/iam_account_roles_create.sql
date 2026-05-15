@@ -42,15 +42,15 @@ create table if not exists ores_iam_account_roles_tbl (
     check ("valid_from" < "valid_to")
 );
 
-create index if not exists ores_iam_account_roles_tenant_idx
+create index if not exists account_roles_tenant_idx
 on ores_iam_account_roles_tbl (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_account_roles_account_idx
+create index if not exists account_roles_account_idx
 on ores_iam_account_roles_tbl (account_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_account_roles_role_idx
+create index if not exists account_roles_role_idx
 on ores_iam_account_roles_tbl (role_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

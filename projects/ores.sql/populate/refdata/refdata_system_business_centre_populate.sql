@@ -44,7 +44,7 @@ begin
 
     if not exists (
         select 1 from ores_refdata_business_centres_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
         and code = 'WRLD'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -54,7 +54,7 @@ begin
             modified_by, performed_by,
             change_reason_code, change_commentary
         ) values (
-            'WRLD', ores_iam_system_tenant_id_fn(), 0, 'NONE',
+            'WRLD', ores_utility_system_tenant_id_fn(), 0, 'NONE',
             'Internal',
             'World. Global business centre for entities not tied to a specific geographic location.',
             v_image_id,
@@ -64,7 +64,7 @@ begin
         raise debug 'Created WRLD business centre for system tenant';
     elsif exists (
         select 1 from ores_refdata_business_centres_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
         and code = 'WRLD'
         and valid_to = ores_utility_infinity_timestamp_fn()
         and (source is distinct from 'Internal' or image_id is distinct from v_image_id)
@@ -75,7 +75,7 @@ begin
             modified_by, performed_by,
             change_reason_code, change_commentary
         ) values (
-            'WRLD', ores_iam_system_tenant_id_fn(), 0, 'NONE',
+            'WRLD', ores_utility_system_tenant_id_fn(), 0, 'NONE',
             'Internal',
             'World. Global business centre for entities not tied to a specific geographic location.',
             v_image_id,
@@ -92,5 +92,5 @@ $$;
 -- Summary
 select 'refdata_business_centres (system)' as entity, count(*) as count
 from ores_refdata_business_centres_tbl
-where tenant_id = ores_iam_system_tenant_id_fn()
+where tenant_id = ores_utility_system_tenant_id_fn()
 and valid_to = ores_utility_infinity_timestamp_fn();

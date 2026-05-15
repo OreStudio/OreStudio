@@ -41,7 +41,7 @@
 
 DO $$
 BEGIN
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE Analytics',
         'ORE risk analytics seed data including report definition templates for provisioning new parties.',
         'OreStudio Development Team'
@@ -55,7 +55,7 @@ END $$;
 
 DO $$
 BEGIN
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.report_definitions',
         'ORE Analytics',
         'Trading',
@@ -83,7 +83,7 @@ END $$;
 do $$
 declare
     v_dataset_id uuid;
-    v_tenant_id uuid := ores_iam_system_tenant_id_fn();
+    v_tenant_id uuid := ores_utility_system_tenant_id_fn();
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl

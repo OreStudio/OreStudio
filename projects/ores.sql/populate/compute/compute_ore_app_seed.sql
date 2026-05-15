@@ -50,7 +50,7 @@ insert into ores_compute_apps_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'ORE',
     'Open Source Risk Engine — QuantLib-based risk analytics engine for '
@@ -64,7 +64,7 @@ select
 where not exists (
     select 1 from ores_compute_apps_tbl
     where name = 'ORE'
-      and tenant_id = ores_iam_system_tenant_id_fn()
+      and tenant_id = ores_utility_system_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
 
@@ -74,7 +74,7 @@ where not exists (
 with ore_app as (
     select id from ores_compute_apps_tbl
     where name = 'ORE'
-      and tenant_id = ores_iam_system_tenant_id_fn()
+      and tenant_id = ores_utility_system_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn()
 ),
 new_version_id as (
@@ -98,7 +98,7 @@ inserted_version as (
     )
     select
         new_version_id.uuid,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         1,
         ore_app.id,
         '1.0.0',
@@ -117,7 +117,7 @@ inserted_version as (
         join ore_app on av.app_id = ore_app.id
         where av.engine_version = '1.8.15.0'
           and av.wrapper_version = '1.0.0'
-          and av.tenant_id = ores_iam_system_tenant_id_fn()
+          and av.tenant_id = ores_utility_system_tenant_id_fn()
           and av.valid_to = ores_utility_infinity_timestamp_fn()
     )
     returning id
@@ -130,7 +130,7 @@ app_version_id as (
     join ore_app on av.app_id = ore_app.id
     where av.engine_version = '1.8.15.0'
       and av.wrapper_version = '1.0.0'
-      and av.tenant_id = ores_iam_system_tenant_id_fn()
+      and av.tenant_id = ores_utility_system_tenant_id_fn()
       and av.valid_to = ores_utility_infinity_timestamp_fn()
     limit 1
 )
@@ -150,7 +150,7 @@ insert into ores_compute_app_version_platforms_tbl (
     valid_to
 )
 select
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     app_version_id.id,
     p.id,
     '/api/v1/storage/compute/packages/ore/1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz',
@@ -171,6 +171,6 @@ where not exists (
        and pl.code = 'x64-linux'
        and pl.valid_to = ores_utility_infinity_timestamp_fn()
     where avp.app_version_id = app_version_id.id
-      and avp.tenant_id = ores_iam_system_tenant_id_fn()
+      and avp.tenant_id = ores_utility_system_tenant_id_fn()
       and avp.valid_to = ores_utility_infinity_timestamp_fn()
 );

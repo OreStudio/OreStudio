@@ -51,13 +51,13 @@ BEGIN
 
     -- --- Data Quality Origin Dimensions ---
 
-    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Primary',
         'Primary Data',
         'Raw data ingested directly from the origin without transformations.'
     );
 
-    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_origin_dimensions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Derived',
         'Derived Data',
         'Data transformed, aggregated, or calculated via code.'

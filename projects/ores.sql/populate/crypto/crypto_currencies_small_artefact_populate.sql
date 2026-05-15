@@ -83,7 +83,7 @@ begin
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         c.iso_code,
         0,
         c.name,

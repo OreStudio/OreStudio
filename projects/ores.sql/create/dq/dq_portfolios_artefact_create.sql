@@ -30,14 +30,14 @@ create table if not exists "ores_dq_portfolios_artefact_tbl" (
     "is_virtual" integer not null
 );
 
-create index if not exists ores_dq_portfolios_artefact_dataset_idx
+create index if not exists portfolios_artefact_dataset_idx
 on "ores_dq_portfolios_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_portfolios_artefact_tenant_idx
+create index if not exists portfolios_artefact_tenant_idx
 on "ores_dq_portfolios_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_portfolios_artefact_id_idx
+create index if not exists portfolios_artefact_id_idx
 on "ores_dq_portfolios_artefact_tbl" (id);
 
-create index if not exists ores_dq_portfolios_artefact_name_idx
+create index if not exists portfolios_artefact_name_idx
 on "ores_dq_portfolios_artefact_tbl" (name);

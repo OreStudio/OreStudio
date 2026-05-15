@@ -26,7 +26,7 @@ BEGIN
 
     -- --- ORE Catalog ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE',
         'Open Risk Engine (ORE) reference data and coding schemes. Includes asset class categorization codes used for market data series and trade classification.',
         'Reference Data Team'

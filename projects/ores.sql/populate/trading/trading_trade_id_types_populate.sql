@@ -31,11 +31,11 @@ insert into ores_trading_trade_id_types_tbl (
     code, tenant_id, version, description,
     modified_by, change_reason_code, change_commentary
 ) values
-    ('UTI',      ores_iam_system_tenant_id_fn(), 0, 'Unique Transaction Identifier',
+    ('UTI',      ores_utility_system_tenant_id_fn(), 0, 'Unique Transaction Identifier',
      current_user, 'system.initial_load', 'Seed trade identifier types'),
-    ('USI',      ores_iam_system_tenant_id_fn(), 0, 'Unique Swap Identifier',
+    ('USI',      ores_utility_system_tenant_id_fn(), 0, 'Unique Swap Identifier',
      current_user, 'system.initial_load', 'Seed trade identifier types'),
-    ('Internal', ores_iam_system_tenant_id_fn(), 0, 'Internal system identifier',
+    ('Internal', ores_utility_system_tenant_id_fn(), 0, 'Internal system identifier',
      current_user, 'system.initial_load', 'Seed trade identifier types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

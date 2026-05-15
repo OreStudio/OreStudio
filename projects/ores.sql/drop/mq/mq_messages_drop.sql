@@ -24,5 +24,5 @@ drop function if exists ores_mq_messages_read_fn;
 drop function if exists ores_mq_messages_ack_fn;
 drop function if exists ores_mq_messages_nack_fn;
 drop function if exists ores_mq_messages_purge_fn;
-drop index if exists ores_mq_messages_queue_status_idx;
+drop index if exists messages_queue_status_idx;
 drop table if exists ores_mq_messages_tbl cascade;

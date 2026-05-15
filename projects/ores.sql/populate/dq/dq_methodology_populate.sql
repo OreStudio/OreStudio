@@ -34,7 +34,7 @@ BEGIN
 
     -- --- General Methodologies ---
 
-    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Synthetic Data Generation',
         'Test data generated programmatically using the ores.synthetic library with seeded random generation',
         'https://github.com/cieslarmichal/faker-cxx',
@@ -64,7 +64,7 @@ BEGIN
     the methodology itself.'
     );
 
-    PERFORM ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORE Internal',
         'Reference data defined internally by the ORE (Open Risk Engine) project and maintained as part of the OreStudio system configuration',
         'https://ore.opensourcerisk.org',

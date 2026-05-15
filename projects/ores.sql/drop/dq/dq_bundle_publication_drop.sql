@@ -26,8 +26,8 @@ drop function if exists ores_dq_bundle_datasets_list_fn;
 drop function if exists ores_dq_bundles_list_fn;
 
 -- Drop indexes
-drop index if exists ores_dq_bundle_publications_published_at_idx;
-drop index if exists ores_dq_bundle_publications_bundle_code_idx;
+drop index if exists bundle_publications_published_at_idx;
+drop index if exists bundle_publications_bundle_code_idx;
 
 -- Drop table
 drop table if exists ores_dq_bundle_publications_tbl;

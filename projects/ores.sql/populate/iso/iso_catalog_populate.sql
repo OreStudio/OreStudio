@@ -33,7 +33,7 @@ BEGIN
 
     -- --- ISO Standards Catalog ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ISO Standards',
         'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
         'Reference Data Team'

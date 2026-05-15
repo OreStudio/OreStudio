@@ -77,120 +77,120 @@ begin
     )
     values
         -- Root: Global Portfolio
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000001', 0, 'Global Portfolio', null,
          '10000000-0000-4000-a000-000000000001', 'Risk', 'USD', 1),
 
         -- EMEA Portfolio (under Global)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000002', 0, 'EMEA Portfolio',
          '20000000-0000-4000-a000-000000000001',
          '10000000-0000-4000-a000-000000000002', 'Risk', 'EUR', 1),
 
         -- Rates EMEA (under EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000003', 0, 'Rates EMEA',
          '20000000-0000-4000-a000-000000000002',
          '10000000-0000-4000-a000-000000000003', 'Risk', 'EUR', 1),
 
         -- GBP Rates (leaf under Rates EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000004', 0, 'GBP Rates',
          '20000000-0000-4000-a000-000000000003',
          '10000000-0000-4000-a000-000000000003', 'Risk', 'GBP', 0),
 
         -- EUR Rates (leaf under Rates EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000005', 0, 'EUR Rates',
          '20000000-0000-4000-a000-000000000003',
          '10000000-0000-4000-a000-000000000003', 'Risk', 'EUR', 0),
 
         -- Credit EMEA (under EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000006', 0, 'Credit EMEA',
          '20000000-0000-4000-a000-000000000002',
          '10000000-0000-4000-a000-000000000004', 'Risk', 'EUR', 1),
 
         -- IG Credit EMEA (leaf under Credit EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000007', 0, 'IG Credit EMEA',
          '20000000-0000-4000-a000-000000000006',
          '10000000-0000-4000-a000-000000000004', 'Risk', 'EUR', 0),
 
         -- FX EMEA (under EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000008', 0, 'FX EMEA',
          '20000000-0000-4000-a000-000000000002',
          '10000000-0000-4000-a000-000000000005', 'Risk', 'EUR', 1),
 
         -- G10 FX EMEA (leaf under FX EMEA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000009', 0, 'G10 FX EMEA',
          '20000000-0000-4000-a000-000000000008',
          '10000000-0000-4000-a000-000000000005', 'Risk', 'EUR', 0),
 
         -- Americas Portfolio (under Global)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000a', 0, 'Americas Portfolio',
          '20000000-0000-4000-a000-000000000001',
          '10000000-0000-4000-a000-000000000006', 'Risk', 'USD', 1),
 
         -- Rates Americas (under Americas)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000b', 0, 'Rates Americas',
          '20000000-0000-4000-a000-00000000000a',
          '10000000-0000-4000-a000-000000000007', 'Risk', 'USD', 1),
 
         -- USD Rates (leaf under Rates Americas)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000c', 0, 'USD Rates',
          '20000000-0000-4000-a000-00000000000b',
          '10000000-0000-4000-a000-000000000007', 'Risk', 'USD', 0),
 
         -- CAD Rates (leaf under Rates Americas)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000d', 0, 'CAD Rates',
          '20000000-0000-4000-a000-00000000000b',
          '10000000-0000-4000-a000-000000000007', 'Risk', 'CAD', 0),
 
         -- Credit Americas (under Americas)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000e', 0, 'Credit Americas',
          '20000000-0000-4000-a000-00000000000a',
          '10000000-0000-4000-a000-000000000008', 'Risk', 'USD', 1),
 
         -- IG Credit Americas (leaf under Credit Americas)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-00000000000f', 0, 'IG Credit Americas',
          '20000000-0000-4000-a000-00000000000e',
          '10000000-0000-4000-a000-000000000008', 'Risk', 'USD', 0),
 
         -- APAC Portfolio (under Global)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000010', 0, 'APAC Portfolio',
          '20000000-0000-4000-a000-000000000001',
          '10000000-0000-4000-a000-000000000009', 'Risk', 'JPY', 1),
 
         -- Rates APAC (under APAC)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000011', 0, 'Rates APAC',
          '20000000-0000-4000-a000-000000000010',
          '10000000-0000-4000-a000-00000000000a', 'Risk', 'JPY', 1),
 
         -- JPY Rates (leaf under Rates APAC)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000012', 0, 'JPY Rates',
          '20000000-0000-4000-a000-000000000011',
          '10000000-0000-4000-a000-00000000000a', 'Risk', 'JPY', 0),
 
         -- FX APAC (leaf under APAC)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000013', 0, 'FX APAC',
          '20000000-0000-4000-a000-000000000010',
          '10000000-0000-4000-a000-00000000000b', 'Risk', 'JPY', 0),
 
         -- Root: Regulatory Capital
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '20000000-0000-4000-a000-000000000014', 0, 'Regulatory Capital', null,
          '10000000-0000-4000-a000-00000000000c', 'Regulatory', 'USD', 0);
 

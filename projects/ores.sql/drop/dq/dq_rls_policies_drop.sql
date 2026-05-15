@@ -26,61 +26,61 @@
 \ir ./dq_fsm_rls_policies_drop.sql
 
 -- Dataset Bundle Members
-drop policy if exists ores_dq_dataset_bundle_members_modification_policy on "ores_dq_dataset_bundle_members_tbl";
-drop policy if exists ores_dq_dataset_bundle_members_read_policy on "ores_dq_dataset_bundle_members_tbl";
+drop policy if exists dataset_bundle_members_modification_policy on "ores_dq_dataset_bundle_members_tbl";
+drop policy if exists dataset_bundle_members_read_policy on "ores_dq_dataset_bundle_members_tbl";
 
 -- Dataset Bundles
-drop policy if exists ores_dq_dataset_bundles_modification_policy on "ores_dq_dataset_bundles_tbl";
-drop policy if exists ores_dq_dataset_bundles_read_policy on "ores_dq_dataset_bundles_tbl";
+drop policy if exists dataset_bundles_modification_policy on "ores_dq_dataset_bundles_tbl";
+drop policy if exists dataset_bundles_read_policy on "ores_dq_dataset_bundles_tbl";
 
 -- Dataset Dependencies
-drop policy if exists ores_dq_dataset_dependencies_modification_policy on "ores_dq_dataset_dependencies_tbl";
-drop policy if exists ores_dq_dataset_dependencies_read_policy on "ores_dq_dataset_dependencies_tbl";
+drop policy if exists dataset_dependencies_modification_policy on "ores_dq_dataset_dependencies_tbl";
+drop policy if exists dataset_dependencies_read_policy on "ores_dq_dataset_dependencies_tbl";
 
 -- Treatment Dimensions
-drop policy if exists ores_dq_treatment_dimensions_modification_policy on "ores_dq_treatment_dimensions_tbl";
-drop policy if exists ores_dq_treatment_dimensions_read_policy on "ores_dq_treatment_dimensions_tbl";
+drop policy if exists treatment_dimensions_modification_policy on "ores_dq_treatment_dimensions_tbl";
+drop policy if exists treatment_dimensions_read_policy on "ores_dq_treatment_dimensions_tbl";
 
 -- Nature Dimensions
-drop policy if exists ores_dq_nature_dimensions_modification_policy on "ores_dq_nature_dimensions_tbl";
-drop policy if exists ores_dq_nature_dimensions_read_policy on "ores_dq_nature_dimensions_tbl";
+drop policy if exists nature_dimensions_modification_policy on "ores_dq_nature_dimensions_tbl";
+drop policy if exists nature_dimensions_read_policy on "ores_dq_nature_dimensions_tbl";
 
 -- Origin Dimensions
-drop policy if exists ores_dq_origin_dimensions_modification_policy on "ores_dq_origin_dimensions_tbl";
-drop policy if exists ores_dq_origin_dimensions_read_policy on "ores_dq_origin_dimensions_tbl";
+drop policy if exists origin_dimensions_modification_policy on "ores_dq_origin_dimensions_tbl";
+drop policy if exists origin_dimensions_read_policy on "ores_dq_origin_dimensions_tbl";
 
 -- Change Reasons
-drop policy if exists ores_dq_change_reasons_modification_policy on "ores_dq_change_reasons_tbl";
-drop policy if exists ores_dq_change_reasons_read_policy on "ores_dq_change_reasons_tbl";
+drop policy if exists change_reasons_modification_policy on "ores_dq_change_reasons_tbl";
+drop policy if exists change_reasons_read_policy on "ores_dq_change_reasons_tbl";
 
 -- Change Reason Categories
-drop policy if exists ores_dq_change_reason_categories_modification_policy on "ores_dq_change_reason_categories_tbl";
-drop policy if exists ores_dq_change_reason_categories_read_policy on "ores_dq_change_reason_categories_tbl";
+drop policy if exists change_reason_categories_modification_policy on "ores_dq_change_reason_categories_tbl";
+drop policy if exists change_reason_categories_read_policy on "ores_dq_change_reason_categories_tbl";
 
 -- Coding Scheme Authority Types
-drop policy if exists ores_dq_coding_scheme_authority_types_modification_policy on "ores_dq_coding_scheme_authority_types_tbl";
-drop policy if exists ores_dq_coding_scheme_authority_types_read_policy on "ores_dq_coding_scheme_authority_types_tbl";
+drop policy if exists coding_scheme_authority_types_modification_policy on "ores_dq_coding_scheme_authority_types_tbl";
+drop policy if exists coding_scheme_authority_types_read_policy on "ores_dq_coding_scheme_authority_types_tbl";
 
 -- Coding Schemes
-drop policy if exists ores_dq_coding_schemes_modification_policy on "ores_dq_coding_schemes_tbl";
-drop policy if exists ores_dq_coding_schemes_read_policy on "ores_dq_coding_schemes_tbl";
+drop policy if exists coding_schemes_modification_policy on "ores_dq_coding_schemes_tbl";
+drop policy if exists coding_schemes_read_policy on "ores_dq_coding_schemes_tbl";
 
 -- Data Domains
-drop policy if exists ores_dq_data_domains_modification_policy on "ores_dq_data_domains_tbl";
-drop policy if exists ores_dq_data_domains_read_policy on "ores_dq_data_domains_tbl";
+drop policy if exists data_domains_modification_policy on "ores_dq_data_domains_tbl";
+drop policy if exists data_domains_read_policy on "ores_dq_data_domains_tbl";
 
 -- Subject Areas
-drop policy if exists ores_dq_subject_areas_modification_policy on "ores_dq_subject_areas_tbl";
-drop policy if exists ores_dq_subject_areas_read_policy on "ores_dq_subject_areas_tbl";
+drop policy if exists subject_areas_modification_policy on "ores_dq_subject_areas_tbl";
+drop policy if exists subject_areas_read_policy on "ores_dq_subject_areas_tbl";
 
 -- Methodologies
-drop policy if exists ores_dq_methodologies_modification_policy on "ores_dq_methodologies_tbl";
-drop policy if exists ores_dq_methodologies_read_policy on "ores_dq_methodologies_tbl";
+drop policy if exists methodologies_modification_policy on "ores_dq_methodologies_tbl";
+drop policy if exists methodologies_read_policy on "ores_dq_methodologies_tbl";
 
 -- Datasets
-drop policy if exists ores_dq_datasets_modification_policy on "ores_dq_datasets_tbl";
-drop policy if exists ores_dq_datasets_read_policy on "ores_dq_datasets_tbl";
+drop policy if exists datasets_modification_policy on "ores_dq_datasets_tbl";
+drop policy if exists datasets_read_policy on "ores_dq_datasets_tbl";
 
 -- Catalogs
-drop policy if exists ores_dq_catalogs_modification_policy on "ores_dq_catalogs_tbl";
-drop policy if exists ores_dq_catalogs_read_policy on "ores_dq_catalogs_tbl";
+drop policy if exists catalogs_modification_policy on "ores_dq_catalogs_tbl";
+drop policy if exists catalogs_read_policy on "ores_dq_catalogs_tbl";

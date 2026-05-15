@@ -21,7 +21,7 @@
 drop rule if exists ores_reporting_risk_report_config_portfolios_delete_rule on "ores_reporting_risk_report_config_portfolios_tbl";
 drop trigger if exists ores_reporting_risk_report_config_portfolios_insert_trg on "ores_reporting_risk_report_config_portfolios_tbl";
 drop function if exists ores_reporting_risk_report_config_portfolios_insert_fn;
-drop index if exists ores_reporting_risk_report_config_portfolios_tenant_idx;
-drop index if exists ores_reporting_risk_report_config_portfolios_config_idx;
-drop index if exists ores_reporting_risk_report_config_portfolios_uniq_idx;
+drop index if exists risk_report_config_portfolios_tenant_idx;
+drop index if exists risk_report_config_portfolios_config_idx;
+drop index if exists risk_report_config_portfolios_uniq_idx;
 drop table if exists "ores_reporting_risk_report_config_portfolios_tbl";

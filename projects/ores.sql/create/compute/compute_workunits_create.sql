@@ -53,27 +53,27 @@ create table if not exists "ores_compute_workunits_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_workunits_version_uniq_idx
+create unique index if not exists workunits_version_uniq_idx
 on "ores_compute_workunits_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_workunits_id_uniq_idx
+create unique index if not exists workunits_id_uniq_idx
 on "ores_compute_workunits_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_workunits_tenant_idx
+create index if not exists workunits_tenant_idx
 on "ores_compute_workunits_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_workunits_batch_id_idx
+create index if not exists workunits_batch_id_idx
 on "ores_compute_workunits_tbl" (tenant_id, batch_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_workunits_app_version_id_idx
+create index if not exists workunits_app_version_id_idx
 on "ores_compute_workunits_tbl" (tenant_id, app_version_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

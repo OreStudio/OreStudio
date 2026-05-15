@@ -51,21 +51,21 @@ create table if not exists "ores_iam_account_parties_tbl" (
 );
 
 -- Index for looking up parties for an account
-create index if not exists ores_iam_account_parties_account_idx
+create index if not exists account_parties_account_idx
 on "ores_iam_account_parties_tbl" (account_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding accounts associated with a party
-create index if not exists ores_iam_account_parties_party_idx
+create index if not exists account_parties_party_idx
 on "ores_iam_account_parties_tbl" (party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_iam_account_parties_uniq_idx
+create unique index if not exists account_parties_uniq_idx
 on "ores_iam_account_parties_tbl" (tenant_id, account_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_account_parties_tenant_idx
+create index if not exists account_parties_tenant_idx
 on "ores_iam_account_parties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

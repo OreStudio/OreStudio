@@ -44,7 +44,7 @@ insert into ores_refdata_books_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'e0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'ROLES-TEST-BOOK', 'Test book for party role tests',
     'e0000000-0000-0000-0000-000000000010'::uuid,
     current_user, current_user, 'system.test', 'Test book'
@@ -55,7 +55,7 @@ insert into ores_refdata_portfolios_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'e0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'e0000000-0000-0000-0000-000000000010'::uuid,
     'ROLES-TEST-PORTFOLIO', 'Test portfolio for party role tests',
     current_user, current_user, 'system.test', 'Test portfolio'
@@ -69,7 +69,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'e1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'e0000000-0000-0000-0000-000000000001'::uuid,
     'e0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-ROLES-001', 'new_booking', s.id,
@@ -88,7 +88,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'e2000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'RoleCorp A', 'ROLA', 'Corporate', 'GBLO', 'Active',
     current_user, current_user, 'system.test', 'Test counterparty for roles'
 );
@@ -103,7 +103,7 @@ insert into ores_trading_party_roles_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'e3000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'e1000000-0000-0000-0000-000000000001'::uuid,
     'e2000000-0000-0000-0000-000000000001'::uuid,
     'Counterparty',
@@ -113,7 +113,7 @@ insert into ores_trading_party_roles_tbl (
 select is(
     (select version from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     1,
     'party role insert: first version is 1'
@@ -130,7 +130,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'e3000000-0000-0000-0000-000000000099'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'e2000000-0000-0000-0000-000000000001'::uuid,
         'Counterparty',
@@ -152,7 +152,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'e3000000-0000-0000-0000-000000000098'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'e1000000-0000-0000-0000-000000000001'::uuid,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'Counterparty',
@@ -174,7 +174,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'e3000000-0000-0000-0000-000000000097'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'e1000000-0000-0000-0000-000000000001'::uuid,
         'e2000000-0000-0000-0000-000000000001'::uuid,
         'INVALID_ROLE',
@@ -191,12 +191,12 @@ select throws_ok(
 
 delete from ores_trading_party_roles_tbl
 where id = 'e3000000-0000-0000-0000-000000000001'::uuid
-  and tenant_id = ores_iam_system_tenant_id_fn();
+  and tenant_id = ores_utility_system_tenant_id_fn();
 
 select is(
     (select count(*)::integer from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     0,
     'party role delete: record no longer current after soft delete'
@@ -209,7 +209,7 @@ select is(
 select ok(
     (select count(*) > 0 from ores_trading_party_roles_tbl
      where id = 'e3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),
     'party role delete: historical record preserved after soft delete'
 );

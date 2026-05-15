@@ -18,12 +18,17 @@
       {"name": "name", "type": "text", "nullable": false},
       {"name": "description", "type": "text", "nullable": false},
       {"name": "coding_scheme_code", "type": "text", "nullable": true},
-      {"name": "display_order", "type": "integer", "nullable": false, "default": "0"}
+      {"name": "display_order", "type": "integer", "nullable": false, "default": "0"},
+      {"name": "max_cardinality", "type": "integer", "nullable": true}
     ],
     "validations": [
       {
         "column": "change_reason_code",
         "validation_function": "ores_dq_validate_change_reason_fn"
+      },
+      {
+        "column": "coding_scheme_code",
+        "validation_function": "ores_refdata_validate_party_id_scheme_coding_scheme_fn"
       }
     ],
     "indexes": []

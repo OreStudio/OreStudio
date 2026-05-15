@@ -22,6 +22,7 @@
  * Template: sql_schema_table_create.mustache
  * To modify, update the template and regenerate.
  */
+
 -- =============================================================================
 -- Party Statuses - Lifecycle states for party and counterparty records (Active, Inactive, Suspended)
 -- =============================================================================
@@ -49,15 +50,15 @@ create table if not exists "ores_refdata_party_statuses_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_refdata_party_statuses_version_uniq_idx
+create unique index if not exists party_statuses_version_uniq_idx
 on "ores_refdata_party_statuses_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_party_statuses_code_uniq_idx
+create unique index if not exists party_statuses_code_uniq_idx
 on "ores_refdata_party_statuses_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_party_statuses_tenant_idx
+create index if not exists party_statuses_tenant_idx
 on "ores_refdata_party_statuses_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -124,7 +125,7 @@ do instead
 -- Validation function for party_status
 -- Validates that a code exists in the party_statuses table.
 -- Returns the validated value, or default if null/empty.
--- Uses tenant-scoped reference data.
+-- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_refdata_validate_party_status_fn(
     p_tenant_id uuid,
@@ -138,21 +139,21 @@ begin
     end if;
 
     -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_party_statuses_tbl where tenant_id = p_tenant_id limit 1) then
+    if not exists (select 1 from ores_refdata_party_statuses_tbl limit 1) then
         return p_value;
     end if;
 
     -- Validate against reference data
     if not exists (
         select 1 from ores_refdata_party_statuses_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid party_status: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_party_statuses_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

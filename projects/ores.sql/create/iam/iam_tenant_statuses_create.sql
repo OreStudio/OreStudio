@@ -17,6 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_table_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
 -- =============================================================================
 -- Tenant Statuses - Valid tenant lifecycle statuses
 -- =============================================================================
@@ -44,15 +50,15 @@ create table if not exists "ores_iam_tenant_statuses_tbl" (
     check ("status" <> '')
 );
 
-create unique index if not exists ores_iam_tenant_statuses_version_uniq_idx
+create unique index if not exists tenant_statuses_version_uniq_idx
 on "ores_iam_tenant_statuses_tbl" (tenant_id, status, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_tenant_statuses_status_uniq_idx
+create unique index if not exists tenant_statuses_status_uniq_idx
 on "ores_iam_tenant_statuses_tbl" (tenant_id, status)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_iam_tenant_statuses_tenant_idx
+create index if not exists tenant_statuses_tenant_idx
 on "ores_iam_tenant_statuses_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -140,14 +146,14 @@ begin
     -- Validate against reference data
     if not exists (
         select 1 from ores_iam_tenant_statuses_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and status = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid tenant_status: %. Must be one of: %', p_value, (
             select string_agg(status::text, ', ' order by display_order)
             from ores_iam_tenant_statuses_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

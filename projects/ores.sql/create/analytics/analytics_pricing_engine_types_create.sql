@@ -49,15 +49,15 @@ create table if not exists "ores_analytics_pricing_engine_types_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_analytics_pricing_engine_types_version_uniq_idx
+create unique index if not exists pricing_engine_types_version_uniq_idx
 on "ores_analytics_pricing_engine_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_analytics_pricing_engine_types_code_uniq_idx
+create unique index if not exists pricing_engine_types_code_uniq_idx
 on "ores_analytics_pricing_engine_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_analytics_pricing_engine_types_tenant_idx
+create index if not exists pricing_engine_types_tenant_idx
 on "ores_analytics_pricing_engine_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -71,6 +71,9 @@ begin
 
     -- Validate change_reason_code
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate instrument_type_code
+    new.instrument_type_code := ores_analytics_validate_pricing_engine_instrument_type_fn(new.tenant_id, new.instrument_type_code);
 
     select version into current_version
     from "ores_analytics_pricing_engine_types_tbl"
@@ -97,25 +100,10 @@ begin
         new.version = 1;
     end if;
 
-    -- Validate instrument_type_code (optional soft FK to ores_trading_trade_types_tbl)
-    if new.instrument_type_code is not null and new.instrument_type_code <> '' then
-        if exists (select 1 from ores_trading_trade_types_tbl limit 1) then
-            if not exists (
-                select 1 from ores_trading_trade_types_tbl
-                where tenant_id = ores_iam_system_tenant_id_fn()
-                  and code = new.instrument_type_code
-                  and valid_to = ores_utility_infinity_timestamp_fn()
-            ) then
-                raise exception 'Invalid instrument_type_code: %. Must reference a valid trade type.', new.instrument_type_code
-                    using errcode = '23503';
-            end if;
-        end if;
-    end if;
-
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return new;
 end;
@@ -160,14 +148,14 @@ begin
     -- Validate against reference data
     if not exists (
         select 1 from ores_analytics_pricing_engine_types_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid pricing_engine_type: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by code)
             from ores_analytics_pricing_engine_types_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

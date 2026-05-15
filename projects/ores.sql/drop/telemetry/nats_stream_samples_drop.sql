@@ -18,5 +18,5 @@
  *
  */
 
-drop index if exists ores_telemetry_nats_stream_samples_name_idx;
+drop index if exists nats_stream_samples_name_idx;
 drop table if exists ores_telemetry_nats_stream_samples_tbl;

@@ -62,7 +62,7 @@ declare
     v_system_party_id uuid;
 begin
     v_actor := coalesce(nullif(p_actor, ''), ores_iam_current_actor_fn(), current_user);
-    v_system_tenant_id := ores_iam_system_tenant_id_fn();
+    v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Verify system tenant context
     if ores_iam_current_tenant_id_fn() != v_system_tenant_id then

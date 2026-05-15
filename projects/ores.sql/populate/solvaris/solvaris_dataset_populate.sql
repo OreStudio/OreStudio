@@ -31,7 +31,7 @@ BEGIN
 
     -- --- Data Quality Slovaris Datasets ---
 
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'slovaris.country_flags',
         'Slovaris',
         'Country Flags',
@@ -49,7 +49,7 @@ BEGIN
         ' CC BY 4.0',
         'images'
     );
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'slovaris.countries',
         'Slovaris',
         'Countries',
@@ -67,7 +67,7 @@ BEGIN
         ' CC BY 4.0',
         'countries'
     );
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'slovaris.currencies',
         'Slovaris',
         'Currencies',

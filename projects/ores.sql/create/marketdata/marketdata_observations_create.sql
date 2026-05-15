@@ -45,26 +45,26 @@ create table if not exists ores_marketdata_observations_tbl (
     "valid_to"         timestamp with time zone not null,
     primary key (id, observation_date),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("value" <> '')
 );
 
 -- Current-row uniqueness per (tenant, series, date, point).
 -- coalesce(point_id, '') maps scalars to an empty string so the index covers them.
-create unique index if not exists ores_marketdata_observations_current_uniq_idx
+create unique index if not exists observations_current_uniq_idx
 on ores_marketdata_observations_tbl (tenant_id, series_id, observation_date, coalesce(point_id, ''))
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Lookup by series + date range (primary query pattern).
-create index if not exists ores_marketdata_observations_series_date_idx
+create index if not exists observations_series_date_idx
 on ores_marketdata_observations_tbl (tenant_id, series_id, observation_date desc);
 
 -- Lookup by tenant across all series for a date.
-create index if not exists ores_marketdata_observations_tenant_date_idx
+create index if not exists observations_tenant_date_idx
 on ores_marketdata_observations_tbl (tenant_id, observation_date desc);
 
 -- Lookup by source.
-create index if not exists ores_marketdata_observations_source_idx
+create index if not exists observations_source_idx
 on ores_marketdata_observations_tbl (tenant_id, source, observation_date desc)
 where source is not null;
 

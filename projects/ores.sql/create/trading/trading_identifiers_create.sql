@@ -52,31 +52,31 @@ create table if not exists "ores_trading_identifiers_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_identifiers_version_uniq_idx
+create unique index if not exists identifiers_version_uniq_idx
 on "ores_trading_identifiers_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_identifiers_id_uniq_idx
+create unique index if not exists identifiers_id_uniq_idx
 on "ores_trading_identifiers_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_identifiers_tenant_idx
+create index if not exists identifiers_tenant_idx
 on "ores_trading_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Trade index for lookups
-create index if not exists ores_trading_identifiers_trade_idx
+create index if not exists identifiers_trade_idx
 on "ores_trading_identifiers_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Identifier type + value for UTI/USI lookups
-create index if not exists ores_trading_identifiers_type_value_idx
+create index if not exists identifiers_type_value_idx
 on "ores_trading_identifiers_tbl" (tenant_id, id_type, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

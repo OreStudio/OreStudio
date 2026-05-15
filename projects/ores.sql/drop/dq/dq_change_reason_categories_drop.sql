@@ -20,6 +20,6 @@
 drop rule if exists ores_dq_change_reason_categories_delete_rule on ores_dq_change_reason_categories_tbl;
 drop trigger if exists ores_dq_change_reason_categories_insert_trg on ores_dq_change_reason_categories_tbl;
 drop function if exists ores_dq_change_reason_categories_insert_fn;
-drop index if exists ores_dq_change_reason_categories_code_uniq_idx;
-drop index if exists ores_dq_change_reason_categories_version_uniq_idx;
+drop index if exists change_reason_categories_code_uniq_idx;
+drop index if exists change_reason_categories_version_uniq_idx;
 drop table if exists ores_dq_change_reason_categories_tbl;

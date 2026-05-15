@@ -48,27 +48,27 @@ create table if not exists "ores_refdata_business_unit_types_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("level" >= 0)
 );
 
 -- Natural key: unique code per coding scheme within tenant
-create unique index if not exists ores_refdata_business_unit_types_natural_key_uniq_idx
+create unique index if not exists business_unit_types_natural_key_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, coding_scheme_code, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_business_unit_types_version_uniq_idx
+create unique index if not exists business_unit_types_version_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- ID uniqueness for active records
-create unique index if not exists ores_refdata_business_unit_types_id_uniq_idx
+create unique index if not exists business_unit_types_id_uniq_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index for efficient tenant-scoped queries
-create index if not exists ores_refdata_business_unit_types_tenant_idx
+create index if not exists business_unit_types_tenant_idx
 on "ores_refdata_business_unit_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -83,7 +83,7 @@ begin
     -- Validate coding_scheme_code (soft FK against dq_coding_schemes)
     if not exists (
         select 1 from ores_dq_coding_schemes_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = NEW.coding_scheme_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

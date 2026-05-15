@@ -36,7 +36,7 @@ BEGIN
     -- --- Cryptocurrency Datasets ---
 
     -- Cryptocurrency Icon Images
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'assets.crypto_icons',
         'Cryptocurrency',
         'Cryptocurrencies',
@@ -56,7 +56,7 @@ BEGIN
     );
 
     -- Cryptocurrencies Large
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto.large',
         'Cryptocurrency',
         'Cryptocurrencies',
@@ -76,7 +76,7 @@ BEGIN
     );
 
     -- Cryptocurrencies Small
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto.small',
         'Cryptocurrency',
         'Cryptocurrencies',

@@ -33,7 +33,7 @@ BEGIN
 
     -- --- GLEIF LEI Catalog ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'GLEIF Standards',
         'Legal entity identification and corporate hierarchy data from GLEIF.',
         'Reference Data Team'

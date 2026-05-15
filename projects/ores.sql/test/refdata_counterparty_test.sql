@@ -50,7 +50,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0, 'Acme Corporation', 'ACME', 'Corporate',
+    ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation', 'ACME', 'Corporate',
     NULL, NULL, 'Active',
     current_user, current_user, 'system.test', 'Test counterparty insert'
 );
@@ -83,7 +83,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000099'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Bad Type Inc', 'BTI', 'INVALID_TYPE',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Type Inc', 'BTI', 'INVALID_TYPE',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -102,7 +102,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000098'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Bad Status Inc', 'BSI', 'Corporate', 'INVALID_STATUS',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Status Inc', 'BSI', 'Corporate', 'INVALID_STATUS',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -121,7 +121,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0, 'Acme UK Ltd', 'ACUK', 'Corporate',
+    ores_utility_system_tenant_id_fn(), 0, 'Acme UK Ltd', 'ACUK', 'Corporate',
     'b0000000-0000-0000-0000-000000000001'::uuid,
     current_user, current_user, 'system.test', 'Test child counterparty'
 );
@@ -142,7 +142,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000097'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Orphan Inc', 'OI', 'Corporate',
+        ores_utility_system_tenant_id_fn(), 0, 'Orphan Inc', 'OI', 'Corporate',
         'deadbeef-0000-0000-0000-000000000000'::uuid,
         current_user, current_user, 'system.test', 'Test'
     )$$,
@@ -162,7 +162,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000096'::uuid,
-        ores_iam_system_tenant_id_fn(), 0, 'Acme Corporation', 'UNIQUE', 'Corporate',
+        ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation', 'UNIQUE', 'Corporate',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23505',

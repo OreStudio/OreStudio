@@ -40,7 +40,7 @@ select plan(6);
 
 -- Test 1: NULL raises 23502 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), NULL)$$,
+    $$select ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), NULL)$$,
     '23502',
     NULL,
     'tenant_status: NULL raises 23502 exception'
@@ -48,7 +48,7 @@ select throws_ok(
 
 -- Test 2: Empty string raises 23502 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), '')$$,
+    $$select ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), '')$$,
     '23502',
     NULL,
     'tenant_status: empty string raises 23502 exception'
@@ -60,21 +60,21 @@ select throws_ok(
 
 -- Test 3: Valid value 'active' returns itself
 select is(
-    ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), 'active'),
+    ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), 'active'),
     'active',
     'tenant_status: valid value active returns itself'
 );
 
 -- Test 4: Valid value 'suspended' returns itself
 select is(
-    ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), 'suspended'),
+    ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), 'suspended'),
     'suspended',
     'tenant_status: valid value suspended returns itself'
 );
 
 -- Test 5: Valid value 'terminated' returns itself
 select is(
-    ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), 'terminated'),
+    ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), 'terminated'),
     'terminated',
     'tenant_status: valid value terminated returns itself'
 );
@@ -85,7 +85,7 @@ select is(
 
 -- Test 6: Invalid value raises 23503 exception
 select throws_ok(
-    $$select ores_iam_validate_tenant_status_fn(ores_iam_system_tenant_id_fn(), 'INVALID_STATUS')$$,
+    $$select ores_iam_validate_tenant_status_fn(ores_utility_system_tenant_id_fn(), 'INVALID_STATUS')$$,
     '23503',
     NULL,
     'tenant_status: invalid value raises 23503 exception'

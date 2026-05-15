@@ -34,7 +34,7 @@ BEGIN
 
     -- --- IP Geolocation Dataset Tags ---
 
-    PERFORM ores_dq_tags_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_tags_upsert_fn(ores_utility_system_tenant_id_fn(),
         'IP to Country IPv4 Ranges',
         'IP Address to Country maps',
         'Reference Data',

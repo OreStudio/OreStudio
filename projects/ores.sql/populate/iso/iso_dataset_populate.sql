@@ -36,7 +36,7 @@ BEGIN
     -- --- ISO Standards Datasets ---
 
     -- ISO 3166 Country Codes
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.countries',
         'ISO Standards',
         'Countries',
@@ -56,7 +56,7 @@ BEGIN
     );
 
     -- ISO 4217 Currency Codes
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.currencies',
         'ISO Standards',
         'Currencies',

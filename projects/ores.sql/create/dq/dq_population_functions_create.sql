@@ -268,7 +268,7 @@ begin
             dq.svg_data
         from ores_dq_images_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and dq.tenant_id = ores_iam_system_tenant_id_fn()
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop
         -- Check if an image with this key already exists IN THE TARGET TENANT
         select image_id into v_existing_image_id
@@ -434,7 +434,7 @@ begin
             dq.image_id
         from ores_dq_countries_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and dq.tenant_id = ores_iam_system_tenant_id_fn()
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop
         -- Check if record already exists (for mode handling and reporting)
         select exists (
@@ -460,7 +460,7 @@ begin
             join ores_assets_images_tbl assets on assets.key = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
-              and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
+              and dq_img.tenant_id = ores_utility_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();
 
             if v_resolved_image_id is null then
@@ -638,7 +638,7 @@ begin
             dq.image_id
         from ores_dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and dq.tenant_id = ores_iam_system_tenant_id_fn()
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
           and (p_monetary_nature_filter is null or dq.monetary_nature = p_monetary_nature_filter)
     loop
         -- Check if record already exists (for mode handling and reporting)
@@ -665,7 +665,7 @@ begin
             join ores_assets_images_tbl assets on assets.key = dq_img.key
               and assets.tenant_id = p_target_tenant_id
             where dq_img.image_id = r.image_id
-              and dq_img.tenant_id = ores_iam_system_tenant_id_fn()
+              and dq_img.tenant_id = ores_utility_system_tenant_id_fn()
               and assets.valid_to = ores_utility_infinity_timestamp_fn();
 
             if v_resolved_image_id is null then
@@ -800,7 +800,7 @@ begin
         country_code
     from ores_dq_ip2country_artefact_tbl
     where dataset_id = p_dataset_id
-      and tenant_id = ores_iam_system_tenant_id_fn();
+      and tenant_id = ores_utility_system_tenant_id_fn();
 
     get diagnostics v_inserted = row_count;
 

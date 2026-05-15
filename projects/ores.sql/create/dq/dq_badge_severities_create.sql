@@ -55,20 +55,20 @@ create table if not exists "ores_dq_badge_severities_tbl" (
 );
 
 -- Unique name for active records
-create unique index if not exists ores_dq_badge_severities_name_uniq_idx
+create unique index if not exists badge_severities_name_uniq_idx
 on "ores_dq_badge_severities_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_dq_badge_severities_version_uniq_idx
+create unique index if not exists badge_severities_version_uniq_idx
 on "ores_dq_badge_severities_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_badge_severities_id_uniq_idx
+create unique index if not exists badge_severities_id_uniq_idx
 on "ores_dq_badge_severities_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_badge_severities_tenant_idx
+create index if not exists badge_severities_tenant_idx
 on "ores_dq_badge_severities_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -109,7 +109,7 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

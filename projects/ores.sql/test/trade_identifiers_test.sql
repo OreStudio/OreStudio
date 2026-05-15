@@ -44,7 +44,7 @@ insert into ores_refdata_books_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'IDENT-TEST-BOOK', 'Test book for identifier tests',
     'd0000000-0000-0000-0000-000000000010'::uuid,
     current_user, current_user, 'system.test', 'Test book'
@@ -55,7 +55,7 @@ insert into ores_refdata_portfolios_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'd0000000-0000-0000-0000-000000000010'::uuid,
     'IDENT-TEST-PORTFOLIO', 'Test portfolio for identifier tests',
     current_user, current_user, 'system.test', 'Test portfolio'
@@ -69,7 +69,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'd1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'd0000000-0000-0000-0000-000000000001'::uuid,
     'd0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-IDENT-001', 'new_booking', s.id,
@@ -89,7 +89,7 @@ insert into ores_refdata_counterparties_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd2000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'Issuer Corp', 'ISSCORP', 'Corporate', 'GBLO', 'Active',
     current_user, current_user, 'system.test', 'Test issuer'
 );
@@ -104,7 +104,7 @@ insert into ores_trading_identifiers_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd3000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'd1000000-0000-0000-0000-000000000001'::uuid, null,
     'UTI-TEST-001', 'UTI', null,
     current_user, current_user, 'system.test', 'UTI test insert'
@@ -113,7 +113,7 @@ insert into ores_trading_identifiers_tbl (
 select is(
     (select version from ores_trading_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     1,
     'identifier insert: first version is 1'
@@ -130,7 +130,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'd3000000-0000-0000-0000-000000000099'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid, null,
         'UTI-BAD', 'UTI', null,
         current_user, current_user, 'system.test', 'Bad trade_id'
@@ -151,7 +151,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'd3000000-0000-0000-0000-000000000098'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'd1000000-0000-0000-0000-000000000001'::uuid, null,
         'BAD-VALUE', 'INVALID_TYPE', null,
         current_user, current_user, 'system.test', 'Bad id_type'
@@ -171,7 +171,7 @@ insert into ores_trading_identifiers_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'd3000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'd1000000-0000-0000-0000-000000000001'::uuid,
     'd2000000-0000-0000-0000-000000000001'::uuid,
     'USI-TEST-001', 'USI', null,
@@ -181,7 +181,7 @@ insert into ores_trading_identifiers_tbl (
 select is(
     (select issuing_party_id::text from ores_trading_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000002'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     'd2000000-0000-0000-0000-000000000001',
     'identifier insert: issuing_party_id from counterparties accepted'
@@ -198,7 +198,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'd3000000-0000-0000-0000-000000000097'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'd1000000-0000-0000-0000-000000000001'::uuid,
         'baddbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'USI-BAD', 'USI', null,
@@ -215,12 +215,12 @@ select throws_ok(
 
 delete from ores_trading_identifiers_tbl
 where id = 'd3000000-0000-0000-0000-000000000001'::uuid
-  and tenant_id = ores_iam_system_tenant_id_fn();
+  and tenant_id = ores_utility_system_tenant_id_fn();
 
 select is(
     (select count(*)::integer from ores_trading_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     0,
     'identifier delete: record no longer current after soft delete'
@@ -233,7 +233,7 @@ select is(
 select ok(
     (select count(*) > 0 from ores_trading_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),
     'identifier delete: historical record preserved after soft delete'
 );

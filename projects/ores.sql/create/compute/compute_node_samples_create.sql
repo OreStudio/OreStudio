@@ -52,10 +52,10 @@ create table if not exists ores_compute_node_samples_tbl (
     primary key (sampled_at, tenant_id, host_id)
 );
 
-create index if not exists ores_compute_node_samples_host_idx
+create index if not exists node_samples_host_idx
     on ores_compute_node_samples_tbl (host_id, sampled_at desc);
 
-create index if not exists ores_compute_node_samples_tenant_idx
+create index if not exists node_samples_tenant_idx
     on ores_compute_node_samples_tbl (tenant_id, sampled_at desc);
 
 do $$

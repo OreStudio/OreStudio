@@ -34,7 +34,7 @@
 
 do $$
 declare
-    v_sys_tenant uuid := ores_iam_system_tenant_id_fn();
+    v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
     v_machine_id uuid;
     v_tr_initial_booking uuid;
     v_tr_confirm         uuid;

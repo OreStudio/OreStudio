@@ -45,12 +45,12 @@ create table if not exists "ores_controller_service_instances_tbl" (
     "last_command_line" text null,
     "created_at" timestamp with time zone not null default current_timestamp,
     primary key (id),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Only one replica per index per service at a time.
-create unique index if not exists ores_controller_service_instances_name_replica_uniq_idx
+create unique index if not exists service_instances_name_replica_uniq_idx
 on ores_controller_service_instances_tbl (service_name, replica_index);
 
-create index if not exists ores_controller_service_instances_service_name_idx
+create index if not exists service_instances_service_name_idx
 on ores_controller_service_instances_tbl (service_name);

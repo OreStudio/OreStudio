@@ -54,7 +54,7 @@ create table if not exists "ores_trading_swaption_instruments_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("exercise_type" in ('European', 'Bermudan', 'American')),
     check ("settlement_type" in ('Cash', 'Physical')),
     check ("long_short" in ('Long', 'Short')),
@@ -66,27 +66,27 @@ create table if not exists "ores_trading_swaption_instruments_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_swaption_instruments_version_uniq_idx
+create unique index if not exists swaption_instruments_version_uniq_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_swaption_instruments_id_uniq_idx
+create unique index if not exists swaption_instruments_id_uniq_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_swaption_instruments_tenant_idx
+create index if not exists swaption_instruments_tenant_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for RLS
-create index if not exists ores_trading_swaption_instruments_party_idx
+create index if not exists swaption_instruments_party_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Soft FK back to trade (NULL for standalone instruments)
-create unique index if not exists ores_trading_swaption_instruments_trade_id_idx
+create unique index if not exists swaption_instruments_trade_id_idx
 on "ores_trading_swaption_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;

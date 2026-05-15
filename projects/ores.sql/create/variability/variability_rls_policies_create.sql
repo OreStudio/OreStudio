@@ -30,7 +30,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_variability_system_settings_tbl enable row level security;
 
-create policy ores_variability_system_settings_tbl_tenant_isolation_policy on ores_variability_system_settings_tbl
+create policy system_settings_tbl_tenant_isolation_policy on ores_variability_system_settings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

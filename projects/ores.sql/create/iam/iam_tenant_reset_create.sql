@@ -106,7 +106,7 @@ declare
         'ores_scheduler_job_definitions_tbl'
     ];
 begin
-    v_system_tenant_id := ores_iam_system_tenant_id_fn();
+    v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Cannot reset system tenant
     if p_tenant_id = v_system_tenant_id then

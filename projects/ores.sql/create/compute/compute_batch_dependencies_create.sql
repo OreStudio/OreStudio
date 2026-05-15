@@ -30,13 +30,13 @@ create table if not exists "ores_compute_batch_dependencies_tbl" (
     "parent_batch_id"  uuid not null,
     "child_batch_id"   uuid not null,
     primary key (tenant_id, parent_batch_id, child_batch_id),
-    check ("parent_batch_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
-    check ("child_batch_id"  <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("parent_batch_id" <> ores_utility_nil_uuid_fn()),
+    check ("child_batch_id"  <> ores_utility_nil_uuid_fn()),
     check ("parent_batch_id" <> "child_batch_id")
 );
 
-create index if not exists ores_compute_batch_dependencies_parent_idx
+create index if not exists batch_dependencies_parent_idx
 on "ores_compute_batch_dependencies_tbl" (tenant_id, parent_batch_id);
 
-create index if not exists ores_compute_batch_dependencies_child_idx
+create index if not exists batch_dependencies_child_idx
 on "ores_compute_batch_dependencies_tbl" (tenant_id, child_batch_id);

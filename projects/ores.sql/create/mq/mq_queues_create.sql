@@ -45,13 +45,13 @@ create table if not exists ores_mq_queues_tbl (
 );
 
 -- Unique indexes per scope level
-create unique index if not exists ores_mq_queues_party_name_uniq_idx
+create unique index if not exists queues_party_name_uniq_idx
     on ores_mq_queues_tbl (tenant_id, party_id, name)
     where is_active = true and scope_type = 'party';
-create unique index if not exists ores_mq_queues_tenant_name_uniq_idx
+create unique index if not exists queues_tenant_name_uniq_idx
     on ores_mq_queues_tbl (tenant_id, name)
     where is_active = true and scope_type = 'tenant';
-create unique index if not exists ores_mq_queues_system_name_uniq_idx
+create unique index if not exists queues_system_name_uniq_idx
     on ores_mq_queues_tbl (name)
     where is_active = true and scope_type = 'system';
 
@@ -61,7 +61,7 @@ create unique index if not exists ores_mq_queues_system_name_uniq_idx
 
 alter table ores_mq_queues_tbl enable row level security;
 
-create policy ores_mq_queues_read_policy on ores_mq_queues_tbl for select using (
+create policy queues_read_policy on ores_mq_queues_tbl for select using (
     scope_type = 'system'
     or (scope_type = 'tenant' and tenant_id = ores_iam_current_tenant_id_fn())
     or (scope_type = 'party'  and tenant_id = ores_iam_current_tenant_id_fn()

@@ -34,7 +34,7 @@ BEGIN
 
     -- --- Test Data Catalog ---
 
-    PERFORM ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_catalogs_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Test Data',
         'Manufactured test data for exercising reference data tables including business units, portfolios, and books.',
         'Development Team'

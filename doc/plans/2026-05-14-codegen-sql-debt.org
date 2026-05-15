@@ -1,0 +1,159 @@
+#+TITLE: Codegen SQL Debt — Hand-Written Files with Existing Models
+#+DATE: 2026-05-14
+#+AUTHOR: ORE Studio Team
+#+STATUS: PLANNED
+
+* Problem
+
+During the identifier-length cleanup investigation (see
+[[file:2026-05-13-identifier-length-cleanup.org]]) a cross-check was run between
+~projects/ores.codegen/models/~ and ~projects/ores.sql/create/~.  Two classes
+of debt were found:
+
+1. *Category A* — SQL files that exist and are in use, but were written by hand
+   despite a codegen model (~*_domain_entity.json~ or ~*_entity.json~) covering
+   the same entity.  These files have no ~AUTO-GENERATED FILE - DO NOT EDIT
+   MANUALLY~ header and will diverge from the template over time.
+
+2. *Category B* — Codegen models whose expected SQL output file does not exist
+   at all.  These are entities with models but no schema; they are either
+   incomplete implementations or superseded by a differently-named hand-written
+   file.
+
+Neither category blocks the identifier cleanup.  For that PR the Category A
+files are treated as hand-written (Phase 3 sed pass).  This plan tracks
+resolution as separate work.
+
+* Category A — SQL Exists But Not Codegen-Managed (24 files)
+
+These files must be deleted and regenerated from the template (or the template
+must be extended to match any custom SQL in the hand-written version before
+regeneration).
+
+** IAM (4 files)
+
+| SQL file | Model file |
+|----------+------------|
+| ~iam/iam_account_types_create.sql~ | ~iam/account_type_domain_entity.json~ + ~iam/account_type_entity.json~ |
+| ~iam/iam_tenants_create.sql~ | ~iam/tenant_domain_entity.json~ |
+| ~iam/iam_tenant_statuses_create.sql~ | ~iam/tenant_status_domain_entity.json~ + ~iam/tenant_status_entity.json~ |
+| ~iam/iam_tenant_types_create.sql~ | ~iam/tenant_type_domain_entity.json~ + ~iam/tenant_type_entity.json~ |
+
+Note: ~iam_tenants_create.sql~ contains the full tenant table including custom
+RLS policy logic and the bitemporal trigger.  Before regenerating, verify the
+template produces equivalent DDL.
+
+** DQ (1 file)
+
+| SQL file | Model file |
+|----------+------------|
+| ~dq/dq_artefact_types_create.sql~ | ~dq/artefact_type_entity.json~ |
+
+** Reporting (4 files)
+
+| SQL file | Model file |
+|----------+------------|
+| ~reporting/reporting_concurrency_policies_create.sql~ | ~reporting/concurrency_policy_domain_entity.json~ |
+| ~reporting/reporting_report_definitions_create.sql~ | ~reporting/report_definition_domain_entity.json~ |
+| ~reporting/reporting_report_instances_create.sql~ | ~reporting/report_instance_domain_entity.json~ |
+| ~reporting/reporting_report_types_create.sql~ | ~reporting/report_type_domain_entity.json~ |
+
+** Scheduler (1 file)
+
+| SQL file | Model file |
+|----------+------------|
+| ~scheduler/scheduler_job_definitions_create.sql~ | ~scheduler/job_definition_domain_entity.json~ |
+
+** Trading (14 files)
+
+| SQL file | Model file |
+|----------+------------|
+| ~trading/trading_balance_guaranteed_swap_instruments_create.sql~ | ~trading/balance_guaranteed_swap_instrument_domain_entity.json~ |
+| ~trading/trading_business_day_convention_types_create.sql~ | ~trading/business_day_convention_type_domain_entity.json~ |
+| ~trading/trading_callable_swap_instruments_create.sql~ | ~trading/callable_swap_instrument_domain_entity.json~ |
+| ~trading/trading_cap_floor_instruments_create.sql~ | ~trading/cap_floor_instrument_domain_entity.json~ |
+| ~trading/trading_day_count_fraction_types_create.sql~ | ~trading/day_count_fraction_type_domain_entity.json~ |
+| ~trading/trading_floating_index_types_create.sql~ | ~trading/floating_index_type_domain_entity.json~ |
+| ~trading/trading_fra_instruments_create.sql~ | ~trading/fra_instrument_domain_entity.json~ |
+| ~trading/trading_inflation_swap_instruments_create.sql~ | ~trading/inflation_swap_instrument_domain_entity.json~ |
+| ~trading/trading_knock_out_swap_instruments_create.sql~ | ~trading/knock_out_swap_instrument_domain_entity.json~ |
+| ~trading/trading_leg_types_create.sql~ | ~trading/leg_type_domain_entity.json~ |
+| ~trading/trading_payment_frequency_types_create.sql~ | ~trading/payment_frequency_type_domain_entity.json~ |
+| ~trading/trading_swaption_instruments_create.sql~ | ~trading/swaption_instrument_domain_entity.json~ |
+| ~trading/trading_trades_create.sql~ | ~trading/trade_domain_entity.json~ |
+| ~trading/trading_vanilla_swap_instruments_create.sql~ | ~trading/vanilla_swap_instrument_domain_entity.json~ |
+
+** Remediation per file
+
+For each file:
+
+1. Run codegen to get the template's current output.
+2. Diff against the hand-written file.
+3. If the diff reveals custom columns, constraints, or trigger logic not in the
+   template: extend the model JSON or template as required.
+4. Replace the hand-written file with the codegen output.
+5. Verify ~recreate_database.sh~ still succeeds.
+
+IAM files should be done last (most complex custom logic).
+
+* Category B — Model Exists But No SQL File (9 files)
+
+These require investigation: either the SQL file needs to be created (run
+codegen and wire the output into the schema setup scripts), or the model is
+stale/superseded.
+
+** DQ (4 files)
+
+| Expected SQL path | Model file | Notes |
+|-------------------+------------+-------|
+| ~dq/dq_dataset_bundles_create.sql~ | ~dq/dataset_bundle_domain_entity.json~ | Hand-written ~dq_dataset_bundle_create.sql~ (singular) may be the intended file — check naming |
+| ~dq/dq_lei_entities_create.sql~ | ~dq/lei_entities_entity.json~ | LEI entity table — not yet in schema |
+| ~dq/dq_lei_relationships_create.sql~ | ~dq/lei_relationships_entity.json~ | LEI relationship table — not yet in schema |
+| ~dq/dq_report_definitions_create.sql~ | ~dq/report_definitions_entity.json~ | Distinct from ~ores_dq_report_definitions_artefact_tbl~ — verify intent |
+
+** Database (1 file)
+
+| Expected SQL path | Model file | Notes |
+|-------------------+------------+-------|
+| ~database/database_database_infos_create.sql~ | ~database/database_info_domain_entity.json~ | Utility entity; may be intentionally deferred |
+
+** Trading (4 files)
+
+| Expected SQL path | Model file | Notes |
+|-------------------+------------+-------|
+| ~trading/trading_lifecycle_events_create.sql~ | ~trading/lifecycle_event_domain_entity.json~ + ~trading/lifecycle_event_entity.json~ | Lifecycle events table absent from schema |
+| ~trading/trading_rpa_instruments_create.sql~ | ~trading/rpa_instrument_domain_entity.json~ | Risk Participation Agreement instruments — not in schema |
+| ~trading/trading_trade_identifiers_create.sql~ | ~trading/trade_identifier_domain_entity.json~ | Trade identifier table — not in schema |
+| ~trading/trading_trade_party_roles_create.sql~ | ~trading/trade_party_role_domain_entity.json~ | Trade party role table — not in schema |
+
+** Remediation per file
+
+For each file, determine whether:
+
+- (a) The model is correct and the SQL was never generated: run codegen, wire
+  the file into the relevant ~*_setup.sql~ or include list, validate.
+- (b) The model is superseded by a differently-named hand-written file (e.g.
+  ~dq_dataset_bundle~ singular vs ~dq_dataset_bundles~ plural): reconcile the
+  name and either rename or update ~entity_plural~ in the model.
+- (c) The model is stale and the entity will not be implemented: delete the
+  model file.
+
+* Impact on Identifier Cleanup
+
+For the ~feature/identifier-length-cleanup~ branch all Category A files are
+treated as hand-written (Phase 3 sed pass strips the ~ores_<service>_~ prefix
+from their index names).  No special handling is needed.
+
+Category B files have no SQL, so they produce no truncation notices and require
+no action in the cleanup branch.
+
+* Execution Order
+
+This work is independent of any current PR.  Suggested order:
+
+1. Resolve Category B naming ambiguities (quick desk review, ~30 min).
+2. Generate Category B SQL files where (a) applies; delete stale models where
+   (c) applies.
+3. Address Category A domain-by-domain, simplest first:
+   ~scheduler~ → ~dq~ → ~reporting~ → ~trading~ (simple entities) →
+   ~trading~ (complex instruments) → ~iam~ (last, most custom logic).

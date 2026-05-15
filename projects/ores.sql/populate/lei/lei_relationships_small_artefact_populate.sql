@@ -61,7 +61,7 @@ begin
     )
     select
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         v.relationship_start_node_node_id,
         0,
         v.relationship_start_node_node_id_type, v.relationship_end_node_node_id, v.relationship_end_node_node_id_type, v.relationship_relationship_type, v.relationship_relationship_status, v.relationship_period_1_start_date, v.relationship_period_1_end_date, v.registration_initial_registration_date, v.registration_last_update_date, v.registration_registration_status, v.registration_validation_sources

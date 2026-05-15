@@ -48,8 +48,8 @@ as $$
       and s.is_initial = 1
       and s.valid_to = ores_utility_infinity_timestamp_fn()
       and m.valid_to = ores_utility_infinity_timestamp_fn()
-      and s.tenant_id = ores_iam_system_tenant_id_fn()
-      and m.tenant_id = ores_iam_system_tenant_id_fn()
+      and s.tenant_id = ores_utility_system_tenant_id_fn()
+      and m.tenant_id = ores_utility_system_tenant_id_fn()
     limit 1;
 $$;
 
@@ -76,8 +76,8 @@ as $$
       and s.name     = 'active'
       and s.valid_to = ores_utility_infinity_timestamp_fn()
       and m.valid_to = ores_utility_infinity_timestamp_fn()
-      and s.tenant_id = ores_iam_system_tenant_id_fn()
-      and m.tenant_id = ores_iam_system_tenant_id_fn()
+      and s.tenant_id = ores_utility_system_tenant_id_fn()
+      and m.tenant_id = ores_utility_system_tenant_id_fn()
     limit 1;
 $$;
 
@@ -104,7 +104,7 @@ as $$
       and s.name     = 'suspended'
       and s.valid_to = ores_utility_infinity_timestamp_fn()
       and m.valid_to = ores_utility_infinity_timestamp_fn()
-      and s.tenant_id = ores_iam_system_tenant_id_fn()
-      and m.tenant_id = ores_iam_system_tenant_id_fn()
+      and s.tenant_id = ores_utility_system_tenant_id_fn()
+      and m.tenant_id = ores_utility_system_tenant_id_fn()
     limit 1;
 $$;

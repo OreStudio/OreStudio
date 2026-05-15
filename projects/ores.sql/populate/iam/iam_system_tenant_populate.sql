@@ -34,7 +34,7 @@ DO $$
 begin
     if not exists (
         select 1 from ores_iam_tenants_tbl
-        where id = ores_iam_system_tenant_id_fn()
+        where id = ores_utility_system_tenant_id_fn()
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         -- Note: tenant_id is set automatically by the trigger to system_tenant_id

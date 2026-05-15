@@ -49,15 +49,15 @@ create table if not exists "ores_compute_app_version_platforms_tbl" (
 );
 
 -- Only one active association per (tenant, app_version, platform) combination
-create unique index if not exists ores_compute_app_version_platforms_active_uniq_idx
+create unique index if not exists app_version_platforms_active_uniq_idx
 on "ores_compute_app_version_platforms_tbl" (tenant_id, app_version_id, platform_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_app_version_platforms_tenant_idx
+create index if not exists app_version_platforms_tenant_idx
 on "ores_compute_app_version_platforms_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_app_version_platforms_app_version_idx
+create index if not exists app_version_platforms_app_version_idx
 on "ores_compute_app_version_platforms_tbl" (tenant_id, app_version_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

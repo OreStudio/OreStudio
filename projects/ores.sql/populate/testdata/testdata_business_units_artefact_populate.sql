@@ -72,67 +72,67 @@ begin
     )
     values
         -- Top-level: Global Markets (depth 0 → DIVISION)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000001', 0,
          'Global Markets', null, 'GLOB_MKT', 'GBLO', 'DIVISION'),
 
         -- EMEA Trading (depth 1 → BUSINESS_AREA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000002', 0,
          'EMEA Trading', '10000000-0000-4000-a000-000000000001', 'EMEA_TRD', 'GBLO', 'BUSINESS_AREA'),
 
         -- Rates Trading EMEA (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000003', 0,
          'Rates Trading EMEA', '10000000-0000-4000-a000-000000000002', 'RATES_EMEA', 'GBLO', 'DESK'),
 
         -- Credit Trading EMEA (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000004', 0,
          'Credit Trading EMEA', '10000000-0000-4000-a000-000000000002', 'CREDIT_EMEA', 'GBLO', 'DESK'),
 
         -- FX Trading EMEA (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000005', 0,
          'FX Trading EMEA', '10000000-0000-4000-a000-000000000002', 'FX_EMEA', 'GBLO', 'DESK'),
 
         -- Americas Trading (depth 1 → BUSINESS_AREA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000006', 0,
          'Americas Trading', '10000000-0000-4000-a000-000000000001', 'AMER_TRD', 'USNY', 'BUSINESS_AREA'),
 
         -- Rates Trading Americas (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000007', 0,
          'Rates Trading Americas', '10000000-0000-4000-a000-000000000006', 'RATES_AMER', 'USNY', 'DESK'),
 
         -- Credit Trading Americas (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000008', 0,
          'Credit Trading Americas', '10000000-0000-4000-a000-000000000006', 'CREDIT_AMER', 'USNY', 'DESK'),
 
         -- APAC Trading (depth 1 → BUSINESS_AREA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000009', 0,
          'APAC Trading', '10000000-0000-4000-a000-000000000001', 'APAC_TRD', 'JPTO', 'BUSINESS_AREA'),
 
         -- Rates Trading APAC (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000a', 0,
          'Rates Trading APAC', '10000000-0000-4000-a000-000000000009', 'RATES_APAC', 'JPTO', 'DESK'),
 
         -- FX Trading APAC (depth 2 → DESK)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000b', 0,
          'FX Trading APAC', '10000000-0000-4000-a000-000000000009', 'FX_APAC', 'HKHK', 'DESK'),
 
         -- Top-level: Risk Management (depth 0 → DIVISION)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000c', 0,
          'Risk Management', null, 'RISK_MGMT', 'GBLO', 'DIVISION'),
 
         -- Counterparty Risk (depth 1 → BUSINESS_AREA)
-        (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000d', 0,
          'Counterparty Risk', '10000000-0000-4000-a000-00000000000c', 'CPTY_RISK', 'GBLO', 'BUSINESS_AREA');
 

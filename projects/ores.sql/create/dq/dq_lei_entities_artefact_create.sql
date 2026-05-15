@@ -54,8 +54,8 @@ create table if not exists "ores_dq_lei_entities_artefact_tbl" (
     "registration_last_update_date" timestamp with time zone null,
     "registration_next_renewal_date" timestamp with time zone null,
     "registration_registration_status" text null,
-    "entity_transliterated_name_1" text null,
-    "entity_transliterated_name_1_type" text null
+    "entity_transliterated_name_1" text null default null,
+    "entity_transliterated_name_1_type" text null default null
 );
 
 create index if not exists dq_lei_entities_artefact_dataset_idx

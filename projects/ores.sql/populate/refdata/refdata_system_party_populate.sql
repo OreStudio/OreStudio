@@ -34,7 +34,7 @@ DO $$
 begin
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
         and party_category = 'System'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -43,7 +43,7 @@ begin
             party_type, business_center_code, parent_party_id, status,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            gen_random_uuid(), ores_iam_system_tenant_id_fn(),
+            gen_random_uuid(), ores_utility_system_tenant_id_fn(),
             'System Party', 'system_party', 'System',
             'Internal', 'WRLD', null, 'Active',
             current_user, current_user, 'system.initial_load',
@@ -59,5 +59,5 @@ $$;
 -- Summary
 select 'refdata_parties (system)' as entity, count(*) as count
 from ores_refdata_parties_tbl
-where tenant_id = ores_iam_system_tenant_id_fn()
+where tenant_id = ores_utility_system_tenant_id_fn()
 and valid_to = ores_utility_infinity_timestamp_fn();

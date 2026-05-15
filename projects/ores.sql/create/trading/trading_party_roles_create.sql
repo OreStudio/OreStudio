@@ -48,31 +48,31 @@ create table if not exists "ores_trading_party_roles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_party_roles_version_uniq_idx
+create unique index if not exists party_roles_version_uniq_idx
 on "ores_trading_party_roles_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_party_roles_id_uniq_idx
+create unique index if not exists party_roles_id_uniq_idx
 on "ores_trading_party_roles_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_party_roles_tenant_idx
+create index if not exists party_roles_tenant_idx
 on "ores_trading_party_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Trade index for role lookups
-create index if not exists ores_trading_party_roles_trade_idx
+create index if not exists party_roles_trade_idx
 on "ores_trading_party_roles_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Counterparty index for exposure queries
-create index if not exists ores_trading_party_roles_counterparty_idx
+create index if not exists party_roles_counterparty_idx
 on "ores_trading_party_roles_tbl" (tenant_id, counterparty_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

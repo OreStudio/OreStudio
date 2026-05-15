@@ -33,35 +33,35 @@ insert into ores_trading_floating_index_types_tbl (
     modified_by, change_reason_code, change_commentary
 ) values
     -- Euro
-    ('EUR-EURIBOR-6M',  ores_iam_system_tenant_id_fn(), 0, 'EURIBOR 6 Month',
+    ('EUR-EURIBOR-6M',  ores_utility_system_tenant_id_fn(), 0, 'EURIBOR 6 Month',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('EUR-EURIBOR-3M',  ores_iam_system_tenant_id_fn(), 0, 'EURIBOR 3 Month',
+    ('EUR-EURIBOR-3M',  ores_utility_system_tenant_id_fn(), 0, 'EURIBOR 3 Month',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('EUR-EURIBOR-1M',  ores_iam_system_tenant_id_fn(), 0, 'EURIBOR 1 Month',
+    ('EUR-EURIBOR-1M',  ores_utility_system_tenant_id_fn(), 0, 'EURIBOR 1 Month',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('EUR-ESTR',        ores_iam_system_tenant_id_fn(), 0, 'Euro Short-Term Rate (ESTR)',
+    ('EUR-ESTR',        ores_utility_system_tenant_id_fn(), 0, 'Euro Short-Term Rate (ESTR)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
     -- USD
-    ('USD-SOFR',        ores_iam_system_tenant_id_fn(), 0, 'Secured Overnight Financing Rate (SOFR)',
+    ('USD-SOFR',        ores_utility_system_tenant_id_fn(), 0, 'Secured Overnight Financing Rate (SOFR)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('USD-SOFR-3M',     ores_iam_system_tenant_id_fn(), 0, 'SOFR 3 Month Term Rate',
+    ('USD-SOFR-3M',     ores_utility_system_tenant_id_fn(), 0, 'SOFR 3 Month Term Rate',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('USD-LIBOR-3M',    ores_iam_system_tenant_id_fn(), 0, 'USD LIBOR 3 Month (legacy)',
+    ('USD-LIBOR-3M',    ores_utility_system_tenant_id_fn(), 0, 'USD LIBOR 3 Month (legacy)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('USD-LIBOR-6M',    ores_iam_system_tenant_id_fn(), 0, 'USD LIBOR 6 Month (legacy)',
+    ('USD-LIBOR-6M',    ores_utility_system_tenant_id_fn(), 0, 'USD LIBOR 6 Month (legacy)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
     -- GBP
-    ('GBP-SONIA',       ores_iam_system_tenant_id_fn(), 0, 'Sterling Overnight Index Average (SONIA)',
+    ('GBP-SONIA',       ores_utility_system_tenant_id_fn(), 0, 'Sterling Overnight Index Average (SONIA)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('GBP-LIBOR-6M',    ores_iam_system_tenant_id_fn(), 0, 'GBP LIBOR 6 Month (legacy)',
+    ('GBP-LIBOR-6M',    ores_utility_system_tenant_id_fn(), 0, 'GBP LIBOR 6 Month (legacy)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
     -- CHF
-    ('CHF-SARON',       ores_iam_system_tenant_id_fn(), 0, 'Swiss Average Rate Overnight (SARON)',
+    ('CHF-SARON',       ores_utility_system_tenant_id_fn(), 0, 'Swiss Average Rate Overnight (SARON)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
     -- JPY
-    ('JPY-TONAR',       ores_iam_system_tenant_id_fn(), 0, 'Tokyo Overnight Average Rate (TONAR)',
+    ('JPY-TONAR',       ores_utility_system_tenant_id_fn(), 0, 'Tokyo Overnight Average Rate (TONAR)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types'),
-    ('JPY-LIBOR-6M',    ores_iam_system_tenant_id_fn(), 0, 'JPY LIBOR 6 Month (legacy)',
+    ('JPY-LIBOR-6M',    ores_utility_system_tenant_id_fn(), 0, 'JPY LIBOR 6 Month (legacy)',
      'ores_trading_service', 'system.initial_load', 'Seed floating index types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

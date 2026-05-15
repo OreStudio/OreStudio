@@ -47,27 +47,27 @@ create table if not exists "{{junction.product}}_{{junction.component}}_{{juncti
 );
 
 -- {{junction.left.index_comment}}
-create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_{{junction.left.column_short}}_idx
+create index if not exists {{junction.name}}_{{junction.left.column_short}}_idx
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- {{junction.right.index_comment}}
-create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_{{junction.right.column_short}}_idx
+create index if not exists {{junction.name}}_{{junction.right.column_short}}_idx
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.right.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 {{#junction.has_tenant_id}}
-create unique index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_uniq_idx
+create unique index if not exists {{junction.name}}_uniq_idx
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id, {{junction.left.column}}, {{junction.right.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_tenant_idx
+create index if not exists {{junction.name}}_tenant_idx
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/junction.has_tenant_id}}
 {{^junction.has_tenant_id}}
-create unique index if not exists {{junction.product}}_{{junction.component}}_{{junction.name}}_uniq_idx
+create unique index if not exists {{junction.name}}_uniq_idx
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" ({{junction.left.column}}, {{junction.right.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/junction.has_tenant_id}}
@@ -115,7 +115,7 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.change_reason_code);
 

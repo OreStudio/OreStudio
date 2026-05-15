@@ -31,11 +31,11 @@
 -- -----------------------------------------------------------------------------
 alter table ores_compute_platforms_tbl enable row level security;
 
-create policy ores_compute_platforms_tenant_isolation_policy
+create policy platforms_tenant_isolation_policy
 on ores_compute_platforms_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system platforms visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system platforms visible to all
 );
 
 -- -----------------------------------------------------------------------------
@@ -43,11 +43,11 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_app_version_platforms_tbl enable row level security;
 
-create policy ores_compute_app_version_platforms_tenant_isolation_policy
+create policy app_version_platforms_tenant_isolation_policy
 on ores_compute_app_version_platforms_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app version platforms visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system app version platforms visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -58,11 +58,11 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_apps_tbl enable row level security;
 
-create policy ores_compute_apps_tenant_isolation_policy
+create policy apps_tenant_isolation_policy
 on ores_compute_apps_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system apps visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system apps visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -73,11 +73,11 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_app_versions_tbl enable row level security;
 
-create policy ores_compute_app_versions_tenant_isolation_policy
+create policy app_versions_tenant_isolation_policy
 on ores_compute_app_versions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app versions visible to all
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system app versions visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -88,7 +88,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_hosts_tbl enable row level security;
 
-create policy ores_compute_hosts_tenant_isolation_policy
+create policy hosts_tenant_isolation_policy
 on ores_compute_hosts_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -102,7 +102,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_batches_tbl enable row level security;
 
-create policy ores_compute_batches_tenant_isolation_policy
+create policy batches_tenant_isolation_policy
 on ores_compute_batches_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -116,7 +116,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_batch_dependencies_tbl enable row level security;
 
-create policy ores_compute_batch_dependencies_tenant_isolation_policy
+create policy batch_dependencies_tenant_isolation_policy
 on ores_compute_batch_dependencies_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -130,7 +130,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_workunits_tbl enable row level security;
 
-create policy ores_compute_workunits_tenant_isolation_policy
+create policy workunits_tenant_isolation_policy
 on ores_compute_workunits_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -144,7 +144,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_compute_results_tbl enable row level security;
 
-create policy ores_compute_results_tenant_isolation_policy
+create policy results_tenant_isolation_policy
 on ores_compute_results_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()

@@ -57,21 +57,21 @@ create table if not exists "ores_dq_dataset_dependencies_tbl" (
 );
 
 -- Index for looking up dependencies of a dataset
-create index if not exists ores_dq_dataset_dependencies_dataset_idx
+create index if not exists dataset_dependencies_dataset_idx
 on "ores_dq_dataset_dependencies_tbl" (dataset_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding datasets that depend on a given dataset
-create index if not exists ores_dq_dataset_dependencies_dependency_idx
+create index if not exists dataset_dependencies_dependency_idx
 on "ores_dq_dataset_dependencies_tbl" (dependency_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_dq_dataset_dependencies_uniq_idx
+create unique index if not exists dataset_dependencies_uniq_idx
 on "ores_dq_dataset_dependencies_tbl" (tenant_id, dataset_code, dependency_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_dataset_dependencies_tenant_idx
+create index if not exists dataset_dependencies_tenant_idx
 on "ores_dq_dataset_dependencies_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

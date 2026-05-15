@@ -47,49 +47,49 @@ begin
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'fx', 1, 'ORE_ASSET_CLASS', 'ORE', 'FX');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'rates', 1, 'ORE_ASSET_CLASS', 'ORE', 'Rates');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'credit', 1, 'ORE_ASSET_CLASS', 'ORE', 'Credit');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'equity', 1, 'ORE_ASSET_CLASS', 'ORE', 'Equity');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'commodity', 1, 'ORE_ASSET_CLASS', 'ORE', 'Commodity');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'inflation', 1, 'ORE_ASSET_CLASS', 'ORE', 'Inflation');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'bond', 1, 'ORE_ASSET_CLASS', 'ORE', 'Bond');
     v_count := v_count + 1;
 
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+    ) values (v_dataset_id, ores_utility_system_tenant_id_fn(),
         'cross_asset', 1, 'ORE_ASSET_CLASS', 'ORE', 'Cross Asset');
     v_count := v_count + 1;
 

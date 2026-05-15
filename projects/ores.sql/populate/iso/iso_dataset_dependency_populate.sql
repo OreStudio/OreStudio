@@ -33,25 +33,25 @@ BEGIN
 
     -- --- ISO Standards Dataset Dependencies ---
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.countries',
         'iso.coding_schemes',
         'coding_scheme'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.countries',
         'assets.country_flags',
         'visual_assets'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.currencies',
         'iso.coding_schemes',
         'coding_scheme'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'iso.currencies',
         'assets.country_flags',
         'visual_assets'

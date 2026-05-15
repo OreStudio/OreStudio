@@ -94,7 +94,7 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("base_currency" <> ''),
     check ("observation_model" in ('disable', 'none', 'move', 'defer')),
     check ("n_threads" >= 1),
@@ -120,22 +120,22 @@ create table if not exists "ores_reporting_risk_report_configs_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_reporting_risk_report_configs_version_uniq_idx
+create unique index if not exists risk_report_configs_version_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_reporting_risk_report_configs_id_uniq_idx
+create unique index if not exists risk_report_configs_id_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- One config per report definition (enforced on current records)
-create unique index if not exists ores_reporting_risk_report_configs_definition_uniq_idx
+create unique index if not exists risk_report_configs_definition_uniq_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id, report_definition_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_reporting_risk_report_configs_tenant_idx
+create index if not exists risk_report_configs_tenant_idx
 on "ores_reporting_risk_report_configs_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

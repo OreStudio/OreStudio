@@ -33,13 +33,13 @@ insert into ores_refdata_book_statuses_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'Active', 0, 'Active',
+    (ores_utility_system_tenant_id_fn(), 'Active', 0, 'Active',
      'Book is open and accepting new trades.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of book statuses'),
-    (ores_iam_system_tenant_id_fn(), 'Closed', 0, 'Closed',
+    (ores_utility_system_tenant_id_fn(), 'Closed', 0, 'Closed',
      'Book is closed. Existing trades remain but no new trades are allowed.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of book statuses'),
-    (ores_iam_system_tenant_id_fn(), 'Frozen', 0, 'Frozen',
+    (ores_utility_system_tenant_id_fn(), 'Frozen', 0, 'Frozen',
      'Book is frozen. No modifications allowed including new trades or amendments.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of book statuses')
 on conflict (tenant_id, code)

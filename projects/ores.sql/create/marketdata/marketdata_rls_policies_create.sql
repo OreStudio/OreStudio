@@ -29,7 +29,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_marketdata_series_tbl enable row level security;
 
-create policy ores_marketdata_series_tbl_tenant_isolation_policy
+create policy series_tbl_tenant_isolation_policy
 on ores_marketdata_series_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -43,7 +43,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_marketdata_observations_tbl enable row level security;
 
-create policy ores_marketdata_observations_tbl_tenant_isolation_policy
+create policy observations_tbl_tenant_isolation_policy
 on ores_marketdata_observations_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -57,7 +57,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_marketdata_fixings_tbl enable row level security;
 
-create policy ores_marketdata_fixings_tbl_tenant_isolation_policy
+create policy fixings_tbl_tenant_isolation_policy
 on ores_marketdata_fixings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()

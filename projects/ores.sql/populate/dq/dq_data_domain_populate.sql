@@ -38,17 +38,17 @@ BEGIN
 
     -- --- Data Quality Data Domains ---
 
-    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_data_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Reference Data',
         'Standardized data used across the system.'
     );
 
-    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_data_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Trade Data',
         'Transaction and position data.'
     );
 
-    PERFORM ores_dq_data_domains_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_data_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Market Data',
         'Pricing and market information.'
     );

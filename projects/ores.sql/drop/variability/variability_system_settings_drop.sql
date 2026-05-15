@@ -20,7 +20,7 @@
 
 drop trigger if exists ores_variability_system_settings_insert_trg on "ores_variability_system_settings_tbl";
 drop function if exists ores_variability_system_settings_insert_fn;
-drop index if exists ores_variability_system_settings_version_uniq_idx;
-drop index if exists ores_variability_system_settings_name_uniq_idx;
-drop index if exists ores_variability_system_settings_tenant_idx;
+drop index if exists system_settings_version_uniq_idx;
+drop index if exists system_settings_name_uniq_idx;
+drop index if exists system_settings_tenant_idx;
 drop table if exists "ores_variability_system_settings_tbl";

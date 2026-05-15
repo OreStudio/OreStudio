@@ -54,29 +54,30 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_system_tenant_id_fn()),
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Unique code for active records
-create unique index if not exists ores_dq_dataset_bundles_code_uniq_idx
+create unique index if not exists dataset_bundles_code_uniq_idx
 on "ores_dq_dataset_bundles_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique name for active records
-create unique index if not exists ores_dq_dataset_bundles_name_uniq_idx
+create unique index if not exists dataset_bundles_name_uniq_idx
 on "ores_dq_dataset_bundles_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_dq_dataset_bundles_version_uniq_idx
+create unique index if not exists dataset_bundles_version_uniq_idx
 on "ores_dq_dataset_bundles_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_dataset_bundles_id_uniq_idx
+create unique index if not exists dataset_bundles_id_uniq_idx
 on "ores_dq_dataset_bundles_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_dataset_bundles_tenant_idx
+create index if not exists dataset_bundles_tenant_idx
 on "ores_dq_dataset_bundles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -116,9 +117,8 @@ begin
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

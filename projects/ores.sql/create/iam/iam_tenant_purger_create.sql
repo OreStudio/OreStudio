@@ -42,7 +42,7 @@ declare
     v_tenant_code text;
     v_deleted_count integer;
 begin
-    v_system_tenant_id := ores_iam_system_tenant_id_fn();
+    v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Cannot purge system tenant
     if p_tenant_id = v_system_tenant_id then
@@ -208,7 +208,7 @@ declare
 begin
     -- Ensure we're in system tenant context
     perform set_config('app.current_tenant_id',
-        ores_iam_system_tenant_id_fn()::text, false);
+        ores_utility_system_tenant_id_fn()::text, false);
 
     raise notice 'Purging all test tenants...';
 

@@ -57,7 +57,7 @@ create table if not exists ores_compute_grid_samples_tbl (
     primary key (sampled_at, tenant_id)
 );
 
-create index if not exists ores_compute_grid_samples_tenant_idx
+create index if not exists grid_samples_tenant_idx
     on ores_compute_grid_samples_tbl (tenant_id, sampled_at desc);
 
 do $$

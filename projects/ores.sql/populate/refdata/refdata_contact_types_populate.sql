@@ -34,16 +34,16 @@ insert into ores_refdata_contact_types_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'Legal', 0, 'Legal',
+    (ores_utility_system_tenant_id_fn(), 'Legal', 0, 'Legal',
      'Registered legal address and contact details for regulatory and compliance purposes.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of contact types'),
-    (ores_iam_system_tenant_id_fn(), 'Operations', 0, 'Operations',
+    (ores_utility_system_tenant_id_fn(), 'Operations', 0, 'Operations',
      'Day-to-day operational contact details for trade confirmations and general business communication.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of contact types'),
-    (ores_iam_system_tenant_id_fn(), 'Settlement', 0, 'Settlement',
+    (ores_utility_system_tenant_id_fn(), 'Settlement', 0, 'Settlement',
      'Contact details for settlement instructions, payment processing, and reconciliation.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of contact types'),
-    (ores_iam_system_tenant_id_fn(), 'Billing', 0, 'Billing',
+    (ores_utility_system_tenant_id_fn(), 'Billing', 0, 'Billing',
      'Contact details for invoicing, fee collection, and billing-related correspondence.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of contact types')
 on conflict (tenant_id, code)

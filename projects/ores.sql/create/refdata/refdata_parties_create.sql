@@ -55,7 +55,7 @@ create table if not exists "ores_refdata_parties_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check (length("codename") <= 32),
     check ("codename" = '' or "codename" ~ '^[a-z][a-z_]+$')
 );
@@ -63,42 +63,42 @@ create table if not exists "ores_refdata_parties_tbl" (
 -- Non-unique full_name index for search. Full names are not unique in
 -- real-world data (e.g. "CAISSE LOCALE CREDIT AGRICOLE" appears for
 -- multiple branches, each with a distinct LEI).
-create index if not exists ores_refdata_parties_full_name_idx
+create index if not exists parties_full_name_idx
 on "ores_refdata_parties_tbl" (tenant_id, full_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique short_code for active records
-create unique index if not exists ores_refdata_parties_short_code_uniq_idx
+create unique index if not exists parties_short_code_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id, short_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_parties_version_uniq_idx
+create unique index if not exists parties_version_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_parties_id_uniq_idx
+create unique index if not exists parties_id_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_parties_tenant_idx
+create index if not exists parties_tenant_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Root party uniqueness: exactly one operational root party per tenant.
 -- The system party (party_category='System') is excluded — it has its
 -- own uniqueness constraint below.
-create unique index if not exists ores_refdata_parties_root_party_uniq_idx
+create unique index if not exists parties_root_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where parent_party_id is null and party_category <> 'System' and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- System party uniqueness: exactly one system party per tenant
-create unique index if not exists ores_refdata_parties_system_party_uniq_idx
+create unique index if not exists parties_system_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Globally unique codename across all tenants (empty string excluded)
-create unique index if not exists ores_refdata_parties_codename_uniq_idx
+create unique index if not exists parties_codename_uniq_idx
 on "ores_refdata_parties_tbl" (codename)
 where valid_to = ores_utility_infinity_timestamp_fn() and codename <> '';
 

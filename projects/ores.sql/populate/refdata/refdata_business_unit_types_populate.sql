@@ -31,7 +31,7 @@
 
 DO $$
 BEGIN
-    PERFORM ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_coding_schemes_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ORES-ORG',
         'ORE Studio Organisational Hierarchy',
         'internal',
@@ -46,7 +46,7 @@ END $$;
 -- Helper: insert one business unit type, skipping if the natural key already exists.
 do $$
 declare
-    v_tenant_id uuid := ores_iam_system_tenant_id_fn();
+    v_tenant_id uuid := ores_utility_system_tenant_id_fn();
     v_scheme    text := 'ORES-ORG';
 
     type_rows record;

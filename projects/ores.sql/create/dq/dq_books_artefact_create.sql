@@ -31,14 +31,14 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "is_trading_book" integer not null
 );
 
-create index if not exists ores_dq_books_artefact_dataset_idx
+create index if not exists books_artefact_dataset_idx
 on "ores_dq_books_artefact_tbl" (dataset_id);
 
-create index if not exists ores_dq_books_artefact_tenant_idx
+create index if not exists books_artefact_tenant_idx
 on "ores_dq_books_artefact_tbl" (tenant_id);
 
-create index if not exists ores_dq_books_artefact_id_idx
+create index if not exists books_artefact_id_idx
 on "ores_dq_books_artefact_tbl" (id);
 
-create index if not exists ores_dq_books_artefact_name_idx
+create index if not exists books_artefact_name_idx
 on "ores_dq_books_artefact_tbl" (name);

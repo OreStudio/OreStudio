@@ -31,7 +31,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_monetary_natures_tbl enable row level security;
 
-create policy ores_refdata_monetary_natures_tenant_isolation_policy on ores_refdata_monetary_natures_tbl
+create policy monetary_natures_tenant_isolation_policy on ores_refdata_monetary_natures_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -44,7 +44,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_market_tiers_tbl enable row level security;
 
-create policy ores_refdata_currency_market_tiers_tenant_isolation_policy on ores_refdata_currency_market_tiers_tbl
+create policy currency_market_tiers_tenant_isolation_policy on ores_refdata_currency_market_tiers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -57,7 +57,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_zero_conventions_tbl enable row level security;
 
-create policy ores_refdata_zero_conventions_tenant_isolation_policy on ores_refdata_zero_conventions_tbl
+create policy zero_conventions_tenant_isolation_policy on ores_refdata_zero_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -70,7 +70,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_deposit_conventions_tbl enable row level security;
 
-create policy ores_refdata_deposit_conventions_tenant_isolation_policy on ores_refdata_deposit_conventions_tbl
+create policy deposit_conventions_tenant_isolation_policy on ores_refdata_deposit_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -83,7 +83,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_swap_conventions_tbl enable row level security;
 
-create policy ores_refdata_swap_conventions_tenant_isolation_policy on ores_refdata_swap_conventions_tbl
+create policy swap_conventions_tenant_isolation_policy on ores_refdata_swap_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -96,7 +96,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ois_conventions_tbl enable row level security;
 
-create policy ores_refdata_ois_conventions_tenant_isolation_policy on ores_refdata_ois_conventions_tbl
+create policy ois_conventions_tenant_isolation_policy on ores_refdata_ois_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -109,7 +109,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_fra_conventions_tbl enable row level security;
 
-create policy ores_refdata_fra_conventions_tenant_isolation_policy on ores_refdata_fra_conventions_tbl
+create policy fra_conventions_tenant_isolation_policy on ores_refdata_fra_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -122,7 +122,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_ibor_index_conventions_tbl enable row level security;
 
-create policy ores_refdata_ibor_index_conventions_tenant_isolation_policy on ores_refdata_ibor_index_conventions_tbl
+create policy ibor_index_conventions_tenant_isolation_policy on ores_refdata_ibor_index_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -135,7 +135,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_overnight_index_conventions_tbl enable row level security;
 
-create policy ores_refdata_overnight_index_conventions_tenant_isolation_policy on ores_refdata_overnight_index_conventions_tbl
+create policy overnight_index_conventions_tenant_isolation_policy on ores_refdata_overnight_index_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -148,7 +148,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_fx_conventions_tbl enable row level security;
 
-create policy ores_refdata_fx_conventions_tenant_isolation_policy on ores_refdata_fx_conventions_tbl
+create policy fx_conventions_tenant_isolation_policy on ores_refdata_fx_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -161,7 +161,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_cds_conventions_tbl enable row level security;
 
-create policy ores_refdata_cds_conventions_tenant_isolation_policy on ores_refdata_cds_conventions_tbl
+create policy cds_conventions_tenant_isolation_policy on ores_refdata_cds_conventions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -174,7 +174,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currencies_tbl enable row level security;
 
-create policy ores_refdata_currencies_tenant_isolation_policy on ores_refdata_currencies_tbl
+create policy currencies_tenant_isolation_policy on ores_refdata_currencies_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -187,7 +187,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_countries_tbl enable row level security;
 
-create policy ores_refdata_countries_tenant_isolation_policy on ores_refdata_countries_tbl
+create policy countries_tenant_isolation_policy on ores_refdata_countries_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -200,7 +200,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_account_types_tbl enable row level security;
 
-create policy ores_refdata_account_types_tenant_isolation_policy on ores_refdata_account_types_tbl
+create policy account_types_tenant_isolation_policy on ores_refdata_account_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -213,7 +213,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_asset_classes_tbl enable row level security;
 
-create policy ores_refdata_asset_classes_tenant_isolation_policy on ores_refdata_asset_classes_tbl
+create policy asset_classes_tenant_isolation_policy on ores_refdata_asset_classes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -226,7 +226,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_asset_measures_tbl enable row level security;
 
-create policy ores_refdata_asset_measures_tenant_isolation_policy on ores_refdata_asset_measures_tbl
+create policy asset_measures_tenant_isolation_policy on ores_refdata_asset_measures_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -239,7 +239,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_benchmark_rates_tbl enable row level security;
 
-create policy ores_refdata_benchmark_rates_tenant_isolation_policy on ores_refdata_benchmark_rates_tbl
+create policy benchmark_rates_tenant_isolation_policy on ores_refdata_benchmark_rates_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -252,7 +252,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_business_centres_tbl enable row level security;
 
-create policy ores_refdata_business_centres_tenant_isolation_policy on ores_refdata_business_centres_tbl
+create policy business_centres_tenant_isolation_policy on ores_refdata_business_centres_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -265,7 +265,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_business_processes_tbl enable row level security;
 
-create policy ores_refdata_business_processes_tenant_isolation_policy on ores_refdata_business_processes_tbl
+create policy business_processes_tenant_isolation_policy on ores_refdata_business_processes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -278,7 +278,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_cashflow_types_tbl enable row level security;
 
-create policy ores_refdata_cashflow_types_tenant_isolation_policy on ores_refdata_cashflow_types_tbl
+create policy cashflow_types_tenant_isolation_policy on ores_refdata_cashflow_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -291,7 +291,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_entity_classifications_tbl enable row level security;
 
-create policy ores_refdata_entity_classifications_tenant_isolation_policy on ores_refdata_entity_classifications_tbl
+create policy entity_classifications_tenant_isolation_policy on ores_refdata_entity_classifications_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -304,7 +304,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_local_jurisdictions_tbl enable row level security;
 
-create policy ores_refdata_local_jurisdictions_tenant_isolation_policy on ores_refdata_local_jurisdictions_tbl
+create policy local_jurisdictions_tenant_isolation_policy on ores_refdata_local_jurisdictions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -317,7 +317,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_relationships_tbl enable row level security;
 
-create policy ores_refdata_party_relationships_tenant_isolation_policy on ores_refdata_party_relationships_tbl
+create policy party_relationships_tenant_isolation_policy on ores_refdata_party_relationships_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -330,7 +330,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_roles_tbl enable row level security;
 
-create policy ores_refdata_party_roles_tenant_isolation_policy on ores_refdata_party_roles_tbl
+create policy party_roles_tenant_isolation_policy on ores_refdata_party_roles_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -343,7 +343,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_person_roles_tbl enable row level security;
 
-create policy ores_refdata_person_roles_tenant_isolation_policy on ores_refdata_person_roles_tbl
+create policy person_roles_tenant_isolation_policy on ores_refdata_person_roles_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -356,7 +356,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_regulatory_corporate_sectors_tbl enable row level security;
 
-create policy ores_refdata_regulatory_corporate_sectors_tenant_isolation_policy on ores_refdata_regulatory_corporate_sectors_tbl
+create policy regulatory_corporate_sectors_tenant_isolation_policy on ores_refdata_regulatory_corporate_sectors_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -369,7 +369,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_reporting_regimes_tbl enable row level security;
 
-create policy ores_refdata_reporting_regimes_tenant_isolation_policy on ores_refdata_reporting_regimes_tbl
+create policy reporting_regimes_tenant_isolation_policy on ores_refdata_reporting_regimes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -382,7 +382,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_supervisory_bodies_tbl enable row level security;
 
-create policy ores_refdata_supervisory_bodies_tenant_isolation_policy on ores_refdata_supervisory_bodies_tbl
+create policy supervisory_bodies_tenant_isolation_policy on ores_refdata_supervisory_bodies_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -395,7 +395,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_parties_tbl enable row level security;
 
-create policy ores_refdata_parties_tenant_isolation_policy on ores_refdata_parties_tbl
+create policy parties_tenant_isolation_policy on ores_refdata_parties_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -408,7 +408,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_identifiers_tbl enable row level security;
 
-create policy ores_refdata_party_identifiers_tenant_isolation_policy on ores_refdata_party_identifiers_tbl
+create policy party_identifiers_tenant_isolation_policy on ores_refdata_party_identifiers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -419,7 +419,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
-create policy ores_refdata_party_identifiers_party_isolation_policy
+create policy party_identifiers_party_isolation_policy
 on ores_refdata_party_identifiers_tbl
 as restrictive
 for select using (
@@ -431,7 +431,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_contact_informations_tbl enable row level security;
 
-create policy ores_refdata_party_contact_informations_tenant_isolation_policy on ores_refdata_party_contact_informations_tbl
+create policy party_contact_informations_tenant_isolation_policy on ores_refdata_party_contact_informations_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -442,7 +442,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
-create policy ores_refdata_party_contact_informations_party_isolation_policy
+create policy party_contact_informations_party_isolation_policy
 on ores_refdata_party_contact_informations_tbl
 as restrictive
 for select using (
@@ -454,7 +454,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_counterparties_tbl enable row level security;
 
-create policy ores_refdata_counterparties_tenant_isolation_policy on ores_refdata_counterparties_tbl
+create policy counterparties_tenant_isolation_policy on ores_refdata_counterparties_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -467,7 +467,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_counterparty_identifiers_tbl enable row level security;
 
-create policy ores_refdata_counterparty_identifiers_tenant_isolation_policy on ores_refdata_counterparty_identifiers_tbl
+create policy counterparty_identifiers_tenant_isolation_policy on ores_refdata_counterparty_identifiers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -480,7 +480,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_counterparty_contact_informations_tbl enable row level security;
 
-create policy ores_refdata_counterparty_contact_informations_tenant_isolation_policy on ores_refdata_counterparty_contact_informations_tbl
+create policy counterparty_contact_informations_tenant_isolation_policy on ores_refdata_counterparty_contact_informations_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -493,7 +493,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_business_units_tbl enable row level security;
 
-create policy ores_refdata_business_units_tenant_isolation_policy on ores_refdata_business_units_tbl
+create policy business_units_tenant_isolation_policy on ores_refdata_business_units_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -504,7 +504,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id FK validated by trigger; WITH CHECK would block
 -- bulk inserts from the publisher.
-create policy ores_refdata_business_units_party_isolation_policy
+create policy business_units_party_isolation_policy
 on ores_refdata_business_units_tbl
 as restrictive
 for select using (
@@ -516,7 +516,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_countries_tbl enable row level security;
 
-create policy ores_refdata_party_countries_tenant_isolation_policy on ores_refdata_party_countries_tbl
+create policy party_countries_tenant_isolation_policy on ores_refdata_party_countries_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -527,7 +527,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
 -- inserts from the publisher.
-create policy ores_refdata_party_countries_party_isolation_policy
+create policy party_countries_party_isolation_policy
 on ores_refdata_party_countries_tbl
 as restrictive
 for select using (
@@ -539,7 +539,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_currencies_tbl enable row level security;
 
-create policy ores_refdata_party_currencies_tenant_isolation_policy on ores_refdata_party_currencies_tbl
+create policy party_currencies_tenant_isolation_policy on ores_refdata_party_currencies_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -550,7 +550,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: party_id is part of the PK; WITH CHECK would block bulk
 -- inserts from the publisher.
-create policy ores_refdata_party_currencies_party_isolation_policy
+create policy party_currencies_party_isolation_policy
 on ores_refdata_party_currencies_tbl
 as restrictive
 for select using (
@@ -562,7 +562,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_portfolios_tbl enable row level security;
 
-create policy ores_refdata_portfolios_tenant_isolation_policy on ores_refdata_portfolios_tbl
+create policy portfolios_tenant_isolation_policy on ores_refdata_portfolios_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -574,7 +574,7 @@ with check (
 -- x = ANY(NULL) evaluates to NULL (falsy) when no party context is set.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk inserts from the publisher.
-create policy ores_refdata_portfolios_party_isolation_policy
+create policy portfolios_party_isolation_policy
 on ores_refdata_portfolios_tbl
 as restrictive
 for select using (
@@ -586,7 +586,7 @@ for select using (
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_books_tbl enable row level security;
 
-create policy ores_refdata_books_tenant_isolation_policy on ores_refdata_books_tbl
+create policy books_tenant_isolation_policy on ores_refdata_books_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -597,7 +597,7 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk inserts from the publisher.
-create policy ores_refdata_books_party_isolation_policy
+create policy books_party_isolation_policy
 on ores_refdata_books_tbl
 as restrictive
 for select using (
@@ -610,7 +610,7 @@ for select using (
 alter table ores_refdata_party_counterparties_tbl enable row level security;
 
 -- Tenant isolation (standard pattern)
-create policy ores_refdata_party_counterparties_tenant_isolation_policy
+create policy party_counterparties_tenant_isolation_policy
 on ores_refdata_party_counterparties_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
@@ -623,7 +623,7 @@ with check (
 -- When no party context is set (visible_party_ids is NULL), the policy
 -- passes through, preserving backward compatibility. When party context IS
 -- set, only rows matching the visible party set are accessible.
-create policy ores_refdata_party_counterparties_party_isolation_policy
+create policy party_counterparties_party_isolation_policy
 on ores_refdata_party_counterparties_tbl
 as restrictive
 for all using (

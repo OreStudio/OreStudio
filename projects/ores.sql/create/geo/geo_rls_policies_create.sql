@@ -34,13 +34,13 @@
 -- -----------------------------------------------------------------------------
 alter table ores_geo_ip2country_tbl enable row level security;
 
-create policy ores_geo_ip2country_tbl_read_policy on ores_geo_ip2country_tbl
+create policy ip2country_tbl_read_policy on ores_geo_ip2country_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_iam_system_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
-create policy ores_geo_ip2country_tbl_modification_policy on ores_geo_ip2country_tbl
+create policy ip2country_tbl_modification_policy on ores_geo_ip2country_tbl
 for all
 using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());

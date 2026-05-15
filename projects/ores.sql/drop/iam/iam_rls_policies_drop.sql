@@ -24,29 +24,29 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- Account Parties
-drop policy if exists ores_iam_account_parties_tenant_isolation_policy on "ores_iam_account_parties_tbl";
+drop policy if exists account_parties_tenant_isolation_policy on "ores_iam_account_parties_tbl";
 
 -- Tenants
-drop policy if exists ores_iam_tenants_write_policy on "ores_iam_tenants_tbl";
-drop policy if exists ores_iam_tenants_read_policy on "ores_iam_tenants_tbl";
+drop policy if exists tenants_write_policy on "ores_iam_tenants_tbl";
+drop policy if exists tenants_read_policy on "ores_iam_tenants_tbl";
 
 -- Login Info
-drop policy if exists ores_iam_login_info_tenant_isolation_policy on "ores_iam_login_info_tbl";
+drop policy if exists login_info_tenant_isolation_policy on "ores_iam_login_info_tbl";
 
 -- Sessions
-drop policy if exists ores_iam_sessions_tenant_isolation_policy on "ores_iam_sessions_tbl";
+drop policy if exists sessions_tenant_isolation_policy on "ores_iam_sessions_tbl";
 
 -- Role Permissions
-drop policy if exists ores_iam_role_permissions_tenant_isolation_policy on "ores_iam_role_permissions_tbl";
+drop policy if exists role_permissions_tenant_isolation_policy on "ores_iam_role_permissions_tbl";
 
 -- Account Roles
-drop policy if exists ores_iam_account_roles_tenant_isolation_policy on "ores_iam_account_roles_tbl";
+drop policy if exists account_roles_tenant_isolation_policy on "ores_iam_account_roles_tbl";
 
 -- Permissions
-drop policy if exists ores_iam_permissions_tenant_isolation_policy on "ores_iam_permissions_tbl";
+drop policy if exists permissions_tenant_isolation_policy on "ores_iam_permissions_tbl";
 
 -- Roles
-drop policy if exists ores_iam_roles_tenant_isolation_policy on "ores_iam_roles_tbl";
+drop policy if exists roles_tenant_isolation_policy on "ores_iam_roles_tbl";
 
 -- Accounts
-drop policy if exists ores_iam_accounts_tenant_isolation_policy on "ores_iam_accounts_tbl";
+drop policy if exists accounts_tenant_isolation_policy on "ores_iam_accounts_tbl";

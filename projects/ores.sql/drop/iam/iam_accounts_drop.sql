@@ -20,7 +20,7 @@
 
 drop trigger if exists ores_iam_accounts_insert_trg on ores_iam_accounts_tbl;
 drop function if exists ores_iam_accounts_insert_fn;
-drop index if exists ores_iam_accounts_username_uniq_idx;
-drop index if exists ores_iam_accounts_email_uniq_idx;
-drop index if exists ores_iam_accounts_version_uniq_idx;
+drop index if exists accounts_username_uniq_idx;
+drop index if exists accounts_email_uniq_idx;
+drop index if exists accounts_version_uniq_idx;
 drop table if exists ores_iam_accounts_tbl;

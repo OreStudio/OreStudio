@@ -18,8 +18,8 @@
  *
  */
 
-drop policy if exists ores_workflow_workflow_steps_tenant_isolation_policy
+drop policy if exists workflow_steps_tenant_isolation_policy
 on ores_workflow_workflow_steps_tbl;
 
-drop policy if exists ores_workflow_workflow_instances_tenant_isolation_policy
+drop policy if exists workflow_instances_tenant_isolation_policy
 on ores_workflow_workflow_instances_tbl;

@@ -58,43 +58,43 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("name" <> ''),
     check ("schedule_expression" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_reporting_report_definitions_version_uniq_idx
+create unique index if not exists report_definitions_version_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_reporting_report_definitions_id_uniq_idx
+create unique index if not exists report_definitions_id_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Natural key: unique definition name per party
-create unique index if not exists ores_reporting_report_definitions_name_uniq_idx
+create unique index if not exists report_definitions_name_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique scheduler_job_id among active records (NULL allowed when not scheduled)
-create unique index if not exists ores_reporting_report_definitions_scheduler_job_id_uniq_idx
+create unique index if not exists report_definitions_scheduler_job_id_uniq_idx
 on "ores_reporting_report_definitions_tbl" (scheduler_job_id)
 where valid_to = ores_utility_infinity_timestamp_fn() and scheduler_job_id is not null;
 
 -- Tenant index
-create index if not exists ores_reporting_report_definitions_tenant_idx
+create index if not exists report_definitions_tenant_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for party-scoped lookups
-create index if not exists ores_reporting_report_definitions_party_idx
+create index if not exists report_definitions_party_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FSM state index for state-based filtering
-create index if not exists ores_reporting_report_definitions_fsm_state_idx
+create index if not exists report_definitions_fsm_state_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, fsm_state_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -128,7 +128,7 @@ begin
     if new.fsm_state_id is not null then
         if not exists (
             select 1 from ores_dq_fsm_states_tbl
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
               and id = new.fsm_state_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

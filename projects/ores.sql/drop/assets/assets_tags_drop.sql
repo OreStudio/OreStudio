@@ -21,6 +21,6 @@
 drop rule if exists ores_assets_tags_delete_rule on "ores_assets_tags_tbl";
 drop trigger if exists ores_assets_tags_insert_trg on "ores_assets_tags_tbl";
 drop function if exists ores_assets_tags_insert_fn;
-drop index if exists ores_assets_tags_name_uniq_idx;
-drop index if exists ores_assets_tags_version_uniq_idx;
+drop index if exists tags_name_uniq_idx;
+drop index if exists tags_version_uniq_idx;
 drop table if exists "ores_assets_tags_tbl";

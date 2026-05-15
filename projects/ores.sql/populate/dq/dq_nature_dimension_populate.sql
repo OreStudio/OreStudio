@@ -38,19 +38,19 @@ BEGIN
 
     -- --- Data Quality Nature Dimensions ---
 
-    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Actual',
         'Actual Data',
         'Real-world data (replaces "Real").'
     );
 
-    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Synthetic',
         'Synthetic Data',
         'Artificially generated data for testing/modeling.'
     );
 
-    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_nature_dimensions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'Mock',
         'Mock Data',
         'Static, hand-written data for unit tests.'

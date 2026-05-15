@@ -40,7 +40,7 @@
 
 do $$
 declare
-    v_sys_tenant  uuid := ores_iam_system_tenant_id_fn();
+    v_sys_tenant  uuid := ores_utility_system_tenant_id_fn();
     v_trade_id    uuid := gen_random_uuid();
     v_book_id     uuid;
     v_portfolio_id uuid;
@@ -266,5 +266,5 @@ select
     activity_type_code,
     valid_from
 from ores_trade_ore_envelope_vw
-where tenant_id = ores_iam_system_tenant_id_fn()
+where tenant_id = ores_utility_system_tenant_id_fn()
   and netting_set_id = 'NS-SAMPLE-001';

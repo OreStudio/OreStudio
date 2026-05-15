@@ -60,22 +60,22 @@ create table if not exists "ores_dq_datasets_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
-create unique index if not exists ores_dq_datasets_name_uniq_idx
+create unique index if not exists datasets_name_uniq_idx
 on "ores_dq_datasets_tbl" (tenant_id, name, subject_area_name, domain_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_datasets_code_uniq_idx
+create unique index if not exists datasets_code_uniq_idx
 on "ores_dq_datasets_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_dq_datasets_version_uniq_idx
+create unique index if not exists datasets_version_uniq_idx
 on "ores_dq_datasets_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_datasets_tenant_idx
+create index if not exists datasets_tenant_idx
 on "ores_dq_datasets_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -35,16 +35,16 @@ insert into ores_refdata_monetary_natures_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'fiat', 0, 'Fiat Currency',
+    (ores_utility_system_tenant_id_fn(), 'fiat', 0, 'Fiat Currency',
      'Government-issued currency not backed by a commodity',
      1, current_user, current_user, 'system.initial_load', 'Initial population of monetary natures'),
-    (ores_iam_system_tenant_id_fn(), 'commodity', 0, 'Commodity Currency',
+    (ores_utility_system_tenant_id_fn(), 'commodity', 0, 'Commodity Currency',
      'Currency backed by or representing a physical commodity (e.g. XAU, XAG)',
      2, current_user, current_user, 'system.initial_load', 'Initial population of monetary natures'),
-    (ores_iam_system_tenant_id_fn(), 'synthetic', 0, 'Synthetic Currency',
+    (ores_utility_system_tenant_id_fn(), 'synthetic', 0, 'Synthetic Currency',
      'Artificially constructed currency or index',
      3, current_user, current_user, 'system.initial_load', 'Initial population of monetary natures'),
-    (ores_iam_system_tenant_id_fn(), 'supranational', 0, 'Supranational Currency',
+    (ores_utility_system_tenant_id_fn(), 'supranational', 0, 'Supranational Currency',
      'Currency issued by a multi-national authority (e.g. XDR)',
      4, current_user, current_user, 'system.initial_load', 'Initial population of monetary natures')
 on conflict (tenant_id, code)

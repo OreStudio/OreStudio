@@ -49,7 +49,7 @@ select * from ores_dq_asset_classes_publish_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'fpml.asset_class'
      and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     'upsert'
 );
 
@@ -63,7 +63,7 @@ select * from ores_dq_asset_classes_publish_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'ore.asset_class'
      and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     'upsert'
 );
 

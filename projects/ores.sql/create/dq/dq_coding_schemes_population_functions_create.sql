@@ -142,7 +142,7 @@ begin
             dq.description
         from ores_dq_coding_schemes_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and dq.tenant_id = ores_iam_system_tenant_id_fn()
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
     loop
         -- Check if record already exists in target tenant
         select exists (

@@ -76,24 +76,24 @@ create table if not exists "{{entity.product}}_{{entity.component}}_{{entity.ent
 
 {{#entity.has_coding_scheme}}
 {{#entity.has_tenant_id}}
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_version_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
 {{^entity.has_tenant_id}}
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_version_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
 {{/entity.has_coding_scheme}}
 {{^entity.has_coding_scheme}}
 {{#entity.has_tenant_id}}
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_version_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
 {{^entity.has_tenant_id}}
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_version_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_version_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{entity.primary_key.column}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
@@ -101,24 +101,24 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#entity.has_tenant_id}}
 {{#entity.has_coding_scheme}}
 
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}}, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_coding_scheme}}
 {{^entity.has_coding_scheme}}
 
-create unique index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
+create unique index if not exists {{entity.entity_plural}}_{{entity.primary_key.column}}_uniq_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id, {{entity.primary_key.column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_coding_scheme}}
 
-create index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tenant_idx
+create index if not exists {{entity.entity_plural}}_tenant_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/entity.has_tenant_id}}
 {{#entity.indexes}}
 
-create{{#unique}} unique{{/unique}} index if not exists {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_{{name}}_idx
+create{{#unique}} unique{{/unique}} index if not exists {{entity.entity_plural}}_{{name}}_idx
 on "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl" ({{columns}}){{#current_only}}
 where valid_to = ores_utility_infinity_timestamp_fn(){{/current_only}};
 {{/entity.indexes}}
@@ -196,7 +196,7 @@ begin
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return new;
 end;
@@ -256,7 +256,7 @@ begin
     if not exists (
         select 1 from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
 {{#entity.system_tenant_validation}}
-        where tenant_id = ores_iam_system_tenant_id_fn()
+        where tenant_id = ores_utility_system_tenant_id_fn()
 {{/entity.system_tenant_validation}}
 {{^entity.system_tenant_validation}}
         where tenant_id = p_tenant_id
@@ -268,7 +268,7 @@ begin
             select string_agg({{entity.primary_key.column}}::text, ', ' order by {{#entity.has_display_order}}display_order{{/entity.has_display_order}}{{^entity.has_display_order}}{{entity.primary_key.column}}{{/entity.has_display_order}})
             from {{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl
 {{#entity.system_tenant_validation}}
-            where tenant_id = ores_iam_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn()
 {{/entity.system_tenant_validation}}
 {{^entity.system_tenant_validation}}
             where tenant_id = p_tenant_id

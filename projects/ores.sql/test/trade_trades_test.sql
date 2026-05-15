@@ -46,7 +46,7 @@ insert into ores_refdata_books_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'c0000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'TRADE-TEST-BOOK', 'Test book for trade tests',
     'c0000000-0000-0000-0000-000000000010'::uuid,
     current_user, current_user,
@@ -59,7 +59,7 @@ insert into ores_refdata_portfolios_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'c0000000-0000-0000-0000-000000000002'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'c0000000-0000-0000-0000-000000000010'::uuid,
     'TRADE-TEST-PORTFOLIO', 'Test portfolio for trade tests',
     current_user, current_user,
@@ -89,7 +89,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-TEST-001', 'new_booking', s.id,
@@ -105,7 +105,7 @@ where m.name = 'trade_status'
 select is(
     (select version from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     1,
     'trade insert: first version is 1'
@@ -118,7 +118,7 @@ select is(
 select is(
     (select valid_to from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     ores_utility_infinity_timestamp_fn(),
     'trade insert: valid_to set to infinity'
@@ -137,7 +137,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'c1000000-0000-0000-0000-000000000099'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'Swap', 'NS-BAD', 'new_booking', %L::uuid,
@@ -167,7 +167,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'c1000000-0000-0000-0000-000000000098'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'Swap', 'NS-BAD', 'new_booking', %L::uuid,
@@ -197,7 +197,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'c1000000-0000-0000-0000-000000000097'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'INVALID_TYPE', 'NS-BAD', 'new_booking', %L::uuid,
@@ -227,7 +227,7 @@ select throws_ok(
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'c1000000-0000-0000-0000-000000000096'::uuid,
-        ores_iam_system_tenant_id_fn(), 0,
+        ores_utility_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
         'Swap', 'NS-BAD', 'INVALID_ACTIVITY', %L::uuid,
@@ -257,7 +257,7 @@ insert into ores_trading_trades_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 ) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
-    ores_iam_system_tenant_id_fn(), 0,
+    ores_utility_system_tenant_id_fn(), 0,
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
     'Swap', 'NS-TEST-001', 'amendment', s.id,
@@ -274,7 +274,7 @@ where m.name = 'trade_status'
 select is(
     (select version from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     2,
     'trade amendment: new version is 2'
@@ -287,7 +287,7 @@ select is(
 select is(
     (select count(*)::integer from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),
     1,
     'trade amendment: exactly one historical row exists'
@@ -299,12 +299,12 @@ select is(
 
 delete from ores_trading_trades_tbl
 where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-  and tenant_id = ores_iam_system_tenant_id_fn();
+  and tenant_id = ores_utility_system_tenant_id_fn();
 
 select is(
     (select count(*)::integer from ores_trading_trades_tbl
      where id = 'c1000000-0000-0000-0000-000000000001'::uuid
-       and tenant_id = ores_iam_system_tenant_id_fn()
+       and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
     0,
     'trade delete: record no longer current after soft delete'

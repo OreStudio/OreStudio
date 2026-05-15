@@ -20,6 +20,6 @@
 
 drop materialized view if exists ores_iam_auth_events_daily_vw cascade;
 drop materialized view if exists ores_iam_auth_events_hourly_vw cascade;
-drop index if exists ores_iam_auth_events_event_type_idx;
-drop index if exists ores_iam_auth_events_tenant_time_idx;
+drop index if exists auth_events_event_type_idx;
+drop index if exists auth_events_tenant_time_idx;
 drop table if exists ores_iam_auth_events_tbl;

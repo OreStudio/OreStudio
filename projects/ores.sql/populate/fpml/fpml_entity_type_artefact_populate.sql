@@ -62,7 +62,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Asian',
         1,
         'FPML_ENTITY_TYPE',
@@ -74,7 +74,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'AustralianAndNewZealand',
         1,
         'FPML_ENTITY_TYPE',
@@ -86,7 +86,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'EuropeanEmergingMarkets',
         1,
         'FPML_ENTITY_TYPE',
@@ -98,7 +98,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Japanese',
         1,
         'FPML_ENTITY_TYPE',
@@ -110,7 +110,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'NorthAmericanHighYield',
         1,
         'FPML_ENTITY_TYPE',
@@ -122,7 +122,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'NorthAmericanInsurance',
         1,
         'FPML_ENTITY_TYPE',
@@ -134,7 +134,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'NorthAmericanInvestmentGrade',
         1,
         'FPML_ENTITY_TYPE',
@@ -146,7 +146,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'Singaporean',
         1,
         'FPML_ENTITY_TYPE',
@@ -158,7 +158,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'WesternEuropean',
         1,
         'FPML_ENTITY_TYPE',
@@ -170,7 +170,7 @@ begin
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         'WesternEuropeanInsurance',
         1,
         'FPML_ENTITY_TYPE',

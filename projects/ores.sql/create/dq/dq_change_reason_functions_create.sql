@@ -41,7 +41,7 @@ begin
     if not exists (
         select 1 from ores_dq_change_reasons_tbl
         where code = p_change_reason_code
-        and tenant_id = ores_iam_system_tenant_id_fn()
+        and tenant_id = ores_utility_system_tenant_id_fn()
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid change_reason_code: %. Reason must exist in ores_dq_change_reasons_tbl.',

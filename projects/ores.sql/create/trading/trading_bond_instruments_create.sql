@@ -59,7 +59,7 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("face_value" > 0),
     check ("coupon_rate" >= 0),
     check ("issuer" <> ''),
@@ -68,32 +68,32 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_trading_bond_instruments_version_uniq_idx
+create unique index if not exists bond_instruments_version_uniq_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
-create unique index if not exists ores_trading_bond_instruments_id_uniq_idx
+create unique index if not exists bond_instruments_id_uniq_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_trading_bond_instruments_tenant_idx
+create index if not exists bond_instruments_tenant_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Party index for party isolation
-create index if not exists ores_trading_bond_instruments_party_idx
+create index if not exists bond_instruments_party_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Trade type index for product filtering
-create index if not exists ores_trading_bond_instruments_trade_type_idx
+create index if not exists bond_instruments_trade_type_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, trade_type_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Soft FK back to trade (NULL for standalone instruments)
-create unique index if not exists ores_trading_bond_instruments_trade_id_idx
+create unique index if not exists bond_instruments_trade_id_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;

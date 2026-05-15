@@ -82,7 +82,7 @@ begin
     )
     select
         v_countries_dataset_id,
-        ores_iam_system_tenant_id_fn(),
+        ores_utility_system_tenant_id_fn(),
         c.alpha2_code,
         0,
         c.alpha3_code,

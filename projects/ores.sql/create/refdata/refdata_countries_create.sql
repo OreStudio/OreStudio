@@ -51,23 +51,23 @@ create table if not exists "ores_refdata_countries_tbl" (
     check ("alpha2_code" <> '')
 );
 
-create unique index if not exists ores_refdata_countries_version_uniq_idx
+create unique index if not exists countries_version_uniq_idx
 on "ores_refdata_countries_tbl" (tenant_id, alpha2_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_countries_code_uniq_idx
+create unique index if not exists countries_code_uniq_idx
 on "ores_refdata_countries_tbl" (tenant_id, alpha2_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_countries_tenant_idx
+create index if not exists countries_tenant_idx
 on "ores_refdata_countries_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_countries_alpha3_idx
+create index if not exists countries_alpha3_idx
 on "ores_refdata_countries_tbl" (alpha3_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_countries_numeric_idx
+create index if not exists countries_numeric_idx
 on "ores_refdata_countries_tbl" (numeric_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

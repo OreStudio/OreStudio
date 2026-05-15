@@ -51,21 +51,21 @@ create table if not exists "ores_refdata_party_counterparties_tbl" (
 );
 
 -- Index for looking up counterparties visible to a party
-create index if not exists ores_refdata_party_counterparties_party_idx
+create index if not exists party_counterparties_party_idx
 on "ores_refdata_party_counterparties_tbl" (party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding parties that can see a counterparty
-create index if not exists ores_refdata_party_counterparties_counterparty_idx
+create index if not exists party_counterparties_counterparty_idx
 on "ores_refdata_party_counterparties_tbl" (counterparty_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_refdata_party_counterparties_uniq_idx
+create unique index if not exists party_counterparties_uniq_idx
 on "ores_refdata_party_counterparties_tbl" (tenant_id, party_id, counterparty_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_party_counterparties_tenant_idx
+create index if not exists party_counterparties_tenant_idx
 on "ores_refdata_party_counterparties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

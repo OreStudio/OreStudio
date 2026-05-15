@@ -35,19 +35,19 @@ insert into ores_refdata_rounding_types_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    (ores_iam_system_tenant_id_fn(), 'Up', 0, 'Round Up',
+    (ores_utility_system_tenant_id_fn(), 'Up', 0, 'Round Up',
      'Rounds away from zero. 2.341→2.35, 2.349→2.35. Negative: -2.341→-2.35. Used when amounts must never be understated.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
-    (ores_iam_system_tenant_id_fn(), 'Down', 0, 'Round Down',
+    (ores_utility_system_tenant_id_fn(), 'Down', 0, 'Round Down',
      'Truncates toward zero. 2.349→2.34, -2.341→-2.34. Never overstates amounts; used in conservative contexts.',
      2, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
-    (ores_iam_system_tenant_id_fn(), 'Closest', 0, 'Round to Nearest',
+    (ores_utility_system_tenant_id_fn(), 'Closest', 0, 'Round to Nearest',
      'Round half up to nearest. 2.344→2.34, 2.345→2.35. Default rounding; most common for financial amounts.',
      3, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
-    (ores_iam_system_tenant_id_fn(), 'Floor', 0, 'Floor',
+    (ores_utility_system_tenant_id_fn(), 'Floor', 0, 'Floor',
      'Always rounds to next lower value. 2.349→2.34, -2.341→-2.35. Used when rounding must never produce a higher value.',
      4, current_user, current_user, 'system.initial_load', 'Initial population of rounding types'),
-    (ores_iam_system_tenant_id_fn(), 'Ceiling', 0, 'Ceiling',
+    (ores_utility_system_tenant_id_fn(), 'Ceiling', 0, 'Ceiling',
      'Always rounds to next higher value. 2.341→2.35, -2.349→-2.34. Used when rounding must never produce a lower value.',
      5, current_user, current_user, 'system.initial_load', 'Initial population of rounding types')
 on conflict (tenant_id, code)

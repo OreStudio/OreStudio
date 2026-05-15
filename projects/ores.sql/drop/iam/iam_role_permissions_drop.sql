@@ -21,6 +21,6 @@
 drop rule if exists ores_iam_role_permissions_delete_rule on ores_iam_role_permissions_tbl;
 drop trigger if exists ores_iam_role_permissions_insert_trg on ores_iam_role_permissions_tbl;
 drop function if exists ores_iam_role_permissions_insert_fn;
-drop index if exists ores_iam_role_permissions_permission_idx;
-drop index if exists ores_iam_role_permissions_role_idx;
+drop index if exists role_permissions_permission_idx;
+drop index if exists role_permissions_role_idx;
 drop table if exists ores_iam_role_permissions_tbl;

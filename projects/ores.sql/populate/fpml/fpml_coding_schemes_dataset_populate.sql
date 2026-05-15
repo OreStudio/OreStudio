@@ -17,7 +17,7 @@ BEGIN
     -- --- FPML Coding Schemes Dataset ---
 
     -- FpML Coding Schemes
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.coding_schemes',
         'FpML Standards',
         'General',

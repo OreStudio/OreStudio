@@ -57,21 +57,21 @@ create table if not exists "ores_dq_dataset_bundle_members_tbl" (
 );
 
 -- Index for looking up datasets in a bundle
-create index if not exists ores_dq_dataset_bundle_members_bundle_idx
+create index if not exists dataset_bundle_members_bundle_idx
 on "ores_dq_dataset_bundle_members_tbl" (bundle_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding bundles containing a dataset
-create index if not exists ores_dq_dataset_bundle_members_dataset_idx
+create index if not exists dataset_bundle_members_dataset_idx
 on "ores_dq_dataset_bundle_members_tbl" (dataset_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_dq_dataset_bundle_members_uniq_idx
+create unique index if not exists dataset_bundle_members_uniq_idx
 on "ores_dq_dataset_bundle_members_tbl" (tenant_id, bundle_code, dataset_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_dq_dataset_bundle_members_tenant_idx
+create index if not exists dataset_bundle_members_tenant_idx
 on "ores_dq_dataset_bundle_members_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

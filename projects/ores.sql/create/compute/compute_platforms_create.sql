@@ -49,24 +49,24 @@ create table if not exists "ores_compute_platforms_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Unique code for active records (Rust target triple must be globally unique)
-create unique index if not exists ores_compute_platforms_code_uniq_idx
+create unique index if not exists platforms_code_uniq_idx
 on "ores_compute_platforms_tbl" (code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_compute_platforms_version_uniq_idx
+create unique index if not exists platforms_version_uniq_idx
 on "ores_compute_platforms_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_compute_platforms_id_uniq_idx
+create unique index if not exists platforms_id_uniq_idx
 on "ores_compute_platforms_tbl" (id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_compute_platforms_tenant_idx
+create index if not exists platforms_tenant_idx
 on "ores_compute_platforms_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

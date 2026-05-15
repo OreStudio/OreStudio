@@ -56,23 +56,23 @@ create table if not exists "ores_refdata_counterparty_contact_informations_tbl" 
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_refdata_counterparty_contact_informations_version_uniq_idx
+create unique index if not exists counterparty_contact_informations_version_uniq_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_counterparty_contact_informations_id_uniq_idx
+create unique index if not exists counterparty_contact_informations_id_uniq_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_counterparty_contact_informations_tenant_idx
+create index if not exists counterparty_contact_informations_tenant_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_counterparty_contact_informations_counterparty_contact_type_uniq_idx
+create unique index if not exists counterparty_contact_info_cpty_contact_type_uniq_idx
 on "ores_refdata_counterparty_contact_informations_tbl" (tenant_id, counterparty_id, contact_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

@@ -51,21 +51,21 @@ create table if not exists "ores_refdata_party_currencies_tbl" (
 );
 
 -- Index for looking up currencies visible to a party
-create index if not exists ores_refdata_party_currencies_party_idx
+create index if not exists party_currencies_party_idx
 on "ores_refdata_party_currencies_tbl" (party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Index for finding parties that can see a currency
-create index if not exists ores_refdata_party_currencies_currency_idx
+create index if not exists party_currencies_currency_idx
 on "ores_refdata_party_currencies_tbl" (currency_iso_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
-create unique index if not exists ores_refdata_party_currencies_uniq_idx
+create unique index if not exists party_currencies_uniq_idx
 on "ores_refdata_party_currencies_tbl" (tenant_id, party_id, currency_iso_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_party_currencies_tenant_idx
+create index if not exists party_currencies_tenant_idx
 on "ores_refdata_party_currencies_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -110,7 +110,7 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = current_user;
+    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 

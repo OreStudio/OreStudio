@@ -21,8 +21,8 @@
 drop rule if exists ores_iam_account_parties_delete_rule on "ores_iam_account_parties_tbl";
 drop trigger if exists ores_iam_account_parties_insert_trg on "ores_iam_account_parties_tbl";
 drop function if exists ores_iam_account_parties_insert_fn();
-drop index if exists ores_iam_account_parties_tenant_idx;
-drop index if exists ores_iam_account_parties_uniq_idx;
-drop index if exists ores_iam_account_parties_party_idx;
-drop index if exists ores_iam_account_parties_account_idx;
+drop index if exists account_parties_tenant_idx;
+drop index if exists account_parties_uniq_idx;
+drop index if exists account_parties_party_idx;
+drop index if exists account_parties_account_idx;
 drop table if exists "ores_iam_account_parties_tbl";

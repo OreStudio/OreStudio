@@ -30,7 +30,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_telemetry_logs_tbl enable row level security;
 
-create policy ores_telemetry_logs_tbl_tenant_isolation_policy on ores_telemetry_logs_tbl
+create policy logs_tbl_tenant_isolation_policy on ores_telemetry_logs_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

@@ -24,10 +24,10 @@
 -- Must be dropped before the corresponding tables are dropped.
 
 -- Image Tags
-drop policy if exists ores_assets_image_tags_tbl_tenant_isolation_policy on "ores_assets_image_tags_tbl";
+drop policy if exists image_tags_tbl_tenant_isolation_policy on "ores_assets_image_tags_tbl";
 
 -- Tags
-drop policy if exists ores_assets_tags_tbl_tenant_isolation_policy on "ores_assets_tags_tbl";
+drop policy if exists tags_tbl_tenant_isolation_policy on "ores_assets_tags_tbl";
 
 -- Images
-drop policy if exists ores_assets_images_tbl_tenant_isolation_policy on "ores_assets_images_tbl";
+drop policy if exists images_tbl_tenant_isolation_policy on "ores_assets_images_tbl";

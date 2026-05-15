@@ -29,7 +29,7 @@
 
 do $$
 declare
-    v_sys_tenant uuid := ores_iam_system_tenant_id_fn();
+    v_sys_tenant uuid := ores_utility_system_tenant_id_fn();
 begin
     if not exists (
         select 1 from ores_reporting_report_types_tbl
@@ -77,5 +77,5 @@ $$;
 
 select 'Report Types' as entity, count(*) as count
 from ores_reporting_report_types_tbl
-where tenant_id = ores_iam_system_tenant_id_fn()
+where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();

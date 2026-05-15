@@ -45,17 +45,17 @@ create table if not exists "ores_reporting_risk_report_config_portfolios_tbl" (
 );
 
 -- Unique active association
-create unique index if not exists ores_reporting_risk_report_config_portfolios_uniq_idx
+create unique index if not exists risk_report_config_portfolios_uniq_idx
 on "ores_reporting_risk_report_config_portfolios_tbl" (tenant_id, risk_report_config_id, portfolio_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Config index
-create index if not exists ores_reporting_risk_report_config_portfolios_config_idx
+create index if not exists risk_report_config_portfolios_config_idx
 on "ores_reporting_risk_report_config_portfolios_tbl" (risk_report_config_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
-create index if not exists ores_reporting_risk_report_config_portfolios_tenant_idx
+create index if not exists risk_report_config_portfolios_tenant_idx
 on "ores_reporting_risk_report_config_portfolios_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

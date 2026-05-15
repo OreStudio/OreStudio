@@ -48,7 +48,7 @@ insert into ores_refdata_currencies_tbl (
     fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
     format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
-    ores_iam_system_tenant_id_fn(), 'TST', 0, 'Test Currency', '999', 'T',
+    ores_utility_system_tenant_id_fn(), 'TST', 0, 'Test Currency', '999', 'T',
     'c', 100, NULL, 2,
     'T#,##0.00', 'fiat', 'test', current_user, current_user, 'system.test', 'Test insert'
 );
@@ -66,7 +66,7 @@ insert into ores_refdata_currencies_tbl (
     fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
     format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
 ) values (
-    ores_iam_system_tenant_id_fn(), 'TS2', 0, 'Test Currency 2', '998', 'T',
+    ores_utility_system_tenant_id_fn(), 'TS2', 0, 'Test Currency 2', '998', 'T',
     'c', 100, 'Up', 2,
     'T#,##0.00', 'fiat', 'test', current_user, current_user, NULL, 'Test insert'
 );
@@ -97,7 +97,7 @@ select throws_ok(
         fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
         format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        ores_iam_system_tenant_id_fn(), 'BAD', 0, 'Bad Currency', '997', 'B',
+        ores_utility_system_tenant_id_fn(), 'BAD', 0, 'Bad Currency', '997', 'B',
         'c', 100, 'INVALID_ROUNDING', 2,
         'B#,##0.00', 'fiat', 'test', current_user, current_user, 'system.test', 'Test'
     )$$,
@@ -113,7 +113,7 @@ select throws_ok(
         fraction_symbol, fractions_per_unit, rounding_type, rounding_precision,
         format, asset_class, market_tier, modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        ores_iam_system_tenant_id_fn(), 'BD2', 0, 'Bad Currency 2', '996', 'B',
+        ores_utility_system_tenant_id_fn(), 'BD2', 0, 'Bad Currency 2', '996', 'B',
         'c', 100, 'Closest', 2,
         'B#,##0.00', 'fiat', 'test', current_user, current_user, 'INVALID_REASON', 'Test'
     )$$,

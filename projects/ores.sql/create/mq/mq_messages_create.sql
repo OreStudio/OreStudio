@@ -42,7 +42,7 @@ create table if not exists ores_mq_messages_tbl (
     error_message text         not null default ''
 );
 
-create index if not exists ores_mq_messages_queue_status_idx
+create index if not exists messages_queue_status_idx
     on ores_mq_messages_tbl (queue_id, status, visible_after)
     where status in ('pending','processing');
 
@@ -52,13 +52,13 @@ create index if not exists ores_mq_messages_queue_status_idx
 
 alter table ores_mq_messages_tbl enable row level security;
 
-create policy ores_mq_messages_read_policy on ores_mq_messages_tbl for select using (
+create policy messages_read_policy on ores_mq_messages_tbl for select using (
     (tenant_id is null and party_id is null)  -- system scope
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id is null)  -- tenant scope
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id = any(ores_iam_visible_party_ids_fn()))  -- party scope
 );
 
-create policy ores_mq_messages_write_policy on ores_mq_messages_tbl for all using (
+create policy messages_write_policy on ores_mq_messages_tbl for all using (
     (tenant_id is null and party_id is null)
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id is null)
     or (tenant_id = ores_iam_current_tenant_id_fn() and party_id = any(ores_iam_visible_party_ids_fn()))

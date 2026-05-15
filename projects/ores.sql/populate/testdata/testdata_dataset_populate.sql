@@ -34,7 +34,7 @@ BEGIN
     -- --- Test Data Datasets ---
 
     -- Business Units
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'testdata.business_units',
         'Test Data',
         'Organisation',
@@ -54,7 +54,7 @@ BEGIN
     );
 
     -- Portfolios
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'testdata.portfolios',
         'Test Data',
         'Organisation',
@@ -74,7 +74,7 @@ BEGIN
     );
 
     -- Books
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'testdata.books',
         'Test Data',
         'Organisation',

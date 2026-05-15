@@ -51,29 +51,29 @@ create table if not exists "ores_analytics_pricing_model_product_parameters_tbl"
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists ores_analytics_pricing_model_product_parameters_version_uniq_idx
+create unique index if not exists pricing_model_product_parameters_version_uniq_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_analytics_pricing_model_product_parameters_id_uniq_idx
+create unique index if not exists pricing_model_product_parameters_id_uniq_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_analytics_pricing_model_product_parameters_tenant_idx
+create index if not exists pricing_model_product_parameters_tenant_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FK lookup: all parameters for a config
-create index if not exists ores_analytics_pricing_model_product_parameters_config_idx
+create index if not exists pricing_model_product_parameters_config_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, pricing_model_config_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- FK lookup: all parameters for a product
-create index if not exists ores_analytics_pricing_model_product_parameters_product_idx
+create index if not exists pricing_model_product_parameters_product_idx
 on "ores_analytics_pricing_model_product_parameters_tbl" (tenant_id, pricing_model_product_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -114,7 +114,7 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

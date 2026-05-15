@@ -40,7 +40,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'x64-linux',
     'Linux x86-64',
@@ -72,7 +72,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'arm64-linux',
     'Linux ARM64',
@@ -103,7 +103,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'x64-osx',
     'macOS Intel',
@@ -135,7 +135,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'arm64-osx',
     'macOS Apple Silicon (M-series)',
@@ -167,7 +167,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'x64-windows',
     'Windows x86-64',
@@ -199,7 +199,7 @@ insert into ores_compute_platforms_tbl (
 )
 select
     gen_random_uuid(),
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     1,
     'arm64-windows',
     'Windows ARM64',

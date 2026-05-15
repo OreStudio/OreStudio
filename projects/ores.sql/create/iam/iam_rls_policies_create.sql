@@ -30,7 +30,7 @@
 -- -----------------------------------------------------------------------------
 alter table ores_iam_accounts_tbl enable row level security;
 
-create policy ores_iam_accounts_tenant_isolation_policy on ores_iam_accounts_tbl
+create policy accounts_tenant_isolation_policy on ores_iam_accounts_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -43,7 +43,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_roles_tbl enable row level security;
 
-create policy ores_iam_roles_tenant_isolation_policy on ores_iam_roles_tbl
+create policy roles_tenant_isolation_policy on ores_iam_roles_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -56,7 +56,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_permissions_tbl enable row level security;
 
-create policy ores_iam_permissions_tenant_isolation_policy on ores_iam_permissions_tbl
+create policy permissions_tenant_isolation_policy on ores_iam_permissions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -69,7 +69,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_roles_tbl enable row level security;
 
-create policy ores_iam_account_roles_tenant_isolation_policy on ores_iam_account_roles_tbl
+create policy account_roles_tenant_isolation_policy on ores_iam_account_roles_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -82,7 +82,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_role_permissions_tbl enable row level security;
 
-create policy ores_iam_role_permissions_tenant_isolation_policy on ores_iam_role_permissions_tbl
+create policy role_permissions_tenant_isolation_policy on ores_iam_role_permissions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -95,7 +95,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_sessions_tbl enable row level security;
 
-create policy ores_iam_sessions_tenant_isolation_policy on ores_iam_sessions_tbl
+create policy sessions_tenant_isolation_policy on ores_iam_sessions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -108,7 +108,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_login_info_tbl enable row level security;
 
-create policy ores_iam_login_info_tenant_isolation_policy on ores_iam_login_info_tbl
+create policy login_info_tenant_isolation_policy on ores_iam_login_info_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -124,13 +124,13 @@ with check (
 -- Regular tenants can only read their own tenant record (by id).
 alter table ores_iam_tenants_tbl enable row level security;
 
-create policy ores_iam_tenants_read_policy on ores_iam_tenants_tbl
+create policy tenants_read_policy on ores_iam_tenants_tbl
 for select using (
     id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-create policy ores_iam_tenants_write_policy on ores_iam_tenants_tbl
+create policy tenants_write_policy on ores_iam_tenants_tbl
 for all using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
@@ -139,7 +139,7 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_iam_session_samples_tbl enable row level security;
 
-create policy ores_iam_session_samples_tenant_isolation_policy on ores_iam_session_samples_tbl
+create policy session_samples_tenant_isolation_policy on ores_iam_session_samples_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -152,7 +152,7 @@ with check (
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_parties_tbl enable row level security;
 
-create policy ores_iam_account_parties_tenant_isolation_policy on ores_iam_account_parties_tbl
+create policy account_parties_tenant_isolation_policy on ores_iam_account_parties_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

@@ -53,23 +53,23 @@ create table if not exists "ores_refdata_business_centres_tbl" (
     check ("code" <> '')
 );
 
-create unique index if not exists ores_refdata_business_centres_version_uniq_idx
+create unique index if not exists business_centres_version_uniq_idx
 on "ores_refdata_business_centres_tbl" (tenant_id, code, coding_scheme_code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_refdata_business_centres_code_uniq_idx
+create unique index if not exists business_centres_code_uniq_idx
 on "ores_refdata_business_centres_tbl" (tenant_id, code, coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_business_centres_tenant_idx
+create index if not exists business_centres_tenant_idx
 on "ores_refdata_business_centres_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_business_centres_coding_scheme_idx
+create index if not exists business_centres_coding_scheme_idx
 on "ores_refdata_business_centres_tbl" (coding_scheme_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_refdata_business_centres_country_idx
+create index if not exists business_centres_country_idx
 on "ores_refdata_business_centres_tbl" (tenant_id, country_alpha2_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 

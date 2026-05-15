@@ -68,7 +68,7 @@ fsm_service::list_states_for_machine(const std::string& machine_name) {
         " WHERE m.name = $1"
         "   AND s.valid_to  = ores_utility_infinity_timestamp_fn()"
         "   AND m.valid_to  = ores_utility_infinity_timestamp_fn()"
-        "   AND s.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND s.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY s.name",
         {machine_name},
         lg(), "Listing FSM states for machine: " + machine_name);
@@ -125,7 +125,7 @@ fsm_service::list_transitions_for_machine(const std::string& machine_name) {
         " WHERE m.name = $1"
         "   AND t.valid_to = ores_utility_infinity_timestamp_fn()"
         "   AND m.valid_to = ores_utility_infinity_timestamp_fn()"
-        "   AND t.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND t.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY t.name",
         {machine_name},
         lg(), "Listing FSM transitions for machine: " + machine_name);
@@ -155,7 +155,7 @@ std::vector<domain::fsm_transition> fsm_service::list_all_transitions() {
         "       t.tenant_id, t.version, t.modified_by"
         " FROM ores_dq_fsm_transitions_tbl t"
         " WHERE t.valid_to = ores_utility_infinity_timestamp_fn()"
-        "   AND t.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND t.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY t.name",
         {},
         lg(), "Listing all FSM transitions");
@@ -184,7 +184,7 @@ std::vector<domain::fsm_state> fsm_service::list_all_states() {
         "       s.tenant_id, s.version, s.modified_by"
         " FROM ores_dq_fsm_states_tbl s"
         " WHERE s.valid_to  = ores_utility_infinity_timestamp_fn()"
-        "   AND s.tenant_id = ores_iam_system_tenant_id_fn()"
+        "   AND s.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY s.name",
         {},
         lg(), "Listing all FSM states");

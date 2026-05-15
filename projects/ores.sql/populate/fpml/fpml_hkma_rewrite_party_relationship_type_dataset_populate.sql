@@ -37,7 +37,7 @@ BEGIN
 
     -- --- FpML Hkma Rewrite Party Relationship Type Dataset ---
 
-    PERFORM ores_dq_datasets_upsert_fn(ores_iam_system_tenant_id_fn(),
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'fpml.hkma_rewrite_party_relationship_type',
         'FpML Standards',
         'Parties',

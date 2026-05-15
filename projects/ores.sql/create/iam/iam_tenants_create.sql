@@ -36,7 +36,7 @@
 
 create table if not exists "ores_iam_tenants_tbl" (
     "id" uuid not null,
-    "tenant_id" uuid not null default ores_iam_system_tenant_id_fn(),
+    "tenant_id" uuid not null default ores_utility_system_tenant_id_fn(),
     "version" integer not null,
     "type" text not null,
     "code" text not null,
@@ -57,22 +57,22 @@ create table if not exists "ores_iam_tenants_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'),
-    check ("tenant_id" = ores_iam_system_tenant_id_fn()),  -- All tenants owned by system
+    check ("tenant_id" = ores_utility_system_tenant_id_fn()),  -- All tenants owned by system
     check ("code" <> ''),
     check ("hostname" <> '')
 );
 
 -- Unique indexes for active records
 -- Note: tenant_id is always system tenant, so not needed in uniqueness constraints
-create unique index if not exists ores_iam_tenants_code_uniq_idx
+create unique index if not exists tenants_code_uniq_idx
 on ores_iam_tenants_tbl (code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_tenants_hostname_uniq_idx
+create unique index if not exists tenants_hostname_uniq_idx
 on ores_iam_tenants_tbl (hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_iam_tenants_version_uniq_idx
+create unique index if not exists tenants_version_uniq_idx
 on ores_iam_tenants_tbl (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -87,7 +87,7 @@ declare
     current_version integer;
 begin
     -- All tenants belong to the system tenant
-    new.tenant_id := ores_iam_system_tenant_id_fn();
+    new.tenant_id := ores_utility_system_tenant_id_fn();
 
     -- Validate type FK
     if not exists (
@@ -139,7 +139,7 @@ begin
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     -- Validate change_reason_code (use system tenant for tenant records)
-    new.change_reason_code := ores_dq_validate_change_reason_fn(ores_iam_system_tenant_id_fn(), new.change_reason_code);
+    new.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), new.change_reason_code);
 
     return new;
 end;

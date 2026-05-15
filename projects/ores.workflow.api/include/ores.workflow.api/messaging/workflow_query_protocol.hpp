@@ -24,7 +24,7 @@
 #include <vector>
 #include <optional>
 #include <string_view>
-#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/step_log_types.hpp"
 
 namespace ores::workflow::messaging {
 

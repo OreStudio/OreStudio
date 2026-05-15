@@ -26,51 +26,9 @@
 #include <string_view>
 #include <vector>
 #include <rfl.hpp>
+#include "ores.workflow.api/messaging/step_log_types.hpp"
 
 namespace ores::workflow::messaging {
-
-/**
- * @brief Severity of a step log entry.
- *
- * Serialises as a lowercase string ("info", "warn", "error") so that
- * step_log_json columns in the DB are human-readable and queryable via
- * JSON containment (@>).
- */
-enum class step_log_level : std::uint8_t {
-    info  = 0,
-    warn  = 1,
-    error = 2
-};
-
-[[nodiscard]] inline std::string_view to_string(step_log_level v) {
-    switch (v) {
-    case step_log_level::info:  return "info";
-    case step_log_level::warn:  return "warn";
-    case step_log_level::error: return "error";
-    }
-    throw std::invalid_argument("Out-of-range step_log_level");
-}
-
-[[nodiscard]] inline step_log_level step_log_level_from_string(std::string_view sv) {
-    if (sv == "info")  return step_log_level::info;
-    if (sv == "warn")  return step_log_level::warn;
-    if (sv == "error") return step_log_level::error;
-    throw std::invalid_argument("Invalid step_log_level: '" + std::string(sv) + "'");
-}
-
-/**
- * @brief A single structured log entry emitted by a step handler.
- *
- * Entries are stored as a JSON array in workflow_step.step_log_json and
- * surfaced in the workflow instance detail dialog.  The context field
- * carries item-level identifiers (trade ID, filename, etc.) so the user
- * can locate the source of each message.
- */
-struct step_log_entry {
-    step_log_level level = step_log_level::info;
-    std::string    message;
-    std::string    context;
-};
 
 /**
  * @brief Terminal outcome of a workflow step.

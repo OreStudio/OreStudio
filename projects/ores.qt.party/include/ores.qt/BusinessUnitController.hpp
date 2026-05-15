@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PartyExport.hpp"
 
 namespace ores::qt {
 
@@ -42,7 +43,7 @@ class ChangeReasonCache;
  * Manages the lifecycle of business unit list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class BusinessUnitController final : public EntityController {
+class ORES_QT_PARTY_EXPORT BusinessUnitController final : public EntityController {
     Q_OBJECT
 
 private:

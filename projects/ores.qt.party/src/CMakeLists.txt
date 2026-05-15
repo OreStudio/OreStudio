@@ -34,6 +34,7 @@ file(GLOB_RECURSE HEADERS "${ORES_QT_PARTY_DIR}/include/*.hpp")
 file(GLOB FORMS "${ORES_QT_PARTY_DIR}/ui/*.ui")
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_PARTY_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)

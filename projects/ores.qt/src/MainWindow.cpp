@@ -805,7 +805,7 @@ void MainWindow::performDisconnectCleanup() {
     // The disconnected() signal is emitted via QueuedConnection from inside
     // disconnect(), so all UI state updates land on the main thread regardless.
     QPointer<ClientManager> cm = clientManager_;
-    QtConcurrent::run([cm]() {
+    QThreadPool::globalInstance()->start([cm]() {
         if (cm)
             cm->disconnect();
     });

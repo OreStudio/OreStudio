@@ -31,6 +31,7 @@ file(GLOB_RECURSE files RELATIVE
 file(GLOB_RECURSE HEADERS "${ORES_QT_WORKFLOW_DIR}/include/*.hpp")
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_WORKFLOW_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)

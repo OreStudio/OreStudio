@@ -28,6 +28,7 @@
 #include <QFutureWatcher>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowExport.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 
 namespace ores::qt {
@@ -45,7 +46,7 @@ namespace ores::qt {
  *   w->setInstance(QUuid::fromString(workflowId));
  * @endcode
  */
-class WorkflowStepsWidget final : public QWidget {
+class ORES_QT_WORKFLOW_EXPORT WorkflowStepsWidget final : public QWidget {
     Q_OBJECT
 
 private:

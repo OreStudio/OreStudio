@@ -17,4 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+drop function if exists ores_utility_nil_uuid_fn cascade;
 drop function if exists ores_utility_system_tenant_id_fn cascade;

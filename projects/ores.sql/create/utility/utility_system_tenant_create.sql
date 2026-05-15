@@ -28,3 +28,12 @@ begin
     return 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid;
 end;
 $$ language plpgsql immutable;
+
+-- Nil UUID constant (RFC 9562 nil UUID: all zeroes).
+-- Used in CHECK constraints to reject uninitialized or zero-value UUIDs.
+create or replace function ores_utility_nil_uuid_fn()
+returns uuid as $$
+begin
+    return '00000000-0000-0000-0000-000000000000'::uuid;
+end;
+$$ language plpgsql immutable;

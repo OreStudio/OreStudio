@@ -51,7 +51,7 @@ create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
     check ("maturity_date" > "start_date"),
     check ("lockout_days" is null or "lockout_days" >= 0)
 );

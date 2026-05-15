@@ -40,7 +40,7 @@ create table if not exists ores_marketdata_fixings_tbl (
     "valid_to"     timestamp with time zone not null,
     primary key (id, fixing_date),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("value" <> '')
 );
 

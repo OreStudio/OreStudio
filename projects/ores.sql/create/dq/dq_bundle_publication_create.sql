@@ -58,7 +58,7 @@ create table if not exists "ores_dq_bundle_publications_tbl" (
     "published_at" timestamp with time zone not null default current_timestamp,
     "completed_at" timestamp with time zone,
     primary key (id),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("bundle_code" <> ''),
     check ("mode" in ('upsert', 'insert_only', 'replace_all')),
     check ("published_by" <> '')

@@ -42,7 +42,7 @@ create table if not exists "ores_reporting_report_input_bundles_tbl" (
     "series_count"              integer not null default 0,
     "created_at"                timestamp with time zone not null default current_timestamp,
     primary key (tenant_id, id),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("trades_storage_key" <> ''),
     check ("market_data_storage_key" <> '')
 );

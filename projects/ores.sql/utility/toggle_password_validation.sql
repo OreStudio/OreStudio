@@ -42,7 +42,7 @@
 
 -- Update the setting using the upsert function
 select ores_variability_system_settings_upsert_fn(
-    ores_iam_system_tenant_id_fn(),
+    ores_utility_system_tenant_id_fn(),
     'system.disable_password_validation',
     case when :new_value::boolean then 'true' else 'false' end,
     'boolean',

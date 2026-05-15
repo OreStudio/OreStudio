@@ -69,7 +69,7 @@ create table if not exists ores_marketdata_series_tbl (
         tstzrange(valid_from, valid_to) with &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("series_type" <> ''),
     check ("metric" <> ''),
     check ("qualifier" <> ''),

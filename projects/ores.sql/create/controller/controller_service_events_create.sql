@@ -35,7 +35,7 @@ create table if not exists ores_controller_service_events_tbl (
     "event_type"     text not null,
     "message"        text not null default '',
     primary key (occurred_at, event_id),
-    check ("event_id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("event_id" <> ores_utility_nil_uuid_fn())
 );
 
 create index if not exists service_events_name_idx

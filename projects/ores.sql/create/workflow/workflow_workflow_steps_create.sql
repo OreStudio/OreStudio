@@ -48,5 +48,5 @@ create table if not exists "ores_workflow_workflow_steps_tbl" (
     "completed_at" timestamptz null,
     "created_at" timestamp with time zone not null default current_timestamp,
     primary key (id),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> ores_utility_nil_uuid_fn())
 );

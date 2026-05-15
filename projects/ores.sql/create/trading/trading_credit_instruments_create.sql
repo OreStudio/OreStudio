@@ -62,7 +62,7 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("id" <> ores_utility_nil_uuid_fn()),
     check ("notional" > 0),
     check ("spread" >= 0),
     check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),

@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic scripted_instrument.
  */
-domain::scripted_instrument generate_synthetic_scripted_instrument(
+ORES_TRADING_API_EXPORT domain::scripted_instrument generate_synthetic_scripted_instrument(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic scripted_instruments.
  */
-std::vector<domain::scripted_instrument>
+ORES_TRADING_API_EXPORT std::vector<domain::scripted_instrument>
 generate_synthetic_scripted_instruments(std::size_t n,
     utility::generation::generation_context& ctx);
 

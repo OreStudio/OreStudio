@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic day_count_fraction_type.
  */
-domain::day_count_fraction_type generate_synthetic_day_count_fraction_type(
+ORES_TRADING_API_EXPORT domain::day_count_fraction_type generate_synthetic_day_count_fraction_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic day_count_fraction_types.
  */
-std::vector<domain::day_count_fraction_type>
+ORES_TRADING_API_EXPORT std::vector<domain::day_count_fraction_type>
 generate_synthetic_day_count_fraction_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

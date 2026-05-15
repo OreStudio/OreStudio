@@ -24,13 +24,14 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic composite_leg for the given instrument_id.
  */
-domain::composite_leg generate_synthetic_composite_leg(
+ORES_TRADING_API_EXPORT domain::composite_leg generate_synthetic_composite_leg(
     const boost::uuids::uuid& instrument_id,
     int leg_sequence,
     utility::generation::generation_context& ctx);
@@ -38,7 +39,7 @@ domain::composite_leg generate_synthetic_composite_leg(
 /**
  * @brief Generates a synthetic pair of composite legs for an instrument.
  */
-std::vector<domain::composite_leg>
+ORES_TRADING_API_EXPORT std::vector<domain::composite_leg>
 generate_synthetic_composite_legs(const boost::uuids::uuid& instrument_id,
     utility::generation::generation_context& ctx);
 

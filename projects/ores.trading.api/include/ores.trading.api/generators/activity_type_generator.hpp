@@ -23,19 +23,20 @@
 #include <vector>
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic activity_type.
  */
-domain::activity_type generate_synthetic_activity_type(
+ORES_TRADING_API_EXPORT domain::activity_type generate_synthetic_activity_type(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic activity_types.
  */
-std::vector<domain::activity_type>
+ORES_TRADING_API_EXPORT std::vector<domain::activity_type>
 generate_synthetic_activity_types(std::size_t n,
     utility::generation::generation_context& ctx);
 

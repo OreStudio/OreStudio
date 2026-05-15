@@ -428,6 +428,100 @@ Additional tables populated via operational processes (not publication):
 |            | =ores_iam_login_info_tbl=               | Login tracking                            |
 | Variability| =ores_variability_system_settings_tbl=  | Runtime configuration                     |
 
+* Service Table Isolation
+
+Each domain service runs as a dedicated PostgreSQL role
+(=ores_<env>_<service>_service=) and holds DML privileges only on its own
+component tables (=ores_<service>_*=). This is the *strict service table
+isolation invariant*: no service user may read from or write to a table owned
+by another service, except through the patterns described below.
+
+** Why it matters
+
+Without this invariant:
+- Grant files stop being the source of truth for "who can write where". Auditing
+  correctness requires reading every function body.
+- Cross-service writes bypass application-layer logic (cache invalidation,
+  projection updates, per-service event emission) in the target service.
+- Schema changes in a target table force edits to files owned by another domain.
+
+** Intra-service writes (normal path)
+
+The default: a service handler receives a NATS message, validates the payload,
+and calls its own repository, which INSERTs into =ores_<service>_*= tables. No
+cross-service DB access at all.
+
+** Cross-service reads via SECURITY DEFINER (trigger validation)
+
+DB trigger functions sometimes need to validate a soft FK against a table owned
+by another service. Since trigger functions run as the calling service user, a
+plain =SELECT= would fail. The solution is =SECURITY DEFINER=:
+
+#+begin_src sql
+create or replace function ores_<service>_<entity>_insert_fn()
+returns trigger
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    -- can now SELECT from ores_<other_service>_* safely
+    if not exists (
+        select 1 from ores_other_service_entities_tbl
+        where id = new.entity_id ...
+    ) then
+        raise exception '...';
+    end if;
+    ...
+end;
+$$ language plpgsql;
+#+end_src
+
+The function executes as the DDL owner, so no service user needs a
+cross-component =SELECT= grant. The grants file remains the authoritative
+record of service permissions.
+
+Two system-wide shared validators follow this pattern and are called from
+every service's triggers:
+
+- =ores_iam_validate_tenant_fn= — validates =tenant_id= on every INSERT/UPDATE.
+- =ores_dq_validate_change_reason_fn= — validates =change_reason_code= on every
+  INSERT/UPDATE.
+
+Per-table soft-FK validators also follow this pattern when they cross a service
+boundary:
+
+- =ores_iam_account_parties_insert_fn= — validates =party_id= against
+  =ores_refdata_parties_tbl=.
+- =ores_refdata_countries_insert_fn= — validates =coding_scheme_code= against
+  =ores_dq_coding_schemes_tbl=.
+
+*Rule:* any trigger function body containing a =SELECT= from
+=ores_<other_service>_*= must be declared =SECURITY DEFINER SET search_path =
+public, pg_temp=. Never add a cross-component =SELECT= grant to a service user
+to satisfy a trigger check.
+
+** Cross-service writes via NATS (application layer)
+
+When a service needs to write to another service's tables (e.g. the workflow
+engine provisioning parties), it publishes a NATS message to the target
+service's write API (e.g. =refdata.v1.parties.save=). The target service
+handles the message and writes to its own tables. No cross-service DML grants
+are needed or permitted.
+
+** Foreign key constraints
+
+PostgreSQL FK enforcement does /not/ require the session user to hold =SELECT=
+on the referenced table. The =REFERENCES= privilege is only needed when
+creating the constraint (granted to the DDL user). At runtime, the FK check is
+system-internal. Service users therefore need no cross-component =SELECT= grant
+solely because of FK constraints.
+
+** Current status
+
+All tracked cross-component grants have been removed. For migration history see
+[[file:../../doc/plans/2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]] and
+[[file:../../doc/plans/2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+
 * Multi-Environment Architecture
 
 ORE Studio supports multiple isolated development environments. For full

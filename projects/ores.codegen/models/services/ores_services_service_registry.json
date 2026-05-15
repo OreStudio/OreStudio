@@ -174,9 +174,7 @@
         "iam_role": "OreService",
         "description": "ORE Import",
         "email": "ore_service@system.ores",
-        "dml_prefixes": [
-          {"prefix": "ores_workflow_"}
-        ],
+        "dml_prefixes": [],
         "select_tables": [],
         "select_prefixes": []
       },

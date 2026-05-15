@@ -165,20 +165,23 @@ Steps:
 3. Remove ~select _ores_grant_select_fn('ores_refdata_', :'trading_service_user')~
    from the service registry and regenerate the grants file.
 
-* Phase 3a — Trading reads FSM transitions via NATS (deferred)
+* Phase 3a — Trading reads FSM transitions via NATS
 
-*Status: DEFERRED — no DB grant; trading service trade saves will fail until resolved.*
+*Status: COMPLETE*
 
-~trade_status_service.cpp~ calls ~dq::repository::fsm_transition_repository::find_by_id()~
-directly. No DB grant is issued; this must be replaced with a NATS call.
+~trade_status_service.cpp~ previously called
+~dq::repository::fsm_transition_repository::find_by_id()~ directly, violating
+service isolation.
 
-Fix:
-1. In ~trade_handler::save()~, call ~dq.v1.fsm-transitions.list~ once per request
-   (before iterating trades) to fetch the full set of transitions into a lookup map.
-2. Inject the map into ~trade_service~ / ~trade_status_service::resolve_status()~
-   so no direct DB access to ~ores_dq_fsm_transitions_tbl~ is needed.
-3. Remove ~#include "ores.dq.core/repository/fsm_transition_repository.hpp"~
-   from ~trade_status_service.cpp~ and the corresponding CMake link.
+Fix applied:
+1. ~trade_handler::save()~ calls ~dq.v1.fsm-transitions.list~ once per request
+   via the private ~fetch_fsm_transitions()~ helper, returning a
+   ~service::fsm_transition_map~ keyed by UUID.
+2. The map is passed into ~trade_service::save_trades()~ →
+   ~trade_status_service::resolve_status()~, which looks up the transition
+   by UUID without any DB access to ~ores_dq_fsm_transitions_tbl~.
+3. ~#include "ores.dq.core/repository/fsm_transition_repository.hpp"~
+   removed from ~trade_status_service.cpp~.
 
 * Phase 4 — Lock the Invariant
 

@@ -20,8 +20,11 @@
 #ifndef ORES_TRADING_MESSAGING_TRADE_HANDLER_HPP
 #define ORES_TRADING_MESSAGING_TRADE_HANDLER_HPP
 
+#include <chrono>
 #include <optional>
+#include <span>
 #include <unordered_map>
+#include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -66,6 +69,8 @@
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
@@ -460,7 +465,8 @@ public:
         service::trade_service svc(ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
-                svc.save_trades(req->trades);
+                const auto transitions = fetch_fsm_transitions();
+                svc.save_trades(req->trades, transitions);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, save_trade_response{.success = true});
@@ -695,6 +701,59 @@ public:
     }
 
 private:
+    /**
+     * @brief Fetches all FSM transitions from the DQ service via NATS.
+     *
+     * Results are cached process-wide for 5 minutes; FSM transitions are
+     * system-level reference data that change only on schema migrations.
+     * The cache avoids an extra NATS round-trip per trade when the ore import
+     * handler sends one save_trade message per trade.
+     * Returns an empty map on failure so save operations degrade gracefully.
+     */
+    service::fsm_transition_map fetch_fsm_transitions() {
+        using namespace ores::dq::messaging;
+
+        {
+            std::lock_guard lock(s_cache_mutex_);
+            const auto age = std::chrono::steady_clock::now() - s_cache_fetched_;
+            if (!s_cache_.empty() && age < std::chrono::minutes(5))
+                return s_cache_;
+        }
+
+        service::fsm_transition_map result;
+        const get_fsm_transitions_request req{};
+        const auto json = rfl::json::write(req);
+        const auto* p = reinterpret_cast<const std::byte*>(json.data());
+        try {
+            const auto reply = nats_.request_sync(
+                get_fsm_transitions_request::nats_subject,
+                std::span<const std::byte>(p, json.size()),
+                {}, std::chrono::seconds(10));
+            const std::string_view sv(
+                reinterpret_cast<const char*>(reply.data.data()),
+                reply.data.size());
+            const auto resp = rfl::json::read<get_fsm_transitions_response>(sv);
+            if (resp && resp->success) {
+                for (auto& t : resp->transitions)
+                    result[t.id] = std::move(t);
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), warn)
+                << "fetch_fsm_transitions: " << e.what();
+        }
+
+        {
+            std::lock_guard lock(s_cache_mutex_);
+            s_cache_ = result;
+            s_cache_fetched_ = std::chrono::steady_clock::now();
+        }
+        return result;
+    }
+
+    inline static std::mutex s_cache_mutex_;
+    inline static service::fsm_transition_map s_cache_;
+    inline static std::chrono::steady_clock::time_point s_cache_fetched_{};
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

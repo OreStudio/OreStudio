@@ -58,7 +58,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.storage.lib
         ores.database.lib
-        ores.dq.core.lib
+        ores.dq.api.lib
         ores.utility.lib
         ores.security.lib
         sqlgen::sqlgen

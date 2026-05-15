@@ -23,7 +23,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.trading.core/service/trade_status_service.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -73,7 +72,8 @@ trade_service::find_trade(const std::string& id) {
     return results.front();
 }
 
-void trade_service::save_trade(const domain::trade& v) {
+void trade_service::save_trade(const domain::trade& v,
+    const fsm_transition_map& transitions) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.id;
@@ -83,12 +83,13 @@ void trade_service::save_trade(const domain::trade& v) {
         t.status_id.is_nil() ? std::nullopt
                              : std::make_optional(t.status_id);
     t.status_id = trade_status_service::resolve_status(
-        ctx_, t.activity_type_code, current);
+        ctx_, t.activity_type_code, current, transitions);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved trade: " << t.id;
 }
 
-void trade_service::save_trades(const std::vector<domain::trade>& trades) {
+void trade_service::save_trades(const std::vector<domain::trade>& trades,
+    const fsm_transition_map& transitions) {
     for (const auto& t : trades) {
         if (t.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
@@ -101,7 +102,7 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
             t.status_id.is_nil() ? std::nullopt
                                  : std::make_optional(t.status_id);
         t.status_id = trade_status_service::resolve_status(
-            ctx_, t.activity_type_code, current);
+            ctx_, t.activity_type_code, current, transitions);
     }
     repo_.write(ctx_, resolved);
 }

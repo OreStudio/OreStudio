@@ -1,7 +1,9 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "reporting",
+    "has_tenant_id": true,
     "entity_singular": "report_type",
     "entity_plural": "report_types",
     "entity_title": "Report Type",

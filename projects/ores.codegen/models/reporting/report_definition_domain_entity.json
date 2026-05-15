@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "reporting",
     "entity_singular": "report_definition",
     "entity_plural": "report_definitions",

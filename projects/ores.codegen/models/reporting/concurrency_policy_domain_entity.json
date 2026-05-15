@@ -1,7 +1,9 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "reporting",
+    "has_tenant_id": true,
     "entity_singular": "concurrency_policy",
     "entity_plural": "concurrency_policies",
     "entity_title": "Concurrency Policy",

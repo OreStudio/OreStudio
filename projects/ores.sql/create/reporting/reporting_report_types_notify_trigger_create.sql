@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
 create or replace function ores_reporting_report_types_notify_fn()
 returns trigger as $$
@@ -25,20 +30,25 @@ declare
     entity_name text := 'ores.reporting.report_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
+    changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_code := OLD.code;
+        changed_tenant_id := OLD.tenant_id::text;
     else
         changed_code := NEW.code;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_code)
+        'entity_ids', jsonb_build_array(changed_code),
+        'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_reporting_report_types', notification_payload::text);
+    perform pg_notify('ores_report_types', notification_payload::text);
+
     return null;
 end;
 $$ language plpgsql;

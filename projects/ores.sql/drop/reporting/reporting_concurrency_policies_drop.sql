@@ -18,11 +18,7 @@
  *
  */
 
-drop function if exists ores_reporting_validate_concurrency_policy_fn(uuid, text);
 drop rule if exists ores_reporting_concurrency_policies_delete_rule on "ores_reporting_concurrency_policies_tbl";
 drop trigger if exists ores_reporting_concurrency_policies_insert_trg on "ores_reporting_concurrency_policies_tbl";
 drop function if exists ores_reporting_concurrency_policies_insert_fn;
-drop index if exists concurrency_policies_code_uniq_idx;
-drop index if exists concurrency_policies_version_uniq_idx;
-drop index if exists concurrency_policies_tenant_idx;
 drop table if exists "ores_reporting_concurrency_policies_tbl";

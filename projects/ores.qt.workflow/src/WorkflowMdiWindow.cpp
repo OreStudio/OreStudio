@@ -19,6 +19,7 @@
 #include "ores.qt/WorkflowMdiWindow.hpp"
 
 #include <algorithm>
+#include "ores.qt/WorkflowStepLogWidget.hpp"
 #include <QCloseEvent>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -68,8 +69,7 @@ enum ItemRole {
     BadgeTagRole   = Qt::UserRole,
     BadgeColorRole = Qt::UserRole + 1,
     InstanceIdRole = Qt::UserRole + 2,
-    ErrorDetailRole = Qt::UserRole + 3,
-    CorrIdRole     = Qt::UserRole + 4,
+    CorrIdRole     = Qt::UserRole + 3,
 };
 
 // Execution list table columns
@@ -168,12 +168,16 @@ QString display_status(const QString& status) {
     if (status == QStringLiteral("compensating") ||
         status == QStringLiteral("compensated"))
         return QStringLiteral("Failed");
+    if (status == QStringLiteral("completed_with_warnings"))
+        return QStringLiteral("Warnings");
     return status;
 }
 
 QColor status_color(const QString& status) {
     if (status == QStringLiteral("completed"))
         return color_constants::level_info;
+    if (status == QStringLiteral("completed_with_warnings"))
+        return color_constants::level_warn;
     if (status == QStringLiteral("failed") ||
         status == QStringLiteral("compensating") ||
         status == QStringLiteral("compensated"))
@@ -656,6 +660,7 @@ void WorkflowMdiWindow::onStepsFetchFinished() {
 void WorkflowMdiWindow::populateSteps(
     const std::vector<wf::workflow_step_summary>& steps) {
 
+    currentSteps_ = steps;
     stepsTable_->setRowCount(0);
 
     for (const auto& step : steps) {
@@ -677,15 +682,10 @@ void WorkflowMdiWindow::populateSteps(
                 ? QString::fromStdString(*step.started_at)
                 : QStringLiteral("—")));
 
-        auto* completedItem = make_item(step.completed_at
-                ? QString::fromStdString(*step.completed_at)
-                : QStringLiteral("—"));
         stepsTable_->setItem(row, static_cast<int>(SCol::CompletedAt),
-            completedItem);
-
-        // Store full error text on the last visible item for the details dialog.
-        const QString fullError = QString::fromStdString(step.error);
-        completedItem->setData(ErrorDetailRole, fullError);
+            make_item(step.completed_at
+                ? QString::fromStdString(*step.completed_at)
+                : QStringLiteral("—")));
     }
 
     stepsTable_->resizeColumnsToContents();
@@ -724,6 +724,7 @@ void WorkflowMdiWindow::onInstanceSelectionChanged() {
     const int row = instanceTable_->currentRow();
     if (row < 0) {
         selectedInstanceId_.clear();
+        currentSteps_.clear();
         stepsTable_->setRowCount(0);
         stepsGroup_->setTitle(tr("Steps"));
         return;
@@ -748,15 +749,11 @@ void WorkflowMdiWindow::onInstanceSelectionChanged() {
 }
 
 void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
-    // Error text is stored on the CompletedAt column item.
-    auto* dataItem = stepsTable_->item(row, static_cast<int>(SCol::CompletedAt));
-    if (!dataItem) return;
+    if (row < 0 || row >= static_cast<int>(currentSteps_.size())) return;
 
-    const QString fullError = dataItem->data(ErrorDetailRole).toString();
-
-    // Always show the dialog (even without an error) so the user can see step info.
-    auto* nameItem = stepsTable_->item(row, static_cast<int>(SCol::Name));
-    const QString stepName = nameItem ? nameItem->text() : QString{};
+    const auto& step = currentSteps_[static_cast<std::size_t>(row)];
+    const QString stepName = QString::fromStdString(step.name);
+    const QString fullError = QString::fromStdString(step.error);
 
     // Find correlation ID and workflow ID from the selected instance row.
     const int instRow = instanceTable_->currentRow();
@@ -772,7 +769,7 @@ void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
     auto* dlg = new QDialog(nullptr);  // no parent → independent top-level window
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle(tr("Step details — %1").arg(stepName));
-    dlg->resize(760, 520);
+    dlg->resize(760, 600);
 
     auto* vbox = new QVBoxLayout(dlg);
 
@@ -796,14 +793,22 @@ void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
 
     vbox->addLayout(form);
 
-    // ── Error message ─────────────────────────────────────────────────────────
-    vbox->addWidget(new QLabel(tr("Error:"), dlg));
-    const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    auto* edit = new QPlainTextEdit(
-        fullError.isEmpty() ? tr("(no error)") : fullError, dlg);
-    edit->setReadOnly(true);
-    edit->setFont(fixed);
-    vbox->addWidget(edit);
+    // ── Step log ──────────────────────────────────────────────────────────────
+    auto* logWidget = new WorkflowStepLogWidget(dlg);
+    logWidget->showLog(stepName, step.log);
+    vbox->addWidget(logWidget, 1);
+
+    // ── Fatal error (only shown when non-empty) ───────────────────────────────
+    if (!fullError.isEmpty()) {
+        auto* errorLabel = new QLabel(tr("Fatal error:"), dlg);
+        vbox->addWidget(errorLabel);
+        const QFont fixed = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        auto* edit = new QPlainTextEdit(fullError, dlg);
+        edit->setReadOnly(true);
+        edit->setFont(fixed);
+        edit->setMaximumHeight(100);
+        vbox->addWidget(edit);
+    }
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
     connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);

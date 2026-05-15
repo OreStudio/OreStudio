@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include <chrono>
 #include <optional>
 #include <span>
 #include <string>
@@ -28,6 +29,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 
 namespace ores::service::messaging {
 
@@ -186,6 +188,66 @@ inline void publish_step_completion(
         ctx.complete(result_json);
     else
         ctx.fail(error_msg);
+}
+
+/**
+ * @brief Cached result of a previously-completed workflow step.
+ *
+ * Returned by check_step_idempotency() when the step is in a terminal state.
+ * Callers pass these fields directly to publish_step_completion() to replay
+ * the original outcome without re-executing the operation.
+ */
+struct cached_step_result {
+    bool success = false;
+    std::string result_json;
+    std::string error_message;
+};
+
+/**
+ * @brief Queries the workflow engine for a previously-completed step result.
+ *
+ * Domain service handlers call this at the start of every workflow step
+ * command path. If the workflow engine has a terminal record for this step_id,
+ * the caller replays the cached outcome; otherwise it executes normally.
+ *
+ * Fails open: returns std::nullopt on timeout or transport error so the caller
+ * proceeds with normal execution rather than blocking the workflow.
+ *
+ * @param nats    NATS client used to make the synchronous request.
+ * @param step_id UUID string echoed from the X-Workflow-Step-Id header.
+ * @return Cached result if the step already completed; std::nullopt otherwise.
+ */
+inline std::optional<cached_step_result> check_step_idempotency(
+    ores::nats::service::client& nats,
+    const std::string& step_id) {
+
+    using namespace ores::workflow::messaging;
+
+    const get_step_result_request req{.step_id = step_id};
+    const auto json = rfl::json::write(req);
+    const auto data = std::as_bytes(std::span{json.data(), json.size()});
+
+    try {
+        const auto reply_msg = nats.request_sync(
+            get_step_result_request::nats_subject, data,
+            {}, std::chrono::seconds(5));
+
+        const std::string_view sv(
+            reinterpret_cast<const char*>(reply_msg.data.data()),
+            reply_msg.data.size());
+        const auto resp = rfl::json::read<get_step_result_response>(sv);
+        if (!resp || !resp->found) return std::nullopt;
+
+        return cached_step_result{
+            .success       = resp->success,
+            .result_json   = resp->result_json,
+            .error_message = resp->error_message};
+    } catch (const std::exception&) {
+        // Fail open: if the workflow service is unreachable, proceed with
+        // normal execution. The engine's own idempotency guard (step state
+        // check on step-completed) prevents double-application.
+        return std::nullopt;
+    }
 }
 
 }

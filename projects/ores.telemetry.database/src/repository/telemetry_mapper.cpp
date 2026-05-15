@@ -26,7 +26,7 @@
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.telemetry/log/skip_telemetry_guard.hpp"
+#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::database::repository {
 

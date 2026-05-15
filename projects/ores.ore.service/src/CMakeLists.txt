@@ -43,12 +43,12 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
     PRIVATE
-        ores.ore.lib
+        ores.ore.core.lib
         ores.ore.api.lib
         ores.storage.lib
-        ores.workflow.lib
+        ores.workflow.core.lib
         ores.iam.client.lib
         ores.refdata.api.lib
         ores.trading.api.lib

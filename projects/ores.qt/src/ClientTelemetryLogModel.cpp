@@ -23,7 +23,7 @@
 #include <QDateTime>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.telemetry/messaging/telemetry_protocol.hpp"
+#include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
 
 namespace ores::qt {
 

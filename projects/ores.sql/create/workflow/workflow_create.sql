@@ -24,6 +24,6 @@
 -- Saga-pattern workflow orchestration: instances track long-running distributed
 -- operations; steps record each action within a workflow execution.
 
-\ir ./workflow_workflow_instances_create.sql
-\ir ./workflow_workflow_steps_create.sql
+\ir ./workflow_workflow_instance_create.sql
+\ir ./workflow_workflow_step_create.sql
 \ir ./workflow_constraints_create.sql

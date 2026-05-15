@@ -41,7 +41,7 @@
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {

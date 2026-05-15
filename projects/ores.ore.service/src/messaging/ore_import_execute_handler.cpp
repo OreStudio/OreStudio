@@ -27,14 +27,14 @@
 #include "ores.storage/net/storage_transfer.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
-#include "ores.ore/scanner/ore_directory_scanner.hpp"
-#include "ores.ore/planner/ore_import_planner.hpp"
+#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.ore/domain/trade_mapper.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 
 namespace ores::ore::service::messaging {

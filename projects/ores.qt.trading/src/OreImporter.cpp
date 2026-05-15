@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.ore/planner/ore_import_planner.hpp"
+#include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"

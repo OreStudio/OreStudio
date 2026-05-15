@@ -31,7 +31,7 @@ set_target_properties(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ores.iam.api.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
         ores.utility.lib
         ores.testing.lib
         faker-cxx::faker-cxx

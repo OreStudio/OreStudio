@@ -25,7 +25,7 @@
 #include "ores.shell/config/login_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.telemetry/exporting/telemetry_options.hpp"
+#include "ores.telemetry.core/exporting/telemetry_options.hpp"
 
 namespace ores::shell::config {
 

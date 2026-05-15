@@ -33,8 +33,8 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
-#include "ores.ore/market/market_data_parser.hpp"
-#include "ores.ore/market/fixing.hpp"
+#include "ores.ore.core/market/market_data_parser.hpp"
+#include "ores.ore.core/market/fixing.hpp"
 
 namespace ores::marketdata::service {
 

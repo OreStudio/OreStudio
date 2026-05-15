@@ -26,7 +26,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {

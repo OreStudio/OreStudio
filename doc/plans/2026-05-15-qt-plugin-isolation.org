@@ -1,0 +1,119 @@
+#+title: Qt Plugin Isolation: Cross-Plugin Symbol Dependencies
+#+date: 2026-05-15
+#+author: Marco Craveiro
+
+* Problem
+
+Symbol visibility hardening (=-fvisibility=hidden= on all Qt plugin shared
+libraries) exposed a set of latent architectural violations: classes defined in
+one domain plugin being instantiated directly by another domain plugin.  The
+linker surfaced these as =undefined symbol= crashes at plugin load time.
+
+* Inventory of Cross-Plugin Dependencies
+
+** Category 1 — Acceptable: shared library used by domain plugins
+
+These are downward dependencies on the always-loaded shared libraries.
+The fix is mechanical (add an export macro); the dependency direction is correct.
+
+| Provider        | Symbol                    | Consumer(s)                                       |
+|-----------------+---------------------------+---------------------------------------------------|
+| =ores.qt.api=   | =BoundedListView=         | =ores.qt=, =.admin=, =.party=, =.refdata=, =.trading= |
+| =ores.qt=       | =SessionHistoryDialog=    | =ores.qt.admin=                                   |
+| =ores.qt=       | =OreLogViewerWidget=      | =ores.qt.compute=                                 |
+
+Status: export macros still missing on =BoundedListView=, =SessionHistoryDialog=,
+=OreLogViewerWidget=.  No crashes observed yet because =ores.qt= and =ores.qt.api=
+are always loaded before domain plugins; add macros as encountered.
+
+** Category 2 — Violations: domain plugin depends on another domain plugin
+
+These are the structural problems.  A domain plugin directly instantiates
+concrete classes from a peer domain plugin, creating hard bilateral coupling.
+
+| Provider           | Symbols (8)                                                    | Consumer              |
+|--------------------+----------------------------------------------------------------+-----------------------|
+| =ores.qt.refdata=  | =DataDomainController=, =CatalogController=,                   | =ores.qt.data_transfer= |
+|                    | =DatasetBundleController=, =MethodologyController=,            |                       |
+|                    | =SubjectAreaController=, =NatureDimensionController=,          |                       |
+|                    | =OriginDimensionController=, =TreatmentDimensionController=    |                       |
+| =ores.qt.party=    | =BusinessUnitController=                                       | =ores.qt.trading=     |
+
+Immediate fix applied 2026-05-15: added =ORES_QT_REFDATA_EXPORT= and
+=ORES_QT_PARTY_EXPORT= macros so the symbols resolve at load time.  This stops
+the crashes but does not fix the underlying coupling.
+
+* Why Cross-Plugin Coupling Is Harmful
+
+1. *Load-order fragility.* =ores.qt.data_transfer= resolves symbols from
+   =ores.qt.refdata= at =dlopen= time.  If =ores.qt.refdata= is absent or fails to
+   initialise, =ores.qt.data_transfer= crashes with a symbol lookup error rather
+   than a clean "plugin unavailable" message.
+
+2. *Constructor signature coupling.* Any change to a refdata controller's
+   constructor propagates as a compile-time break into =ores.qt.data_transfer=,
+   which owns none of that domain logic.
+
+3. *Testing isolation.* Exercising =ores.qt.data_transfer= in isolation requires
+   standing up the full =ores.qt.refdata= plugin.
+
+4. *Circular dependency risk.* Once plugin A knows about plugin B's concrete
+   types, the next developer adding a feature can easily close the loop, making
+   both plugins unloadable in isolation.
+
+* Root Cause
+
+The data-transfer wizard needs to let users browse and select refdata entities
+(catalogs, data domains, dataset bundles, etc.) as part of configuring a
+transfer.  Rather than introducing an abstraction, the implementor reached
+directly for the existing concrete controllers.  Similarly, the trading org
+explorer reused =BusinessUnitController= from =ores.qt.party= to avoid duplicating
+the business unit list widget.
+
+* Target Architecture
+
+Domain plugins must depend only on =ores.qt.api= (the shared API library), never
+on each other.  Controllers that are shared across plugins belong in =ores.qt.api=
+behind a stable abstract interface.
+
+** Phase 1 — Introduce abstract interfaces in =ores.qt.api=
+
+For each cross-plugin controller, add an abstract interface class to
+=ores.qt.api=:
+
+#+begin_example
+ores.qt.api/include/ores.qt/IEntityController.hpp   (already exists as EntityController)
+ores.qt.api/include/ores.qt/IRefDataBrowser.hpp     (new — exposes browse/select for DQ refdata entities)
+ores.qt.api/include/ores.qt/IBusinessUnitBrowser.hpp (new — exposes browse/select for business units)
+#+end_example
+
+The concrete implementations stay in the owning plugin (=ores.qt.refdata=,
+=ores.qt.party=).  They register themselves with the main window's plugin registry
+at load time via a factory or service locator in =ores.qt.api=.
+
+** Phase 2 — Migrate =ores.qt.data_transfer= to the interface
+
+Replace the eight direct =*Controller= includes in =DataTransferPlugin.cpp= with
+lookups against the abstract interface registry.  The data-transfer plugin
+requests an =IRefDataBrowser*= and calls the browsing methods — it has zero
+knowledge of the concrete controller classes.
+
+** Phase 3 — Migrate =ores.qt.trading= to the interface
+
+Replace the =BusinessUnitController*= member in =OrgExplorerMdiWindow= with an
+=IBusinessUnitBrowser*= obtained from the registry.
+
+** Phase 4 — Remove export macros and CMakeLists coupling
+
+Once no domain plugin includes headers from another domain plugin, remove the
+=ORES_QT_REFDATA_EXPORT= and =ORES_QT_PARTY_EXPORT= macros and verify that
+=-fvisibility=hidden= hides everything correctly without explicit annotations on
+these classes.
+
+* Acceptance Criteria
+
+- No =ores.qt.*= plugin includes a header from any other =ores.qt.*= domain plugin.
+- =ores.qt.data_transfer= can be loaded without =ores.qt.refdata= being present
+  (it degrades gracefully to "refdata browser unavailable").
+- =ores.qt.trading= can be loaded without =ores.qt.party= being present.
+- The cross-plugin include audit script finds zero Category 2 violations.

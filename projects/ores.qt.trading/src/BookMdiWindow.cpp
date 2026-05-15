@@ -36,8 +36,8 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
-#include "ores.ore/xml/importer.hpp"
-#include "ores.ore/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 

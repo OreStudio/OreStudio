@@ -26,7 +26,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
-#include "ores.workflow/messaging/registrar.hpp"
+#include "ores.workflow.core/messaging/registrar.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"

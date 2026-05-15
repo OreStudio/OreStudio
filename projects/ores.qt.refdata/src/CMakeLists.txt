@@ -34,6 +34,7 @@ file(GLOB_RECURSE HEADERS "${ORES_QT_REFDATA_DIR}/include/*.hpp")
 file(GLOB FORMS "${ORES_QT_REFDATA_DIR}/ui/*.ui")
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_REFDATA_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)
@@ -62,7 +63,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib
         ores.refdata.api.lib
         ores.trading.api.lib
-        ores.ore.lib
+        ores.ore.core.lib
         ores.storage.lib
         ores.variability.api.lib
         ores.dq.api.lib

@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
+#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -40,7 +41,7 @@ class ChangeReasonCache;
  * Manages the lifecycle of treatment dimension list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class TreatmentDimensionController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT TreatmentDimensionController final : public EntityController {
     Q_OBJECT
 
 private:

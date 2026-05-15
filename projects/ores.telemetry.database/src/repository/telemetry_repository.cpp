@@ -27,7 +27,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.telemetry/log/skip_telemetry_guard.hpp"
+#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 

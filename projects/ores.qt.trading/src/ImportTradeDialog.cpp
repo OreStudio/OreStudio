@@ -34,7 +34,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.ore/xml/importer.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"

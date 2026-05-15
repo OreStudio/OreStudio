@@ -1,0 +1,218 @@
+#+title: ORE Import Error Reporting and Step Warning State
+#+date: 2026-05-15
+#+author: Marco Craveiro
+
+* Problem
+
+When an ORE import saves zero trades due to a permission error (or any other
+per-item failure), the wizard completes silently with an empty trade list.  The
+workflow step publishes =success=true= because the handler treats individual
+trade save failures as non-fatal warnings and never inspects =item_errors= before
+calling =publish_step_completion=.  The user has no way to know that anything
+went wrong.
+
+Two structural gaps:
+
+1. *No warning state.* =step_completed_event= is binary (=success= / fail).
+   There is no way to express "step ran to completion but with partial failures".
+
+2. *No step log.* There is no mechanism for a step handler to emit structured
+   log entries (with severity levels) that survive in the workflow record and
+   are visible in the UI.  Errors are either fatal (=fail()=) or silent.
+
+* Current Architecture
+
+#+begin_example
+step_completed_event  →  success: bool
+                      →  result_json: string   (serialised ore_import_execute_result)
+                      →  error_message: string (only set on fatal failure)
+
+ore_import_execute_result:
+    item_errors: vector<ore_import_item_error>
+        { trade_id, source_file, error }
+    saved_trade_ids, saved_instrument_ids, ...
+
+publish_step_completion(nats, step_id, inst_id,
+    /*success=*/true,        ← always true if handler doesn't throw
+    result_json,             ← contains item_errors but UI never reads it
+    /*error_msg=*/"")
+#+end_example
+
+The =WorkflowStepsWidget= reads step state from the workflow engine (completed /
+failed / running) but has no concept of warnings or step-level log entries.
+
+* Target Architecture
+
+** Item 1 — Add a =warning= outcome to =step_completed_event=
+
+Replace the =bool success= field with a tri-state outcome:
+
+#+begin_src cpp
+enum class step_outcome : uint8_t {
+    completed               = 0,  // success, no issues
+    completed_with_warnings = 1,  // ran to completion, some items failed
+    failed                  = 2   // fatal, compensation triggered
+};
+#+end_src
+
+Update =workflow_step_context= to add a =warn(result_json, log)= helper alongside
+=complete()= and =fail()=.  The workflow engine maps the new outcome to a distinct
+DB state (=completed_with_warnings=) which is terminal (no compensation) but
+visually distinct from =completed=.
+
+Touches:
+- =ores.workflow.api/messaging/workflow_events.hpp= — new outcome enum
+- =ores.service/messaging/workflow_helpers.hpp= — =workflow_step_context::warn()=
+- Workflow engine step handler — recognise new outcome, persist new state name
+- SQL FSM state seeding — add =completed_with_warnings= terminal state
+
+** Item 2 — Add a generic step log to =step_completed_event=
+
+Each step handler can emit an ordered list of structured log entries.  The
+entries are stored alongside the step in the workflow DB and surfaced in the
+workflow instance detail dialog.  They are workflow-engine-level information —
+no knowledge of ORE-specific types is required.
+
+#+begin_src cpp
+enum class step_log_level : uint8_t {
+    info  = 0,
+    warn  = 1,
+    error = 2
+};
+
+struct step_log_entry {
+    step_log_level level;
+    std::string    message;
+    std::string    context;  // optional: trade_id, filename, ISO code, etc.
+};
+
+struct step_completed_event {
+    // ...existing fields...
+    step_outcome                outcome = step_outcome::completed;
+    std::vector<step_log_entry> log;    // ordered list of entries from this step
+};
+#+end_src
+
+*** Serialisation: level as string, not integer
+
+=step_log_level= must serialise to its name string (="info"=, ="warn"=, ="error"=)
+rather than its numeric value, using rfl's =rfl::json::write= with a custom
+enum-to-string mapping (or rfl's =REFLTYPE= approach).
+
+This ensures the =step_log_json= column in the DB stores human-readable entries:
+
+#+begin_example
+[
+  {"level": "info",  "message": "Saved 12 trades",          "context": ""},
+  {"level": "warn",  "message": "Trade save failed",         "context": "FX_FORWARD"},
+  {"level": "error", "message": "permission denied for ...", "context": "FX_BARRIER"}
+]
+#+end_example
+
+Operators can then query directly without a lookup table:
+
+#+begin_src sql
+-- all steps with at least one error entry
+select step_id, step_log_json
+from ores_workflow_steps_tbl
+where step_log_json @> '[{"level": "error"}]';
+
+-- entries for a specific trade
+select entry
+from ores_workflow_steps_tbl,
+     jsonb_array_elements(step_log_json) as entry
+where entry->>'context' = 'FX_FORWARD';
+#+end_src
+
+The same string mapping is used when deserialising back to C++ so the UI
+receives typed =step_log_level= values.
+
+*** Why not reuse the service's own logger?
+
+Service-level log output goes to rotating log files and is not visible in the
+UI.  The step log is intentionally a user-facing audit trail — not a debugging
+facility — so it belongs in the workflow record, not the service log.  Entries
+should be written at the grain a user would care about: "Trade FX_FORWARD failed
+to save: permission denied", not low-level DB trace lines.
+
+** Item 3 — =ore_import_execute= handler: publish outcome + log
+
+After step 7 (trade saves), evaluate:
+
+| Condition                                   | Outcome                    |
+|---------------------------------------------+----------------------------|
+| =item_errors= empty                         | =completed=                |
+| =item_errors= non-empty, some trades saved  | =completed_with_warnings=  |
+| =item_errors= non-empty, no trades saved    | =failed=                   |
+
+Build the step log by mapping =ore_import_item_error= entries to =step_log_entry=
+at =warn= level (or =error= level when outcome is =failed=).  Successful saves
+can optionally emit =info= entries ("Saved 15 trades").
+
+The threshold for total failure (all trades failed) is an explicit named
+constant in the handler so it is easy to locate and adjust.
+
+** Item 4 — Workflow instance detail dialog: step log panel
+
+The existing =WorkflowInstanceDetailDialog= (or a new tab within it) shows a
+per-step log panel:
+
+- One row per =step_log_entry=, in emission order.
+- Level column: colour-coded icon (blue info / amber warn / red error).
+- Message column: full text.
+- Context column: trade ID, filename, etc. where populated.
+
+The data comes from the extended =workflow_step_summary= returned by the steps
+query.  The workflow engine reads the =step_log_json= column and includes it in
+the query response.
+
+** Item 5 — =WorkflowStepsWidget=: visual warning state
+
+=WorkflowStepsWidget= currently colours rows by state name.  Extend it to:
+
+- Colour =completed_with_warnings= rows amber.
+- Show a warning count badge ("3 warnings") on the step row when =log= contains
+  warn/error entries.
+- Clicking the step row (or a detail button) opens the workflow instance detail
+  dialog scrolled to that step's log.
+
+** Item 6 — =OreImportWizard= done page: import summary
+
+The done page shows:
+
+- A summary line: "Imported N trades (M warnings — see step log for details)"
+- A compact table of =warn=/=error= log entries from the execute step, with
+  columns: Level | Context | Message.
+- This data is read from the step result already carried in the wizard state —
+  no new NATS messages required.
+
+* Implementation Order
+
+1. Item 1 — =step_outcome= enum + workflow engine DB state + FSM seeding
+2. Item 2 — =step_log_entry= + =step_log_json= DB column + query protocol extension
+3. Item 3 — handler log emission + outcome threshold
+4. Item 4 — workflow instance detail dialog log panel
+5. Item 5 — =WorkflowStepsWidget= warning badge
+6. Item 6 — wizard done page summary table
+
+Items 1–3 are backend-only and can be built and tested before any UI work.
+Items 4–6 depend on items 1–3.
+
+* What This Does NOT Fix
+
+The underlying =permission denied for table ores_dq_fsm_transitions_tbl= error
+is a DB permissions gap tracked separately.  This plan only improves the
+*observability* of that failure so users see a clear, actionable error report.
+Fix the root cause after this plan is complete.
+
+* Acceptance Criteria
+
+- An ORE import where all trades fail produces a =failed= step; the wizard done
+  page shows a red outcome with a per-trade error table.
+- An ORE import where some trades fail produces =completed_with_warnings=; the
+  done page shows amber with a warning count and per-trade table.
+- An ORE import where all trades succeed is unchanged.
+- =WorkflowStepsWidget= renders the three outcome states with distinct colours.
+- The workflow instance detail dialog shows the full step log with level icons.
+- Step log entries from any future workflow (not just ORE import) are
+  automatically displayed — the mechanism is generic.

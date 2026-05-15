@@ -19,22 +19,19 @@
 #ifndef ORES_QT_WORKFLOW_INSTANCE_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKFLOW_INSTANCE_DETAIL_DIALOG_HPP
 
-#include <vector>
 #include <QDialog>
 #include <QLabel>
-#include <QTableWidget>
-#include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 
 /**
  * @brief Modal dialog showing steps for a specific workflow instance.
  *
- * Fetches the step list from the server when opened and displays each step
- * in a table with a status badge, timing information, and any error message.
+ * Wraps WorkflowStepsWidget in a dialog with instance metadata in the header.
+ * Steps auto-refresh every 3 seconds while the instance is running.
  */
 class WorkflowInstanceDetailDialog final : public QDialog {
     Q_OBJECT
@@ -49,12 +46,6 @@ private:
         return instance;
     }
 
-    struct FetchResult {
-        bool success = false;
-        QString error;
-        std::vector<ores::workflow::messaging::workflow_step_summary> steps;
-    };
-
 public:
     WorkflowInstanceDetailDialog(
         ClientManager* clientManager,
@@ -63,15 +54,13 @@ public:
         const QString& workflowStatus,
         QWidget* parent = nullptr);
 
+    /**
+     * @brief Triggers an immediate step fetch (delegates to WorkflowStepsWidget).
+     */
     void loadSteps();
-
-private slots:
-    void onFetchFinished();
 
 private:
     void setupUi();
-    void populateSteps(
-        const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
 
     ClientManager* clientManager_;
     QString workflowId_;
@@ -79,10 +68,9 @@ private:
     QString workflowStatus_;
 
     QLabel* statusLabel_;
-    QTableWidget* stepsTable_;
-    QFutureWatcher<FetchResult>* watcher_;
+    WorkflowStepsWidget* stepsWidget_;
 };
 
-}
+}  // namespace ores::qt
 
 #endif

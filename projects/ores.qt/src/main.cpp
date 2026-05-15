@@ -25,7 +25,7 @@
 #include <QTimer>
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"

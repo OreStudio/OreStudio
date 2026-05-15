@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -33,7 +34,7 @@ class SubjectAreaMdiWindow;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
-class SubjectAreaController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT SubjectAreaController final : public EntityController {
     Q_OBJECT
 
 private:

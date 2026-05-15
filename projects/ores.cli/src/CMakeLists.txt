@@ -41,12 +41,12 @@ find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
-        ores.telemetry.lib
+        ores.telemetry.core.lib
         ores.utility.lib
     PRIVATE
         ores.iam.core.lib
         ores.dq.core.lib
-        ores.ore.lib
+        ores.ore.core.lib
         ores.refdata.core.lib
         ores.variability.core.lib
         ores.security.lib

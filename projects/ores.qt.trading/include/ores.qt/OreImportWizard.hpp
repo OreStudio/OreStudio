@@ -41,9 +41,10 @@
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.ore/scanner/scan_result.hpp"
-#include "ores.ore/planner/import_choices.hpp"
-#include "ores.ore/planner/ore_import_plan.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
+#include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.ore.core/planner/ore_import_plan.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 
@@ -320,18 +321,23 @@ class OreDonePage final : public QWizardPage {
 public:
     explicit OreDonePage(OreImportWizard* wizard);
     void initializePage() override;
-private:
-    void setupIdRow(QWidget* container, QLabel* label, QLineEdit* edit,
-                    QPushButton* copyBtn, const QString& labelText);
 
+private slots:
+    void onStepFailed(int stepIndex, const QString& errorMessage);
+
+private:
     OreImportWizard* wizard_;
     QLabel* summaryLabel_;
+    QLabel* errorBanner_ = nullptr;
 
     // Selectable ID rows — shown only when the IDs are present
     QWidget*      workflowIdRow_  = nullptr;
     QLineEdit*    workflowIdEdit_ = nullptr;
     QWidget*      correlIdRow_    = nullptr;
     QLineEdit*    correlIdEdit_   = nullptr;
+
+    // Live step progress — shown only for async (workflow-backed) imports.
+    WorkflowStepsWidget* stepsWidget_ = nullptr;
 };
 
 }

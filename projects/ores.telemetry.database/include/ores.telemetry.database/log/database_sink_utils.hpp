@@ -23,7 +23,7 @@
 #include <memory>
 #include <functional>
 #include <iostream>
-#include "ores.telemetry/log/database_sink_backend.hpp"
+#include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 namespace ores::telemetry::database::log {

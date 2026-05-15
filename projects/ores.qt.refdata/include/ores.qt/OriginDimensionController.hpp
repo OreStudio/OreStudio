@@ -27,6 +27,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -40,7 +41,7 @@ class ChangeReasonCache;
  * Manages the lifecycle of origin dimension list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class OriginDimensionController final : public EntityController {
+class ORES_QT_REFDATA_EXPORT OriginDimensionController final : public EntityController {
     Q_OBJECT
 
 private:

@@ -34,7 +34,7 @@
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
-#include "ores.workflow/service/fsm_state_map.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
 
 namespace ores::reporting::messaging {
 

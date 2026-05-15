@@ -26,8 +26,9 @@ target_include_directories(${lib_target_name} INTERFACE
 
 target_link_libraries(${lib_target_name}
     INTERFACE
+        ores.platform.lib
         ores.storage.lib
         ores.logging.lib
-        ores.utility.lib)
+        ores.workflow.api.lib)
 
 install(TARGETS ${lib_target_name})

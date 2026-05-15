@@ -165,6 +165,21 @@ Steps:
 3. Remove ~select _ores_grant_select_fn('ores_refdata_', :'trading_service_user')~
    from the service registry and regenerate the grants file.
 
+* Phase 3a — Trading reads FSM transitions via NATS (deferred)
+
+*Status: DEFERRED — no DB grant; trading service trade saves will fail until resolved.*
+
+~trade_status_service.cpp~ calls ~dq::repository::fsm_transition_repository::find_by_id()~
+directly. No DB grant is issued; this must be replaced with a NATS call.
+
+Fix:
+1. In ~trade_handler::save()~, call ~dq.v1.fsm-transitions.list~ once per request
+   (before iterating trades) to fetch the full set of transitions into a lookup map.
+2. Inject the map into ~trade_service~ / ~trade_status_service::resolve_status()~
+   so no direct DB access to ~ores_dq_fsm_transitions_tbl~ is needed.
+3. Remove ~#include "ores.dq.core/repository/fsm_transition_repository.hpp"~
+   from ~trade_status_service.cpp~ and the corresponding CMake link.
+
 * Phase 4 — Lock the Invariant
 
 *Status: COMPLETE*

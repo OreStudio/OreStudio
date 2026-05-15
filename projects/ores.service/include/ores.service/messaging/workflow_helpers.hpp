@@ -156,10 +156,14 @@ struct workflow_step_context {
      * @brief Publishes a failed step-completed event.
      *
      * @param error_msg Human-readable error description.
+     * @param log       Optional per-item diagnostic entries (e.g. one per
+     *                  failed trade). Stored in step_log_json so the UI can
+     *                  show individual failure reasons.
      */
-    void fail(const std::string& error_msg) const {
+    void fail(const std::string& error_msg,
+        const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) const {
         publish(ores::workflow::messaging::step_outcome::failed,
-            "", error_msg, {});
+            "", error_msg, log);
     }
 
 private:
@@ -215,7 +219,7 @@ inline void publish_step_completion(
         ctx.warn(result_json, log);
         break;
     case ores::workflow::messaging::step_outcome::failed:
-        ctx.fail(error_msg);
+        ctx.fail(error_msg, log);
         break;
     }
 }

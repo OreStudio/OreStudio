@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "entity_singular": "business_day_convention_type",
     "entity_plural": "business_day_convention_types",

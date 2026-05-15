@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
 create or replace function ores_trading_payment_frequency_types_notify_fn()
 returns trigger as $$
@@ -42,7 +47,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_trading_payment_frequency_types', notification_payload::text);
+    perform pg_notify('ores_payment_frequency_types', notification_payload::text);
 
     return null;
 end;

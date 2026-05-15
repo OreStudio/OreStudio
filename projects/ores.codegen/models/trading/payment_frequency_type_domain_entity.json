@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "entity_singular": "payment_frequency_type",
     "entity_plural": "payment_frequency_types",

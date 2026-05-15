@@ -19,28 +19,16 @@
 #ifndef ORES_QT_DATA_TRANSFER_PLUGIN_HPP
 #define ORES_QT_DATA_TRANSFER_PLUGIN_HPP
 
-#include <memory>
 #include <QList>
 #include "ores.qt/PluginBase.hpp"
 
 namespace ores::qt {
 
-class DataDomainController;
-class SubjectAreaController;
-class CatalogController;
-class DatasetBundleController;
-class MethodologyController;
-class OriginDimensionController;
-class NatureDimensionController;
-class TreatmentDimensionController;
-
 /**
  * @brief Qt plugin providing the Data Transfer top-level menu.
  *
- * Manages data catalogue controllers (data domains, subject areas, catalogues,
- * dataset bundles, methodologies, and dimension types).
- * Data Librarian and Import ORE Data are contributed by RefdataPlugin and
- * TradingPlugin via setup_menus on the shared data_transfer_menu.
+ * Owns the pre-created data_transfer_menu handle. All menu items are
+ * contributed by peer plugins (RefdataPlugin, TradingPlugin) via setup_menus.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
 class DataTransferPlugin : public PluginBase {
@@ -66,15 +54,6 @@ private:
     // The data_transfer_menu is pre-created by MainWindow and passed via
     // setup_menus context. We hold a reference to return it from create_menus.
     QMenu* data_transfer_menu_{nullptr};
-
-    std::unique_ptr<DataDomainController>         dataDomainController_;
-    std::unique_ptr<SubjectAreaController>        subjectAreaController_;
-    std::unique_ptr<CatalogController>            catalogController_;
-    std::unique_ptr<DatasetBundleController>      datasetBundleController_;
-    std::unique_ptr<MethodologyController>        methodologyController_;
-    std::unique_ptr<OriginDimensionController>    originDimensionController_;
-    std::unique_ptr<NatureDimensionController>    natureDimensionController_;
-    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
 };
 
 }

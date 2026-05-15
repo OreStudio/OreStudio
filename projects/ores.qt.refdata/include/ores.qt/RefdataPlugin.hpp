@@ -29,6 +29,14 @@ namespace ores::qt {
 
 class DataLibrarianWindow;
 class DetachableMdiSubWindow;
+class DataDomainController;
+class SubjectAreaController;
+class CatalogController;
+class DatasetBundleController;
+class MethodologyController;
+class OriginDimensionController;
+class NatureDimensionController;
+class TreatmentDimensionController;
 class CurrencyController;
 class CountryController;
 class ChangeReasonCategoryController;
@@ -59,15 +67,8 @@ class CdsConventionController;
  * @brief Reference data plugin: currencies, countries, dimensions, coding
  *        schemes, datasets, trading conventions, and related types.
  *
- * Extracted from LegacyPlugin in Step 5 of the Qt plugin refactor.
- * Owns the Data, Auxiliary Data, Data Governance, and related menus.
- */
-/**
- * @brief Reference data plugin: currencies, countries, dimensions, coding
- *        schemes, datasets, trading conventions, and related types.
- *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Data, Auxiliary Data, Data Governance, and related menus.
+ * Owns the Reference Data, Data Transfer catalogue, and related menus.
  */
 class RefdataPlugin : public PluginBase {
     Q_OBJECT
@@ -123,6 +124,16 @@ private:
     std::unique_ptr<OvernightIndexConventionController>    overnightIndexConventionController_;
     std::unique_ptr<FxConventionController>                fxConventionController_;
     std::unique_ptr<CdsConventionController>               cdsConventionController_;
+
+    // Data Catalogue controllers (owned here, contributed to data_transfer_menu)
+    std::unique_ptr<DataDomainController>         dataDomainController_;
+    std::unique_ptr<SubjectAreaController>        subjectAreaController_;
+    std::unique_ptr<CatalogController>            catalogController_;
+    std::unique_ptr<DatasetBundleController>      datasetBundleController_;
+    std::unique_ptr<MethodologyController>        methodologyController_;
+    std::unique_ptr<OriginDimensionController>    originDimensionController_;
+    std::unique_ptr<NatureDimensionController>    natureDimensionController_;
+    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
 };
 
 }

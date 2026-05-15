@@ -23,6 +23,7 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
+#include "ores.qt/IBusinessUnitBrowser.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -43,7 +44,8 @@ class ChangeReasonCache;
  * Manages the lifecycle of business unit list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class ORES_QT_PARTY_EXPORT BusinessUnitController final : public EntityController {
+class ORES_QT_PARTY_EXPORT BusinessUnitController final
+    : public EntityController, public IBusinessUnitBrowser {
     Q_OBJECT
 
 private:
@@ -71,8 +73,8 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
-    void openEdit(const refdata::domain::business_unit& business_unit);
-    void openHistory(const refdata::domain::business_unit& business_unit);
+    void openEdit(const refdata::domain::business_unit& business_unit) override;
+    void openHistory(const refdata::domain::business_unit& business_unit) override;
 
 signals:
     void statusMessage(const QString& message);

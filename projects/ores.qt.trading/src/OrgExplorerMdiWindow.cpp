@@ -28,7 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/IBusinessUnitBrowser.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
@@ -43,7 +43,7 @@ using namespace ores::logging;
 
 OrgExplorerMdiWindow::OrgExplorerMdiWindow(
     ClientManager* clientManager,
-    BusinessUnitController* businessUnitController,
+    IBusinessUnitBrowser* businessUnitController,
     BookController* bookController,
     TradeController* tradeController,
     const QString& username,

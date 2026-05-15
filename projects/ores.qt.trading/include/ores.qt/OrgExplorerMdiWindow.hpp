@@ -45,7 +45,7 @@
 
 namespace ores::qt {
 
-class BusinessUnitController;
+class IBusinessUnitBrowser;
 class BookController;
 class TradeController;
 
@@ -78,7 +78,7 @@ private:
 public:
     explicit OrgExplorerMdiWindow(
         ClientManager* clientManager,
-        BusinessUnitController* businessUnitController,
+        IBusinessUnitBrowser* businessUnitController,
         BookController* bookController,
         TradeController* tradeController,
         const QString& username,
@@ -164,7 +164,7 @@ private:
     QString username_;
 
     // Controllers (not owned — lifetime guaranteed by MainWindow)
-    BusinessUnitController* businessUnitController_{nullptr};
+    IBusinessUnitBrowser* businessUnitController_{nullptr};
     BookController* bookController_{nullptr};
     TradeController* tradeController_{nullptr};
 

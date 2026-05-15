@@ -55,14 +55,12 @@ target_include_directories(${lib_target_name} PRIVATE
     # Transient: trading controllers include headers still in ores.qt or other plugins.
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt.party/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt.mktdata/include"
     "${CMAKE_SOURCE_DIR}/projects/ores.qt.workflow/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
-        ores.qt.party.lib
         ores.refdata.api.lib
         ores.trading.api.lib
         ores.ore.core.lib

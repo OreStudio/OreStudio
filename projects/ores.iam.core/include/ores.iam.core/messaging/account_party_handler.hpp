@@ -126,13 +126,15 @@ public:
             // Idempotency guard: replay cached result if this step already completed.
             if (auto cached = check_step_idempotency(nats_, step_id)) {
                 publish_step_completion(nats_, step_id, inst_id,
-                    cached->success, cached->result_json, cached->error_message);
+                    cached->outcome, cached->result_json, cached->error_message,
+                    cached->log);
                 return;
             }
 
             auto req = decode<save_account_party_request>(msg);
             if (!req) {
-                publish_step_completion(nats_, step_id, inst_id, false, "",
+                publish_step_completion(nats_, step_id, inst_id,
+                    ores::workflow::messaging::step_outcome::failed, "",
                     "Failed to decode save_account_party_request");
                 return;
             }
@@ -146,13 +148,15 @@ public:
                 }
                 BOOST_LOG_SEV(account_party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
-                publish_step_completion(nats_, step_id, inst_id, true,
+                publish_step_completion(nats_, step_id, inst_id,
+                    ores::workflow::messaging::step_outcome::completed,
                     rfl::json::write(save_account_party_response{.success = true}), "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_party_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject
                     << " — " << e.what();
-                publish_step_completion(nats_, step_id, inst_id, false, "", e.what());
+                publish_step_completion(nats_, step_id, inst_id,
+                    ores::workflow::messaging::step_outcome::failed, "", e.what());
             }
             return;
         }

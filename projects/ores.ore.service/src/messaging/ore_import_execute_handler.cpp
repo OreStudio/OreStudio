@@ -105,7 +105,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     if (!parsed) {
         BOOST_LOG_SEV(lg(), error) << "ore.import.execute: failed to decode request | step="
                                    << step_id;
-        publish_step_completion(nats_, step_id, inst_id, false, "",
+        publish_step_completion(nats_, step_id, inst_id,
+            ores::workflow::messaging::step_outcome::failed, "",
             "Failed to decode ore_import_execute_request");
         return;
     }
@@ -143,7 +144,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto failure = std::format("fetch_and_unpack failed: {}", e.what());
         BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 0 failed | corr="
                                    << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+        publish_step_completion(nats_, step_id, inst_id,
+            ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
@@ -162,7 +164,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto failure = std::format("Directory scan failed: {}", e.what());
         BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 1 failed | corr="
                                    << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+        publish_step_completion(nats_, step_id, inst_id,
+            ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
@@ -186,7 +189,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         if (!list_resp) {
             BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 2 failed | corr="
                                        << req.correlation_id << " error=" << err;
-            publish_step_completion(nats_, step_id, inst_id, false, "", err);
+            publish_step_completion(nats_, step_id, inst_id,
+                ores::workflow::messaging::step_outcome::failed, "", err);
             return;
         }
         for (const auto& c : list_resp->currencies)
@@ -209,7 +213,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 parsed_choices.error().what());
             BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 3 failed | corr="
                                        << req.correlation_id << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+            publish_step_completion(nats_, step_id, inst_id,
+                ores::workflow::messaging::step_outcome::failed, "", failure);
             return;
         }
         choices = std::move(*parsed_choices);
@@ -224,7 +229,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         const auto failure = std::format("Import plan failed: {}", e.what());
         BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 3 failed | corr="
                                    << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+        publish_step_completion(nats_, step_id, inst_id,
+            ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
@@ -252,7 +258,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 4 failed | corr="
                                        << req.correlation_id
                                        << " iso_code=" << iso << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+            publish_step_completion(nats_, step_id, inst_id,
+                ores::workflow::messaging::step_outcome::failed, "", failure);
             return;
         }
         result.saved_currency_iso_codes.push_back(iso);
@@ -280,7 +287,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 5 failed | corr="
                                        << req.correlation_id
                                        << " portfolio=" << pid << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+            publish_step_completion(nats_, step_id, inst_id,
+                ores::workflow::messaging::step_outcome::failed, "", failure);
             return;
         }
         result.saved_portfolio_ids.push_back(pid);
@@ -308,7 +316,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 6 failed | corr="
                                        << req.correlation_id
                                        << " book=" << bid << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id, false, "", failure);
+            publish_step_completion(nats_, step_id, inst_id,
+                ores::workflow::messaging::step_outcome::failed, "", failure);
             return;
         }
         result.saved_book_ids.push_back(bid);
@@ -545,20 +554,68 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                               << " instruments_saved=" << instruments_saved;
 
     // -------------------------------------------------------------------------
-    // Done — publish result
+    // Done — determine step outcome and publish
     // -------------------------------------------------------------------------
-    result.success = true;
-    result.message = "ORE import completed.";
+    // Total failure: all planned trades failed to save (and at least one was attempted).
+    // Adjust this constant to change the threshold for saga compensation.
+    const bool all_trades_failed =
+        !plan.trades.empty() &&
+        result.saved_trade_ids.empty() &&
+        !result.item_errors.empty();
+
+    using wf_outcome = ores::workflow::messaging::step_outcome;
+    using wf_log_level = ores::workflow::messaging::step_log_level;
+    using wf_log_entry = ores::workflow::messaging::step_log_entry;
+
+    wf_outcome outcome;
+    if (result.item_errors.empty()) {
+        outcome = wf_outcome::completed;
+    } else if (all_trades_failed) {
+        outcome = wf_outcome::failed;
+    } else {
+        outcome = wf_outcome::completed_with_warnings;
+    }
+
+    std::vector<wf_log_entry> step_log;
+    if (!result.saved_trade_ids.empty()) {
+        step_log.push_back({
+            .level = wf_log_level::info,
+            .message = std::format("Saved {} trade(s).",
+                result.saved_trade_ids.size()),
+            .context = {}});
+    }
+    for (const auto& ie : result.item_errors) {
+        step_log.push_back({
+            .level = (outcome == wf_outcome::failed)
+                ? wf_log_level::error : wf_log_level::warn,
+            .message = ie.message,
+            .context = ie.item_id.empty() ? ie.source_file : ie.item_id});
+    }
+
+    result.success = outcome != wf_outcome::failed;
+    result.message = result.item_errors.empty()
+        ? "ORE import completed."
+        : std::format("ORE import completed with {} error(s).",
+            result.item_errors.size());
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute complete | corr=" << req.correlation_id
                               << " currencies=" << result.saved_currency_iso_codes.size()
                               << " portfolios=" << result.saved_portfolio_ids.size()
                               << " books=" << result.saved_book_ids.size()
                               << " trades=" << result.saved_trade_ids.size()
-                              << " item_errors=" << result.item_errors.size();
+                              << " item_errors=" << result.item_errors.size()
+                              << " outcome=" << ores::workflow::messaging::to_string(outcome);
 
-    publish_step_completion(nats_, step_id, inst_id, true,
-        rfl::json::write(result), "");
+    if (outcome == wf_outcome::failed) {
+        publish_step_completion(nats_, step_id, inst_id,
+            wf_outcome::failed, rfl::json::write(result),
+            std::format("All {} trade save(s) failed.",
+                result.item_errors.size()),
+            step_log);
+    } else {
+        publish_step_completion(nats_, step_id, inst_id,
+            outcome, rfl::json::write(result), "", step_log);
+    }
 }
 
 void ore_import_execute_handler::rollback(ores::nats::message msg) {
@@ -573,7 +630,8 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     if (!parsed) {
         BOOST_LOG_SEV(lg(), error) << "ore.import.rollback: failed to decode request | step="
                                    << step_id;
-        publish_step_completion(nats_, step_id, inst_id, false, "",
+        publish_step_completion(nats_, step_id, inst_id,
+            ores::workflow::messaging::step_outcome::failed, "",
             "Failed to decode ore_import_rollback_request");
         return;
     }
@@ -652,7 +710,8 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.rollback complete | corr=" << req.correlation_id;
-    publish_step_completion(nats_, step_id, inst_id, true, "{\"success\":true}", "");
+    publish_step_completion(nats_, step_id, inst_id,
+        ores::workflow::messaging::step_outcome::completed, "{\"success\":true}", "");
 }
 
 }

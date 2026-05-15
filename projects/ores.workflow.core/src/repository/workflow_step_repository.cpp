@@ -108,7 +108,8 @@ void workflow_step_repository::update_state(
     context ctx, const boost::uuids::uuid& id,
     const boost::uuids::uuid& state_id,
     const std::string& response_json,
-    const std::string& error) {
+    const std::string& error,
+    const std::string& step_log_json) {
     BOOST_LOG_SEV(lg(), debug) << "Updating workflow step state: "
                                << boost::uuids::to_string(id)
                                << " -> " << boost::uuids::to_string(state_id);
@@ -123,6 +124,9 @@ void workflow_step_repository::update_state(
     const auto opt_error = error.empty()
         ? std::optional<std::string>{}
         : std::optional<std::string>(error);
+    const auto opt_log = step_log_json.empty()
+        ? std::optional<std::string>{}
+        : std::optional<std::string>(step_log_json);
     using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 
@@ -130,6 +134,7 @@ void workflow_step_repository::update_state(
         "state_id"_c.set(state_id_str),
         "response_json"_c.set(opt_response),
         "error"_c.set(opt_error),
+        "step_log_json"_c.set(opt_log),
         "completed_at"_c.set(opt_now)
     ) | where("id"_c == id_str);
 

@@ -56,6 +56,7 @@ workflow_step_mapper::map(const workflow_step_entity& v) {
     if (!v.created_at)
         throw std::logic_error("Cannot map entity with null created_at to domain object.");
     r.created_at = timestamp_to_timepoint(*v.created_at);
+    r.step_log_json = v.step_log_json.value_or("");
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -97,6 +98,8 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     if (v.completed_at)
         r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
     r.created_at = timepoint_to_timestamp(v.created_at, lg());
+    r.step_log_json = v.step_log_json.empty()
+        ? std::nullopt : std::optional<std::string>(v.step_log_json);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain object to entity.";
     return r;

@@ -22,6 +22,8 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -60,25 +62,32 @@ struct get_step_result_response {
     bool found = false;
 
     /**
-     * @brief true if the step completed successfully; false if it failed.
+     * @brief Terminal outcome of the step.
      *
      * Valid only when found == true.
      */
-    bool success = false;
+    step_outcome outcome = step_outcome::completed;
 
     /**
      * @brief Serialised JSON result from the original execution.
      *
-     * Non-empty when found == true && success == true.
+     * Non-empty when found == true && outcome != failed.
      */
     std::string result_json;
 
     /**
      * @brief Human-readable error from the original execution.
      *
-     * Non-empty when found == true && success == false.
+     * Non-empty when found == true && outcome == failed.
      */
     std::string error_message;
+
+    /**
+     * @brief Log entries emitted during the original execution.
+     *
+     * Non-empty when the step produced user-visible diagnostics.
+     */
+    std::vector<step_log_entry> log;
 };
 
 }  // namespace ores::workflow::messaging

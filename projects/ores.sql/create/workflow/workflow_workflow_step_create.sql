@@ -47,6 +47,7 @@ create table if not exists "ores_workflow_workflow_steps_tbl" (
     "started_at" timestamptz null,
     "completed_at" timestamptz null,
     "created_at" timestamp with time zone not null default current_timestamp,
+    "step_log_json" jsonb null,
     primary key (id),
     check ("id" <> ores_utility_nil_uuid_fn())
 );

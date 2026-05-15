@@ -23,12 +23,14 @@
  *
  * Seeds the workflow_step state machine with:
  * - 1 machine: workflow_step
- * - 5 states: pending, in_progress, completed, failed, compensated
- * - 4 transitions:
- *     initial_start  (NULL         -> in_progress)
- *     complete       (in_progress  -> completed)
- *     fail           (in_progress  -> failed)
- *     compensate     (failed       -> compensated)
+ * - 6 states: pending, in_progress, completed, completed_with_warnings,
+ *             failed, compensated
+ * - 5 transitions:
+ *     initial_start          (NULL         -> in_progress)
+ *     complete               (in_progress  -> completed)
+ *     complete_with_warnings (in_progress  -> completed_with_warnings)
+ *     fail                   (in_progress  -> failed)
+ *     compensate             (failed       -> compensated)
  *
  * This script is idempotent: it skips insertion if the machine already exists.
  */
@@ -37,13 +39,14 @@
 
 do $$
 declare
-    v_machine_id        uuid;
-    v_state_pending     uuid;
-    v_state_in_progress uuid;
-    v_state_completed   uuid;
-    v_state_failed      uuid;
-    v_state_compensated uuid;
-    v_sys_tenant        uuid := ores_utility_system_tenant_id_fn();
+    v_machine_id                  uuid;
+    v_state_pending               uuid;
+    v_state_in_progress           uuid;
+    v_state_completed             uuid;
+    v_state_completed_with_warn   uuid;
+    v_state_failed                uuid;
+    v_state_compensated           uuid;
+    v_sys_tenant                  uuid := ores_utility_system_tenant_id_fn();
 begin
     -- -------------------------------------------------------------------------
     -- Machine
@@ -77,11 +80,12 @@ begin
     -- -------------------------------------------------------------------------
     -- States
     -- -------------------------------------------------------------------------
-    v_state_pending     := gen_random_uuid();
-    v_state_in_progress := gen_random_uuid();
-    v_state_completed   := gen_random_uuid();
-    v_state_failed      := gen_random_uuid();
-    v_state_compensated := gen_random_uuid();
+    v_state_pending             := gen_random_uuid();
+    v_state_in_progress         := gen_random_uuid();
+    v_state_completed           := gen_random_uuid();
+    v_state_completed_with_warn := gen_random_uuid();
+    v_state_failed              := gen_random_uuid();
+    v_state_compensated         := gen_random_uuid();
 
     insert into ores_dq_fsm_states_tbl (
         id, tenant_id, version,
@@ -97,6 +101,9 @@ begin
         (v_state_completed, v_sys_tenant, 0,
          v_machine_id, 'completed', 0, 1,
          current_user, 'system.initial_load', 'Seed workflow_step state: completed'),
+        (v_state_completed_with_warn, v_sys_tenant, 0,
+         v_machine_id, 'completed_with_warnings', 0, 1,
+         current_user, 'system.initial_load', 'Seed workflow_step state: completed_with_warnings'),
         (v_state_failed, v_sys_tenant, 0,
          v_machine_id, 'failed', 0, 1,
          current_user, 'system.initial_load', 'Seed workflow_step state: failed'),
@@ -104,7 +111,7 @@ begin
          v_machine_id, 'compensated', 0, 1,
          current_user, 'system.initial_load', 'Seed workflow_step state: compensated');
 
-    raise debug 'Created 5 workflow_step states.';
+    raise debug 'Created 6 workflow_step states.';
 
     -- -------------------------------------------------------------------------
     -- Transitions (4 total)
@@ -122,6 +129,12 @@ begin
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_in_progress, v_state_completed, 'complete', null,
          current_user, 'system.initial_load', 'in_progress -> completed'),
+        -- Step completed with partial item failures (non-fatal)
+        (gen_random_uuid(), v_sys_tenant, 0,
+         v_machine_id, v_state_in_progress, v_state_completed_with_warn,
+         'complete_with_warnings', null,
+         current_user, 'system.initial_load',
+         'in_progress -> completed_with_warnings'),
         -- Step failed
         (gen_random_uuid(), v_sys_tenant, 0,
          v_machine_id, v_state_in_progress, v_state_failed, 'fail', null,
@@ -131,6 +144,6 @@ begin
          v_machine_id, v_state_failed, v_state_compensated, 'compensate', null,
          current_user, 'system.initial_load', 'failed -> compensated');
 
-    raise debug 'Created 4 workflow_step transitions.';
+    raise debug 'Created 5 workflow_step transitions.';
 end;
 $$;

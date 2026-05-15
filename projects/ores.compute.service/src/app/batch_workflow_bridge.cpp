@@ -81,7 +81,7 @@ void batch_workflow_bridge::poll_once() {
             ores::workflow::messaging::step_completed_event evt;
             evt.workflow_instance_id = link.workflow_instance_id;
             evt.step_id              = link.workflow_step_id;
-            evt.success              = true;
+            evt.outcome              = ores::workflow::messaging::step_outcome::completed;
             evt.result_json          = std::format(
                 R"({{"success":true,"batch_id":"{}","message":"Compute batch completed"}})",
                 batch_id);

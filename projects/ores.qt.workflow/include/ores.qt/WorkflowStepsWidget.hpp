@@ -86,6 +86,14 @@ public:
      */
     void setMaxVisibleSteps(int n);
 
+    /**
+     * @brief Returns the most recently fetched step summaries (including log).
+     *
+     * Empty until the first successful fetch completes.
+     */
+    const std::vector<ores::workflow::messaging::workflow_step_summary>&
+    steps() const { return currentSteps_; }
+
 signals:
     /**
      * @brief Emitted once when the bound instance enters a terminal state.

@@ -674,26 +674,67 @@ std::optional<TradeListResult> ClientManager::listTrades(
     }
 }
 
+std::string ClientManager::send_authenticated_request(
+    std::string_view subject,
+    std::string json_body,
+    std::chrono::milliseconds timeout) {
+    if (!session_.is_logged_in())
+        throw std::runtime_error("Not logged in");
+    const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto scoped = session_
+        .with_correlation_id(cid)
+        .with_session_id(session_id_);
+    auto msg = scoped.authenticated_request(subject, json_body, timeout);
+    return std::string(
+        reinterpret_cast<const char*>(msg.data.data()),
+        msg.data.size());
+}
+
 std::optional<trading::messaging::trade_export_item>
 ClientManager::getTradeDetail(const std::string& trade_id) {
     try {
         trading::messaging::get_trade_detail_request request;
         request.trade_id = trade_id;
-        auto result = process_authenticated_request(std::move(request));
-        if (!result) {
+        const auto raw = send_authenticated_request(
+            trading::messaging::get_trade_detail_request::nats_subject,
+            rfl::json::write(request),
+            std::chrono::seconds(30));
+
+        // Two-phase parse: avoid combining trade (22 fields) with the
+        // trade_instrument variant (8 alternatives) in a single rfl call,
+        // which exceeds MSVC's constexpr depth budget (C1202).
+        auto base = rfl::json::read<
+            trading::messaging::get_trade_detail_response_base>(raw);
+        if (!base) {
             BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail failed: " << result.error();
+                << "getTradeDetail deserialize error: " << base.error().what();
             return std::nullopt;
         }
-        if (!result->success) {
+        if (!base->success) {
             BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail server error: " << result->message;
+                << "getTradeDetail server error: " << base->message;
+            return std::nullopt;
+        }
+        auto inst = rfl::json::read<
+            trading::messaging::get_trade_detail_instrument_wrapper,
+            rfl::AddTagsToVariants>(raw);
+        if (!inst) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail instrument deserialize error: "
+                << inst.error().what();
             return std::nullopt;
         }
         trading::messaging::trade_export_item item;
-        item.trade = std::move(result->trade);
-        item.instrument = std::move(result->instrument);
+        item.trade = std::move(base->trade);
+        item.instrument = std::move(inst->instrument);
         return item;
+    } catch (const ores::nats::service::nats_connect_error&) {
+        throw;
+    } catch (const ores::nats::service::session_expired_error& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
+        QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
+        return std::nullopt;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "getTradeDetail failed: " << e.what();
         return std::nullopt;

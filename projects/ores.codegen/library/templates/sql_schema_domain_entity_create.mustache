@@ -160,7 +160,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer{{/domain_entity.sql.security_definer}};
+$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer set search_path = public, pg_temp{{/domain_entity.sql.security_definer}};
 
 create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
 before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"

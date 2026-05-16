@@ -7,7 +7,7 @@
     "entity_plural": "rounding_types",
     "description": "Rounding Types - Valid rounding methods per ORE XML schema (roundingType)",
     "has_tenant_id": true,
-    "system_tenant_validation": true,
+    "system_tenant_validation": false,
     "has_display_order": true,
     "default_value": "Closest",
     "primary_key": {

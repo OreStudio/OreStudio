@@ -7,7 +7,7 @@
     "entity_plural": "currency_market_tiers",
     "description": "Currency market tier classification. Drives UI priority, liquidity expectations, and risk limits.",
     "has_tenant_id": true,
-    "system_tenant_validation": true,
+    "system_tenant_validation": false,
     "has_display_order": true,
     "default_value": "g10",
     "primary_key": {

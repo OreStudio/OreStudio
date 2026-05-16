@@ -7,7 +7,7 @@
     "entity_plural": "monetary_natures",
     "description": "Monetary nature classification. Defines the monetary nature of the currency.",
     "has_tenant_id": true,
-    "system_tenant_validation": true,
+    "system_tenant_validation": false,
     "has_display_order": true,
     "default_value": "fiat",
     "primary_key": {

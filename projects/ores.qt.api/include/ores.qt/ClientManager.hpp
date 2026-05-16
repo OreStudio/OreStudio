@@ -375,22 +375,10 @@ public:
         std::chrono::milliseconds timeout = std::chrono::seconds(30))
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
-        if (!session_.is_logged_in()) {
-            return std::unexpected(std::string("Not logged in"));
-        }
         try {
-            const auto cid = boost::uuids::to_string(
-                boost::uuids::random_generator()());
-            const auto json_body = rfl::json::write(request);
-            auto scoped = session_
-                .with_correlation_id(cid)
-                .with_session_id(session_id_);
-            auto msg = scoped.authenticated_request(
-                RequestType::nats_subject, json_body, timeout);
-            const std::string_view data(
-                reinterpret_cast<const char*>(msg.data.data()),
-                msg.data.size());
-            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(data);
+            const auto raw = send_authenticated_request(
+                RequestType::nats_subject, rfl::json::write(request), timeout);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
             if (!result) {
                 return std::unexpected(
                     std::string("Failed to deserialize response: ") +
@@ -529,6 +517,17 @@ private:
      * Emits sessionExpired() if the server returns max_session_exceeded.
      */
     void onRefreshTimer();
+
+    /**
+     * @brief Send an authenticated NATS request and return the raw JSON response.
+     *
+     * Handles auth check, correlation ID, and session scoping. Throws on any
+     * error; does not deserialize — that is the caller's responsibility.
+     */
+    std::string send_authenticated_request(
+        std::string_view subject,
+        std::string json_body,
+        std::chrono::milliseconds timeout);
 
     // NATS session for connection and authentication
     ores::nats::service::nats_client session_;

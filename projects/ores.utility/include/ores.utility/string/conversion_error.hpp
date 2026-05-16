@@ -22,6 +22,7 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.utility/export.hpp"
 
 namespace ores::utility::string {
 
@@ -29,8 +30,8 @@ namespace ores::utility::string {
  * @brief An error occurred whilst converting a string.
  *
  */
-class conversion_error : public virtual std::exception,
-                         public virtual boost::exception {
+class ORES_UTILITY_EXPORT conversion_error : public virtual std::exception,
+                                             public virtual boost::exception {
 public:
     explicit conversion_error(std::string message)
         : message_(std::move(message)) { }

@@ -48,7 +48,7 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
-# Trading types have up to 18 fields; rfl's duplicate-field-names check performs
+# Trading types have up to 22 fields; rfl's duplicate-field-names check performs
 # an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and
 # step (100 000) budgets, producing C1202. Consumers like ores.qt.api instantiate
 # these types inside deeper template contexts (e.g. process_authenticated_request),

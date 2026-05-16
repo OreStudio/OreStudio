@@ -27,7 +27,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.qt/RefdataExport.hpp"
 
 namespace ores::qt {
 
@@ -35,7 +34,7 @@ class MethodologyMdiWindow;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
-class ORES_QT_REFDATA_EXPORT MethodologyController final : public EntityController {
+class MethodologyController final : public EntityController {
     Q_OBJECT
 
 private:

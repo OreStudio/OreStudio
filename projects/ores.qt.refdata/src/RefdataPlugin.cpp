@@ -53,6 +53,14 @@
 #include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.qt/FxConventionController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
+#include "ores.qt/DataDomainController.hpp"
+#include "ores.qt/SubjectAreaController.hpp"
+#include "ores.qt/CatalogController.hpp"
+#include "ores.qt/DatasetBundleController.hpp"
+#include "ores.qt/MethodologyController.hpp"
+#include "ores.qt/OriginDimensionController.hpp"
+#include "ores.qt/NatureDimensionController.hpp"
+#include "ores.qt/TreatmentDimensionController.hpp"
 
 namespace ores::qt {
 
@@ -210,6 +218,47 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
         ctx_.username, this);
     connectControllerSignals(cdsConventionController_.get());
+
+    // Data Catalogue controllers
+    dataDomainController_ = std::make_unique<DataDomainController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(dataDomainController_.get());
+
+    subjectAreaController_ = std::make_unique<SubjectAreaController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(subjectAreaController_.get());
+
+    catalogController_ = std::make_unique<CatalogController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(catalogController_.get());
+
+    datasetBundleController_ = std::make_unique<DatasetBundleController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(datasetBundleController_.get());
+
+    methodologyController_ = std::make_unique<MethodologyController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(methodologyController_.get());
+
+    originDimensionController_ = std::make_unique<OriginDimensionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(originDimensionController_.get());
+
+    natureDimensionController_ = std::make_unique<NatureDimensionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(natureDimensionController_.get());
+
+    treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(treatmentDimensionController_.get());
 }
 
 // ---------------------------------------------------------------------------
@@ -366,9 +415,57 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // ---- Data Transfer menu — contribute Data Librarian action ----------
+    // ---- Data Transfer menu — contribute Data Catalogue submenu + Data Librarian
     auto* dt = smc.data_transfer_menu;
     if (dt) {
+        auto* menuCatalogue = dt->addMenu(tr("Data Ca&talogue"));
+
+        auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
+        connect(actDataDomains, &QAction::triggered, this, [this]() {
+            if (dataDomainController_) dataDomainController_->showListWindow();
+        });
+
+        auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
+        connect(actSubjectAreas, &QAction::triggered, this, [this]() {
+            if (subjectAreaController_) subjectAreaController_->showListWindow();
+        });
+
+        auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogues"));
+        connect(actCatalogs, &QAction::triggered, this, [this]() {
+            if (catalogController_) catalogController_->showListWindow();
+        });
+
+        auto* actDatasetBundles = menuCatalogue->addAction(
+            ico(Icon::Folder), tr("Dataset &Bundles"));
+        connect(actDatasetBundles, &QAction::triggered, this, [this]() {
+            if (datasetBundleController_) datasetBundleController_->showListWindow();
+        });
+
+        auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
+        connect(actMethodologies, &QAction::triggered, this, [this]() {
+            if (methodologyController_) methodologyController_->showListWindow();
+        });
+
+        menuCatalogue->addSeparator();
+
+        auto* actOriginDimensions = menuCatalogue->addAction(
+            ico(Icon::Database), tr("&Origin Dimensions"));
+        connect(actOriginDimensions, &QAction::triggered, this, [this]() {
+            if (originDimensionController_) originDimensionController_->showListWindow();
+        });
+
+        auto* actNatureDimensions = menuCatalogue->addAction(
+            ico(Icon::Database), tr("&Nature Dimensions"));
+        connect(actNatureDimensions, &QAction::triggered, this, [this]() {
+            if (natureDimensionController_) natureDimensionController_->showListWindow();
+        });
+
+        auto* actTreatmentDimensions = menuCatalogue->addAction(
+            ico(Icon::Database), tr("&Treatment Dimensions"));
+        connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
+            if (treatmentDimensionController_) treatmentDimensionController_->showListWindow();
+        });
+
         act_data_librarian_ = dt->addAction(
             IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor),
             tr("Data &Librarian"));
@@ -437,6 +534,15 @@ void RefdataPlugin::on_logout() {
         data_librarian_window_->close();
         data_librarian_window_ = nullptr;
     }
+
+    treatmentDimensionController_.reset();
+    natureDimensionController_.reset();
+    originDimensionController_.reset();
+    methodologyController_.reset();
+    datasetBundleController_.reset();
+    catalogController_.reset();
+    subjectAreaController_.reset();
+    dataDomainController_.reset();
 
     zeroConventionController_.reset();
     purposeTypeController_.reset();

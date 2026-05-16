@@ -17,9 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
- * Report Definitions Table
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
  *
  * The persistent template for a report. Describes what to run, when to run it,
  * and how to handle concurrent executions. Type-specific configuration (e.g.
@@ -34,23 +37,23 @@
  */
 
 create table if not exists "ores_reporting_report_definitions_tbl" (
-    "id"                   uuid    not null,
-    "tenant_id"            uuid    not null,
-    "version"              integer not null,
-    "party_id"             uuid    not null,
-    "name"                 text    not null,
-    "description"          text    not null default '',
-    "report_type"          text    not null,
-    "fsm_state_id"         uuid    null,
-    "schedule_expression"  text    not null,
-    "concurrency_policy"   text    not null default 'skip',
-    "scheduler_job_id"     uuid    null,
-    "modified_by"          text    not null,
-    "performed_by"         text    not null,
-    "change_reason_code"   text    not null,
-    "change_commentary"    text    not null,
-    "valid_from"           timestamp with time zone not null,
-    "valid_to"             timestamp with time zone not null,
+    "id" uuid not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
+    "name" text not null,
+    "party_id" uuid not null,
+    "description" text not null default '',
+    "report_type" text not null,
+    "fsm_state_id" uuid null,
+    "schedule_expression" text not null,
+    "concurrency_policy" text not null default 'skip',
+    "scheduler_job_id" uuid null,
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
     primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
@@ -63,37 +66,33 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     check ("schedule_expression" <> '')
 );
 
+-- Unique name for active records
+create unique index if not exists report_definitions_name_uniq_idx
+on "ores_reporting_report_definitions_tbl" (tenant_id, party_id, name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists report_definitions_version_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists report_definitions_id_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Natural key: unique definition name per party
-create unique index if not exists report_definitions_name_uniq_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, party_id, name)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Unique scheduler_job_id among active records (NULL allowed when not scheduled)
-create unique index if not exists report_definitions_scheduler_job_id_uniq_idx
-on "ores_reporting_report_definitions_tbl" (scheduler_job_id)
-where valid_to = ores_utility_infinity_timestamp_fn() and scheduler_job_id is not null;
-
--- Tenant index
 create index if not exists report_definitions_tenant_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for party-scoped lookups
+create unique index if not exists report_definitions_scheduler_job_id_uniq_idx
+on "ores_reporting_report_definitions_tbl" (scheduler_job_id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and scheduler_job_id is not null;
+
 create index if not exists report_definitions_party_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- FSM state index for state-based filtering
 create index if not exists report_definitions_fsm_state_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, fsm_state_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -104,77 +103,75 @@ declare
     current_version integer;
 begin
     -- Validate tenant_id
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = new.tenant_id
-          and id = new.party_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            new.party_id
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
             using errcode = '23503';
     end if;
 
-    -- Validate report_type
-    new.report_type := ores_reporting_validate_report_type_fn(new.tenant_id, new.report_type);
-
-    -- Validate concurrency_policy
-    new.concurrency_policy := ores_reporting_validate_concurrency_policy_fn(new.tenant_id, new.concurrency_policy);
-
-    -- Validate fsm_state_id (soft FK to ores_dq_fsm_states_tbl)
-    if new.fsm_state_id is not null then
+    -- Validate fsm_state_id (optional soft FK to ores_dq_fsm_states_tbl)
+    if NEW.fsm_state_id is not null then
         if not exists (
             select 1 from ores_dq_fsm_states_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
-              and id = new.fsm_state_id
+              and id = NEW.fsm_state_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
-            raise exception 'Invalid fsm_state_id: %. No active FSM state found with this id.',
-                new.fsm_state_id
+            raise exception 'Invalid fsm_state_id: %. No active FSM state found with this id.', NEW.fsm_state_id
                 using errcode = '23503';
         end if;
     end if;
 
+    -- Validate report_type
+    NEW.report_type := ores_reporting_validate_report_type_fn(NEW.tenant_id, NEW.report_type);
+
+    -- Validate concurrency_policy
+    NEW.concurrency_policy := ores_reporting_validate_concurrency_policy_fn(NEW.tenant_id, NEW.concurrency_policy);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
     -- Version management
     select version into current_version
     from "ores_reporting_report_definitions_tbl"
-    where tenant_id = new.tenant_id
-      and id = new.id
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
         update "ores_reporting_report_definitions_tbl"
         set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and id = new.id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
-
-    return new;
+    return NEW;
 end;
-$$ language plpgsql security definer set search_path = public;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_reporting_report_definitions_insert_trg
 before insert on "ores_reporting_report_definitions_tbl"
@@ -184,6 +181,6 @@ create or replace rule ores_reporting_report_definitions_delete_rule as
 on delete to "ores_reporting_report_definitions_tbl" do instead
     update "ores_reporting_report_definitions_tbl"
     set valid_to = current_timestamp
-    where tenant_id = old.tenant_id
-      and id = old.id
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();

@@ -151,9 +151,8 @@ do instead
 
 -- =============================================================================
 -- Validation function for currency
--- Validates that a iso_code exists in the currencies table.
--- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
+-- Validates that a iso_code exists in the currencies table for the given tenant.
+-- Returns the validated value, or raises if not found.
 -- =============================================================================
 create or replace function ores_refdata_validate_currency_fn(
     p_tenant_id uuid,
@@ -171,17 +170,19 @@ begin
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against the tenant's currencies and the system tenant's currencies.
+    -- System-tenant currencies are the standard reference set (published once);
+    -- tenant-specific currencies extend them after bundle publish.
     if not exists (
         select 1 from ores_refdata_currencies_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and iso_code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid currency: %. Must be one of: %', p_value, (
             select string_agg(iso_code::text, ', ' order by iso_code)
             from ores_refdata_currencies_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

@@ -2,8 +2,133 @@
 #+SUBTITLE: Dynamic steps, ownership relocation, idempotency, and a reusable step widget
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSAL
+#+STATUS: COMPLETE
 #+OPTIONS: toc:t num:nil
+
+* Progress
+
+Items 3 and 4 from the original plan are complete. Items 1 and 2 remain
+pending. Additional hardening work was done on branches
+~feature/workflow-step-log~ and ~feature/dq-publish-pattern-microservices~
+that is closely related to this plan but addresses bugs surfaced during
+integration testing.
+
+** Completed — Error surfacing pipeline fixes
+
+Three bugs prevented workflow step errors from appearing in the UI.
+All three are now fixed:
+
+1. ~workflow_step_context::fail()~ was discarding the accumulated log
+   (fixed in commit ~db41924b1~, ~feature/workflow-step-log~).
+
+2. ~workflow_engine.cpp~ ~on_step_completed~: the ~failed~ outcome
+   branch was passing ~""~ for ~step_log_json~ in
+   ~step_repo_.update_state()~, silently dropping the log on DB write
+   even when it was correctly forwarded by the handler (fixed in commit
+   ~90fb7eb12~, ~feature/workflow-step-log~):
+
+   #+begin_src cpp
+   // Before (log discarded):
+   case outcome::failed:
+       step_repo_.update_state(ctx_, step_id,
+           step_states_.require("failed"), "", event.error_message, "");
+   // After:
+   case outcome::failed:
+       step_repo_.update_state(ctx_, step_id,
+           step_states_.require("failed"), "", event.error_message, log_json);
+   #+end_src
+
+3. ~trade_status_service~ was calling ~dq::repository::fsm_transition_repository~
+   directly, causing permission-denied errors in the trading service user.
+   Resolved as part of Phase 3a service isolation (see below).
+
+** Completed — Phase 3a: trading service isolation (NATS)
+
+~trade_status_service.cpp~ was bypassing service table isolation by
+directly calling the DQ ~fsm_transition_repository~. Fixed on branch
+~feature/dq-publish-pattern-microservices~ (commit ~ff3c1b505~):
+
+- ~trade_handler::fetch_fsm_transitions()~ fetches the full FSM
+  transition map from ~dq.v1.fsm-transitions.list~ via NATS, with a
+  5-minute process-level static cache to avoid one NATS call per trade
+  during bulk imports.
+- The map is passed through ~trade_service::save_trades()~ →
+  ~trade_status_service::resolve_status()~.
+- ~ores.dq.core.lib~ removed from ~ores.trading.core~'s CMake link
+  libraries; replaced with ~ores.dq.api.lib~.
+- Phase 3a in
+  [[file:2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]]
+  marked COMPLETE.
+
+** Completed — Workflow instance list: Completed At column
+
+~WorkflowMdiWindow~ now shows a ~Completed At~ column. The
+~workflow_instance_summary.completed_at~ field was already populated by
+~workflow_query_handler.cpp~; only the UI column was missing.
+
+** Completed — Item 3: Idempotency guard
+
+~check_step_idempotency~ is implemented in
+~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~
+alongside the existing ~publish_step_completion~ helper. Handlers call
+it to replay the cached completion event on re-dispatch rather than
+re-executing the operation.
+
+** Completed — Item 4: Reusable step widget
+
+~WorkflowStepsWidget~ and ~WorkflowStepLogWidget~ exist in
+~projects/ores.qt.workflow/~. ~WorkflowInstanceDetailDialog~ uses the
+factored-out widget. The DQ publish pattern PR can embed the widget
+directly without adding a new per-step component.
+
+** Completed — SQL-level service isolation for workflow and ORE (Phases 5.2 and 5.3)
+
+Landed on main in PRs #745 and #746:
+
+- *Phase 5.2* (~feature/workflow-iam-refdata-write-apis~): Removed dead
+  ~ores_iam_*~ and ~ores_refdata_parties~ DML grants from the workflow service
+  registry. The ~provision_parties~ workflow already routes all writes
+  through NATS (~refdata.v1.parties.save~, ~iam.v1.accounts.save~,
+  ~iam.v1.account-parties.save~). The grants were dead leftovers.
+
+- *Phase 5.3* (~feature/ore-workflow-write-decoupling~): Removed dead
+  ~ores_workflow_*~ DML grant from the workflow service registry and the
+  ~ores.workflow.core.lib~ CMake link from ~ores.ore.service~. The ORE
+  import handler already submits workflows via NATS (~nats_.js_publish~)
+  and never called workflow.core directly.
+
+The runtime (SQL) isolation between the workflow service and all domain
+services is now clean. What remains for Item 2 is the *compile-time*
+dependency: workflow definition headers (for ~ore_import~,
+~provision_parties~, ~report_execution~) still live inside ~ores.workflow~
+and include domain API headers, keeping the dependency direction inverted.
+
+** Completed — Item 1: Dynamic step lists
+
+~workflow_definition~ in ~ores.workflow.api~ already uses ~build_steps~ as
+a ~std::function~ callback (signature:
+~(request_json, tenant_id, correlation_id) → vector<workflow_step_def>~).
+~materialised_step~ struct and ~workflow_instance.materialised_steps_json~
+column both exist. ~workflow_engine.cpp~ calls ~def->build_steps(...)~ at
+instance start, recovery, and dispatch. No static step path remains.
+
+** Completed — Item 2: Definitions moved to owning service API packages
+
+All three definitions already live in their respective owning API packages:
+
+| Workflow               | Location                                                     |
+|------------------------+--------------------------------------------------------------|
+| ~provision_parties~    | ~ores.refdata.api/workflow/provision_parties_workflow.hpp~   |
+| ~ore_import~           | ~ores.ore.api/workflow/ore_import_workflow.hpp~              |
+| ~report_execution~     | ~ores.reporting.api/workflow/report_execution_workflow.hpp~  |
+
+~registrar.cpp~ calls ~refdata::workflow::register_provision_parties_workflow~,
+~ore::workflow::register_ore_import_workflow~, and
+~reporting::workflow::register_report_execution_workflow~. The ~ores.workflow~
+package no longer includes domain headers directly for these definitions.
+
+The SQL-level isolation (Phases 5.2/5.3 above) is the runtime complement:
+DML grants are gone and all domain writes go through NATS.
 
 * Context
 
@@ -70,7 +195,7 @@ on top of the engine. This plan addresses them in one PR.
 - Compensation semantics (the existing ~begin_compensation~ /
   ~check_compensation_complete~ flow continues unchanged).
 
-* Item 1 — Dynamic step lists (mandatory, no static path)
+* Item 1 — Dynamic step lists (mandatory, no static path) [PENDING]
 
 ** Current shape
 
@@ -145,7 +270,7 @@ def.build_steps = [](const std::string& /*request_json*/) {
 No behavioural change for ~provision_parties~, ~ore_import~, or
 ~report_execution~; only the registration path is rewritten.
 
-* Item 2 — Move definitions to the owning service's API package
+* Item 2 — Move definitions to the owning service's API package [PENDING]
 
 ** Current shape
 
@@ -195,7 +320,7 @@ This is still compile-time coupling, but in the correct direction:
 registration symbol), and each api package owns its own workflow
 declarations.
 
-* Item 3 — Idempotency guard contract
+* Item 3 — Idempotency guard contract [DONE]
 
 ** Current behaviour
 
@@ -259,7 +384,7 @@ The existing ~workflow_step.workflow_step_id~ column already serves as
 the idempotency key inside the engine. No new column needed; the new
 endpoint just exposes a read.
 
-* Item 4 — Reusable step widget
+* Item 4 — Reusable step widget [DONE]
 
 ** Factor out
 
@@ -336,7 +461,7 @@ dialog stores that id and binds it to a ~WorkflowStepsWidget~. On
 ~instanceReachedTerminalState(true)~ the dialog enables its Close
 button; on ~stepFailed~ it surfaces a banner above the widget.
 
-* Item 5 — End-to-end verification
+* Item 5 — End-to-end verification [PENDING]
 
 Smoke tests added in the same PR:
 

@@ -132,28 +132,54 @@ struct workflow_step_context {
      * @param result_json Serialised JSON result payload.
      */
     void complete(const std::string& result_json) const {
-        publish(true, result_json, "");
+        publish(ores::workflow::messaging::step_outcome::completed,
+            result_json, "", {});
+    }
+
+    /**
+     * @brief Publishes a step-completed event with partial failures.
+     *
+     * Use when the step ran to completion but some items failed (e.g. some
+     * trades could not be saved). The workflow advances but the step record
+     * is marked completed_with_warnings rather than completed.
+     *
+     * @param result_json Serialised JSON result payload.
+     * @param log         Ordered list of per-item log entries.
+     */
+    void warn(const std::string& result_json,
+        const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
+        publish(ores::workflow::messaging::step_outcome::completed_with_warnings,
+            result_json, "", log);
     }
 
     /**
      * @brief Publishes a failed step-completed event.
      *
      * @param error_msg Human-readable error description.
+     * @param log       Optional per-item diagnostic entries (e.g. one per
+     *                  failed trade). Stored in step_log_json so the UI can
+     *                  show individual failure reasons.
      */
-    void fail(const std::string& error_msg) const {
-        publish(false, "", error_msg);
+    void fail(const std::string& error_msg,
+        const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) const {
+        publish(ores::workflow::messaging::step_outcome::failed,
+            "", error_msg, log);
     }
 
 private:
-    void publish(bool success, const std::string& result_json,
-        const std::string& error_msg) const {
+    void publish(
+        ores::workflow::messaging::step_outcome outcome,
+        const std::string& result_json,
+        const std::string& error_msg,
+        const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
 
         ores::workflow::messaging::step_completed_event event{
             .workflow_instance_id = instance_id,
             .step_id              = step_id,
-            .success              = success,
+            .outcome              = outcome,
             .result_json          = result_json,
-            .error_message        = error_msg};
+            .error_message        = error_msg,
+            .log                  = log};
 
         const auto json = rfl::json::write(event);
         const auto data = std::as_bytes(
@@ -167,16 +193,17 @@ private:
  * @brief Publishes a step-completed event to the workflow engine.
  *
  * Low-level function for cases where a workflow_step_context is not
- * convenient.  Prefer workflow_step_context::complete() / fail() for
- * new code.
+ * convenient.  Prefer workflow_step_context::complete() / warn() / fail()
+ * for new code.
  */
 inline void publish_step_completion(
     ores::nats::service::client& nats,
     const std::string& step_id,
     const std::string& instance_id,
-    bool success,
+    ores::workflow::messaging::step_outcome outcome,
     const std::string& result_json,
-    const std::string& error_msg) {
+    const std::string& error_msg,
+    const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) {
 
     workflow_step_context ctx{
         .step_id = step_id,
@@ -184,10 +211,17 @@ inline void publish_step_completion(
         .tenant_id = {},
         .nats = &nats};
 
-    if (success)
+    switch (outcome) {
+    case ores::workflow::messaging::step_outcome::completed:
         ctx.complete(result_json);
-    else
-        ctx.fail(error_msg);
+        break;
+    case ores::workflow::messaging::step_outcome::completed_with_warnings:
+        ctx.warn(result_json, log);
+        break;
+    case ores::workflow::messaging::step_outcome::failed:
+        ctx.fail(error_msg, log);
+        break;
+    }
 }
 
 /**
@@ -198,9 +232,11 @@ inline void publish_step_completion(
  * the original outcome without re-executing the operation.
  */
 struct cached_step_result {
-    bool success = false;
+    ores::workflow::messaging::step_outcome outcome =
+        ores::workflow::messaging::step_outcome::completed;
     std::string result_json;
     std::string error_message;
+    std::vector<ores::workflow::messaging::step_log_entry> log;
 };
 
 /**
@@ -239,9 +275,10 @@ inline std::optional<cached_step_result> check_step_idempotency(
         if (!resp || !resp->found) return std::nullopt;
 
         return cached_step_result{
-            .success       = resp->success,
+            .outcome       = resp->outcome,
             .result_json   = resp->result_json,
-            .error_message = resp->error_message};
+            .error_message = resp->error_message,
+            .log           = resp->log};
     } catch (const std::exception&) {
         // Fail open: if the workflow service is unreachable, proceed with
         // normal execution. The engine's own idempotency guard (step state

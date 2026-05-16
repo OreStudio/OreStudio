@@ -105,49 +105,18 @@ Each domain service runs as a dedicated PostgreSQL role
 tables (~ores_<service>_*~). This is the strict service table isolation
 invariant.
 
-** Cross-component validation functions
+** Service table isolation
 
-Service table triggers call shared validator functions for tenant and
-change-reason validation. These functions are defined as ~SECURITY DEFINER~
-so they execute as the DDL owner, not as the calling service user:
-
-- ~ores_iam_validate_tenant_fn~ — validates ~tenant_id~ on every INSERT/UPDATE
-  across all service components.  Lives in ~iam_tenant_functions_create.sql~.
-- ~ores_dq_validate_change_reason_fn~ — validates ~change_reason_code~ on
-  every INSERT/UPDATE across all service components.  Lives in
-  ~dq_change_reason_functions_create.sql~.
-
-This means no service user needs ~SELECT ON ores_iam_tenants_tbl~ or
-~SELECT ON ores_dq_change_reasons_tbl~ — FK enforcement and trigger
-validation work without those grants.
-
-** Foreign keys across service boundaries
-
-PostgreSQL FK constraint enforcement does /not/ require the session user
-to hold ~SELECT~ on the referenced table.  The ~REFERENCES~ privilege needed
-to /create/ a FK is granted to the DDL user; at runtime, the FK check is
-system-internal.  Service users therefore need no cross-component ~SELECT~
-grant solely because of FK constraints.
-
-** Remaining cross-component grants
-
-The following grants are genuine architectural coupling and are tracked
-in the deferred plan for eventual removal:
-
-| Grant                                          | Owner    | Plan phase |
-|------------------------------------------------+----------+------------|
-| DML on ~ores_refdata_parties~                  | IAM      | 4.3        |
-| DML on ~ores_iam_*~ and ~ores_refdata_parties~ | Workflow | 5.2        |
-| DML on ~ores_workflow_*~                       | ORE      | 5.3        |
-
-Phases 2.1, 2.2, and 3 of the isolation plan are complete. The three
-remaining items require NATS write APIs and are tracked separately in
-[[file:../doc/plans/2026-05-13-cross-service-write-decoupling.org][cross-service-write-decoupling.org]].
+Each domain service user holds DML only on its own ~ores_<service>_*~ tables.
+Cross-service reads inside trigger functions use ~SECURITY DEFINER~; cross-service
+writes go through NATS. All tracked cross-component grants have been removed.
 
 The synthetic service holds broad SELECT on all domains and is classified
 as ~role: "tooling"~ — a permanent exception, not a service.
 
-See [[file:../doc/plans/2026-05-12-strict-service-table-isolation.org][strict-service-table-isolation.org]] for the full migration plan.
+Full rules, patterns, and examples are in the
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] document
+under "Service Table Isolation".
 
 * Useful Pages
 

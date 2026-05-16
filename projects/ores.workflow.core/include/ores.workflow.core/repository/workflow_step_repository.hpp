@@ -76,12 +76,15 @@ public:
     /**
      * @brief Updates the FSM state (and optional response/error) of a workflow step.
      *
-     * Sets @p state_id, @p response_json, @p error, and stamps completed_at to now.
+     * Sets @p state_id, @p response_json, @p error, @p step_log_json, and
+     * stamps completed_at to now.  Pass an empty string for @p step_log_json
+     * when the step produces no log entries.
      */
     void update_state(context ctx, const boost::uuids::uuid& id,
         const boost::uuids::uuid& state_id,
         const std::string& response_json,
-        const std::string& error);
+        const std::string& error,
+        const std::string& step_log_json = {});
 
     /**
      * @brief Records that the step command was successfully published.

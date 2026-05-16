@@ -1,0 +1,366 @@
+#+title: Environment / Instance Domain Model and Login Filter
+#+date: 2026-05-15
+#+author: Marco Craveiro
+
+* Problem
+
+The login dialog's saved-connections combo is a flat list that shows every
+server bookmark and every connection, making it hard to find what you need
+when bookmarks span multiple deployment tiers.  In practice, users work within
+one tier at a time and rarely cross tiers in a single session.
+
+A second gap: when several client windows are open simultaneously there is no
+reliable signal telling the user which tier each window belongs to.  The
+existing ~--instance-name~ / ~--instance-color~ flags address multi-instance
+labelling generically, but they have no first-class concept of a deployment
+tier.
+
+Both problems share a root: the domain model conflates the deployment tier
+(~dev~, ~staging~, ~prod~) with the specific server bookmark (~local1~,
+~local2~).  Separating them fixes the naming throughout — the domain, the
+connection browser, the login dialog, and the CLI.
+
+* Terminology
+
+Standard DevOps and financial IT usage:
+
+| Term            | Meaning                                      | Examples                      |
+|-----------------+----------------------------------------------+-------------------------------|
+| *Environment*   | A deployment tier (the "what kind")          | ~dev~, ~staging~, ~prod~      |
+| *Instance*      | A specific server within an environment      | ~local1~, ~local2~, ~local3~  |
+| *Connection*    | Saved credentials linked to an instance      | ~alice@local2~                |
+
+An instance belongs to at most one environment.  Connections are linked to
+instances.  The NATS ~subject_prefix~ field already uses this split:
+~ores.{environment}.{instance}~ — e.g., ~ores.dev.local2~.
+
+The existing ~--instance-name~ CLI flag already uses the right word.  The
+~--environment~ flag proposed below completes the pair.
+
+* Current State
+
+** Domain model
+
+~ores.connections~ has two domain objects whose names do not match their roles:
+
+- *Environment* (currently): used as a host/port bookmark — i.e., what should
+  be called an *instance*.  Fields: ~name~, ~host~, ~port~, ~http_port~,
+  ~subject_prefix~, ~folder_id~.
+- *Connection*: credential bookmark linked to an environment (instance).
+  Fields: ~name~, ~username~, ~encrypted_password~, ~environment_id~.
+- *Folder*: arbitrary hierarchical container, orthogonal to tier semantics.
+
+There is no domain object for a deployment tier (environment).  The tier is
+implicit only in the ~subject_prefix~ string and in user-imposed naming
+conventions.
+
+** Connection browser
+
+~ConnectionBrowserMdiWindow~ shows ~Folder → Environment(instance)~ in its
+tree.  Without a tier object, users rely on folder naming to group bookmarks
+by tier.
+
+** Login dialog
+
+All instance bookmarks and connections are shown in two flat sections, with no
+tier-level grouping or filtering possible.  ~QuickConnectItem~ carries
+~{Type, name, subtitle}~ with no tier membership.
+
+** CLI flags
+
+~CommandLineParser~ has ~--instance-name~ (arbitrary label), ~--instance-color~
+(hex RGB dot), ~--http-base-url~, and logging flags.  No tier-aware flag exists.
+
+* Design
+
+** Rename and introduce domain objects
+
+*** Rename: environment → instance
+
+The existing ~environment~ struct is renamed to ~instance~.  All fields and
+semantics stay the same; only the name changes:
+
+#+begin_src cpp
+// ores.connections/domain/instance.hpp  (was environment.hpp)
+struct instance final {
+    boost::uuids::uuid                 id;
+    std::optional<boost::uuids::uuid>  environment_id;  // was folder_id (see below)
+    std::string                        name;            // e.g., "local1"
+    std::string                        host;
+    int                                port{0};
+    int                                http_port{8080};
+    std::string                        description;
+    std::string                        subject_prefix;  // "ores.dev.local1"
+};
+#+end_src
+
+The ~folder_id~ field is replaced by ~environment_id~ (pointing to the new
+~environment~ object).  Folder support is removed from instances — the tier is
+the natural grouping and folders added complexity without semantic value.
+
+*** New: environment
+
+#+begin_src cpp
+// ores.connections/domain/environment.hpp  (new)
+struct environment final {
+    boost::uuids::uuid  id;
+    std::string         name;         // "dev", "staging", "prod"
+    std::string         description;
+};
+#+end_src
+
+Minimal by design.  A colour field can be added later if needed.
+
+*** Connection: rename foreign key
+
+~connection.environment_id~ is renamed to ~connection.instance_id~ to match
+the new name:
+
+#+begin_src cpp
+struct connection final {
+    boost::uuids::uuid                 id;
+    std::optional<boost::uuids::uuid>  instance_id;  // was environment_id
+    std::string                        name;
+    std::string                        username;
+    std::string                        encrypted_password;
+    std::string                        description;
+};
+#+end_src
+
+** Updated connection_manager API
+
+Remove environment operations; add instance and environment operations:
+
+#+begin_src cpp
+// Environment (tier) operations — all new
+void create_environment(const domain::environment&);
+void update_environment(const domain::environment&);
+void delete_environment(const boost::uuids::uuid& id);
+std::vector<domain::environment> get_all_environments();
+std::optional<domain::environment> get_environment(const boost::uuids::uuid& id);
+std::optional<domain::environment> get_environment_by_name(const std::string& name);
+
+// Instance operations — renamed from environment_*
+void create_instance(const domain::instance&);
+void update_instance(const domain::instance&);
+void delete_instance(const boost::uuids::uuid& id);
+std::vector<domain::instance> get_all_instances();
+std::optional<domain::instance> get_instance(const boost::uuids::uuid& id);
+std::vector<domain::instance> get_instances_for_environment(const boost::uuids::uuid& env_id);
+
+// Connection: instance_id replaces environment_id in resolved_connection
+struct resolved_connection {
+    std::string host;
+    int         port{0};
+    int         http_port{8080};
+    std::string username;
+    std::string password;
+    std::string name;
+    std::string subject_prefix;
+    std::optional<boost::uuids::uuid>  instance_id;
+    std::optional<std::string>         instance_name;
+    std::optional<boost::uuids::uuid>  environment_id;
+    std::optional<std::string>         environment_name;
+};
+#+end_src
+
+** SQLite schema
+
+New table ~environments~.  Existing ~environments~ table (currently holding
+instances) is renamed to ~instances~; ~folder_id~ column replaced by
+~environment_id~ (nullable FK to ~environments~).  ~connections.environment_id~
+column renamed to ~instance_id~.  The migration is applied inside
+~connection_manager~'s constructor with lightweight ALTER TABLE / RENAME
+statements guarded by existence checks.
+
+** Connection browser: environment → instance → connection tree
+
+The ~ConnectionBrowserMdiWindow~ tree changes to:
+
+#+begin_example
+  dev                   ← environment node
+    local1              ← instance node
+    local2              ← instance node
+        alice@local2    ← connection node
+  staging               ← environment node
+    staging1            ← instance node
+  Unassigned            ← instances with no environment
+    legacy-test
+#+end_example
+
+Toolbar actions: create environment, create instance (under selected
+environment), create connection (under selected instance), rename, delete.
+Drag-and-drop for moving instances between environments.
+
+A new ~EnvironmentDetailPanel~ section shows: environment name, description,
+list of member instances.  The existing instance detail panel is updated to
+show its parent environment name.
+
+Folder support is removed from the tree view.  The ~folder~ domain object and
+~folder_id~ column can be dropped in a follow-up cleanup once confirmed no
+data relies on them.
+
+** Login dialog filter
+
+A *Environment* filter row appears above the quick-connect combo:
+
+#+begin_example
+  Environment: [ All ▼ ]     ← hidden when <2 environments defined
+  Quick connect: [ ── ▼ ]
+#+end_example
+
+Filter options: "All", then each environment name sorted alphabetically.  An
+"Unassigned" entry appears when ungrouped instances or connections exist.
+
+When an environment is selected, the quick-connect combo is restricted to:
+- *Instances* section: only instances belonging to that environment.
+- *Connections* section: only connections whose linked instance belongs to
+  that environment.
+
+The filter is a pure narrowing control; it does not fill form fields.
+
+*** QuickConnectItem
+
+#+begin_src cpp
+struct QuickConnectItem {
+    enum class Type { Instance, Connection };
+    Type    type;
+    QString name;
+    QString subtitle;
+    // ── new ──
+    std::optional<QString>            environment_name;
+    std::optional<boost::uuids::uuid> environment_id;
+};
+#+end_src
+
+Note: ~Type::Environment~ is renamed to ~Type::Instance~ to match the domain.
+~MainWindow~ populates ~environment_name~ / ~environment_id~ for each item by
+looking up the instance's ~environment_id~.
+
+*** LoginDialog additions
+
+#+begin_src
+QLabel*    environmentFilterLabel_   (hidden when <2 environments)
+QComboBox* environmentFilterCombo_   (hidden when <2 environments)
+#+end_src
+
+New public method:
+#+begin_src cpp
+void setActiveEnvironment(const QString& environmentName);
+#+end_src
+Pre-selects the filter; called by ~MainWindow~ when ~--environment~ was passed.
+
+** ~--environment~ CLI flag
+
+Names a deployment tier (environment), not an instance.
+
+#+begin_src
+  -E, --environment NAME
+      Deployment environment to use as the default context for this client
+      instance (e.g. dev, staging, prod).  Filters the login dialog to the
+      specified environment and labels the window title.
+#+end_src
+
+Semantics in ~MainWindow~:
+
+1. Call ~get_environment_by_name(name)~ (case-insensitive) after
+   ~initializeConnectionManager()~ succeeds.
+2. If found: store as ~activeEnvironmentName_~; pre-select filter; update title.
+3. If not found: ~warn~-level log; fall back to "All".  Do not abort startup.
+
+** Window title
+
+#+begin_example
+  ORE Studio v1.2.3                          (no flags)
+  ORE Studio v1.2.3 {dev}                    (--environment dev)
+  ORE Studio v1.2.3 [local2]                 (--instance-name local2)
+  ORE Studio v1.2.3 {dev} [local2]           (both)
+#+end_example
+
+~{env}~ = tier in curly braces; ~[instance]~ = disambiguation label in square
+brackets.  ~activeEnvironmentName_~ is a new ~MainWindow~ member.
+
+The two flags are designed to be used together: ~--environment~ identifies the
+tier; ~--instance-name~ disambiguates when multiple windows target the same tier.
+
+* Implementation
+
+** Item 1 — Rename environment → instance in domain layer
+
+New file: ~domain/instance.hpp~ (copy of ~environment.hpp~ with renames).
+Update ~environment.hpp~ to the new tier object.
+Update ~CMakeLists.txt~.
+
+** Item 2 — SQLite migration in connection_manager
+
+~connection_manager.cpp~: rename tables, replace ~folder_id~ with
+~environment_id~ on instances, rename ~connections.environment_id~ →
+~instance_id~.  Add ~environments~ table for tiers.
+
+** Item 3 — connection_manager API: environment + instance CRUD
+
+Add all environment and instance operations to header and implementation.
+Update ~resolved_connection~ to carry both ~instance_name~ and
+~environment_name~.
+
+** Item 4 — ConnectionBrowserMdiWindow: three-level tree
+
+Rebuild tree model for Environment → Instance → Connection hierarchy.
+Add toolbar actions for all three levels.  Add ~EnvironmentDetailPanel~.
+Remove folder nodes from the default view.
+
+** Item 5 — QuickConnectItem: add environment fields; rename Type::Environment
+
+File: ~LoginDialog.hpp~.
+
+** Item 6 — Populate environment metadata in MainWindow
+
+File: ~MainWindow.cpp~ — look up environment for each instance when building
+quick-connect items.
+
+** Item 7 — Add environment filter combo to LoginDialog
+
+Files: ~LoginDialog.hpp~, ~LoginDialog.cpp~.
+Filter row with label + combo.  ~setActiveEnvironment()~ public method.
+~onEnvironmentFilterChanged()~ slot.  Full item list cached; visible list
+filtered.
+
+** Item 8 — Add ~--environment~ to CommandLineParser
+
+Files: ~CommandLineParser.hpp~, ~CommandLineParser.cpp~.
+Add option; add ~environmentName() const -> QString~ accessor.
+
+** Item 9 — Wire ~--environment~ in main.cpp / MainWindow
+
+Files: ~main.cpp~, ~MainWindow.cpp~.
+~setEnvironmentContext(QString)~ method on ~MainWindow~; stores
+~activeEnvironmentName_~, looks up UUID, updates title, pre-selects filter.
+
+** Item 10 — Update updateWindowTitle()
+
+File: ~MainWindow.cpp~.
+Append ~{envName}~ when ~activeEnvironmentName_~ is set, before ~[instanceName]~.
+
+* Non-goals
+
+- Colour field on ~environment~ (can be added later; ~--instance-color~ covers
+  the immediate need).
+- UUID argument support for ~--environment~.
+- Persisting the last-used filter across sessions.
+- Server-side environment discovery.
+- Immediate removal of the ~folder~ table from the schema (leave it; clean up
+  later once confirmed unused).
+
+* Open Questions
+
+- Many-to-one vs many-to-many for instance → environment: current proposal is
+  many-to-one (each instance belongs to at most one environment).  No known
+  use case for an instance belonging to multiple tiers.
+
+- Should the environment filter appear when there is exactly one environment?
+  Current proposal: only when ≥2 environments are defined.  Could always show
+  it once any environment is defined, for consistency.
+
+- Should deleting an environment cascade-delete its instances, or unassign them
+  (set ~instance.environment_id = null~)?  Proposal: unassign, so bookmarks are
+  not silently lost.

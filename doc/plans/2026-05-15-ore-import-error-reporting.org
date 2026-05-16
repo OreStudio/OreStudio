@@ -1,6 +1,25 @@
 #+title: ORE Import Error Reporting and Step Warning State
 #+date: 2026-05-15
 #+author: Marco Craveiro
+#+STATUS: COMPLETE
+
+* Status
+
+All six items are implemented on ~feature/workflow-step-log~.  The root-cause
+permission error noted in "What This Does NOT Fix" is also resolved — Phase 3a
+on ~feature/dq-publish-pattern-microservices~ replaced the direct DQ DB access
+in ~trade_status_service~ with a NATS call to ~dq.v1.fsm-transitions.list~,
+eliminating the ~permission denied for table ores_dq_fsm_transitions_tbl~ error.
+
+| Item | Description                                      | Status   |
+|------+--------------------------------------------------+----------|
+|    1 | ~step_outcome~ tri-state enum + DB FSM state     | DONE     |
+|    2 | ~step_log_entry~ + ~step_log_json~ column        | DONE     |
+|    3 | ~ore_import_execute~ handler: outcome + log      | DONE     |
+|    4 | Workflow detail dialog: step log panel           | DONE     |
+|    5 | ~WorkflowStepsWidget~: warning badge             | DONE     |
+|    6 | ~OreImportWizard~ done page: import summary      | DONE     |
+| n/a  | Root-cause fix: FSM transitions via NATS         | DONE     |
 
 * Problem
 

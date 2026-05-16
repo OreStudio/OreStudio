@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Deliberately invalid sample: BoughtAmount=0 violates the DB check constraint
+     (bought_amount > 0) on ores_trading_fx_forward_instruments_tbl.
+     Used to verify that per-item instrument errors surface in the workflow
+     step log panel after a partially-failed import. -->
+<Portfolio>
+    <Trade id="FXFWD_INVALID_ZERO_AMOUNT">
+        <TradeType>FxForward</TradeType>
+        <Envelope>
+            <CounterParty>CPTY</CounterParty>
+            <NettingSetId>NS</NettingSetId>
+            <AdditionalFields>
+                <party_id>party</party_id>
+                <valuation_date>2025-02-10</valuation_date>
+            </AdditionalFields>
+        </Envelope>
+        <FxForwardData>
+            <ValueDate>2033-02-20</ValueDate>
+            <BoughtCurrency>EUR</BoughtCurrency>
+            <BoughtAmount>0</BoughtAmount>
+            <SoldCurrency>USD</SoldCurrency>
+            <SoldAmount>0</SoldAmount>
+            <Settlement>Cash</Settlement>
+            <SettlementData>
+                <Currency>USD</Currency>
+                <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+                <Date>2033-02-24</Date>
+                <Rules>
+                    <PaymentLag>2D</PaymentLag>
+                    <PaymentCalendar>USD</PaymentCalendar>
+                    <PaymentConvention>Following</PaymentConvention>
+                </Rules>
+            </SettlementData>
+        </FxForwardData>
+    </Trade>
+</Portfolio>

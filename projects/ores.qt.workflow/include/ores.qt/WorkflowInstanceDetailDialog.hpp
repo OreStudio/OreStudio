@@ -24,6 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/WorkflowStepsWidget.hpp"
+#include "ores.qt/WorkflowStepLogWidget.hpp"
 
 namespace ores::qt {
 
@@ -69,6 +70,7 @@ private:
 
     QLabel* statusLabel_;
     WorkflowStepsWidget* stepsWidget_;
+    WorkflowStepLogWidget* logWidget_;
 };
 
 }  // namespace ores::qt

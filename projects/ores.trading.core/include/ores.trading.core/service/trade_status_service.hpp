@@ -22,12 +22,26 @@
 
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <boost/uuid/uuid.hpp>
+#include <boost/container_hash/hash.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
+
+/**
+ * @brief Lookup map of FSM transitions keyed by their UUID.
+ *
+ * Fetched once per request from the DQ service via NATS and passed into
+ * resolve_status() to avoid a cross-service DB read.
+ */
+using fsm_transition_map = std::unordered_map<
+    boost::uuids::uuid,
+    ores::dq::domain::fsm_transition,
+    boost::hash<boost::uuids::uuid>>;
 
 /**
  * @brief Resolves trade status transitions via the FSM.
@@ -54,22 +68,24 @@ public:
     /**
      * @brief Resolves the new status_id for a trade.
      *
-     * Given an activity_type_code and the trade's current status_id
-     * (std::nullopt for brand-new trades not yet in the database), returns
-     * the resulting status_id after applying the FSM transition linked to
-     * the activity type.
+     * Given an activity_type_code, the trade's current status_id
+     * (std::nullopt for brand-new trades), and a pre-fetched transitions
+     * map (keyed by UUID, retrieved once per batch from the DQ service
+     * via NATS), returns the resulting status_id after applying the FSM
+     * transition linked to the activity type.
      *
      * If the activity type has no linked FSM transition, the current
      * status_id is returned unchanged (nil UUID for new trades).
      *
      * @throws std::invalid_argument if the activity_type_code is unknown.
      * @throws std::logic_error if the transition is invalid from the
-     *         current status.
+     *         current status, or if the transition id is not in the map.
      */
     static boost::uuids::uuid resolve_status(
         context ctx,
         const std::string& activity_type_code,
-        std::optional<boost::uuids::uuid> current_status_id);
+        std::optional<boost::uuids::uuid> current_status_id,
+        const fsm_transition_map& transitions);
 };
 
 }

@@ -20,10 +20,48 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
 
+#include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
+#include <rfl.hpp>
+#include "ores.workflow.api/messaging/step_log_types.hpp"
 
 namespace ores::workflow::messaging {
+
+/**
+ * @brief Terminal outcome of a workflow step.
+ *
+ * Replaces the previous bool success field to express three distinct states:
+ *   completed               — succeeded with no issues
+ *   completed_with_warnings — ran to completion but some items failed
+ *   failed                  — fatal; saga compensation will be triggered
+ *
+ * Serialises as a lowercase string for the same DB queryability reasons
+ * as step_log_level.
+ */
+enum class step_outcome : std::uint8_t {
+    completed               = 0,
+    completed_with_warnings = 1,
+    failed                  = 2
+};
+
+[[nodiscard]] inline std::string_view to_string(step_outcome v) {
+    switch (v) {
+    case step_outcome::completed:               return "completed";
+    case step_outcome::completed_with_warnings: return "completed_with_warnings";
+    case step_outcome::failed:                  return "failed";
+    }
+    throw std::invalid_argument("Out-of-range step_outcome");
+}
+
+[[nodiscard]] inline step_outcome step_outcome_from_string(std::string_view sv) {
+    if (sv == "completed")               return step_outcome::completed;
+    if (sv == "completed_with_warnings") return step_outcome::completed_with_warnings;
+    if (sv == "failed")                  return step_outcome::failed;
+    throw std::invalid_argument("Invalid step_outcome: '" + std::string(sv) + "'");
+}
 
 /**
  * @brief Fire-and-forget event published by domain services on step completion.
@@ -53,9 +91,9 @@ struct step_completed_event {
     std::string step_id;
 
     /**
-     * @brief true if the step succeeded; false if it failed.
+     * @brief Terminal outcome of this step.
      */
-    bool success = false;
+    step_outcome outcome = step_outcome::completed;
 
     /**
      * @brief Serialised JSON result payload from the domain service.
@@ -66,11 +104,20 @@ struct step_completed_event {
     std::string result_json;
 
     /**
-     * @brief Human-readable error message on failure.
+     * @brief Human-readable error message on fatal failure.
      *
      * Stored in workflow_step.error and workflow_instance.error.
+     * Non-empty only when outcome == failed.
      */
     std::string error_message;
+
+    /**
+     * @brief Ordered list of log entries emitted by this step.
+     *
+     * Serialised to step_log_json in the workflow step record.  Empty for
+     * steps that produce no user-visible diagnostic output.
+     */
+    std::vector<step_log_entry> log;
 };
 
 /**
@@ -114,6 +161,36 @@ struct start_workflow_message {
      * Empty string (default) means the engine generates a fresh UUID.
      */
     std::string instance_id;
+};
+
+}
+
+namespace rfl {
+
+template<>
+struct Reflector<ores::workflow::messaging::step_log_level> {
+    using ReflType = std::string;
+
+    static ores::workflow::messaging::step_log_level to(const ReflType& s) {
+        return ores::workflow::messaging::step_log_level_from_string(s);
+    }
+
+    static ReflType from(const ores::workflow::messaging::step_log_level& v) {
+        return std::string(ores::workflow::messaging::to_string(v));
+    }
+};
+
+template<>
+struct Reflector<ores::workflow::messaging::step_outcome> {
+    using ReflType = std::string;
+
+    static ores::workflow::messaging::step_outcome to(const ReflType& s) {
+        return ores::workflow::messaging::step_outcome_from_string(s);
+    }
+
+    static ReflType from(const ores::workflow::messaging::step_outcome& v) {
+        return std::string(ores::workflow::messaging::to_string(v));
+    }
 };
 
 }

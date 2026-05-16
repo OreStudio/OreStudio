@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
@@ -75,9 +76,11 @@ public:
     std::optional<domain::trade>
     find_trade(const std::string& id);
 
-    void save_trade(const domain::trade& v);
+    void save_trade(const domain::trade& v,
+        const fsm_transition_map& transitions);
 
-    void save_trades(const std::vector<domain::trade>& trades);
+    void save_trades(const std::vector<domain::trade>& trades,
+        const fsm_transition_map& transitions);
 
     void remove_trade(const std::string& id);
 

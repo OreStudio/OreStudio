@@ -18,6 +18,7 @@
  */
 #include "ores.qt/WorkflowStepsWidget.hpp"
 
+#include <algorithm>
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QHeaderView>
@@ -44,6 +45,7 @@ enum class Col {
     Index = 0,
     Name,
     Status,
+    Warnings,
     StartedAt,
     CompletedAt,
     Error,
@@ -104,6 +106,8 @@ QTableWidgetItem* make_item(const QString& text) {
 QColor status_color(const QString& status) {
     if (status == QStringLiteral("completed"))
         return color_constants::level_info;
+    if (status == QStringLiteral("completed_with_warnings"))
+        return color_constants::level_warn;
     if (status == QStringLiteral("failed"))
         return color_constants::level_error;
     if (status == QStringLiteral("in_progress") ||
@@ -112,6 +116,15 @@ QColor status_color(const QString& status) {
     if (status == QStringLiteral("compensated"))
         return color_constants::level_debug;
     return color_constants::level_trace;
+}
+
+int count_issues(const std::vector<wf::workflow_step_summary>& steps, int row) {
+    const auto& log = steps[static_cast<std::size_t>(row)].log;
+    return static_cast<int>(std::count_if(log.begin(), log.end(),
+        [](const wf::step_log_entry& e) {
+            return e.level == wf::step_log_level::warn ||
+                   e.level == wf::step_log_level::error;
+        }));
 }
 
 constexpr int kRefreshIntervalMs = 3000;
@@ -146,7 +159,7 @@ void WorkflowStepsWidget::setupUi() {
 
     stepsTable_ = new QTableWidget(0, static_cast<int>(Col::Count), this);
     stepsTable_->setHorizontalHeaderLabels(
-        {tr("#"), tr("Name"), tr("Status"),
+        {tr("#"), tr("Name"), tr("Status"), tr("Warnings"),
          tr("Started At"), tr("Completed At"), tr("Error")});
     stepsTable_->horizontalHeader()->setSectionResizeMode(
         QHeaderView::ResizeToContents);
@@ -156,6 +169,16 @@ void WorkflowStepsWidget::setupUi() {
     stepsTable_->setAlternatingRowColors(true);
     stepsTable_->setItemDelegate(new BadgeDelegate(stepsTable_));
     layout->addWidget(stepsTable_);
+
+    connect(stepsTable_->selectionModel(),
+            &QItemSelectionModel::currentRowChanged,
+            this, [this](const QModelIndex& current, const QModelIndex&) {
+                const int row = current.row();
+                if (row >= 0 &&
+                    row < static_cast<int>(currentSteps_.size()))
+                    emit stepSelected(currentSteps_[
+                        static_cast<std::size_t>(row)]);
+            });
 }
 
 void WorkflowStepsWidget::setInstance(const QUuid& instanceId) {
@@ -234,6 +257,7 @@ void WorkflowStepsWidget::populateSteps(
                     visible.size()) - maxVisibleSteps_);
     }
 
+    currentSteps_ = visible;
     stepsTable_->setRowCount(static_cast<int>(visible.size()));
 
     int row = 0;
@@ -247,6 +271,24 @@ void WorkflowStepsWidget::populateSteps(
         const QString status = QString::fromStdString(step.status);
         stepsTable_->setItem(row, static_cast<int>(Col::Status),
             make_badge_item(status, status_color(status)));
+
+        const int issues = count_issues(visible, row);
+        if (issues > 0) {
+            const bool has_errors = std::any_of(
+                step.log.begin(), step.log.end(),
+                [](const wf::step_log_entry& e) {
+                    return e.level == wf::step_log_level::error;
+                });
+            const QColor badge_col = has_errors
+                ? color_constants::level_error
+                : color_constants::level_warn;
+            const QString badge_text = tr("%1 issue(s)").arg(issues);
+            stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
+                make_badge_item(badge_text, badge_col));
+        } else {
+            stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
+                make_item(QStringLiteral("—")));
+        }
 
         stepsTable_->setItem(row, static_cast<int>(Col::StartedAt),
             make_item(step.started_at
@@ -266,20 +308,26 @@ void WorkflowStepsWidget::populateSteps(
 
     // Update header label: show running step or terminal state.
     const int total = static_cast<int>(steps.size());
-    int runningIdx = -1;
-    int failedIdx  = -1;
+    int runningIdx   = -1;
+    int failedIdx    = -1;
     int completedCount = 0;
+    int warnedCount    = 0;
     QString failedError;
 
     for (const auto& s : steps) {
         const auto st = QString::fromStdString(s.status);
-        if (st == QStringLiteral("in_progress") || st == QStringLiteral("compensating"))
+        if (st == QStringLiteral("in_progress") ||
+            st == QStringLiteral("compensating"))
             runningIdx = s.step_index;
         else if (st == QStringLiteral("failed")) {
             failedIdx  = s.step_index;
             failedError = QString::fromStdString(s.error);
-        } else if (st == QStringLiteral("completed"))
+        } else if (st == QStringLiteral("completed_with_warnings")) {
             ++completedCount;
+            ++warnedCount;
+        } else if (st == QStringLiteral("completed")) {
+            ++completedCount;
+        }
     }
 
     if (failedIdx >= 0) {
@@ -292,7 +340,14 @@ void WorkflowStepsWidget::populateSteps(
             emit instanceReachedTerminalState(false);
         }
     } else if (total > 0 && completedCount == total) {
-        headerLabel_->setText(tr("All %1 step(s) completed").arg(total));
+        if (warnedCount > 0) {
+            headerLabel_->setText(
+                tr("All %1 step(s) completed (%2 with warnings)")
+                .arg(total).arg(warnedCount));
+        } else {
+            headerLabel_->setText(
+                tr("All %1 step(s) completed").arg(total));
+        }
         if (!terminalReached_) {
             terminalReached_ = true;
             refreshTimer_->stop();

@@ -42,6 +42,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WorkflowStepsWidget.hpp"
+#include "ores.qt/WorkflowStepLogWidget.hpp"
 #include "ores.ore.core/scanner/scan_result.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/planner/ore_import_plan.hpp"
@@ -324,6 +325,7 @@ public:
 
 private slots:
     void onStepFailed(int stepIndex, const QString& errorMessage);
+    void onWorkflowCompleted(bool success);
 
 private:
     OreImportWizard* wizard_;
@@ -338,6 +340,9 @@ private:
 
     // Live step progress — shown only for async (workflow-backed) imports.
     WorkflowStepsWidget* stepsWidget_ = nullptr;
+
+    // Per-item import log — shown after workflow completes when there are warnings.
+    WorkflowStepLogWidget* importLogWidget_ = nullptr;
 };
 
 }

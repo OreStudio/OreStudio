@@ -24,6 +24,7 @@
 #include <vector>
 #include <optional>
 #include <string_view>
+#include "ores.workflow.api/messaging/step_log_types.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -98,6 +99,7 @@ struct workflow_step_summary {
     std::optional<std::string> started_at;
     std::optional<std::string> completed_at;
     std::string error;
+    std::vector<step_log_entry> log;
 };
 
 /**

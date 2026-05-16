@@ -25,6 +25,7 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <rfl/json.hpp>
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 
@@ -215,6 +216,12 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         ws.started_at = fmt_opt_tp(s.started_at);
         ws.completed_at = fmt_opt_tp(s.completed_at);
         ws.error      = s.error;
+        if (!s.step_log_json.empty()) {
+            auto log = rfl::json::read<
+                std::vector<ores::workflow::messaging::step_log_entry>>(
+                    s.step_log_json);
+            if (log) ws.log = std::move(*log);
+        }
         resp.steps.push_back(std::move(ws));
     }
 
@@ -300,15 +307,34 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
         return;
     }
 
-    const bool success = (sname == "completed");
+    using outcome = ores::workflow::messaging::step_outcome;
+    const auto step_outcome = (sname == "completed")
+        ? outcome::completed
+        : (sname == "completed_with_warnings")
+            ? outcome::completed_with_warnings
+            : outcome::failed;
+    const bool is_success =
+        step_outcome == outcome::completed ||
+        step_outcome == outcome::completed_with_warnings;
+
     BOOST_LOG_SEV(lg(), debug)
         << "get_step_result: step=" << req->step_id
         << " state=" << sname;
+
+    std::vector<ores::workflow::messaging::step_log_entry> log;
+    if (!step->step_log_json.empty()) {
+        auto parsed = rfl::json::read<
+            std::vector<ores::workflow::messaging::step_log_entry>>(
+                step->step_log_json);
+        if (parsed) log = std::move(*parsed);
+    }
+
     reply(nats_, msg, get_step_result_response{
         .found         = true,
-        .success       = success,
-        .result_json   = success ? step->response_json : "",
-        .error_message = success ? "" : step->error});
+        .outcome       = step_outcome,
+        .result_json   = is_success ? step->response_json : "",
+        .error_message = is_success ? "" : step->error,
+        .log           = std::move(log)});
 }
 
 }  // namespace ores::workflow::messaging

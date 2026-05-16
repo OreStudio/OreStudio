@@ -151,6 +151,7 @@ private:
     // Async fetch — steps
     QFutureWatcher<StepsFetchResult>* stepsWatcher_;
     QString selectedInstanceId_;
+    std::vector<ores::workflow::messaging::workflow_step_summary> currentSteps_;
 };
 
 }

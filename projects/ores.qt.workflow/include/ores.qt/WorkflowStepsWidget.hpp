@@ -86,12 +86,20 @@ public:
      */
     void setMaxVisibleSteps(int n);
 
+    /**
+     * @brief Returns the most recently fetched step summaries (including log).
+     *
+     * Empty until the first successful fetch completes.
+     */
+    const std::vector<ores::workflow::messaging::workflow_step_summary>&
+    steps() const { return currentSteps_; }
+
 signals:
     /**
      * @brief Emitted once when the bound instance enters a terminal state.
      *
-     * @p success is true if all steps completed successfully; false if any
-     * step failed or the instance was compensated.
+     * @p success is true if all steps completed successfully or with
+     * warnings; false if any step failed or the instance was compensated.
      */
     void instanceReachedTerminalState(bool success);
 
@@ -102,6 +110,14 @@ signals:
      * refreshes — callers should de-duplicate by stepIndex if needed.
      */
     void stepFailed(int stepIndex, const QString& errorMessage);
+
+    /**
+     * @brief Emitted when the user selects a step row.
+     *
+     * Carries the full step summary so the parent dialog can display its
+     * structured log in WorkflowStepLogWidget.
+     */
+    void stepSelected(const ores::workflow::messaging::workflow_step_summary& step);
 
 private slots:
     void onFetchFinished();
@@ -119,6 +135,7 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     int maxVisibleSteps_ = -1;
     bool terminalReached_ = false;
+    std::vector<ores::workflow::messaging::workflow_step_summary> currentSteps_;
 };
 
 }  // namespace ores::qt

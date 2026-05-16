@@ -330,8 +330,9 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         << "Step-completed event received:"
         << " workflow=" << event.workflow_instance_id
         << " step=" << event.step_id
-        << " success=" << (event.success ? "true" : "false")
-        << (event.success ? "" : " error=" + event.error_message);
+        << " outcome=" << ores::workflow::messaging::to_string(event.outcome)
+        << (event.outcome == ores::workflow::messaging::step_outcome::failed
+            ? " error=" + event.error_message : "");
 
     // Load the workflow step.
     boost::uuids::uuid step_id;
@@ -356,13 +357,27 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         return;
     }
 
+    // Serialize log entries (empty string when there are none).
+    const auto log_json = event.log.empty()
+        ? std::string{}
+        : rfl::json::write(event.log);
+
     // Update step state.
-    if (event.success) {
+    using outcome = ores::workflow::messaging::step_outcome;
+    switch (event.outcome) {
+    case outcome::completed:
         step_repo_.update_state(ctx_, step_id,
-            step_states_.require("completed"), event.result_json, "");
-    } else {
+            step_states_.require("completed"), event.result_json, "", "");
+        break;
+    case outcome::completed_with_warnings:
         step_repo_.update_state(ctx_, step_id,
-            step_states_.require("failed"), "", event.error_message);
+            step_states_.require("completed_with_warnings"),
+            event.result_json, "", log_json);
+        break;
+    case outcome::failed:
+        step_repo_.update_state(ctx_, step_id,
+            step_states_.require("failed"), "", event.error_message, log_json);
+        break;
     }
 
     // Load the workflow instance.
@@ -384,9 +399,14 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     }
 
     // Distinguish between forward steps and compensation steps.
+    using outcome = ores::workflow::messaging::step_outcome;
+    const bool is_success =
+        event.outcome == outcome::completed ||
+        event.outcome == outcome::completed_with_warnings;
+
     if (step->step_index < 0) {
         // Compensation step completed — check if all compensations are done.
-        if (!event.success) {
+        if (!is_success) {
             BOOST_LOG_SEV(lg(), error)
                 << "Compensation step " << event.step_id << " failed: "
                 << event.error_message;
@@ -394,7 +414,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         check_compensation_complete(*instance);
     } else {
         // Forward step completed.
-        if (event.success) {
+        if (is_success) {
             dispatch_next_step(*instance, event.result_json);
         } else {
             begin_compensation(*instance, event.error_message);

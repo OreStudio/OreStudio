@@ -984,7 +984,16 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     stepsWidget_->hide();
     connect(stepsWidget_, &WorkflowStepsWidget::stepFailed,
             this, &OreDonePage::onStepFailed);
+    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+            this, &OreDonePage::onWorkflowCompleted);
     layout->addWidget(stepsWidget_);
+
+    // Per-item import log — populated and shown after workflow completes with warnings.
+    importLogWidget_ = new WorkflowStepLogWidget(this);
+    importLogWidget_->setSizePolicy(
+        QSizePolicy::Expanding, QSizePolicy::Preferred);
+    importLogWidget_->hide();
+    layout->addWidget(importLogWidget_);
 
     layout->addStretch();
 }
@@ -996,6 +1005,8 @@ void OreDonePage::initializePage() {
     correlIdRow_->hide();
     errorBanner_->hide();
     stepsWidget_->hide();
+    importLogWidget_->hide();
+    importLogWidget_->clear();
 
     if (wizard_->importSuccess()) {
         QString html;
@@ -1064,6 +1075,59 @@ void OreDonePage::onStepFailed(int stepIndex, const QString& errorMessage) {
     errorBanner_->setText(
         tr("Step %1 failed: %2").arg(stepIndex + 1).arg(errorMessage));
     errorBanner_->show();
+}
+
+void OreDonePage::onWorkflowCompleted(bool success) {
+    namespace wf = ores::workflow::messaging;
+
+    // Scan all steps for saved-trade count (info entries) and issues (warn/error).
+    int saved_count = 0;
+    std::vector<wf::step_log_entry> issues;
+
+    for (const auto& step : stepsWidget_->steps()) {
+        for (const auto& entry : step.log) {
+            if (entry.level == wf::step_log_level::info) {
+                // Info messages from ore_import_execute read "Saved N trade(s)."
+                const auto msg = QString::fromStdString(entry.message);
+                if (msg.startsWith(QStringLiteral("Saved "))) {
+                    const auto parts = msg.split(QLatin1Char(' '));
+                    if (parts.size() >= 2)
+                        saved_count += parts[1].toInt();
+                }
+            } else {
+                issues.push_back(entry);
+            }
+        }
+    }
+
+    const int M = static_cast<int>(issues.size());
+
+    QString html;
+    if (success && M == 0) {
+        html = tr("<p><b>Imported %1 trade(s) successfully.</b></p>")
+            .arg(saved_count);
+        html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
+    } else if (success) {
+        html = tr("<p><b>Imported %1 trade(s) with %2 warning(s).</b></p>")
+            .arg(saved_count).arg(M);
+        html += tr("<p>See the import log below for details.</p>");
+    } else {
+        if (saved_count > 0) {
+            html = tr("<p><b>Import partially failed — "
+                      "%1 trade(s) saved, %2 failed.</b></p>")
+                .arg(saved_count).arg(M);
+        } else {
+            html = tr("<p><b>Import failed — "
+                      "%1 trade save(s) failed.</b></p>").arg(M);
+        }
+        html += tr("<p>See the import log below for details.</p>");
+    }
+    summaryLabel_->setText(html);
+
+    if (!issues.empty()) {
+        importLogWidget_->showLog(tr("Import"), issues);
+        importLogWidget_->show();
+    }
 }
 
 }

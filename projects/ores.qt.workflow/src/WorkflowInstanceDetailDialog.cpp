@@ -20,6 +20,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QSplitter>
 #include <QDialogButtonBox>
 
 namespace ores::qt {
@@ -36,14 +37,15 @@ WorkflowInstanceDetailDialog::WorkflowInstanceDetailDialog(
     , workflowType_(workflowType)
     , workflowStatus_(workflowStatus)
     , statusLabel_(nullptr)
-    , stepsWidget_(nullptr) {
+    , stepsWidget_(nullptr)
+    , logWidget_(nullptr) {
 
     setupUi();
     setWindowTitle(tr("Workflow: %1").arg(workflowType_));
 }
 
 void WorkflowInstanceDetailDialog::setupUi() {
-    setMinimumSize(700, 450);
+    setMinimumSize(750, 600);
 
     auto* layout = new QVBoxLayout(this);
 
@@ -66,9 +68,25 @@ void WorkflowInstanceDetailDialog::setupUi() {
     headerLayout->addStretch();
     layout->addLayout(headerLayout);
 
-    // ── Steps widget ──────────────────────────────────────────────────────────
-    stepsWidget_ = new WorkflowStepsWidget(clientManager_, this);
-    layout->addWidget(stepsWidget_);
+    // ── Steps + log splitter ──────────────────────────────────────────────────
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+
+    stepsWidget_ = new WorkflowStepsWidget(clientManager_, splitter);
+    splitter->addWidget(stepsWidget_);
+
+    logWidget_ = new WorkflowStepLogWidget(splitter);
+    splitter->addWidget(logWidget_);
+
+    splitter->setStretchFactor(0, 2);
+    splitter->setStretchFactor(1, 1);
+
+    layout->addWidget(splitter);
+
+    connect(stepsWidget_, &WorkflowStepsWidget::stepSelected,
+        this, [this](const ores::workflow::messaging::workflow_step_summary& step) {
+            logWidget_->showLog(
+                QString::fromStdString(step.name), step.log);
+        });
 
     // ── Buttons ───────────────────────────────────────────────────────────────
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);

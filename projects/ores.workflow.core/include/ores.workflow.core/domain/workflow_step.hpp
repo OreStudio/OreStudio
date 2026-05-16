@@ -123,6 +123,15 @@ struct workflow_step final {
     std::optional<std::chrono::system_clock::time_point> completed_at;
 
     /**
+     * @brief Serialised JSON array of step_log_entry records.
+     *
+     * Populated when the step handler emits log entries (via warn() or
+     * complete() with a non-empty log). Empty for steps that produce no
+     * user-visible diagnostic output.
+     */
+    std::string step_log_json;
+
+    /**
      * @brief Timestamp when this record was created.
      */
     std::chrono::system_clock::time_point created_at;

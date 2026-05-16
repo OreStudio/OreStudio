@@ -1,7 +1,7 @@
 #+TITLE: Codegen SQL Debt — Hand-Written Files with Existing Models
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS
+#+STATUS: IN PROGRESS (PR #752)
 
 * Problem
 
@@ -29,7 +29,7 @@ Remediation work started in PR #747 (~investigation/codegen-drift~,
 
 * Category A — SQL Exists But Not Codegen-Managed
 
-Originally 24 files; 20 resolved as of 2026-05-15.
+Originally 24 files; 21 resolved as of 2026-05-16.
 
 ** IAM (1 remaining of 4)
 
@@ -46,20 +46,20 @@ Originally 24 files; 20 resolved as of 2026-05-15.
 |----------+------------+--------|
 | ~dq/dq_artefact_types_create.sql~ | ~dq/artefact_type_entity.json~ | DONE — auto-generated via ~sql_schema_table_create.mustache~ (pre-PR #747) |
 
-** Reporting (2 remaining of 4)
+** Reporting (1 remaining of 4)
 
 | SQL file | Model file | Status |
 |----------+------------+--------|
 | ~reporting/reporting_concurrency_policies_create.sql~ | ~reporting/concurrency_policy_domain_entity.json~ | DONE — PR #747 |
-| ~reporting/reporting_report_definitions_create.sql~ | ~reporting/report_definition_domain_entity.json~ | DEFERRED — template needs extensions for soft-FK validations and ~SECURITY DEFINER set search_path~ |
-| ~reporting/reporting_report_instances_create.sql~ | ~reporting/report_instance_domain_entity.json~ | DEFERRED — same as ~report_definitions~ |
+| ~reporting/reporting_report_definitions_create.sql~ | ~reporting/report_definition_domain_entity.json~ | DONE — PR #752 (template extended with prefix_columns + soft_fk_validations) |
+| ~reporting/reporting_report_instances_create.sql~ | ~reporting/report_instance_domain_entity.json~ | DEFERRED — template needs extension for ~definition_id~ denormalization (SELECT + conditional copy) |
 | ~reporting/reporting_report_types_create.sql~ | ~reporting/report_type_domain_entity.json~ | DONE — PR #747 |
 
 ** Scheduler (1 remaining of 1)
 
 | SQL file | Model file | Status |
 |----------+------------+--------|
-| ~scheduler/scheduler_job_definitions_create.sql~ | ~scheduler/job_definition_domain_entity.json~ | TODO — model significantly out of date; requires model update before regeneration |
+| ~scheduler/scheduler_job_definitions_create.sql~ | ~scheduler/job_definition_domain_entity.json~ | DEFERRED — model has nullable tenant_id and system-scope jobs; template always assumes non-null tenant_id |
 
 ** Trading (1 remaining of 14)
 
@@ -77,7 +77,7 @@ Originally 24 files; 20 resolved as of 2026-05-15.
 | ~trading/trading_leg_types_create.sql~ | ~trading/leg_type_domain_entity.json~ | DONE — PR #747 |
 | ~trading/trading_payment_frequency_types_create.sql~ | ~trading/payment_frequency_type_domain_entity.json~ | DONE — PR #747 |
 | ~trading/trading_swaption_instruments_create.sql~ | ~trading/swaption_instrument_domain_entity.json~ | DONE — PR #747 |
-| ~trading/trading_trades_create.sql~ | ~trading/trade_domain_entity.json~ | TODO |
+| ~trading/trading_trades_create.sql~ | ~trading/trade_domain_entity.json~ | DEFERRED — requires party_id denormalization from book_id and cross-validation (portfolio match); cannot template these |
 | ~trading/trading_vanilla_swap_instruments_create.sql~ | ~trading/vanilla_swap_instrument_domain_entity.json~ | DONE — PR #747 |
 
 ** Remediation per file
@@ -95,16 +95,16 @@ IAM ~tenants~ should be done last (most complex custom logic).
 
 * Category B — Model Exists But No SQL File
 
-Originally 9 files; 6 resolved as of 2026-05-15.
+Originally 9 files; all resolved as of 2026-05-16.
 
-** DQ (3 remaining of 4)
+** DQ (0 remaining of 4)
 
 | Expected SQL path | Model file | Status |
 |-------------------+------------+--------|
 | ~dq/dq_dataset_bundles_create.sql~ | ~dq/dataset_bundle_domain_entity.json~ | RESOLVED — hand-written ~dq_dataset_bundle_create.sql~ (singular) is the intended file |
-| ~dq/dq_lei_entities_create.sql~ | ~dq/lei_entities_entity.json~ | TODO — LEI entity table not yet in schema |
-| ~dq/dq_lei_relationships_create.sql~ | ~dq/lei_relationships_entity.json~ | TODO — LEI relationship table not yet in schema |
-| ~dq/dq_report_definitions_create.sql~ | ~dq/report_definitions_entity.json~ | TODO — verify intent; distinct from ~ores_dq_report_definitions_artefact_tbl~ |
+| ~dq/dq_lei_entities_create.sql~ | ~dq/lei_entities_entity.json~ | RESOLVED — entity.json generates ~_artefact_create.sql~ only; artefact file already codegen-managed |
+| ~dq/dq_lei_relationships_create.sql~ | ~dq/lei_relationships_entity.json~ | RESOLVED — entity.json generates ~_artefact_create.sql~ only; artefact file already codegen-managed |
+| ~dq/dq_report_definitions_create.sql~ | ~dq/report_definitions_entity.json~ | RESOLVED — entity.json generates ~_artefact_create.sql~ only; artefact file already codegen-managed |
 
 ** Database (0 remaining of 1)
 
@@ -132,19 +132,15 @@ For each remaining Category B file, determine whether:
 - (c) The model is stale and the entity will not be implemented: delete the
   model file.
 
-* Remaining Work (as of 2026-05-15)
+* Remaining Work (as of 2026-05-16)
 
-Category A — 4 files outstanding:
-- ~iam/iam_tenants_create.sql~ — do last; most complex
-- ~reporting/reporting_report_definitions_create.sql~ — deferred; needs template extensions
-- ~reporting/reporting_report_instances_create.sql~ — deferred; needs template extensions
-- ~scheduler/scheduler_job_definitions_create.sql~ — model needs update first
-- ~trading/trading_trades_create.sql~
+Category A — 4 files outstanding (all require template extensions beyond current scope):
+- ~iam/iam_tenants_create.sql~ — do last; most complex (custom RLS, system-scoped PK, bitemporal trigger)
+- ~reporting/reporting_report_instances_create.sql~ — deferred; needs definition_id denormalization template support
+- ~scheduler/scheduler_job_definitions_create.sql~ — deferred; nullable tenant_id not supported by template
+- ~trading/trading_trades_create.sql~ — deferred; party_id denormalization + cross-validation cannot be templatized
 
-Category B — 3 files outstanding:
-- ~dq/dq_lei_entities_create.sql~
-- ~dq/dq_lei_relationships_create.sql~
-- ~dq/dq_report_definitions_create.sql~
+Category B — all resolved.
 
 * Impact on Identifier Cleanup
 
@@ -157,10 +153,8 @@ no action in the cleanup branch.
 
 * Execution Order
 
-Remaining work suggested order:
-1. ~trading_trades~ (straightforward domain entity).
-2. ~scheduler_job_definitions~ (update model first).
-3. DQ Category B items (investigate intent, generate or delete).
-4. ~reporting_report_definitions~ and ~reporting_report_instances~ (extend
-   template for soft-FK validations and ~SECURITY DEFINER set search_path~).
-5. ~iam_tenants~ (last; most custom logic).
+Remaining work suggested order (all require non-trivial template extensions):
+1. ~reporting_report_instances~ — extend template for denormalization-with-fallback pattern.
+2. ~trading_trades~ — extend template for multi-column denormalization and cross-validation.
+3. ~scheduler_job_definitions~ — extend template for nullable tenant_id / system-scope jobs.
+4. ~iam_tenants~ (last; most custom logic: RLS, custom trigger, delete rule side effects).

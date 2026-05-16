@@ -1829,9 +1829,24 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     // Populate quick-connect combo with environments (fills host+port) and
     // full connections (fills all fields including credentials).
     if (options.showSavedConnections && initializeConnectionManager() && connectionManager_) {
+        // Auto-tag environments from ORES_CHECKOUT_LABEL so the label filter
+        // works without requiring manual tagging via the connection browser.
+        const QString checkoutLabel = qEnvironmentVariable("ORES_CHECKOUT_LABEL");
+        if (!checkoutLabel.isEmpty()) {
+            try {
+                connectionManager_->auto_tag_environments_by_label(
+                    checkoutLabel.toStdString());
+            } catch (const std::exception& e) {
+                using namespace ores::logging;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "auto_tag_environments_by_label failed: " << e.what();
+            }
+        }
+
         QList<LoginDialog::QuickConnectItem> items;
 
-        // Environments: selecting fills host+port only; user types credentials
+        // Environments: selecting fills host+port only; user types credentials.
+        // Tags are populated for label-filter support.
         for (const auto& env : connectionManager_->get_all_environments()) {
             LoginDialog::QuickConnectItem it;
             it.type = LoginDialog::QuickConnectItem::Type::Environment;
@@ -1839,20 +1854,30 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
             it.subtitle = QString("%1:%2")
                 .arg(QString::fromStdString(env.host))
                 .arg(env.port);
+            for (const auto& tag : connectionManager_->get_tags_for_environment(env.id))
+                it.tags.append(QString::fromStdString(tag.name));
             items.append(it);
         }
 
-        // Connections: selecting fills all fields via resolve_connection()
+        // Connections: selecting fills all fields via resolve_connection().
+        // Inherit tags from the linked environment for label-filter support.
         for (const auto& conn : connectionManager_->get_all_connections()) {
             LoginDialog::QuickConnectItem it;
             it.type = LoginDialog::QuickConnectItem::Type::Connection;
             it.name = QString::fromStdString(conn.name);
             it.subtitle = QString::fromStdString(conn.username);
+            if (conn.environment_id) {
+                for (const auto& tag :
+                     connectionManager_->get_tags_for_environment(*conn.environment_id))
+                    it.tags.append(QString::fromStdString(tag.name));
+            }
             items.append(it);
         }
 
         if (!items.isEmpty()) {
             loginWidget->setQuickConnectItems(items);
+            if (!checkoutLabel.isEmpty())
+                loginWidget->setActiveLabel(checkoutLabel);
 
             // Environment selected: fill host+port, credentials stay editable
             connect(loginWidget, &LoginDialog::environmentSelected,

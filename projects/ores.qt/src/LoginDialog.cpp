@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LoginDialog.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <QSet>
 #include <QStandardItemModel>
 #include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -85,12 +86,67 @@ void LoginDialog::setImageCache(ImageCache* cache) {
 }
 
 void LoginDialog::setQuickConnectItems(const QList<QuickConnectItem>& items) {
+    allItems_ = items;
+
     if (items.isEmpty()) {
+        labelFilterLabel_->setVisible(false);
+        labelFilterCombo_->setVisible(false);
         quickConnectLabel_->setVisible(false);
         quickConnectCombo_->setVisible(false);
         return;
     }
 
+    // Collect all unique tags across all items
+    QSet<QString> tagSet;
+    for (const auto& it : items) {
+        for (const auto& tag : it.tags)
+            tagSet.insert(tag);
+    }
+    QStringList sortedTags(tagSet.begin(), tagSet.end());
+    sortedTags.sort(Qt::CaseInsensitive);
+
+    // Show/hide label filter based on whether there are ≥2 distinct tags
+    const bool showFilter = sortedTags.size() >= 2;
+    labelFilterLabel_->setVisible(showFilter);
+    labelFilterCombo_->setVisible(showFilter);
+
+    if (showFilter) {
+        // Rebuild filter combo without triggering applyLabelFilter during population
+        QSignalBlocker blocker(labelFilterCombo_);
+        labelFilterCombo_->clear();
+        labelFilterCombo_->addItem(tr("All"));
+        for (const auto& tag : sortedTags)
+            labelFilterCombo_->addItem(tag);
+        labelFilterCombo_->setCurrentIndex(0);
+    }
+
+    // Show all items initially (or filtered if setActiveLabel was already called)
+    applyLabelFilter(showFilter ? labelFilterCombo_->currentText() : QString());
+}
+
+void LoginDialog::setActiveLabel(const QString& label) {
+    if (!labelFilterCombo_ || !labelFilterCombo_->isVisible() || label.isEmpty())
+        return;
+    const int idx = labelFilterCombo_->findText(label, Qt::MatchFixedString);
+    if (idx >= 0)
+        labelFilterCombo_->setCurrentIndex(idx);
+    // If not found, leave at "All" — applyLabelFilter will show everything
+}
+
+void LoginDialog::applyLabelFilter(const QString& label) {
+    if (label.isEmpty() || label == tr("All")) {
+        rebuildQuickConnectModel(allItems_);
+    } else {
+        QList<QuickConnectItem> filtered;
+        for (const auto& it : allItems_) {
+            if (it.tags.contains(label, Qt::CaseSensitive))
+                filtered.append(it);
+        }
+        rebuildQuickConnectModel(filtered);
+    }
+}
+
+void LoginDialog::rebuildQuickConnectModel(const QList<QuickConnectItem>& items) {
     auto* model = new QStandardItemModel(quickConnectCombo_);
 
     auto makeHeader = [](const QString& text) -> QStandardItem* {
@@ -224,6 +280,7 @@ void LoginDialog::lockCredentialFields(bool locked) {
 void LoginDialog::enableForm(bool enabled) {
     loginButton_->setEnabled(enabled);
     signUpButton_->setEnabled(enabled);
+    if (labelFilterCombo_) labelFilterCombo_->setEnabled(enabled);
     quickConnectCombo_->setEnabled(enabled);
 
     if (enabled) {
@@ -329,6 +386,23 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
+    // Label filter — hidden until setQuickConnectItems() finds ≥2 distinct tags.
+    labelFilterLabel_ = new QLabel(tr("LABEL"), parent);
+    labelFilterLabel_->setStyleSheet(dialog_styles::field_label);
+    labelFilterLabel_->setVisible(false);
+    layout->addWidget(labelFilterLabel_);
+    layout->addSpacing(4);
+
+    labelFilterCombo_ = new QComboBox(parent);
+    labelFilterCombo_->setStyleSheet(dialog_styles::combo_box);
+    labelFilterCombo_->setVisible(false);
+    layout->addWidget(labelFilterCombo_);
+
+    connect(labelFilterCombo_, &QComboBox::currentIndexChanged,
+            this, &LoginDialog::onLabelFilterChanged);
+
+    layout->addSpacing(8);
+
     // Quick-connect combo: environments (fills host+port) and connections
     // (fills all fields). Hidden until setQuickConnectItems() is called.
     quickConnectLabel_ = new QLabel(tr("QUICK CONNECT"), parent);
@@ -441,6 +515,10 @@ void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     layout->addWidget(copyrightLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(8);
+}
+
+void LoginDialog::onLabelFilterChanged(int) {
+    applyLabelFilter(labelFilterCombo_->currentText());
 }
 
 void LoginDialog::onQuickConnectChanged(int idx) {

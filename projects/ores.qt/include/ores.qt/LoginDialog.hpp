@@ -61,12 +61,15 @@ public:
      * @brief An item for the unified quick-connect combo.
      *
      * Environments fill host+port only; connections fill all fields.
+     * @p tags carries the tags of the linked environment and drives the label
+     * filter. Connections inherit tags from their linked environment.
      */
     struct QuickConnectItem {
         enum class Type { Environment, Connection };
         Type type;
         QString name;
         QString subtitle; // "host:port" for environments, username for connections
+        QStringList tags; // tags for label-filter narrowing
     };
 
 public:
@@ -81,8 +84,19 @@ public:
      * Environments are shown under an "Environments" header and fill host+port
      * when selected. Connections are shown under a "Connections" header and fill
      * all fields including credentials. The combo is hidden when items is empty.
+     *
+     * The label filter combo is shown automatically when items carry ≥2 distinct
+     * tags. Call setActiveLabel() afterwards to pre-select a specific label.
      */
     void setQuickConnectItems(const QList<QuickConnectItem>& items);
+
+    /**
+     * @brief Pre-select a label in the filter combo.
+     *
+     * Selects the entry matching @p label (case-sensitive). Falls back to "All"
+     * if the label is not in the list. No-op when the filter is hidden.
+     */
+    void setActiveLabel(const QString& label);
 
     /**
      * @brief Provide an image cache for flag icons in the party picker.
@@ -195,6 +209,7 @@ private slots:
     void onShowPasswordToggled(bool checked);
     void onLoginResult(const LoginResult& result);
     void onQuickConnectChanged(int idx);
+    void onLabelFilterChanged(int idx);
 
 private:
     void setupUI();
@@ -208,6 +223,8 @@ private:
     void enableForm(bool enabled);
     void lockServerFields(bool locked);
     void lockCredentialFields(bool locked);
+    void applyLabelFilter(const QString& label);
+    void rebuildQuickConnectModel(const QList<QuickConnectItem>& items);
 
     // UI elements
     QLabel* loginTitleLabel_;
@@ -225,9 +242,16 @@ private:
     QSpinBox* portSpinBox_;
     QLineEdit* subjectPrefixEdit_;
 
+    // Label filter (hidden when <2 distinct tags across all items)
+    QLabel* labelFilterLabel_{nullptr};
+    QComboBox* labelFilterCombo_{nullptr};
+
     // Quick-connect combo (environments + connections, hidden when empty)
     QLabel* quickConnectLabel_{nullptr};
     QComboBox* quickConnectCombo_{nullptr};
+
+    // Full unfiltered item list — rebuilt by setQuickConnectItems()
+    QList<QuickConnectItem> allItems_;
 
     // Lock state (set when a saved item is selected)
     bool serverFieldsLocked_{false};

@@ -164,6 +164,16 @@ public:
     void change_master_password(const std::string& new_password);
 
     /**
+     * @brief Ensure @p label exists as a tag and is applied to every environment
+     * whose subject_prefix ends with ".{label}".
+     *
+     * Idempotent — safe to call on every startup. Used to seed the login-dialog
+     * label filter from ORES_CHECKOUT_LABEL without requiring manual UI tagging.
+     * No-op when @p label is empty.
+     */
+    void auto_tag_environments_by_label(const std::string& label);
+
+    /**
      * @brief Delete all data from the database.
      *
      * Removes all connections, environments, folders, and tags. This operation

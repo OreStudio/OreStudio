@@ -27,25 +27,33 @@
 \ir ./trading_ore_envelope_view_drop.sql
 
 -- Trade junction tables (depend on trades, drop after view)
-\ir ./trading_party_roles_notify_trigger_drop.sql
-\ir ./trading_party_roles_drop.sql
+\ir ./trading_trade_party_roles_notify_trigger_drop.sql
+\ir ./trading_trade_party_roles_drop.sql
 
-\ir ./trading_identifiers_notify_trigger_drop.sql
-\ir ./trading_identifiers_drop.sql
+\ir ./trading_trade_identifiers_notify_trigger_drop.sql
+\ir ./trading_trade_identifiers_drop.sql
 
 -- Rates instruments (depend on reference data, drop before reference data)
 \ir ./trading_swap_legs_notify_trigger_drop.sql
 \ir ./trading_swap_legs_drop.sql
 
+\ir ./trading_fra_instruments_notify_trigger_drop.sql
 \ir ./trading_fra_instruments_drop.sql
+\ir ./trading_vanilla_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_vanilla_swap_instruments_drop.sql
+\ir ./trading_cap_floor_instruments_notify_trigger_drop.sql
 \ir ./trading_cap_floor_instruments_drop.sql
+\ir ./trading_swaption_instruments_notify_trigger_drop.sql
 \ir ./trading_swaption_instruments_drop.sql
+\ir ./trading_balance_guaranteed_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_balance_guaranteed_swap_instruments_drop.sql
+\ir ./trading_callable_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_callable_swap_instruments_drop.sql
+\ir ./trading_knock_out_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_knock_out_swap_instruments_drop.sql
+\ir ./trading_inflation_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_inflation_swap_instruments_drop.sql
-\ir ./trading_risk_participation_agreement_instruments_drop.sql
+\ir ./trading_rpa_instruments_drop.sql
 
 \ir ./trading_instruments_notify_trigger_drop.sql
 \ir ./trading_instruments_drop.sql
@@ -102,21 +110,29 @@
 \ir ./trading_fpml_event_types_notify_trigger_drop.sql
 \ir ./trading_fpml_event_types_drop.sql
 
+\ir ./trading_lifecycle_events_notify_trigger_drop.sql
+\ir ./trading_lifecycle_events_drop.sql
+
 \ir ./trading_trade_types_notify_trigger_drop.sql
 \ir ./trading_trade_types_drop.sql
 
 -- Trading instrument reference data types
 \ir ./trading_day_count_fraction_types_notify_trigger_drop.sql
 \ir ./trading_day_count_fraction_types_drop.sql
+\ir ./trading_day_count_fraction_types_validate_fn_drop.sql
 
 \ir ./trading_business_day_convention_types_notify_trigger_drop.sql
 \ir ./trading_business_day_convention_types_drop.sql
+\ir ./trading_business_day_convention_types_validate_fn_drop.sql
 
 \ir ./trading_floating_index_types_notify_trigger_drop.sql
 \ir ./trading_floating_index_types_drop.sql
+\ir ./trading_floating_index_types_validate_fn_drop.sql
 
 \ir ./trading_payment_frequency_types_notify_trigger_drop.sql
 \ir ./trading_payment_frequency_types_drop.sql
+\ir ./trading_payment_frequency_types_validate_fn_drop.sql
 
 \ir ./trading_leg_types_notify_trigger_drop.sql
 \ir ./trading_leg_types_drop.sql
+\ir ./trading_leg_types_validate_fn_drop.sql

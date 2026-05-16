@@ -1,7 +1,9 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "reporting",
+    "has_tenant_id": true,
     "entity_singular": "concurrency_policy",
     "entity_plural": "concurrency_policies",
     "entity_title": "Concurrency Policy",
@@ -16,22 +18,21 @@
       "detail": "Examples: 'skip', 'queue', 'fail'."
     },
 
-    "natural_keys": [
+    "columns": [
       {
-        "column": "name",
+        "name": "name",
         "type": "text",
         "cpp_type": "std::string",
+        "nullable": false,
         "description": "Human-readable name for the concurrency policy.",
         "generator_expr": "std::string(faker::word::adjective()) + \" Policy\""
-      }
-    ],
-
-    "columns": [
+      },
       {
         "name": "description",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "''",
         "description": "Detailed description of the concurrency policy behaviour.",
         "generator_expr": "std::string(faker::lorem::sentence())"
       },
@@ -40,6 +41,7 @@
         "type": "integer",
         "cpp_type": "int",
         "nullable": false,
+        "default": "0",
         "description": "Order for UI display purposes.",
         "generator_expr": "faker::number::integer(1, 100)"
       }

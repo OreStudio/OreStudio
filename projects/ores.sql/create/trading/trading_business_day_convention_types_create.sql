@@ -17,10 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Business Day Convention Types - ORE business day adjustment codes
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
+ *
+ * Reference data table defining valid business day conventions used in
+ * instrument leg definitions. Values are sourced from ORE ore_types.xsd.
+ */
 
 create table if not exists "ores_trading_business_day_convention_types_tbl" (
     "code" text not null,
@@ -43,6 +49,7 @@ create table if not exists "ores_trading_business_day_convention_types_tbl" (
     check ("code" <> '')
 );
 
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists business_day_convention_types_version_uniq_idx
 on "ores_trading_business_day_convention_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -60,88 +67,55 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
     select version into current_version
     from "ores_trading_business_day_convention_types_tbl"
-    where tenant_id = new.tenant_id
-      and code = new.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
         update "ores_trading_business_day_convention_types_tbl"
         set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and code = new.code
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
 $$ language plpgsql;
 
 create or replace trigger ores_trading_business_day_convention_types_insert_trg
 before insert on "ores_trading_business_day_convention_types_tbl"
-for each row
-execute function ores_trading_business_day_convention_types_insert_fn();
+for each row execute function ores_trading_business_day_convention_types_insert_fn();
 
 create or replace rule ores_trading_business_day_convention_types_delete_rule as
-on delete to "ores_trading_business_day_convention_types_tbl"
-do instead
-  update "ores_trading_business_day_convention_types_tbl"
-  set valid_to = current_timestamp
-  where tenant_id = old.tenant_id
-  and code = old.code
-  and valid_to = ores_utility_infinity_timestamp_fn();
-
--- =============================================================================
--- Validation function for business_day_convention_type
--- =============================================================================
-create or replace function ores_trading_validate_business_day_convention_type_fn(
-    p_tenant_id uuid,
-    p_value text
-) returns text as $$
-begin
-    if p_value is null or p_value = '' then
-        raise exception 'Invalid business_day_convention_type: value cannot be null or empty'
-            using errcode = '23502';
-    end if;
-
-    if not exists (select 1 from ores_trading_business_day_convention_types_tbl limit 1) then
-        return p_value;
-    end if;
-
-    if not exists (
-        select 1 from ores_trading_business_day_convention_types_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and code = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid business_day_convention_type: %. Must be one of: %', p_value, (
-            select string_agg(code::text, ', ' order by code)
-            from ores_trading_business_day_convention_types_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) using errcode = '23503';
-    end if;
-
-    return p_value;
-end;
-$$ language plpgsql;
+on delete to "ores_trading_business_day_convention_types_tbl" do instead
+    update "ores_trading_business_day_convention_types_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
+      and valid_to = ores_utility_infinity_timestamp_fn();

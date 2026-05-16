@@ -17,30 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
- * Report Types Table
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
  *
- * Enum table for the available report types (e.g. risk, grid). Each tenant
- * carries its own copy, populated from system seed data at provisioning time.
+ *  Table
  *
- * The validation function is called from the report_definitions insert trigger
- * so that new types can be added without schema migrations.
+ * Reference data table defining valid report type classifications.
+ * Examples: 'risk', 'grid'.
+ *
+ * Report types are managed by the system tenant and drive which
+ * configuration block is used when creating a report definition.
  */
 
 create table if not exists "ores_reporting_report_types_tbl" (
-    "code"                text    not null,
-    "tenant_id"           uuid    not null,
-    "version"             integer not null,
-    "name"                text    not null,
-    "description"         text    not null default '',
-    "display_order"       integer not null default 0,
-    "modified_by"         text    not null,
-    "performed_by"        text    not null,
-    "change_reason_code"  text    not null,
-    "change_commentary"   text    not null,
-    "valid_from"          timestamp with time zone not null,
-    "valid_to"            timestamp with time zone not null,
+    "code" text not null,
+    "tenant_id" uuid not null,
+    "version" integer not null,
+    "name" text not null,
+    "description" text not null default '',
+    "display_order" integer not null default 0,
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
     primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
@@ -51,6 +54,7 @@ create table if not exists "ores_reporting_report_types_tbl" (
     check ("code" <> '')
 );
 
+-- Version uniqueness for optimistic concurrency
 create unique index if not exists report_types_version_uniq_idx
 on "ores_reporting_report_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -68,40 +72,44 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
-    new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
     select version into current_version
     from "ores_reporting_report_types_tbl"
-    where tenant_id = new.tenant_id
-      and code = new.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
     if found then
-        if new.version != 0 and new.version != current_version then
+        if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
+                NEW.version, current_version
                 using errcode = 'P0002';
         end if;
-        new.version = current_version + 1;
+        NEW.version = current_version + 1;
 
         update "ores_reporting_report_types_tbl"
         set valid_to = current_timestamp
-        where tenant_id = new.tenant_id
-          and code = new.code
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
-        new.version = 1;
+        NEW.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
-    new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    return new;
+    return NEW;
 end;
 $$ language plpgsql;
 
@@ -113,42 +121,6 @@ create or replace rule ores_reporting_report_types_delete_rule as
 on delete to "ores_reporting_report_types_tbl" do instead
     update "ores_reporting_report_types_tbl"
     set valid_to = current_timestamp
-    where tenant_id = old.tenant_id
-      and code = old.code
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
-
--- =============================================================================
--- Validation function for report_type
--- =============================================================================
-create or replace function ores_reporting_validate_report_type_fn(
-    p_tenant_id uuid,
-    p_value text
-) returns text as $$
-begin
-    if p_value is null or p_value = '' then
-        raise exception 'report_type is required.' using errcode = '23502';
-    end if;
-
-    -- Allow pass-through during bootstrap (empty table for this tenant)
-    if not exists (select 1 from ores_reporting_report_types_tbl
-                   where tenant_id = p_tenant_id limit 1) then
-        return p_value;
-    end if;
-
-    if not exists (
-        select 1 from ores_reporting_report_types_tbl
-        where tenant_id = p_tenant_id
-          and code = p_value
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid report_type: %. Must be one of: %', p_value, (
-            select string_agg(code, ', ' order by display_order)
-            from ores_reporting_report_types_tbl
-            where tenant_id = p_tenant_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) using errcode = '23503';
-    end if;
-
-    return p_value;
-end;
-$$ language plpgsql;

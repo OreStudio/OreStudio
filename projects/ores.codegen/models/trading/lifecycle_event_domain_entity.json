@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "entity_singular": "lifecycle_event",
     "entity_plural": "lifecycle_events",

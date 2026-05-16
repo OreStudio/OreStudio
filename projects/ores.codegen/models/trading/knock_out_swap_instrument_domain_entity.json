@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "component_include": "trading.api",
     "component_core": "trading.core",
@@ -16,9 +17,18 @@
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID uniquely identifying this knock-out swap instrument.",
-      "detail": "Surrogate key for the instrument record."
+      "detail": "Surrogate key for the instrument record.",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
     "columns": [
+      {
+        "name": "trade_type_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Trade type code (soft FK to ores_trading_trade_types_tbl).",
+        "generator_expr": "std::string(\"KnockOutSwap\")"
+      },
       {
         "name": "party_id",
         "type": "uuid",
@@ -53,7 +63,7 @@
       },
       {
         "name": "barrier_level",
-        "type": "double precision",
+        "type": "numeric(18, 10)",
         "cpp_type": "double",
         "nullable": false,
         "description": "Barrier level that triggers knock-out.",
@@ -65,8 +75,8 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Barrier type: UpOut or DownOut.",
-        "detail": "UpOut knocks out when rate rises above barrier; DownOut when it falls below."
+        "description": "Barrier type: UpAndOut or DownAndOut.",
+        "detail": "UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below."
       },
       {
         "name": "knock_out_dates_json",
@@ -86,8 +96,24 @@
       }
     ],
     "sql": {
-      "tablename": "ores_trading_knock_out_swap_instruments_tbl"
+      "tablename": "ores_trading_knock_out_swap_instruments_tbl",
+      "security_definer": true,
+      "party_id_from_session": true,
+      "extra_checks": [
+        "\"maturity_date\" > \"start_date\"",
+        "\"barrier_type\" in ('UpAndOut', 'DownAndOut')"
+      ]
     },
+    "validations": [
+      {
+        "column": "trade_type_code",
+        "validation_function": "ores_trading_validate_trade_type_fn"
+      }
+    ],
+    "indexes": [
+      {"name": "party", "columns": "tenant_id, party_id", "current_only": true},
+      {"unique": true, "name": "trade_id", "columns": "tenant_id, trade_id", "current_only": true, "where_extra": "trade_id is not null"}
+    ],
     "repository": {
       "entity_singular_short": "knock_out_swap_instrument",
       "entity_plural_short": "knock_out_swap_instruments",

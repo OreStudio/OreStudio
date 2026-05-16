@@ -31,7 +31,7 @@
 \ir ./dq_dataset_dependency_create.sql
 
 -- Dataset bundles
-\ir ./dq_dataset_bundle_create.sql
+\ir ./dq_dataset_bundles_create.sql
 \ir ./dq_dataset_bundle_member_create.sql
 
 -- Data domains and subject areas

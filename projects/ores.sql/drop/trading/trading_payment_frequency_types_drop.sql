@@ -21,5 +21,4 @@
 drop rule if exists ores_trading_payment_frequency_types_delete_rule on "ores_trading_payment_frequency_types_tbl";
 drop trigger if exists ores_trading_payment_frequency_types_insert_trg on "ores_trading_payment_frequency_types_tbl";
 drop function if exists ores_trading_payment_frequency_types_insert_fn;
-drop function if exists ores_trading_validate_payment_frequency_type_fn;
 drop table if exists "ores_trading_payment_frequency_types_tbl";

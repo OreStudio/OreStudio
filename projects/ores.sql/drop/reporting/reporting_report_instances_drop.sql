@@ -21,9 +21,4 @@
 drop rule if exists ores_reporting_report_instances_delete_rule on "ores_reporting_report_instances_tbl";
 drop trigger if exists ores_reporting_report_instances_insert_trg on "ores_reporting_report_instances_tbl";
 drop function if exists ores_reporting_report_instances_insert_fn;
-drop index if exists report_instances_fsm_state_idx;
-drop index if exists report_instances_definition_idx;
-drop index if exists report_instances_tenant_idx;
-drop index if exists report_instances_id_uniq_idx;
-drop index if exists report_instances_version_uniq_idx;
 drop table if exists "ores_reporting_report_instances_tbl";

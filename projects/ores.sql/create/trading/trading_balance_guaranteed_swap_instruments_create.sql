@@ -17,23 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Balance Guaranteed Swap (BGS) Instruments Table
---
--- Mortgage-backed swap where notional tracks an amortising pool balance.
--- ORE product type: BalanceGuaranteedSwap. Leg economics live in
--- ores_trading_swap_legs_tbl linked by instrument_id. lockout_days
--- specifies the observation lag in business days (ORE: LockoutDays).
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
+ *
+ * Represents a Balance Guaranteed Swap instrument where the notional
+ * amortises in line with an underlying pool of assets (e.g., mortgages).
+ */
 
 create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "start_date" date not null,
     "maturity_date" date not null,
     "lockout_days" integer null,
@@ -61,22 +62,18 @@ create unique index if not exists bgs_instruments_version_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists bgs_instruments_id_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists bgs_instruments_tenant_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists bgs_instruments_party_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists bgs_instruments_trade_id_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()

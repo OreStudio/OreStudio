@@ -31,8 +31,10 @@
 -- Enum tables (must precede report_definitions which validates against them)
 \ir ./reporting_report_types_create.sql
 \ir ./reporting_report_types_notify_trigger_create.sql
+\ir ./reporting_report_types_validate_fn_create.sql
 \ir ./reporting_concurrency_policies_create.sql
 \ir ./reporting_concurrency_policies_notify_trigger_create.sql
+\ir ./reporting_concurrency_policies_validate_fn_create.sql
 
 \ir ./reporting_report_definitions_create.sql
 \ir ./reporting_report_definitions_notify_trigger_create.sql

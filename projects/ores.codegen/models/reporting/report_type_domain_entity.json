@@ -1,7 +1,9 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "reporting",
+    "has_tenant_id": true,
     "entity_singular": "report_type",
     "entity_plural": "report_types",
     "entity_title": "Report Type",
@@ -16,22 +18,21 @@
       "detail": "Examples: 'risk', 'grid'."
     },
 
-    "natural_keys": [
+    "columns": [
       {
-        "column": "name",
+        "name": "name",
         "type": "text",
         "cpp_type": "std::string",
+        "nullable": false,
         "description": "Human-readable name for the report type.",
         "generator_expr": "std::string(faker::word::adjective()) + \" Report\""
-      }
-    ],
-
-    "columns": [
+      },
       {
         "name": "description",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "''",
         "description": "Detailed description of the report type.",
         "generator_expr": "std::string(faker::lorem::sentence())"
       },
@@ -40,6 +41,7 @@
         "type": "integer",
         "cpp_type": "int",
         "nullable": false,
+        "default": "0",
         "description": "Order for UI display purposes.",
         "generator_expr": "faker::number::integer(1, 100)"
       }

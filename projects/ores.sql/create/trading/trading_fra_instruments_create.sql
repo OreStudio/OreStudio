@@ -17,23 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- FRA (Forward Rate Agreement) Instruments Table
---
--- Standalone single-row instrument. ORE product type: ForwardRateAgreement.
--- No legs required — the instrument is fully described by a single row.
--- ORE XML: ForwardRateAgreementData with StartDate, EndDate, Currency,
--- Index, LongShort, Strike, Notional.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
+ *
+ * Represents a Forward Rate Agreement instrument that fixes a future
+ * interest rate for a notional principal amount over a specified period.
+ */
 
 create table if not exists "ores_trading_fra_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "start_date" date not null,
     "end_date" date not null,
     "currency" text not null,
@@ -68,22 +69,18 @@ create unique index if not exists fra_instruments_version_uniq_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists fra_instruments_id_uniq_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists fra_instruments_tenant_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists fra_instruments_party_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists fra_instruments_trade_id_idx
 on "ores_trading_fra_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()

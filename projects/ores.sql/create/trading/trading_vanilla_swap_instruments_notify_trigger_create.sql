@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
 create or replace function ores_trading_vanilla_swap_instruments_notify_fn()
 returns trigger as $$
@@ -24,21 +29,21 @@ declare
     notification_payload jsonb;
     entity_name text := 'ores.trading.vanilla_swap_instrument';
     change_timestamp timestamptz := NOW();
-    changed_id text;
+    changed_instrument_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := OLD.id::text;
+        changed_instrument_id := OLD.instrument_id;
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := NEW.id::text;
+        changed_instrument_id := NEW.instrument_id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_id),
+        'entity_ids', jsonb_build_array(changed_instrument_id),
         'tenant_id', changed_tenant_id
     );
 

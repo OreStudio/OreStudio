@@ -1333,12 +1333,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():
                 domain_entity[key] = value
+        # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
+        sql_section = domain_entity.get('sql', {})
+        domain_entity['index_name_prefix'] = sql_section.get(
+            'index_prefix', domain_entity.get('entity_plural', 'unknown'))
         # Add computed properties for primary key type detection
         if 'primary_key' in domain_entity:
             pk = domain_entity['primary_key']
             pk_type = pk.get('type', 'uuid')
             pk['is_uuid'] = pk_type == 'uuid'
             pk['is_text'] = pk_type == 'text'
+            if pk['is_uuid'] and 'uuid_check_fn' not in pk:
+                pk['uuid_check_fn'] = 'ores_utility_system_tenant_id_fn()'
             # Ensure cpp_type is set with sensible defaults
             if 'cpp_type' not in pk:
                 if pk['is_uuid']:

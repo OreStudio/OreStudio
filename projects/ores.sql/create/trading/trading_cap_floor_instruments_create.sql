@@ -17,22 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Cap/Floor Instruments Table
---
--- Header row for interest rate cap and floor instruments. ORE product type:
--- CapFloor. Leg economics (floating index, notional, cap/floor rate)
--- live in ores_trading_swap_legs_tbl with leg_type_code = 'Capfloor'.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ *  Table
+ *
+ * Represents an interest rate cap or floor instrument.
+ * Legs are defined separately in the swap_legs table.
+ */
 
 create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "start_date" date not null,
     "maturity_date" date not null,
     "description" text null,
@@ -58,22 +60,18 @@ create unique index if not exists cap_floor_instruments_version_uniq_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists cap_floor_instruments_id_uniq_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists cap_floor_instruments_tenant_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists cap_floor_instruments_party_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists cap_floor_instruments_trade_id_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()

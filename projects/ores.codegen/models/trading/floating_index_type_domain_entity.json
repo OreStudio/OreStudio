@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "entity_singular": "floating_index_type",
     "entity_plural": "floating_index_types",

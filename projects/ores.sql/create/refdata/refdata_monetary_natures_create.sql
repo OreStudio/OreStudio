@@ -125,7 +125,7 @@ do instead
 -- Validation function for monetary_nature
 -- Validates that a code exists in the monetary_natures table.
 -- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
+-- Uses current tenant data.
 -- =============================================================================
 create or replace function ores_refdata_validate_monetary_nature_fn(
     p_tenant_id uuid,
@@ -145,14 +145,14 @@ begin
     -- Validate against reference data
     if not exists (
         select 1 from ores_refdata_monetary_natures_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
+        where tenant_id = p_tenant_id
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid monetary_nature: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_monetary_natures_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
+            where tenant_id = p_tenant_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

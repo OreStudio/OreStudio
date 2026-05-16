@@ -281,6 +281,39 @@ and CMake link, then regenerating) was needed.
 Branch: =feature/ore-workflow-write-decoupling=
 Pull Request: [[https://github.com/OreStudio/OreStudio/pull/746][#746]]
 
+*** BLOCKED Fix refdata RLS validate function bug                    :code:
+CLOSED: [2026-05-16 Sat 00:00]
+:LOGBOOK:
+CLOCK: [2026-05-16 Sat 00:00]--[2026-05-16 Sat 00:00] =>  0:00
+:END:
+
+Fix =ores_refdata_validate_monetary_nature_fn=, =ores_refdata_validate_currency_market_tier_fn=,
+and =ores_refdata_validate_rounding_type_fn= to use =p_tenant_id= instead of
+=ores_utility_system_tenant_id_fn()=.
+
+With RLS enabled on =ores_refdata_monetary_natures_tbl= and
+=ores_refdata_currency_market_tiers_tbl=, a provisioned test-tenant session cannot see
+system-tenant rows. The bootstrap pass-through is bypassed (test-tenant rows are visible),
+but the system-tenant validation query returns zero rows, causing:
+=ERROR: Invalid monetary_nature: fiat. Must be one of: <NULL>=
+
+***** Tasks
+
+- [X] Change =system_tenant_validation: true= → =false= in three entity JSON models
+- [X] Regenerate SQL via =generate_refdata_schema.sh=
+- [X] Run =validate_schemas.sh= — passes clean
+- [X] Commit and push; create PR
+
+***** Notes
+
+Story is BLOCKED pending:
+- User build verification
+- Runtime testing (currency insert flows)
+- Pull request review
+
+Branch: =feature/fix-refdata-rls-validate-fn=
+Pull Request: [[https://github.com/OreStudio/OreStudio/pull/750][#750]]
+
 *** Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

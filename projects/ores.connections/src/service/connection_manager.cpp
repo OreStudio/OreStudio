@@ -37,6 +37,7 @@ connection_manager::connection_manager(const std::filesystem::path& db_path,
       conn_tag_repo_(ctx_),
       env_repo_(ctx_),
       env_tag_repo_(ctx_),
+      recent_party_repo_(ctx_),
       master_password_(master_password) {
     ctx_.initialize_schema();
 }
@@ -371,6 +372,15 @@ void connection_manager::auto_tag_environments_by_label(const std::string& label
 
 void connection_manager::purge() {
     ctx_.purge_all_data();
+}
+
+std::vector<domain::recent_party> connection_manager::get_recent_parties() {
+    return recent_party_repo_.read_recent();
+}
+
+void connection_manager::record_party_selection(
+    const boost::uuids::uuid& party_id, const std::string& party_name) {
+    recent_party_repo_.record(party_id, party_name);
 }
 
 }

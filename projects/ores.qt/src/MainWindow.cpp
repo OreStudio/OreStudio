@@ -1748,6 +1748,7 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     auto* loginWidget = new LoginDialog();
     loginWidget->setClientManager(clientManager_);
     loginWidget->setImageCache(imageCache_);
+    loginWidget->setConnectionManager(connectionManager_);
 
     // Pre-fill connection details if provided
     if (!options.host.isEmpty()) {

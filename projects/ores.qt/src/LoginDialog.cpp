@@ -234,6 +234,11 @@ void LoginDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
 
+void LoginDialog::setConnectionManager(
+    ores::connections::service::connection_manager* connectionManager) {
+    connectionManager_ = connectionManager;
+}
+
 QString LoginDialog::getUsername() const {
     return usernameEdit_->text().trimmed();
 }
@@ -689,13 +694,35 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                                       << " parties available";
             statusLabel_->setText("Select party...");
 
-            PartyPickerDialog partyDialog(result.available_parties, clientManager_, imageCache_, this);
+            std::vector<boost::uuids::uuid> recentIds;
+            if (connectionManager_) {
+                try {
+                    for (const auto& rp : connectionManager_->get_recent_parties())
+                        recentIds.push_back(rp.party_id);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Failed to load recent parties: " << e.what();
+                }
+            }
+
+            PartyPickerDialog partyDialog(result.available_parties, recentIds,
+                                          clientManager_, imageCache_, this);
             if (partyDialog.exec() == QDialog::Accepted) {
                 BOOST_LOG_SEV(lg(), info) << "Party selected: "
                                           << clientManager_->currentPartyName().toStdString()
                                           << " (category="
                                           << clientManager_->currentPartyCategory().toStdString()
                                           << ")";
+                if (connectionManager_) {
+                    try {
+                        connectionManager_->record_party_selection(
+                            partyDialog.selectedPartyId(),
+                            partyDialog.selectedPartyName().toStdString());
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to record recent party: " << e.what();
+                    }
+                }
                 statusLabel_->setText("Login successful!");
                 emit loginSucceeded(usernameEdit_->text().trimmed());
                 if (clientManager_->lastPartySetupRequired()) {

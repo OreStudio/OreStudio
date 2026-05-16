@@ -51,6 +51,7 @@ class ORES_QT_API PartyPickerDialog : public QDialog {
 public:
     explicit PartyPickerDialog(
         const std::vector<PartyInfo>& parties,
+        const std::vector<boost::uuids::uuid>& recent_ids,
         ClientManager* clientManager,
         ImageCache* imageCache,
         QWidget* parent = nullptr);
@@ -65,7 +66,9 @@ private:
     enum Role {
         BusinessCentreRole = Qt::UserRole,
         PartyNameRole,
-        PartyIdRole
+        PartyIdRole,
+        IsSectionHeaderRole,
+        IsRecentRole
     };
 
 private:
@@ -78,19 +81,22 @@ private:
     void refreshFlagIcons();
 
 private:
-    ClientManager*         clientManager_;
-    ImageCache*            imageCache_;
-    std::vector<PartyInfo> parties_;
+    ClientManager*              clientManager_;
+    ImageCache*                 imageCache_;
+    std::vector<PartyInfo>      parties_;
+    std::vector<boost::uuids::uuid> recent_ids_;
 
     // System-party section (hidden when no system party is available)
     QRadioButton* systemRadio_;
 
     // Operational-party section
-    QRadioButton* operationalRadio_;
-    QWidget*      operationalContent_;
-    QLineEdit*    filterEdit_;
-    QComboBox*    centreCombo_;
-    QTreeWidget*  listWidget_;
+    QRadioButton*    operationalRadio_;
+    QWidget*         operationalContent_;
+    QLineEdit*       filterEdit_;
+    QComboBox*       centreCombo_;
+    QTreeWidget*     listWidget_;
+    QTreeWidgetItem* recentHeader_{nullptr};  // null when no recents
+    QTreeWidgetItem* allPartiesHeader_{nullptr};
 
     QPushButton* okButton_;
     QPushButton* cancelButton_;

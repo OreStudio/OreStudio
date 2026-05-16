@@ -32,6 +32,7 @@
 #include <QVBoxLayout>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.connections/service/connection_manager.hpp"
 
 namespace ores::qt {
 
@@ -132,6 +133,12 @@ public:
      * @brief Set the client manager for performing login.
      */
     void setClientManager(ClientManager* clientManager);
+
+    /**
+     * @brief Set the connection manager for persisting recent party selections.
+     */
+    void setConnectionManager(
+        ores::connections::service::connection_manager* connectionManager);
 
     /**
      * @brief Get the username that was used for login.
@@ -260,6 +267,7 @@ private:
     // Dependencies
     ClientManager* clientManager_{nullptr};
     ImageCache* imageCache_{nullptr};
+    ores::connections::service::connection_manager* connectionManager_{nullptr};
 };
 
 }

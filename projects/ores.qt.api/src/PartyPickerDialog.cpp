@@ -23,6 +23,7 @@
 #include <set>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <QApplication>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -37,13 +38,15 @@ namespace ores::qt {
 
 PartyPickerDialog::PartyPickerDialog(
     const std::vector<PartyInfo>& parties,
+    const std::vector<boost::uuids::uuid>& recent_ids,
     ClientManager* clientManager,
     ImageCache* imageCache,
     QWidget* parent)
     : QDialog(parent),
       clientManager_(clientManager),
       imageCache_(imageCache),
-      parties_(parties) {
+      parties_(parties),
+      recent_ids_(recent_ids) {
 
     setupUi();
 
@@ -53,6 +56,7 @@ PartyPickerDialog::PartyPickerDialog(
             this,          &QDialog::reject);
     connect(listWidget_,   &QTreeWidget::itemDoubleClicked,
             this,          [this](QTreeWidgetItem* item, int) {
+        if (item->data(0, IsSectionHeaderRole).toBool()) return;
         selectOperationalItem(item);
         onOkClicked();
     });
@@ -160,7 +164,7 @@ void PartyPickerDialog::setupUi() {
     listWidget_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     listWidget_->header()->setSectionResizeMode(1, QHeaderView::Stretch);
 
-    // Populate operational parties sorted alphabetically by name
+    // Sort operational parties alphabetically
     std::vector<const PartyInfo*> ops;
     for (const auto& p : parties_) {
         if (!p.is_system()) ops.push_back(&p);
@@ -170,21 +174,52 @@ void PartyPickerDialog::setupUi() {
             return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
         });
 
-    for (const auto* p : ops) {
+    // Build lookup from party_id → PartyInfo* for recents cross-referencing
+    std::vector<const PartyInfo*> recentOps;
+    for (const auto& rid : recent_ids_) {
+        for (const auto* p : ops) {
+            if (p->id == rid) { recentOps.push_back(p); break; }
+        }
+    }
+
+    auto makePartyItem = [&](const PartyInfo* p, bool isRecent) {
         auto* item = new QTreeWidgetItem(listWidget_);
         const QString bc = p->business_center_code;
-        // col 0: business centre code (with flag icon)
-        // col 1: party name
         item->setText(0, bc);
         item->setText(1, p->name);
-        item->setData(0, BusinessCentreRole, bc);
-        item->setData(0, PartyNameRole,      p->name);
+        item->setData(0, BusinessCentreRole,   bc);
+        item->setData(0, PartyNameRole,        p->name);
         item->setData(0, PartyIdRole,
             QString::fromStdString(boost::uuids::to_string(p->id)));
-
+        item->setData(0, IsSectionHeaderRole,  false);
+        item->setData(0, IsRecentRole,         isRecent);
         if (imageCache_ && !bc.isEmpty())
             item->setIcon(0, imageCache_->getBusinessCentreFlagIcon(bc.toStdString()));
+        return item;
+    };
+
+    auto makeSectionHeader = [&](const QString& title) {
+        auto* hdr = new QTreeWidgetItem(listWidget_);
+        hdr->setText(1, title);
+        hdr->setData(0, IsSectionHeaderRole, true);
+        hdr->setFlags(Qt::NoItemFlags);
+        QFont f = hdr->font(1);
+        f.setBold(true);
+        hdr->setFont(1, f);
+        hdr->setForeground(1, QApplication::palette().color(QPalette::Mid));
+        return hdr;
+    };
+
+    if (!recentOps.empty()) {
+        recentHeader_ = makeSectionHeader(tr("Recent"));
+        for (const auto* p : recentOps)
+            makePartyItem(p, true);
     }
+
+    allPartiesHeader_ = makeSectionHeader(tr("All Parties"));
+    for (const auto* p : ops)
+        makePartyItem(p, false);
+
     opsLayout->addWidget(listWidget_);
 
     // ----------------------------------------------------------------
@@ -243,6 +278,7 @@ void PartyPickerDialog::setupUi() {
 
     connect(listWidget_, &QTreeWidget::itemClicked,
             this, [this](QTreeWidgetItem* item, int) {
+        if (item->data(0, IsSectionHeaderRole).toBool()) return;
         if (!operationalRadio_->isChecked())
             operationalRadio_->setChecked(true);
         selectOperationalItem(item);
@@ -256,11 +292,8 @@ void PartyPickerDialog::setupUi() {
         // toggled signal fires synchronously, so updateSections(true) already ran
     } else {
         operationalRadio_->setChecked(true);
-        auto* first = listWidget_->topLevelItem(0);
-        if (first) {
-            listWidget_->setCurrentItem(first);
-            selectOperationalItem(first);
-        }
+        // updateSections(false) fires synchronously via the toggled signal above,
+        // which calls firstVisibleItem() — no manual selection needed here.
     }
 
     filterEdit_->setFocus();
@@ -288,21 +321,32 @@ void PartyPickerDialog::applyFilter() {
     const QString text   = filterEdit_->text().trimmed().toLower();
     const QString centre = centreCombo_->currentData().toString();
 
+    bool anyRecentVisible = false;
     for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
         auto* item = listWidget_->topLevelItem(i);
+        if (item->data(0, IsSectionHeaderRole).toBool()) continue;
+
         const QString name = item->data(0, PartyNameRole).toString().toLower();
         const QString bc   = item->data(0, BusinessCentreRole).toString();
+        const bool isRecent = item->data(0, IsRecentRole).toBool();
 
         const bool nameMatch   = text.isEmpty()   || name.contains(text);
         const bool centreMatch = centre.isEmpty() || bc == centre;
-        item->setHidden(!(nameMatch && centreMatch));
+        const bool visible = nameMatch && centreMatch;
+        item->setHidden(!visible);
+
+        if (visible && isRecent) anyRecentVisible = true;
     }
+
+    if (recentHeader_)
+        recentHeader_->setHidden(!anyRecentVisible);
 }
 
 QTreeWidgetItem* PartyPickerDialog::firstVisibleItem() const {
     for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
         auto* item = listWidget_->topLevelItem(i);
-        if (!item->isHidden()) return item;
+        if (!item->isHidden() && !item->data(0, IsSectionHeaderRole).toBool())
+            return item;
     }
     return nullptr;
 }
@@ -339,6 +383,7 @@ void PartyPickerDialog::refreshFlagIcons() {
 
     for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
         auto* item = listWidget_->topLevelItem(i);
+        if (item->data(0, IsSectionHeaderRole).toBool()) continue;
         const auto bc = item->data(0, BusinessCentreRole).toString().toStdString();
         if (!bc.empty())
             item->setIcon(0, imageCache_->getBusinessCentreFlagIcon(bc));

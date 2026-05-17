@@ -117,6 +117,11 @@ case "${COLOUR,,}" in
         ;;
 esac
 
+# --- Default instance name from checkout label when no --name or colour given ---
+if [[ -z "$INSTANCE_NAME" ]] && [[ -n "${ORES_CHECKOUT_LABEL:-}" ]]; then
+    INSTANCE_NAME="$ORES_CHECKOUT_LABEL"
+fi
+
 # --- PID and log file names ---
 if [[ -n "$COLOUR_TAG" ]]; then
     PID_NAME="ores.qt.${COLOUR_TAG}"

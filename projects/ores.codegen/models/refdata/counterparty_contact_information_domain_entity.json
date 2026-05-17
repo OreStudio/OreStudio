@@ -7,6 +7,7 @@
     "entity_singular": "counterparty_contact_information",
     "entity_plural": "counterparty_contact_informations",
     "entity_title": "Counterparty Contact Information",
+    "natural_keys_composite_name": "cpty_contact_type",
     "brief": "Contact details for a counterparty organised by purpose.",
     "description": "Contact details for counterparties organised by purpose (Legal, Operations,\nSettlement, Billing). Each counterparty can have one contact record per type.",
 

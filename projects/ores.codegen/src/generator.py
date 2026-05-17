@@ -1273,7 +1273,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['has_multiple_natural_keys'] = len(nks) > 1
             if len(nks) > 1:
                 domain_entity['natural_keys_composite_columns'] = ', '.join(nk['column'] for nk in nks)
-                domain_entity['natural_keys_composite_name'] = '_'.join(nk['column'] for nk in nks)
+                if 'natural_keys_composite_name' not in domain_entity:
+                    domain_entity['natural_keys_composite_name'] = '_'.join(nk['column'] for nk in nks)
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])
         if 'validations' in domain_entity:

@@ -67,19 +67,25 @@ artefacts from curated data.
 A *Workspace* is a named, isolated data context within OreStudio.  It contains
 a complete or partial set of data — trades, market data, conventions, curve
 configs, pricing engine configs, today's market definitions — and can
-optionally inherit missing data from one or more parent workspaces.
+optionally inherit missing data from a single parent workspace.
 
 Key properties:
 
 - *Isolated by default*: data in workspace A is not visible to workspace B
   unless an explicit parent relationship links them.
-- *Layered*: a workspace can declare parent workspaces.  Any data not present
-  in the workspace is resolved from parents in priority order, recursively.
-  This is the same model as Docker image layers.
-- *Scoped report definitions*: ORE orchestration files (~ore.xml~) are stored
-  as report definitions scoped to a workspace.  Running a report definition
-  generates ORE input files from the workspace's (and its ancestors') data
-  and submits the job to the compute grid.
+- *Layered (single-parent)*: a workspace may declare one parent workspace.
+  Any data not present in the workspace is resolved from the parent, then the
+  grandparent, and so on up the chain — the same model as Docker image layers.
+  The resolution order is simply the chain from the current workspace to the
+  root (workspace 0).
+- *Exclusions*: a workspace can explicitly exclude records inherited from
+  ancestors, hiding them from that workspace's view without deleting them from
+  the parent.
+- *Scoped report definitions*: report definitions are scoped to a workspace.
+  Running one generates ORE input files from the workspace's first-class domain
+  objects (conventions, curves, market data, trades) via the workspace-aware
+  query mechanism and submits the job to the compute grid.  No raw ~ore.xml~
+  is stored — the domain objects are the source of truth.
 - *Durable*: workspaces are long-lived; not deleted when the session ends.
 - *Non-promotable directly*: data cannot be directly promoted from a workspace
   to live.  A deliberate /copy/ operation is used instead.
@@ -99,87 +105,66 @@ Using ~id = 0~ rather than ~NULL~ means:
 
 ** Workspace table
 
+Single-parent inheritance: the parent FK lives directly on the workspace row.
+No separate parents table is needed.
+
 #+begin_src sql
 create table ores_workspaces_tbl (
-    id           integer      not null generated always as identity primary key,
-    name         text         not null,
-    description  text         not null default '',
-    source_path  text         not null default '',  -- original import path, if any
-    created_at   timestamptz  not null default now(),
-    created_by   text         not null,
-    status       text         not null default 'active',  -- active | archived
-    constraint ores_workspaces_name_uq unique (name)
+    id                  integer      not null generated always as identity primary key,
+    name                text         not null,
+    description         text         not null default '',
+    source_path         text         not null default '',  -- original import path, if any
+    parent_workspace_id integer      null references ores_workspaces_tbl(id),
+    created_at          timestamptz  not null default now(),
+    created_by          text         not null,
+    status              text         not null default 'active',  -- active | archived
+    constraint ores_workspaces_name_uq unique (name),
+    constraint ores_workspaces_no_self_parent check (id != parent_workspace_id)
 );
 
 -- Seed the live workspace (id must be 0; override the identity sequence).
+-- Live has no parent — it is the root of all inheritance chains.
 insert into ores_workspaces_tbl (id, name, description, created_by)
 overriding system value
 values (0, 'Live', 'Live production data space', 'system');
 #+end_src
 
-** Parent relationships (ordered)
-
-A workspace can have zero or more parents.  Parents are ordered: lower
-~priority~ value = higher resolution priority.  When the same natural key
-exists in multiple ancestors, the ancestor with the lowest priority number
-(closest to the current workspace in resolution order) wins.
-
-#+begin_src sql
-create table ores_workspace_parents_tbl (
-    workspace_id  integer  not null references ores_workspaces_tbl(id),
-    parent_id     integer  not null references ores_workspaces_tbl(id),
-    priority      integer  not null,  -- 0 = first parent (highest priority)
-    primary key (workspace_id, parent_id),
-    constraint ores_workspace_parents_no_self
-        check (workspace_id != parent_id)
-);
-#+end_src
-
-Example: trader's shock workspace inheriting from live:
+Example inheritance chains:
 
 #+begin_example
-workspace 0 (Live) ← workspace 5 (EUR shock +50bps)
-                      priority 0 parent: workspace 0
+workspace 0 (Live)
+  └─ workspace 5 (EUR shock +50bps)     parent = 0
+       └─ workspace 8 (EUR+credit shock) parent = 5
 
-Resolution order for workspace 5: [5, 0]
-- EUR/USD curveconfig exists in workspace 5 → use workspace 5 version
-- USD/JPY curveconfig absent in workspace 5 → fall through to workspace 0
-- All trades absent in workspace 5 → fall through to workspace 0
+Resolution order for workspace 8: [8, 5, 0]
+- Data in workspace 8 wins.
+- Data absent from 8 falls through to workspace 5.
+- Data absent from 5 falls through to workspace 0 (Live).
 #+end_example
 
-Example with multiple parents:
-
-#+begin_example
-workspace 5 (EUR shock) ← workspace 7 (EUR+USD shock)
-workspace 6 (USD shock) ←/
-
-Resolution order for workspace 7: [7, 5, 6, 0]
-- Data in workspace 7 wins over both parents
-- Data in workspace 5 (priority 0) wins over workspace 6 (priority 1)
-  when both have the same key and workspace 7 does not
-#+end_example
-
-Cycle prevention must be enforced at insertion time (recursive CTE check).
+Cycle prevention is enforced by a trigger that walks the parent chain before
+any insert or update of ~parent_workspace_id~.
 
 ** Resolution order computation
 
-When a workspace is opened, the full resolution order is computed once using a
-recursive CTE and cached in the application session:
+When a workspace is opened, its full ancestor chain is computed once via a
+recursive CTE and cached in the application session as an ordered integer
+array:
 
 #+begin_src sql
-with recursive resolution(workspace_id, depth) as (
-    select :target_workspace_id, 0
+with recursive chain(id, depth) as (
+    select id, 0 from ores_workspaces_tbl where id = :target_workspace_id
     union all
-    select p.parent_id, r.depth + p.priority + 1
-    from ores_workspace_parents_tbl p
-    join resolution r on r.workspace_id = p.workspace_id
+    select w.parent_workspace_id, c.depth + 1
+    from ores_workspaces_tbl w
+    join chain c on c.id = w.id
+    where w.parent_workspace_id is not null
 )
-select distinct on (workspace_id) workspace_id
-from resolution
-order by workspace_id, depth;
+select id from chain order by depth;
+-- Returns e.g. [8, 5, 0] for workspace 8
 #+end_src
 
-The resulting ordered array (e.g. ~[7, 5, 6, 0]~) is passed to data queries.
+This array is passed as ~:resolution_order~ to all workspace-aware queries.
 
 ** workspace_id column on all major tables
 
@@ -209,47 +194,87 @@ Affected tables (non-exhaustive):
 Tables that are genuinely global (users, IAM, parties, DQ FSM definitions,
 workflow definitions, workspace table itself) do *not* get ~workspace_id~.
 
+** Workspace exclusions
+
+A workspace can exclude specific records inherited from its ancestors, hiding
+them from that workspace's view without touching the parent.  This is the
+mechanism for "delete" within a layered workspace.
+
+#+begin_src sql
+create table ores_workspace_exclusions_tbl (
+    workspace_id  integer  not null references ores_workspaces_tbl(id),
+    table_name    text     not null,  -- e.g. 'ores_trading_trades_tbl'
+    record_id     uuid     not null,  -- PK of the excluded record
+    primary key (workspace_id, table_name, record_id)
+);
+#+end_src
+
+Exclusions apply to the declaring workspace only — they are not automatically
+inherited by child workspaces (a child that wants to re-hide the same record
+must add its own exclusion row).  This keeps the semantics simple: each
+workspace's exclusion list is local to that workspace.
+
 ** Workspace-aware data queries
 
-*Point lookup* (single row by natural key): query all workspaces in resolution
-order, take the first hit.
+All workspace-aware queries filter by the resolution order array and exclude
+any records listed in ~ores_workspace_exclusions_tbl~ for the current
+workspace.
+
+*Point lookup* (single row by natural key):
 
 #+begin_src sql
 select * from ores_curveconfig_yieldcurve_tbl
 where name = 'EUR-EONIA'
   and workspace_id = any(:resolution_order)
+  and id not in (
+      select record_id from ores_workspace_exclusions_tbl
+      where workspace_id = :current_workspace_id
+        and table_name = 'ores_curveconfig_yieldcurve_tbl')
 order by array_position(:resolution_order, workspace_id)
 limit 1;
 #+end_src
 
-*List query* (all rows of a type): collect from all workspaces in resolution
-order; deduplicate on natural key, keeping the highest-priority workspace's row.
+*List query* (all rows of a type), with deduplication on natural key:
 
 #+begin_src sql
 select distinct on (name) *
 from ores_curveconfig_yieldcurve_tbl
 where workspace_id = any(:resolution_order)
+  and id not in (
+      select record_id from ores_workspace_exclusions_tbl
+      where workspace_id = :current_workspace_id
+        and table_name = 'ores_curveconfig_yieldcurve_tbl')
 order by name, array_position(:resolution_order, workspace_id);
 #+end_src
 
 ** Report definitions as workspace-scoped ORE runs
 
-The existing ~report_definition~ / ~risk_report_config~ infrastructure is
-extended with ~workspace_id~.  For ORE sample import, each ~ore.xml~ is stored
-as a ~report_definition~ record scoped to the workspace:
+~report_definition~ gains a ~workspace_id~ column.  ~risk_report_config~
+requires no structural change — it already references portfolios, books, and
+analytics type, which are all first-class domain objects.
 
-- The ~risk_report_config~ gains an optional ~ore_xml_template~ text field
-  holding the verbatim ~ore.xml~ content.
-- When a report is run, the compute job generator exports all data from the
-  workspace's resolution chain into ORE input files, then substitutes file
-  references in the stored ~ore.xml~ before submitting to the compute grid.
-- For NPV-only valuation runs the generator overrides the ~<Analytics>~
-  section to request only ~npv~.
-- For reproduce runs (re-run the original sample) the stored ~ore.xml~ is
-  used verbatim.
+The workspace provides the complete data context for a report run: conventions,
+curveconfig, market data, pricingengine, todaysmarket are all looked up via the
+workspace resolution chain at run time.  No raw ~ore.xml~ is stored.
 
-No new ~ores_workspace_analyses_tbl~ is needed — this reuses the existing
-reporting infrastructure.
+When the compute job generator runs a report definition:
+
+1. Resolves the workspace chain.
+2. Exports all relevant domain objects (conventions, curves, market data,
+   pricing engine, today's market, trades filtered by the report's portfolio
+   and book selection) using workspace-aware list queries.
+3. Generates ORE input files from those domain objects via the existing ORE
+   mapper layer.
+4. Generates ~ore.xml~ from the report definition's ~analytics_type~ and the
+   exported file paths — exactly as it does today for live reports.
+5. Submits to compute grid; receives results; stores back on trade rows.
+
+For ORE sample import: when an ~ore.xml~ is discovered, its settings (which
+analytics to run, which simulation parameters) are parsed and stored as
+structured fields on a new report definition record — not as a raw XML blob.
+If a setting has no domain model yet, a new field is added to
+~risk_report_config~.  This is incremental: start with NPV-only, add
+simulation/sensitivity fields as needed.
 
 * Import Track Mapping
 
@@ -264,9 +289,10 @@ workspaces as follows:
 - *One workspace per top-level import group* (e.g. one "MarketRisk" workspace).
   Shared data (conventions, curveconfig, shared market data) is stored once in
   the workspace.
-- *One report definition per ~ore*.xml~* within the workspace.  The report
-  definition holds the original orchestration XML and references the
-  workspace's data via the workspace-aware query mechanism.
+- *One report definition per ~ore*.xml~* within the workspace.  The importer
+  parses the orchestration XML and stores its settings as structured fields on
+  a new report definition record (analytics type, simulation parameters, etc.).
+  No raw XML is retained.
 - Trades imported by different report definitions within the same workspace
   are tagged with the report definition's ID (via ~source_position~ or a
   dedicated FK) to keep results distinct.
@@ -403,21 +429,23 @@ workspace data into the live workspace (0).
 
 ** Reporting component
 
-The ~report_definition~ table gains ~workspace_id~ and ~risk_report_config~
-gains an optional ~ore_xml_template~ field.  No new analyses table is
-introduced.  The existing scheduling, lifecycle FSM, and execution pipeline
-are reused.
+The ~report_definition~ table gains ~workspace_id~.  ~risk_report_config~ is
+extended incrementally with structured fields parsed from ORE orchestration
+XMLs as needed (starting with NPV analytics, adding simulation/sensitivity
+settings later).  No raw XML is stored; no new analyses table is introduced.
+The existing scheduling, lifecycle FSM, and execution pipeline are reused.
 
 * Implementation Phases
 
 ** Phase 1: Core schema
 
-1. Create ~ores_workspaces_tbl~; seed Live workspace (~id = 0~).
-2. Create ~ores_workspace_parents_tbl~ with priority ordering.
+1. Create ~ores_workspaces_tbl~ with ~parent_workspace_id~ nullable FK; seed
+   Live workspace (~id = 0~, no parent).
+2. Create ~ores_workspace_exclusions_tbl~.
 3. Add ~workspace_id integer not null default 0~ to all affected tables.
-4. Add indexes; enforce cycle-prevention trigger on parent inserts.
-5. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~; extend
-   ~risk_report_config~ with optional ~ore_xml_template~.
+4. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
+   ~parent_workspace_id~ inserts/updates.
+5. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~.
 6. Run ~recreate_database.sh~; validate schemas.
 
 ** Phase 2: Service layer
@@ -426,7 +454,8 @@ are reused.
    parameter; default to ~[0]~ (live only).
 2. Resolution order computation: recursive CTE exposed as a helper function.
 3. New NATS endpoints: ~workspace.v1.list~, ~workspace.v1.create~,
-   ~workspace.v1.parents.set~, ~workspace.v1.archive~, ~workspace.v1.copy~.
+   ~workspace.v1.archive~, ~workspace.v1.copy~, ~workspace.v1.exclusions.add~,
+   ~workspace.v1.exclusions.remove~.
 4. Extend report definition endpoints to accept and return ~workspace_id~.
 
 ** Phase 3: UI — workspace context propagation
@@ -450,32 +479,41 @@ are reused.
    [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] plan).
 2. Create workspace per top-level import group.
 3. Import all data types into the workspace using workspace-aware inserts.
-4. Store ~ore.xml~ verbatim as ~ore_xml_template~ in a new report definition
-   per orchestration file found.
+4. Parse each orchestration XML; create a report definition per file with
+   structured settings (analytics type, simulation parameters, etc.) — no
+   raw XML stored.
 5. Parent-chain: importer can optionally create a parent workspace for the
-   batch root and make each group workspace a child of it.
+   batch root and make each group workspace a child of it via
+   ~parent_workspace_id~.
 
 * Open Questions
 
-1. *Multiple parents in practice*: single-parent chains cover the common trader
-   use case (inherit from live, override a few curves).  Multiple parents are
-   supported in the schema but the UI for creating multi-parent workspaces needs
-   careful design to avoid confusion.  Consider restricting the creation UI to
-   one parent for now while keeping the schema general.
+1. *Exclusion inheritance*: exclusions are currently local to the declaring
+   workspace.  A child workspace does not automatically inherit its parent's
+   exclusions.  If a trader's workspace W5 (child of Live) excludes trade
+   IRS_001, a child W8 of W5 still sees IRS_001 unless it adds its own
+   exclusion row.  Whether exclusions should propagate down is a UX decision
+   — propagation is safer but more surprising.  Start with local-only.
 
-2. *Tombstones*: if a workspace wants to hide a row inherited from a parent
-   (e.g. "delete this trade for my what-if run"), there is currently no
-   mechanism.  A tombstone row (a record flagged as deleted in the current
-   workspace) would handle this but adds query complexity.  Deferred.
+2. *risk_report_config extension scope*: ORE orchestration XMLs contain many
+   settings beyond analytics type (simulation grid, sensitivity configs,
+   scenario definitions, etc.).  Define which settings need structured fields
+   in ~risk_report_config~ for Phase 5 (ORE sample importer) versus which can
+   be deferred.  At minimum: analytics type, as-of date, market configuration
+   references.
 
-3. *Conflict visibility*: when two parents have the same natural key, the
-   higher-priority parent wins silently.  The UI should surface conflicts so
-   users know that workspace 5's EUR curve is shadowing workspace 6's version.
-
-4. *Report definition scheduling in non-live workspaces*: the existing
+3. *Report definition scheduling in non-live workspaces*: the existing
    reporting scheduler is designed for live data.  Should report definitions
    in non-live workspaces be schedulable, or run-on-demand only?  On-demand
    only is the simpler starting point.
 
-5. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
+4. *Archive semantics*: proposed: immediate hide from normal selectors; data
+   retained; restoration allowed via explicit "show archived" filter.
+
+5. *Workspace storage reporting*: large ORE sample imports may need per-workspace
+   row counts or storage estimates visible in the Data Workshop.  The product
+   backlog mentions a Baobab-style map for workspace visualisation.  Deferred
+   to Phase 4.
+
+6. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
    Phase 4 begins.

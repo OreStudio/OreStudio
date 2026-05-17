@@ -292,10 +292,10 @@ void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.lifecycle.termination_date.value_or("")));
     }
 
-    if (current.execution_timestamp != previous.execution_timestamp) {
+    if (current.lifecycle.execution_timestamp != previous.lifecycle.execution_timestamp) {
         addChange("Execution Timestamp",
-                  QString::fromStdString(previous.execution_timestamp.value_or("")),
-                  QString::fromStdString(current.execution_timestamp.value_or("")));
+                  QString::fromStdString(previous.lifecycle.execution_timestamp.value_or("")),
+                  QString::fromStdString(current.lifecycle.execution_timestamp.value_or("")));
     }
 
 
@@ -323,7 +323,7 @@ void TradeHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->tradeDateValue->setText(QString::fromStdString(version.lifecycle.trade_date.value_or("")));
     ui_->effectiveDateValue->setText(QString::fromStdString(version.lifecycle.effective_date.value_or("")));
     ui_->terminationDateValue->setText(QString::fromStdString(version.lifecycle.termination_date.value_or("")));
-    ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp.value_or("")));
+    ui_->executionTimestampValue->setText(QString::fromStdString(version.lifecycle.execution_timestamp.value_or("")));
     ui_->versionNumberValue->setText(QString::number(version.identity.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.audit.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.audit.recorded_at));
@@ -347,7 +347,7 @@ void TradeHistoryDialog::onOpenVersionClicked() {
     int row = selected.first()->row();
     if (static_cast<size_t>(row) >= versions_.size()) return;
 
-    emit openVersionRequested(versions_[row], versions_[row].version);
+    emit openVersionRequested(versions_[row], versions_[row].identity.version);
 }
 
 void TradeHistoryDialog::onRevertClicked() {

@@ -55,7 +55,10 @@ fi
 BIN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/bin"
 RUN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/run"
 
+_stop_start_ts=$(date +%s)
+_stop_start_dt=$(date '+%Y-%m-%d %H:%M:%S')
 echo "Stopping ORE Studio services ($PRESET)"
+echo "  Start  : $_stop_start_dt"
 echo ""
 
 shopt -s nullglob
@@ -179,4 +182,8 @@ if [[ $((total_stopped + total_gone)) -eq 0 ]]; then
     exit 0
 fi
 
-echo "Stopped $total_stopped service(s)${total_gone:+, $total_gone already gone}."
+_stop_end_ts=$(date +%s)
+echo "Stopped  : $total_stopped service(s)${total_gone:+, $total_gone already gone}."
+echo "Started  : $_stop_start_dt"
+echo "Finished : $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Time     : $(( _stop_end_ts - _stop_start_ts ))s"

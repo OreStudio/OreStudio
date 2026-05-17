@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,27 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Tenants Notification Trigger
--- Sends notifications on tenant changes for real-time UI updates.
--- =============================================================================
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
 create or replace function ores_iam_tenants_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
     entity_name text := 'ores.iam.tenant';
-    change_timestamp timestamptz := now();
-    changed_id text;
+    change_timestamp timestamptz := NOW();
+    changed_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := old.id::text;
-        changed_tenant_id := old.tenant_id::text;
+        changed_id := OLD.id;
+        changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := new.id::text;
-        changed_tenant_id := new.tenant_id::text;
+        changed_id := NEW.id;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
@@ -47,7 +47,8 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_tenants', notification_payload::text);
+    perform pg_notify('ores_iam_tenants', notification_payload::text);
+
     return null;
 end;
 $$ language plpgsql;

@@ -1337,6 +1337,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(
             'index_prefix', domain_entity.get('entity_plural', 'unknown'))
+        # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
+        # is set but neither system_scope nor nullable_tenant_id overrides the PK.
+        has_tenant_id = domain_entity.get('has_tenant_id', False)
+        domain_entity['has_tenant_in_pk'] = (
+            has_tenant_id
+            and not sql_section.get('system_scope', False)
+            and not sql_section.get('nullable_tenant_id', False)
+        )
+        # Mark last items in new iterable sql sub-sections for template rendering
+        if 'fk_copy_validations' in sql_section:
+            _mark_last_item(sql_section['fk_copy_validations'])
+            for fkc in sql_section['fk_copy_validations']:
+                if 'declare_vars' in fkc:
+                    _mark_last_item(fkc['declare_vars'])
+                if 'copy_empty' in fkc:
+                    _mark_last_item(fkc['copy_empty'])
+        if 'text_code_validations' in sql_section:
+            _mark_last_item(sql_section['text_code_validations'])
+        if 'extra_delete_sets' in sql_section:
+            _mark_last_item(sql_section['extra_delete_sets'])
         # Add computed properties for primary key type detection
         if 'primary_key' in domain_entity:
             pk = domain_entity['primary_key']
@@ -1344,7 +1364,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             pk['is_uuid'] = pk_type == 'uuid'
             pk['is_text'] = pk_type == 'text'
             if pk['is_uuid'] and 'uuid_check_fn' not in pk:
-                pk['uuid_check_fn'] = 'ores_utility_system_tenant_id_fn()'
+                pk['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
             # Ensure cpp_type is set with sensible defaults
             if 'cpp_type' not in pk:
                 if pk['is_uuid']:

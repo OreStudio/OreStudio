@@ -14,23 +14,27 @@
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
-      "description": "UUID uniquely identifying this report instance."
+      "description": "UUID uniquely identifying this report instance.",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
 
-    "columns": [
+    "natural_keys": [
       {
-        "name": "name",
+        "column": "name",
         "type": "text",
         "cpp_type": "std::string",
-        "nullable": false,
         "description": "Human-readable name copied from the report definition at creation time.",
         "generator_expr": "std::string(faker::word::noun()) + \"_instance\""
-      },
+      }
+    ],
+
+    "columns": [
       {
         "name": "description",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "''",
         "description": "Description copied from the report definition at creation time.",
         "generator_expr": "std::string(faker::lorem::sentence())"
       },
@@ -71,12 +75,13 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "''",
         "description": "Execution log or error message.",
         "generator_expr": "std::string()"
       },
       {
         "name": "started_at",
-        "type": "timestamp",
+        "type": "timestamp with time zone",
         "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
         "nullable": true,
         "description": "When execution began. NULL if cancelled before starting.",
@@ -84,7 +89,7 @@
       },
       {
         "name": "completed_at",
-        "type": "timestamp",
+        "type": "timestamp with time zone",
         "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
         "nullable": true,
         "description": "When execution completed. NULL while running or before start.",
@@ -93,8 +98,60 @@
     ],
 
     "sql": {
-      "tablename": "ores_reporting_report_instances_tbl"
+      "tablename": "ores_reporting_report_instances_tbl",
+      "security_definer": true,
+      "extra_checks": [
+        "\"name\" <> ''",
+        "\"completed_at\" is null or \"started_at\" is not null"
+      ],
+      "soft_fk_validations": [
+        {
+          "column": "party_id",
+          "table": "ores_refdata_parties_tbl",
+          "nullable": false,
+          "error_message": "Invalid party_id: %. No active party found with this id."
+        },
+        {
+          "column": "fsm_state_id",
+          "table": "ores_dq_fsm_states_tbl",
+          "nullable": true,
+          "use_system_tenant": true,
+          "error_message": "Invalid fsm_state_id: %. No active FSM state found with this id."
+        }
+      ],
+      "fk_copy_validations": [
+        {
+          "column": "definition_id",
+          "table": "ores_reporting_report_definitions_tbl",
+          "error_message": "Invalid definition_id: %. No active report definition found with this id.",
+          "select_fields": "name, description",
+          "into_vars": "def_name, def_description",
+          "declare_vars": [
+            {"name": "def_name",        "type": "text"},
+            {"name": "def_description", "type": "text"}
+          ],
+          "copy_empty": [
+            {"target": "name",        "source": "def_name",        "coalesce": false},
+            {"target": "description", "source": "def_description", "coalesce": true}
+          ]
+        }
+      ]
     },
+
+    "indexes": [
+      {
+        "name": "definition",
+        "unique": false,
+        "columns": "tenant_id, definition_id",
+        "current_only": true
+      },
+      {
+        "name": "fsm_state",
+        "unique": false,
+        "columns": "tenant_id, fsm_state_id",
+        "current_only": true
+      }
+    ],
 
     "repository": {
       "entity_singular_short": "instance",

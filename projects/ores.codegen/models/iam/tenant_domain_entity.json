@@ -1,10 +1,12 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "iam",
     "entity_singular": "tenant",
     "entity_plural": "tenants",
     "entity_title": "Tenant",
+    "has_tenant_id": true,
     "brief": "A tenant representing an isolated organisation or the system platform.",
     "description": "Core entity for multi-tenancy support. Each tenant represents an isolated\norganisation with its own users, roles, and data. The system tenant (UUID all zeros)\nis a special tenant used for shared reference data and system administration.\n\nTenants are identified by:\n- id: UUID primary key (SQL also has tenant_id = id for self-reference)\n- code: Unique text code for stable referencing (e.g., 'system', 'acme')\n- hostname: Unique hostname for tenant routing during login",
 
@@ -13,7 +15,8 @@
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID uniquely identifying this tenant.",
-      "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records."
+      "detail": "The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records.",
+      "skip_uuid_check": true
     },
 
     "natural_keys": [
@@ -24,17 +27,18 @@
         "description": "Unique code for stable referencing.",
         "detail": "Examples: 'system', 'acme', 'demo'.",
         "generator_expr": "std::string(faker::word::noun()) + \"_tenant\""
-      },
-      {
-        "column": "name",
-        "type": "text",
-        "cpp_type": "std::string",
-        "description": "Human-readable name for the tenant.",
-        "generator_expr": "std::string(faker::company::name())"
       }
     ],
 
     "columns": [
+      {
+        "name": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Human-readable display name for the tenant.",
+        "generator_expr": "std::string(faker::company::name())"
+      },
       {
         "name": "type",
         "type": "text",
@@ -70,8 +74,41 @@
     ],
 
     "sql": {
-      "tablename": "ores_iam_tenants_tbl"
+      "tablename": "ores_iam_tenants_tbl",
+      "system_scope": true,
+      "extra_checks": [
+        "\"id\" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or \"code\" = 'system'",
+        "\"tenant_id\" = ores_utility_system_tenant_id_fn()",
+        "\"code\" <> ''",
+        "\"hostname\" <> ''"
+      ],
+      "text_code_validations": [
+        {
+          "column": "type",
+          "table": "ores_iam_tenant_types_tbl",
+          "lookup_column": "type",
+          "error_message": "Invalid tenant type: %. Must exist in ores_iam_tenant_types_tbl."
+        },
+        {
+          "column": "status",
+          "table": "ores_iam_tenant_statuses_tbl",
+          "lookup_column": "status",
+          "error_message": "Invalid tenant status: %. Must exist in ores_iam_tenant_statuses_tbl."
+        }
+      ],
+      "extra_delete_sets": [
+        "status = 'terminated'"
+      ]
     },
+
+    "indexes": [
+      {
+        "name": "hostname_uniq",
+        "unique": true,
+        "columns": "hostname",
+        "current_only": true
+      }
+    ],
 
     "repository": {
       "entity_singular_short": "tenant",

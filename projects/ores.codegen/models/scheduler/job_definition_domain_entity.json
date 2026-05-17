@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "scheduler",
     "entity_singular": "job_definition",
     "entity_plural": "job_definitions",
@@ -14,57 +15,116 @@
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
-      "description": "UUID primary key for the job definition."
+      "description": "UUID primary key for the job definition.",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
 
     "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional party scope for this job (NULL for tenant-scoped or system jobs)."
+      },
       {
         "name": "job_name",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Unique name passed to pg_cron."
+        "description": "Unique name for the scheduled job."
       },
       {
         "name": "description",
         "type": "text",
         "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Human-readable label for UI."
+        "nullable": false,
+        "default": "''",
+        "description": "Human-readable description of the job."
       },
       {
         "name": "command",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "SQL command to execute."
+        "default": "''",
+        "description": "SQL command to execute (used when action_type = execute_sql)."
       },
       {
         "name": "schedule_expression",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Validated cron expression (stored as string, typed as cron_expression)."
+        "description": "Cron expression defining the schedule."
       },
       {
-        "name": "database_name",
+        "name": "action_type",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Target PostgreSQL database name."
+        "default": "'execute_sql'",
+        "description": "Execution mode: execute_sql or nats_publish."
+      },
+      {
+        "name": "action_payload",
+        "type": "jsonb",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'{}'::jsonb",
+        "description": "Payload for nats_publish action type."
       },
       {
         "name": "is_active",
-        "type": "boolean",
-        "cpp_type": "bool",
+        "type": "integer",
+        "cpp_type": "int",
         "nullable": false,
-        "description": "False = paused (unscheduled from pg_cron)."
+        "default": "1",
+        "description": "1 = active, 0 = paused."
       }
     ],
 
     "sql": {
-      "tablename": "ores_scheduler_job_definitions_tbl"
+      "tablename": "ores_scheduler_job_definitions_tbl",
+      "nullable_tenant_id": true,
+      "security_definer": true,
+      "extra_checks": [
+        "\"job_name\" <> ''",
+        "action_type in ('execute_sql','nats_publish')",
+        "action_type != 'execute_sql' or \"command\" <> ''",
+        "\"schedule_expression\" <> ''"
+      ],
+      "soft_fk_validations": [
+        {
+          "column": "party_id",
+          "table": "ores_refdata_parties_tbl",
+          "nullable": true,
+          "error_message": "Invalid party_id: %. No active party found with this id."
+        }
+      ]
     },
+
+    "indexes": [
+      {
+        "name": "name_tenant_uniq",
+        "unique": true,
+        "columns": "tenant_id, job_name",
+        "current_only": true,
+        "where_extra": "tenant_id is not null"
+      },
+      {
+        "name": "name_system_uniq",
+        "unique": true,
+        "columns": "job_name",
+        "current_only": true,
+        "where_extra": "tenant_id is null"
+      },
+      {
+        "name": "party",
+        "unique": false,
+        "columns": "tenant_id, party_id",
+        "current_only": true
+      }
+    ],
 
     "repository": {
       "entity_singular_short": "definition",

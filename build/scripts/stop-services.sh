@@ -127,17 +127,17 @@ wait_for_pids() {
 
 echo "[Controller]"
 ctrl_pid_file="$RUN_DIR/ores.controller.service.pid"
-if [[ ! -f "$ctrl_pid_file" ]]; then
-    echo "error: no PID file for ores.controller.service ($ctrl_pid_file)" >&2
-    echo "       is the controller running? start with: ./build/scripts/start-services.sh" >&2
-    exit 1
-fi
 ctrl_pids=()
-stop_service "ores.controller.service"
-[[ -n "$STOP_PID" ]] && ctrl_pids+=("$STOP_PID")
-echo ""
-# Give the controller up to 30 s: it must stop all children before it exits.
-wait_for_pids "controller" 30 "${ctrl_pids[@]}"
+if [[ ! -f "$ctrl_pid_file" ]]; then
+    echo "  skip    ores.controller.service (no PID file — already stopped)"
+    total_gone=$((total_gone + 1))
+else
+    stop_service "ores.controller.service"
+    [[ -n "$STOP_PID" ]] && ctrl_pids+=("$STOP_PID")
+    echo ""
+    # Give the controller up to 30 s: it must stop all children before it exits.
+    wait_for_pids "controller" 30 "${ctrl_pids[@]}"
+fi
 
 # Clean up any leftover PID files for dead processes.
 for f in "$RUN_DIR"/*.pid; do

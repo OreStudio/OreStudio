@@ -33,6 +33,7 @@
 #include <QVBoxLayout>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
@@ -318,9 +319,8 @@ private:
 /**
  * @brief Results page showing per-dataset publication outcomes.
  *
- * Displays a table of results for each dataset in the bundle,
- * including record counts for inserts, updates, skips, deletes,
- * and any error messages.
+ * Shows the workflow step progress for the dispatched publication and
+ * blocks the Finish button until the workflow reaches a terminal state.
  */
 class PublishResultsPage final : public QWizardPage {
     Q_OBJECT
@@ -328,6 +328,7 @@ class PublishResultsPage final : public QWizardPage {
 public:
     explicit PublishResultsPage(PublishBundleWizard* wizard);
     void initializePage() override;
+    bool isComplete() const override;
 
     /**
      * @brief Set results data for display.
@@ -339,18 +340,20 @@ public:
                     const std::string& instanceId = {},
                     int datasetsDispatched = 0);
 
+private slots:
+    void onWorkflowComplete(bool success);
+
 private:
     void setupUI();
-    void populateResults();
 
     PublishBundleWizard* wizard_;
     QLabel* overallStatusLabel_;
-    QLabel* instanceIdLabel_;
+    WorkflowStepsWidget* stepsWidget_ = nullptr;
 
     bool overallSuccess_ = false;
     QString errorMessage_;
     std::string instanceId_;
-    int datasetsDispatched_ = 0;
+    bool workflowComplete_ = false;
 };
 
 }

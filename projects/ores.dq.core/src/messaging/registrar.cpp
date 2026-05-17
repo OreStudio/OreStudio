@@ -30,6 +30,7 @@
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.dq.core/messaging/fsm_handler.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
@@ -43,6 +44,7 @@
 #include "ores.dq.core/messaging/lei_entity_handler.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.dq.core/messaging/report_definition_template_handler.hpp"
 
 namespace ores::dq::messaging {
 
@@ -423,6 +425,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_lei_entities_summary_request::nats_subject, queue_group,
         [lei](ores::nats::message msg) { lei->summary(std::move(msg)); }));
+
+    // =========================================================================
+    // Report Definition Templates (served from DQ artefact tables)
+    // =========================================================================
+
+    {
+        auto rdt = std::make_shared<report_definition_template_handler>(
+            nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            list_dq_report_definition_templates_request::nats_subject, queue_group,
+            [rdt](ores::nats::message msg) { rdt->list(std::move(msg)); }));
+    }
 
     // =========================================================================
     // Badges (severities, code domains, definitions, mappings)

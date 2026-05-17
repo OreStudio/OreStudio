@@ -36,6 +36,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 
@@ -368,18 +369,23 @@ public:
     void initializePage() override;
     bool isComplete() const override;
 
+private slots:
+    void onWorkflowComplete(bool success);
+
 private:
     void startPublish();
     void startBundlePublish();
+    void startPartyAssociation();
     void startSyntheticGeneration();
-    void appendLog(const QString& message);
 
     TenantProvisioningWizard* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
-    QTextEdit* logOutput_;
+    WorkflowStepsWidget* stepsWidget_ = nullptr;
     bool publishComplete_ = false;
     bool publishSuccess_ = false;
+    // Stored for party association phase (phase 2)
+    std::string publishedBy_;
 };
 
 /**

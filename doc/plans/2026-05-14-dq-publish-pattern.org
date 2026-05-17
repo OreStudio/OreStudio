@@ -571,6 +571,53 @@ A side benefit: any operator-facing workflow monitor (planned in
 visibility into in-flight publishes, with no additional wiring. The
 publish path is no longer a special case.
 
+* Implementation Status
+
+Branch: ~feature/dq-publish-pattern~
+
+** SQL phase
+
+- [X] New ~ores_refdata_publish_*_from_dq_fn~ functions (22) in refdata SQL tree
+- [X] New ~ores_assets_publish_images_from_dq_fn~ in assets SQL tree
+- [X] New ~ores_reporting_publish_report_definitions_from_dq_fn~ in reporting SQL tree
+- [X] ~ores_dq_ip2country_publish_fn~ and ~ores_dq_coding_schemes_publish_fn~ for DQ-owned tables
+- [X] ~dataset_id uuid~ added to ~ores_dq_bundle_datasets_list_fn~ return type
+- [X] ~target_subject~ column added to bundle dataset list (replacing ~populate_function~ dispatch)
+- [X] Delete old ~ores_dq_*_publish_fn~ functions that write to non-DQ tables (~25 deletions)
+- [X] Delete ~ores_dq_bundles_publish_fn~ (SQL bundle orchestrator)
+- [X] Grants file regeneration: remove DQ-side EXECUTE grants on deleted populate functions
+- [X] Revert the three tactical workaround changes listed under "Current state on this branch"
+
+** C++ phase
+
+- [X] ~publish_from_dq_protocol.hpp~ — ~publish_from_dq_command~ / ~publish_from_dq_result~
+- [X] ~bundle_publish_workflow.hpp~ — workflow definition + ~register_bundle_publish_workflow()~
+- [X] ~publish_bundle_response~ updated to async semantics (~instance_id~, ~datasets_dispatched~)
+- [X] ~publication_service.cpp~ — ~publish_bundle()~ replaced by ~list_bundle_publishable_datasets()~
+- [X] ~publication_handler.hpp~ — ~publish_bundle~ starts a workflow, returns ~instance_id~
+- [X] Workflow service registrar — ~register_bundle_publish_workflow(*registry)~ added
+- [X] ~ores.refdata.core~ — ~publish_from_dq_handler~ + 22-subject registration in registrar
+- [X] ~ores.assets.core~ — ~publish_from_dq_handler~ + 1-subject registration (~images~)
+- [X] ~ores.reporting.core~ — ~publish_from_dq_handler~ + 1-subject registration (~report-definitions~)
+- [X] ~ores.dq.core~ — ~publish_from_dq_handler~ + 2-subject registration (~ip2country~, ~coding-schemes~)
+- [X] CMake: ~ores.dq.api~ added as PRIVATE dependency to assets/refdata/reporting core
+- [X] ~dq.v1.report-definition-templates.list~ NATS endpoint in DQ service
+- [X] ~report_definition_template_service::list_templates~ — remove cross-service SELECT, use NATS call
+
+** UI phase
+
+- [X] ~PublishBundleWizard~ — results page shows workflow instance id + datasets dispatched count
+- [X] ~TenantProvisioningWizard~ — success path updated for async response
+- [X] ~PartyProvisioningWizard~ — success path updated for async response
+- [X] ~PublishBundleWizard~ — replace results page with ~WorkflowStepsWidget~ bound to ~instance_id~
+- [X] ~TenantProvisioningWizard~ — replace status label with ~WorkflowStepsWidget~ (two-phase: workflow→party association)
+- [X] ~PartyProvisioningWizard~ — replace status label with ~WorkflowStepsWidget~
+- [ ] ~DataLibrarianWindow~ / ~PublishDatasetsDialog~ — replace summary with ~WorkflowStepsWidget~
+
+** Documentation
+
+- [X] ~projects/modeling/system_model.org~ — add "Publish exception" architectural rule
+
 * Open Questions
 
 1. *Seed-time inversions.* Some populate scripts owned by service S

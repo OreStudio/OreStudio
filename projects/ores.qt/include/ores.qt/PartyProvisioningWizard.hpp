@@ -33,6 +33,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 #include "ores.reporting.api/domain/report_definition_template.hpp"
 
 namespace ores::qt {
@@ -190,12 +191,11 @@ public:
 
 private:
     void startPublish();
-    void appendLog(const QString& message);
 
     PartyProvisioningWizard* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
-    QTextEdit* logOutput_;
+    WorkflowStepsWidget* stepsWidget_ = nullptr;
     bool publishComplete_ = false;
     bool publishSuccess_ = false;
 };

@@ -696,32 +696,40 @@ void PublishResultsPage::setupUI() {
 
     layout->addSpacing(10);
 
-    instanceIdLabel_ = new QLabel(this);
-    instanceIdLabel_->setWordWrap(true);
-    instanceIdLabel_->setStyleSheet("color: #888888;");
-    layout->addWidget(instanceIdLabel_);
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    layout->addWidget(stepsWidget_, 1);
 
-    layout->addStretch();
+    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+            this, &PublishResultsPage::onWorkflowComplete);
 }
 
 void PublishResultsPage::setResults(
     bool overallSuccess,
     const QString& errorMessage,
     const std::string& instanceId,
-    int datasetsDispatched) {
+    int) {
 
     overallSuccess_ = overallSuccess;
     errorMessage_ = errorMessage;
     instanceId_ = instanceId;
-    datasetsDispatched_ = datasetsDispatched;
 }
 
 void PublishResultsPage::initializePage() {
+    workflowComplete_ = false;
+
     if (overallSuccess_) {
         overallStatusLabel_->setText(
-            tr("Publication workflow started successfully."));
+            tr("Publication workflow started — waiting for completion..."));
         overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #228B22;");
+            "font-size: 14px; font-weight: bold;");
+        if (!instanceId_.empty()) {
+            stepsWidget_->setVisible(true);
+            stepsWidget_->setInstance(
+                QUuid::fromString(QString::fromStdString(instanceId_)));
+        } else {
+            workflowComplete_ = true;
+        }
     } else {
         QString msg = tr("Publication failed.");
         if (!errorMessage_.isEmpty()) {
@@ -730,20 +738,28 @@ void PublishResultsPage::initializePage() {
         overallStatusLabel_->setText(msg);
         overallStatusLabel_->setStyleSheet(
             "font-size: 14px; font-weight: bold; color: #cc0000;");
+        workflowComplete_ = true;
     }
 
-    populateResults();
+    emit completeChanged();
 }
 
-void PublishResultsPage::populateResults() {
-    if (overallSuccess_ && !instanceId_.empty()) {
-        instanceIdLabel_->setText(
-            tr("%1 datasets dispatched to workflow.\nInstance ID: %2")
-                .arg(datasetsDispatched_)
-                .arg(QString::fromStdString(instanceId_)));
+bool PublishResultsPage::isComplete() const {
+    return workflowComplete_;
+}
+
+void PublishResultsPage::onWorkflowComplete(bool success) {
+    if (success) {
+        overallStatusLabel_->setText(tr("Publication workflow completed successfully."));
+        overallStatusLabel_->setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: #228B22;");
     } else {
-        instanceIdLabel_->clear();
+        overallStatusLabel_->setText(tr("Publication workflow completed with errors."));
+        overallStatusLabel_->setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: #cc0000;");
     }
+    workflowComplete_ = true;
+    emit completeChanged();
 }
 
 }

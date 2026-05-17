@@ -75,6 +75,7 @@ target_link_libraries(${lib_target_name}
         ores.synthetic.api.lib
         ores.assets.api.lib
         ores.workflow.core.lib
+        ores.qt.workflow.lib
         ores.connections.lib
         ores.variability.api.lib
         ores.telemetry.core.lib

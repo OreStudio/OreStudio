@@ -737,7 +737,7 @@ TenantPartyOrganisationPage::TenantPartyOrganisationPage(
     layout->addWidget(statusLabel_);
 
     progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setRange(0, 0);
     progressBar_->setTextVisible(false);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
@@ -745,10 +745,12 @@ TenantPartyOrganisationPage::TenantPartyOrganisationPage(
         "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
-    logOutput_ = new QTextEdit(this);
-    logOutput_->setReadOnly(true);
-    logOutput_->setFont(FontUtils::monospace());
-    layout->addWidget(logOutput_);
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    layout->addWidget(stepsWidget_, 1);
+
+    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+            this, &TenantPartyOrganisationPage::onWorkflowComplete);
 }
 
 bool TenantPartyOrganisationPage::isComplete() const {
@@ -758,7 +760,7 @@ bool TenantPartyOrganisationPage::isComplete() const {
 void TenantPartyOrganisationPage::initializePage() {
     publishComplete_ = false;
     publishSuccess_ = false;
-    logOutput_->clear();
+    stepsWidget_->setVisible(false);
     progressBar_->setRange(0, 0);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
@@ -782,13 +784,6 @@ void TenantPartyOrganisationPage::initializePage() {
     startPublish();
 }
 
-void TenantPartyOrganisationPage::appendLog(const QString& message) {
-    logOutput_->append(message);
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
-}
-
 void TenantPartyOrganisationPage::startPublish() {
     const bool isSynthetic = wizard_->dataSourceMode() ==
         TenantProvisioningWizard::DataSourceMode::synthetic;
@@ -800,7 +795,7 @@ void TenantPartyOrganisationPage::startPublish() {
 }
 
 void TenantPartyOrganisationPage::startBundlePublish() {
-    const std::string publishedBy = wizard_->clientManager()->currentUsername();
+    publishedBy_ = wizard_->clientManager()->currentUsername();
     ClientManager* clientManager = wizard_->clientManager();
     const std::string rootLei = wizard_->rootLei().toStdString();
     const bool hasLei = !rootLei.empty();
@@ -810,61 +805,148 @@ void TenantPartyOrganisationPage::startBundlePublish() {
                               << (hasLei ? " with root LEI: " : "")
                               << rootLei;
 
-    // Build LEI params for re-publishing the base bundle with opt-in datasets
-    std::string leiParamsJson = "{}";
-    if (hasLei) {
-        dq::messaging::publish_bundle_params leiParams;
-        leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
-        const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-        const std::string size = datasetSize.empty() ? "small" : datasetSize;
-        leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
-        leiParamsJson = dq::messaging::build_params_json(leiParams);
+    if (!hasLei) {
+        // No LEI — skip publish, go straight to party association
+        statusLabel_->setText(tr("No root LEI selected — skipping GLEIF publication."));
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+        startPartyAssociation();
+        return;
     }
 
-    struct PublishResult {
+    // Build LEI params for the bundle publish
+    dq::messaging::publish_bundle_params leiParams;
+    leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
+    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+    const std::string size = datasetSize.empty() ? "small" : datasetSize;
+    leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
+    const std::string leiParamsJson = dq::messaging::build_params_json(leiParams);
+
+    struct Phase1Result {
         bool success = false;
         std::string error_message;
-        bool has_lei = false;
         std::string instance_id;
         int datasets_dispatched = 0;
-        int parties_linked = 0;
     };
 
-    auto* watcher = new QFutureWatcher<PublishResult>(this);
-    connect(watcher, &QFutureWatcher<PublishResult>::finished,
+    statusLabel_->setText(tr("Publishing GLEIF LEI parties (root: %1, dataset: %2)...")
+        .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
+
+    auto* watcher = new QFutureWatcher<Phase1Result>(this);
+    connect(watcher, &QFutureWatcher<Phase1Result>::finished,
             [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
         if (!result.success) {
             BOOST_LOG_SEV(lg(), error)
-                << "Organisation publication failed: " << result.error_message;
+                << "Bundle publish failed: " << result.error_message;
             statusLabel_->setText(tr("Organisation setup failed!"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error_message)));
+            statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
+            progressBar_->setRange(0, 1);
+            progressBar_->setValue(1);
             progressBar_->setStyleSheet(
                 "QProgressBar::chunk { background-color: #cc0000; }");
             publishSuccess_ = false;
+            publishComplete_ = true;
+            emit completeChanged();
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Bundle publish started: " << result.datasets_dispatched
+            << " datasets dispatched, instance=" << result.instance_id;
+
+        // Hide the indeterminate bar and show step progress widget
+        progressBar_->setVisible(false);
+        statusLabel_->setText(tr("Waiting for GLEIF party workflow to complete..."));
+        stepsWidget_->setVisible(true);
+        stepsWidget_->setInstance(
+            QUuid::fromString(QString::fromStdString(result.instance_id)));
+        // onWorkflowComplete slot will fire via instanceReachedTerminalState
+    });
+
+    QFuture<Phase1Result> future = QtConcurrent::run(
+        [clientManager, publishedBy = publishedBy_, leiParamsJson, selectedBundle]()
+            -> Phase1Result {
+
+            Phase1Result result;
+            dq::messaging::publish_bundle_request leiRequest;
+            leiRequest.bundle_code = selectedBundle;
+            leiRequest.mode = dq::domain::publication_mode::upsert;
+            leiRequest.published_by = publishedBy;
+            leiRequest.atomic = true;
+            leiRequest.params_json = leiParamsJson;
+
+            auto leiResult = clientManager->process_authenticated_request(
+                std::move(leiRequest), std::chrono::minutes(5));
+
+            if (!leiResult) {
+                result.error_message = "Failed to communicate with server (GLEIF parties)";
+                return result;
+            }
+            if (!leiResult->success) {
+                result.error_message = leiResult->error_message;
+                return result;
+            }
+            result.success = true;
+            result.instance_id = leiResult->instance_id;
+            result.datasets_dispatched = leiResult->datasets_dispatched;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void TenantPartyOrganisationPage::onWorkflowComplete(bool success) {
+    if (!success) {
+        BOOST_LOG_SEV(lg(), error) << "GLEIF party workflow failed";
+        statusLabel_->setText(tr("GLEIF party workflow completed with errors."));
+        statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
+        publishSuccess_ = false;
+        publishComplete_ = true;
+        emit completeChanged();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "GLEIF party workflow completed successfully";
+    statusLabel_->setText(tr("GLEIF parties imported — associating tenant admin..."));
+    startPartyAssociation();
+}
+
+void TenantPartyOrganisationPage::startPartyAssociation() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    struct Phase2Result {
+        bool success = false;
+        std::string error_message;
+        int parties_linked = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<Phase2Result>(this);
+    connect(watcher, &QFutureWatcher<Phase2Result>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Party association failed: " << result.error_message;
+            statusLabel_->setText(tr("Organisation setup failed: %1").arg(
+                QString::fromStdString(result.error_message)));
+            statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
+            publishSuccess_ = false;
         } else {
             BOOST_LOG_SEV(lg(), info)
-                << "Organisation setup succeeded: "
-                << result.datasets_dispatched << " datasets dispatched, "
-                << result.parties_linked << " parties linked"
-                << (result.has_lei ? "" : " (no root LEI selected)");
-            statusLabel_->setText(tr("Organisation setup complete!"));
-            if (result.has_lei) {
-                appendLog(tr("Publication workflow started: %1 datasets dispatched.")
-                    .arg(result.datasets_dispatched));
-            } else {
-                appendLog(tr("No root LEI selected — GLEIF party publication skipped."));
-            }
-            if (result.parties_linked > 0) {
-                appendLog(tr("Tenant admin associated with %1 parties.")
-                    .arg(result.parties_linked));
-            }
+                << "Organisation setup complete: " << result.parties_linked
+                << " parties linked";
+            const QString partyMsg = result.parties_linked > 0
+                ? tr("Organisation setup complete — %1 parties linked.")
+                      .arg(result.parties_linked)
+                : tr("Organisation setup complete.");
+            statusLabel_->setText(partyMsg);
+            statusLabel_->setStyleSheet("font-weight: bold; color: #228B22;");
             wizard_->setPartiesLinkedCount(result.parties_linked);
             publishSuccess_ = true;
         }
@@ -873,46 +955,12 @@ void TenantPartyOrganisationPage::startBundlePublish() {
         emit completeChanged();
     });
 
-    QFuture<PublishResult> future = QtConcurrent::run(
-        [clientManager, publishedBy, leiParamsJson, hasLei, rootLei,
-         selectedBundle,
-         rootLeiName = wizard_->rootLeiName().toStdString(),
-         leiDatasetSize = wizard_->leiDatasetSize().toStdString()]()
-            -> PublishResult {
+    QFuture<Phase2Result> future = QtConcurrent::run(
+        [clientManager, publishedBy = publishedBy_]() -> Phase2Result {
+            Phase2Result result;
 
-            PublishResult result;
-            result.has_lei = hasLei;
-
-            // Step 1: Re-publish the selected bundle with root_lei params to
-            // filter GLEIF party data to the chosen hierarchy
-            if (hasLei) {
-                dq::messaging::publish_bundle_request leiRequest;
-                leiRequest.bundle_code = selectedBundle;
-                leiRequest.mode = dq::domain::publication_mode::upsert;
-                leiRequest.published_by = publishedBy;
-                leiRequest.atomic = true;
-                leiRequest.params_json = leiParamsJson;
-
-                auto leiResult = clientManager->process_authenticated_request(
-                    std::move(leiRequest), std::chrono::minutes(5));
-
-                if (!leiResult) {
-                    result.error_message = "Failed to communicate with server "
-                        "(GLEIF parties)";
-                    return result;
-                }
-                if (!leiResult->success) {
-                    result.error_message = leiResult->error_message;
-                    return result;
-                }
-                result.instance_id        = leiResult->instance_id;
-                result.datasets_dispatched = leiResult->datasets_dispatched;
-            }
-
-            // Step 2: Associate tenant admin with all Operational parties
             const auto accountId = clientManager->accountId();
             if (!accountId) {
-                // No account ID available - skip linking (non-fatal)
                 result.success = true;
                 return result;
             }
@@ -924,8 +972,7 @@ void TenantPartyOrganisationPage::startBundlePublish() {
                 std::move(partyReq));
 
             if (!partyResult) {
-                // Non-fatal: parties were created, just couldn't link admin
-                result.success = true;
+                result.success = true; // non-fatal
                 return result;
             }
 
@@ -939,8 +986,7 @@ void TenantPartyOrganisationPage::startBundlePublish() {
                 ap.tenant_id = party.tenant_id;
                 ap.modified_by = publishedBy;
                 ap.performed_by = publishedBy;
-                ap.change_reason_code =
-                    std::string(reason::codes::new_record);
+                ap.change_reason_code = std::string(reason::codes::new_record);
                 ap.change_commentary =
                     "Tenant provisioning: tenant admin associated with party";
                 apReq.account_parties.push_back(std::move(ap));
@@ -949,10 +995,9 @@ void TenantPartyOrganisationPage::startBundlePublish() {
             if (!apReq.account_parties.empty()) {
                 auto apResult = clientManager->process_authenticated_request(
                     std::move(apReq));
-                if (apResult && apResult->success) {
+                if (apResult && apResult->success)
                     result.parties_linked =
                         static_cast<int>(apReq.account_parties.size());
-                }
             }
 
             result.success = true;
@@ -961,12 +1006,6 @@ void TenantPartyOrganisationPage::startBundlePublish() {
     );
 
     watcher->setFuture(future);
-
-    if (hasLei) {
-        appendLog(tr("Publishing GLEIF LEI parties "
-                      "(root: %1, dataset: %2)...")
-            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
-    }
 }
 
 void TenantPartyOrganisationPage::startSyntheticGeneration() {
@@ -993,21 +1032,23 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
         if (!result.success) {
             BOOST_LOG_SEV(lg(), error)
                 << "Synthetic generation failed: " << result.error_message;
-            statusLabel_->setText(tr("Synthetic generation failed!"));
-            appendLog(tr("ERROR: %1").arg(
+            statusLabel_->setText(tr("Synthetic generation failed: %1").arg(
                 QString::fromStdString(result.error_message)));
+            statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
             progressBar_->setStyleSheet(
                 "QProgressBar::chunk { background-color: #cc0000; }");
             publishSuccess_ = false;
         } else {
             BOOST_LOG_SEV(lg(), info) << "Synthetic generation succeeded";
-            statusLabel_->setText(tr("Organisation setup complete!"));
-            appendLog(tr("Synthetic organisation data generated (%1 parties).")
-                .arg(result.parties_generated));
-            if (result.parties_linked > 0) {
-                appendLog(tr("Tenant admin associated with %1 parties.")
-                    .arg(result.parties_linked));
-            }
+            const QString msg = result.parties_linked > 0
+                ? tr("Organisation setup complete — %1 parties generated, "
+                      "%2 linked.")
+                      .arg(result.parties_generated)
+                      .arg(result.parties_linked)
+                : tr("Organisation setup complete — %1 parties generated.")
+                      .arg(result.parties_generated);
+            statusLabel_->setText(msg);
+            statusLabel_->setStyleSheet("font-weight: bold; color: #228B22;");
             wizard_->setPartiesLinkedCount(result.parties_linked);
             publishSuccess_ = true;
         }
@@ -1133,9 +1174,6 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
     );
 
     watcher->setFuture(future);
-
-    appendLog(tr("Generating synthetic parties, counterparties, and "
-                  "organisational structure..."));
 }
 
 // ============================================================================

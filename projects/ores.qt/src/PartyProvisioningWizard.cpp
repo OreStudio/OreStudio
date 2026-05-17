@@ -258,7 +258,7 @@ PartyOrganisationSetupPage::PartyOrganisationSetupPage(
     layout->addWidget(statusLabel_);
 
     progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setRange(0, 0);
     progressBar_->setTextVisible(false);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
@@ -266,10 +266,9 @@ PartyOrganisationSetupPage::PartyOrganisationSetupPage(
         "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
-    logOutput_ = new QTextEdit(this);
-    logOutput_->setReadOnly(true);
-    logOutput_->setFont(FontUtils::monospace());
-    layout->addWidget(logOutput_);
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    layout->addWidget(stepsWidget_, 1);
 }
 
 bool PartyOrganisationSetupPage::isComplete() const {
@@ -279,7 +278,7 @@ bool PartyOrganisationSetupPage::isComplete() const {
 void PartyOrganisationSetupPage::initializePage() {
     publishComplete_ = false;
     publishSuccess_ = false;
-    logOutput_->clear();
+    stepsWidget_->setVisible(false);
     progressBar_->setRange(0, 0);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
@@ -288,13 +287,6 @@ void PartyOrganisationSetupPage::initializePage() {
 
     statusLabel_->setText(tr("Importing counterparties and organisation data..."));
     startPublish();
-}
-
-void PartyOrganisationSetupPage::appendLog(const QString& message) {
-    logOutput_->append(message);
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
 }
 
 void PartyOrganisationSetupPage::startPublish() {
@@ -320,28 +312,37 @@ void PartyOrganisationSetupPage::startPublish() {
 
         if (!result || !result->success) {
             publishSuccess_ = false;
-            statusLabel_->setText(tr("Publication failed!"));
+            progressBar_->setRange(0, 1);
+            progressBar_->setValue(1);
             progressBar_->setStyleSheet(
                 "QProgressBar::chunk { background-color: #cc0000; }");
 
             if (!result) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Organisation publication: no server response";
-                appendLog(tr("ERROR: Failed to communicate with server."));
+                statusLabel_->setText(tr("Failed to communicate with server."));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Organisation publication failed: "
                     << result->error_message;
-                appendLog(tr("ERROR: %1").arg(
+                statusLabel_->setText(tr("Publication failed: %1").arg(
                     QString::fromStdString(result->error_message)));
             }
+            statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Organisation publication workflow started: "
                 << result->datasets_dispatched << " datasets dispatched";
-            statusLabel_->setText(tr("Organisation setup complete!"));
-            appendLog(tr("Publication workflow started: %1 datasets dispatched.")
-                .arg(result->datasets_dispatched));
+            statusLabel_->setText(
+                tr("Organisation workflow started — %1 datasets dispatched.")
+                    .arg(result->datasets_dispatched));
+            if (!result->instance_id.empty()) {
+                progressBar_->setVisible(false);
+                stepsWidget_->setVisible(true);
+                stepsWidget_->setInstance(
+                    QUuid::fromString(
+                        QString::fromStdString(result->instance_id)));
+            }
             publishSuccess_ = true;
             wizard_->setOrganisationPublished(true);
         }
@@ -404,11 +405,6 @@ void PartyOrganisationSetupPage::startPublish() {
     );
 
     watcher->setFuture(future);
-
-    appendLog(tr("[1/2] Importing GLEIF counterparties (dataset: %1)...")
-        .arg(QString::fromStdString(size)));
-    appendLog(tr("[2/2] Publishing organisation structure (business units, "
-                  "portfolios, books)..."));
 }
 
 // ============================================================================

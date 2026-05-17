@@ -72,7 +72,7 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
         throw;
     } catch (const ores::nats::service::session_expired_error& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn) << "Session expired: " << boost::diagnostic_information(e);
+        BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
         QMetaObject::invokeMethod(this, [this] { emit sessionExpired(); }, Qt::QueuedConnection);
         return std::nullopt;
     } catch (const std::exception& e) {

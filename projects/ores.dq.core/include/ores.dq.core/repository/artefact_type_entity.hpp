@@ -41,7 +41,7 @@ struct artefact_type_entity {
     std::optional<std::string> description;
     std::optional<std::string> artefact_table;
     std::optional<std::string> target_table;
-    std::optional<std::string> populate_function;
+    std::optional<std::string> target_subject;
     int display_order = 0;
 };
 

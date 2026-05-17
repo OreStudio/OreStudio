@@ -139,3 +139,4 @@
 \ir ./refdata_fx_conventions_notify_trigger_create.sql
 \ir ./refdata_cds_conventions_create.sql
 \ir ./refdata_cds_conventions_notify_trigger_create.sql
+\ir ./refdata_publish_from_dq_create.sql

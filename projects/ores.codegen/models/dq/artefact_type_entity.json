@@ -5,7 +5,7 @@
     "component": "dq",
     "entity_singular": "artefact_type",
     "entity_plural": "artefact_types",
-    "description": "Artefact Types - Maps artefact type codes to their population functions and tables",
+    "description": "Artefact Types - Maps artefact type codes to their NATS dispatch subjects",
     "has_tenant_id": true,
     "system_tenant_validation": true,
     "has_display_order": true,
@@ -19,7 +19,7 @@
       {"name": "description", "type": "text", "nullable": true},
       {"name": "artefact_table", "type": "text", "nullable": true},
       {"name": "target_table", "type": "text", "nullable": true},
-      {"name": "populate_function", "type": "text", "nullable": true},
+      {"name": "target_subject", "type": "text", "nullable": true},
       {"name": "display_order", "type": "integer", "nullable": false, "default": "0"}
     ],
     "validations": [

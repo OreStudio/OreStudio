@@ -11800,7 +11800,7 @@
               "references": null
             },
             {
-              "name": "populate_function",
+              "name": "target_subject",
               "type": "text",
               "nullable": true,
               "is_pk": false,
@@ -11882,7 +11882,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_artefact_types_create.sql",
-          "description": "Artefact Types - Maps artefact type codes to their population functions and tables"
+          "description": "Artefact Types - Maps artefact type codes to their NATS dispatch subjects"
         },
         {
           "name": "ores_dq_badge_definitions_tbl",

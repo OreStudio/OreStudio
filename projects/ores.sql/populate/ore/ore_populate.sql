@@ -45,7 +45,7 @@
 
 \echo ''
 \echo '--- Publishing FpML Asset Classes ---'
-select * from ores_dq_asset_classes_publish_fn(
+select * from ores_refdata_publish_asset_classes_from_dq_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'fpml.asset_class'
      and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -59,7 +59,7 @@ select * from ores_dq_asset_classes_publish_fn(
 
 \echo ''
 \echo '--- Publishing ORE Asset Classes ---'
-select * from ores_dq_asset_classes_publish_fn(
+select * from ores_refdata_publish_asset_classes_from_dq_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'ore.asset_class'
      and valid_to = ores_utility_infinity_timestamp_fn()),

@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- Artefact Types - Maps artefact type codes to their population functions and tables
+-- Artefact Types - Maps artefact type codes to their NATS dispatch subjects
 -- =============================================================================
 
 create table if not exists "ores_dq_artefact_types_tbl" (
@@ -35,7 +35,7 @@ create table if not exists "ores_dq_artefact_types_tbl" (
     "description" text null,
     "artefact_table" text null,
     "target_table" text null,
-    "populate_function" text null,
+    "target_subject" text null,
     "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

@@ -214,7 +214,7 @@ private:
      * @brief Calls the artefact type's populate function.
      *
      * @param dataset The dataset to publish.
-     * @param artefact_type The artefact type with target_table and populate_function.
+     * @param artefact_type The artefact type with target_table and target_subject.
      * @param mode The publication mode.
      * @return Publication result from the database function.
      */

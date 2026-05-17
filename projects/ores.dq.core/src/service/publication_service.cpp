@@ -314,9 +314,9 @@ domain::publication_result publication_service::publish_dataset(
         return result;
     }
 
-    if (!artefact_type.populate_function.has_value() || artefact_type.populate_function->empty()) {
+    if (!artefact_type.target_subject.has_value() || artefact_type.target_subject->empty()) {
         result.success = false;
-        result.error_message = "Artefact type has no populate_function: " + *dataset.artefact_type;
+        result.error_message = "Artefact type has no target_subject: " + *dataset.artefact_type;
         BOOST_LOG_SEV(lg(), warn) << result.error_message
             << " for dataset: " << dataset.code;
         return result;
@@ -372,7 +372,7 @@ domain::publication_result publication_service::call_populate_function(
     result.target_table = *artefact_type.target_table;
 
     const std::string mode_str = to_string(mode);
-    const std::string function_name = *artefact_type.populate_function;
+    const std::string function_name = *artefact_type.target_subject;
     const std::string dataset_id_str = boost::uuids::to_string(dataset.id);
 
     BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "

@@ -77,13 +77,11 @@ struct artefact_type final {
     std::optional<std::string> target_table;
 
     /**
-     * @brief Name of the database function that populates the target table.
-     *
-     * This function is called during publication to move data from
-     * the artefact table to the target table.
-     * Example: "dq_countries_publish_fn".
+     * @brief NATS subject dispatched by the workflow engine to publish
+     * data from the DQ artefact table to the target service table.
+     * Example: "refdata.v1.countries.publish-from-dq".
      */
-    std::optional<std::string> populate_function;
+    std::optional<std::string> target_subject;
 
     /**
      * @brief Display order for UI sorting.

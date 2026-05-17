@@ -333,14 +333,69 @@ void LeiEntityPicker::onCountryFilterChanged(int index) {
 void LeiEntityPicker::applyFilters() {
     const auto searchText = searchEdit_->text();
     proxyModel_->setFilterKeyColumn(Column::EntityLegalName);
+
+    // Block selection signals while the proxy re-filters: layoutChanged causes
+    // the view to clear the selection, firing onSelectionChanged with empty
+    // indexes and erasing selectedLei_ even though the user did not act.
+    tableView_->selectionModel()->blockSignals(true);
     proxyModel_->setFilterRegularExpression(
         QRegularExpression(QRegularExpression::escape(searchText),
             QRegularExpression::CaseInsensitiveOption));
+    tableView_->selectionModel()->blockSignals(false);
+
+    // Restore the visual selection for the stored LEI if it is still visible.
+    if (!selectedLei_.isEmpty()) {
+        for (int row = 0; row < proxyModel_->rowCount(); ++row) {
+            const auto lei = proxyModel_->data(
+                proxyModel_->index(row, Column::Country), LeiRole).toString();
+            if (lei == selectedLei_) {
+                tableView_->selectionModel()->select(
+                    proxyModel_->index(row, 0),
+                    QItemSelectionModel::ClearAndSelect |
+                    QItemSelectionModel::Rows);
+                tableView_->scrollTo(proxyModel_->index(row, 0));
+                return;
+            }
+        }
+        // The selected LEI was filtered out — clear the selection state.
+        BOOST_LOG_SEV(lg(), debug) << "Selection cleared by filter: "
+            << selectedLei_.toStdString() << " no longer visible";
+        selectedLei_.clear();
+        selectedName_.clear();
+        emit selectionCleared();
+        return;
+    }
+
+    // When the filter narrows the visible set to exactly one row and nothing is
+    // selected yet, auto-select that row so the user does not have to click.
+    if (proxyModel_->rowCount() == 1) {
+        const auto lei = proxyModel_->data(
+            proxyModel_->index(0, Column::Country), LeiRole).toString();
+        const auto name = proxyModel_->data(
+            proxyModel_->index(0, Column::EntityLegalName)).toString();
+        BOOST_LOG_SEV(lg(), debug) << "Auto-selecting sole visible entity: "
+            << lei.toStdString() << " - " << name.toStdString();
+        selectedLei_ = lei;
+        selectedName_ = name;
+        // Block the selection signal to avoid double-emitting entitySelected
+        // via onSelectionChanged.
+        tableView_->selectionModel()->blockSignals(true);
+        tableView_->selectionModel()->select(
+            proxyModel_->index(0, 0),
+            QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        tableView_->selectionModel()->blockSignals(false);
+        tableView_->scrollTo(proxyModel_->index(0, 0));
+        emit entitySelected(selectedLei_, selectedName_);
+    }
 }
 
 void LeiEntityPicker::onSelectionChanged() {
     const auto indexes = tableView_->selectionModel()->selectedRows();
     if (indexes.isEmpty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Selection cleared"
+            << (selectedLei_.isEmpty() ? "" : " (was: ")
+            << selectedLei_.toStdString()
+            << (selectedLei_.isEmpty() ? "" : ")");
         selectedLei_.clear();
         selectedName_.clear();
         emit selectionCleared();

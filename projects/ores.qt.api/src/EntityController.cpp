@@ -159,12 +159,11 @@ void EntityController::untrack_window(const QString& key) {
 
 void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     DetachableMdiSubWindow* referenceWindow, QPoint offset) {
-    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window calling addSubWindow";
-    mdiArea_->addSubWindow(window);
-    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window addSubWindow returned, calling adjustSize";
+    // Set flags before addSubWindow so the MDI area decorates the subwindow
+    // exactly once with the correct flags.  Setting flags after addSubWindow
+    // triggers a re-decoration that leaves a blank black strip above the content.
     window->setWindowFlags(window->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-    window->adjustSize();
-    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window adjustSize returned, calling show";
+    mdiArea_->addSubWindow(window);
 
     if (referenceWindow && referenceWindow->isDetached()) {
         window->show();
@@ -174,7 +173,6 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     } else {
         window->show();
     }
-    BOOST_LOG_SEV(lg(), info) << "DIAG: show_managed_window show returned";
 
     if (referenceWindow) {
         QPointer<EntityController> self = this;

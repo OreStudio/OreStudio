@@ -709,6 +709,12 @@ bool TenantPartySetupPage::validatePage() {
     if (leiPicker_->hasSelection()) {
         wizard_->setRootLei(leiPicker_->selectedLei());
         wizard_->setRootLeiName(leiPicker_->selectedName());
+        BOOST_LOG_SEV(lg(), info) << "Party setup: root LEI set to "
+            << leiPicker_->selectedLei().toStdString()
+            << " (" << leiPicker_->selectedName().toStdString() << ")";
+    } else {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Party setup: no LEI selected, advancing without root LEI";
     }
     wizard_->setLeiDatasetSize(datasetSizeCombo_->currentData().toString());
     return true;
@@ -820,6 +826,7 @@ void TenantPartyOrganisationPage::startBundlePublish() {
     struct PublishResult {
         bool success = false;
         std::string error_message;
+        bool has_lei = false;
         int datasets_succeeded = 0;
         int total_records_inserted = 0;
         int total_records_updated = 0;
@@ -848,12 +855,17 @@ void TenantPartyOrganisationPage::startBundlePublish() {
             BOOST_LOG_SEV(lg(), info)
                 << "Organisation setup succeeded: "
                 << result.datasets_succeeded << " datasets, "
-                << result.parties_linked << " parties linked";
+                << result.parties_linked << " parties linked"
+                << (result.has_lei ? "" : " (no root LEI selected)");
             statusLabel_->setText(tr("Organisation setup complete!"));
-            appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                .arg(result.datasets_succeeded)
-                .arg(result.total_records_inserted)
-                .arg(result.total_records_updated));
+            if (result.has_lei) {
+                appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
+                    .arg(result.datasets_succeeded)
+                    .arg(result.total_records_inserted)
+                    .arg(result.total_records_updated));
+            } else {
+                appendLog(tr("No root LEI selected — GLEIF party publication skipped."));
+            }
             if (result.parties_linked > 0) {
                 appendLog(tr("Tenant admin associated with %1 parties.")
                     .arg(result.parties_linked));
@@ -874,6 +886,7 @@ void TenantPartyOrganisationPage::startBundlePublish() {
             -> PublishResult {
 
             PublishResult result;
+            result.has_lei = hasLei;
 
             // Step 1: Re-publish the selected bundle with root_lei params to
             // filter GLEIF party data to the chosen hierarchy

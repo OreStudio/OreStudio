@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <thread>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -34,6 +35,7 @@
 #include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
@@ -62,8 +64,10 @@ class bootstrap_handler {
 public:
     bootstrap_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+        ores::security::jwt::jwt_authenticator signer,
+        std::shared_ptr<service::party_cache> party_cache)
+        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)),
+          party_cache_(std::move(party_cache)) {}
 
     void status(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -135,6 +139,14 @@ public:
             }
 
             const auto& account_id_str = results[0];
+
+            // Reload the system-tenant party cache: the SQL function created
+            // the system party and associated it with the admin account, but
+            // no NATS event is published for bootstrap SQL operations.
+            std::thread([pc = party_cache_]() {
+                pc->load(ores::database::service::tenant_context::system_tenant_id);
+            }).detach();
+
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, create_initial_admin_response{
@@ -217,6 +229,12 @@ public:
                 << "Associated " << req->principal
                 << " with system party " << system_party_id_str;
 
+            // Reload the new tenant's party cache: the SQL provisioner created
+            // the system party directly, no NATS event is published for it.
+            std::thread([pc = party_cache_, tid = tenant_id_str]() {
+                pc->load(tid);
+            }).detach();
+
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, provision_tenant_response{
@@ -235,6 +253,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    std::shared_ptr<service::party_cache> party_cache_;
 };
 
 } // namespace ores::iam::messaging

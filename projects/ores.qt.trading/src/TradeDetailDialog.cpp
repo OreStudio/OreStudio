@@ -105,13 +105,6 @@ TradeDetailDialog::~TradeDetailDialog() {
 
 void TradeDetailDialog::showEvent(QShowEvent* event) {
     DetailDialogBase::showEvent(event);
-    // Cap height to 75% of the available screen so the instrument scroll area
-    // actually scrolls for tall forms. Done here (not the constructor) because
-    // screen() is guaranteed non-null once the widget is being shown.
-    if (maximumHeight() == QWIDGETSIZE_MAX) {
-        const int cap = screen()->availableGeometry().height() * 3 / 4;
-        setMaximumHeight(std::max(cap, minimumHeight()));
-    }
 }
 
 QTabWidget*       TradeDetailDialog::tabWidget()        const { return ui_->tabWidget; }

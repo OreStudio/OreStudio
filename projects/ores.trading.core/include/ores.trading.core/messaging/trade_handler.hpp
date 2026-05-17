@@ -28,6 +28,7 @@
 #include <rfl/msgpack.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -465,7 +466,7 @@ public:
         service::trade_service svc(ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
-                const auto transitions = fetch_fsm_transitions();
+                const auto transitions = fetch_fsm_transitions(extract_bearer(msg));
                 svc.save_trades(req->trades, transitions);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "Completed " << msg.subject;
@@ -708,9 +709,22 @@ private:
      * system-level reference data that change only on schema migrations.
      * The cache avoids an extra NATS round-trip per trade when the ore import
      * handler sends one save_trade message per trade.
-     * Returns an empty map on failure so save operations degrade gracefully.
+     * Throws std::runtime_error on failure; callers must handle or propagate.
      */
-    service::fsm_transition_map fetch_fsm_transitions() {
+    // Extract the raw JWT from an incoming message, preferring the delegated
+    // header so the original end-user context propagates to downstream calls.
+    static std::string extract_bearer(const ores::nats::message& msg) {
+        using namespace ores::nats::headers;
+        for (auto hdr : {delegated_authorization, authorization}) {
+            const auto it = msg.headers.find(std::string(hdr));
+            if (it != msg.headers.end() &&
+                    it->second.starts_with(bearer_prefix))
+                return std::string(it->second.substr(bearer_prefix.size()));
+        }
+        return {};
+    }
+
+    service::fsm_transition_map fetch_fsm_transitions(std::string_view bearer) {
         using namespace ores::dq::messaging;
 
         {
@@ -725,10 +739,15 @@ private:
         const auto json = rfl::json::write(req);
         const auto* p = reinterpret_cast<const std::byte*>(json.data());
         try {
+            using namespace ores::nats::headers;
+            std::unordered_map<std::string, std::string> hdrs;
+            if (!bearer.empty())
+                hdrs[std::string(delegated_authorization)] =
+                    std::string(bearer_prefix) + std::string(bearer);
             const auto reply = nats_.request_sync(
                 get_fsm_transitions_request::nats_subject,
                 std::span<const std::byte>(p, json.size()),
-                {}, std::chrono::seconds(2));
+                std::move(hdrs), std::chrono::seconds(2));
             const std::string_view sv(
                 reinterpret_cast<const char*>(reply.data.data()),
                 reply.data.size());
@@ -736,10 +755,18 @@ private:
             if (resp && resp->success) {
                 for (auto& t : resp->transitions)
                     result[t.id] = std::move(t);
+            } else {
+                const auto detail = resp
+                    ? resp->message
+                    : std::string("no response from DQ service");
+                throw std::runtime_error(
+                    "Failed to retrieve FSM transitions: " + detail);
             }
+        } catch (const std::runtime_error&) {
+            throw;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(trade_handler_lg(), warn)
-                << "fetch_fsm_transitions: " << e.what();
+            throw std::runtime_error(
+                std::string("Failed to retrieve FSM transitions: ") + e.what());
         }
 
         {

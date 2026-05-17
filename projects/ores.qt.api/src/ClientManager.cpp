@@ -19,18 +19,13 @@
  */
 #include "ores.qt/ClientManager.hpp"
 
-#include <sstream>
-#include <QDateTime>
-#include <QTimeZone>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
@@ -372,156 +367,6 @@ LoginResult ClientManager::connectAndLogin(
     return login(username, password);
 }
 
-LoginResult ClientManager::testConnection(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& password) {
-
-    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
-
-    try {
-        ores::nats::service::nats_client temp_session;
-        nats::config::nats_options opts;
-        opts.url = "nats://" + host + ":" + std::to_string(port);
-        opts.subject_prefix = subject_prefix_;
-        temp_session.connect(std::move(opts));
-
-        // Attempt login
-        iam::messaging::login_request request{
-            .principal = username,
-            .password = password
-        };
-        const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(
-            iam::messaging::login_request::nats_subject, json_body);
-        temp_session.disconnect();
-
-        const std::string_view data(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::login_response>(data);
-        if (!resp || !resp->success) {
-            const std::string err = resp ? resp->error_message : "Invalid response";
-            return {.success = false, .error_message = QString::fromStdString(err)};
-        }
-        return {.success = true, .error_message = {}};
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Test connection failed: " << e.what();
-        return {.success = false, .error_message = QString::fromStdString(e.what())};
-    }
-}
-
-SignupResult ClientManager::signup(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& email,
-    const std::string& password) {
-
-    BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port;
-
-    try {
-        ores::nats::service::nats_client temp_session;
-        nats::config::nats_options opts;
-        opts.url = "nats://" + host + ":" + std::to_string(port);
-        opts.subject_prefix = subject_prefix_;
-        temp_session.connect(std::move(opts));
-
-        iam::messaging::signup_request request{
-            .principal = username,
-            .password = password,
-            .email = email
-        };
-        const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(
-            iam::messaging::signup_request::nats_subject, json_body);
-        temp_session.disconnect();
-
-        const std::string_view data(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::signup_response>(data);
-        if (!resp || !resp->success) {
-            const std::string err = resp ? resp->message : "Invalid response";
-            return {.success = false,
-                    .error_message = QString::fromStdString(err)};
-        }
-        return {.success = true,
-                .error_message = {},
-                .username = QString::fromStdString(username)};
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Signup failed: " << e.what();
-        return {.success = false,
-                .error_message = QString::fromStdString(e.what())};
-    }
-}
-
-void ClientManager::subscribeToEvent(const std::string& subject) {
-    if (nats_subscriptions_.count(subject))
-        return;
-
-    auto cl = session_.get_client();
-    if (!cl) {
-        BOOST_LOG_SEV(lg(), warn) << "subscribeToEvent: not connected, skipping '"
-                                  << subject << "'";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Subscribing to NATS event: " << subject;
-    try {
-        auto sub = cl->subscribe(subject,
-            [this, subject](nats::message msg) {
-                try {
-                    const std::string_view json(
-                        reinterpret_cast<const char*>(msg.data.data()),
-                        msg.data.size());
-                    auto result =
-                        rfl::json::read<eventing::domain::entity_change_event>(json);
-                    if (!result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to parse event on '" << subject << "': "
-                            << result.error().what();
-                        return;
-                    }
-                    const auto& ev = *result;
-                    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        ev.timestamp.time_since_epoch()).count();
-                    QDateTime ts = QDateTime::fromMSecsSinceEpoch(ms, QTimeZone::UTC);
-                    QStringList ids;
-                    ids.reserve(static_cast<int>(ev.entity_ids.size()));
-                    for (const auto& id : ev.entity_ids)
-                        ids.append(QString::fromStdString(id));
-                    QString eventType = QString::fromStdString(subject);
-                    QString tenantId  = QString::fromStdString(ev.tenant_id);
-                    QMetaObject::invokeMethod(this,
-                        [this, eventType, ts, ids, tenantId]() {
-                            emit notificationReceived(
-                                eventType, ts, ids, tenantId, 0, {});
-                        }, Qt::QueuedConnection);
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Exception in event handler for '" << subject
-                        << "': " << e.what();
-                }
-            });
-        nats_subscriptions_.emplace(subject, std::move(sub));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to subscribe to '" << subject
-                                   << "': " << e.what();
-    }
-}
-
-void ClientManager::unsubscribeFromEvent(const std::string& subject) {
-    if (nats_subscriptions_.erase(subject) > 0) {
-        try {
-            BOOST_LOG_SEV(lg(), debug) << "Unsubscribed from event: " << subject;
-        } catch (...) {
-            // Boost.Log may already be torn down during static destruction.
-        }
-    }
-}
-
 void ClientManager::disconnect() {
     BOOST_LOG_SEV(lg(), info) << "Disconnecting";
     if (refresh_timer_)
@@ -639,41 +484,6 @@ std::optional<SessionListResult> ClientManager::listSessions(
     }
 }
 
-std::optional<TradeListResult> ClientManager::listTrades(
-    std::optional<boost::uuids::uuid> node_id,
-    std::uint32_t offset,
-    std::uint32_t limit) {
-
-    try {
-        trading::messaging::get_trades_request request;
-        request.offset = static_cast<int>(offset);
-        request.limit = static_cast<int>(limit);
-        if (node_id)
-            request.node_id = boost::uuids::to_string(*node_id);
-
-        auto result = process_authenticated_request(std::move(request));
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error)
-                << "listTrades failed: " << result.error();
-            return std::nullopt;
-        }
-        if (!result->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "listTrades server error: " << result->message;
-            return std::nullopt;
-        }
-
-        return TradeListResult{
-            .trades = std::move(result->trades),
-            .total_count = static_cast<std::uint32_t>(
-                result->total_available_count)
-        };
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "listTrades failed: " << e.what();
-        return std::nullopt;
-    }
-}
-
 std::string ClientManager::send_authenticated_request(
     std::string_view subject,
     std::string json_body,
@@ -688,57 +498,6 @@ std::string ClientManager::send_authenticated_request(
     return std::string(
         reinterpret_cast<const char*>(msg.data.data()),
         msg.data.size());
-}
-
-std::optional<trading::messaging::trade_export_item>
-ClientManager::getTradeDetail(const std::string& trade_id) {
-    try {
-        trading::messaging::get_trade_detail_request request;
-        request.trade_id = trade_id;
-        const auto raw = send_authenticated_request(
-            trading::messaging::get_trade_detail_request::nats_subject,
-            rfl::json::write(request),
-            std::chrono::seconds(30));
-
-        // Two-phase parse: avoid combining trade (22 fields) with the
-        // trade_instrument variant (8 alternatives) in a single rfl call,
-        // which exceeds MSVC's constexpr depth budget (C1202).
-        auto base = rfl::json::read<
-            trading::messaging::get_trade_detail_response_base>(raw);
-        if (!base) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail deserialize error: " << base.error().what();
-            return std::nullopt;
-        }
-        if (!base->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail server error: " << base->message;
-            return std::nullopt;
-        }
-        auto inst = rfl::json::read<
-            trading::messaging::get_trade_detail_instrument_wrapper,
-            rfl::AddTagsToVariants>(raw);
-        if (!inst) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail instrument deserialize error: "
-                << inst.error().what();
-            return std::nullopt;
-        }
-        trading::messaging::trade_export_item item;
-        item.trade = std::move(base->trade);
-        item.instrument = std::move(inst->instrument);
-        return item;
-    } catch (const ores::nats::service::nats_connect_error&) {
-        throw;
-    } catch (const ores::nats::service::session_expired_error& e) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
-        QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
-        return std::nullopt;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "getTradeDetail failed: " << e.what();
-        return std::nullopt;
-    }
 }
 
 std::optional<std::vector<iam::domain::session>>

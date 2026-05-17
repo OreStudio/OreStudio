@@ -37,22 +37,22 @@ const std::string tags("[domain]");
 
 trade make_trade(const std::string& trade_type = "Swap") {
     trade t;
-    t.identity.get().version = 1;
-    t.identity.get().id = boost::uuids::random_generator()();
-    t.identity.get().party_id = boost::uuids::random_generator()();
-    t.parties.get().book_id = boost::uuids::random_generator()();
-    t.parties.get().portfolio_id = boost::uuids::random_generator()();
-    t.classification.get().trade_type = trade_type;
-    t.classification.get().activity_type_code = "new_booking";
-    t.classification.get().status_id = boost::uuids::random_generator()();
-    t.lifecycle.get().trade_date = "2026-01-15";
-    t.lifecycle.get().effective_date = "2026-01-20";
-    t.lifecycle.get().termination_date = "2031-01-20";
-    t.audit.get().modified_by = "system";
-    t.audit.get().performed_by = "system";
-    t.audit.get().change_reason_code = "system.new";
-    t.audit.get().change_commentary = "Test data";
-    t.audit.get().recorded_at = std::chrono::system_clock::now();
+    t.identity.version = 1;
+    t.identity.id = boost::uuids::random_generator()();
+    t.identity.party_id = boost::uuids::random_generator()();
+    t.parties.book_id = boost::uuids::random_generator()();
+    t.parties.portfolio_id = boost::uuids::random_generator()();
+    t.classification.trade_type = trade_type;
+    t.classification.activity_type_code = "new_booking";
+    t.classification.status_id = boost::uuids::random_generator()();
+    t.lifecycle.trade_date = "2026-01-15";
+    t.lifecycle.effective_date = "2026-01-20";
+    t.lifecycle.termination_date = "2031-01-20";
+    t.audit.modified_by = "system";
+    t.audit.performed_by = "system";
+    t.audit.change_reason_code = "system.new";
+    t.audit.change_commentary = "Test data";
+    t.audit.recorded_at = std::chrono::system_clock::now();
     return t;
 }
 
@@ -65,87 +65,87 @@ TEST_CASE("create_trade_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
     trade sut;
-    sut.identity.get().version = 1;
-    sut.identity.get().id = boost::uuids::random_generator()();
-    sut.identity.get().party_id = boost::uuids::random_generator()();
-    sut.identity.get().external_id = "EXT-001";
-    sut.parties.get().book_id = boost::uuids::random_generator()();
-    sut.parties.get().portfolio_id = boost::uuids::random_generator()();
-    sut.classification.get().trade_type = "Swap";
-    sut.classification.get().netting_set_id = "NS-001";
-    sut.classification.get().activity_type_code = "new_booking";
-    sut.classification.get().status_id = boost::uuids::random_generator()();
-    sut.lifecycle.get().trade_date = "2026-01-15";
-    sut.lifecycle.get().execution_timestamp = "2026-01-15 09:30:00+00";
-    sut.lifecycle.get().effective_date = "2026-01-20";
-    sut.lifecycle.get().termination_date = "2031-01-20";
-    sut.audit.get().modified_by = "admin";
-    sut.audit.get().performed_by = "admin";
-    sut.audit.get().change_reason_code = "system.new";
-    sut.audit.get().change_commentary = "New trade booking";
-    sut.audit.get().recorded_at = std::chrono::system_clock::now();
+    sut.identity.version = 1;
+    sut.identity.id = boost::uuids::random_generator()();
+    sut.identity.party_id = boost::uuids::random_generator()();
+    sut.identity.external_id = "EXT-001";
+    sut.parties.book_id = boost::uuids::random_generator()();
+    sut.parties.portfolio_id = boost::uuids::random_generator()();
+    sut.classification.trade_type = "Swap";
+    sut.classification.netting_set_id = "NS-001";
+    sut.classification.activity_type_code = "new_booking";
+    sut.classification.status_id = boost::uuids::random_generator()();
+    sut.lifecycle.trade_date = "2026-01-15";
+    sut.lifecycle.execution_timestamp = "2026-01-15 09:30:00+00";
+    sut.lifecycle.effective_date = "2026-01-20";
+    sut.lifecycle.termination_date = "2031-01-20";
+    sut.audit.modified_by = "admin";
+    sut.audit.performed_by = "admin";
+    sut.audit.change_reason_code = "system.new";
+    sut.audit.change_commentary = "New trade booking";
+    sut.audit.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
 
-    CHECK(sut.identity.get().version == 1);
-    CHECK(!sut.identity.get().id.is_nil());
-    CHECK(!sut.identity.get().party_id.is_nil());
-    CHECK(sut.classification.get().trade_type == "Swap");
-    CHECK(sut.lifecycle.get().trade_date == "2026-01-15");
-    CHECK(sut.audit.get().modified_by == "admin");
-    CHECK(!sut.parties.get().successor_trade_id.has_value());
-    CHECK(!sut.parties.get().counterparty_id.has_value());
+    CHECK(sut.identity.version == 1);
+    CHECK(!sut.identity.id.is_nil());
+    CHECK(!sut.identity.party_id.is_nil());
+    CHECK(sut.classification.trade_type == "Swap");
+    CHECK(sut.lifecycle.trade_date == "2026-01-15");
+    CHECK(sut.audit.modified_by == "admin");
+    CHECK(!sut.parties.successor_trade_id.has_value());
+    CHECK(!sut.parties.counterparty_id.has_value());
 }
 
 TEST_CASE("create_trade_with_optional_fields", tags) {
     auto lg(make_logger(test_suite));
 
     trade sut;
-    sut.identity.get().version = 2;
-    sut.identity.get().id = boost::uuids::random_generator()();
-    sut.identity.get().party_id = boost::uuids::random_generator()();
-    sut.parties.get().book_id = boost::uuids::random_generator()();
-    sut.parties.get().portfolio_id = boost::uuids::random_generator()();
-    sut.parties.get().successor_trade_id = boost::uuids::random_generator()();
-    sut.parties.get().counterparty_id = boost::uuids::random_generator()();
-    sut.classification.get().trade_type = "FxForward";
-    sut.classification.get().activity_type_code = "novation";
-    sut.classification.get().status_id = boost::uuids::random_generator()();
-    sut.lifecycle.get().trade_date = "2026-02-01";
-    sut.lifecycle.get().effective_date = "2026-02-05";
-    sut.lifecycle.get().termination_date = "2026-08-05";
-    sut.audit.get().modified_by = "system";
-    sut.audit.get().performed_by = "system";
-    sut.audit.get().change_reason_code = "system.novation";
-    sut.audit.get().change_commentary = "Novation";
-    sut.audit.get().recorded_at = std::chrono::system_clock::now();
+    sut.identity.version = 2;
+    sut.identity.id = boost::uuids::random_generator()();
+    sut.identity.party_id = boost::uuids::random_generator()();
+    sut.parties.book_id = boost::uuids::random_generator()();
+    sut.parties.portfolio_id = boost::uuids::random_generator()();
+    sut.parties.successor_trade_id = boost::uuids::random_generator()();
+    sut.parties.counterparty_id = boost::uuids::random_generator()();
+    sut.classification.trade_type = "FxForward";
+    sut.classification.activity_type_code = "novation";
+    sut.classification.status_id = boost::uuids::random_generator()();
+    sut.lifecycle.trade_date = "2026-02-01";
+    sut.lifecycle.effective_date = "2026-02-05";
+    sut.lifecycle.termination_date = "2026-08-05";
+    sut.audit.modified_by = "system";
+    sut.audit.performed_by = "system";
+    sut.audit.change_reason_code = "system.novation";
+    sut.audit.change_commentary = "Novation";
+    sut.audit.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade with optionals: " << sut;
 
-    CHECK(sut.parties.get().successor_trade_id.has_value());
-    CHECK(!sut.parties.get().successor_trade_id->is_nil());
-    CHECK(sut.parties.get().counterparty_id.has_value());
-    CHECK(!sut.parties.get().counterparty_id->is_nil());
+    CHECK(sut.parties.successor_trade_id.has_value());
+    CHECK(!sut.parties.successor_trade_id->is_nil());
+    CHECK(sut.parties.counterparty_id.has_value());
+    CHECK(!sut.parties.counterparty_id->is_nil());
 }
 
 TEST_CASE("trade_insertion_operator", tags) {
     auto lg(make_logger(test_suite));
 
     trade sut;
-    sut.identity.get().version = 1;
-    sut.identity.get().id = boost::uuids::random_generator()();
-    sut.identity.get().party_id = boost::uuids::random_generator()();
-    sut.parties.get().book_id = boost::uuids::random_generator()();
-    sut.parties.get().portfolio_id = boost::uuids::random_generator()();
-    sut.classification.get().trade_type = "Swaption";
-    sut.classification.get().activity_type_code = "new_booking";
-    sut.classification.get().status_id = boost::uuids::random_generator()();
-    sut.lifecycle.get().trade_date = "2026-03-01";
-    sut.lifecycle.get().effective_date = "2026-03-05";
-    sut.lifecycle.get().termination_date = "2031-03-05";
-    sut.audit.get().modified_by = "system";
-    sut.audit.get().performed_by = "system";
-    sut.audit.get().change_reason_code = "system.new";
-    sut.audit.get().change_commentary = "Test";
-    sut.audit.get().recorded_at = std::chrono::system_clock::now();
+    sut.identity.version = 1;
+    sut.identity.id = boost::uuids::random_generator()();
+    sut.identity.party_id = boost::uuids::random_generator()();
+    sut.parties.book_id = boost::uuids::random_generator()();
+    sut.parties.portfolio_id = boost::uuids::random_generator()();
+    sut.classification.trade_type = "Swaption";
+    sut.classification.activity_type_code = "new_booking";
+    sut.classification.status_id = boost::uuids::random_generator()();
+    sut.lifecycle.trade_date = "2026-03-01";
+    sut.lifecycle.effective_date = "2026-03-05";
+    sut.lifecycle.termination_date = "2031-03-05";
+    sut.audit.modified_by = "system";
+    sut.audit.performed_by = "system";
+    sut.audit.change_reason_code = "system.new";
+    sut.audit.change_commentary = "Test";
+    sut.audit.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
 
     std::ostringstream os;
@@ -160,28 +160,28 @@ TEST_CASE("create_trade_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     trade sut;
-    sut.identity.get().version = faker::number::integer(1, 10);
-    sut.identity.get().id = boost::uuids::random_generator()();
-    sut.identity.get().party_id = boost::uuids::random_generator()();
-    sut.parties.get().book_id = boost::uuids::random_generator()();
-    sut.parties.get().portfolio_id = boost::uuids::random_generator()();
-    sut.classification.get().trade_type = std::string(faker::word::noun()) + "_trade";
-    sut.classification.get().activity_type_code = "new_booking";
-    sut.classification.get().status_id = boost::uuids::random_generator()();
-    sut.lifecycle.get().trade_date = "2026-01-01";
-    sut.lifecycle.get().effective_date = "2026-01-05";
-    sut.lifecycle.get().termination_date = "2031-01-05";
-    sut.audit.get().modified_by = std::string(faker::internet::username());
-    sut.audit.get().performed_by = std::string(faker::internet::username());
-    sut.audit.get().change_reason_code = "system.new";
-    sut.audit.get().change_commentary = "Synthetic test data";
-    sut.audit.get().recorded_at = std::chrono::system_clock::now();
+    sut.identity.version = faker::number::integer(1, 10);
+    sut.identity.id = boost::uuids::random_generator()();
+    sut.identity.party_id = boost::uuids::random_generator()();
+    sut.parties.book_id = boost::uuids::random_generator()();
+    sut.parties.portfolio_id = boost::uuids::random_generator()();
+    sut.classification.trade_type = std::string(faker::word::noun()) + "_trade";
+    sut.classification.activity_type_code = "new_booking";
+    sut.classification.status_id = boost::uuids::random_generator()();
+    sut.lifecycle.trade_date = "2026-01-01";
+    sut.lifecycle.effective_date = "2026-01-05";
+    sut.lifecycle.termination_date = "2031-01-05";
+    sut.audit.modified_by = std::string(faker::internet::username());
+    sut.audit.performed_by = std::string(faker::internet::username());
+    sut.audit.change_reason_code = "system.new";
+    sut.audit.change_commentary = "Synthetic test data";
+    sut.audit.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
 
-    CHECK(sut.identity.get().version >= 1);
-    CHECK(!sut.identity.get().id.is_nil());
-    CHECK(!sut.audit.get().modified_by.empty());
-    CHECK(sut.audit.get().change_reason_code == "system.new");
+    CHECK(sut.identity.version >= 1);
+    CHECK(!sut.identity.id.is_nil());
+    CHECK(!sut.audit.modified_by.empty());
+    CHECK(sut.audit.change_reason_code == "system.new");
 }
 
 TEST_CASE("create_multiple_random_trades", tags) {
@@ -191,8 +191,8 @@ TEST_CASE("create_multiple_random_trades", tags) {
     for (const auto& tt : trade_types) {
         auto sut = make_trade(tt);
         BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
-        CHECK(!sut.identity.get().id.is_nil());
-        CHECK(sut.identity.get().version == 1);
+        CHECK(!sut.identity.id.is_nil());
+        CHECK(sut.identity.version == 1);
     }
 }
 
@@ -238,22 +238,22 @@ TEST_CASE("trade_table_with_faker_data", tags) {
     std::vector<trade> items;
     for (int i = 0; i < 5; ++i) {
         trade t;
-        t.identity.get().version = 1;
-        t.identity.get().id = boost::uuids::random_generator()();
-        t.identity.get().party_id = boost::uuids::random_generator()();
-        t.parties.get().book_id = boost::uuids::random_generator()();
-        t.parties.get().portfolio_id = boost::uuids::random_generator()();
-        t.classification.get().trade_type = std::string(faker::word::noun()) + "_" + std::to_string(i);
-        t.classification.get().activity_type_code = "new_booking";
-        t.classification.get().status_id = boost::uuids::random_generator()();
-        t.lifecycle.get().trade_date = "2026-01-01";
-        t.lifecycle.get().effective_date = "2026-01-05";
-        t.lifecycle.get().termination_date = "2031-01-05";
-        t.audit.get().modified_by = "system";
-        t.audit.get().performed_by = "system";
-        t.audit.get().change_reason_code = "system.new";
-        t.audit.get().change_commentary = "Test";
-        t.audit.get().recorded_at = std::chrono::system_clock::now();
+        t.identity.version = 1;
+        t.identity.id = boost::uuids::random_generator()();
+        t.identity.party_id = boost::uuids::random_generator()();
+        t.parties.book_id = boost::uuids::random_generator()();
+        t.parties.portfolio_id = boost::uuids::random_generator()();
+        t.classification.trade_type = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        t.classification.activity_type_code = "new_booking";
+        t.classification.status_id = boost::uuids::random_generator()();
+        t.lifecycle.trade_date = "2026-01-01";
+        t.lifecycle.effective_date = "2026-01-05";
+        t.lifecycle.termination_date = "2031-01-05";
+        t.audit.modified_by = "system";
+        t.audit.performed_by = "system";
+        t.audit.change_reason_code = "system.new";
+        t.audit.change_commentary = "Test";
+        t.audit.recorded_at = std::chrono::system_clock::now();
         items.push_back(t);
     }
 

@@ -39,14 +39,14 @@ trading::domain::trade trade_mapper::map(const trade& v) {
 
     const auto nil = boost::uuids::nil_uuid();
     trading::domain::trade r;
-    r.identity.get().id = nil;
-    r.identity.get().party_id = nil;
-    r.identity.get().external_id = std::string(v.id);
-    r.classification.get().trade_type = to_string(v.TradeType);
+    r.identity.id = nil;
+    r.identity.party_id = nil;
+    r.identity.external_id = std::string(v.id);
+    r.classification.trade_type = to_string(v.TradeType);
 
     // Book, portfolio and counterparty require external mapping context.
-    r.parties.get().book_id = nil;
-    r.parties.get().portfolio_id = nil;
+    r.parties.book_id = nil;
+    r.parties.portfolio_id = nil;
 
     // Extract envelope fields where available.
     if (v.Envelope) {
@@ -57,17 +57,17 @@ trading::domain::trade trade_mapper::map(const trade& v) {
         }
         if (v.Envelope->nettingSetGroup) {
             if (v.Envelope->nettingSetGroup->NettingSetId) {
-                r.classification.get().netting_set_id =
+                r.classification.netting_set_id =
                     std::string(*v.Envelope->nettingSetGroup->NettingSetId);
             }
         }
     }
 
-    r.classification.get().activity_type_code = "new_booking";
-    r.classification.get().status_id = boost::uuids::nil_uuid();
-    r.audit.get().modified_by = "ores";
-    r.audit.get().change_reason_code = "system.external_data_import";
-    r.audit.get().change_commentary = "Imported from ORE XML portfolio";
+    r.classification.activity_type_code = "new_booking";
+    r.classification.status_id = boost::uuids::nil_uuid();
+    r.audit.modified_by = "ores";
+    r.audit.change_reason_code = "system.external_data_import";
+    r.audit.change_commentary = "Imported from ORE XML portfolio";
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped trade. Result: " << r;
     return r;

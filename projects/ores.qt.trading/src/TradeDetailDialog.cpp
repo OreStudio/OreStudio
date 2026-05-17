@@ -219,9 +219,9 @@ void TradeDetailDialog::loadBooks() {
 }
 
 void TradeDetailDialog::selectCurrentBook() {
-    if (trade_.parties.get().book_id.is_nil()) return;
+    if (trade_.parties.book_id.is_nil()) return;
     const QString target =
-        QString::fromStdString(boost::uuids::to_string(trade_.parties.get().book_id));
+        QString::fromStdString(boost::uuids::to_string(trade_.parties.book_id));
     for (int i = 0; i < ui_->bookCombo->count(); ++i) {
         if (ui_->bookCombo->itemData(i).toString() == target) {
             ui_->bookCombo->blockSignals(true);
@@ -273,14 +273,14 @@ void TradeDetailDialog::loadCounterparties() {
 }
 
 void TradeDetailDialog::selectCurrentCounterparty() {
-    if (!trade_.parties.get().counterparty_id.has_value()) {
+    if (!trade_.parties.counterparty_id.has_value()) {
         ui_->counterpartyCombo->blockSignals(true);
         ui_->counterpartyCombo->setCurrentIndex(0);
         ui_->counterpartyCombo->blockSignals(false);
         return;
     }
     const QString target =
-        QString::fromStdString(boost::uuids::to_string(*trade_.parties.get().counterparty_id));
+        QString::fromStdString(boost::uuids::to_string(*trade_.parties.counterparty_id));
     for (int i = 0; i < ui_->counterpartyCombo->count(); ++i) {
         if (ui_->counterpartyCombo->itemData(i).toString() == target) {
             ui_->counterpartyCombo->blockSignals(true);
@@ -405,14 +405,14 @@ void TradeDetailDialog::setTradeBundle(
     trade_ = bundle.trade;
 
     const bool has_instrument = !std::holds_alternative<std::monostate>(bundle.instrument);
-    const std::string instrument_id_str = bundle.trade.classification.get().instrument_id
-        ? boost::uuids::to_string(*bundle.trade.classification.get().instrument_id) : "<none>";
+    const std::string instrument_id_str = bundle.trade.classification.instrument_id
+        ? boost::uuids::to_string(*bundle.trade.classification.instrument_id) : "<none>";
 
     BOOST_LOG_SEV(lg(), debug)
-        << "setTradeBundle: trade=" << bundle.trade.identity.get().external_id
+        << "setTradeBundle: trade=" << bundle.trade.identity.external_id
         << " product_type=" << std::string(
-            ores::trading::domain::to_string(bundle.trade.classification.get().product_type))
-        << " trade_type=" << bundle.trade.classification.get().trade_type
+            ores::trading::domain::to_string(bundle.trade.classification.product_type))
+        << " trade_type=" << bundle.trade.classification.trade_type
         << " instrument_id=" << instrument_id_str
         << " instrument=" << (has_instrument
             ? ("present (index=" + std::to_string(bundle.instrument.index()) + ")")
@@ -422,15 +422,15 @@ void TradeDetailDialog::setTradeBundle(
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    auto* form = findForm(trade_.classification.get().product_type, trade_.classification.get().trade_type);
+    auto* form = findForm(trade_.classification.product_type, trade_.classification.trade_type);
     if (!form) {
         const QString msg = tr("No instrument form registered for trade '%1' "
             "(product_type=%2, trade_type=%3). "
             "Check that the instrument form plugin is loaded.")
-            .arg(QString::fromStdString(bundle.trade.identity.get().external_id))
+            .arg(QString::fromStdString(bundle.trade.identity.external_id))
             .arg(QString::fromStdString(std::string(
-                ores::trading::domain::to_string(bundle.trade.classification.get().product_type))))
-            .arg(QString::fromStdString(bundle.trade.classification.get().trade_type));
+                ores::trading::domain::to_string(bundle.trade.classification.product_type))))
+            .arg(QString::fromStdString(bundle.trade.classification.trade_type));
         BOOST_LOG_SEV(lg(), warn)
             << "setTradeBundle: " << msg.toStdString();
         MessageBoxHelper::warning(this, tr("Instrument Form Missing"), msg);
@@ -438,33 +438,33 @@ void TradeDetailDialog::setTradeBundle(
         return;
     }
 
-    activateForm(form, trade_.classification.get().trade_type);
+    activateForm(form, trade_.classification.trade_type);
     if (!has_instrument) {
-        if (bundle.trade.classification.get().instrument_id) {
+        if (bundle.trade.classification.instrument_id) {
             // Server had an instrument_id but returned monostate — something
             // went wrong during instrument lookup on the server side.
             const QString msg = tr("Instrument data could not be loaded for trade '%1' "
                 "(instrument_id=%2, trade_type=%3). "
                 "The server returned no instrument data despite a linked instrument. "
                 "Check the trading service log for details.")
-                .arg(QString::fromStdString(bundle.trade.identity.get().external_id))
+                .arg(QString::fromStdString(bundle.trade.identity.external_id))
                 .arg(QString::fromStdString(instrument_id_str))
-                .arg(QString::fromStdString(bundle.trade.classification.get().trade_type));
+                .arg(QString::fromStdString(bundle.trade.classification.trade_type));
             BOOST_LOG_SEV(lg(), error)
                 << "setTradeBundle: instrument_id set but got monostate"
-                << " trade=" << bundle.trade.identity.get().external_id
+                << " trade=" << bundle.trade.identity.external_id
                 << " instrument_id=" << instrument_id_str;
             MessageBoxHelper::warning(this, tr("Instrument Load Failed"), msg);
             emit errorMessage(msg);
         } else {
             BOOST_LOG_SEV(lg(), debug)
                 << "setTradeBundle: no instrument linked, clearing form for trade="
-                << bundle.trade.identity.get().external_id;
+                << bundle.trade.identity.external_id;
         }
         activeForm_->clear();
     } else {
         BOOST_LOG_SEV(lg(), debug)
-            << "setTradeBundle: calling setInstrument for trade=" << bundle.trade.identity.get().external_id
+            << "setTradeBundle: calling setInstrument for trade=" << bundle.trade.identity.external_id
             << " instrument_id=" << instrument_id_str;
         activeForm_->setInstrument(bundle.instrument);
     }
@@ -478,7 +478,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
 
     if (createMode)
-        trade_.identity.get().id = boost::uuids::random_generator()();
+        trade_.identity.id = boost::uuids::random_generator()();
 
     // Instrument tab starts hidden; onCreateTradeTypeChanged reveals it
     // once the user enters a known trade type code.
@@ -519,24 +519,24 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
 // ---------------------------------------------------------------------------
 
 void TradeDetailDialog::updateUiFromTrade() {
-    ui_->externalIdEdit->setText(QString::fromStdString(trade_.identity.get().external_id));
-    ui_->tradeTypeEdit->setText(QString::fromStdString(trade_.classification.get().trade_type));
+    ui_->externalIdEdit->setText(QString::fromStdString(trade_.identity.external_id));
+    ui_->tradeTypeEdit->setText(QString::fromStdString(trade_.classification.trade_type));
     ui_->lifecycleEventEdit->setText(
-        QString::fromStdString(trade_.classification.get().activity_type_code));
+        QString::fromStdString(trade_.classification.activity_type_code));
     ui_->nettingSetIdEdit->setText(
-        QString::fromStdString(trade_.classification.get().netting_set_id));
-    ui_->tradeDateEdit->setText(QString::fromStdString(trade_.lifecycle.get().trade_date.value_or("")));
+        QString::fromStdString(trade_.classification.netting_set_id));
+    ui_->tradeDateEdit->setText(QString::fromStdString(trade_.lifecycle.trade_date.value_or("")));
     ui_->effectiveDateEdit->setText(
-        QString::fromStdString(trade_.lifecycle.get().effective_date.value_or("")));
+        QString::fromStdString(trade_.lifecycle.effective_date.value_or("")));
     ui_->terminationDateEdit->setText(
-        QString::fromStdString(trade_.lifecycle.get().termination_date.value_or("")));
+        QString::fromStdString(trade_.lifecycle.termination_date.value_or("")));
     ui_->executionTimestampEdit->setText(
-        QString::fromStdString(trade_.lifecycle.get().execution_timestamp.value_or("")));
+        QString::fromStdString(trade_.lifecycle.execution_timestamp.value_or("")));
 
-    populateProvenance(trade_.identity.get().version, trade_.audit.get().modified_by,
-                       trade_.audit.get().performed_by,
-                       trade_.audit.get().recorded_at, trade_.audit.get().change_reason_code,
-                       trade_.audit.get().change_commentary);
+    populateProvenance(trade_.identity.version, trade_.audit.modified_by,
+                       trade_.audit.performed_by,
+                       trade_.audit.recorded_at, trade_.audit.change_reason_code,
+                       trade_.audit.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -545,39 +545,39 @@ void TradeDetailDialog::updateTradeFromUi() {
     const int bookIdx = ui_->bookCombo->currentIndex();
     if (bookIdx >= 0 && bookIdx < static_cast<int>(books_.size())) {
         const auto& book = books_[static_cast<std::size_t>(bookIdx)];
-        trade_.parties.get().book_id = book.id;
-        trade_.parties.get().portfolio_id = book.parent_portfolio_id;
+        trade_.parties.book_id = book.id;
+        trade_.parties.portfolio_id = book.parent_portfolio_id;
     }
     const int cpIdx = ui_->counterpartyCombo->currentIndex();
     if (cpIdx > 0) {
         const auto& cp = counterparties_[static_cast<std::size_t>(cpIdx - 1)];
-        trade_.parties.get().counterparty_id = cp.id;
+        trade_.parties.counterparty_id = cp.id;
     } else {
-        trade_.parties.get().counterparty_id = std::nullopt;
+        trade_.parties.counterparty_id = std::nullopt;
     }
     if (createMode_)
-        trade_.identity.get().external_id = ui_->externalIdEdit->text().trimmed().toStdString();
-    trade_.classification.get().trade_type =
+        trade_.identity.external_id = ui_->externalIdEdit->text().trimmed().toStdString();
+    trade_.classification.trade_type =
         ui_->tradeTypeEdit->text().trimmed().toStdString();
     if (createMode_) {
-        auto it = tradeTypeCache_.find(trade_.classification.get().trade_type);
+        auto it = tradeTypeCache_.find(trade_.classification.trade_type);
         if (it != tradeTypeCache_.end())
-            trade_.classification.get().product_type = it->second.product_type;
+            trade_.classification.product_type = it->second.product_type;
     }
-    trade_.classification.get().activity_type_code =
+    trade_.classification.activity_type_code =
         ui_->lifecycleEventEdit->text().trimmed().toStdString();
-    trade_.classification.get().netting_set_id =
+    trade_.classification.netting_set_id =
         ui_->nettingSetIdEdit->text().trimmed().toStdString();
-    trade_.lifecycle.get().trade_date =
+    trade_.lifecycle.trade_date =
         ui_->tradeDateEdit->text().trimmed().toStdString();
-    trade_.lifecycle.get().effective_date =
+    trade_.lifecycle.effective_date =
         ui_->effectiveDateEdit->text().trimmed().toStdString();
-    trade_.lifecycle.get().termination_date =
+    trade_.lifecycle.termination_date =
         ui_->terminationDateEdit->text().trimmed().toStdString();
-    trade_.lifecycle.get().execution_timestamp =
+    trade_.lifecycle.execution_timestamp =
         ui_->executionTimestampEdit->text().trimmed().toStdString();
-    trade_.audit.get().modified_by = username_;
-    trade_.audit.get().performed_by = username_;
+    trade_.audit.modified_by = username_;
+    trade_.audit.performed_by = username_;
 }
 
 // ---------------------------------------------------------------------------
@@ -674,8 +674,8 @@ void TradeDetailDialog::onSaveClicked() {
         createMode_ ? "system" : "common");
     if (!crSel) return;
 
-    trade_.audit.get().change_reason_code = crSel->reason_code;
-    trade_.audit.get().change_commentary  = crSel->commentary;
+    trade_.audit.change_reason_code = crSel->reason_code;
+    trade_.audit.change_commentary  = crSel->commentary;
 
     if (activeForm_)
         activeForm_->setChangeReason(crSel->reason_code, crSel->commentary);
@@ -686,14 +686,14 @@ void TradeDetailDialog::onSaveClicked() {
 
     if (needsInstrumentSave) {
         BOOST_LOG_SEV(lg(), info)
-            << "Saving instrument then trade: " << trade_.identity.get().external_id;
+            << "Saving instrument then trade: " << trade_.identity.external_id;
         const auto saved_trade = trade_;
         activeForm_->saveInstrument(
             [this, saved_trade](const std::string& id) {
                 instrumentHasChanges_ = false;
                 auto t = saved_trade;
                 if (!id.empty())
-                    t.classification.get().instrument_id = boost::uuids::string_generator()(id);
+                    t.classification.instrument_id = boost::uuids::string_generator()(id);
                 saveTrade(t);
             },
             [this](const QString& err) {
@@ -704,7 +704,7 @@ void TradeDetailDialog::onSaveClicked() {
                     tr("Failed to save instrument:\n%1").arg(err));
             });
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.identity.get().external_id;
+        BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.identity.external_id;
         saveTrade(trade_);
     }
 }
@@ -722,7 +722,7 @@ void TradeDetailDialog::saveTrade(const trading::domain::trade& trade) {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Trade saved successfully";
-            QString code = QString::fromStdString(self->trade_.identity.get().external_id);
+            QString code = QString::fromStdString(self->trade_.identity.external_id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->tradeSaved(code);
@@ -758,7 +758,7 @@ void TradeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(trade_.identity.get().external_id);
+    QString code = QString::fromStdString(trade_.identity.external_id);
     auto reply = MessageBoxHelper::question(this, "Delete Trade",
         QString("Are you sure you want to delete trade '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
@@ -768,7 +768,7 @@ void TradeDetailDialog::onDeleteClicked() {
         ChangeReasonDialog::OperationType::Delete, true, "common");
     if (!crSel) return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting trade: " << trade_.identity.get().external_id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting trade: " << trade_.identity.external_id;
 
     struct DeleteResult { bool success; std::string message; };
 
@@ -791,7 +791,7 @@ void TradeDetailDialog::onDeleteClicked() {
         }
     });
 
-    watcher->setFuture(QtConcurrent::run([self, id = trade_.identity.get().id]() -> DeleteResult {
+    watcher->setFuture(QtConcurrent::run([self, id = trade_.identity.id]() -> DeleteResult {
         if (!self || !self->clientManager_)
             return {false, "Dialog closed"};
         trading::messaging::delete_trade_request req;

@@ -225,7 +225,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     CHECK(!xml.empty());
     CHECK(xml.contains("<Portfolio>"));
     CHECK(xml.contains("<SwapData>"));
-    CHECK(xml.contains(imported.front().trade.identity.get().external_id));
+    CHECK(xml.contains(imported.front().trade.identity.external_id));
 }
 
 TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
@@ -248,15 +248,15 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<FxForwardData>"));
-    CHECK(xml.contains(imported.front().trade.identity.get().external_id));
+    CHECK(xml.contains(imported.front().trade.identity.external_id));
 }
 
 TEST_CASE("export_portfolio_monostate_items_are_skipped", tags) {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
-    item.trade.identity.get().external_id = "UnmappedTrade001";
-    item.trade.classification.get().trade_type = "UnknownType";
+    item.trade.identity.external_id = "UnmappedTrade001";
+    item.trade.classification.trade_type = "UnknownType";
     // instrument left as monostate
 
     const auto xml = exporter::export_portfolio({item});

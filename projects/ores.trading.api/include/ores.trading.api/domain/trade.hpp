@@ -20,7 +20,6 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_HPP
 #define ORES_TRADING_DOMAIN_TRADE_HPP
 
-#include <rfl/Flatten.hpp>
 #include "ores.trading.api/domain/trade_identity.hpp"
 #include "ores.trading.api/domain/trade_parties.hpp"
 #include "ores.trading.api/domain/trade_classification.hpp"
@@ -36,17 +35,17 @@ namespace ores::trading::domain {
  * etc.) creates a new temporal row for the same trade id. The internal party
  * is derived from book_id via books.party_id.
  *
- * Composed of five sub-structs via rfl::Flatten so that the JSON wire format
- * remains flat while each sub-struct stays small enough to avoid MSVC C1202
- * (recursive template dependency context too complex) in rfl's O(n²)
- * field-uniqueness check.
+ * Composed of five sub-structs to keep each reflected struct small and avoid
+ * MSVC C1202 (recursive template dependency context too complex) in rfl's
+ * O(n²) field-uniqueness check.  The JSON wire format is nested:
+ * {"identity":{...}, "parties":{...}, ...}.
  */
 struct trade final {
-    rfl::Flatten<trade_identity> identity;
-    rfl::Flatten<trade_parties> parties;
-    rfl::Flatten<trade_classification> classification;
-    rfl::Flatten<trade_lifecycle> lifecycle;
-    rfl::Flatten<trade_audit> audit;
+    trade_identity identity;
+    trade_parties parties;
+    trade_classification classification;
+    trade_lifecycle lifecycle;
+    trade_audit audit;
 };
 
 }

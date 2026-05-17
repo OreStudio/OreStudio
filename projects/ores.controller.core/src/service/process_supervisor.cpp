@@ -443,6 +443,13 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
 
     write_pid_file(service_name, replica_index, pid);
 
+    // Register the process and start the monitor immediately so that stop_all()
+    // can always find and SIGTERM every launched process regardless of whether
+    // the post-launch DB writes have completed yet.
+    entry->retry.on_start();
+    processes_[key] = entry;
+    boost::asio::co_spawn(ioc_, monitor_process(entry), boost::asio::detached);
+
     // Switch to the DB thread pool for the post-launch DB writes so the
     // io_context is not blocked while the connection pool rebuilds or writes.
     co_await boost::asio::post(
@@ -487,17 +494,8 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
             << "DB update failed after launch of " << service_name
             << "[" << replica_index << "]: " << e.what();
     }
-
-    // Switch back to the io_context before mutating processes_ and co_spawning.
-    co_await boost::asio::post(
-        boost::asio::bind_executor(ioc_.get_executor(),
-            boost::asio::use_awaitable));
-
-    entry->retry.on_start();
-    processes_[key] = entry;
-
-    // Monitor the process in the background.
-    boost::asio::co_spawn(ioc_, monitor_process(entry), boost::asio::detached);
+    // do_launch ends here on the db_pool thread — that is fine since the
+    // coroutine is detached and no shared state is accessed after this point.
 }
 
 boost::asio::awaitable<void> process_supervisor::do_stop(

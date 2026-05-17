@@ -120,10 +120,10 @@ private:
 
         for (const auto& item : items) {
             const auto& t = item.trade;
-            if (!t.instrument_id || t.product_type == product_type::unknown) continue;
-            const auto id = boost::uuids::to_string(*t.instrument_id);
-            const auto& ttc = t.trade_type;
-            switch (t.product_type) {
+            if (!t.classification.instrument_id || t.classification.product_type == product_type::unknown) continue;
+            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
+            const auto& ttc = t.classification.trade_type;
+            switch (t.classification.product_type) {
             case product_type::bond:      bond_ids.push_back(id);      break;
             case product_type::credit:    credit_ids.push_back(id);    break;
             case product_type::commodity: commodity_ids.push_back(id); break;
@@ -375,8 +375,8 @@ private:
         // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
         for (auto& item : items) {
             const auto& t = item.trade;
-            if (!t.instrument_id || t.product_type == product_type::unknown) continue;
-            const auto id = boost::uuids::to_string(*t.instrument_id);
+            if (!t.classification.instrument_id || t.classification.product_type == product_type::unknown) continue;
+            const auto id = boost::uuids::to_string(*t.classification.instrument_id);
             if (auto it = imap.find(id); it != imap.end())
                 item.instrument = it->second;
         }

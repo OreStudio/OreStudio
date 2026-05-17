@@ -24,6 +24,36 @@ The UI component that manages workspaces needs a name.  Candidates:
 
 Final naming decision deferred; "Data Workshop" is used as a placeholder.
 
+* Workspace vs Scenario
+
+These two concepts must not be confused.
+
+A *workspace* is a *data context*: a stable, named collection of trades (scoped
+by portfolio and optionally narrowed to specific trade IDs), plus whatever
+market data, conventions, curve configs, pricing engine configs and today's
+market definitions belong to it — either stored locally or inherited from a
+parent workspace.  The workspace answers the question "what data are we working
+with?"  It is long-lived; multiple users can share it; its data does not change
+unless someone explicitly edits or imports into it.
+
+A *scenario* (in the OreStudio sense) is a *computation*: one execution of a
+report definition against a workspace.  "What is the NPV of my EUR book under a
++50bps parallel shift?" is a scenario.  Scenarios are ephemeral — they produce
+results (NPVs, sensitivities, PFE profiles) but do not change the workspace's
+data.  Multiple scenarios can be run against the same workspace without conflict.
+
+The common risk-system usage of "scenario" (a set of market data shocks) maps
+to OreStudio as a *child workspace that inherits from a parent and overrides
+specific curves or rates*.  The shocks live in the workspace; the scenario is
+the report execution that prices the trades against those shocks.
+
+In practice:
+- A trader creates a workspace "EUR rates +50bps" inheriting from Live,
+  overrides the EUR yield curve, sets the portfolio scope to their EUR desk.
+- They then run several report definitions (NPV, delta, bucketed DV01) as
+  separate scenarios within that workspace.
+- The workspace is reusable; each report run is a new scenario instance.
+
 * Problem Statement
 
 ** Two import tracks with incompatible data isolation requirements
@@ -76,16 +106,22 @@ Key properties:
 - *Layered (single-parent)*: a workspace may declare one parent workspace.
   Any data not present in the workspace is resolved from the parent, then the
   grandparent, and so on up the chain — the same model as Docker image layers.
-  The resolution order is simply the chain from the current workspace to the
-  root (workspace 0).
-- *Exclusions*: a workspace can explicitly exclude records inherited from
-  ancestors, hiding them from that workspace's view without deleting them from
-  the parent.
+  The resolution order is the chain from the current workspace to the root
+  (workspace 0).
+- *Trade-scoped via portfolio*: a workspace optionally declares a portfolio
+  scope (a real or virtual portfolio).  Only trades in the scoped books are
+  visible; all other inherited trades are hidden.  A trade whitelist can further
+  narrow the scope to specific trade IDs within those books.
+- *Non-trade data follows trades*: market data, conventions, curve configs,
+  pricing engine configs and today's market definitions are not independently
+  filtered.  They are either stored locally in the workspace (overriding the
+  parent's version for the same natural key) or inherited transparently.  There
+  is no separate scoping mechanism for reference data — it is all available and
+  the compute job uses whatever the workspace resolution chain provides.
 - *Scoped report definitions*: report definitions are scoped to a workspace.
-  Running one generates ORE input files from the workspace's first-class domain
-  objects (conventions, curves, market data, trades) via the workspace-aware
-  query mechanism and submits the job to the compute grid.  No raw ~ore.xml~
-  is stored — the domain objects are the source of truth.
+  Running one (a scenario) generates ORE input files from the workspace's
+  domain objects and submits the job to the compute grid.  See the
+  "Workspace vs Scenario" section above.
 - *Durable*: workspaces are long-lived; not deleted when the session ends.
 - *Non-promotable directly*: data cannot be directly promoted from a workspace
   to live.  A deliberate /copy/ operation is used instead.
@@ -105,8 +141,8 @@ Using ~id = 0~ rather than ~NULL~ means:
 
 ** Workspace table
 
-Single-parent inheritance: the parent FK lives directly on the workspace row.
-No separate parents table is needed.
+Single-parent inheritance and portfolio scope live directly on the workspace
+row.  No separate parents or scope tables are needed at the workspace level.
 
 #+begin_src sql
 create table ores_workspaces_tbl (
@@ -115,6 +151,9 @@ create table ores_workspaces_tbl (
     description         text         not null default '',
     source_path         text         not null default '',  -- original import path, if any
     parent_workspace_id integer      null references ores_workspaces_tbl(id),
+    -- Portfolio scope: NULL = inherit all books from parent chain.
+    -- Non-null = only trades in the books of this portfolio are visible.
+    scope_portfolio_id  uuid         null references ores_trading_portfolios_tbl(id),
     created_at          timestamptz  not null default now(),
     created_by          text         not null,
     status              text         not null default 'active',  -- active | archived
@@ -123,11 +162,35 @@ create table ores_workspaces_tbl (
 );
 
 -- Seed the live workspace (id must be 0; override the identity sequence).
--- Live has no parent — it is the root of all inheritance chains.
+-- Live has no parent and no portfolio scope — it sees everything.
 insert into ores_workspaces_tbl (id, name, description, created_by)
 overriding system value
 values (0, 'Live', 'Live production data space', 'system');
 #+end_src
+
+** Trade scope whitelist (optional further narrowing)
+
+When a workspace's portfolio scope still includes more trades than the user
+wants (e.g. they need just three specific trades from a large book), a trade
+whitelist provides exact selection.
+
+#+begin_src sql
+create table ores_workspace_trade_scope_tbl (
+    workspace_id  integer  not null references ores_workspaces_tbl(id),
+    trade_id      uuid     not null,  -- references ores_trading_trades_tbl(id)
+    primary key (workspace_id, trade_id)
+);
+#+end_src
+
+Semantics:
+- No rows for a workspace → all trades reachable via the portfolio scope are
+  visible.
+- Rows present → only listed trades are visible (must also be within the
+  portfolio scope; rows referencing out-of-scope trades are ignored).
+
+This is a positive selection (include list), not an exclusion list.  The common
+case of "one book" or "one desk" is handled entirely by ~scope_portfolio_id~
+and needs no whitelist rows at all.
 
 Example inheritance chains:
 
@@ -194,57 +257,56 @@ Affected tables (non-exhaustive):
 Tables that are genuinely global (users, IAM, parties, DQ FSM definitions,
 workflow definitions, workspace table itself) do *not* get ~workspace_id~.
 
-** Workspace exclusions
-
-A workspace can exclude specific records inherited from its ancestors, hiding
-them from that workspace's view without touching the parent.  This is the
-mechanism for "delete" within a layered workspace.
-
-#+begin_src sql
-create table ores_workspace_exclusions_tbl (
-    workspace_id  integer  not null references ores_workspaces_tbl(id),
-    table_name    text     not null,  -- e.g. 'ores_trading_trades_tbl'
-    record_id     uuid     not null,  -- PK of the excluded record
-    primary key (workspace_id, table_name, record_id)
-);
-#+end_src
-
-Exclusions apply to the declaring workspace only — they are not automatically
-inherited by child workspaces (a child that wants to re-hide the same record
-must add its own exclusion row).  This keeps the semantics simple: each
-workspace's exclusion list is local to that workspace.
-
 ** Workspace-aware data queries
 
-All workspace-aware queries filter by the resolution order array and exclude
-any records listed in ~ores_workspace_exclusions_tbl~ for the current
-workspace.
+Two query patterns cover all cases.
 
-*Point lookup* (single row by natural key):
+*Trade queries* additionally filter by portfolio scope and (if present) the
+trade whitelist:
 
 #+begin_src sql
-select * from ores_curveconfig_yieldcurve_tbl
-where name = 'EUR-EONIA'
-  and workspace_id = any(:resolution_order)
-  and id not in (
-      select record_id from ores_workspace_exclusions_tbl
-      where workspace_id = :current_workspace_id
-        and table_name = 'ores_curveconfig_yieldcurve_tbl')
-order by array_position(:resolution_order, workspace_id)
-limit 1;
+-- All trades visible in workspace :ws_id with resolution order :res_order
+select distinct on (t.id) t.*
+from ores_trading_trades_tbl t
+join ores_trading_books_tbl b on b.id = t.book_id
+-- Portfolio scope: if scope_portfolio_id is set, restrict to books in that portfolio
+left join ores_trading_portfolio_books_tbl pb
+    on pb.book_id = b.id
+    and pb.portfolio_id = (
+        select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id)
+where t.workspace_id = any(:res_order)
+  and (
+      -- No portfolio scope set: include all books
+      (select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id) is null
+      or pb.book_id is not null
+  )
+  and (
+      -- No trade whitelist: include all scoped trades
+      not exists (select 1 from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+      -- Trade whitelist active: only listed trades
+      or t.id in (select trade_id from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+  )
+order by t.id, array_position(:res_order, t.workspace_id);
 #+end_src
 
-*List query* (all rows of a type), with deduplication on natural key:
+*Non-trade data queries* (conventions, curves, market data, etc.) use only the
+resolution order — no portfolio or trade filtering:
 
 #+begin_src sql
+-- Point lookup by natural key
+select * from ores_curveconfig_yieldcurve_tbl
+where name = 'EUR-EONIA'
+  and workspace_id = any(:res_order)
+order by array_position(:res_order, workspace_id)
+limit 1;
+
+-- List query with deduplication on natural key
 select distinct on (name) *
 from ores_curveconfig_yieldcurve_tbl
-where workspace_id = any(:resolution_order)
-  and id not in (
-      select record_id from ores_workspace_exclusions_tbl
-      where workspace_id = :current_workspace_id
-        and table_name = 'ores_curveconfig_yieldcurve_tbl')
-order by name, array_position(:resolution_order, workspace_id);
+where workspace_id = any(:res_order)
+order by name, array_position(:res_order, workspace_id);
 #+end_src
 
 ** Report definitions as workspace-scoped ORE runs
@@ -439,9 +501,9 @@ The existing scheduling, lifecycle FSM, and execution pipeline are reused.
 
 ** Phase 1: Core schema
 
-1. Create ~ores_workspaces_tbl~ with ~parent_workspace_id~ nullable FK; seed
-   Live workspace (~id = 0~, no parent).
-2. Create ~ores_workspace_exclusions_tbl~.
+1. Create ~ores_workspaces_tbl~ with ~parent_workspace_id~ and
+   ~scope_portfolio_id~ nullable FKs; seed Live workspace (~id = 0~).
+2. Create ~ores_workspace_trade_scope_tbl~.
 3. Add ~workspace_id integer not null default 0~ to all affected tables.
 4. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
    ~parent_workspace_id~ inserts/updates.
@@ -488,12 +550,12 @@ The existing scheduling, lifecycle FSM, and execution pipeline are reused.
 
 * Open Questions
 
-1. *Exclusion inheritance*: exclusions are currently local to the declaring
-   workspace.  A child workspace does not automatically inherit its parent's
-   exclusions.  If a trader's workspace W5 (child of Live) excludes trade
-   IRS_001, a child W8 of W5 still sees IRS_001 unless it adds its own
-   exclusion row.  Whether exclusions should propagate down is a UX decision
-   — propagation is safer but more surprising.  Start with local-only.
+1. *Virtual portfolio design*: the workspace ~scope_portfolio_id~ references a
+   portfolio, which may be a real book-group or a user-created virtual portfolio
+   aggregating books from anywhere in the book tree.  Virtual portfolios need
+   their own design (or an extension of the existing portfolio model).  This is
+   a prerequisite for the trader what-if use case; ORE sample workspaces do not
+   need it (they have their own self-contained books).
 
 2. *risk_report_config extension scope*: ORE orchestration XMLs contain many
    settings beyond analytics type (simulation grid, sensitivity configs,

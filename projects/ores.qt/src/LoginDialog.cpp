@@ -400,6 +400,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
 
     labelFilterCombo_ = new QComboBox(parent);
     labelFilterCombo_->setStyleSheet(dialog_styles::combo_box);
+    labelFilterCombo_->setFixedHeight(36);
     labelFilterCombo_->setVisible(false);
     layout->addWidget(labelFilterCombo_);
 
@@ -419,6 +420,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     quickConnectCombo_ = new QComboBox(parent);
     quickConnectCombo_->addItem(tr("— connect manually —"));
     quickConnectCombo_->setStyleSheet(dialog_styles::combo_box);
+    quickConnectCombo_->setFixedHeight(36);
     quickConnectCombo_->setVisible(false);
     layout->addWidget(quickConnectCombo_);
 
@@ -436,7 +438,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     hostEdit_->setPlaceholderText("localhost");
     hostEdit_->setText("localhost");
     hostEdit_->setStyleSheet(dialog_styles::input_field);
-    hostEdit_->setFixedHeight(32);
+    hostEdit_->setFixedHeight(36);
     layout->addWidget(hostEdit_);
 
     layout->addSpacing(8);
@@ -450,7 +452,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     portSpinBox_->setRange(1, 65535);
     portSpinBox_->setValue(4222);
     portSpinBox_->setStyleSheet(dialog_styles::spin_box);
-    portSpinBox_->setFixedHeight(32);
+    portSpinBox_->setFixedHeight(36);
     layout->addWidget(portSpinBox_);
 
     layout->addSpacing(8);
@@ -464,7 +466,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     subjectPrefixEdit_->setPlaceholderText("e.g. ores.dev.local1  (leave empty for default)");
     subjectPrefixEdit_->setText("ores.dev.local1");
     subjectPrefixEdit_->setStyleSheet(dialog_styles::input_field);
-    subjectPrefixEdit_->setFixedHeight(32);
+    subjectPrefixEdit_->setFixedHeight(36);
     layout->addWidget(subjectPrefixEdit_);
 
     layout->addSpacing(12);

@@ -17,7 +17,7 @@ using namespace ores::logging;
 
 namespace {
     std::string {{domain_entity.entity_snake}}_key_extractor(const {{domain_entity.qt.domain_class}}& e) {
-        return e.{{domain_entity.qt.key_field}};
+        return e.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}};
     }
 }
 
@@ -66,24 +66,24 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#domain_entity.qt.columns}}
         case {{enum_name}}:
 {{#is_string}}
-            return QString::fromStdString({{domain_entity.qt.item_var}}.{{field}});
+            return QString::fromStdString({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_string}}
 {{#is_optional_string}}
-            return {{domain_entity.qt.item_var}}.{{field}}
-                ? QString::fromStdString(*{{domain_entity.qt.item_var}}.{{field}})
+            return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+                ? QString::fromStdString(*{{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
                 : QString{};
 {{/is_optional_string}}
 {{#is_uuid}}
-            return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{field}}));
+            return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_uuid}}
 {{#is_int}}
-            return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{field}});
+            return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_int}}
 {{#is_bool}}
-            return {{domain_entity.qt.item_var}}.{{field}} ? tr("true") : tr("false");
+            return {{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} ? tr("true") : tr("false");
 {{/is_bool}}
 {{#is_timestamp}}
-            return relative_time_helper::format({{domain_entity.qt.item_var}}.{{field}});
+            return relative_time_helper::format({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_timestamp}}
 {{/domain_entity.qt.columns}}
         default:
@@ -92,7 +92,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color({{domain_entity.qt.item_var}}.{{domain_entity.qt.key_field}});
+        return recency_foreground_color({{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}});
     }
 
     return {};

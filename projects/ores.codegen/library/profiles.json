@@ -535,6 +535,17 @@
           "output": "projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql"
         }
       ]
+    },
+
+    "field-group": {
+      "description": "Plain C++ field-group struct header. Generates a single .hpp with no primary key, no audit columns, no DB entity, no mapper, and no SQL. Use exclusively for splitting a large flat entity struct into logical sub-groups (e.g. rfl::Flatten<T> composition to stay under the MSVC C1202 template-depth limit). The composing parent struct is always hand-crafted.",
+      "model_types": ["field_group"],
+      "templates": [
+        {
+          "template": "cpp_field_group.hpp.mustache",
+          "output": "projects/ores.{component_include}/include/ores.{component_include}/domain/{entity}.hpp"
+        }
+      ]
     }
   }
 }

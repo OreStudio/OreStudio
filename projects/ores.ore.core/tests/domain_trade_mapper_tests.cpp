@@ -207,10 +207,10 @@ TEST_CASE("map_portfolio_with_multiple_trades", tags) {
     BOOST_LOG_SEV(lg, debug) << "Mapped " << result.size() << " trades";
 
     REQUIRE(result.size() == 3);
-    CHECK(result[0].external_id == "Swap_1");
-    CHECK(result[0].trade_type == "Swap");
-    CHECK(result[1].external_id == "FxFwd_1");
-    CHECK(result[1].trade_type == "FxForward");
-    CHECK(result[2].external_id == "Cap_1");
-    CHECK(result[2].trade_type == "CapFloor");
+    CHECK(result[0].identity.external_id == "Swap_1");
+    CHECK(result[0].classification.trade_type == "Swap");
+    CHECK(result[1].identity.external_id == "FxFwd_1");
+    CHECK(result[1].classification.trade_type == "FxForward");
+    CHECK(result[2].identity.external_id == "Cap_1");
+    CHECK(result[2].classification.trade_type == "CapFloor");
 }

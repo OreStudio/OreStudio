@@ -371,7 +371,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     passwordEdit_->setFixedHeight(36);
     layout->addWidget(passwordEdit_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* optionsRow = new QHBoxLayout();
     showPasswordCheck_ = new QCheckBox("Show password", parent);

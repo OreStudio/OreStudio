@@ -73,8 +73,14 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
     const auto& cmd = *parsed;
 
+    // Strip namespace prefix (e.g. "ores.dev.local3.") before map lookup.
+    const auto v1_pos = msg.subject.find("dq.v1.");
+    const std::string bare_subject = v1_pos != std::string_view::npos
+        ? std::string(msg.subject.substr(v1_pos))
+        : std::string(msg.subject);
+
     const auto& m = subject_fn_map();
-    const auto it = m.find(std::string(msg.subject));
+    const auto it = m.find(bare_subject);
     if (it == m.end()) {
         wf->fail("Unknown DQ publish-from-dq subject: "
             + std::string(msg.subject));

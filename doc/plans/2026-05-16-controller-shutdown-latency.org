@@ -1,0 +1,285 @@
+#+TITLE: Controller Startup and Shutdown Latency Fix
+#+SUBTITLE: Move blocking DB writes off the io_context thread in process_supervisor
+#+DATE: 2026-05-16
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSED
+#+OPTIONS: toc:t num:nil
+
+* Problem Statement
+
+** Shutdown: controller must be killed
+
+Running ~./build/scripts/stop-services.sh~ takes roughly 30 seconds and the
+controller process must be killed rather than exiting gracefully:
+
+#+begin_example
+Waiting for controller to exit............................................................... done
+  killed  PID 428643 (did not exit within grace period)
+#+end_example
+
+The 30-second grace period in ~stop-services.sh~ is not long enough for the
+controller to drain all its DB writes.
+
+** Startup: slow time-to-ready for all services
+
+~start-services.sh~ exits as soon as the controller process is launched — it
+does not wait for the controller to finish starting all supervised services.
+The controller runs ~start_all()~ asynchronously after start-services.sh
+returns, so from the operator's perspective services appear unavailable for a
+significant period after the script completes.
+
+Additionally, ~start_all()~ performs the same synchronous blocking DB writes
+per service (in ~do_launch()~) that cause the shutdown problem.  Each service
+launch blocks the io_context while writing a "started" event to the DB,
+serialising the startup of services that have no dependency relationship and
+could otherwise be launched in parallel.
+
+* Root Cause
+
+** Blocking DB writes inside ASIO coroutines
+
+~monitor_process()~ in ~process_supervisor.cpp~ is a ~co_spawn~-ed ASIO
+coroutine that runs on the controller's single-threaded ~io_context~.  When a
+supervised service exits, ~monitor_process()~ performs several synchronous,
+blocking libpqxx calls:
+
+#+begin_src cpp
+// process_supervisor.cpp:559-588
+try {
+    repository::service_instance_repository inst_repo;
+    inst_repo.update_phase(db_ctx_, *existing);   // blocking
+
+    repository::service_event_repository ev_repo;
+    ev_repo.insert(db_ctx_, ev);                  // blocking — up to 7 s
+} catch (...) { ... }
+#+end_src
+
+These calls block the ~io_context~ thread.  While one coroutine is blocked
+inside a DB write, every other pending coroutine is frozen: ~async_wait~
+completions for other exiting processes queue up and cannot fire.  The result
+is that all service-exit notifications are processed serially, gated by each
+blocking DB write.
+
+** Evidence from controller log
+
+The pattern repeats for every service during shutdown:
+
+#+begin_example
+21:08:42.317  Shutdown signal received. Draining...
+21:08:42.330  Stopped service ores.assets.service[0].     ← exits immediately after SIGTERM
+21:08:42.393  Inserting service event..                   ← DB write starts
+21:08:42.393  Pool connection dead → rebuilding           ← dead connection overhead
+21:08:49.830  Finished Inserting service event..          ← 7.4 s blocked!
+21:08:49.830  Stopped service ores.variability.service[0] ← only NOW can this fire
+#+end_example
+
+~ores.variability.service~ likely exited within a second of receiving SIGTERM,
+but its ~async_wait~ completion could not fire until the io_context was
+unblocked by the end of the assets DB write.
+
+Individual DB write durations observed:
+| Service              | DB write duration |
+|----------------------+-------------------|
+| ores.assets.service  | 7.4 s             |
+| ores.marketdata      | 7.0 s             |
+| ores.telemetry       | 5.3 s             |
+| ores.dq.service      | 1.7 s             |
+| ores.compute.service | 1.2 s             |
+| ores.ore.service     | 3.0 s             |
+
+With ~N~ services stopping, worst-case shutdown time ≈ sum of all DB write
+durations, serialised.
+
+** Secondary: dead pool connection on every operation
+
+Every DB operation during shutdown triggers "Pool connection dead
+(ROLLBACK failed: Query execution failed: no connection to the server)".
+The pool rebuilds in ~50 ms and the operation succeeds, so this is not the
+primary cause of the long shutdown — but it does add overhead and noise.
+
+The likely cause is PostgreSQL's server-side idle connection reaping
+(~tcp_keepalives_idle~ or ~idle_in_transaction_session_timeout~) killing
+connections that have been idle during steady-state operation.  The controller
+only writes to the DB when services start or stop, so its pool connections sit
+idle for extended periods between events.
+
+** Startup: do_launch() DB writes
+
+~do_launch()~ writes a "started" event to the DB synchronously inside the
+coroutine before returning.  Because ~start_all()~ calls ~co_await do_launch()~
+for each service sequentially, each blocking write delays the launch of the
+next service.  For services with no dependency relationship, this is pure
+wasted time.
+
+** Startup: start-services.sh does not wait for readiness
+
+~start-services.sh~ currently exits immediately after starting the controller.
+The operator has no way to know when the full service stack is ready from the
+terminal, and any elapsed-time measurement via the new ~Time :~ line only
+reflects the time to launch the controller process itself (~2–3 s), not the
+total time until services are usable.
+
+* Proposed Solution
+
+** Primary fix: DB thread pool for blocking writes
+
+Add a ~boost::asio::thread_pool db_pool_{1}~ to ~process_supervisor~.  Before
+each blocking DB section in ~monitor_process()~ and ~do_launch()~, switch the
+coroutine to the thread pool executor; switch back to the io_context afterwards
+if further shared-state access is needed.
+
+#+begin_src cpp
+// In monitor_process() — after all processes_ map mutations are done:
+
+// Switch to DB thread pool so the io_context is not blocked.
+co_await boost::asio::post(
+    boost::asio::bind_executor(db_pool_.get_executor(),
+        boost::asio::use_awaitable));
+
+try {
+    // All blocking DB calls go here.
+    inst_repo.update_phase(db_ctx_, *existing);
+    ev_repo.insert(db_ctx_, ev);
+} catch (const std::exception& e) {
+    BOOST_LOG_SEV(lg(), warn) << "DB update failed: " << e.what();
+}
+
+if (entry->stop_requested)
+    co_return;   // no more shared state — staying on db_pool thread is fine
+
+// Switch back to io_context before accessing processes_ for restart.
+co_await boost::asio::post(
+    boost::asio::bind_executor(ioc_.get_executor(),
+        boost::asio::use_awaitable));
+
+// Restart logic (accesses processes_ map) continues here on io_context thread.
+#+end_src
+
+A single-thread pool (~thread_pool{1}~) is sufficient and avoids concurrent DB
+connection pressure.  All ~processes_~  map access remains on the io_context
+thread, so no locks are needed on that map.
+
+** Secondary fix: idle connection keepalive
+
+Configure the database pool to issue a lightweight keepalive ping (~SELECT 1~)
+before returning a connection to a caller, or enable TCP keepalives in the
+libpqxx connection string.  This removes the ~"Pool connection dead"~ log
+noise and the ~50 ms pool-rebuild overhead on every event write.  It is not
+required for the primary fix but is easy to add.
+
+** Startup fix: log "all services started" with timestamp in the controller
+
+~process_supervisor::start_all()~ already logs ~"All services started."~ at
+INFO when it completes.  That timestamp in the controller log gives the exact
+time-to-ready.  No code change is required here — the operator can inspect the
+log.  However, adding a dedicated structured log line with elapsed time would
+make it searchable:
+
+#+begin_src cpp
+// At the end of start_all():
+const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+    std::chrono::steady_clock::now() - start_ts).count();
+BOOST_LOG_SEV(lg(), info)
+    << "All services started in " << elapsed << "s.";
+#+end_src
+
+** Startup fix: wait for controller readiness in start-services.sh
+
+Extend ~start-services.sh~ to wait until the controller log shows
+~"All services started"~ before printing the final timing line.  This gives
+the operator an accurate wall-clock cost for the full startup and a clear
+signal that the stack is ready.  Use the existing ~wait_for_ready~ shell
+function pattern (tail the log file, poll for the string, timeout after 120 s):
+
+#+begin_src bash
+wait_for_ready_string "ores.controller.service" "All services started"
+#+end_src
+
+The ~Time :~ line added to ~start-services.sh~ will then reflect the true
+time from launch to full service availability.
+
+* Files to Change
+
+| File | Change |
+|------+--------|
+| ~projects/ores.controller.core/include/ores.controller.core/service/process_supervisor.hpp~ | Add ~#include <boost/asio/thread_pool.hpp>~; add ~db_pool_~ member |
+| ~projects/ores.controller.core/src/service/process_supervisor.cpp~ | ~monitor_process()~: switch to ~db_pool_~ before DB writes, back to ~ioc_~ before restart |
+| ~projects/ores.controller.core/src/service/process_supervisor.cpp~ | ~do_launch()~: switch to ~db_pool_~ for post-launch DB writes |
+| ~projects/ores.controller.core/src/service/process_supervisor.cpp~ | ~start_all()~: log elapsed startup time at completion |
+| ~build/scripts/start-services.sh~ | Add ~wait_for_ready_string~ call for controller "All services started"; ~Time:~ line reflects true total startup |
+
+No schema changes.  No other services are affected.
+
+* Implementation Steps
+
+** Step 1: Add DB thread pool to process_supervisor
+
+Add ~boost::asio::thread_pool db_pool_{1}~ as a member of ~process_supervisor~
+(inline initialiser; destroyed after ~ioc_~ so any in-flight DB work completes
+before the destructor returns).  One thread is sufficient — avoids concurrent
+DB connections and matches the single-connection pool pattern already in use.
+
+** Step 2: Offload monitor_process() DB writes
+
+In ~monitor_process()~, all ~processes_~ map accesses complete by line 534
+(~remove_pid_file~).  After that line, switch to the DB pool executor:
+
+#+begin_src cpp
+co_await boost::asio::post(
+    boost::asio::bind_executor(db_pool_.get_executor(),
+        boost::asio::use_awaitable));
+
+// blocking DB writes go here (unchanged)
+try { ... inst_repo.update_phase(...); ev_repo.insert(...); }
+catch (...) { ... }
+
+if (entry->stop_requested)
+    co_return;  // no more shared state — ok to stay on db_pool thread
+
+// Switch back for restart logic (accesses processes_ map, calls do_launch)
+co_await boost::asio::post(
+    boost::asio::bind_executor(ioc_.get_executor(),
+        boost::asio::use_awaitable));
+
+// restart logic continues here on io_context thread
+#+end_src
+
+** Step 3: Offload do_launch() DB writes
+
+In ~do_launch()~, the DB try-catch block (lines 443–480) runs after
+~processes_[key] = entry~ and ~co_spawn monitor_process~.  Switch to
+~db_pool_~ immediately before the try-catch.  Since ~do_launch~ ends after
+those writes, no switch-back is needed.
+
+** Step 4: Elapsed time in start_all()
+
+Record ~std::chrono::steady_clock::now()~ at the top of ~start_all()~ and
+log the elapsed duration at the end.
+
+** Step 5: wait_for_ready_string in start-services.sh
+
+Add a shell helper ~wait_for_ready_string(name, pattern)~ analogous to the
+existing ~wait_for_ready~ function but matching a fixed string instead of
+"Service ready".  Call it after launching the controller:
+
+#+begin_src bash
+wait_for_ready_string "ores.controller.service" "All services started"
+#+end_src
+
+Update the final ~Time :~ line so it prints after this wait completes.
+
+** Step 6 (optional): Idle connection keepalive
+
+In ~ores.database.domain.tenant_aware_pool~, add a ~SELECT 1~ validation
+in ~acquire()~ before returning a connection.  On failure, rebuild the pool
+and retry once.  This removes the rebuild noise from normal shutdown and from
+any future long idle periods.
+
+* Expected Outcome
+
+| Metric | Before | After |
+|--------+--------+-------|
+| Shutdown time | ~30 s, killed | ~5–8 s, clean exit |
+| Startup script exit time | ~2–3 s (controller launched only) | Reflects true time-to-ready |
+| io_context blocked during shutdown | Yes, serially per service | No — DB writes on thread pool |
+| "Pool connection dead" log noise | Every operation | Eliminated (Step 6) |

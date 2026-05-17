@@ -520,8 +520,12 @@ void WorkflowMdiWindow::populateDashboard(
                 make_item(QString::fromStdString(inst.type)));
             failuresTable_->setItem(row, static_cast<int>(FCol::CreatedAt),
                 make_item(QString::fromStdString(inst.created_at)));
-            failuresTable_->setItem(row, static_cast<int>(FCol::Error),
-                make_item(QString::fromStdString(inst.error)));
+            {
+                const auto errStr = QString::fromStdString(inst.error);
+                auto* errItem = make_item(errStr);
+                errItem->setToolTip(errStr);
+                failuresTable_->setItem(row, static_cast<int>(FCol::Error), errItem);
+            }
         }
     }
 
@@ -774,8 +778,9 @@ void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
 
     auto* dlg = new QDialog(nullptr);  // no parent → independent top-level window
     dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setWindowModality(Qt::NonModal);
     dlg->setWindowTitle(tr("Step details — %1").arg(stepName));
-    dlg->resize(760, 600);
+    dlg->resize(UiPersistence::restoreSize("StepDetailDialog", {760, 600}));
 
     auto* vbox = new QVBoxLayout(dlg);
 
@@ -819,6 +824,10 @@ void WorkflowMdiWindow::onStepDoubleClicked(int row, int /*col*/) {
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, dlg);
     connect(buttons, &QDialogButtonBox::rejected, dlg, &QDialog::accept);
     vbox->addWidget(buttons);
+
+    connect(dlg, &QDialog::finished, dlg, [dlg](int) {
+        UiPersistence::saveSize("StepDetailDialog", dlg);
+    });
 
     dlg->show();
 }

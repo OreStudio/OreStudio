@@ -20,6 +20,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/UiPersistence.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -151,6 +152,9 @@ void DetachableMdiSubWindow::closeEvent(QCloseEvent* event) {
             }
         }
     }
+
+    if (!geometryKey_.isEmpty())
+        UiPersistence::saveMdiGeometry(geometryKey_, this);
 
     QMdiSubWindow::closeEvent(event);
 }

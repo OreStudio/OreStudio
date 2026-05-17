@@ -25,6 +25,7 @@
 #include <QPointer>
 #include <QPoint>
 #include <QSize>
+#include <QString>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/export.hpp"
 
@@ -55,6 +56,7 @@ public:
     ~DetachableMdiSubWindow() override = default;
 
     bool isDetached() const { return isDetached_; }
+    void setGeometryKey(const QString& key) { geometryKey_ = key; }
 
 public slots:
     void detach();
@@ -71,6 +73,7 @@ private:
     QPointer<QMdiArea> savedMdiArea_;
     QPoint savedMdiPosition_;
     QSize savedMdiSize_;
+    QString geometryKey_;
 };
 
 }

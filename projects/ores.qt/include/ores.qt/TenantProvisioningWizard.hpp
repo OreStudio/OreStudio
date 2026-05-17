@@ -321,6 +321,16 @@ private:
 class TenantPartySetupPage final : public QWizardPage {
     Q_OBJECT
 
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.tenant_party_setup_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit TenantPartySetupPage(TenantProvisioningWizard* wizard);
     void initializePage() override;

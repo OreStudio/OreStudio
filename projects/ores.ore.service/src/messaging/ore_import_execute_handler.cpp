@@ -72,6 +72,8 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request,
                 Req::nats_subject, result.error().what());
             return std::nullopt;
         }
+        if (!result->success)
+            out_error = result->message;
         return *result;
     } catch (const std::exception& e) {
         out_error = std::format("Exception calling {}: {}",

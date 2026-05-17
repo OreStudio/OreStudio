@@ -40,8 +40,13 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 #   1  Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER ->
 #      ORES_DB_COMPUTE_WRAPPER_USER so it matches the variable name used in
 #      setup_database.sh.
+#   2  Removed ORES_WT_PORT; the WT port is now owned exclusively by the
+#      controller via ORES_CONTROLLER_SERVICE_WT_PORT and substituted into
+#      the wt.service launch template as {wt_port}.  ORES_WT_PORT was being
+#      mapped to an unknown option name by the wt.service parser, causing an
+#      "unrecognised option" crash on startup.
 # ---------------------------------------------------------------------------
-ENV_VERSION=1
+ENV_VERSION=2
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -402,7 +407,6 @@ ORES_DATABASE_NAME=${DB_NAME}
 # Run build/scripts/init-nats.sh to generate the server config and store dir.
 # ---------------------------------------------------------------------------
 ORES_HTTP_PORT=${HTTP_PORT}
-ORES_WT_PORT=${WT_PORT}
 ORES_CONTROLLER_SERVICE_HTTP_PORT=${HTTP_PORT}
 ORES_CONTROLLER_SERVICE_WT_PORT=${WT_PORT}
 ORES_NATS_PORT=${NATS_PORT}

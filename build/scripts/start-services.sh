@@ -54,6 +54,9 @@ set -a
 source "$ENV_FILE"
 set +a
 
+# shellcheck source=../../projects/ores.sql/utility/validate_env_version.sh
+source "$PROJECT_DIR/projects/ores.sql/utility/validate_env_version.sh"
+
 # --preset flag takes priority; fall back to ORES_PRESET from .env.
 PRESET="${PRESET_ARG:-${ORES_PRESET:-}}"
 if [[ -z "$PRESET" ]]; then
@@ -241,8 +244,13 @@ wait_for_nats() {
     local port="$1"
     printf "  wait    nats-server (port %d)" "$port"
     local i
-    for i in $(seq 1 60); do
-        if (echo > /dev/tcp/localhost/"$port") 2>/dev/null; then
+    # Use ss to check the LISTEN state rather than a TCP connect: the TCP
+    # connect probe fails when the server requires mTLS (the TLS handshake
+    # error causes bash's /dev/tcp write to be rejected before ss reports
+    # the port as connectable). ss sees the LISTEN socket immediately.
+    # 120 iterations × 0.5 s = 60 s — enough for JetStream replay on large stores.
+    for i in $(seq 1 120); do
+        if ss -tlnH "sport = :$port" 2>/dev/null | grep -q .; then
             echo " ... ready"
             return 0
         fi
@@ -279,6 +287,7 @@ wait_for_ready() {
 }
 
 # ============================================================
+_start_ts=$(date +%s)
 echo "Starting ORE Studio services"
 echo "  Preset : $PRESET"
 TLS_STATUS="${NATS_TLS_CA:+enabled}"
@@ -326,5 +335,7 @@ echo ""
 
 # JetStream streams are self-provisioned by each service on startup.
 
+_end_ts=$(date +%s)
 echo "Logs : $LOG_DIR"
 echo "Stop : ./build/scripts/stop-services.sh"
+echo "Time : $(( _end_ts - _start_ts ))s"

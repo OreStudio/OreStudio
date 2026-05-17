@@ -44,6 +44,7 @@
 #include "ores.qt/TradeHistoryDialog.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
@@ -415,7 +416,12 @@ void TradeController::showDetailWindow(
     });
 
     connect_dialog_close(detailDialog, detailWindow);
+    detailWindow->setGeometryKey("TradeDetailDialog");
     show_managed_window(detailWindow, listMdiSubWindow_);
+
+    if (!UiPersistence::restoreMdiGeometry("TradeDetailDialog", detailWindow)) {
+        detailWindow->resize(700, 620);
+    }
 }
 
 void TradeController::showHistoryWindow(

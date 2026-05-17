@@ -18,12 +18,13 @@
 
 set -euo pipefail
 
-REQUIRED_ENV_VERSION=1
+REQUIRED_ENV_VERSION=2
 
 # One entry per version number (index 0 is a placeholder).
 CHANGELOG=(
     ""
     "1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER"
+    "2: Removed ORES_WT_PORT; WT port is now owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT"
 )
 
 CURRENT_VERSION="${ORES_ENV_VERSION:-0}"

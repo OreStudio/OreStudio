@@ -1,0 +1,164 @@
+#+TITLE: MSVC C1202 — Decompose trade into Sub-Structs
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: TODO
+
+* Problem
+
+MSVC has an internal hard limit on recursive template / constexpr-type
+dependency depth, reported as error C1202:
+
+#+begin_example
+fatal error C1202: recursive type or function dependency context too complex
+#+end_example
+
+The limit is triggered by =reflect-cpp='s =rfl/internal/no_duplicate_field_names.hpp=,
+which performs a compile-time field-uniqueness check via deeply recursive
+template instantiation.  The check scales roughly as O(n²) in the number of
+reflected fields; =trade= at 25 fields produces the deepest instantiation in
+the codebase.  Any TU that reflects both =get_trades_response= (a
+=vector<trade>=) and a second large rfl type reliably hits the limit and
+aborts.
+
+** Current workaround
+
+PRs #754 and #757 split =ClientManager.cpp= into focused per-function TUs so
+that each large rfl instantiation is isolated:
+
+| File | Content |
+|------+---------|
+| =ClientManagerTrades.cpp= | =listTrades()= only |
+| =ClientManagerTradeDetail.cpp= | =getTradeDetail()= only |
+
+The split is pragmatic but artificial: the two functions logically belong
+together and are separated only to satisfy the compiler.  The split must be
+maintained manually as =trade= gains fields, and it does not remove the
+underlying constraint.
+
+* Proposed Fix — Decompose =trade= into Sub-Structs
+
+Split =trade= (25 fields) into nested sub-structs so that each rfl
+instantiation stays shallow.  The SQL table remains flat; the ORM mapper
+and the JSON wire format absorb the structural change.
+
+** Current fields (25)
+
+| Field | Group |
+|-------+-------|
+| =tenant_id=, =id=, =version=, =party_id= | identity |
+| =book_id=, =portfolio_id=, =counterparty_id=, =successor_trade_id= | parties |
+| =trade_type=, =product_type=, =instrument_id=, =asset_class=, =netting_set_id=, =activity_type_code=, =status_id= | classification |
+| =trade_date=, =effective_date=, =termination_date=, =execution_timestamp= | lifecycle |
+| =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=, =recorded_at= | audit |
+
+** Proposed sub-struct layout
+
+#+begin_src cpp
+struct trade_identity {        // 4 fields
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid id;
+    int version = 0;
+    boost::uuids::uuid party_id;
+};
+
+struct trade_parties {         // 4 fields
+    boost::uuids::uuid book_id;
+    boost::uuids::uuid portfolio_id;
+    std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<boost::uuids::uuid> successor_trade_id;
+};
+
+struct trade_classification {  // 7 fields
+    std::string trade_type;
+    domain::product_type product_type = domain::product_type::unknown;
+    std::optional<boost::uuids::uuid> instrument_id;
+    std::optional<std::string> asset_class;
+    std::string netting_set_id;
+    std::string activity_type_code;
+    boost::uuids::uuid status_id;
+};
+
+struct trade_lifecycle {       // 4 fields
+    std::optional<std::string> trade_date;
+    std::optional<std::string> effective_date;
+    std::optional<std::string> termination_date;
+    std::optional<std::string> execution_timestamp;
+};
+
+struct trade_audit {           // 5 fields
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+struct trade final {           // 5 fields (sub-structs only)
+    trade_identity identity;
+    trade_parties parties;
+    trade_classification classification;
+    trade_lifecycle lifecycle;
+    trade_audit audit;
+};
+#+end_src
+
+With this layout the deepest rfl instantiation is =trade_classification= at 7
+fields, well under the limit on any platform.
+
+** Wire format
+
+=rfl::Flatten<sub_struct>= instructs reflect-cpp to inline the sub-struct's
+fields into the parent JSON object, preserving the existing flat wire format.
+Verify this compiles and round-trips before committing the struct layout.
+
+If =rfl::Flatten= is unavailable or unsuitable, the wire format changes to
+nested JSON (={"identity": {...}, "parties": {...}}=); all NATS message
+consumers would need updating.  Prefer the flatten approach.
+
+** SQL / DB impact
+
+The =ores_trading_trades_tbl= table stays flat.  No schema migration is
+needed.  The ORM mapper (pqxx row → =trade=) must be updated to populate each
+sub-struct field from the flat SQL row.
+
+* Scope of Changes
+
+| Area | Change |
+|------+--------|
+| =ores.trading.api/include/.../domain/trade.hpp= | Replace flat struct with five sub-structs + parent |
+| Codegen model =trade_domain_entity.json= | Update column layout to reflect sub-struct grouping (documentation / generator alignment) |
+| ORM mapper (=trade_mapper.*=) | Populate sub-struct fields from flat SQL row |
+| NATS message handlers | Update field access paths (=t.book_id= → =t.parties.book_id=) |
+| Qt =ClientTradesModel= | Update column accessors |
+| ORE importer / exporter | Update field access paths |
+| Tests | Fix any direct struct construction that breaks |
+| =ClientManagerTrades.cpp= / =ClientManagerTradeDetail.cpp= | Reunite into =ClientManager.cpp= once C1202 no longer fires |
+
+* Risks
+
+- *rfl::Flatten availability*: if reflect-cpp does not support field flattening,
+  the wire format change cascades to all NATS consumers.  Verify first.
+- *Mapper effort*: the pqxx row mapper reads columns by name into a flat struct.
+  Changing to sub-struct access is mechanical but touches every trade read path.
+- *Field access churn*: every call site that reads =trade= fields needs updating
+  (=t.book_id= → =t.parties.book_id= etc.).  A project-wide grep will surface the
+  scope before starting.
+
+* Execution Order
+
+1. Verify =rfl::Flatten= compiles and preserves JSON round-trip on a toy struct.
+2. Define the five sub-structs and the new =trade= in a scratch branch; confirm
+   C1202 is gone on Windows CI.
+3. Update the ORM mapper.
+4. Fix all field access sites (grep-driven; expect ~50–100 call sites).
+5. Update tests.
+6. Reunite =ClientManagerTrades.cpp= and =ClientManagerTradeDetail.cpp= into
+   =ClientManager.cpp=.
+7. Update the codegen model to match the new layout.
+
+* References
+
+- PR #754 — initial =ClientManager= TU split
+- PR #757 — =getTradeDetail= split + =workflow.api= export fix
+- reflect-cpp =rfl::Flatten=: [[https://github.com/getml/reflect-cpp][getml/reflect-cpp]]
+- MSVC C1202: [[https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-2/compiler-error-c1202][C1202 error]]

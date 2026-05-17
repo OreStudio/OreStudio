@@ -58,6 +58,21 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
     check ("{{domain_entity.primary_key.column}}" <> ''){{/domain_entity.primary_key.is_text}}{{#domain_entity.sql.extra_checks}},
     check ({{{.}}}){{/domain_entity.sql.extra_checks}}
 );
+{{#domain_entity.has_multiple_natural_keys}}
+
+-- Composite natural key: unique combination for active records
+{{#domain_entity.has_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_id}}
+{{^domain_entity.has_tenant_id}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_id}}
+{{/domain_entity.has_multiple_natural_keys}}
+{{^domain_entity.has_multiple_natural_keys}}
 {{#domain_entity.natural_keys}}
 
 -- Unique {{column}} for active records
@@ -72,6 +87,7 @@ on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
+{{/domain_entity.has_multiple_natural_keys}}
 
 -- Version uniqueness for optimistic concurrency
 {{#domain_entity.has_tenant_in_pk}}

@@ -52,14 +52,14 @@ TEST_CASE("map_trade_with_swap_type", tags) {
     ore_trade.TradeType = oreTradeType::Swap;
 
     const auto result = trade_mapper::map(ore_trade);
-    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.external_id;
+    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.identity.external_id;
 
-    CHECK(result.external_id == "Swap_20y");
-    CHECK(result.trade_type == "Swap");
-    CHECK(result.activity_type_code == "new_booking");
-    CHECK(result.modified_by == "ores");
-    CHECK(result.change_reason_code == "system.external_data_import");
-    CHECK(result.change_commentary == "Imported from ORE XML portfolio");
+    CHECK(result.identity.external_id == "Swap_20y");
+    CHECK(result.classification.trade_type == "Swap");
+    CHECK(result.classification.activity_type_code == "new_booking");
+    CHECK(result.audit.modified_by == "ores");
+    CHECK(result.audit.change_reason_code == "system.external_data_import");
+    CHECK(result.audit.change_commentary == "Imported from ORE XML portfolio");
 }
 
 TEST_CASE("map_trade_with_fx_forward_type", tags) {
@@ -70,10 +70,10 @@ TEST_CASE("map_trade_with_fx_forward_type", tags) {
     ore_trade.TradeType = oreTradeType::FxForward;
 
     const auto result = trade_mapper::map(ore_trade);
-    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.external_id;
+    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.identity.external_id;
 
-    CHECK(result.external_id == "FxFwd_EUR_USD_1");
-    CHECK(result.trade_type == "FxForward");
+    CHECK(result.identity.external_id == "FxFwd_EUR_USD_1");
+    CHECK(result.classification.trade_type == "FxForward");
 }
 
 TEST_CASE("map_trade_all_trade_types_produce_non_empty_string", tags) {
@@ -106,7 +106,7 @@ TEST_CASE("map_trade_all_trade_types_produce_non_empty_string", tags) {
 
         const auto result = trade_mapper::map(ore_trade);
         INFO("Trade type: " << tc.expected);
-        CHECK(result.trade_type == tc.expected);
+        CHECK(result.classification.trade_type == tc.expected);
     }
 }
 
@@ -131,11 +131,11 @@ TEST_CASE("map_trade_with_envelope_and_netting_set", tags) {
     ore_trade.Envelope = env;
 
     const auto result = trade_mapper::map(ore_trade);
-    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.external_id
-                             << " netting_set: " << result.netting_set_id;
+    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.identity.external_id
+                             << " netting_set: " << result.classification.netting_set_id;
 
-    CHECK(result.external_id == "Swap_1");
-    CHECK(result.netting_set_id == "NS_CPTY_A");
+    CHECK(result.identity.external_id == "Swap_1");
+    CHECK(result.classification.netting_set_id == "NS_CPTY_A");
 }
 
 TEST_CASE("map_trade_without_envelope_leaves_netting_set_empty", tags) {
@@ -147,9 +147,9 @@ TEST_CASE("map_trade_without_envelope_leaves_netting_set_empty", tags) {
     // No Envelope set
 
     const auto result = trade_mapper::map(ore_trade);
-    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.external_id;
+    BOOST_LOG_SEV(lg, debug) << "Mapped trade: " << result.identity.external_id;
 
-    CHECK(result.netting_set_id.empty());
+    CHECK(result.classification.netting_set_id.empty());
 }
 
 TEST_CASE("map_trade_leaves_uuid_fields_as_nil", tags) {
@@ -162,11 +162,11 @@ TEST_CASE("map_trade_leaves_uuid_fields_as_nil", tags) {
     const auto result = trade_mapper::map(ore_trade);
     const auto nil = boost::uuids::nil_uuid();
 
-    CHECK(result.id == nil);
-    CHECK(result.party_id == nil);
-    CHECK(result.book_id == nil);
-    CHECK(result.portfolio_id == nil);
-    CHECK_FALSE(result.counterparty_id.has_value());
+    CHECK(result.identity.id == nil);
+    CHECK(result.identity.party_id == nil);
+    CHECK(result.parties.book_id == nil);
+    CHECK(result.parties.portfolio_id == nil);
+    CHECK_FALSE(result.parties.counterparty_id.has_value());
 }
 
 // =============================================================================

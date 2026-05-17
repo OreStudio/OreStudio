@@ -178,24 +178,24 @@ void TradeHistoryDialog::updateVersionList() {
         int row = ui_->versionListWidget->rowCount();
         ui_->versionListWidget->insertRow(row);
 
-        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.identity.version));
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
 
         auto* recordedAtItem = new QTableWidgetItem(
-            relative_time_helper::format(version.recorded_at));
+            relative_time_helper::format(version.audit.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
         auto* modifiedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.modified_by));
+            QString::fromStdString(version.audit.modified_by));
         ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
         auto* performedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.performed_by));
+            QString::fromStdString(version.audit.performed_by));
         ui_->versionListWidget->setItem(row, 3, performedByItem);
 
         auto* commentaryItem = new QTableWidgetItem(
-            QString::fromStdString(version.change_commentary));
+            QString::fromStdString(version.audit.change_commentary));
         ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
@@ -250,46 +250,46 @@ void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.external_id != previous.external_id) {
+    if (current.identity.external_id != previous.identity.external_id) {
         addChange("External ID",
-                  QString::fromStdString(previous.external_id),
-                  QString::fromStdString(current.external_id));
+                  QString::fromStdString(previous.identity.external_id),
+                  QString::fromStdString(current.identity.external_id));
     }
 
-    if (current.trade_type != previous.trade_type) {
+    if (current.classification.trade_type != previous.classification.trade_type) {
         addChange("Trade Type",
-                  QString::fromStdString(previous.trade_type),
-                  QString::fromStdString(current.trade_type));
+                  QString::fromStdString(previous.classification.trade_type),
+                  QString::fromStdString(current.classification.trade_type));
     }
 
-    if (current.activity_type_code != previous.activity_type_code) {
+    if (current.classification.activity_type_code != previous.classification.activity_type_code) {
         addChange("Lifecycle Event",
-                  QString::fromStdString(previous.activity_type_code),
-                  QString::fromStdString(current.activity_type_code));
+                  QString::fromStdString(previous.classification.activity_type_code),
+                  QString::fromStdString(current.classification.activity_type_code));
     }
 
-    if (current.netting_set_id != previous.netting_set_id) {
+    if (current.classification.netting_set_id != previous.classification.netting_set_id) {
         addChange("Netting Set",
-                  QString::fromStdString(previous.netting_set_id),
-                  QString::fromStdString(current.netting_set_id));
+                  QString::fromStdString(previous.classification.netting_set_id),
+                  QString::fromStdString(current.classification.netting_set_id));
     }
 
-    if (current.trade_date != previous.trade_date) {
+    if (current.lifecycle.trade_date != previous.lifecycle.trade_date) {
         addChange("Trade Date",
-                  QString::fromStdString(previous.trade_date.value_or("")),
-                  QString::fromStdString(current.trade_date.value_or("")));
+                  QString::fromStdString(previous.lifecycle.trade_date.value_or("")),
+                  QString::fromStdString(current.lifecycle.trade_date.value_or("")));
     }
 
-    if (current.effective_date != previous.effective_date) {
+    if (current.lifecycle.effective_date != previous.lifecycle.effective_date) {
         addChange("Effective Date",
-                  QString::fromStdString(previous.effective_date.value_or("")),
-                  QString::fromStdString(current.effective_date.value_or("")));
+                  QString::fromStdString(previous.lifecycle.effective_date.value_or("")),
+                  QString::fromStdString(current.lifecycle.effective_date.value_or("")));
     }
 
-    if (current.termination_date != previous.termination_date) {
+    if (current.lifecycle.termination_date != previous.lifecycle.termination_date) {
         addChange("Termination Date",
-                  QString::fromStdString(previous.termination_date.value_or("")),
-                  QString::fromStdString(current.termination_date.value_or("")));
+                  QString::fromStdString(previous.lifecycle.termination_date.value_or("")),
+                  QString::fromStdString(current.lifecycle.termination_date.value_or("")));
     }
 
     if (current.execution_timestamp != previous.execution_timestamp) {
@@ -316,19 +316,19 @@ void TradeHistoryDialog::updateFullDetails(int versionIndex) {
 
     const auto& version = versions_[versionIndex];
 
-    ui_->externalIdValue->setText(QString::fromStdString(version.external_id));
-    ui_->tradeTypeValue->setText(QString::fromStdString(version.trade_type));
-    ui_->lifecycleEventValue->setText(QString::fromStdString(version.activity_type_code));
-    ui_->nettingSetIdValue->setText(QString::fromStdString(version.netting_set_id));
-    ui_->tradeDateValue->setText(QString::fromStdString(version.trade_date.value_or("")));
-    ui_->effectiveDateValue->setText(QString::fromStdString(version.effective_date.value_or("")));
-    ui_->terminationDateValue->setText(QString::fromStdString(version.termination_date.value_or("")));
+    ui_->externalIdValue->setText(QString::fromStdString(version.identity.external_id));
+    ui_->tradeTypeValue->setText(QString::fromStdString(version.classification.trade_type));
+    ui_->lifecycleEventValue->setText(QString::fromStdString(version.classification.activity_type_code));
+    ui_->nettingSetIdValue->setText(QString::fromStdString(version.classification.netting_set_id));
+    ui_->tradeDateValue->setText(QString::fromStdString(version.lifecycle.trade_date.value_or("")));
+    ui_->effectiveDateValue->setText(QString::fromStdString(version.lifecycle.effective_date.value_or("")));
+    ui_->terminationDateValue->setText(QString::fromStdString(version.lifecycle.termination_date.value_or("")));
     ui_->executionTimestampValue->setText(QString::fromStdString(version.execution_timestamp.value_or("")));
-    ui_->versionNumberValue->setText(QString::number(version.version));
-    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->versionNumberValue->setText(QString::number(version.identity.version));
+    ui_->modifiedByValue->setText(QString::fromStdString(version.audit.modified_by));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.audit.recorded_at));
     ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+        QString::fromStdString(version.audit.change_commentary));
 }
 
 void TradeHistoryDialog::updateActionStates() {

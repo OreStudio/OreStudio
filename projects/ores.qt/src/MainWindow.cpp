@@ -50,6 +50,7 @@
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/plugin_context.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -1606,6 +1607,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.http_base_url = httpBaseUrl_.empty() && clientManager_
         ? clientManager_->httpBaseUrl()
         : httpBaseUrl_;
+    ctx.workspace_context = WorkspaceContext{};
+    mdiArea_->setProperty("ores_workspace_context",
+        QVariant::fromValue(ctx.workspace_context));
 
     // Drive plugin lifecycle in load_order sequence.
     // Menus were already created in the constructor; on_login() wires up controllers.

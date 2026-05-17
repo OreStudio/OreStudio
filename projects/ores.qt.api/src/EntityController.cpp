@@ -20,8 +20,10 @@
 #include "ores.qt/EntityController.hpp"
 
 #include <QPointer>
+#include <QVariant>
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 
 namespace ores::qt {
 
@@ -164,6 +166,15 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     // triggers a re-decoration that leaves a blank black strip above the content.
     window->setWindowFlags(window->windowFlags() & ~Qt::WindowMaximizeButtonHint);
     mdiArea_->addSubWindow(window);
+
+    auto wvar = mdiArea_->property("ores_workspace_context");
+    if (wvar.isValid()) {
+        const auto wctx = wvar.value<WorkspaceContext>();
+        if (!wctx.is_live()) {
+            window->setWindowTitle(
+                window->windowTitle() + " [" + wctx.name + "]");
+        }
+    }
 
     if (referenceWindow && referenceWindow->isDetached()) {
         window->show();

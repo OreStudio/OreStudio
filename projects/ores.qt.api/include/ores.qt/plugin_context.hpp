@@ -23,6 +23,7 @@
 #include <string>
 #include <QString>
 #include "ores.qt/export.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 
 class QMainWindow;
 class QMdiArea;
@@ -53,8 +54,9 @@ struct ORES_QT_API plugin_context {
     ChangeReasonCache*  change_reason_cache = nullptr;
     BadgeCache*         badge_cache         = nullptr;
     std::shared_ptr<eventing::service::event_bus> event_bus;
-    QString     username;
-    std::string http_base_url;
+    QString           username;
+    std::string       http_base_url;
+    WorkspaceContext  workspace_context;
 };
 
 }

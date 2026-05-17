@@ -1,5 +1,5 @@
-#+TITLE: Data Sandbox — Isolated Workspace Design
-#+SUBTITLE: Self-contained, isolated data contexts within OreStudio; prerequisite for ORE sample import and multi-track data import
+#+TITLE: Workspace — Isolated Data Context Design
+#+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
 #+STATUS: PROPOSED
@@ -7,23 +7,22 @@
 
 * Related Plans
 
-- [[file:2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] — the import design that
-  requires sandboxes as a prerequisite.  Track 1 (educational/sample import)
-  is blocked until sandboxes are implemented.  Track 2 (production live import)
-  is independent and can proceed without this plan.
+- [[file:2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] — import design that
+  depends on workspaces for Track 1 (educational/sample import).  Track 2
+  (production live import) is independent.
+- [[file:2026-03-01-reporting-component-design.org][Reporting Component Design]] — defines ~report_definition~ and
+  ~risk_report_config~.  ORE orchestration files stored within workspaces
+  extend this infrastructure rather than introducing a new table.
 
 * Note on naming
 
-The concept is called "Data Sandbox" in this document as a working name.  The
-UI component that manages sandboxes needs a better name.  Candidates:
+The UI component that manages workspaces needs a name.  Candidates:
 
 - /Data Workshop/ — implies active exploration; not overloaded in finance
-- /Sandbox Explorer/ — clear and descriptive
-- /Study Manager/ — academic connotation; good for the educational use case
+- /Workspace Explorer/ — clear and descriptive
+- /Workspace Browser/ — consistent with existing browser windows
 
-The existing product backlog used "workspace" for a client-side caching concept
-(later renamed to ~ores.caching~), so "workspace" is available but carries some
-baggage.  Final naming decision deferred.
+Final naming decision deferred; "Data Workshop" is used as a placeholder.
 
 * Problem Statement
 
@@ -46,16 +45,15 @@ booking.  Market data comes from live curated sources.  This track does not
 need isolation — it targets the shared live data space.
 
 The ~is_live~ flag and Pending Book design handles Track 2.  Track 1 has no
-solution without data isolation.
+solution without workspace isolation.
 
-** No way to reproduce an ORE sample run faithfully
+** No way to run what-if analysis against live data
 
-Even if isolation is achieved via flags, there is no mechanism to re-run an
-ORE sample and get the same results, because the ORE orchestration XML
-(~ore.xml~) — which defines exactly which analytics to run against which data
-— is not persisted in the system.  Without storing the orchestration
-definition, OreStudio cannot drive the compute grid to reproduce the original
-run.
+Traders routinely want to ask "what happens to my book's NPV if I shock EUR
+rates by 50bps?"  Without an isolation mechanism, any change to market data
+instantly affects all users and all compute runs.  Workspaces give the trader
+an isolated copy of live data in which to apply the shock, run the report, and
+compare results side-by-side against the unshocked live view.
 
 ** Live data space is polluted by sample data
 
@@ -64,66 +62,130 @@ trades, thousands of curve config rows, and dozens of conventions in the live
 books — all mixed with real production data.  Users cannot distinguish sample
 artefacts from curated data.
 
-* Core Concept: Data Sandbox
+* Core Concept: Workspace
 
-A *Data Sandbox* is a named, isolated data context within OreStudio.  It
-contains a complete and self-contained copy of all data types — trades, market
-data, conventions, curve configs, pricing engine configs, today's market
-definitions, and any report/analysis definitions.
+A *Workspace* is a named, isolated data context within OreStudio.  It contains
+a complete or partial set of data — trades, market data, conventions, curve
+configs, pricing engine configs, today's market definitions — and can
+optionally inherit missing data from one or more parent workspaces.
 
 Key properties:
 
-- *Isolated*: data in sandbox A is never visible to sandbox B.  Queries within
-  a sandbox see only that sandbox's data.
-- *Self-contained*: a sandbox has everything needed to reproduce the ORE run(s)
-  it was created from, without depending on data outside it.
-- *Durable*: sandboxes are long-lived; they are not deleted when the session
-  ends.
-- *Readonly-by-default*: sandbox data is not editable in the same way live data
-  is.  Edits are possible but explicit.
-- *Non-promotable*: data cannot be directly "promoted" from a sandbox to live.
-  Instead, a deliberate /copy/ operation is used (see below).
+- *Isolated by default*: data in workspace A is not visible to workspace B
+  unless an explicit parent relationship links them.
+- *Layered*: a workspace can declare parent workspaces.  Any data not present
+  in the workspace is resolved from parents in priority order, recursively.
+  This is the same model as Docker image layers.
+- *Scoped report definitions*: ORE orchestration files (~ore.xml~) are stored
+  as report definitions scoped to a workspace.  Running a report definition
+  generates ORE input files from the workspace's (and its ancestors') data
+  and submits the job to the compute grid.
+- *Durable*: workspaces are long-lived; not deleted when the session ends.
+- *Non-promotable directly*: data cannot be directly promoted from a workspace
+  to live.  A deliberate /copy/ operation is used instead.
 
-** Sandbox 0 — the live sandbox
+** Workspace 0 — the live workspace
 
-Sandbox with ~id = 0~ is the live data space.  It always exists, cannot be
-deleted, and is the default context for all UI windows.  All existing data in
-OreStudio implicitly belongs to sandbox 0.
+Workspace with ~id = 0~ is the live data space.  It always exists, cannot be
+deleted or archived, and has no parents.  It is the root of all inheritance
+chains.  All existing data in OreStudio implicitly belongs to workspace 0.
 
 Using ~id = 0~ rather than ~NULL~ means:
-- Uniform FK semantics across all tables (no nullable FK special-casing).
-- Existing queries need only a ~WHERE workspace_id = 0~ clause added, not a
-  ~WHERE workspace_id IS NULL~ pattern.
-- The live sandbox participates in copy operations like any other sandbox.
+- Uniform FK semantics across all tables — no nullable FK special-casing.
+- Existing queries need only a ~WHERE workspace_id = 0~ clause added.
+- Workspace 0 participates in copy and inheritance like any other workspace.
 
 * Data Model
 
-** Sandbox table
+** Workspace table
 
 #+begin_src sql
 create table ores_workspaces_tbl (
-    id              integer      not null generated always as identity primary key,
-    name            text         not null,
-    description     text         not null default '',
-    source_path     text         not null default '',   -- original import path, if any
-    created_at      timestamptz  not null default now(),
-    created_by      text         not null,
-    status          text         not null default 'active',  -- active | archived
-    constraint ores_workspaces_tbl_name_uq unique (name)
+    id           integer      not null generated always as identity primary key,
+    name         text         not null,
+    description  text         not null default '',
+    source_path  text         not null default '',  -- original import path, if any
+    created_at   timestamptz  not null default now(),
+    created_by   text         not null,
+    status       text         not null default 'active',  -- active | archived
+    constraint ores_workspaces_name_uq unique (name)
 );
 
--- Seed the live sandbox (id must be 0; override the identity sequence)
+-- Seed the live workspace (id must be 0; override the identity sequence).
 insert into ores_workspaces_tbl (id, name, description, created_by)
 overriding system value
 values (0, 'Live', 'Live production data space', 'system');
 #+end_src
+
+** Parent relationships (ordered)
+
+A workspace can have zero or more parents.  Parents are ordered: lower
+~priority~ value = higher resolution priority.  When the same natural key
+exists in multiple ancestors, the ancestor with the lowest priority number
+(closest to the current workspace in resolution order) wins.
+
+#+begin_src sql
+create table ores_workspace_parents_tbl (
+    workspace_id  integer  not null references ores_workspaces_tbl(id),
+    parent_id     integer  not null references ores_workspaces_tbl(id),
+    priority      integer  not null,  -- 0 = first parent (highest priority)
+    primary key (workspace_id, parent_id),
+    constraint ores_workspace_parents_no_self
+        check (workspace_id != parent_id)
+);
+#+end_src
+
+Example: trader's shock workspace inheriting from live:
+
+#+begin_example
+workspace 0 (Live) ← workspace 5 (EUR shock +50bps)
+                      priority 0 parent: workspace 0
+
+Resolution order for workspace 5: [5, 0]
+- EUR/USD curveconfig exists in workspace 5 → use workspace 5 version
+- USD/JPY curveconfig absent in workspace 5 → fall through to workspace 0
+- All trades absent in workspace 5 → fall through to workspace 0
+#+end_example
+
+Example with multiple parents:
+
+#+begin_example
+workspace 5 (EUR shock) ← workspace 7 (EUR+USD shock)
+workspace 6 (USD shock) ←/
+
+Resolution order for workspace 7: [7, 5, 6, 0]
+- Data in workspace 7 wins over both parents
+- Data in workspace 5 (priority 0) wins over workspace 6 (priority 1)
+  when both have the same key and workspace 7 does not
+#+end_example
+
+Cycle prevention must be enforced at insertion time (recursive CTE check).
+
+** Resolution order computation
+
+When a workspace is opened, the full resolution order is computed once using a
+recursive CTE and cached in the application session:
+
+#+begin_src sql
+with recursive resolution(workspace_id, depth) as (
+    select :target_workspace_id, 0
+    union all
+    select p.parent_id, r.depth + p.priority + 1
+    from ores_workspace_parents_tbl p
+    join resolution r on r.workspace_id = p.workspace_id
+)
+select distinct on (workspace_id) workspace_id
+from resolution
+order by workspace_id, depth;
+#+end_src
+
+The resulting ordered array (e.g. ~[7, 5, 6, 0]~) is passed to data queries.
 
 ** workspace_id column on all major tables
 
 Every table that holds user or import data gains a ~workspace_id~ column:
 
 #+begin_src sql
--- Pattern applied to each affected table:
 alter table <table_name>
     add column workspace_id integer not null default 0
     references ores_workspaces_tbl(id);
@@ -131,7 +193,7 @@ alter table <table_name>
 create index on <table_name> (workspace_id);
 #+end_src
 
-Affected tables (non-exhaustive; full list in implementation phase):
+Affected tables (non-exhaustive):
 
 | Category | Tables |
 |----------+--------|
@@ -142,245 +204,278 @@ Affected tables (non-exhaustive; full list in implementation phase):
 | Pricing engine | ~ores_pricingengine_*_tbl~ |
 | Today's market | ~ores_todaysmarket_*_tbl~ |
 | Instruments | ~ores_instrument_*_tbl~ |
+| Report definitions | ~ores_reporting_report_definitions_tbl~ |
 
 Tables that are genuinely global (users, IAM, parties, DQ FSM definitions,
-workflow definitions) do *not* get ~workspace_id~.  These are system-level and
-belong to no specific sandbox.
+workflow definitions, workspace table itself) do *not* get ~workspace_id~.
 
-** Analysis definitions (ore.xml storage)
+** Workspace-aware data queries
 
-Each ~ore.xml~ imported into a sandbox is stored as an *analysis definition*:
+*Point lookup* (single row by natural key): query all workspaces in resolution
+order, take the first hit.
 
 #+begin_src sql
-create table ores_workspace_analyses_tbl (
-    id              uuid         not null default gen_random_uuid() primary key,
-    workspace_id    integer      not null references ores_workspaces_tbl(id),
-    name            text         not null,       -- display name (heuristic from path)
-    source_path     text         not null,       -- relative path of ore.xml in import
-    ore_xml_content text         not null,       -- full ore.xml content, verbatim
-    created_at      timestamptz  not null default now(),
-    last_run_at     timestamptz,
-    constraint ores_workspace_analyses_name_wks_uq unique (workspace_id, name)
-);
+select * from ores_curveconfig_yieldcurve_tbl
+where name = 'EUR-EONIA'
+  and workspace_id = any(:resolution_order)
+order by array_position(:resolution_order, workspace_id)
+limit 1;
 #+end_src
 
-This allows OreStudio to re-run the original ORE analytics against the sandbox
-data at any time, using the preserved orchestration XML.  The compute job
-generator reads this record to reconstruct the ~ore.xml~, replacing file
-references with generated exports from the sandbox's data.
+*List query* (all rows of a type): collect from all workspaces in resolution
+order; deduplicate on natural key, keeping the highest-priority workspace's row.
+
+#+begin_src sql
+select distinct on (name) *
+from ores_curveconfig_yieldcurve_tbl
+where workspace_id = any(:resolution_order)
+order by name, array_position(:resolution_order, workspace_id);
+#+end_src
+
+** Report definitions as workspace-scoped ORE runs
+
+The existing ~report_definition~ / ~risk_report_config~ infrastructure is
+extended with ~workspace_id~.  For ORE sample import, each ~ore.xml~ is stored
+as a ~report_definition~ record scoped to the workspace:
+
+- The ~risk_report_config~ gains an optional ~ore_xml_template~ text field
+  holding the verbatim ~ore.xml~ content.
+- When a report is run, the compute job generator exports all data from the
+  workspace's resolution chain into ORE input files, then substitutes file
+  references in the stored ~ore.xml~ before submitting to the compute grid.
+- For NPV-only valuation runs the generator overrides the ~<Analytics>~
+  section to request only ~npv~.
+- For reproduce runs (re-run the original sample) the stored ~ore.xml~ is
+  used verbatim.
+
+No new ~ores_workspace_analyses_tbl~ is needed — this reuses the existing
+reporting infrastructure.
 
 * Import Track Mapping
 
-| Track | Source | Target sandbox | Mechanism |
-|-------+--------+----------------+-----------|
-| Educational | ORE sample directory | New named sandbox | Importer creates sandbox per batch; all data lands there |
-| Production | External trades (FpML, CSV) | Sandbox 0 (live) | Data Import Session; Pending Book; ~is_live~ flags |
+| Track | Source | Target workspace | Isolation mechanism |
+|-------+--------+------------------+---------------------|
+| 1 — Educational | ORE sample directory | New named workspace | Importer creates workspace per group; report definition per ore.xml |
+| 2 — Production | External trades (FpML, CSV) | Workspace 0 (live) | Pending Book + ~is_live~ flags |
 
-For the educational track, the batch/unit hierarchy from the import analysis
-maps to sandboxes as follows:
+For the educational track, the ORE examples directory structure maps to
+workspaces as follows:
 
-- *One sandbox per top-level group* (e.g. one "MarketRisk" sandbox).  Data
-  shared across analyses in the same group (common conventions, curveconfig,
-  shared market data) is stored once in the sandbox and shared.
-- *One analysis definition per ~ore*.xml~* within the sandbox.  The analysis
-  definition stores the orchestration XML and references the sandbox's shared
-  data.
-- Trades are tagged with both ~workspace_id~ (the sandbox) and ~analysis_id~
-  (the specific orchestration that imported them), so that NPV results and
-  errors can be scoped per analysis without the analyses trampling each other.
+- *One workspace per top-level import group* (e.g. one "MarketRisk" workspace).
+  Shared data (conventions, curveconfig, shared market data) is stored once in
+  the workspace.
+- *One report definition per ~ore*.xml~* within the workspace.  The report
+  definition holds the original orchestration XML and references the
+  workspace's data via the workspace-aware query mechanism.
+- Trades imported by different report definitions within the same workspace
+  are tagged with the report definition's ID (via ~source_position~ or a
+  dedicated FK) to keep results distinct.
 
-For groups where all ~ore_*.xml~ files reference the *same* portfolio (e.g.
-~MarketRisk~ running different analytics on the same trades), the trades are
-stored once and each analysis definition references them.  For groups where
-each ~ore_*.xml~ uses a *different* portfolio (e.g. ~AmericanMonteCarlo~), the
-trades are separate rows sharing the same ~workspace_id~ but different
-~analysis_id~.
+* Copy Between Workspaces
 
-* No Inheritance — Copy Instead
+Promotion is never direct.  The user initiates an explicit copy:
 
-Sandbox inheritance (overlay semantics) adds substantial complexity for limited
-gain in this context.  The chosen approach is explicit copy:
+- *Workspace → workspace*: duplicates selected rows into the target workspace.
+  Both workspaces then evolve independently from that point.
+- *Workspace → live (workspace 0)*: copied rows enter the Pending Book /
+  ~is_live = false~ state and require user approval before becoming live.
+  This is the deliberate "import to production" pathway.
 
-- *Copy sandbox → sandbox*: duplicates all rows from source sandbox into target
-  sandbox.  Both sandboxes then evolve independently.
-- *Copy sandbox → live (sandbox 0)*: all copied rows enter the Pending Book /
-  ~is_live = false~ state and require user approval before becoming live.  This
-  is the deliberate "promote to live" pathway.
-- *Copy selection*: users can copy individual trades, specific data categories
-  (just conventions, just market data), or the entire sandbox.
+Users can copy individual trades, specific data categories (just conventions,
+just market data), or the entire workspace.
 
-Shared data duplication is acceptable for the ORE samples use case given the
-data volumes involved.  If performance becomes a concern, copy-on-write can be
-introduced later without changing the external interface.
+Note: workspaces with parent relationships do *not* need copying just to read
+inherited data.  Copying is only needed when the user wants a standalone
+snapshot that no longer inherits, or when moving data to production.
 
 * UI Design
 
-** Per-window sandbox context
+** Multiple workspaces in the same session
 
-Each MDI subwindow operates in a sandbox context.  The context is:
+Unlike Eclipse (one workspace = one session restart), OreStudio allows multiple
+workspaces to be active simultaneously.  Each MDI subwindow carries its own
+workspace context.  The primary use case is side-by-side comparison:
 
-- Shown in the window's title bar or header: e.g. ~[MarketRisk]~ in brackets
-  after the window title for non-live sandboxes.  Live sandbox (0) shows no
-  badge — it is the default.
-- Selectable per window: a small sandbox selector appears in the window's
-  toolbar or header area, allowing the user to switch a window between
-  sandboxes without closing and reopening it.
-- *Not global*: different windows can be in different sandboxes simultaneously.
-  A user might have the Trades window showing ~MarketRisk~ data while the
-  Market Data window shows ~Live~ data.
+#+begin_example
++-----------------------------+  +-----------------------------+
+|  TRADES  [Live ▼]           |  |  TRADES  [EUR shock ▼]       |
+|-----------------------------|  |-----------------------------|
+|  IRS_001  NPV:  1,234,500   |  |  IRS_001  NPV:  1,189,200   |
+|  FXF_002  NPV:    456,100   |  |  FXF_002  NPV:    455,900   |
++-----------------------------+  +-----------------------------+
+#+end_example
+
+The trader opens the Trades window twice, sets one to Live and one to the
+shocked workspace, and sees the NPV impact immediately.  The same applies to
+Market Data, Conventions, and any other view.
+
+** Per-window workspace context
+
+Each MDI window carries a workspace context:
+
+- Shown as a chip/badge in the window header: ~[Live]~, ~[MarketRisk]~,
+  ~[EUR shock +50bps]~.  Live workspace shows no badge (it is the default and
+  adding a badge to every window would be noisy).
+- Selectable via a compact combo box in the window toolbar.  Changing the
+  workspace re-queries all data for that window without closing or reopening it.
+- Windows default to workspace 0 (live) on first open.
 
 #+begin_example
 +-------------------------------------------------------+
-|  TRADES  [MarketRisk ▼]              [Import] [Filter] |
+|  TRADES  [EUR shock ▼]               [Filter] [Cols]  |
 +-------------------------------------------------------+
-|  ...trade grid scoped to MarketRisk sandbox...         |
+|  ...trade grid scoped to EUR shock workspace...        |
 +-------------------------------------------------------+
 #+end_example
 
-** Data Sandbox UI component (working name: Data Workshop)
+** Data Workshop (workspace manager UI)
 
-A dedicated window accessible from the main menu (Data Transfer → Data
-Workshop, or similar).  Shows:
+A dedicated window in the Data Transfer menu.  Shows all workspaces in a tree,
+grouped by parent/child relationships:
 
 #+begin_example
-+----------------------------------------------------------+
-|  DATA WORKSHOP                        [New] [Import ORE] |
-+----------------------------------------------------------+
-| ▶ Live                        0 trades  —  live          |
-| ▼ MarketRisk                 27 analyses · 312 trades    |
-|     ore_sensi                 12 trades  last run 10:15  |
-|     ore_hist                  12 trades  last run 10:17  |
-|     ore_correlation           12 trades  not yet run     |
-|     ...                                                  |
-| ▶ Legacy · Example_1          1 analysis · 12 trades     |
-| ▶ Legacy · Example_2          1 analysis · 3 trades      |
-| ...                                                      |
-+----------------------------------------------------------+
-| [ Open ] [ Run Analysis ] [ Copy to... ] [ Archive ]     |
-+----------------------------------------------------------+
++-----------------------------------------------------------+
+|  DATA WORKSHOP                          [New] [Import ORE] |
++-----------------------------------------------------------+
+| ▶ Live                          0 local trades  · live    |
+| ▼ MarketRisk                   27 reports · 312 trades    |
+|     ore_sensi                   12 trades  last run 10:15 |
+|     ore_hist                    12 trades  last run 10:17 |
+|     ore_correlation             12 trades  not yet run    |
+|     ...                                                   |
+| ▼ EUR shock +50bps              inherits: Live             |
+|     [no local data — all inherited]                       |
+|     NPV Report                  last run 11:02            |
+| ▶ Legacy · Example_1            1 report · 12 trades      |
+| ▶ Legacy · Example_2            1 report  · 3 trades      |
+| ...                                                       |
++-----------------------------------------------------------+
+| [ Open ] [ Run Report ] [ Copy to... ] [ Archive ]        |
++-----------------------------------------------------------+
 #+end_example
 
 Actions:
-- *Open*: opens the selected sandbox in the Data Import Session window (scoped
-  to that sandbox), or focuses an already-open window for it.
-- *Run Analysis*: submits the selected analysis definition to the compute grid
-  for NPV computation.  Prompts for compute configuration if needed.
-- *Copy to...*: copies selected sandbox (or selection within it) to another
-  sandbox or to Live.  If copying to Live, shows a warning that data will enter
-  the pending/approval workflow.
-- *Archive*: marks sandbox as archived; data is retained but hidden from normal
-  views.
+- *Open*: opens the selected workspace in the Data Import Session window (or
+  any other window), scoped to that workspace.
+- *Run Report*: submits the selected report definition to the compute grid.
+- *Copy to...*: copies selected workspace or selection within it to another
+  workspace or to Live (live copy triggers pending/approval workflow).
+- *Archive*: marks workspace archived; data retained but hidden from selectors.
 
-** Sandbox indicator in other windows
+** Workspace indicator in all windows
 
-All windows that display sandbox-scoped data show a sandbox chip/badge in
-their header.  Clicking the chip opens the sandbox selector.  Windows default
-to Live (sandbox 0) on first open.
+All windows that display workspace-scoped data show the workspace chip.
+Windows with a non-live workspace display it prominently so users always know
+which data context they are viewing.
 
 * Compute Integration
 
-Each analysis definition contains the original ~ore.xml~.  To run it:
+Running a report definition within a workspace:
 
-1. Export the sandbox's trades (scoped to that analysis's ~analysis_id~) as a
-   ~portfolio.xml~ file.
-2. Export the sandbox's market data, conventions, curveconfig, pricingengine,
-   and todaysmarket as the corresponding ORE input files.
-3. Substitute file paths in the stored ~ore.xml~ with the generated file paths.
-4. Override the ~<Analytics>~ section to request only ~npv~ (for valuation
-   runs; full analytics for reproduce runs).
-5. Submit to the compute grid as a normal ORE job.
-6. Receive results; store NPVs back on trade rows tagged with this ~analysis_id~.
-
-For educational runs: step 4 can be skipped — the original analytics are run
-verbatim to reproduce the sample's original output.
-
-For production valuation: step 4 strips expensive analytics so the job is fast.
+1. Compute the workspace's full resolution order.
+2. Export trades (scoped to the report definition's source) using workspace-
+   aware list query → ~portfolio.xml~.
+3. Export market data, conventions, curveconfig, pricingengine, todaysmarket
+   using workspace-aware list queries → corresponding ORE input files.
+4. Retrieve the stored ~ore.xml~ template from the report definition; substitute
+   file path references with the generated file paths.
+5. For NPV-only runs: override ~<Analytics>~ to ~npv~ only.  For full
+   reproduce runs: use the stored ~ore.xml~ verbatim.
+6. Submit to compute grid as a normal ORE job.
+7. Receive results; store NPVs on trade rows tagged with this workspace and
+   report definition.
 
 * Relationship to Existing Plans
 
 ** Data Import Session plan
 
-The [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] plan remains valid for Track 2 (production import).
-Track 1 import replaces the "batch session" concept with sandbox creation:
-instead of creating ~ores_data_import_sessions_tbl~ rows, the importer creates
-an ~ores_workspaces_tbl~ row and populates it with all data from the sample.
-The Data Import Session window is then used to browse the sandbox's data in
-exactly the same way, since it is already scoped by sandbox context.
-
-The ~ores_data_import_sessions_tbl~ and its batch/unit hierarchy may be
-retained as audit/lineage metadata (recording what was imported when), even
-though the primary isolation mechanism is the sandbox.
+Track 2 of that plan (Pending Book, ~is_live~ flags) is unchanged and
+independent of workspaces.  Track 1 (ORE sample import) creates workspaces
+rather than plain import sessions.  The Data Import Session window is reused
+to browse workspace data since it is already workspace-scoped.
 
 ** is_live flags and Pending Book
 
-These remain Track 2 concerns only.  Within a sandbox, all data is
-unconditionally the sandbox's data — there is no ~is_live~ distinction needed,
-since the sandbox boundary provides the isolation.  The ~is_live~ flag only
-becomes relevant when data is copied from a sandbox into the live workspace (0).
+These are Track 2 concerns only.  Within a workspace, all data is the
+workspace's data — no ~is_live~ distinction is needed because the workspace
+boundary provides the isolation.  The ~is_live~ flag only matters when copying
+workspace data into the live workspace (0).
+
+** Reporting component
+
+The ~report_definition~ table gains ~workspace_id~ and ~risk_report_config~
+gains an optional ~ore_xml_template~ field.  No new analyses table is
+introduced.  The existing scheduling, lifecycle FSM, and execution pipeline
+are reused.
 
 * Implementation Phases
 
 ** Phase 1: Core schema
 
-1. Create ~ores_workspaces_tbl~; seed Live sandbox (id = 0).
-2. Create ~ores_workspace_analyses_tbl~.
+1. Create ~ores_workspaces_tbl~; seed Live workspace (~id = 0~).
+2. Create ~ores_workspace_parents_tbl~ with priority ordering.
 3. Add ~workspace_id integer not null default 0~ to all affected tables.
-4. Add indexes on ~workspace_id~.
-5. Run ~recreate_database.sh~; validate schemas.
+4. Add indexes; enforce cycle-prevention trigger on parent inserts.
+5. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~; extend
+   ~risk_report_config~ with optional ~ore_xml_template~.
+6. Run ~recreate_database.sh~; validate schemas.
 
 ** Phase 2: Service layer
 
-1. All service queries gain a ~workspace_id~ filter parameter.
-2. NATS message protocol: add optional ~workspace_id~ field (defaults to 0) to
-   all list/get/create requests.
+1. All service queries gain a ~workspace_id~ (or resolution-order array)
+   parameter; default to ~[0]~ (live only).
+2. Resolution order computation: recursive CTE exposed as a helper function.
 3. New NATS endpoints: ~workspace.v1.list~, ~workspace.v1.create~,
-   ~workspace.v1.archive~, ~workspace.v1.copy~.
-4. Analysis definition endpoints: ~workspace.v1.analysis.list~,
-   ~workspace.v1.analysis.create~, ~workspace.v1.analysis.run~.
+   ~workspace.v1.parents.set~, ~workspace.v1.archive~, ~workspace.v1.copy~.
+4. Extend report definition endpoints to accept and return ~workspace_id~.
 
-** Phase 3: UI — sandbox context propagation
+** Phase 3: UI — workspace context propagation
 
-1. Add ~workspace_id~ to application session state.
-2. Propagate sandbox context to all MDI windows via a ~WorkspaceContext~ object.
-3. Add sandbox chip/badge to window headers.
-4. Add per-window sandbox selector (combo box in toolbar).
+1. Add workspace resolution order to application session state.
+2. Propagate workspace context to all MDI windows via a ~WorkspaceContext~
+   object passed on window construction and switchable at runtime.
+3. Add workspace chip/badge to window headers.
+4. Add per-window workspace selector (searchable combo in toolbar).
 
 ** Phase 4: Data Workshop UI
 
-1. Sandbox tree view (grouped by top-level import path).
-2. Analysis list within sandbox.
-3. Open / Run Analysis / Copy to / Archive actions.
+1. Workspace tree view (parent/child grouped).
+2. Report definition list within workspace.
+3. Open / Run Report / Copy to / Archive / New workspace actions.
+4. Inheritance summary ("inherits: Live · 3 overrides").
 
 ** Phase 5: ORE sample importer
 
 1. Implement recursive orchestration XML discoverer (per analysis section of
    [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] plan).
-2. Create sandbox per top-level group; create analysis per ~ore*.xml~.
-3. Import all data types into the sandbox.
-4. Store orchestration XML verbatim in ~ores_workspace_analyses_tbl~.
+2. Create workspace per top-level import group.
+3. Import all data types into the workspace using workspace-aware inserts.
+4. Store ~ore.xml~ verbatim as ~ore_xml_template~ in a new report definition
+   per orchestration file found.
+5. Parent-chain: importer can optionally create a parent workspace for the
+   batch root and make each group workspace a child of it.
 
 * Open Questions
 
-1. *Sandbox selector granularity*: should the per-window selector show a flat
-   list of all sandboxes, or a grouped tree (Live / sample groups / other)?
-   For 30+ sandboxes a tree is necessary.
+1. *Multiple parents in practice*: single-parent chains cover the common trader
+   use case (inherit from live, override a few curves).  Multiple parents are
+   supported in the schema but the UI for creating multi-parent workspaces needs
+   careful design to avoid confusion.  Consider restricting the creation UI to
+   one parent for now while keeping the schema general.
 
-2. *Analysis_id on trade rows*: is a separate ~analysis_id~ UUID column on
-   ~ores_trading_trades_tbl~ the right mechanism, or should it be part of
-   ~source_position~?  Affects how NPV results are partitioned per analysis.
+2. *Tombstones*: if a workspace wants to hide a row inherited from a parent
+   (e.g. "delete this trade for my what-if run"), there is currently no
+   mechanism.  A tombstone row (a record flagged as deleted in the current
+   workspace) would handle this but adds query complexity.  Deferred.
 
-3. *Shared data within a sandbox*: conventions and curveconfig are shared across
-   analyses in the same sandbox.  If two analyses in MarketRisk use different
-   conventions for the same curve name, which wins?  Needs a conflict resolution
-   policy.
+3. *Conflict visibility*: when two parents have the same natural key, the
+   higher-priority parent wins silently.  The UI should surface conflicts so
+   users know that workspace 5's EUR curve is shadowing workspace 6's version.
 
-4. *Archive semantics*: does archiving a sandbox immediately hide it from
-   selectors, or after a grace period?  Can archived sandboxes be restored?
+4. *Report definition scheduling in non-live workspaces*: the existing
+   reporting scheduler is designed for live data.  Should report definitions
+   in non-live workspaces be schedulable, or run-on-demand only?  On-demand
+   only is the simpler starting point.
 
-5. *Sandbox storage quota*: large samples (e.g. full ORE examples = hundreds of
-   thousands of rows) may need per-sandbox storage reporting.  The product
-   backlog mentions a Baobab-style map for workspace visualisation — relevant
-   here.
-
-6. *UI name*: "Data Workshop" vs "Sandbox Explorer" vs other.  Decide before
-   implementation begins.
+5. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
+   Phase 4 begins.

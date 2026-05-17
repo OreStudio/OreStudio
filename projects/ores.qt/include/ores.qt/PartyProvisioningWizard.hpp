@@ -33,8 +33,9 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/WorkflowStepsWidget.hpp"
 #include "ores.reporting.api/domain/report_definition_template.hpp"
+
+namespace ores::qt { class WorkflowStepsWidget; }
 
 namespace ores::qt {
 

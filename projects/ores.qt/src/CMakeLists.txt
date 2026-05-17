@@ -75,7 +75,6 @@ target_link_libraries(${lib_target_name}
         ores.synthetic.api.lib
         ores.assets.api.lib
         ores.workflow.core.lib
-        ores.qt.workflow.lib
         ores.connections.lib
         ores.variability.api.lib
         ores.telemetry.core.lib
@@ -109,6 +108,7 @@ set_target_properties(${exe_target_name} PROPERTIES
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.qt.workflow.lib
         ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
 

@@ -335,9 +335,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
     for (auto& item : plan.trades) {
-        const auto tid = boost::uuids::to_string(item.trade.id);
+        const auto tid = boost::uuids::to_string(item.trade.identity.get().id);
         const auto src = item.source_file.string();
-        const auto ext_id = item.trade.external_id;
+        const auto ext_id = item.trade.identity.get().external_id;
 
         ores::trading::messaging::save_trade_request save_req;
         save_req.trades = {std::move(item.trade)};
@@ -544,11 +544,11 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         } else {
             BOOST_LOG_SEV(lg(), warn) << "ore.import.execute instrument save failed | corr="
                                       << req.correlation_id
-                                      << " trade=" << item.trade.external_id
+                                      << " trade=" << item.trade.identity.get().external_id
                                       << " error=" << instr_error;
             result.item_errors.push_back({
                 .source_file = item.source_file.string(),
-                .item_id = item.trade.external_id,
+                .item_id = item.trade.identity.get().external_id,
                 .message = "Instrument save failed: " + instr_error});
         }
     }

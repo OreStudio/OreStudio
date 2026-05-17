@@ -310,8 +310,8 @@ void ImportTradeDialog::populateTradeTable() {
             return it;
         };
 
-        tradeTable_->setItem(row, 1, makeItem(item.trade.external_id));
-        tradeTable_->setItem(row, 2, makeItem(item.trade.trade_type));
+        tradeTable_->setItem(row, 1, makeItem(item.trade.identity.get().external_id));
+        tradeTable_->setItem(row, 2, makeItem(item.trade.classification.get().trade_type));
 
         // Column 3: per-row counterparty combo (populated after load)
         auto* cpCombo = new QComboBox();
@@ -323,7 +323,7 @@ void ImportTradeDialog::populateTradeTable() {
 
         // Column 4: per-row editable netting set item
         auto* nsItem = new QTableWidgetItem(
-            QString::fromStdString(item.trade.netting_set_id));
+            QString::fromStdString(item.trade.classification.get().netting_set_id));
         if (is_valid) {
             nsItem->setFlags(nsItem->flags() | Qt::ItemIsEditable);
         } else {
@@ -602,14 +602,14 @@ void ImportTradeDialog::onImportClicked() {
         tti.trade = item.trade;
         tti.instrument = item.instrument;
 
-        tti.trade.id = boost::uuids::random_generator()();
+        tti.trade.identity.get().id = boost::uuids::random_generator()();
         // Assign fresh UUIDs and wire the soft FKs for this specific import.
         // product_type is already set on tti.trade from the importer.
         std::visit([&](auto& r) {
             using T = std::decay_t<decltype(r)>;
             if constexpr (!std::is_same_v<T, std::monostate>) {
                 const auto instr_id = boost::uuids::random_generator()();
-                tti.trade.instrument_id = instr_id;
+                tti.trade.classification.get().instrument_id = instr_id;
                 using trading::domain::swap_instrument_data;
                 using trading::domain::fx_instrument_variant;
                 using trading::domain::equity_instrument_variant;
@@ -617,7 +617,7 @@ void ImportTradeDialog::onImportClicked() {
                 if constexpr (std::is_same_v<T, swap_instrument_data>) {
                     std::visit([&](auto& instr) {
                         instr.instrument_id = instr_id;
-                        instr.trade_id = tti.trade.id;
+                        instr.trade_id = tti.trade.identity.get().id;
                     }, r.instrument);
                     for (auto& leg : r.legs)
                         leg.instrument_id = instr_id;
@@ -625,33 +625,33 @@ void ImportTradeDialog::onImportClicked() {
                                      std::is_same_v<T, equity_instrument_variant>) {
                     std::visit([&](auto& instr) {
                         instr.instrument_id = instr_id;
-                        instr.trade_id = tti.trade.id;
+                        instr.trade_id = tti.trade.identity.get().id;
                     }, r);
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                     r.instrument.instrument_id = instr_id;
-                    r.instrument.trade_id = tti.trade.id;
+                    r.instrument.trade_id = tti.trade.identity.get().id;
                 } else {
                     r.instrument_id = instr_id;
-                    r.trade_id = tti.trade.id;
+                    r.trade_id = tti.trade.identity.get().id;
                 }
             }
         }, tti.instrument);
-        tti.trade.book_id = book_.id;
-        tti.trade.portfolio_id = book_.parent_portfolio_id;
-        tti.trade.party_id = book_.party_id;
-        tti.trade.modified_by = username_.toStdString();
+        tti.trade.parties.get().book_id = book_.id;
+        tti.trade.parties.get().portfolio_id = book_.parent_portfolio_id;
+        tti.trade.identity.get().party_id = book_.party_id;
+        tti.trade.audit.get().modified_by = username_.toStdString();
 
         // Apply global date/lifecycle defaults
-        tti.trade.trade_date = tradeDate;
-        tti.trade.effective_date = effectiveDate;
-        tti.trade.termination_date = terminationDate;
-        tti.trade.activity_type_code = lifecycleEvent;
-        tti.trade.execution_timestamp = executionTimestamp;
+        tti.trade.lifecycle.get().trade_date = tradeDate;
+        tti.trade.lifecycle.get().effective_date = effectiveDate;
+        tti.trade.lifecycle.get().termination_date = terminationDate;
+        tti.trade.classification.get().activity_type_code = lifecycleEvent;
+        tti.trade.lifecycle.get().execution_timestamp = executionTimestamp;
 
         // Per-row netting set
         auto* nsItem = tradeTable_->item(i, 4);
         if (nsItem)
-            tti.trade.netting_set_id = nsItem->text().toStdString();
+            tti.trade.classification.get().netting_set_id = nsItem->text().toStdString();
 
         // Per-row counterparty; fall back to the global default if not overridden
         auto* cpWidget = tradeTable_->cellWidget(i, 3);
@@ -663,14 +663,14 @@ void ImportTradeDialog::onImportClicked() {
             cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
         if (!cpUuidStr.isEmpty()) {
             try {
-                tti.trade.counterparty_id =
+                tti.trade.parties.get().counterparty_id =
                     boost::lexical_cast<boost::uuids::uuid>(
                         cpUuidStr.toStdString());
             } catch (...) {
-                tti.trade.counterparty_id = std::nullopt;
+                tti.trade.parties.get().counterparty_id = std::nullopt;
             }
         } else {
-            tti.trade.counterparty_id = std::nullopt;
+            tti.trade.parties.get().counterparty_id = std::nullopt;
         }
 
         selected.push_back(std::move(tti));
@@ -763,7 +763,7 @@ void ImportTradeDialog::onImportClicked() {
                 current++;
 
                 QMetaObject::invokeMethod(self,
-                    [self, current, total, ext_id = tti.trade.external_id]() {
+                    [self, current, total, ext_id = tti.trade.identity.get().external_id]() {
                         if (!self) return;
                         self->progressBar_->setValue(current);
                         self->statusLabel_->setText(
@@ -783,7 +783,7 @@ void ImportTradeDialog::onImportClicked() {
                     if (!response_result) {
                         BOOST_LOG_SEV(lg(), warn)
                             << "Failed to import trade: "
-                            << tti.trade.external_id;
+                            << tti.trade.identity.get().external_id;
                         continue;
                     }
 
@@ -950,17 +950,17 @@ void ImportTradeDialog::onImportClicked() {
                         success_count++;
                         BOOST_LOG_SEV(lg(), debug)
                             << "Successfully imported trade: "
-                            << tti.trade.external_id;
+                            << tti.trade.identity.get().external_id;
                     } else {
                         const std::string msg = response_result->message;
                         BOOST_LOG_SEV(lg(), warn)
                             << "Server rejected trade: "
-                            << tti.trade.external_id << " - " << msg;
+                            << tti.trade.identity.get().external_id << " - " << msg;
                     }
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(lg(), error)
                         << "Error importing trade "
-                        << tti.trade.external_id << ": " << e.what();
+                        << tti.trade.identity.get().external_id << ": " << e.what();
                 }
             }
 

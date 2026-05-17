@@ -20,12 +20,12 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_HPP
 #define ORES_TRADING_DOMAIN_TRADE_HPP
 
-#include <chrono>
-#include <optional>
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.trading.api/domain/product_type.hpp"
+#include <rfl/Flatten.hpp>
+#include "ores.trading.api/domain/trade_identity.hpp"
+#include "ores.trading.api/domain/trade_parties.hpp"
+#include "ores.trading.api/domain/trade_classification.hpp"
+#include "ores.trading.api/domain/trade_lifecycle.hpp"
+#include "ores.trading.api/domain/trade_audit.hpp"
 
 namespace ores::trading::domain {
 
@@ -35,176 +35,18 @@ namespace ores::trading::domain {
  * Temporal trade record. Each lifecycle event (New, Amendment, Novation,
  * etc.) creates a new temporal row for the same trade id. The internal party
  * is derived from book_id via books.party_id.
+ *
+ * Composed of five sub-structs via rfl::Flatten so that the JSON wire format
+ * remains flat while each sub-struct stays small enough to avoid MSVC C1202
+ * (recursive template dependency context too complex) in rfl's O(n²)
+ * field-uniqueness check.
  */
 struct trade final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this trade.
-     *
-     * Surrogate key for the trade record.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief Party that owns this trade.
-     *
-     * Denormalised from book_id by the DB trigger. Enforced by RLS.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief Optional external trade identifier.
-     *
-     * e.g., UTI prefix or legacy system ID.
-     */
-    std::string external_id;
-
-    /**
-     * @brief Book that owns this trade.
-     *
-     * Soft FK to ores_refdata_books_tbl.
-     */
-    boost::uuids::uuid book_id;
-
-    /**
-     * @brief Portfolio this trade belongs to.
-     *
-     * Soft FK to ores_refdata_portfolios_tbl.
-     */
-    boost::uuids::uuid portfolio_id;
-
-    /**
-     * @brief UUID of the trade that replaced this one (e.g., after novation).
-     *
-     * Self-referencing soft FK. Absent for active trades.
-     */
-    std::optional<boost::uuids::uuid> successor_trade_id;
-
-    /**
-     * @brief Counterparty for this trade.
-     *
-     * Soft FK to ores_refdata_counterparties_tbl. Optional: some trades
-     * may not have a counterparty (e.g., internal transfers).
-     */
-    std::optional<boost::uuids::uuid> counterparty_id;
-
-    /**
-     * @brief ORE instrument type code (e.g. Swap, FxForward, CapFloor).
-     *
-     * Soft FK to ores_trading_trade_types_tbl.
-     */
-    std::string trade_type;
-
-    /**
-     * @brief Product type: structural routing discriminator.
-     *
-     * Identifies the kind of financial product (FpML: productType) and
-     * routes the trade to its product-specific extension table. Defaults to
-     * @c product_type::unknown when no instrument record has been linked
-     * yet; round-trips to/from a SQL @c NULL via @c trade_mapper.
-     */
-    domain::product_type product_type = domain::product_type::unknown;
-
-    /**
-     * @brief UUID of the associated instrument record.
-     *
-     * Soft FK into the instrument extension table identified by
-     * product_type. Absent when no instrument has been linked.
-     */
-    std::optional<boost::uuids::uuid> instrument_id;
-
-    /**
-     * @brief Asset class for this trade (e.g. fx, rates, credit).
-     *
-     * ORE asset class code. Soft FK to ores_refdata_asset_classes_tbl
-     * (coding_scheme_code = 'ORE_ASSET_CLASS'). Absent when not yet classified.
-     */
-    std::optional<std::string> asset_class;
-
-    /**
-     * @brief Netting set identifier for ORE aggregation.
-     *
-     * Groups trades under the same netting agreement.
-     */
-    std::string netting_set_id;
-
-    /**
-     * @brief Activity type code classifying this trade event.
-     *
-     * Soft FK to ores_trading_activity_types_tbl.
-     */
-    std::string activity_type_code;
-
-    /**
-     * @brief Current FSM state for this trade (e.g. new, live, expired, cancelled).
-     *
-     * Soft FK to ores_dq_fsm_states_tbl.
-     */
-    boost::uuids::uuid status_id;
-
-    /**
-     * @brief Date the trade was agreed.
-     *
-     * ISO 8601 date: YYYY-MM-DD. Empty when not provided by the source.
-     */
-    std::optional<std::string> trade_date;
-
-    /**
-     * @brief Timestamp when the trade was executed (with timezone).
-     *
-     * ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ. Empty when not provided.
-     */
-    std::optional<std::string> execution_timestamp;
-
-    /**
-     * @brief Date from which the trade is effective.
-     *
-     * ISO 8601 date: YYYY-MM-DD. Empty when not provided.
-     */
-    std::optional<std::string> effective_date;
-
-    /**
-     * @brief Date on which the trade matures or terminates.
-     *
-     * ISO 8601 date: YYYY-MM-DD. Empty when not provided.
-     */
-    std::optional<std::string> termination_date;
-
-    /**
-     * @brief Username of the person who last modified this trade.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    rfl::Flatten<trade_identity> identity;
+    rfl::Flatten<trade_parties> parties;
+    rfl::Flatten<trade_classification> classification;
+    rfl::Flatten<trade_lifecycle> lifecycle;
+    rfl::Flatten<trade_audit> audit;
 };
 
 }

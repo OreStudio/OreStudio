@@ -156,14 +156,14 @@ void TradeController::openEdit(const trading::domain::trade& trade) {
 }
 
 void TradeController::onShowDetails(const trading::domain::trade& trade) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.external_id;
-    const auto id = boost::uuids::to_string(trade.id);
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << trade.identity.get().external_id;
+    const auto id = boost::uuids::to_string(trade.identity.get().id);
     auto bundle_opt = clientManager_->getTradeDetail(id);
     if (!bundle_opt) {
         BOOST_LOG_SEV(lg(), error)
-            << "Failed to fetch detail for trade: " << trade.external_id;
+            << "Failed to fetch detail for trade: " << trade.identity.get().external_id;
         emit errorMessage(tr("Could not load instrument data for trade '%1'.")
-            .arg(QString::fromStdString(trade.external_id)));
+            .arg(QString::fromStdString(trade.identity.get().external_id)));
         return;
     }
     showDetailWindow(*bundle_opt);
@@ -315,7 +315,7 @@ void TradeController::onImportTradesRequested() {
 
 void TradeController::onShowHistory(
     const trading::domain::trade& trade) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << trade.external_id;
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << trade.identity.get().external_id;
     showHistoryWindow(trade);
 }
 
@@ -358,7 +358,7 @@ void TradeController::showAddWindow() {
 void TradeController::showDetailWindow(
     const trading::messaging::trade_export_item& bundle) {
 
-    const QString identifier = QString::fromStdString(bundle.trade.external_id);
+    const QString identifier = QString::fromStdString(bundle.trade.identity.get().external_id);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -367,7 +367,7 @@ void TradeController::showDetailWindow(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: "
-                               << bundle.trade.external_id;
+                               << bundle.trade.identity.get().external_id;
 
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -426,24 +426,24 @@ void TradeController::showDetailWindow(
 
 void TradeController::showHistoryWindow(
     const trading::domain::trade& trade) {
-    const QString code = QString::fromStdString(trade.external_id);
+    const QString code = QString::fromStdString(trade.identity.get().external_id);
     BOOST_LOG_SEV(lg(), info) << "Opening history window for trade: "
-                              << trade.external_id;
+                              << trade.identity.get().external_id;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << trade.external_id;
+                                  << trade.identity.get().external_id;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << trade.external_id;
+                              << trade.identity.get().external_id;
 
     auto* historyDialog = new TradeHistoryDialog(
-        trade.id, code, clientManager_, mainWindow_);
+        trade.identity.get().id, code, clientManager_, mainWindow_);
 
     connect(historyDialog, &TradeHistoryDialog::statusChanged,
             this, [self = QPointer<TradeController>(this)](const QString& message) {
@@ -488,9 +488,9 @@ void TradeController::showHistoryWindow(
 void TradeController::onOpenVersion(
     const trading::domain::trade& trade, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for trade: " << trade.external_id;
+                              << " for trade: " << trade.identity.get().external_id;
 
-    const QString code = QString::fromStdString(trade.external_id);
+    const QString code = QString::fromStdString(trade.identity.get().external_id);
     const QString windowKey = build_window_key("version", QString("%1_v%2")
         .arg(code).arg(versionNumber));
 
@@ -552,7 +552,7 @@ void TradeController::onOpenVersion(
 void TradeController::onRevertVersion(
     const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), info) << "Reverting trade to version: "
-                              << trade.version;
+                              << trade.identity.get().version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
@@ -582,7 +582,7 @@ void TradeController::onRevertVersion(
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Trade: %1")
-        .arg(QString::fromStdString(trade.external_id)));
+        .arg(QString::fromStdString(trade.identity.get().external_id)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 

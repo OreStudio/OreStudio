@@ -170,9 +170,9 @@ ore_import_result OreImporter::execute(
                 b.parent_portfolio_id = it->second;
         }
         for (auto& item : plan.trades) {
-            auto it = portfolio_uuid_remap.find(item.trade.portfolio_id);
+            auto it = portfolio_uuid_remap.find(item.trade.parties.get().portfolio_id);
             if (it != portfolio_uuid_remap.end())
-                item.trade.portfolio_id = it->second;
+                item.trade.parties.get().portfolio_id = it->second;
         }
 
         // Step C: fetch existing books
@@ -251,9 +251,9 @@ ore_import_result OreImporter::execute(
 
         // Apply book remap to trades
         for (auto& item : plan.trades) {
-            auto it = book_uuid_remap.find(item.trade.book_id);
+            auto it = book_uuid_remap.find(item.trade.parties.get().book_id);
             if (it != book_uuid_remap.end())
-                item.trade.book_id = it->second;
+                item.trade.parties.get().book_id = it->second;
         }
 
         ore_import_result res;
@@ -308,16 +308,16 @@ ore_import_result OreImporter::execute(
             for (auto& item : plan.trades) {
                 auto& t = item.trade;
                 bool any = false;
-                if (!t.execution_timestamp || t.execution_timestamp->empty()) {
-                    t.execution_timestamp = ts_fallback;
+                if (!t.lifecycle.get().execution_timestamp || t.lifecycle.get().execution_timestamp->empty()) {
+                    t.lifecycle.get().execution_timestamp = ts_fallback;
                     any = true;
                 }
-                if (!t.effective_date || t.effective_date->empty()) {
-                    t.effective_date = date_fallback;
+                if (!t.lifecycle.get().effective_date || t.lifecycle.get().effective_date->empty()) {
+                    t.lifecycle.get().effective_date = date_fallback;
                     any = true;
                 }
-                if (!t.termination_date || t.termination_date->empty()) {
-                    t.termination_date = std::string(fallback_termination_date);
+                if (!t.lifecycle.get().termination_date || t.lifecycle.get().termination_date->empty()) {
+                    t.lifecycle.get().termination_date = std::string(fallback_termination_date);
                     any = true;
                 }
                 if (any) ++filled;
@@ -342,7 +342,7 @@ ore_import_result OreImporter::execute(
             batch.reserve(static_cast<std::size_t>(end - offset));
             for (int i = offset; i < end; ++i) {
                 auto t = plan.trades[static_cast<std::size_t>(i)].trade;
-                t.change_reason_code = std::string(reason::codes::external_data_import);
+                t.audit.get().change_reason_code = std::string(reason::codes::external_data_import);
                 batch.push_back(std::move(t));
             }
 
@@ -383,9 +383,9 @@ ore_import_result OreImporter::execute(
                         const auto msg = resp ? resp->message : "no response from server";
                         BOOST_LOG_SEV(lg(), warn)
                             << "Instrument save failed for trade "
-                            << item.trade.external_id << ": " << msg;
+                            << item.trade.identity.get().external_id << ": " << msg;
                         res.instrument_errors.push_back(
-                            {item.trade.external_id, std::string(msg)});
+                            {item.trade.identity.get().external_id, std::string(msg)});
                     };
 
                     if constexpr (std::is_same_v<T, swap_instrument_data>) {

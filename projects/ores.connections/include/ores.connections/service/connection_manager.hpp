@@ -31,6 +31,7 @@
 #include "ores.connections/domain/connection_tag.hpp"
 #include "ores.connections/domain/environment.hpp"
 #include "ores.connections/domain/environment_tag.hpp"
+#include "ores.connections/domain/recent_party.hpp"
 #include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/repository/folder_repository.hpp"
 #include "ores.connections/repository/tag_repository.hpp"
@@ -38,6 +39,7 @@
 #include "ores.connections/repository/connection_tag_repository.hpp"
 #include "ores.connections/repository/environment_repository.hpp"
 #include "ores.connections/repository/environment_tag_repository.hpp"
+#include "ores.connections/repository/recent_party_repository.hpp"
 #include "ores.connections/export.hpp"
 
 namespace ores::connections::service {
@@ -164,6 +166,27 @@ public:
     void change_master_password(const std::string& new_password);
 
     /**
+     * @brief Ensure @p label exists as a tag and is applied to every environment
+     * whose subject_prefix ends with ".{label}".
+     *
+     * Idempotent — safe to call on every startup. Used to seed the login-dialog
+     * label filter from ORES_CHECKOUT_LABEL without requiring manual UI tagging.
+     * No-op when @p label is empty.
+     */
+    void auto_tag_environments_by_label(const std::string& label);
+
+    /**
+     * @brief Return up to 5 recently-selected parties, most-recent first.
+     */
+    std::vector<domain::recent_party> get_recent_parties();
+
+    /**
+     * @brief Record a successful party selection for the recent-parties list.
+     */
+    void record_party_selection(const boost::uuids::uuid& party_id,
+                                const std::string& party_name);
+
+    /**
      * @brief Delete all data from the database.
      *
      * Removes all connections, environments, folders, and tags. This operation
@@ -179,6 +202,7 @@ private:
     repository::connection_tag_repository conn_tag_repo_;
     repository::environment_repository env_repo_;
     repository::environment_tag_repository env_tag_repo_;
+    repository::recent_party_repository recent_party_repo_;
     std::string master_password_;
 };
 

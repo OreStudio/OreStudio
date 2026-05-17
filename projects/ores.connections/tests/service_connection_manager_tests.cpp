@@ -517,3 +517,62 @@ TEST_CASE("resolve_connection_via_environment", "[service]") {
     REQUIRE(resolved.environment_name.has_value());
     CHECK(*resolved.environment_name == env.name);
 }
+
+TEST_CASE("auto_tag_environments_by_label_tags_matching_environment", "[service]") {
+    scoped_connection_manager h;
+    auto& mgr = h.manager();
+    generation_context ctx;
+
+    auto matching = generate_synthetic_environment(ctx);
+    matching.subject_prefix = "ores.dev.local1";
+
+    auto other = generate_synthetic_environment(ctx);
+    other.subject_prefix = "ores.dev.local2";
+
+    mgr.create_environment(matching);
+    mgr.create_environment(other);
+
+    mgr.auto_tag_environments_by_label("local1");
+
+    auto matching_tags = mgr.get_tags_for_environment(matching.id);
+    REQUIRE(matching_tags.size() == 1);
+    CHECK(matching_tags[0].name == "local1");
+
+    auto other_tags = mgr.get_tags_for_environment(other.id);
+    CHECK(other_tags.empty());
+
+    auto tag = mgr.get_tag_by_name("local1");
+    REQUIRE(tag.has_value());
+    CHECK(tag->name == "local1");
+}
+
+TEST_CASE("auto_tag_environments_by_label_is_idempotent", "[service]") {
+    scoped_connection_manager h;
+    auto& mgr = h.manager();
+    generation_context ctx;
+
+    auto env = generate_synthetic_environment(ctx);
+    env.subject_prefix = "ores.dev.local1";
+    mgr.create_environment(env);
+
+    mgr.auto_tag_environments_by_label("local1");
+    mgr.auto_tag_environments_by_label("local1"); // second call — no duplicates
+
+    CHECK(mgr.get_tags_for_environment(env.id).size() == 1);
+    CHECK(mgr.get_all_tags().size() == 1);
+}
+
+TEST_CASE("auto_tag_environments_by_label_empty_is_noop", "[service]") {
+    scoped_connection_manager h;
+    auto& mgr = h.manager();
+    generation_context ctx;
+
+    auto env = generate_synthetic_environment(ctx);
+    env.subject_prefix = "ores.dev.local1";
+    mgr.create_environment(env);
+
+    mgr.auto_tag_environments_by_label("");
+
+    CHECK(mgr.get_tags_for_environment(env.id).empty());
+    CHECK(mgr.get_all_tags().empty());
+}

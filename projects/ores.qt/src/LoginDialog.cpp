@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LoginDialog.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <QSet>
 #include <QStandardItemModel>
 #include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -69,7 +70,8 @@ LoginDialog::LoginDialog(QWidget* parent)
 LoginDialog::~LoginDialog() = default;
 
 QSize LoginDialog::sizeHint() const {
-    return {400, 520};
+    const bool filterVisible = labelFilterCombo_ && labelFilterCombo_->isVisible();
+    return {400, filterVisible ? 720 : 580};
 }
 
 void LoginDialog::keyPressEvent(QKeyEvent* event) {
@@ -85,12 +87,68 @@ void LoginDialog::setImageCache(ImageCache* cache) {
 }
 
 void LoginDialog::setQuickConnectItems(const QList<QuickConnectItem>& items) {
+    allItems_ = items;
+
     if (items.isEmpty()) {
+        labelFilterLabel_->setVisible(false);
+        labelFilterCombo_->setVisible(false);
         quickConnectLabel_->setVisible(false);
         quickConnectCombo_->setVisible(false);
         return;
     }
 
+    // Collect all unique tags across all items
+    QSet<QString> tagSet;
+    for (const auto& it : items) {
+        for (const auto& tag : it.tags)
+            tagSet.insert(tag);
+    }
+    QStringList sortedTags(tagSet.begin(), tagSet.end());
+    sortedTags.sort(Qt::CaseInsensitive);
+
+    // Show/hide label filter based on whether there are ≥2 distinct tags
+    const bool showFilter = sortedTags.size() >= 2;
+    labelFilterLabel_->setVisible(showFilter);
+    labelFilterCombo_->setVisible(showFilter);
+    updateGeometry();
+
+    if (showFilter) {
+        // Rebuild filter combo without triggering applyLabelFilter during population
+        QSignalBlocker blocker(labelFilterCombo_);
+        labelFilterCombo_->clear();
+        labelFilterCombo_->addItem(tr("All"));
+        for (const auto& tag : sortedTags)
+            labelFilterCombo_->addItem(tag);
+        labelFilterCombo_->setCurrentIndex(0);
+    }
+
+    // Show all items initially (or filtered if setActiveLabel was already called)
+    applyLabelFilter(showFilter ? labelFilterCombo_->currentText() : QString());
+}
+
+void LoginDialog::setActiveLabel(const QString& label) {
+    if (!labelFilterCombo_ || !labelFilterCombo_->isVisible() || label.isEmpty())
+        return;
+    const int idx = labelFilterCombo_->findText(label, Qt::MatchFixedString);
+    if (idx >= 0)
+        labelFilterCombo_->setCurrentIndex(idx);
+    // If not found, leave at "All" — applyLabelFilter will show everything
+}
+
+void LoginDialog::applyLabelFilter(const QString& label) {
+    if (label.isEmpty() || label == tr("All")) {
+        rebuildQuickConnectModel(allItems_);
+    } else {
+        QList<QuickConnectItem> filtered;
+        for (const auto& it : allItems_) {
+            if (it.tags.contains(label, Qt::CaseSensitive))
+                filtered.append(it);
+        }
+        rebuildQuickConnectModel(filtered);
+    }
+}
+
+void LoginDialog::rebuildQuickConnectModel(const QList<QuickConnectItem>& items) {
     auto* model = new QStandardItemModel(quickConnectCombo_);
 
     auto makeHeader = [](const QString& text) -> QStandardItem* {
@@ -178,6 +236,11 @@ void LoginDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
 
+void LoginDialog::setConnectionManager(
+    ores::connections::service::connection_manager* connectionManager) {
+    connectionManager_ = connectionManager;
+}
+
 QString LoginDialog::getUsername() const {
     return usernameEdit_->text().trimmed();
 }
@@ -224,6 +287,7 @@ void LoginDialog::lockCredentialFields(bool locked) {
 void LoginDialog::enableForm(bool enabled) {
     loginButton_->setEnabled(enabled);
     signUpButton_->setEnabled(enabled);
+    if (labelFilterCombo_) labelFilterCombo_->setEnabled(enabled);
     quickConnectCombo_->setEnabled(enabled);
 
     if (enabled) {
@@ -287,7 +351,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     auto* usernameLabel = new QLabel("USERNAME", parent);
     usernameLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(usernameLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     usernameEdit_ = new QLineEdit(parent);
     usernameEdit_->setPlaceholderText("Enter your username");
@@ -300,7 +364,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     auto* passwordLabel = new QLabel("PASSWORD", parent);
     passwordLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(passwordLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     passwordEdit_ = new QLineEdit(parent);
     passwordEdit_->setPlaceholderText("Enter your password");
@@ -309,7 +373,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     passwordEdit_->setFixedHeight(36);
     layout->addWidget(passwordEdit_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* optionsRow = new QHBoxLayout();
     showPasswordCheck_ = new QCheckBox("Show password", parent);
@@ -329,17 +393,36 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
 }
 
 void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
+    // Label filter — hidden until setQuickConnectItems() finds ≥2 distinct tags.
+    labelFilterLabel_ = new QLabel(tr("LABEL"), parent);
+    labelFilterLabel_->setStyleSheet(dialog_styles::field_label);
+    labelFilterLabel_->setVisible(false);
+    layout->addWidget(labelFilterLabel_);
+    layout->addSpacing(6);
+
+    labelFilterCombo_ = new QComboBox(parent);
+    labelFilterCombo_->setStyleSheet(dialog_styles::combo_box);
+    labelFilterCombo_->setFixedHeight(36);
+    labelFilterCombo_->setVisible(false);
+    layout->addWidget(labelFilterCombo_);
+
+    connect(labelFilterCombo_, &QComboBox::currentIndexChanged,
+            this, &LoginDialog::onLabelFilterChanged);
+
+    layout->addSpacing(12);
+
     // Quick-connect combo: environments (fills host+port) and connections
     // (fills all fields). Hidden until setQuickConnectItems() is called.
     quickConnectLabel_ = new QLabel(tr("QUICK CONNECT"), parent);
     quickConnectLabel_->setStyleSheet(dialog_styles::field_label);
     quickConnectLabel_->setVisible(false);
     layout->addWidget(quickConnectLabel_);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     quickConnectCombo_ = new QComboBox(parent);
     quickConnectCombo_->addItem(tr("— connect manually —"));
     quickConnectCombo_->setStyleSheet(dialog_styles::combo_box);
+    quickConnectCombo_->setFixedHeight(36);
     quickConnectCombo_->setVisible(false);
     layout->addWidget(quickConnectCombo_);
 
@@ -351,41 +434,41 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     auto* hostLabel = new QLabel("SERVER", parent);
     hostLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(hostLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     hostEdit_ = new QLineEdit(parent);
     hostEdit_->setPlaceholderText("localhost");
     hostEdit_->setText("localhost");
     hostEdit_->setStyleSheet(dialog_styles::input_field);
-    hostEdit_->setFixedHeight(32);
+    hostEdit_->setFixedHeight(36);
     layout->addWidget(hostEdit_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* portLabel = new QLabel("PORT", parent);
     portLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(portLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     portSpinBox_ = new QSpinBox(parent);
     portSpinBox_->setRange(1, 65535);
     portSpinBox_->setValue(4222);
     portSpinBox_->setStyleSheet(dialog_styles::spin_box);
-    portSpinBox_->setFixedHeight(32);
+    portSpinBox_->setFixedHeight(36);
     layout->addWidget(portSpinBox_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* prefixLabel = new QLabel("NAMESPACE", parent);
     prefixLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(prefixLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     subjectPrefixEdit_ = new QLineEdit(parent);
     subjectPrefixEdit_->setPlaceholderText("e.g. ores.dev.local1  (leave empty for default)");
     subjectPrefixEdit_->setText("ores.dev.local1");
     subjectPrefixEdit_->setStyleSheet(dialog_styles::input_field);
-    subjectPrefixEdit_->setFixedHeight(32);
+    subjectPrefixEdit_->setFixedHeight(36);
     layout->addWidget(subjectPrefixEdit_);
 
     layout->addSpacing(12);
@@ -407,10 +490,11 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
             this, &LoginDialog::onLoginClicked);
     layout->addWidget(loginButton_);
 
-    layout->addSpacing(12);
+    layout->addSpacing(16);
 
     auto* signUpRow = new QHBoxLayout();
     signUpRow->setAlignment(Qt::AlignCenter);
+    signUpRow->setSpacing(4);
     signUpLabel_ = new QLabel("Don't have an account?", parent);
     signUpLabel_->setStyleSheet(
         "QLabel { background: transparent; color: #707070; font-size: 12px; }");
@@ -441,6 +525,10 @@ void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     layout->addWidget(copyrightLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(8);
+}
+
+void LoginDialog::onLabelFilterChanged(int) {
+    applyLabelFilter(labelFilterCombo_->currentText());
 }
 
 void LoginDialog::onQuickConnectChanged(int idx) {
@@ -611,13 +699,35 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                                       << " parties available";
             statusLabel_->setText("Select party...");
 
-            PartyPickerDialog partyDialog(result.available_parties, clientManager_, imageCache_, this);
+            std::vector<boost::uuids::uuid> recentIds;
+            if (connectionManager_) {
+                try {
+                    for (const auto& rp : connectionManager_->get_recent_parties())
+                        recentIds.push_back(rp.party_id);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Failed to load recent parties: " << e.what();
+                }
+            }
+
+            PartyPickerDialog partyDialog(result.available_parties, recentIds,
+                                          clientManager_, imageCache_, this);
             if (partyDialog.exec() == QDialog::Accepted) {
                 BOOST_LOG_SEV(lg(), info) << "Party selected: "
                                           << clientManager_->currentPartyName().toStdString()
                                           << " (category="
                                           << clientManager_->currentPartyCategory().toStdString()
                                           << ")";
+                if (connectionManager_) {
+                    try {
+                        connectionManager_->record_party_selection(
+                            partyDialog.selectedPartyId(),
+                            partyDialog.selectedPartyName().toStdString());
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to record recent party: " << e.what();
+                    }
+                }
                 statusLabel_->setText("Login successful!");
                 emit loginSucceeded(usernameEdit_->text().trimmed());
                 if (clientManager_->lastPartySetupRequired()) {

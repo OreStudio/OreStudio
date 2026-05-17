@@ -19,7 +19,9 @@
  */
 #include "ores.connections/service/connection_manager.hpp"
 
+#include <algorithm>
 #include <stdexcept>
+#include <boost/uuid/random_generator.hpp>
 #include "ores.security/crypto/encryption.hpp"
 
 namespace ores::connections::service {
@@ -35,6 +37,7 @@ connection_manager::connection_manager(const std::filesystem::path& db_path,
       conn_tag_repo_(ctx_),
       env_repo_(ctx_),
       env_tag_repo_(ctx_),
+      recent_party_repo_(ctx_),
       master_password_(master_password) {
     ctx_.initialize_schema();
 }
@@ -341,8 +344,43 @@ void connection_manager::change_master_password(const std::string& new_password)
     master_password_ = new_password;
 }
 
+void connection_manager::auto_tag_environments_by_label(const std::string& label) {
+    if (label.empty()) return;
+
+    auto tag = get_tag_by_name(label);
+    if (!tag) {
+        domain::tag t;
+        t.id = boost::uuids::random_generator()();
+        t.name = label;
+        create_tag(t);
+        tag = t;
+    }
+
+    const std::string suffix = "." + label;
+    for (const auto& env : get_all_environments()) {
+        const auto& sp = env.subject_prefix;
+        if (sp.size() < suffix.size() ||
+            sp.compare(sp.size() - suffix.size(), suffix.size(), suffix) != 0)
+            continue;
+        const auto existing = get_tags_for_environment(env.id);
+        const bool already = std::any_of(existing.begin(), existing.end(),
+            [&](const domain::tag& t) { return t.id == tag->id; });
+        if (!already)
+            add_tag_to_environment(env.id, tag->id);
+    }
+}
+
 void connection_manager::purge() {
     ctx_.purge_all_data();
+}
+
+std::vector<domain::recent_party> connection_manager::get_recent_parties() {
+    return recent_party_repo_.read_recent();
+}
+
+void connection_manager::record_party_selection(
+    const boost::uuids::uuid& party_id, const std::string& party_name) {
+    recent_party_repo_.record(party_id, party_name);
 }
 
 }

@@ -24,15 +24,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# version.hpp: stable between builds — only contains version number macros,
-# the platform triplet, and function declarations. Generated once at configure
-# time via configure_file(); never touched again unless the inputs change.
-#
-# Platform triplet: prefer vcpkg's canonical value when available; otherwise
-# synthesize a best-effort <arch>-<os> string from CMake's own probes so
-# non-vcpkg builds still produce a usable identifier. A warning is emitted
-# in the fallback path because the synthesized value is unlikely to match a
-# compute platforms table entry verbatim.
 if(VCPKG_TARGET_TRIPLET)
     set(ORES_PLATFORM_TRIPLET "${VCPKG_TARGET_TRIPLET}")
 else()
@@ -60,10 +51,6 @@ set(version_hpp_out "${generated_version_dir}/version.hpp")
 file(MAKE_DIRECTORY "${generated_version_dir}")
 configure_file("${version_hpp_in}" "${version_hpp_out}" @ONLY)
 
-# version.cpp: stamped on every build with the current git hash + timestamp.
-# copy_if_different in the script keeps its mtime stable when nothing has
-# changed. Only this one TU is recompiled per build; all other consumers of
-# version.hpp are unaffected.
 set(version_cpp_in  "${CMAKE_SOURCE_DIR}/projects/ores.utility/src/version/version.cpp.in")
 set(version_cpp_out "${CMAKE_CURRENT_BINARY_DIR}/version/version.cpp")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/version")
@@ -77,6 +64,7 @@ add_custom_target(ores.utility.version ALL
         "-DINPUT_FILE=${version_cpp_in}"
         "-DOUTPUT_FILE=${version_cpp_out}"
         -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
+    BYPRODUCTS "${version_cpp_out}"
     COMMENT "Stamping version.cpp"
     VERBATIM)
 
@@ -98,7 +86,6 @@ endif()
 set_source_files_properties("${version_cpp_out}" PROPERTIES GENERATED TRUE)
 set(lib_files ${files} "${version_cpp_out}")
 add_library(${lib_target_name} ${lib_files})
-add_dependencies(${lib_target_name} ores.utility.version)
 target_compile_definitions(${lib_target_name} PRIVATE ORES_UTILITY_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE

@@ -114,6 +114,15 @@ void sqlite_context::initialize_schema() {
         )
     )";
 
+    // Create recent_parties table (local-only, no FK dependencies)
+    const std::string create_recent_parties = R"(
+        CREATE TABLE IF NOT EXISTS recent_parties (
+            party_id         TEXT NOT NULL PRIMARY KEY,
+            party_name       TEXT NOT NULL,
+            last_selected_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    )";
+
     // Execute schema creation
     conn->execute(create_folders);
     conn->execute(create_tags);
@@ -121,6 +130,7 @@ void sqlite_context::initialize_schema() {
     conn->execute(create_connections);
     conn->execute(create_environment_tags);
     conn->execute(create_connection_tags);
+    conn->execute(create_recent_parties);
 
     // Migration: Add description column to folders if it doesn't exist
     try {
@@ -195,6 +205,7 @@ void sqlite_context::purge_all_data() {
     conn->execute("DELETE FROM environments");
     conn->execute("DELETE FROM folders");
     conn->execute("DELETE FROM tags");
+    conn->execute("DELETE FROM recent_parties");
 }
 
 }

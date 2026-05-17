@@ -16,10 +16,19 @@
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
       "description": "UUID uniquely identifying this trade.",
-      "detail": "Surrogate key for the trade record."
+      "detail": "Surrogate key for the trade record.",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
     },
 
     "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Internal party owning this trade (denormalized from book_id).",
+        "generator_expr": "boost::uuids::random_generator()()"
+      },
       {
         "name": "external_id",
         "type": "text",
@@ -75,9 +84,9 @@
       },
       {
         "name": "product_type",
-        "type": "text",
+        "type": "product_type_t",
         "cpp_type": "std::string",
-        "nullable": false,
+        "nullable": true,
         "description": "ORE product type discriminator.",
         "generator_expr": "std::string(\"Swap\")"
       },
@@ -109,24 +118,24 @@
       {
         "name": "activity_type_code",
         "type": "text",
-        "cpp_type": "std::optional<std::string>",
-        "nullable": true,
+        "cpp_type": "std::string",
+        "nullable": false,
         "description": "Activity type code (soft FK to ores_trading_activity_types_tbl).",
-        "generator_expr": "std::nullopt"
+        "generator_expr": "std::string(\"New\")"
       },
       {
         "name": "status_id",
         "type": "uuid",
-        "cpp_type": "std::optional<boost::uuids::uuid>",
-        "nullable": true,
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
         "description": "Current FSM state (soft FK to ores_dq_fsm_states_tbl).",
-        "generator_expr": "std::nullopt"
+        "generator_expr": "boost::uuids::random_generator()()"
       },
       {
         "name": "trade_date",
         "type": "date",
         "cpp_type": "std::string",
-        "nullable": false,
+        "nullable": true,
         "description": "Date the trade was agreed.",
         "detail": "ISO 8601 date: YYYY-MM-DD.",
         "generator_expr": "std::string(\"2025-01-15\")"
@@ -135,7 +144,7 @@
         "name": "execution_timestamp",
         "type": "timestamp with time zone",
         "cpp_type": "std::string",
-        "nullable": false,
+        "nullable": true,
         "description": "Timestamp when the trade was executed (with timezone).",
         "detail": "ISO 8601 timestamp: YYYY-MM-DD HH:MM:SS+TZ.",
         "generator_expr": "std::string(\"2025-01-15 10:00:00\")"
@@ -144,7 +153,7 @@
         "name": "effective_date",
         "type": "date",
         "cpp_type": "std::string",
-        "nullable": false,
+        "nullable": true,
         "description": "Date from which the trade is effective.",
         "detail": "ISO 8601 date: YYYY-MM-DD.",
         "generator_expr": "std::string(\"2025-01-16\")"
@@ -153,16 +162,82 @@
         "name": "termination_date",
         "type": "date",
         "cpp_type": "std::string",
-        "nullable": false,
+        "nullable": true,
         "description": "Date on which the trade matures or terminates.",
         "detail": "ISO 8601 date: YYYY-MM-DD.",
         "generator_expr": "std::string(\"2026-01-15\")"
       }
     ],
 
+    "validations": [
+      {
+        "column": "asset_class",
+        "validation_function": "ores_refdata_validate_asset_class_fn",
+        "nullable": true
+      },
+      {
+        "column": "trade_type",
+        "validation_function": "ores_trading_validate_trade_type_fn"
+      },
+      {
+        "column": "activity_type_code",
+        "validation_function": "ores_trading_validate_activity_type_fn"
+      }
+    ],
+
     "sql": {
-      "tablename": "ores_trading_trades_tbl"
+      "tablename": "ores_trading_trades_tbl",
+      "security_definer": true,
+      "party_id_from_book_id": {
+        "book_table": "ores_refdata_books_tbl",
+        "book_error_message": "Invalid book_id: %. Book must exist for tenant.",
+        "portfolio_table": "ores_refdata_portfolios_tbl",
+        "portfolio_error_message": "Invalid portfolio_id: %. Portfolio must exist for tenant.",
+        "cross_check_error_message": "portfolio_id % does not match book parent_portfolio_id %."
+      },
+      "soft_fk_validations": [
+        {
+          "column": "successor_trade_id",
+          "table": "ores_trading_trades_tbl",
+          "nullable": true,
+          "error_message": "Invalid successor_trade_id: %. Trade must exist for tenant."
+        },
+        {
+          "column": "counterparty_id",
+          "table": "ores_refdata_counterparties_tbl",
+          "nullable": true,
+          "error_message": "Invalid counterparty_id: %. Counterparty must exist for tenant."
+        },
+        {
+          "column": "status_id",
+          "table": "ores_dq_fsm_states_tbl",
+          "nullable": false,
+          "use_system_tenant": true,
+          "error_message": "Invalid status_id: %. FSM state must exist."
+        }
+      ]
     },
+
+    "indexes": [
+      {"name": "book",         "unique": false, "columns": "tenant_id, book_id",        "current_only": true},
+      {"name": "portfolio",    "unique": false, "columns": "tenant_id, portfolio_id",   "current_only": true},
+      {"name": "netting_set",  "unique": false, "columns": "tenant_id, netting_set_id", "current_only": true},
+      {"name": "trade_type",   "unique": false, "columns": "tenant_id, trade_type",     "current_only": true},
+      {
+        "name": "instrument",
+        "unique": false,
+        "columns": "tenant_id, product_type, instrument_id",
+        "current_only": true,
+        "where_extra": "instrument_id is not null"
+      },
+      {
+        "name": "asset_class",
+        "unique": false,
+        "columns": "tenant_id, asset_class",
+        "current_only": true,
+        "where_extra": "asset_class is not null"
+      }
+    ],
 
     "repository": {
       "entity_singular_short": "trade",

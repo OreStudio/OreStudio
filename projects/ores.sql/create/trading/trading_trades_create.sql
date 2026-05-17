@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
  * Trade Table
  *
- * Temporal trade record capturing FpML Trade Header properties. Each lifecycle
- * event (New, Amendment, Novation, etc.) creates a new temporal row for the
- * same trade id. The internal party is derived from book_id -> books.party_id.
- *
- * Hand-crafted: inline soft FK validations for book_id, portfolio_id, and
- * successor_trade_id cannot be expressed by the standard templates.
+ * Temporal trade record. Each lifecycle event (New, Amendment, Novation,
+ * etc.) creates a new temporal row for the same trade id. The internal party
+ * is derived from book_id via books.party_id.
  */
 
 create table if not exists "ores_trading_trades_tbl" (
@@ -38,18 +38,18 @@ create table if not exists "ores_trading_trades_tbl" (
     "book_id" uuid not null,
     "portfolio_id" uuid not null,
     "successor_trade_id" uuid null,
-    "counterparty_id" uuid null,
     "trade_type" text not null,
+    "counterparty_id" uuid null,
     "product_type" product_type_t null,
     "instrument_id" uuid null,
     "asset_class" text null,
     "netting_set_id" text not null,
     "activity_type_code" text not null,
     "status_id" uuid not null,
-    "trade_date" date,
-    "execution_timestamp" timestamp with time zone,
-    "effective_date" date,
-    "termination_date" date,
+    "trade_date" date null,
+    "execution_timestamp" timestamp with time zone null,
+    "effective_date" date null,
+    "termination_date" date null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -71,44 +71,35 @@ create unique index if not exists trades_version_uniq_idx
 on "ores_trading_trades_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists trades_id_uniq_idx
 on "ores_trading_trades_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists trades_tenant_idx
 on "ores_trading_trades_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Book index for portfolio lookups
 create index if not exists trades_book_idx
 on "ores_trading_trades_tbl" (tenant_id, book_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Portfolio index
 create index if not exists trades_portfolio_idx
 on "ores_trading_trades_tbl" (tenant_id, portfolio_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Netting set index for ORE aggregation
 create index if not exists trades_netting_set_idx
 on "ores_trading_trades_tbl" (tenant_id, netting_set_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade type index for product filtering
 create index if not exists trades_trade_type_idx
 on "ores_trading_trades_tbl" (tenant_id, trade_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Product routing index (product_type + instrument_id used to open
--- the associated instrument record from a trade)
 create index if not exists trades_instrument_idx
 on "ores_trading_trades_tbl" (tenant_id, product_type, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and instrument_id is not null;
 
--- Asset class index for filtering trades by asset class
 create index if not exists trades_asset_class_idx
 on "ores_trading_trades_tbl" (tenant_id, asset_class)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -117,8 +108,8 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$
 declare
-    current_version      integer;
-    v_book_portfolio_id  uuid;
+    current_version integer;
+    v_book_portfolio_id uuid;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -160,7 +151,7 @@ begin
             using errcode = '23514';
     end if;
 
-    -- Validate successor_trade_id (optional self-referencing soft FK)
+    -- Validate successor_trade_id (optional soft FK to ores_trading_trades_tbl)
     if NEW.successor_trade_id is not null then
         if not exists (
             select 1 from ores_trading_trades_tbl
@@ -186,10 +177,20 @@ begin
         end if;
     end if;
 
-    -- Validate asset_class (optional field — skip validation when null)
+    -- Validate status_id (soft FK to ores_dq_fsm_states_tbl)
+    if not exists (
+        select 1 from ores_dq_fsm_states_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and id = NEW.status_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid status_id: %. FSM state must exist.', NEW.status_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate asset_class (optional field -- skip validation when null)
     if NEW.asset_class is not null then
-        NEW.asset_class := ores_refdata_validate_asset_class_fn(
-            NEW.tenant_id, NEW.asset_class);
+        NEW.asset_class := ores_refdata_validate_asset_class_fn(NEW.tenant_id, NEW.asset_class);
     end if;
 
     -- Validate trade_type
@@ -198,15 +199,8 @@ begin
     -- Validate activity_type_code
     NEW.activity_type_code := ores_trading_validate_activity_type_fn(NEW.tenant_id, NEW.activity_type_code);
 
-    -- Validate status_id (soft FK to ores_dq_fsm_states_tbl)
-    if not exists (
-        select 1 from ores_dq_fsm_states_tbl
-        where id = NEW.status_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid status_id: %. FSM state must exist.', NEW.status_id
-            using errcode = '23503';
-    end if;
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -237,9 +231,7 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;

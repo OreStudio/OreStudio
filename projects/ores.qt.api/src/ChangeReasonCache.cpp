@@ -148,7 +148,15 @@ void ChangeReasonCache::loadCategories() {
 }
 
 void ChangeReasonCache::onReasonsLoaded() {
-    auto result = reasons_watcher_->result();
+    decltype(reasons_watcher_->result()) result;
+    try {
+        result = reasons_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading change reasons: " << e.what();
+        is_loading_ = false;
+        emit loadError("Failed to fetch change reasons");
+        return;
+    }
     if (!result.success) {
         is_loading_ = false;
         emit loadError("Failed to fetch change reasons");
@@ -175,7 +183,15 @@ void ChangeReasonCache::onReasonsLoaded() {
 }
 
 void ChangeReasonCache::onCategoriesLoaded() {
-    auto result = categories_watcher_->result();
+    decltype(categories_watcher_->result()) result;
+    try {
+        result = categories_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading change reason categories: " << e.what();
+        is_loading_ = false;
+        emit loadError("Failed to fetch change reason categories");
+        return;
+    }
     if (!result.success) {
         is_loading_ = false;
         emit loadError("Failed to fetch change reason categories");

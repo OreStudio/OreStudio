@@ -106,7 +106,15 @@ void BadgeCache::loadMappings() {
 }
 
 void BadgeCache::onDefinitionsLoaded() {
-    auto result = definitions_watcher_->result();
+    decltype(definitions_watcher_->result()) result;
+    try {
+        result = definitions_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading badge definitions: " << e.what();
+        is_loading_ = false;
+        emit loadError("Failed to fetch badge definitions");
+        return;
+    }
     if (!result.success) {
         is_loading_ = false;
         emit loadError("Failed to fetch badge definitions");
@@ -131,7 +139,15 @@ void BadgeCache::onDefinitionsLoaded() {
 }
 
 void BadgeCache::onMappingsLoaded() {
-    auto result = mappings_watcher_->result();
+    decltype(mappings_watcher_->result()) result;
+    try {
+        result = mappings_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading badge mappings: " << e.what();
+        is_loading_ = false;
+        emit loadError("Failed to fetch badge mappings");
+        return;
+    }
     if (!result.success) {
         is_loading_ = false;
         emit loadError("Failed to fetch badge mappings");

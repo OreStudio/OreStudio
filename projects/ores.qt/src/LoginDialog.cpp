@@ -70,7 +70,8 @@ LoginDialog::LoginDialog(QWidget* parent)
 LoginDialog::~LoginDialog() = default;
 
 QSize LoginDialog::sizeHint() const {
-    return {400, 520};
+    const bool filterVisible = labelFilterCombo_ && labelFilterCombo_->isVisible();
+    return {400, filterVisible ? 720 : 580};
 }
 
 void LoginDialog::keyPressEvent(QKeyEvent* event) {
@@ -109,6 +110,7 @@ void LoginDialog::setQuickConnectItems(const QList<QuickConnectItem>& items) {
     const bool showFilter = sortedTags.size() >= 2;
     labelFilterLabel_->setVisible(showFilter);
     labelFilterCombo_->setVisible(showFilter);
+    updateGeometry();
 
     if (showFilter) {
         // Rebuild filter combo without triggering applyLabelFilter during population
@@ -349,7 +351,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     auto* usernameLabel = new QLabel("USERNAME", parent);
     usernameLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(usernameLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     usernameEdit_ = new QLineEdit(parent);
     usernameEdit_->setPlaceholderText("Enter your username");
@@ -362,7 +364,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     auto* passwordLabel = new QLabel("PASSWORD", parent);
     passwordLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(passwordLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     passwordEdit_ = new QLineEdit(parent);
     passwordEdit_->setPlaceholderText("Enter your password");
@@ -396,7 +398,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     labelFilterLabel_->setStyleSheet(dialog_styles::field_label);
     labelFilterLabel_->setVisible(false);
     layout->addWidget(labelFilterLabel_);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     labelFilterCombo_ = new QComboBox(parent);
     labelFilterCombo_->setStyleSheet(dialog_styles::combo_box);
@@ -407,7 +409,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     connect(labelFilterCombo_, &QComboBox::currentIndexChanged,
             this, &LoginDialog::onLabelFilterChanged);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     // Quick-connect combo: environments (fills host+port) and connections
     // (fills all fields). Hidden until setQuickConnectItems() is called.
@@ -415,7 +417,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     quickConnectLabel_->setStyleSheet(dialog_styles::field_label);
     quickConnectLabel_->setVisible(false);
     layout->addWidget(quickConnectLabel_);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     quickConnectCombo_ = new QComboBox(parent);
     quickConnectCombo_->addItem(tr("— connect manually —"));
@@ -432,7 +434,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     auto* hostLabel = new QLabel("SERVER", parent);
     hostLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(hostLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     hostEdit_ = new QLineEdit(parent);
     hostEdit_->setPlaceholderText("localhost");
@@ -441,12 +443,12 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     hostEdit_->setFixedHeight(36);
     layout->addWidget(hostEdit_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* portLabel = new QLabel("PORT", parent);
     portLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(portLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     portSpinBox_ = new QSpinBox(parent);
     portSpinBox_->setRange(1, 65535);
@@ -455,12 +457,12 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     portSpinBox_->setFixedHeight(36);
     layout->addWidget(portSpinBox_);
 
-    layout->addSpacing(8);
+    layout->addSpacing(12);
 
     auto* prefixLabel = new QLabel("NAMESPACE", parent);
     prefixLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(prefixLabel);
-    layout->addSpacing(4);
+    layout->addSpacing(6);
 
     subjectPrefixEdit_ = new QLineEdit(parent);
     subjectPrefixEdit_->setPlaceholderText("e.g. ores.dev.local1  (leave empty for default)");
@@ -488,10 +490,11 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
             this, &LoginDialog::onLoginClicked);
     layout->addWidget(loginButton_);
 
-    layout->addSpacing(12);
+    layout->addSpacing(16);
 
     auto* signUpRow = new QHBoxLayout();
     signUpRow->setAlignment(Qt::AlignCenter);
+    signUpRow->setSpacing(4);
     signUpLabel_ = new QLabel("Don't have an account?", parent);
     signUpLabel_->setStyleSheet(
         "QLabel { background: transparent; color: #707070; font-size: 12px; }");

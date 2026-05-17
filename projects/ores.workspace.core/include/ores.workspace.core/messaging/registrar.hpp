@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_WORKSPACE_CORE_MESSAGING_REGISTRAR_HPP
+#define ORES_WORKSPACE_CORE_MESSAGING_REGISTRAR_HPP
 
-drop function if exists ores_workspace_resolution_order_fn(integer) cascade;
-drop table if exists ores_workspace_trade_scope_tbl cascade;
-drop table if exists ores_workspaces_tbl cascade;
-drop function if exists ores_workspaces_prevent_cycle_fn() cascade;
+#include <optional>
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.workspace.core/export.hpp"
+
+namespace ores::workspace::messaging {
+
+class ORES_WORKSPACE_CORE_EXPORT registrar {
+public:
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
+};
+
+}
+
+#endif

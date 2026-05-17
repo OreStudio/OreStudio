@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_WORKSPACE_SERVICE_CONFIG_PARSER_HPP
+#define ORES_WORKSPACE_SERVICE_CONFIG_PARSER_HPP
 
-drop function if exists ores_workspace_resolution_order_fn(integer) cascade;
-drop table if exists ores_workspace_trade_scope_tbl cascade;
-drop table if exists ores_workspaces_tbl cascade;
-drop function if exists ores_workspaces_prevent_cycle_fn() cascade;
+#include <iosfwd>
+#include <vector>
+#include <string>
+#include <optional>
+#include "ores.workspace.service/config/options.hpp"
+
+namespace ores::workspace::service::config {
+
+/**
+ * @brief Command-line parser for ores.workspace.service.
+ *
+ * Note on logging: logging is not available during parsing since the logger
+ * is only initialised after options have been successfully parsed.
+ */
+class parser final {
+public:
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
+};
+
+}
+
+#endif

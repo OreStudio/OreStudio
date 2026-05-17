@@ -48,6 +48,15 @@ alter  user :refdata_service_user with password :'refdata_service_password';
 grant :service_role to :refdata_service_user;
 alter  role :refdata_service_user set search_path to public;
 
+-- Workspace domain service
+select set_config('ores.cur_user', :'workspace_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :workspace_service_user with password :'workspace_service_password';
+grant :service_role to :workspace_service_user;
+alter  role :workspace_service_user set search_path to public;
+
 -- Data Quality domain service
 select set_config('ores.cur_user', :'dq_service_user', false);
 do $$ begin

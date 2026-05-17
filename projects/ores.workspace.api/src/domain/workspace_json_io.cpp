@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.workspace.api/domain/workspace_json_io.hpp"
 
-drop function if exists ores_workspace_resolution_order_fn(integer) cascade;
-drop table if exists ores_workspace_trade_scope_tbl cascade;
-drop table if exists ores_workspaces_tbl cascade;
-drop function if exists ores_workspaces_prevent_cycle_fn() cascade;
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
+namespace ores::workspace::domain {
+
+std::ostream& operator<<(std::ostream& s, const workspace& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

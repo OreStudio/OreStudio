@@ -93,3 +93,23 @@ create or replace trigger ores_workspaces_cycle_prevention_trg
 before insert or update of parent_workspace_id
 on ores_workspaces_tbl
 for each row execute function ores_workspaces_prevent_cycle_fn();
+
+-- =============================================================================
+-- Resolution order function. Returns the ancestor chain as an integer array
+-- starting from p_workspace_id up to the root (workspace 0).
+-- =============================================================================
+
+create or replace function ores_workspace_resolution_order_fn(p_workspace_id integer)
+returns integer[] language sql stable as $$
+    with recursive chain(id, depth) as (
+        select id, 0
+        from ores_workspaces_tbl
+        where id = p_workspace_id
+        union all
+        select w.parent_workspace_id, c.depth + 1
+        from ores_workspaces_tbl w
+        join chain c on c.id = w.id
+        where w.parent_workspace_id is not null
+    )
+    select array_agg(id order by depth) from chain
+$$;

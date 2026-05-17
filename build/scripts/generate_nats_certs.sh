@@ -35,6 +35,7 @@ SERVICES=(
     ores.controller.service
     ores.iam.service
     ores.refdata.service
+    ores.workspace.service
     ores.dq.service
     ores.variability.service
     ores.assets.service

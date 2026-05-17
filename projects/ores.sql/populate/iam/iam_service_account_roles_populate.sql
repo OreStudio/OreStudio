@@ -39,6 +39,9 @@ select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'refdata_service_user', 'RefdataService');
 
 select ores_iam_account_role_assign_fn(
+    ores_utility_system_tenant_id_fn(), :'workspace_service_user', 'WorkspaceService');
+
+select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'dq_service_user', 'DqService');
 
 select ores_iam_account_role_assign_fn(

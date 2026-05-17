@@ -12,20 +12,18 @@
 #
 # To bump the version:
 #   1. Increment REQUIRED_ENV_VERSION below.
-#   2. Add one line to CHANGELOG for the new version number.
+#   2. Add a comment line to the Changelog block below.
 #   3. Increment ENV_VERSION in build/scripts/init-environment.sh.
-#   4. Add the corresponding comment to the changelog block there too.
+#   4. Add the corresponding comment in init-environment.sh changelog too.
 
 set -euo pipefail
 
-REQUIRED_ENV_VERSION=2
+REQUIRED_ENV_VERSION=3
 
-# One entry per version number (index 0 is a placeholder).
-CHANGELOG=(
-    ""
-    "1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER"
-    "2: Removed ORES_WT_PORT; WT port is now owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT"
-)
+# Changelog:
+#   1: Initial env versioning; renamed ORES_COMPUTE_WRAPPER_USER -> ORES_DB_COMPUTE_WRAPPER_USER
+#   2: Removed ORES_WT_PORT; WT port is now owned by the controller via ORES_CONTROLLER_SERVICE_WT_PORT
+#   3: Added ORES_WORKSPACE_SERVICE_DB_* for new workspace service
 
 CURRENT_VERSION="${ORES_ENV_VERSION:-0}"
 
@@ -41,10 +39,7 @@ if [[ "${CURRENT_VERSION}" -lt "${REQUIRED_ENV_VERSION}" ]]; then
     echo "  Your .env:  version ${CURRENT_VERSION}" >&2
     echo "  Required:   version ${REQUIRED_ENV_VERSION}" >&2
     echo "" >&2
-    echo "Changes you are missing:" >&2
-    for (( v = CURRENT_VERSION + 1; v <= REQUIRED_ENV_VERSION; v++ )); do
-        echo "  ${CHANGELOG[$v]}" >&2
-    done
+    echo "See the Changelog in validate_env_version.sh for details." >&2
     echo "" >&2
     echo "Fix: re-run init-environment.sh to regenerate .env:" >&2
     echo "  ./build/scripts/init-environment.sh --preset ${ORES_PRESET:-<preset>} -y" >&2

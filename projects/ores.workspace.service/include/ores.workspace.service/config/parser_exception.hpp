@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_WORKSPACE_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
+#define ORES_WORKSPACE_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-drop function if exists ores_workspace_resolution_order_fn(integer) cascade;
-drop table if exists ores_workspace_trade_scope_tbl cascade;
-drop table if exists ores_workspaces_tbl cascade;
-drop function if exists ores_workspaces_prevent_cycle_fn() cascade;
+#include <string>
+#include <boost/exception/info.hpp>
+
+namespace ores::workspace::service::config {
+
+/**
+ * @brief A fatal error has occurred during option parsing.
+ */
+class parser_exception : public virtual std::exception,
+                         public virtual boost::exception {
+public:
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
+};
+
+}
+
+#endif

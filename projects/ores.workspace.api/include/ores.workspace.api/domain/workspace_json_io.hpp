@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
+#define ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
 
-drop function if exists ores_workspace_resolution_order_fn(integer) cascade;
-drop table if exists ores_workspace_trade_scope_tbl cascade;
-drop table if exists ores_workspaces_tbl cascade;
-drop function if exists ores_workspaces_prevent_cycle_fn() cascade;
+#include <iosfwd>
+#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.workspace.api/export.hpp"
+
+namespace ores::workspace::domain {
+
+ORES_WORKSPACE_API_EXPORT std::ostream& operator<<(std::ostream& s, const workspace& v);
+
+}
+
+#endif

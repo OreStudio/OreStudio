@@ -31,6 +31,7 @@
 insert into ores_controller_service_dependencies_tbl (service_name, depends_on)
 values
     ('ores.refdata.service',    'ores.iam.service'),
+    ('ores.workspace.service',  'ores.iam.service'),
     ('ores.dq.service',         'ores.iam.service'),
     ('ores.variability.service','ores.iam.service'),
     ('ores.assets.service',     'ores.iam.service'),

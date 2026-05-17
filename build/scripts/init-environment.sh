@@ -46,7 +46,7 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 #      mapped to an unknown option name by the wt.service parser, causing an
 #      "unrecognised option" crash on startup.
 # ---------------------------------------------------------------------------
-ENV_VERSION=2
+ENV_VERSION=3
 
 # ---------------------------------------------------------------------------
 # Argument parsing

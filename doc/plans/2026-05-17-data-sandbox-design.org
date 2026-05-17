@@ -11,8 +11,17 @@
   depends on workspaces for Track 1 (educational/sample import).  Track 2
   (production live import) is independent.
 - [[file:2026-03-01-reporting-component-design.org][Reporting Component Design]] — defines ~report_definition~ and
-  ~risk_report_config~.  ORE orchestration files stored within workspaces
-  extend this infrastructure rather than introducing a new table.
+  ~risk_report_config~.  Workspaces extend this infrastructure by adding
+  ~workspace_id~ to report definitions; no new tables are introduced.
+
+* Dependencies (prerequisite plans not yet written)
+
+- *Virtual Portfolio Design* — the workspace ~scope_portfolio_id~ references
+  a portfolio that may be a user-created virtual portfolio aggregating books
+  from anywhere in the book tree.  This is a prerequisite for the trader
+  what-if use case (Phase 3 of this plan).  ORE sample workspaces (Phase 5)
+  do not require it — they use self-contained books with no cross-tree
+  aggregation.  A separate plan is needed before Phase 3 implementation begins.
 
 * Note on naming
 
@@ -309,34 +318,65 @@ where workspace_id = any(:res_order)
 order by name, array_position(:res_order, workspace_id);
 #+end_src
 
-** Report definitions as workspace-scoped ORE runs
+** Report definitions and workspace inheritance
 
-~report_definition~ gains a ~workspace_id~ column.  ~risk_report_config~
-requires no structural change — it already references portfolios, books, and
-analytics type, which are all first-class domain objects.
+~report_definition~ gains ~workspace_id~ (default 0 = Live/global).  The same
+resolution chain that applies to trade and reference data applies to report
+definitions: when listing report definitions available in workspace W, the
+query returns all report definitions whose ~workspace_id~ is in the resolution
+order ~[W, parent, ..., 0]~, deduplicated on name with the closest workspace
+winning.
 
-The workspace provides the complete data context for a report run: conventions,
-curveconfig, market data, pricingengine, todaysmarket are all looked up via the
-workspace resolution chain at run time.  No raw ~ore.xml~ is stored.
+*** No duplication — Live report definitions are inherited, not copied
 
-When the compute job generator runs a report definition:
+A Live report definition (workspace_id = 0) is automatically available in
+every workspace that has Live in its ancestry chain.  A trader opening their
+"EUR shock +50bps" workspace already sees all Live reports (NPV, DV01,
+Greeks) without any copying.  The workspace only needs its own report
+definition row when it wants to *differ* from the inherited version.
 
-1. Resolves the workspace chain.
-2. Exports all relevant domain objects (conventions, curves, market data,
-   pricing engine, today's market, trades filtered by the report's portfolio
-   and book selection) using workspace-aware list queries.
-3. Generates ORE input files from those domain objects via the existing ORE
-   mapper layer.
-4. Generates ~ore.xml~ from the report definition's ~analytics_type~ and the
-   exported file paths — exactly as it does today for live reports.
+*** Clone-and-modify for parameter variations
+
+When a trader wants a different bump size or simulation setting for a specific
+workspace:
+
+1. They clone an existing report definition into the workspace.  This creates
+   a workspace-local copy (~workspace_id = W~) pre-populated from the source.
+2. They modify the local copy's parameters (bump sizes, as-of date, etc.).
+3. The local copy shadows the parent's version within workspace W and all of
+   its children.
+
+The "Clone to workspace" action is a single write operation in the report
+definition UI — no new mechanism is required beyond the standard workspace
+override pattern.
+
+*** Scheduling is Live-only
+
+Report definitions in non-live workspaces are run on-demand only.  The
+existing scheduler is not extended to non-live workspaces.  This keeps
+scheduling logic simple and avoids the ambiguity of "which workspace should
+a scheduled run use?" evolving over time as parent data changes.
+
+*** ORE sample import creates workspace-local report definitions
+
+When importing an ORE sample, the importer creates a report definition with
+~workspace_id = <sample_workspace_id>~.  These are invisible outside their
+workspace and do not pollute the Live report definition list.  The importer
+parses each ~ore*.xml~ and stores its settings as structured fields — no raw
+XML blob is retained.
+
+*** Compute execution
+
+When the compute job generator runs a report definition against workspace W:
+
+1. Resolves the workspace chain ~[W, parent, ..., 0]~.
+2. Exports trades (filtered by portfolio scope and trade whitelist) and all
+   non-trade domain objects (conventions, curves, market data, pricingengine,
+   todaysmarket) using workspace-aware queries.
+3. Generates ORE input files from those domain objects via the existing mapper.
+4. Generates ~ore.xml~ from the report definition's ~analytics_type~ and
+   exported file paths — exactly as today for live reports.
 5. Submits to compute grid; receives results; stores back on trade rows.
-
-For ORE sample import: when an ~ore.xml~ is discovered, its settings (which
-analytics to run, which simulation parameters) are parsed and stored as
-structured fields on a new report definition record — not as a raw XML blob.
-If a setting has no domain model yet, a new field is added to
-~risk_report_config~.  This is incremental: start with NPV-only, add
-simulation/sensitivity fields as needed.
 
 * Import Track Mapping
 
@@ -491,11 +531,12 @@ workspace data into the live workspace (0).
 
 ** Reporting component
 
-The ~report_definition~ table gains ~workspace_id~.  ~risk_report_config~ is
-extended incrementally with structured fields parsed from ORE orchestration
-XMLs as needed (starting with NPV analytics, adding simulation/sensitivity
-settings later).  No raw XML is stored; no new analyses table is introduced.
-The existing scheduling, lifecycle FSM, and execution pipeline are reused.
+The ~report_definition~ table gains ~workspace_id~ (default 0).  ~risk_report_config~
+is extended incrementally with structured fields for ORE orchestration settings
+(starting with NPV analytics; simulation/sensitivity settings added as needed).
+No raw XML is stored; no new analyses table is introduced.  The existing
+scheduling, lifecycle FSM, and execution pipeline are reused.  Scheduling
+remains Live-only; non-live workspace report definitions run on-demand only.
 
 * Implementation Phases
 
@@ -516,9 +557,10 @@ The existing scheduling, lifecycle FSM, and execution pipeline are reused.
    parameter; default to ~[0]~ (live only).
 2. Resolution order computation: recursive CTE exposed as a helper function.
 3. New NATS endpoints: ~workspace.v1.list~, ~workspace.v1.create~,
-   ~workspace.v1.archive~, ~workspace.v1.copy~, ~workspace.v1.exclusions.add~,
-   ~workspace.v1.exclusions.remove~.
-4. Extend report definition endpoints to accept and return ~workspace_id~.
+   ~workspace.v1.archive~, ~workspace.v1.copy~,
+   ~workspace.v1.trade-scope.set~, ~workspace.v1.trade-scope.clear~.
+4. Extend report definition endpoints to accept and return ~workspace_id~;
+   add ~report-definition.v1.clone~ endpoint (creates workspace-local copy).
 
 ** Phase 3: UI — workspace context propagation
 
@@ -531,9 +573,13 @@ The existing scheduling, lifecycle FSM, and execution pipeline are reused.
 ** Phase 4: Data Workshop UI
 
 1. Workspace tree view (parent/child grouped).
-2. Report definition list within workspace.
+2. Report definition list within workspace — shows local + inherited (with
+   visual distinction: local rows bold, inherited rows dimmed with source
+   workspace labelled).
 3. Open / Run Report / Copy to / Archive / New workspace actions.
-4. Inheritance summary ("inherits: Live · 3 overrides").
+4. Inheritance summary ("inherits: Live · 3 local overrides").
+5. "Clone to workspace" action on any report definition — creates a
+   workspace-local editable copy pre-populated from the source.
 
 ** Phase 5: ORE sample importer
 
@@ -550,32 +596,27 @@ The existing scheduling, lifecycle FSM, and execution pipeline are reused.
 
 * Open Questions
 
-1. *Virtual portfolio design*: the workspace ~scope_portfolio_id~ references a
-   portfolio, which may be a real book-group or a user-created virtual portfolio
-   aggregating books from anywhere in the book tree.  Virtual portfolios need
-   their own design (or an extension of the existing portfolio model).  This is
-   a prerequisite for the trader what-if use case; ORE sample workspaces do not
-   need it (they have their own self-contained books).
-
-2. *risk_report_config extension scope*: ORE orchestration XMLs contain many
+1. *risk_report_config extension scope*: ORE orchestration XMLs contain many
    settings beyond analytics type (simulation grid, sensitivity configs,
    scenario definitions, etc.).  Define which settings need structured fields
    in ~risk_report_config~ for Phase 5 (ORE sample importer) versus which can
-   be deferred.  At minimum: analytics type, as-of date, market configuration
-   references.
+   be deferred.  Minimum for Phase 5: analytics type, as-of date, market
+   configuration references (todaysmarket, curveconfig, conventions, pricingengine
+   selection).
 
-3. *Report definition scheduling in non-live workspaces*: the existing
-   reporting scheduler is designed for live data.  Should report definitions
-   in non-live workspaces be schedulable, or run-on-demand only?  On-demand
-   only is the simpler starting point.
+2. *Report definition name deduplication*: when listing report definitions in
+   workspace W, two definitions with the same name may exist in different
+   ancestor workspaces.  Resolution: closest workspace in the chain wins (same
+   as data override).  UI should show which workspace a report definition comes
+   from.
 
-4. *Archive semantics*: proposed: immediate hide from normal selectors; data
+3. *Archive semantics*: proposed: immediate hide from normal selectors; data
    retained; restoration allowed via explicit "show archived" filter.
 
-5. *Workspace storage reporting*: large ORE sample imports may need per-workspace
+4. *Workspace storage reporting*: large ORE sample imports may need per-workspace
    row counts or storage estimates visible in the Data Workshop.  The product
    backlog mentions a Baobab-style map for workspace visualisation.  Deferred
    to Phase 4.
 
-6. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
+5. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
    Phase 4 begins.

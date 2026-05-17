@@ -47,7 +47,7 @@ if [[ "${CURRENT_VERSION}" -lt "${REQUIRED_ENV_VERSION}" ]]; then
     done
     echo "" >&2
     echo "Fix: re-run init-environment.sh to regenerate .env:" >&2
-    echo "  ./build/scripts/init-environment.sh --preset <preset> -y" >&2
+    echo "  ./build/scripts/init-environment.sh --preset ${ORES_PRESET:-<preset>} -y" >&2
     echo "" >&2
     exit 1
 fi

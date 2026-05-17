@@ -17,6 +17,25 @@
   handler architecture.  The current plan supersedes the import handler section
   of that design; the rest remains valid reference.
 
+- [[file:2026-05-17-data-sandbox-design.org][Data Sandbox Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
+  workspace concept required for ORE sample import.  This plan covers two
+  import tracks: Track 1 (educational/sample import, blocked on sandbox
+  implementation) and Track 2 (production live import, independent).  The
+  Pending Book and ~is_live~ mechanisms in this plan serve Track 2 only.
+
+* Import Tracks
+
+This plan covers two fundamentally different import use cases.  They share the
+Data Import Session window but differ in where data lands.
+
+| Track | Source | Target | Isolation mechanism |
+|-------+--------+--------+---------------------|
+| 1 — Educational | ORE sample directory | Named sandbox | Data Sandbox (see [[file:2026-05-17-data-sandbox-design.org][sandbox plan]]) |
+| 2 — Production | External trades (FpML, CSV) | Live (sandbox 0) | Pending Book + ~is_live~ flags |
+
+*Track 1 is blocked* on [[file:2026-05-17-data-sandbox-design.org][Data Sandbox]] implementation.  All phases below
+address Track 2 only unless otherwise noted.
+
 * Problem Statement
 
 ** Trades imported directly into live books — no safety checkpoint
@@ -137,26 +156,58 @@ User clicks Data Transfer → Data Import
 ** Overview
 
 A persistent MDI window accessible via Data Transfer → Data Import.  Shows
-import sessions with a session selector at the top.  The body is a notebook
-with one tab per data type.  All tabs are scoped to the selected session.
+import sessions with a two-level selector at the top.  The body is a notebook
+with one tab per data type.  Both selectors scope all tabs simultaneously.
 
 #+begin_example
 +-------------------------------------------------------------------------------------+
 |  DATA IMPORT SESSION                                       [New Import] [Refresh]    |
-|  Session: [ 2026-05-17 10:15 — ORE XML — /ore/examples/Example_1 ▼ ]               |
+|  Batch: [ 2026-05-17 10:15 — ORE XML — /ore/examples           ▼ ]                 |
+|  Unit:  [ All units (34)                                        ▼ ]                 |
 +-------------------------------------------------------------------------------------+
-| [ Trades (12) ] [ Market Data (4) ] [ Conventions (8) ] [ Curves (6) ] [ Pricing ] |
+| [ Trades (847) ] [ Market Data (312) ] [ Conventions (45) ] [ Curves ] [ Pricing ] |
 +-------------------------------------------------------------------------------------+
 | [ tab-specific grid + actions ]                                                     |
 +-------------------------------------------------------------------------------------+
 #+end_example
 
-** Session selector
+** Batch selector
 
-Dropdown listing recent import sessions, most recent first.  Each entry shows:
-session timestamp, source type, source directory (truncated), and a summary
-badge (e.g. "3 pending trades", "all data live").  A search/filter allows
-finding sessions by date or path.
+Dropdown listing recent import batches, most recent first.  Each entry shows:
+the batch timestamp, source type (ORE XML, FpML, …), source directory
+(truncated), and a summary badge (e.g. "34 units · 847 trades · 12 invalid").
+A search/filter allows finding batches by date or path.
+
+** Unit selector
+
+Searchable dropdown scoped to the selected batch.  First entry is always
+"All units (N)".  Remaining entries are the display names derived from each
+unit's relative orchestration XML path (see naming heuristic below).
+Selecting a unit narrows every tab to that unit's data only.
+
+** Unit display name heuristic
+
+Given the orchestration XML path relative to the batch root:
+1. Split into directory components; drop the filename.
+2. Remove uninformative folder names: ~Input~, ~ExpectedOutput~, ~Notebooks~,
+   ~Calc~, ~bak~, ~xlwings~, ~Helpers~, ~Dependencies~.
+3. Join remaining components with ~·~ (e.g. ~Legacy · Example_1~).
+4. If the orchestration filename stem is not plain ~ore~, strip the ~ore_~
+   prefix (or ~_ore~ suffix) and append the variant name
+   (e.g. ~MarketRisk · sensi~, ~CurveBuilding · BootstrapConsistency · EUR_xois~).
+5. If two units in the same batch produce the same display name, append a
+   numeric suffix to make them unique.
+
+Examples:
+
+| Relative path | Display name |
+|---------------+--------------|
+| ~Legacy/Example_1/Input/ore.xml~ | ~Legacy · Example_1~ |
+| ~MarketRisk/Input/ore_sensi.xml~ | ~MarketRisk · sensi~ |
+| ~MarketRisk/Input/ParConversion/ore.xml~ | ~MarketRisk · ParConversion~ |
+| ~ExposureWithCollateral/Input/FirstMpor/ore.xml~ | ~ExposureWithCollateral · FirstMpor~ |
+| ~Academy/TA002_IR_Swap/Input/ore.xml~ | ~Academy · TA002_IR_Swap~ |
+| ~CurveBuilding/BootstrapConsistency/Input/EUR_xois_ore.xml~ | ~CurveBuilding · BootstrapConsistency · EUR_xois~ |
 
 ** Trades tab (Pending Book view)
 

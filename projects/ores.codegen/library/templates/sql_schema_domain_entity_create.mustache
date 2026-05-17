@@ -53,7 +53,7 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 -- Unique {{column}} for active records
 {{#domain_entity.has_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{column}})
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix_columns}}{{/prefix_columns}}, {{column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
@@ -112,6 +112,38 @@ begin
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
 {{/domain_entity.sql.party_id_from_session}}
+{{#domain_entity.sql.soft_fk_validations}}
+{{^nullable}}
+    -- Validate {{column}} (soft FK to {{table}})
+    if not exists (
+        select 1 from {{table}}
+        where {{^use_system_tenant}}tenant_id = NEW.tenant_id
+          and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+          and {{/use_system_tenant}}id = NEW.{{column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{error_message}}', NEW.{{column}}
+            using errcode = '23503';
+    end if;
+
+{{/nullable}}
+{{#nullable}}
+    -- Validate {{column}} (optional soft FK to {{table}})
+    if NEW.{{column}} is not null then
+        if not exists (
+            select 1 from {{table}}
+            where {{^use_system_tenant}}tenant_id = NEW.tenant_id
+              and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+              and {{/use_system_tenant}}id = NEW.{{column}}
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception '{{error_message}}', NEW.{{column}}
+                using errcode = '23503';
+        end if;
+    end if;
+
+{{/nullable}}
+{{/domain_entity.sql.soft_fk_validations}}
 {{#domain_entity.validations}}
     -- Validate {{column}}
     NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
@@ -160,7 +192,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer{{/domain_entity.sql.security_definer}};
+$$ language plpgsql{{#domain_entity.sql.security_definer}} security definer set search_path = public, pg_temp{{/domain_entity.sql.security_definer}};
 
 create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
 before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"

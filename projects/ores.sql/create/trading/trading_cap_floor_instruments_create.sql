@@ -127,7 +127,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_cap_floor_instruments_insert_trg
 before insert on "ores_trading_cap_floor_instruments_tbl"

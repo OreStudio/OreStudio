@@ -14,6 +14,7 @@
       "column": "id",
       "type": "uuid",
       "cpp_type": "boost::uuids::uuid",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()",
       "description": "UUID uniquely identifying this report definition."
     },
 
@@ -22,9 +23,21 @@
         "column": "name",
         "type": "text",
         "cpp_type": "std::string",
-        "description": "Unique name for the report definition within a tenant.",
+        "prefix_columns": "party_id",
+        "description": "Unique name for the report definition within a party.",
         "generator_expr": "std::string(faker::word::noun()) + \"_report\""
       }
+    ],
+
+    "validations": [
+      {"column": "report_type", "validation_function": "ores_reporting_validate_report_type_fn"},
+      {"column": "concurrency_policy", "validation_function": "ores_reporting_validate_concurrency_policy_fn"}
+    ],
+
+    "indexes": [
+      {"unique": true, "name": "scheduler_job_id_uniq", "columns": "scheduler_job_id", "current_only": true, "where_extra": "scheduler_job_id is not null"},
+      {"name": "party", "columns": "tenant_id, party_id", "current_only": true},
+      {"name": "fsm_state", "columns": "tenant_id, fsm_state_id", "current_only": true}
     ],
 
     "columns": [
@@ -41,6 +54,7 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "''",
         "description": "Human-readable description of the report.",
         "generator_expr": "std::string(faker::lorem::sentence())"
       },
@@ -73,6 +87,7 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
+        "default": "'skip'",
         "description": "Concurrency policy code (FK to ores_reporting_concurrency_policies_tbl).",
         "generator_expr": "std::string(\"skip\")"
       },
@@ -87,7 +102,25 @@
     ],
 
     "sql": {
-      "tablename": "ores_reporting_report_definitions_tbl"
+      "tablename": "ores_reporting_report_definitions_tbl",
+      "security_definer": true,
+      "extra_checks": ["\"name\" <> ''", "\"schedule_expression\" <> ''"],
+      "soft_fk_validations": [
+        {
+          "column": "party_id",
+          "table": "ores_refdata_parties_tbl",
+          "error_message": "Invalid party_id: %. No active party found with this id.",
+          "nullable": false,
+          "use_system_tenant": false
+        },
+        {
+          "column": "fsm_state_id",
+          "table": "ores_dq_fsm_states_tbl",
+          "error_message": "Invalid fsm_state_id: %. No active FSM state found with this id.",
+          "nullable": true,
+          "use_system_tenant": true
+        }
+      ]
     },
 
     "repository": {

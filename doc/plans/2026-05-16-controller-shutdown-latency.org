@@ -2,7 +2,7 @@
 #+SUBTITLE: Move blocking DB writes off the io_context thread in process_supervisor
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSED
+#+STATUS: IN PROGRESS
 #+OPTIONS: toc:t num:nil
 
 * Problem Statement

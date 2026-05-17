@@ -55,7 +55,10 @@ fi
 BIN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/bin"
 RUN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/run"
 
+_stop_start_ts=$(date +%s)
+_stop_start_dt=$(date '+%Y-%m-%d %H:%M:%S')
 echo "Stopping ORE Studio services ($PRESET)"
+echo "  Start  : $_stop_start_dt"
 echo ""
 
 shopt -s nullglob
@@ -127,17 +130,17 @@ wait_for_pids() {
 
 echo "[Controller]"
 ctrl_pid_file="$RUN_DIR/ores.controller.service.pid"
-if [[ ! -f "$ctrl_pid_file" ]]; then
-    echo "error: no PID file for ores.controller.service ($ctrl_pid_file)" >&2
-    echo "       is the controller running? start with: ./build/scripts/start-services.sh" >&2
-    exit 1
-fi
 ctrl_pids=()
-stop_service "ores.controller.service"
-[[ -n "$STOP_PID" ]] && ctrl_pids+=("$STOP_PID")
-echo ""
-# Give the controller up to 30 s: it must stop all children before it exits.
-wait_for_pids "controller" 30 "${ctrl_pids[@]}"
+if [[ ! -f "$ctrl_pid_file" ]]; then
+    echo "  skip    ores.controller.service (no PID file — already stopped)"
+    total_gone=$((total_gone + 1))
+else
+    stop_service "ores.controller.service"
+    [[ -n "$STOP_PID" ]] && ctrl_pids+=("$STOP_PID")
+    echo ""
+    # Give the controller up to 30 s: it must stop all children before it exits.
+    wait_for_pids "controller" 30 "${ctrl_pids[@]}"
+fi
 
 # Clean up any leftover PID files for dead processes.
 for f in "$RUN_DIR"/*.pid; do
@@ -179,4 +182,8 @@ if [[ $((total_stopped + total_gone)) -eq 0 ]]; then
     exit 0
 fi
 
-echo "Stopped $total_stopped service(s)${total_gone:+, $total_gone already gone}."
+_stop_end_ts=$(date +%s)
+echo "Stopped  : $total_stopped service(s)${total_gone:+, $total_gone already gone}."
+echo "Started  : $_stop_start_dt"
+echo "Finished : $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Time     : $(( _stop_end_ts - _stop_start_ts ))s"

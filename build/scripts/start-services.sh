@@ -261,6 +261,28 @@ wait_for_nats() {
     return 1
 }
 
+wait_for_string_in_log() {
+    local name="$1" pattern="$2" timeout_secs="${3:-120}" suffix="${4:-.0.log}"
+    local log_file="$LOG_DIR/$name${suffix}"
+    local start_pos=0
+    [[ -f "$log_file" ]] && start_pos=$(wc -c < "$log_file")
+    printf "  wait    %s (%s)" "$name" "$pattern"
+    local i
+    for i in $(seq 1 "$((timeout_secs * 2))"); do
+        local cur_size=0
+        [[ -f "$log_file" ]] && cur_size=$(wc -c < "$log_file")
+        [[ "$cur_size" -lt "$start_pos" ]] && start_pos=0
+        if tail -c "+$((start_pos + 1))" "$log_file" 2>/dev/null | grep -qF "$pattern"; then
+            echo " ... done"
+            return 0
+        fi
+        sleep 0.5
+        [[ $((i % 4)) -eq 0 ]] && printf "."
+    done
+    echo " ... timeout (check $log_file)"
+    return 1
+}
+
 wait_for_ready() {
     local name="$1"
     local log_file="$LOG_DIR/$name.log"
@@ -288,11 +310,13 @@ wait_for_ready() {
 
 # ============================================================
 _start_ts=$(date +%s)
+_start_dt=$(date '+%Y-%m-%d %H:%M:%S')
 echo "Starting ORE Studio services"
 echo "  Preset : $PRESET"
 TLS_STATUS="${NATS_TLS_CA:+enabled}"
 echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX, mTLS: ${TLS_STATUS:-disabled})"
 echo "  Ports  : HTTP=$HTTP_PORT  WT=$WT_PORT"
+echo "  Start  : $_start_dt"
 echo ""
 
 # 0. NATS server — start if not already running.
@@ -331,11 +355,14 @@ launch ores.controller.service \
     --nats-url "$NATS_URL" \
     --nats-subject-prefix "$NATS_PREFIX" \
     "${controller_tls_args[@]}"
+wait_for_string_in_log "ores.controller.service" "All services started" 120 ".log"
 echo ""
 
 # JetStream streams are self-provisioned by each service on startup.
 
 _end_ts=$(date +%s)
-echo "Logs : $LOG_DIR"
-echo "Stop : ./build/scripts/stop-services.sh"
-echo "Time : $(( _end_ts - _start_ts ))s"
+echo "Logs     : $LOG_DIR"
+echo "Stop     : ./build/scripts/stop-services.sh"
+echo "Started  : $_start_dt"
+echo "Finished : $(date '+%Y-%m-%d %H:%M:%S')"
+echo "Time     : $(( _end_ts - _start_ts ))s"

@@ -1,0 +1,282 @@
+#+TITLE: Shared audit_record and Codegen Composite-Type Support
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: DRAFT
+
+* Guiding Principle
+
+Do the right thing.  Do not let backwards compatibility concerns drive
+design decisions.  The wire format, the JSON field names, the SQL column
+names, the C++ struct layout — all of these can and should change when the
+correct design demands it.  Every consumer of these interfaces is internal;
+none is external or contractually fixed.  Carrying unnecessary complexity to
+avoid a migration is a deliberate choice to accumulate debt, and we do not
+make that choice here.
+
+* Problem
+
+Every temporal domain entity (74 at last count) independently declares
+the same five audit fields:
+
+#+begin_src text
+modified_by        std::string
+performed_by       std::string
+change_reason_code std::string
+change_commentary  std::string
+recorded_at        std::chrono::system_clock::time_point
+#+end_src
+
+These are repeated verbatim in every domain entity JSON model and in every
+generated C++ domain struct.  The mapper template hardcodes the five
+assignments at lines 55-61 of =cpp_domain_type_mapper.cpp.mustache=:
+
+#+begin_src cpp
+r.modified_by = v.modified_by;
+r.performed_by = v.performed_by;
+r.change_reason_code = v.change_reason_code;
+r.change_commentary = v.change_commentary;
+r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+#+end_src
+
+Consequences:
+- A change to the audit contract (new field, renamed field, different type)
+  must be applied across 83 models and regenerated across the whole codebase.
+- =stamp()= in =handler_helpers.hpp= uses =if constexpr (requires { obj.modified_by })=
+  to detect stampable objects — coupling the generic stamping machinery to a
+  specific field name on every domain type.
+- The trade decomposition (PR #761) extracted these five fields into
+  =trade_audit= but left them trade-specific; the same sub-struct pattern
+  should apply to all entities.
+
+* Proposed Solution
+
+** Step 1 — Codegen: field-level include declarations
+
+Extend the domain entity JSON model so that any =column= entry can carry an
+optional =include= key.  The generator collects all column-level includes and
+merges them into the entity's =cpp.includes= list before rendering.
+
+Example:
+
+#+begin_src json
+{
+  "name": "audit",
+  "cpp_type": "utility::domain::audit_record",
+  "include": "\"ores.utility/domain/audit_record.hpp\"",
+  "is_composite": true,
+  "description": "Provenance and audit trail for this record."
+}
+#+end_src
+
+This is a purely additive change: existing models that omit =include= are
+unaffected.  No global type registry is needed; the information lives in the
+model that uses the type.
+
+** Step 2 — Codegen: composite-field mapper expansion
+
+Introduce the =is_composite= flag on a column.  A composite column does not
+appear in the normal per-column mapping loop; instead the mapper template has
+a dedicated section that expands it by referencing a list of
+=composite_sql_fields= on the column definition.
+
+#+begin_src json
+{
+  "name": "audit",
+  "cpp_type": "utility::domain::audit_record",
+  "include": "\"ores.utility/domain/audit_record.hpp\"",
+  "is_composite": true,
+  "composite_sql_fields": [
+    {"sql": "modified_by",        "member": "modified_by"},
+    {"sql": "performed_by",       "member": "performed_by"},
+    {"sql": "change_reason_code", "member": "change_reason_code"},
+    {"sql": "change_commentary",  "member": "change_commentary"}
+  ],
+  "description": "Provenance and audit trail for this record."
+}
+#+end_src
+
+The =recorded_at= field is special: it requires a timestamp conversion and
+is sourced from =valid_from= not a same-named column.  It stays outside the
+composite block as a mapper-level convention (or the composite can mark
+individual fields with a =converter= key).
+
+*** Name alignment: valid_from → recorded_at
+
+The SQL column is named =valid_from= (a bitemporal term) while the domain
+field is =recorded_at= (a business-facing term).  This mismatch is a
+persistent source of confusion — developers reading the mapper must know that
+=valid_from= and =recorded_at= refer to the same instant.
+
+As part of this work, rename the SQL column =valid_from= to =recorded_at=
+across all temporal tables.  The rename touches:
+
+- =ores_*_tbl= table DDL (=valid_from= → =recorded_at=).
+- All temporal repository queries that filter on =valid_from= (the
+  "current record" sentinel =MAX_TIMESTAMP= comparison).
+- The mapper template's =timestamp_to_timepoint(*v.valid_from)= line.
+- The =trade_entity= and every other sqlgen entity struct.
+- Any raw SQL in stored procedures or views that references the column.
+
+The bitemporal twin column =valid_to= (used only for the MAX_TIMESTAMP
+sentinel filter) is an implementation detail of the temporal pattern and
+has no domain-facing name — it can stay as =valid_to= since it never
+surfaces in the domain struct.
+
+This rename should be done in a dedicated migration PR before the
+audit_record composite work begins, so that the composite mapper is written
+against the aligned names from the start.
+
+Mapper template change (schematic):
+
+#+begin_src cpp
+// Generated for each is_composite column:
+r.audit.modified_by        = v.modified_by;
+r.audit.performed_by       = v.performed_by;
+r.audit.change_reason_code = v.change_reason_code;
+r.audit.change_commentary  = v.change_commentary;
+// recorded_at stays as before (valid_from conversion)
+r.audit.recorded_at = timestamp_to_timepoint(*v.valid_from);
+#+end_src
+
+The hardcoded block at lines 55-61 of =cpp_domain_type_mapper.cpp.mustache=
+is replaced by this generated expansion; other entities that have not yet
+migrated to a composite field continue to work because the old hardcoded block
+is still rendered when no =is_composite= column is present (opt-in migration).
+
+** Step 3 — Create utility::domain::audit_record
+
+Add a field-group model at:
+
+#+begin_src text
+projects/ores.codegen/models/utility/audit_record_field_group.json
+#+end_src
+
+with =component_include: "utility"= so the generator emits:
+
+#+begin_src text
+projects/ores.utility/include/ores.utility/domain/audit_record.hpp
+#+end_src
+
+Fields:
+
+| Name               | C++ type                                  |
+|--------------------+-------------------------------------------|
+| modified_by        | std::string                               |
+| performed_by       | std::string                               |
+| change_reason_code | std::string                               |
+| change_commentary  | std::string                               |
+| recorded_at        | std::chrono::system_clock::time_point     |
+
+** Step 4 — Update stamp()
+
+The generic =stamp()= template in =handler_helpers.hpp= currently detects
+audit fields by their individual names.  Once all entities carry
+=audit_record audit= it can instead detect the composite:
+
+#+begin_src cpp
+if constexpr (requires { obj.audit; }) {
+    stamp_audit(obj.audit, ctx, change_reason);
+}
+#+end_src
+
+where =stamp_audit= is a small free function that sets the five fields.  The
+existing per-field detection can coexist during the migration (opt-out once
+every entity is converted).
+
+** Step 5 — Migrate entity models (incremental)
+
+Entities are migrated one component at a time:
+
+1. Remove the five individual audit columns from the entity model.
+2. Add the composite =audit= column referencing =audit_record=.
+3. Regenerate the domain struct and mapper.
+4. Update any hand-coded references (=e.modified_by= → =e.audit.modified_by=).
+
+Priority order: =trading=, =refdata=, =iam=, =compute=, =analytics=, =dq=.
+Each component is a self-contained PR.
+
+* Other Candidate Shared Structs
+
+The composite-field mechanism introduced for =audit_record= is general.
+Any set of fields that recurs across multiple domain entities with the same
+semantics and the same types is a candidate.  Scan of the 74 current domain
+entity models reveals two further groups worth packaging:
+
+** postal_address
+
+#+begin_src text
+street_line_1   std::string
+street_line_2   std::string
+city            std::string
+state           std::string
+country_code    std::string
+postal_code     std::string
+phone           std::string
+email           std::string
+#+end_src
+
+These eight fields appear together on party and contact entities.  Packaging
+them as =utility::domain::postal_address= removes eight boilerplate columns
+from every affected entity model and gives the type a name that expresses its
+intent.  SQL storage remains flat; the composite mapper expands
+=r.address.city = v.city= etc.
+
+** entity_provenance (future, lower priority)
+
+The fields =tenant_id=, =id= (UUID surrogate key), and =version= appear on
+every temporal entity but are currently modelled as top-level columns rather
+than as a shared struct.  Packaging them as =utility::domain::entity_provenance=
+would make =stamp()= cleaner (the tenant-id branch could detect =obj.provenance=
+rather than =obj.tenant_id=) and would group the three administrative columns
+that have nothing to do with business content.
+
+This is lower priority because these columns are part of the primary-key and
+optimistic-locking machinery — tooling (sqlgen, repository helpers) relies on
+them by name.  The rename and codegen changes required are larger in scope.
+Treat as a follow-up once =audit_record= and =postal_address= are established.
+
+** Summary of shared struct candidates
+
+| Struct                     | Fields | Entities affected | Priority |
+|----------------------------+--------+-------------------+----------|
+| =utility::domain::audit_record=    |      5 | all 74 temporal   | 1 — this plan |
+| =utility::domain::postal_address=  |      8 | party / contact   | 2 — follow-up  |
+| =utility::domain::entity_provenance= |    3 | all 74 temporal   | 3 — future     |
+
+* Scope of Codegen Changes
+
+| File | Change |
+|------+--------|
+| =generator.py= | Collect =include= from column entries; merge into entity includes |
+| =generator.py= | Recognise =is_composite= flag; build =composite_sql_fields= preprocessing |
+| =cpp_domain_type_mapper.cpp.mustache= | Replace hardcoded audit block with composite expansion; keep fallback |
+| =cpp_domain_type_mapper.hpp.mustache= | No change |
+| =cpp_domain_entity.hpp.mustache= | Composite columns emit a single struct member, not five fields |
+| =audit_record_field_group.json= | New model |
+| =profiles.json= | No change (field-group profile already exists) |
+
+* Risks and Mitigations
+
+| Risk | Mitigation |
+|------+------------|
+| =valid_from= / =recorded_at= name mismatch | Rename =valid_from= → =recorded_at= in SQL DDL and sqlgen entities in a dedicated PR before the composite work; see §Step 2 |
+| 83 entity models to migrate | Opt-in: old entities continue to work; migrate per component in separate PRs |
+| Wire format change (audit fields move to nested ={"audit":{...}}=) | Internal NATS protocol; no external consumers.  Accept as part of the change, same decision as for =trade= |
+| =stamp()= dual-mode during migration | Retain both =requires { obj.modified_by }= and =requires { obj.audit }= branches during transition; remove old branch in cleanup PR |
+
+* Execution Order
+
+1. *Name alignment* — rename =valid_from= → =recorded_at= in all temporal table
+   DDL, sqlgen entity structs, repository queries, and the mapper template.
+   Dedicated PR; validates the rename in isolation before any codegen changes.
+2. Implement field-level =include= support in generator.py (additive; no model
+   changes needed to validate).
+3. Implement =is_composite= flag and mapper template expansion; the composite
+   mapper now writes =r.audit.recorded_at= against the already-renamed column.
+4. Create =audit_record_field_group.json= and generate the header.
+5. Update =stamp()= to handle =obj.audit=.
+6. Migrate =trading= component as the pilot (=trade_audit= already exists and
+   uses the aligned name).
+7. Migrate remaining components incrementally, one component per PR.
+8. Remove the hardcoded mapper block and the old =stamp()= branch in a
+   cleanup PR once all components are converted.

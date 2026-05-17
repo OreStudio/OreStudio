@@ -99,7 +99,11 @@ endif()
 set_source_files_properties("${version_cpp_out}" PROPERTIES GENERATED TRUE)
 set(lib_files ${files} "${version_cpp_out}")
 add_library(${lib_target_name} ${lib_files})
-add_dependencies(${lib_target_name} ores.utility.version)
+# No add_dependencies here: BYPRODUCTS on ores.utility.version already
+# creates an implicit ordering dependency via version_cpp_out.  An explicit
+# add_dependencies would make the library link step depend on the custom
+# target's internal stamp file, which is always touched — causing a full
+# SO relink on every build even when version.cpp content has not changed.
 target_compile_definitions(${lib_target_name} PRIVATE ORES_UTILITY_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE

@@ -19,12 +19,9 @@
 #ifndef ORES_WORKFLOW_API_EXPORT_HPP
 #define ORES_WORKFLOW_API_EXPORT_HPP
 
-#include <boost/config.hpp>
-
-#ifdef ORES_WORKFLOW_API_LIBRARY
-#  define ORES_WORKFLOW_API_EXPORT BOOST_SYMBOL_EXPORT
-#else
-#  define ORES_WORKFLOW_API_EXPORT BOOST_SYMBOL_IMPORT
-#endif
+// ores.workflow.api is a header-only (INTERFACE) library — all types and
+// methods are defined in headers and compiled into each consuming TU.
+// No DLL boundary exists, so no dllexport/dllimport decoration is needed.
+#define ORES_WORKFLOW_API_EXPORT
 
 #endif

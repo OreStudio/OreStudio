@@ -20,6 +20,7 @@
 #ifndef ORES_CONTROLLER_CORE_SERVICE_PROCESS_SUPERVISOR_HPP
 #define ORES_CONTROLLER_CORE_SERVICE_PROCESS_SUPERVISOR_HPP
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <optional>
@@ -90,7 +91,7 @@ private:
         std::optional<boost::process::v2::process> proc;
         api::domain::service_definition def;
         int replica_index = 0;
-        bool stop_requested = false; // true when stop() was intentionally called
+        std::atomic<bool> stop_requested{false}; // true when stop() was intentionally called
         ores::utility::concurrency::retry_strategy retry;
     };
 

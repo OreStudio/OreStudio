@@ -212,7 +212,7 @@
           "column": "status_id",
           "table": "ores_dq_fsm_states_tbl",
           "nullable": false,
-          "use_no_tenant": true,
+          "use_system_tenant": true,
           "error_message": "Invalid status_id: %. FSM state must exist."
         }
       ]

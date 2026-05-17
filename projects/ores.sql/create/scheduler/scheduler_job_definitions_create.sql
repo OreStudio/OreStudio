@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Job Definition Table
  *
  * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
  * cron expression, SQL command, target database, and active state.

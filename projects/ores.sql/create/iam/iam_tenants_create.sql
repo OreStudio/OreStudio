@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Tenant Table
  *
  * Core entity for multi-tenancy support. Each tenant represents an isolated
  * organisation with its own users, roles, and data. The system tenant (UUID all zeros)

@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Report Instance Table
  *
  * A single execution of a report_definition. Created automatically when the
  * scheduler fires a trigger for an active definition.

@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Trade Table
  *
  * Temporal trade record. Each lifecycle event (New, Amendment, Novation,
  * etc.) creates a new temporal row for the same trade id. The internal party
@@ -180,7 +180,8 @@ begin
     -- Validate status_id (soft FK to ores_dq_fsm_states_tbl)
     if not exists (
         select 1 from ores_dq_fsm_states_tbl
-        where id = NEW.status_id
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and id = NEW.status_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid status_id: %. FSM state must exist.', NEW.status_id

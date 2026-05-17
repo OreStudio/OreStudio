@@ -38,7 +38,7 @@ for model_file in "$SCRIPT_DIR/models/refdata/"*_entity.json; do
     if [ -f "$model_file" ]; then
         entity_name=$(basename "$model_file" _entity.json)
         echo "  Processing: $entity_name"
-        python "$SCRIPT_DIR/src/generator.py" "$model_file" "$SCHEMA_DIR/" --template sql_schema_table_create.mustache
+        python "$SCRIPT_DIR/src/generator.py" "$model_file" "$SCHEMA_DIR/" --profile sql
     fi
 done
 echo ""

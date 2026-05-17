@@ -42,6 +42,7 @@
 #include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/lei_entity_handler.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
+#include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 
 namespace ores::dq::messaging {
 
@@ -480,6 +481,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_badge_mappings_request::nats_subject, queue_group,
         [badge](ores::nats::message msg) { badge->list_mappings(std::move(msg)); }));
+
+    // =========================================================================
+    // DQ-internal Publish-from-DQ workflow step handlers
+    // =========================================================================
+
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        subs.push_back(nats.queue_subscribe(
+            "dq.v1.ip2country.publish-from-dq", queue_group,
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            "dq.v1.coding-schemes.publish-from-dq", queue_group,
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+    }
 
     return subs;
 }

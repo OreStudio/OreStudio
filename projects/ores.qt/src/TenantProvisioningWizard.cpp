@@ -395,13 +395,11 @@ void BundleInstallPage::startPublish() {
                 "QProgressBar::chunk { background-color: #cc0000; }");
             publishSuccess_ = false;
         } else {
-            BOOST_LOG_SEV(lg(), info) << "Bundle publication succeeded: "
-                << result->datasets_succeeded << " datasets";
-            statusLabel_->setText(tr("Publication completed successfully!"));
-            appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                .arg(result->datasets_succeeded)
-                .arg(result->total_records_inserted)
-                .arg(result->total_records_updated));
+            BOOST_LOG_SEV(lg(), info) << "Bundle publication workflow started: "
+                << result->datasets_dispatched << " datasets dispatched";
+            statusLabel_->setText(tr("Publication workflow started!"));
+            appendLog(tr("Publication workflow started: %1 datasets dispatched.")
+                .arg(result->datasets_dispatched));
             publishSuccess_ = true;
         }
 
@@ -827,9 +825,8 @@ void TenantPartyOrganisationPage::startBundlePublish() {
         bool success = false;
         std::string error_message;
         bool has_lei = false;
-        int datasets_succeeded = 0;
-        int total_records_inserted = 0;
-        int total_records_updated = 0;
+        std::string instance_id;
+        int datasets_dispatched = 0;
         int parties_linked = 0;
     };
 
@@ -854,15 +851,13 @@ void TenantPartyOrganisationPage::startBundlePublish() {
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Organisation setup succeeded: "
-                << result.datasets_succeeded << " datasets, "
+                << result.datasets_dispatched << " datasets dispatched, "
                 << result.parties_linked << " parties linked"
                 << (result.has_lei ? "" : " (no root LEI selected)");
             statusLabel_->setText(tr("Organisation setup complete!"));
             if (result.has_lei) {
-                appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                    .arg(result.datasets_succeeded)
-                    .arg(result.total_records_inserted)
-                    .arg(result.total_records_updated));
+                appendLog(tr("Publication workflow started: %1 datasets dispatched.")
+                    .arg(result.datasets_dispatched));
             } else {
                 appendLog(tr("No root LEI selected — GLEIF party publication skipped."));
             }
@@ -910,9 +905,8 @@ void TenantPartyOrganisationPage::startBundlePublish() {
                     result.error_message = leiResult->error_message;
                     return result;
                 }
-                result.datasets_succeeded     = leiResult->datasets_succeeded;
-                result.total_records_inserted = leiResult->total_records_inserted;
-                result.total_records_updated  = leiResult->total_records_updated;
+                result.instance_id        = leiResult->instance_id;
+                result.datasets_dispatched = leiResult->datasets_dispatched;
             }
 
             // Step 2: Associate tenant admin with all Operational parties

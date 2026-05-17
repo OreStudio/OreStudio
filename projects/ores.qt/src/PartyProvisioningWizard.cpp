@@ -337,15 +337,11 @@ void PartyOrganisationSetupPage::startPublish() {
             }
         } else {
             BOOST_LOG_SEV(lg(), info)
-                << "Organisation publication succeeded: "
-                << result->datasets_succeeded << " datasets, "
-                << result->total_records_inserted << " inserted, "
-                << result->total_records_updated << " updated";
+                << "Organisation publication workflow started: "
+                << result->datasets_dispatched << " datasets dispatched";
             statusLabel_->setText(tr("Organisation setup complete!"));
-            appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                .arg(result->datasets_succeeded)
-                .arg(result->total_records_inserted)
-                .arg(result->total_records_updated));
+            appendLog(tr("Publication workflow started: %1 datasets dispatched.")
+                .arg(result->datasets_dispatched));
             publishSuccess_ = true;
             wizard_->setOrganisationPublished(true);
         }

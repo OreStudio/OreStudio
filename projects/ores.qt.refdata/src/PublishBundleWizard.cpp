@@ -604,7 +604,7 @@ void PublishProgressPage::startPublish() {
 
             if (resultsPage) {
                 resultsPage->setResults(false,
-                    tr("Failed to communicate with server."), {});
+                    tr("Failed to communicate with server."));
             }
         } else if (!result->success) {
             BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: "
@@ -620,22 +620,20 @@ void PublishProgressPage::startPublish() {
 
             if (resultsPage) {
                 resultsPage->setResults(false,
-                    QString::fromStdString(result->error_message),
-                    result->dataset_results);
+                    QString::fromStdString(result->error_message));
             }
         } else {
-            BOOST_LOG_SEV(lg(), info) << "Bundle publication succeeded: "
-                << result->datasets_succeeded << " datasets, "
-                << result->total_records_inserted << " inserted, "
-                << result->total_records_updated << " updated.";
+            BOOST_LOG_SEV(lg(), info) << "Bundle publish workflow started: "
+                << result->datasets_dispatched << " datasets dispatched, "
+                << "instance=" << result->instance_id;
 
-            statusLabel_->setText(tr("Publication completed successfully!"));
+            statusLabel_->setText(tr("Publication workflow started!"));
             publishComplete_ = true;
             publishSuccess_ = true;
 
             if (resultsPage) {
                 resultsPage->setResults(true, QString(),
-                    result->dataset_results);
+                    result->instance_id, result->datasets_dispatched);
             }
 
             emit wizard_->bundlePublished(wizard_->bundleCode());
@@ -691,7 +689,6 @@ void PublishResultsPage::setupUI() {
     WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
-    // Overall status
     overallStatusLabel_ = new QLabel(this);
     overallStatusLabel_->setWordWrap(true);
     overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
@@ -699,36 +696,30 @@ void PublishResultsPage::setupUI() {
 
     layout->addSpacing(10);
 
-    // Results table
-    resultsModel_ = new QStandardItemModel(0, 7, this);
-    resultsModel_->setHorizontalHeaderLabels({
-        tr("Dataset"), tr("Status"), tr("Inserted"), tr("Updated"),
-        tr("Skipped"), tr("Deleted"), tr("Error")
-    });
+    instanceIdLabel_ = new QLabel(this);
+    instanceIdLabel_->setWordWrap(true);
+    instanceIdLabel_->setStyleSheet("color: #888888;");
+    layout->addWidget(instanceIdLabel_);
 
-    resultsTable_ = new QTableView(this);
-    resultsTable_->setModel(resultsModel_);
-    resultsTable_->setSelectionMode(QAbstractItemView::NoSelection);
-    resultsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    resultsTable_->horizontalHeader()->setStretchLastSection(true);
-    resultsTable_->verticalHeader()->setVisible(false);
-    resultsTable_->setAlternatingRowColors(true);
-    layout->addWidget(resultsTable_, 1);
+    layout->addStretch();
 }
 
 void PublishResultsPage::setResults(
     bool overallSuccess,
     const QString& errorMessage,
-    const std::vector<dq::messaging::bundle_dataset_result>& results) {
+    const std::string& instanceId,
+    int datasetsDispatched) {
 
     overallSuccess_ = overallSuccess;
     errorMessage_ = errorMessage;
-    datasetResults_ = results;
+    instanceId_ = instanceId;
+    datasetsDispatched_ = datasetsDispatched;
 }
 
 void PublishResultsPage::initializePage() {
     if (overallSuccess_) {
-        overallStatusLabel_->setText(tr("Publication completed successfully."));
+        overallStatusLabel_->setText(
+            tr("Publication workflow started successfully."));
         overallStatusLabel_->setStyleSheet(
             "font-size: 14px; font-weight: bold; color: #228B22;");
     } else {
@@ -745,49 +736,14 @@ void PublishResultsPage::initializePage() {
 }
 
 void PublishResultsPage::populateResults() {
-    resultsModel_->removeRows(0, resultsModel_->rowCount());
-
-    for (const auto& r : datasetResults_) {
-        const int row = resultsModel_->rowCount();
-        resultsModel_->insertRow(row);
-
-        resultsModel_->setItem(row, 0, new QStandardItem(
-            QString::fromStdString(r.dataset_code)));
-
-        const std::string statusStr = r.success ? "success" : "failed";
-        auto* statusItem = new QStandardItem(QString::fromStdString(statusStr));
-        if (r.success) {
-            statusItem->setForeground(QBrush(QColor("#228B22")));
-        } else {
-            statusItem->setForeground(QBrush(QColor("#cc0000")));
-        }
-        resultsModel_->setItem(row, 1, statusItem);
-
-        auto* insertedItem = new QStandardItem(
-            QString::number(r.records_inserted));
-        insertedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsModel_->setItem(row, 2, insertedItem);
-
-        auto* updatedItem = new QStandardItem(
-            QString::number(r.records_updated));
-        updatedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsModel_->setItem(row, 3, updatedItem);
-
-        auto* skippedItem = new QStandardItem(
-            QString::number(r.records_skipped));
-        skippedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsModel_->setItem(row, 4, skippedItem);
-
-        auto* deletedItem = new QStandardItem(
-            QString::number(r.records_deleted));
-        deletedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsModel_->setItem(row, 5, deletedItem);
-
-        resultsModel_->setItem(row, 6, new QStandardItem(
-            QString::fromStdString(r.error_message)));
+    if (overallSuccess_ && !instanceId_.empty()) {
+        instanceIdLabel_->setText(
+            tr("%1 datasets dispatched to workflow.\nInstance ID: %2")
+                .arg(datasetsDispatched_)
+                .arg(QString::fromStdString(instanceId_)));
+    } else {
+        instanceIdLabel_->clear();
     }
-
-    resultsTable_->resizeColumnsToContents();
 }
 
 }

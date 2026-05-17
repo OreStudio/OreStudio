@@ -371,3 +371,69 @@ begin
     where v_deleted > 0;
 end;
 $$ language plpgsql security definer;
+
+/**
+ * Publishes coding schemes from DQ artefact table to production.
+ * Writes to ores_dq_coding_schemes_tbl (DQ's own table — no SECURITY DEFINER needed).
+ *
+ * @param p_dataset_id       Dataset to publish from
+ * @param p_target_tenant_id The tenant to publish data to
+ * @param p_mode             'replace_all' truncates and reloads; 'upsert' merges
+ * @param p_params           Unused; reserved for future filtering
+ */
+create or replace function ores_dq_coding_schemes_publish_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated  bigint := 0;
+    v_deleted  bigint := 0;
+    v_now      timestamp with time zone := now();
+    v_inf      timestamp with time zone := ores_utility_infinity_timestamp_fn();
+    v_dataset_name text;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = v_inf;
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Expire existing active records (both modes)
+    update ores_dq_coding_schemes_tbl
+    set valid_to = v_now
+    where tenant_id = p_target_tenant_id
+      and valid_to = v_inf;
+    get diagnostics v_deleted = row_count;
+
+    -- Insert new records from artefact table
+    insert into ores_dq_coding_schemes_tbl (
+        code, tenant_id, version, name, authority_type,
+        subject_area_name, domain_name, uri, description,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    select
+        a.code, p_target_tenant_id, a.version, a.name, a.authority_type,
+        a.subject_area_name, a.domain_name, a.uri, a.description,
+        'system', 'system', 'INITIAL_LOAD', 'Published from DQ artefact',
+        v_now, v_inf
+    from ores_dq_coding_schemes_artefact_tbl a
+    where a.dataset_id = p_dataset_id;
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    union all select 'updated'::text, v_updated  where v_updated  > 0
+    union all select 'deleted'::text, v_deleted  where v_deleted  > 0;
+end;
+$$ language plpgsql;

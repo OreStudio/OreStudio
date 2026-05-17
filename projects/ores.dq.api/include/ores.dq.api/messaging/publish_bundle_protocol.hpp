@@ -42,16 +42,6 @@ inline std::string build_params_json(const publish_bundle_params& params) {
     return rfl::json::write(params);
 }
 
-struct bundle_dataset_result {
-    std::string dataset_code;
-    bool success = false;
-    std::string error_message;
-    int records_inserted = 0;
-    int records_updated = 0;
-    int records_skipped = 0;
-    int records_deleted = 0;
-};
-
 struct publish_bundle_request {
     using response_type = struct publish_bundle_response;
     static constexpr std::string_view nats_subject = "dq.v1.bundles.publish";
@@ -66,10 +56,8 @@ struct publish_bundle_request {
 struct publish_bundle_response {
     bool success = false;
     std::string error_message;
-    int datasets_succeeded = 0;
-    int total_records_inserted = 0;
-    int total_records_updated = 0;
-    std::vector<bundle_dataset_result> dataset_results;
+    std::string instance_id;
+    int datasets_dispatched = 0;
 };
 
 }

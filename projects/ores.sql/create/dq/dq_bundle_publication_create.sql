@@ -111,6 +111,7 @@ $$ language plpgsql;
 create or replace function ores_dq_bundle_datasets_list_fn(p_bundle_code text)
 returns table (
     display_order integer,
+    dataset_id uuid,
     dataset_code text,
     dataset_name text,
     artefact_type text,
@@ -122,6 +123,7 @@ begin
     return query
     select
         m.display_order,
+        d.id as dataset_id,
         m.dataset_code,
         coalesce(d.name, '(not found)')::text,
         coalesce(d.artefact_type, 'none')::text,

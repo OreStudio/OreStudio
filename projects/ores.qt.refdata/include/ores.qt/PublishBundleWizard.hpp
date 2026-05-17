@@ -336,7 +336,8 @@ public:
      */
     void setResults(bool overallSuccess,
                     const QString& errorMessage,
-                    const std::vector<dq::messaging::bundle_dataset_result>& results);
+                    const std::string& instanceId = {},
+                    int datasetsDispatched = 0);
 
 private:
     void setupUI();
@@ -344,12 +345,12 @@ private:
 
     PublishBundleWizard* wizard_;
     QLabel* overallStatusLabel_;
-    QTableView* resultsTable_;
-    QStandardItemModel* resultsModel_;
+    QLabel* instanceIdLabel_;
 
     bool overallSuccess_ = false;
     QString errorMessage_;
-    std::vector<dq::messaging::bundle_dataset_result> datasetResults_;
+    std::string instanceId_;
+    int datasetsDispatched_ = 0;
 };
 
 }

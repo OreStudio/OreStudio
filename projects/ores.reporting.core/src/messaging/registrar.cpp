@@ -33,6 +33,7 @@
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
+#include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 
@@ -167,6 +168,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(fail_report_request::nats_subject), "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->fail(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Publish-from-DQ workflow step handler
+    // ----------------------------------------------------------------
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        subs.push_back(nats.queue_subscribe(
+            "reporting.v1.report-definitions.publish-from-dq",
+            "ores.reporting.service",
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+    }
 
     return subs;
 }

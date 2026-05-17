@@ -33,6 +33,7 @@
 #include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -71,6 +72,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     refdata::workflow::register_provision_parties_workflow(*registry);
     ore::workflow::register_ore_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
+    dq::workflow::register_bundle_publish_workflow(*registry);
 
     // ----------------------------------------------------------------
     // Create the engine (shared across all engine subscriptions).

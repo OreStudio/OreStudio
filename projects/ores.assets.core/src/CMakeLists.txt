@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.core.lib
         ores.nats.lib
     PRIVATE
+        ores.dq.api.lib
         ores.service.lib
         ores.telemetry.core.lib
         ores.utility.lib

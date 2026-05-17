@@ -35,25 +35,25 @@ domain::trade generate_synthetic_trade(
         std::string(generation_keys::modified_by), "system");
 
     domain::trade r;
-    r.version = 1;
-    r.id = ctx.generate_uuid();
-    r.external_id = std::string();
-    r.book_id = ctx.generate_uuid();
-    r.portfolio_id = ctx.generate_uuid();
-    r.successor_trade_id = std::nullopt;
-    r.trade_type = std::string("Swap");
-    r.netting_set_id = std::string("NS-001");
-    r.activity_type_code = std::string("new_booking");
-    r.status_id = boost::uuids::nil_uuid();
-    r.trade_date = std::string("2025-01-15");
-    r.execution_timestamp = std::string("2025-01-15 10:00:00");
-    r.effective_date = std::string("2025-01-16");
-    r.termination_date = std::string("2026-01-15");
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.identity.get().version = 1;
+    r.identity.get().id = ctx.generate_uuid();
+    r.identity.get().external_id = std::string();
+    r.parties.get().book_id = ctx.generate_uuid();
+    r.parties.get().portfolio_id = ctx.generate_uuid();
+    r.parties.get().successor_trade_id = std::nullopt;
+    r.classification.get().trade_type = std::string("Swap");
+    r.classification.get().netting_set_id = std::string("NS-001");
+    r.classification.get().activity_type_code = std::string("new_booking");
+    r.classification.get().status_id = boost::uuids::nil_uuid();
+    r.lifecycle.get().trade_date = std::string("2025-01-15");
+    r.lifecycle.get().execution_timestamp = std::string("2025-01-15 10:00:00");
+    r.lifecycle.get().effective_date = std::string("2025-01-16");
+    r.lifecycle.get().termination_date = std::string("2026-01-15");
+    r.audit.get().modified_by = modified_by;
+    r.audit.get().performed_by = modified_by;
+    r.audit.get().change_reason_code = "system.test";
+    r.audit.get().change_commentary = "Synthetic test data";
+    r.audit.get().recorded_at = ctx.past_timepoint();
     return r;
 }
 

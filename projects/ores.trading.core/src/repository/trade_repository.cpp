@@ -111,7 +111,7 @@ std::string trade_repository::sql() {
 }
 
 void trade_repository::write(context ctx, const domain::trade& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing trade: " << v.identity.get().id;
     execute_write_query(ctx, trade_mapper::map(v),
         lg(), "Writing trade to database.");
 }

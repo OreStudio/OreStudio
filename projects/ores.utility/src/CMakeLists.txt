@@ -77,6 +77,7 @@ add_custom_target(ores.utility.version ALL
         "-DINPUT_FILE=${version_cpp_in}"
         "-DOUTPUT_FILE=${version_cpp_out}"
         -P "${CMAKE_SOURCE_DIR}/cmake/generate_version.cmake"
+    BYPRODUCTS "${version_cpp_out}"
     COMMENT "Stamping version.cpp"
     VERBATIM)
 

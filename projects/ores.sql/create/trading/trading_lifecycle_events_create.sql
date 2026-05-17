@@ -34,6 +34,7 @@ create table if not exists "ores_trading_lifecycle_events_tbl" (
     "version" integer not null,
     "description" text null,
     "fsm_state_id" uuid null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -61,6 +62,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists lifecycle_events_tenant_idx
 on "ores_trading_lifecycle_events_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists lifecycle_events_workspace_idx
+on "ores_trading_lifecycle_events_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_lifecycle_events_insert_fn()

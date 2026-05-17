@@ -46,6 +46,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "spread" numeric(18, 10) null,
     "notional" numeric(28, 10) not null,
     "currency" text not null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -88,6 +89,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- Instrument index for leg lookups
 create index if not exists swap_legs_instrument_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, instrument_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists swap_legs_workspace_idx
+on "ores_trading_swap_legs_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_swap_legs_insert_fn()

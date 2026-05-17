@@ -40,6 +40,7 @@ create table if not exists "ores_refdata_swap_conventions_tbl" (
     "index" text not null,
     "float_frequency" text null,
     "sub_periods_coupon_type" text null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -67,6 +68,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists swap_conventions_tenant_idx
 on "ores_refdata_swap_conventions_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists swap_conventions_workspace_idx
+on "ores_refdata_swap_conventions_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_swap_conventions_insert_fn()

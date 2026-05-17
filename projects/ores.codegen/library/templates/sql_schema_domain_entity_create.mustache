@@ -32,6 +32,9 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 {{#domain_entity.columns}}
     "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
 {{/domain_entity.columns}}
+{{#domain_entity.has_workspace_id}}
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
+{{/domain_entity.has_workspace_id}}
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -132,6 +135,12 @@ on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity
 where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
   and {{where_extra}}{{/where_extra}}{{/current_only}};
 {{/domain_entity.indexes}}
+{{#domain_entity.has_workspace_id}}
+
+create index if not exists {{domain_entity.index_name_prefix}}_workspace_idx
+on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_workspace_id}}
 
 create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
 returns trigger as $$

@@ -48,6 +48,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "schedule_expression" text not null,
     "concurrency_policy" text not null default 'skip',
     "scheduler_job_id" uuid null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -95,6 +96,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists report_definitions_fsm_state_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, fsm_state_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists report_definitions_workspace_idx
+on "ores_reporting_report_definitions_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_reporting_report_definitions_insert_fn()

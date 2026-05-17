@@ -9,6 +9,7 @@
     "entity_plural": "callable_swap_instruments",
     "entity_title": "Callable Swap Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Callable interest rate swap instrument.",
     "description": "Represents a callable interest rate swap where one party has the right\nto terminate the swap early on specified call dates.",

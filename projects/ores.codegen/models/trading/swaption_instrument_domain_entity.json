@@ -9,6 +9,7 @@
     "entity_plural": "swaption_instruments",
     "entity_title": "Swaption Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Swaption (option on an interest rate swap) instrument.",
     "description": "Represents a swaption — an option granting the right to enter into an\ninterest rate swap at a future date. Exercise type may be European,\nBermudan, or American.",

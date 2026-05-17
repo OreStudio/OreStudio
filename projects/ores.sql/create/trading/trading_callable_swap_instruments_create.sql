@@ -40,6 +40,7 @@ create table if not exists "ores_trading_callable_swap_instruments_tbl" (
     "call_dates_json" text null,
     "call_type" text null,
     "description" text null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -79,6 +80,10 @@ create unique index if not exists callable_swap_instruments_trade_id_idx
 on "ores_trading_callable_swap_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
+
+create index if not exists callable_swap_instruments_workspace_idx
+on "ores_trading_callable_swap_instruments_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_callable_swap_instruments_insert_fn()
 returns trigger as $$

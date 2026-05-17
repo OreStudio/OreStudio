@@ -7,6 +7,7 @@
     "entity_plural": "trades",
     "entity_title": "Trade",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generator",
     "brief": "Trade capturing FpML Trade Header properties.",
     "description": "Temporal trade record. Each lifecycle event (New, Amendment, Novation,\netc.) creates a new temporal row for the same trade id. The internal party\nis derived from book_id via books.party_id.",

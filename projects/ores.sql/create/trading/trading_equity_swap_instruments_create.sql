@@ -43,6 +43,7 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "long_short" text not null,
     "payment_frequency" text not null,
     "description" text null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -99,6 +100,10 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 -- Trade type index for product filtering
 create index if not exists equity_swap_instruments_trade_type_idx
 on "ores_trading_equity_swap_instruments_tbl" (tenant_id, trade_type_code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists equity_swap_instruments_workspace_idx
+on "ores_trading_equity_swap_instruments_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_equity_swap_instruments_insert_fn()

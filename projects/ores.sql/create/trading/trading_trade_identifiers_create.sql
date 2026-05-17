@@ -39,6 +39,7 @@ create table if not exists "ores_trading_identifiers_tbl" (
     "id_value" text not null,
     "id_type" text not null,
     "id_scheme" text null,
+    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -78,6 +79,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- Identifier type + value for UTI/USI lookups
 create index if not exists identifiers_type_value_idx
 on "ores_trading_identifiers_tbl" (tenant_id, id_type, id_value)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists identifiers_workspace_idx
+on "ores_trading_identifiers_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_identifiers_insert_fn()

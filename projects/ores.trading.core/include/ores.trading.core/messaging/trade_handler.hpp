@@ -709,7 +709,7 @@ private:
      * system-level reference data that change only on schema migrations.
      * The cache avoids an extra NATS round-trip per trade when the ore import
      * handler sends one save_trade message per trade.
-     * Returns an empty map on failure so save operations degrade gracefully.
+     * Throws std::runtime_error on failure; callers must handle or propagate.
      */
     // Extract the raw JWT from an incoming message, preferring the delegated
     // header so the original end-user context propagates to downstream calls.

@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/thread_pool.hpp>
 #include <boost/process/v2/process.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
@@ -172,6 +173,7 @@ private:
         int replica_index) const;
 
     boost::asio::io_context& ioc_;
+    boost::asio::thread_pool db_pool_{1};
     std::filesystem::path bin_dir_;
     ores::nats::config::nats_options nats_;
     std::string log_level_;

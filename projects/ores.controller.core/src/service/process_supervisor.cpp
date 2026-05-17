@@ -26,6 +26,7 @@
 #include <sstream>
 #include <chrono>
 #include <cstdio>
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -250,6 +251,7 @@ boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(
 }
 
 boost::asio::awaitable<void> process_supervisor::start_all() {
+    const auto start_ts = std::chrono::steady_clock::now();
     BOOST_LOG_SEV(lg(), info) << "Starting all services...";
 
     repository::service_definition_repository def_repo;
@@ -344,7 +346,9 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "All services started.";
+    const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - start_ts).count();
+    BOOST_LOG_SEV(lg(), info) << "All services started in " << elapsed << "s.";
 }
 
 boost::asio::awaitable<void> process_supervisor::do_launch(
@@ -439,7 +443,12 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
 
     write_pid_file(service_name, replica_index, pid);
 
-    // Update/create DB instance record with PID and phase=running.
+    // Switch to the DB thread pool for the post-launch DB writes so the
+    // io_context is not blocked while the connection pool rebuilds or writes.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(db_pool_.get_executor(),
+            boost::asio::use_awaitable));
+
     try {
         const auto now = std::chrono::system_clock::now();
         repository::service_instance_repository inst_repo;
@@ -478,6 +487,11 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
             << "DB update failed after launch of " << service_name
             << "[" << replica_index << "]: " << e.what();
     }
+
+    // Switch back to the io_context before mutating processes_ and co_spawning.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(ioc_.get_executor(),
+            boost::asio::use_awaitable));
 
     entry->retry.on_start();
     processes_[key] = entry;
@@ -555,7 +569,12 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
                 << err_snippet;
     }
 
-    // Update DB.
+    // Switch to the DB thread pool so the io_context is not blocked while
+    // waiting for the connection pool to rebuild or for the write to complete.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(db_pool_.get_executor(),
+            boost::asio::use_awaitable));
+
     try {
         const auto now = std::chrono::system_clock::now();
         repository::service_instance_repository inst_repo;
@@ -590,6 +609,11 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
     if (entry->stop_requested)
         co_return;
+
+    // Switch back to the io_context before accessing processes_ for restart.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(ioc_.get_executor(),
+            boost::asio::use_awaitable));
 
     // Apply restart policy.
     const auto& policy = entry->def.restart_policy;

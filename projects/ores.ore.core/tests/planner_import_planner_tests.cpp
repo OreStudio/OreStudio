@@ -264,7 +264,7 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", tags) {
     // All trades must have non-nil book_id and portfolio_id
     boost::uuids::uuid nil;
     for (const auto& item : plan.trades) {
-        INFO("Trade: " << item.trade.identity.identity.get().external_id);
+        INFO("Trade: " << item.trade.identity.external_id);
         CHECK(item.trade.parties.book_id != nil);
         CHECK(item.trade.parties.portfolio_id != nil);
     }
@@ -301,8 +301,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     const boost::uuids::uuid nil{};
     int checked = 0;
     for (const auto& item : plan.trades) {
-        INFO("Trade external_id: " << item.trade.identity.identity.get().external_id);
-        REQUIRE(item.trade.identity.identity.get().id != nil);
+        INFO("Trade external_id: " << item.trade.identity.external_id);
+        REQUIRE(item.trade.identity.id != nil);
 
         std::visit([&](const auto& r) {
             using ores::trading::domain::swap_instrument_data;

@@ -1,0 +1,166 @@
+#+TITLE: MSVC C1202 — reflect-cpp Template Depth and TU Isolation
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: IN PROGRESS
+
+* Problem
+
+MSVC has an internal hard limit on recursive template / constexpr-type
+dependency depth, reported as error C1202:
+
+#+begin_example
+fatal error C1202: recursive type or function dependency context too complex
+#+end_example
+
+The limit is triggered by =reflect-cpp='s =rfl/internal/no_duplicate_field_names.hpp=,
+which performs a compile-time field-uniqueness check via deeply recursive
+template instantiation.  The check is ~O(n²)~ in the number of reflected
+fields; beyond roughly 20–25 fields in a single TU that also contains other
+large =rfl= instantiations, MSVC overflows its internal recursion budget and
+aborts.
+
+** Affected types and TUs
+
+The problem surfaces wherever a large =rfl=-reflected type shares a translation
+unit with another large =rfl= instantiation.
+
+| TU (original) | Reflected types | Field counts | Status |
+|---------------+-----------------+--------------+--------|
+| =ClientManager.cpp= | =get_trades_response= (→ =vector<trade>=) and =get_trade_detail_*= | 25 + 22 + 8-alt variant | Fixed PR #754 / PR #757 |
+
+=trade= is the principal offender: it has 25 fields, making its
+=no_duplicate_field_names= instantiation the deepest in the codebase.  Adding
+any second large =rfl= type to the same TU reliably hits C1202.
+
+** Current workaround
+
+PR #754 split =ClientManager.cpp= into focused per-function TUs:
+
+- =ClientManagerTrades.cpp= — =listTrades()= only; reflects =get_trades_response=
+  (=vector<trade>=, 25 fields)
+- =ClientManagerTradeDetail.cpp= — =getTradeDetail()= only; two-phase parse
+  reflects =get_trade_detail_response_base= (22 fields) then
+  =get_trade_detail_instrument_wrapper= (8-alternative variant)
+
+The split is pragmatic: =listTrades= and =getTradeDetail= logically belong
+together but are separated purely to respect the compiler limit.  The same
+pattern was applied earlier to other =ClientManager= methods.
+
+This is stable and does not compromise correctness, but it is technical debt:
+the function-per-file granularity is not a natural modeling decision, and the
+split will need to be revisited if =trade= gains further fields.
+
+* Root Cause Analysis
+
+=rfl= generates a field-uniqueness check at compile time via a chain of
+constexpr template specialisations in =no_duplicate_field_names.hpp=.  Each
+reflected type adds one level of recursion per field pair, giving ~n*(n-1)/2~
+instantiation depth.
+
+MSVC imposes an undocumented but effectively fixed limit on this recursion.
+GCC and Clang have much higher (or configurable) limits, which is why the
+problem is Windows-only.
+
+The =/d1templateDepth= MSVC flag can raise the limit slightly, but it is
+undocumented, unsupported, and not a reliable long-term fix.
+
+* Resolution Options
+
+** Option 1 — TU Isolation (current workaround)
+
+Ensure no TU contains more than one large =rfl= instantiation.  Move each
+function that calls =rfl::json::read<LargeType>= or
+=process_authenticated_request<LargeType>= into its own =.cpp= file.
+
+| Pros | Cons |
+|------+------|
+| No changes to domain model or rfl | Artificial file granularity |
+| Already proven stable (PR #754, #757) | Must be maintained as trade gains fields |
+| Zero risk | Logical cohesion broken (listTrades / getTradeDetail split) |
+
+Status: applied.  Treat as interim until Option 2 or 3 is resolved.
+
+** Option 2 — rfl Opt-Out / Specialization (recommended long-term fix)
+
+=reflect-cpp= may expose a hook to disable the =no_duplicate_field_names= check
+for specific types.  If a trait specialisation or opt-out macro exists, we can
+apply it to =trade= (and any other large struct) without touching the domain
+model.
+
+Investigation required:
+
+1. Read =rfl/internal/no_duplicate_field_names.hpp= and the surrounding
+   =rfl::internal= API to identify whether a per-type opt-out exists.
+2. Check =reflect-cpp= issue tracker and changelog for any =DISABLE_= macros or
+   =rfl::NoFieldNameCheck= trait.
+3. If an opt-out exists: apply it to =trade= (and =trade_export_item= etc.),
+   verify C1202 no longer fires, merge the per-file TU split back into
+   =ClientManager.cpp=.
+4. If no opt-out exists: file an upstream issue / PR with =reflect-cpp=, or
+   patch the check locally under =#ifdef _MSC_VER=.
+
+| Pros | Cons |
+|------+------|
+| Fixes root cause, no file fragmentation | Requires rfl internals investigation |
+| Allows =listTrades= + =getTradeDetail= to reunite | May need upstream contribution |
+| Scales to future field additions | Risk of rfl API changing under us |
+
+** Option 3 — Split =trade= into Sub-Structs
+
+Decompose =trade= (25 fields) into nested structs, e.g.:
+
+#+begin_example
+struct trade_header   { id, version, status, ... };      // ~6 fields
+struct trade_dates    { trade_date, settle_date, ... };   // ~5 fields
+struct trade_parties  { book_id, party_id, ... };         // ~6 fields
+struct trade          { trade_header header; trade_dates dates; ... };
+#+end_example
+
+Each sub-struct has a shallow =no_duplicate_field_names= instantiation; the
+outer =trade= struct reflects only a handful of sub-struct fields.
+
+| Pros | Cons |
+|------+------|
+| Eliminates the constraint permanently | Major domain model change |
+| Improves model readability | DB schema change (nested columns → flat in SQL) |
+| | All serialization, ORM, tests, and rfl callers need updating |
+| | High risk, high effort — unsuitable as a hotfix |
+
+* Recommendation
+
+1. *Now*: keep the TU split (Option 1) as the current stable state.
+2. *Next sprint*: investigate Option 2 (rfl opt-out).  Timebox to 2–4 hours of
+   reading rfl internals and the upstream tracker.
+3. *If Option 2 succeeds*: reunite =ClientManagerTrades.cpp= and
+   =ClientManagerTradeDetail.cpp= into =ClientManager.cpp=; remove the
+   now-unnecessary =ClientManagerWorkflow.cpp=,
+   =ClientManagerIam.cpp= splits if they are similarly motivated.
+4. *If Option 2 fails*: document the failure in this plan and park Option 3 as
+   a future domain-model story, explicitly noting it is not a priority until
+   =trade= approaches ~30+ fields.
+
+* Trigger Conditions for Re-evaluation
+
+The TU split must be revisited if any of the following occur:
+
+- =trade= gains more than ~5 additional fields (→ Option 1 split may itself
+  start hitting C1202 with the variant wrapper).
+- A new large message type is introduced that must share a TU with =trade=-based
+  code.
+- =reflect-cpp= releases a version with a documented opt-out mechanism.
+
+* Affected Files (current split)
+
+| File | Purpose | PR |
+|------+---------+----|
+| =projects/ores.qt.api/src/ClientManager.cpp= | IAM / session methods | — |
+| =projects/ores.qt.api/src/ClientManagerTrades.cpp= | =listTrades()= only | #754 |
+| =projects/ores.qt.api/src/ClientManagerTradeDetail.cpp= | =getTradeDetail()= only | #757 |
+| =projects/ores.qt.api/CMakeLists.txt= | Registers all three TUs | #754 / #757 |
+
+* References
+
+- PR #754 — initial =ClientManager= TU split (=listTrades= isolation)
+- PR #757 — =getTradeDetail= split + =workflow.api= export fix
+- MSVC documentation: [[https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-2/compiler-error-c1202][C1202 error]]
+- reflect-cpp repository: =rfl/internal/no_duplicate_field_names.hpp=

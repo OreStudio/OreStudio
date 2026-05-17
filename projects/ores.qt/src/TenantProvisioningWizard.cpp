@@ -20,7 +20,6 @@
 #include "ores.qt/TenantProvisioningWizard.hpp"
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/FontUtils.hpp"
-#include "ores.qt/WorkflowStepsWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"

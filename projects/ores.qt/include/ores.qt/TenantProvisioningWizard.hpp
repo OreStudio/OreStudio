@@ -37,7 +37,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 
-namespace ores::qt { class WorkflowStepsWidget; }
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 

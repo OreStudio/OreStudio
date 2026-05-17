@@ -35,7 +35,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.reporting.api/domain/report_definition_template.hpp"
 
-namespace ores::qt { class WorkflowStepsWidget; }
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 

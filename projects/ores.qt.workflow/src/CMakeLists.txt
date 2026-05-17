@@ -48,15 +48,12 @@ set_target_properties(${lib_target_name} PROPERTIES
 target_include_directories(${lib_target_name} PUBLIC
     ${ORES_QT_WORKFLOW_DIR}/include)
 target_include_directories(${lib_target_name} PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt/include")
+    "${CMAKE_CURRENT_BINARY_DIR}/${lib_target_name}_autogen/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
-        ores.workflow.api.lib
-    PRIVATE
-        ores.qt.lib)
+        ores.workflow.api.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

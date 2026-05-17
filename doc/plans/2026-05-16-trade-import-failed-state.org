@@ -17,7 +17,7 @@
   handler architecture.  The current plan supersedes the import handler section
   of that design; the rest remains valid reference.
 
-- [[file:2026-05-17-data-sandbox-design.org][Workspace Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
+- [[file:2026-05-17-workspace-design.org][Workspace Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
   workspace concept required for ORE sample import.  This plan covers two
   import tracks: Track 1 (educational/sample import, blocked on workspace
   implementation) and Track 2 (production live import, independent).  The
@@ -30,10 +30,10 @@ Data Import Session window but differ in where data lands.
 
 | Track | Source | Target | Isolation mechanism |
 |-------+--------+--------+---------------------|
-| 1 — Educational | ORE sample directory | Named workspace | Workspace (see [[file:2026-05-17-data-sandbox-design.org][workspace plan]]) |
+| 1 — Educational | ORE sample directory | Named workspace | Workspace (see [[file:2026-05-17-workspace-design.org][workspace plan]]) |
 | 2 — Production | External trades (FpML, CSV) | Live (workspace 0) | Pending Book + ~is_live~ flags |
 
-*Track 1 is blocked* on [[file:2026-05-17-data-sandbox-design.org][Workspace]] implementation.  All phases below
+*Track 1 is blocked* on [[file:2026-05-17-workspace-design.org][Workspace]] implementation.  All phases below
 address Track 2 only unless otherwise noted.
 
 * Problem Statement

@@ -1,0 +1,181 @@
+#+TITLE: Virtual Portfolio Design
+#+SUBTITLE: User-defined reporting overlays that aggregate books from anywhere in the book tree
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSED
+#+OPTIONS: toc:t num:nil
+
+* Related Plans
+
+- [[file:2026-05-17-workspace-design.org][Workspace Design]] — workspaces reference a portfolio via ~scope_portfolio_id~
+  to define their trade scope.  Virtual portfolios are the mechanism that lets
+  traders compose a cross-desk scope without restructuring real books.  This
+  plan is a soft dependency of the workspace plan: workspaces work without it
+  (using real books as scope); virtual portfolios extend the scope options.
+
+* Background
+
+The product backlog contains two stories relevant to this plan:
+
+1. *Add virtual portfolio tree support* (backlog line 1240): junction table
+   ~ores_refdata_virtual_portfolio_books~, ~is_virtual~ flag,
+   ~PortfolioBookTreeMdiWindow~ integration, trade table filtering.
+
+2. *Investigate virtual portfolio arbitrary hierarchy construction* (backlog
+   line 5701): whether ~parent_portfolio_id~ is sufficient or whether a
+   separate junction table is needed; cross-legal-entity considerations; UI
+   hierarchy selection.
+
+This plan formalises those stories into a coherent design and adds the
+workspace scope integration.
+
+* Problem Statement
+
+The real portfolio tree is a strict hierarchy:
+~Firm → Division → Desk → Portfolio → Book~.  A book has exactly one
+~parent_portfolio_id~.  This reflects legal/organisational ownership.
+
+A trader or risk manager frequently needs a *view* that crosses this
+hierarchy: "show me all EUR-denominated trades across the Rates desk and the
+FX desk", or "show me everything I personally manage regardless of desk".
+Restructuring real books is not an option — it has legal, accounting, and
+access-control implications.
+
+A *virtual portfolio* is a read-only reporting overlay that aggregates books
+from anywhere in the real tree.  It owns no trades directly; it is a named
+collection of book references.
+
+* Design
+
+** Data model
+
+~is_virtual~ flag on the existing portfolio table marks a portfolio as
+virtual.  Virtual portfolios participate in the same portfolio tree for UI
+display purposes but are shown in a distinct section.
+
+#+begin_src sql
+-- Add to existing ores_trading_portfolios_tbl (or ores_refdata_portfolios_tbl
+-- depending on component; confirm during implementation)
+alter table <portfolios_table>
+    add column is_virtual boolean not null default false;
+#+end_src
+
+Junction table maps virtual portfolios to their member books:
+
+#+begin_src sql
+create table ores_trading_virtual_portfolio_books_tbl (
+    virtual_portfolio_id  uuid  not null
+        references <portfolios_table>(id),
+    book_id               uuid  not null
+        references ores_trading_books_tbl(id),
+    primary key (virtual_portfolio_id, book_id),
+    -- Only virtual portfolios may have junction rows
+    constraint vp_books_must_be_virtual check (
+        (select is_virtual from <portfolios_table>
+         where id = virtual_portfolio_id) = true
+    )
+);
+#+end_src
+
+~parent_portfolio_id~ on the portfolio table is used for display grouping
+of virtual portfolios in the tree (a user may want to organise their virtual
+portfolios under a "My Views" node).  It does not affect membership — book
+membership is governed entirely by the junction table.
+
+** Cross-legal-entity membership
+
+Virtual portfolios may contain books from different legal entities.  This is
+intentional and is the primary use case.  The permission check is: the user
+must have read access to each member book.  Books the user cannot see are
+silently excluded from the virtual portfolio's effective membership.
+
+** Resolving a virtual portfolio to its books
+
+#+begin_src sql
+-- All books in a virtual portfolio visible to the current user
+select b.*
+from ores_trading_books_tbl b
+join ores_trading_virtual_portfolio_books_tbl vpb
+    on vpb.book_id = b.id
+where vpb.virtual_portfolio_id = :vp_id;
+-- RLS on ores_trading_books_tbl enforces per-book visibility
+#+end_src
+
+For workspace scope resolution, this query is used to expand
+~scope_portfolio_id~ into the set of book IDs before the trade query runs.
+Real portfolios use the existing recursive book-descendant query; virtual
+portfolios use the junction table.  The workspace trade query handles both
+transparently by checking ~is_virtual~ and choosing the appropriate join.
+
+* UI
+
+** PortfolioBookTreeMdiWindow
+
+Virtual portfolios appear as a separate section below the real portfolio tree,
+using a distinct icon (e.g. ~briefcase_20_regular~, as noted in the backlog).
+Each virtual portfolio node can be expanded to show its member books.
+
+Selecting a virtual portfolio node in the trade table context filters trades
+to those in the portfolio's member books — identical in behaviour to selecting
+a real portfolio node.
+
+** Virtual portfolio editor
+
+A simple editor (accessible from the right-click menu on any virtual portfolio
+node, or via a "New Virtual Portfolio" action) allows:
+
+- Naming the virtual portfolio.
+- Selecting member books via a searchable book picker (shows full book path
+  ~Firm / Division / Desk / Book~ for clarity).
+- Adding and removing member books.
+- Selecting a parent virtual portfolio node for display grouping (optional).
+
+** Workspace scope picker
+
+When setting a workspace's ~scope_portfolio_id~, the picker shows both real
+portfolios and virtual portfolios in a unified list, clearly labelled.
+
+* Implementation Phases
+
+** Phase 1: Schema
+
+1. Add ~is_virtual boolean not null default false~ to the portfolios table.
+2. Create ~ores_trading_virtual_portfolio_books_tbl~ with constraint.
+3. Add full SQL machinery: triggers, RLS policies, NOTIFY.
+4. Run ~recreate_database.sh~; validate schemas.
+
+** Phase 2: Domain and service layer
+
+1. Extend portfolio domain type with ~is_virtual~ field.
+2. New domain type ~virtual_portfolio_membership~ (virtual_portfolio_id,
+   book_id list).
+3. NATS endpoints:
+   - ~portfolio.v1.virtual.create~
+   - ~portfolio.v1.virtual.update-members~
+   - ~portfolio.v1.virtual.delete~
+   - ~portfolio.v1.virtual.list~ (list all virtual portfolios for the user)
+   - ~portfolio.v1.virtual.resolve~ (expand to book IDs)
+4. Extend existing ~portfolio.v1.list~ to include virtual portfolios with
+   ~is_virtual~ flag set.
+
+** Phase 3: UI
+
+1. ~PortfolioBookTreeMdiWindow~: add virtual portfolio section; distinct icon;
+   book leaves under each virtual portfolio.
+2. Virtual portfolio editor dialog.
+3. Trade table filtering: handle virtual portfolio node selection.
+4. Workspace scope picker: unified real + virtual portfolio list.
+
+* Open Questions
+
+1. *Nesting*: can a virtual portfolio reference another virtual portfolio (not
+   just real books)?  This would allow composing views, but adds recursive
+   resolution.  Proposed: no nesting for now — only real books as members.
+
+2. *Stale indicator*: the backlog notes the stale indicator should respond to
+   virtual portfolio membership changes.  Define what "stale" means: a book
+   added to/removed from the virtual portfolio while the trade table is open
+   should trigger a refresh prompt.
+
+3. *Portability across tenants*: virtual portfolios are per-party (same as
+   real portfolios).  No cross-tenant sharing is needed.

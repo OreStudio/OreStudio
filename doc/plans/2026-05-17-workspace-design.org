@@ -14,14 +14,15 @@
   ~risk_report_config~.  Workspaces extend this infrastructure by adding
   ~workspace_id~ to report definitions; no new tables are introduced.
 
-* Dependencies (prerequisite plans not yet written)
+* Dependencies
 
-- *Virtual Portfolio Design* — the workspace ~scope_portfolio_id~ references
-  a portfolio that may be a user-created virtual portfolio aggregating books
-  from anywhere in the book tree.  This is a prerequisite for the trader
-  what-if use case (Phase 3 of this plan).  ORE sample workspaces (Phase 5)
-  do not require it — they use self-contained books with no cross-tree
-  aggregation.  A separate plan is needed before Phase 3 implementation begins.
+- [[file:2026-05-17-virtual-portfolio-design.org][Virtual Portfolio Design]] (PROPOSED, *soft* dependency) — the workspace
+  ~scope_portfolio_id~ may reference a user-created virtual portfolio
+  aggregating books from anywhere in the book tree.  All workspace phases can
+  be implemented and tested without virtual portfolios by using real books as
+  the scope.  Virtual portfolios are only needed for the trader what-if use
+  case where books span multiple desks.  ORE sample workspaces (Phase 5) need
+  no virtual portfolios — they use self-contained books.
 
 * Note on naming
 

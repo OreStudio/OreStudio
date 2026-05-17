@@ -1,7 +1,7 @@
-#+TITLE: MSVC C1202 — reflect-cpp Template Depth and TU Isolation
+#+TITLE: MSVC C1202 — Decompose trade into Sub-Structs
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS
+#+STATUS: TODO
 
 * Problem
 
@@ -14,153 +14,151 @@ fatal error C1202: recursive type or function dependency context too complex
 
 The limit is triggered by =reflect-cpp='s =rfl/internal/no_duplicate_field_names.hpp=,
 which performs a compile-time field-uniqueness check via deeply recursive
-template instantiation.  The check is ~O(n²)~ in the number of reflected
-fields; beyond roughly 20–25 fields in a single TU that also contains other
-large =rfl= instantiations, MSVC overflows its internal recursion budget and
+template instantiation.  The check scales roughly as O(n²) in the number of
+reflected fields; =trade= at 25 fields produces the deepest instantiation in
+the codebase.  Any TU that reflects both =get_trades_response= (a
+=vector<trade>=) and a second large rfl type reliably hits the limit and
 aborts.
-
-** Affected types and TUs
-
-The problem surfaces wherever a large =rfl=-reflected type shares a translation
-unit with another large =rfl= instantiation.
-
-| TU (original) | Reflected types | Field counts | Status |
-|---------------+-----------------+--------------+--------|
-| =ClientManager.cpp= | =get_trades_response= (→ =vector<trade>=) and =get_trade_detail_*= | 25 + 22 + 8-alt variant | Fixed PR #754 / PR #757 |
-
-=trade= is the principal offender: it has 25 fields, making its
-=no_duplicate_field_names= instantiation the deepest in the codebase.  Adding
-any second large =rfl= type to the same TU reliably hits C1202.
 
 ** Current workaround
 
-PR #754 split =ClientManager.cpp= into focused per-function TUs:
+PRs #754 and #757 split =ClientManager.cpp= into focused per-function TUs so
+that each large rfl instantiation is isolated:
 
-- =ClientManagerTrades.cpp= — =listTrades()= only; reflects =get_trades_response=
-  (=vector<trade>=, 25 fields)
-- =ClientManagerTradeDetail.cpp= — =getTradeDetail()= only; two-phase parse
-  reflects =get_trade_detail_response_base= (22 fields) then
-  =get_trade_detail_instrument_wrapper= (8-alternative variant)
+| File | Content |
+|------+---------|
+| =ClientManagerTrades.cpp= | =listTrades()= only |
+| =ClientManagerTradeDetail.cpp= | =getTradeDetail()= only |
 
-The split is pragmatic: =listTrades= and =getTradeDetail= logically belong
-together but are separated purely to respect the compiler limit.  The same
-pattern was applied earlier to other =ClientManager= methods.
+The split is pragmatic but artificial: the two functions logically belong
+together and are separated only to satisfy the compiler.  The split must be
+maintained manually as =trade= gains fields, and it does not remove the
+underlying constraint.
 
-This is stable and does not compromise correctness, but it is technical debt:
-the function-per-file granularity is not a natural modeling decision, and the
-split will need to be revisited if =trade= gains further fields.
+* Proposed Fix — Decompose =trade= into Sub-Structs
 
-* Root Cause Analysis
+Split =trade= (25 fields) into nested sub-structs so that each rfl
+instantiation stays shallow.  The SQL table remains flat; the ORM mapper
+and the JSON wire format absorb the structural change.
 
-=rfl= generates a field-uniqueness check at compile time via a chain of
-constexpr template specialisations in =no_duplicate_field_names.hpp=.  Each
-reflected type adds one level of recursion per field pair, giving ~n*(n-1)/2~
-instantiation depth.
+** Current fields (25)
 
-MSVC imposes an undocumented but effectively fixed limit on this recursion.
-GCC and Clang have much higher (or configurable) limits, which is why the
-problem is Windows-only.
+| Field | Group |
+|-------+-------|
+| =tenant_id=, =id=, =version=, =party_id= | identity |
+| =book_id=, =portfolio_id=, =counterparty_id=, =successor_trade_id= | parties |
+| =trade_type=, =product_type=, =instrument_id=, =asset_class=, =netting_set_id=, =activity_type_code=, =status_id= | classification |
+| =trade_date=, =effective_date=, =termination_date=, =execution_timestamp= | lifecycle |
+| =modified_by=, =performed_by=, =change_reason_code=, =change_commentary=, =recorded_at= | audit |
 
-The =/d1templateDepth= MSVC flag can raise the limit slightly, but it is
-undocumented, unsupported, and not a reliable long-term fix.
+** Proposed sub-struct layout
 
-* Resolution Options
+#+begin_src cpp
+struct trade_identity {        // 4 fields
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid id;
+    int version = 0;
+    boost::uuids::uuid party_id;
+};
 
-** Option 1 — TU Isolation (current workaround)
+struct trade_parties {         // 4 fields
+    boost::uuids::uuid book_id;
+    boost::uuids::uuid portfolio_id;
+    std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<boost::uuids::uuid> successor_trade_id;
+};
 
-Ensure no TU contains more than one large =rfl= instantiation.  Move each
-function that calls =rfl::json::read<LargeType>= or
-=process_authenticated_request<LargeType>= into its own =.cpp= file.
+struct trade_classification {  // 7 fields
+    std::string trade_type;
+    domain::product_type product_type = domain::product_type::unknown;
+    std::optional<boost::uuids::uuid> instrument_id;
+    std::optional<std::string> asset_class;
+    std::string netting_set_id;
+    std::string activity_type_code;
+    boost::uuids::uuid status_id;
+};
 
-| Pros | Cons |
-|------+------|
-| No changes to domain model or rfl | Artificial file granularity |
-| Already proven stable (PR #754, #757) | Must be maintained as trade gains fields |
-| Zero risk | Logical cohesion broken (listTrades / getTradeDetail split) |
+struct trade_lifecycle {       // 4 fields
+    std::optional<std::string> trade_date;
+    std::optional<std::string> effective_date;
+    std::optional<std::string> termination_date;
+    std::optional<std::string> execution_timestamp;
+};
 
-Status: applied.  Treat as interim until Option 2 or 3 is resolved.
+struct trade_audit {           // 5 fields
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at;
+};
 
-** Option 2 — rfl Opt-Out / Specialization (recommended long-term fix)
+struct trade final {           // 5 fields (sub-structs only)
+    trade_identity identity;
+    trade_parties parties;
+    trade_classification classification;
+    trade_lifecycle lifecycle;
+    trade_audit audit;
+};
+#+end_src
 
-=reflect-cpp= may expose a hook to disable the =no_duplicate_field_names= check
-for specific types.  If a trait specialisation or opt-out macro exists, we can
-apply it to =trade= (and any other large struct) without touching the domain
-model.
+With this layout the deepest rfl instantiation is =trade_classification= at 7
+fields, well under the limit on any platform.
 
-Investigation required:
+** Wire format
 
-1. Read =rfl/internal/no_duplicate_field_names.hpp= and the surrounding
-   =rfl::internal= API to identify whether a per-type opt-out exists.
-2. Check =reflect-cpp= issue tracker and changelog for any =DISABLE_= macros or
-   =rfl::NoFieldNameCheck= trait.
-3. If an opt-out exists: apply it to =trade= (and =trade_export_item= etc.),
-   verify C1202 no longer fires, merge the per-file TU split back into
+=rfl::Flatten<sub_struct>= instructs reflect-cpp to inline the sub-struct's
+fields into the parent JSON object, preserving the existing flat wire format.
+Verify this compiles and round-trips before committing the struct layout.
+
+If =rfl::Flatten= is unavailable or unsuitable, the wire format changes to
+nested JSON (={"identity": {...}, "parties": {...}}=); all NATS message
+consumers would need updating.  Prefer the flatten approach.
+
+** SQL / DB impact
+
+The =ores_trading_trades_tbl= table stays flat.  No schema migration is
+needed.  The ORM mapper (pqxx row → =trade=) must be updated to populate each
+sub-struct field from the flat SQL row.
+
+* Scope of Changes
+
+| Area | Change |
+|------+--------|
+| =ores.trading.api/include/.../domain/trade.hpp= | Replace flat struct with five sub-structs + parent |
+| Codegen model =trade_domain_entity.json= | Update column layout to reflect sub-struct grouping (documentation / generator alignment) |
+| ORM mapper (=trade_mapper.*=) | Populate sub-struct fields from flat SQL row |
+| NATS message handlers | Update field access paths (=t.book_id= → =t.parties.book_id=) |
+| Qt =ClientTradesModel= | Update column accessors |
+| ORE importer / exporter | Update field access paths |
+| Tests | Fix any direct struct construction that breaks |
+| =ClientManagerTrades.cpp= / =ClientManagerTradeDetail.cpp= | Reunite into =ClientManager.cpp= once C1202 no longer fires |
+
+* Risks
+
+- *rfl::Flatten availability*: if reflect-cpp does not support field flattening,
+  the wire format change cascades to all NATS consumers.  Verify first.
+- *Mapper effort*: the pqxx row mapper reads columns by name into a flat struct.
+  Changing to sub-struct access is mechanical but touches every trade read path.
+- *Field access churn*: every call site that reads =trade= fields needs updating
+  (=t.book_id= → =t.parties.book_id= etc.).  A project-wide grep will surface the
+  scope before starting.
+
+* Execution Order
+
+1. Verify =rfl::Flatten= compiles and preserves JSON round-trip on a toy struct.
+2. Define the five sub-structs and the new =trade= in a scratch branch; confirm
+   C1202 is gone on Windows CI.
+3. Update the ORM mapper.
+4. Fix all field access sites (grep-driven; expect ~50–100 call sites).
+5. Update tests.
+6. Reunite =ClientManagerTrades.cpp= and =ClientManagerTradeDetail.cpp= into
    =ClientManager.cpp=.
-4. If no opt-out exists: file an upstream issue / PR with =reflect-cpp=, or
-   patch the check locally under =#ifdef _MSC_VER=.
-
-| Pros | Cons |
-|------+------|
-| Fixes root cause, no file fragmentation | Requires rfl internals investigation |
-| Allows =listTrades= + =getTradeDetail= to reunite | May need upstream contribution |
-| Scales to future field additions | Risk of rfl API changing under us |
-
-** Option 3 — Split =trade= into Sub-Structs
-
-Decompose =trade= (25 fields) into nested structs, e.g.:
-
-#+begin_example
-struct trade_header   { id, version, status, ... };      // ~6 fields
-struct trade_dates    { trade_date, settle_date, ... };   // ~5 fields
-struct trade_parties  { book_id, party_id, ... };         // ~6 fields
-struct trade          { trade_header header; trade_dates dates; ... };
-#+end_example
-
-Each sub-struct has a shallow =no_duplicate_field_names= instantiation; the
-outer =trade= struct reflects only a handful of sub-struct fields.
-
-| Pros | Cons |
-|------+------|
-| Eliminates the constraint permanently | Major domain model change |
-| Improves model readability | DB schema change (nested columns → flat in SQL) |
-| | All serialization, ORM, tests, and rfl callers need updating |
-| | High risk, high effort — unsuitable as a hotfix |
-
-* Recommendation
-
-1. *Now*: keep the TU split (Option 1) as the current stable state.
-2. *Next sprint*: investigate Option 2 (rfl opt-out).  Timebox to 2–4 hours of
-   reading rfl internals and the upstream tracker.
-3. *If Option 2 succeeds*: reunite =ClientManagerTrades.cpp= and
-   =ClientManagerTradeDetail.cpp= into =ClientManager.cpp=; remove the
-   now-unnecessary =ClientManagerWorkflow.cpp=,
-   =ClientManagerIam.cpp= splits if they are similarly motivated.
-4. *If Option 2 fails*: document the failure in this plan and park Option 3 as
-   a future domain-model story, explicitly noting it is not a priority until
-   =trade= approaches ~30+ fields.
-
-* Trigger Conditions for Re-evaluation
-
-The TU split must be revisited if any of the following occur:
-
-- =trade= gains more than ~5 additional fields (→ Option 1 split may itself
-  start hitting C1202 with the variant wrapper).
-- A new large message type is introduced that must share a TU with =trade=-based
-  code.
-- =reflect-cpp= releases a version with a documented opt-out mechanism.
-
-* Affected Files (current split)
-
-| File | Purpose | PR |
-|------+---------+----|
-| =projects/ores.qt.api/src/ClientManager.cpp= | IAM / session methods | — |
-| =projects/ores.qt.api/src/ClientManagerTrades.cpp= | =listTrades()= only | #754 |
-| =projects/ores.qt.api/src/ClientManagerTradeDetail.cpp= | =getTradeDetail()= only | #757 |
-| =projects/ores.qt.api/CMakeLists.txt= | Registers all three TUs | #754 / #757 |
+7. Update the codegen model to match the new layout.
 
 * References
 
-- PR #754 — initial =ClientManager= TU split (=listTrades= isolation)
+- PR #754 — initial =ClientManager= TU split
 - PR #757 — =getTradeDetail= split + =workflow.api= export fix
-- MSVC documentation: [[https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-2/compiler-error-c1202][C1202 error]]
-- reflect-cpp repository: =rfl/internal/no_duplicate_field_names.hpp=
+- reflect-cpp =rfl::Flatten=: [[https://github.com/getml/reflect-cpp][getml/reflect-cpp]]
+- MSVC C1202: [[https://learn.microsoft.com/en-us/cpp/error-messages/compiler-errors-2/compiler-error-c1202][C1202 error]]

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: bcef2c68-65fe-4848-95ba-6ddb01b2ab9f
+:END:
+#+title: Sprint 03 housekeeping
+#+description: Sprint-level sundries — backlog refinement, build-break misspell fix, postponed-work tracking.
+#+type: story
+#+level: s2
+#+filetags: :housekeeping:agile:sprint_03:
+#+created: 2025-11-01
+#+updated: 2025-12-31
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-31]
+:END:
+
+** Now
+Story closed; sprint backlog tidy, build-break misspell fixed.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-31
+
+* Goal
+
+Catch the sprint-level work that has to happen for the sprint to
+function but does not deliver a user-visible outcome: backlog
+refinement and a misspelled symbol that was failing the build.
+
+* Acceptance
+
+- Sprint backlog matches delivered work at sprint close.
+- The misspell that was breaking the build is fixed.
+
+* Tasks
+
+In execution order:
+
+- [[id:84075b11-c508-4412-adc1-70c728c852c5][Sprint and product backlog refinement]]
+- [[id:afe9a275-ebbe-47f8-9d93-e04fd90cca88][Fix misspell that breaks the build]]
+
+Additional v0 entries that landed here but aren't migrated as full
+tasks in the drive-test:
+
+- POSTPONED: Add support for feature flags (deferred to a later
+  sprint).
+- POSTPONED: Implement authentication bootstrap workflow (deferred;
+  picked up by =login_and_sessions= in a successor sprint).
+- CANCELLED: Convert PlantUML diagrams to org-babel.
+- CANCELLED: Add connect command-line argument.
+
+* Decisions
+
+- /Postponed items don't disappear/ :: the v0 record had three
+  POSTPONED entries that vanished into the retrospective. In v2 they
+  are listed here explicitly and either become successor stories or
+  go to the product backlog.
+
+* Out of scope
+
+- Long-term agile tooling.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → various entries under the
+=:agile:= tag, plus the misspell-fix and postponed/cancelled items.

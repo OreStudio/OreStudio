@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 662f38b1-2474-4815-805c-3545d942a861
+:END:
+#+title: Add Postgres support for currency
+#+description: Persist currency reference data through the Postgres repository layer end-to-end.
+#+type: task
+#+level: s1
+#+filetags: :currencies:postgres:repository:postgres_currency_persistence:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed currency persistence]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Persist currency reference data through the Postgres repository layer end-to-end.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

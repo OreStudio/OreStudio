@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 9eb036fa-7c1c-4a61-8491-70c07df71f2d
+:END:
+#+title: Update prodigy to use tags
+#+description: Update the Prodigy launcher integration to discover commands via tags rather than hardcoded names.
+#+type: task
+#+level: s1
+#+filetags: :prodigy:launcher:emacs:client_console_qt_integration:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-15
+#+updated: 2025-12-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client console and Qt integration]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-15]
+:END:
+
+** Now
+Completed 2025-12-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-15
+
+* Goal
+
+Update the Prodigy launcher integration to discover commands via tags rather than hardcoded names.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: ea9a3802-114c-4250-97db-a2e172a69e67
+:END:
+#+title: Fix vcpkg patch application on Windows
+#+description: Diagnose and work around vcpkg failing to apply a port patch on Windows.
+#+type: task
+#+level: s1
+#+filetags: :build:vcpkg:windows:bug_fix:build_stabilisation_3:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-15
+#+updated: 2025-11-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-15]
+:END:
+
+** Now
+Completed 2025-11-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-15
+
+* Goal
+
+Diagnose and work around vcpkg failing to apply a port patch on Windows.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

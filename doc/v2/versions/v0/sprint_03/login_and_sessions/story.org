@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: b09e0d06-0314-4424-ad57-2da31a335d99
+:END:
+#+title: Login and sessions
+#+description: Account and session domain types end-to-end across client, server, and Postgres.
+#+type: story
+#+level: s2
+#+filetags: :login:accounts:sessions:sprint_03:
+#+created: 2025-11-20
+#+updated: 2025-12-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-20]
+:END:
+
+** Now
+Story closed; accounts and sessions land end-to-end. The
+authentication bootstrap remains POSTPONED into a successor sprint.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-20
+
+* Goal
+
+Introduce the account and session domain types and wire them through
+the cobalt client/server runtime. This is the /finish login related
+functionality/ half of the sprint mission.
+
+* Acceptance
+
+- =account= domain type with repository, JSON/XML codecs, and
+  end-to-end tests.
+- =session= domain type with lifecycle (open/close/expire) and
+  server-side persistence.
+- Client can authenticate against the server using an account and
+  receive a session token.
+
+* Tasks
+
+In execution order:
+
+- [[id:3e57dcdc-f728-4b42-b262-74dfc751d04a][Add account support]]
+- [[id:9327c7d2-4bba-41ff-8448-7d61c436391d][Add session support]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- POSTPONED: Implement authentication bootstrap workflow (carries
+  forward to a successor story).
+
+* Decisions
+
+- /Sessions in Postgres/ :: simple and durable; we revisit if session
+  read volume becomes a bottleneck.
+- /Account-record pattern follows currencies/ :: lets us reuse the
+  generated repository code without account-specific exceptions.
+
+* Out of scope
+
+- Multi-factor authentication.
+- OAuth integration.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → account / session entries.

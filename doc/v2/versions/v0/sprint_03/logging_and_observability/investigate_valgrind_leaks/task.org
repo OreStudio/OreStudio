@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 9fe4da29-f05e-405e-9ad1-8268ba85efed
+:END:
+#+title: Investigate Valgrind leaks
+#+description: Triage the leaks Valgrind reports and fix or suppress them with documented rationale.
+#+type: task
+#+level: s1
+#+filetags: :valgrind:leaks:observability:logging_and_observability:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-30
+#+updated: 2025-12-30
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and observability]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-30]
+:END:
+
+** Now
+Completed 2025-12-30.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-30
+
+* Goal
+
+Triage the leaks Valgrind reports and fix or suppress them with documented rationale.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 1b023b81-0bc0-4733-aacb-89e42c9bf068
+:END:
+#+title: Add tests at suite level to ctest
+#+description: Register each Catch2 suite as its own ctest entry so the dashboard reports per-suite status.
+#+type: task
+#+level: s1
+#+filetags: :testing:ctest:catch2:test_infrastructure:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-01]
+:END:
+
+** Now
+Completed 2025-12-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-01
+
+* Goal
+
+Register each Catch2 suite as its own ctest entry so the dashboard reports per-suite status.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

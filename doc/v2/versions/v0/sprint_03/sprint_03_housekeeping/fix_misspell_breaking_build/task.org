@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: afe9a275-ebbe-47f8-9d93-e04fd90cca88
+:END:
+#+title: Fix misspell that breaks the build
+#+description: Repair a misspelled symbol that surfaces as a build break.
+#+type: task
+#+level: s1
+#+filetags: :build:bug_fix:sprint_03_housekeeping:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-31
+#+updated: 2025-12-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-31]
+:END:
+
+** Now
+Completed 2025-12-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-31
+
+* Goal
+
+Repair a misspelled symbol that surfaces as a build break.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 5e739596-d2b8-4206-b2bf-5171ccc9b954
+:END:
+#+title: Separate test database from application
+#+description: Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
+#+type: task
+#+level: s1
+#+filetags: :testing:postgres:isolation:test_infrastructure:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-01]
+:END:
+
+** Now
+Completed 2025-12-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-01
+
+* Goal
+
+Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

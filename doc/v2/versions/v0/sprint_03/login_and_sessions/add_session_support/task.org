@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 9327c7d2-4bba-41ff-8448-7d61c436391d
+:END:
+#+title: Add session support
+#+description: Domain type and lifecycle for client sessions on top of the cobalt-based server.
+#+type: task
+#+level: s1
+#+filetags: :login:sessions:client_server:login_and_sessions:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-20
+#+updated: 2025-12-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-20]
+:END:
+
+** Now
+Completed 2025-12-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-20
+
+* Goal
+
+Domain type and lifecycle for client sessions on top of the cobalt-based server.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

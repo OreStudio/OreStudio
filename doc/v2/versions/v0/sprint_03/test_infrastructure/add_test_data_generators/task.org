@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 36be3e39-dc25-4723-aa29-8a130a1e8c21
+:END:
+#+title: Add generators for test data generation
+#+description: Add deterministic data generators so each test can build representative input without ad-hoc fixtures.
+#+type: task
+#+level: s1
+#+filetags: :testing:generators:fixtures:test_infrastructure:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-01
+#+updated: 2025-12-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-01]
+:END:
+
+** Now
+Completed 2025-12-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-01
+
+* Goal
+
+Add deterministic data generators so each test can build representative input without ad-hoc fixtures.
+
+* Acceptance
+
+-
+
+* Notes
+
+* Result

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 22efe1e8-427f-488a-94a3-8ca78f180966
+:END:
+#+title: Test infrastructure
+#+description: Separate test database, split test code, ctest suite-level tests, data generators.
+#+type: story
+#+level: s2
+#+filetags: :testing:ctest:test_infrastructure:sprint_03:
+#+created: 2025-11-10
+#+updated: 2025-12-01
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-01]
+:END:
+
+** Now
+Story closed for the items that landed; CTest-per-suite carries
+over =BLOCKED= into a successor sprint.
+
+** Waiting on
+None at this story level. The =CTest shows only one test per test
+suite= follow-up is tracked separately as carry-over.
+
+** Next
+None.
+
+** Last touched
+2025-12-01
+
+* Goal
+
+Bring the test infrastructure to a state where (a) tests don't share
+state with the dev database, (b) test data is built from generators
+rather than ad-hoc fixtures, and (c) each Catch2 suite shows up as
+its own ctest entry on the dashboard.
+
+* Acceptance
+
+- A dedicated test database, separate from the application database.
+- A library of generators that build representative test inputs.
+- Each Catch2 test suite registered as a ctest entry.
+
+* Tasks
+
+In execution order:
+
+- [[id:5e739596-d2b8-4206-b2bf-5171ccc9b954][Separate test database from application]]
+- [[id:36be3e39-dc25-4723-aa29-8a130a1e8c21][Add generators for test data generation]]
+- [[id:1b023b81-0bc0-4733-aacb-89e42c9bf068][Add tests at suite level to ctest]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Split test code from utility.
+- CLI tests are failing on GitHub.
+- Tidy-up tests after refactor.
+- BLOCKED: CTest shows only one test per test suite (carries forward).
+
+* Decisions
+
+- /Generators over fixtures/ :: keeps tests independent of the
+  database state; matches the temporal-aware shape of the domain
+  types.
+- /Suite-level ctest registration/ :: gives readable dashboards
+  without doubling the CTest configuration time.
+
+* Out of scope
+
+- Property-based testing.
+- Mutation testing.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → test-related entries plus the
+BLOCKED CTest item.

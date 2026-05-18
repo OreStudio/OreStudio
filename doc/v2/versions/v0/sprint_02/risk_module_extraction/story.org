@@ -61,6 +61,11 @@ In execution order:
 - Splitting risk further into subdomains (deferred).
 - Renaming other modules (each gets its own story when motivated).
 
+* See also
+
+- [[id:3afa8a40-2b03-4317-8ff0-96ef5e2b9249][Add messaging for risk]] (this sprint) — first consumer of the
+  renamed module across the comms boundary.
+
 * Legacy reference
 
 Source entries in =doc/agile/v0/sprint_backlog_02.org= → /Rename

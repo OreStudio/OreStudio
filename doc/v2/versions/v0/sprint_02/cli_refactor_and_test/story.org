@@ -68,6 +68,13 @@ the drive-test:
 - A REPL for the CLI (was investigated, separate task).
 - Tab completion (deferred).
 
+* See also
+
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component model.
+- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] — the testing infrastructure the parser tests use.
+- [[id:562ed395-d245-4e05-b8ae-22f8ff689f59][Add command to dump currencies]] (this sprint) — the first user-
+  facing command added on top of the restructured CLI.
+
 * Legacy reference
 
 Source entries in =doc/agile/v0/sprint_backlog_02.org= → /Refactor

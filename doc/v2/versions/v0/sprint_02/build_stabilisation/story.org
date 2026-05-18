@@ -75,6 +75,16 @@ the drive-test:
 
 - Code signing on Windows (deferred to a later sprint).
 - macOS notarisation (deferred).
+- Longer-tail Windows / dynamic-library / Valgrind issues — picked up
+  in sprint 03's [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the vcpkg-caching and Valgrind details this story
+  established.
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] / [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — recipes
+  that exercise the stabilised pipelines.
+- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) — predecessor story this builds on.
 
 * Legacy reference
 

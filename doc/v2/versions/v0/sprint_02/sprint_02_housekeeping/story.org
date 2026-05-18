@@ -75,6 +75,13 @@ the drive-test:
 - Cross-sprint instrumentation (would be its own story when needed).
 - Productionising the Gemini action (deferred — postponed v0 entry).
 
+* See also
+
+- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (this sprint) — the work the
+  whiteboarding session fed into.
+- [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] / [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]] — predecessor
+  and successor housekeeping stories.
+
 * Legacy reference
 
 Source entries in =doc/agile/v0/sprint_backlog_02.org= under the

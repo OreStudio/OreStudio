@@ -77,9 +77,20 @@ the drive-test:
 
 * Out of scope
 
-- Authentication beyond the basic accounts/logins task.
+- Authentication beyond the basic accounts/logins task — comes back as
+  sprint 03's [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] (with the authentication-bootstrap
+  workflow itself further deferred).
 - Performance tuning of the cobalt event loop.
 - Reconnection / resilience semantics.
+- Wiring the Qt client onto the cobalt server — sprint 03's [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client
+  console and Qt integration]] picks this up.
+
+* See also
+
+- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] — the connection-management primitives the cobalt
+  server consumes.
+- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate the comms library builds on.
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — destination of the network surface in sprint 03.
 
 * Legacy reference
 

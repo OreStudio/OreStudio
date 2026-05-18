@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 145adede-c3dd-4b51-ad3b-d6b5506c6c37
+:END:
+#+title: Client/server foundations
+#+description: Introduce a client/server split via a cobalt-based runtime, a comms library, and risk messaging — recording GRPC/0MQ pivots.
+#+type: story
+#+level: s2
+#+filetags: :client_server:cobalt:comms:messaging:sprint_02:
+#+created: 2025-08-15
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-10-15]
+:END:
+
+** Now
+Story closed; cobalt server/client running, comms library extracted,
+risk module exchanges messages.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-10-15
+
+* Goal
+
+Introduce a client/server architecture into the project. The Qt
+application becomes the client; a runtime process — built on Boost
+cobalt — becomes the server. A new =comms= library carries the
+messages between them, and the risk module is the first consumer.
+
+* Acceptance
+
+- A cobalt-based server runs and accepts connections from the Qt
+  client.
+- A =comms= library exists and is consumed by both client and server.
+- The risk module sends and receives messages over =comms=.
+- The architecture is documented in the whiteboarding artefact (see
+  sprint housekeeping).
+
+* Tasks
+
+In execution order:
+
+- [[id:396ebda8-ca0d-4bfc-ac5e-01e61cae0a6a][Implement a cobalt-based server and client]]
+- [[id:9c9b5954-e01c-495d-94e9-2de3cb10c75c][Create a comms library]]
+- [[id:3afa8a40-2b03-4317-8ff0-96ef5e2b9249][Add messaging for risk]]
+- [[id:095140a1-0dd9-41e0-a346-418f1114d259][Create a GRPC-based service]] (ABANDONED — pivoted to cobalt)
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Implement a 0MQ-based RPC service and client (CANCELLED).
+- Remove GRPC support.
+- Add support for accounts and logins.
+
+* Decisions
+
+- /Cobalt over GRPC/ :: GRPC was explored first but its codegen and
+  build complexity for our use case did not justify the benefit.
+  Cobalt gives us coroutine-based async over plain sockets with no
+  IDL.
+- /0MQ explored, not chosen/ :: 0MQ patterns were attractive but
+  added a second messaging substrate that was hard to justify
+  alongside the cobalt path. Both records preserved as
+  =ABANDONED=.
+- /Comms as a separate library/ :: prevents the messaging types from
+  bleeding into either client or server domain code.
+
+* Out of scope
+
+- Authentication beyond the basic accounts/logins task.
+- Performance tuning of the cobalt event loop.
+- Reconnection / resilience semantics.
+
+* Legacy reference
+
+Source entries in =doc/agile/v0/sprint_backlog_02.org= covering the
+client/server, comms, GRPC, and 0MQ threads.

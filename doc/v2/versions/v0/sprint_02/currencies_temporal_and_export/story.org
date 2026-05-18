@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: ed5bc735-fb54-4ce0-9a08-6dab88c242d0
+:END:
+#+title: Currencies temporal and export
+#+description: Add temporal versioning to currencies, ship a CLI dump command, and build a containing structure for ORE example data.
+#+type: story
+#+level: s2
+#+filetags: :currencies:temporal:cli:reference_data:sprint_02:
+#+created: 2025-08-15
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-09-30]
+:END:
+
+** Now
+Story closed; currencies are versioned in time, CLI can dump them,
+ORE example data has a containing structure.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-30
+
+* Goal
+
+Build on the sprint-01 currencies-end-to-end story: add bitemporal
+versioning so changes can be tracked over time, add a CLI command to
+dump currency data, and create a containing structure for the ORE
+example files so they can be loaded as a group.
+
+* Acceptance
+
+- Currency records carry validity and transaction time columns.
+- The CLI dumps currencies to a file in either XML or JSON.
+- ORE example data is organised under a top-level container that
+  supports load/save.
+
+* Tasks
+
+In execution order:
+
+- [[id:acb832a6-da5e-4463-83a8-4bfa06bd607f][Create a containing structure for data]]
+- [[id:665dc710-e8a1-4c1f-9f66-2ee30aa94849][Add temporal support to currencies]]
+- [[id:562ed395-d245-4e05-b8ae-22f8ff689f59][Add command to dump currencies]]
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Investigate bitemporal support from Postgres 18.
+- CANCELLED: Refactor code for currencies (folded into the temporal
+  task).
+
+* Decisions
+
+- /Bitemporal in application code, not Postgres 18/ :: Postgres 18's
+  native temporal support was investigated but deferred because the
+  project pins to a current LTS Postgres. We do bitemporality in
+  application code for now.
+- /CLI dump goes through reflect-cpp/ :: avoids a separate
+  serialisation path for the dump output.
+
+* Out of scope
+
+- Temporal support for other reference types (deferred — each gets
+  its own task when needed).
+- A general-purpose ORE-data viewer (deferred).
+
+* Legacy reference
+
+Source entries in =doc/agile/v0/sprint_backlog_02.org= covering
+temporal currencies, the CLI dump command, the containing structure,
+and the Postgres 18 investigation. /Create a containing structure
+for data/ was POSTPONED in sprint 01 and finally completed here.

@@ -53,7 +53,9 @@ is the current sprint; the rest are closed.
 
 - [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] — Bootstrap project infrastructure and bring currencies
   end-to-end.
-- Sprint 02 — (to be migrated).
+- [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]] — Client/server foundations + serialisation and storage
+  modernisation.
+- Sprint 03 — (to be migrated).
 - ... through Sprint 16.
 
 * Release scope

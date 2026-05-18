@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: da7f8221-f808-432c-ab7d-cbb2687fd7b1
+:END:
+#+title: Add serialisation support for reflect-cpp
+#+description: Integrate reflect-cpp into the build and use it to generate JSON serialisers for the existing types.
+#+type: task
+#+level: s1
+#+filetags: :serialisation:reflect_cpp:json:modernise_serialisation_and_storage:
+#+owner: marco
+#+created: 2025-09-22
+#+updated: 2025-09-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1f9f213c-6bea-45fb-b0e0-aa5a7a9b7a23][Modernise serialisation and storage]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-09-28]
+:END:
+
+** Now
+Completed 2025-09-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-28
+
+* Goal
+
+Integrate reflect-cpp into the build and use it to generate JSON
+serialisers for the existing types, replacing the hand-written
+serialisation code.
+
+* Acceptance
+
+- reflect-cpp added to vcpkg manifest and linked into the build.
+- Existing JSON serialisers replaced by reflect-cpp generated code.
+- Round-trip tests pass for all migrated types.
+
+* Notes
+
+- Total time spent in v0: ~3:07.
+- Choice over Boost.PFR + manual: reflect-cpp gives us bidirectional
+  codecs for both JSON and XML in one library (XML migration is the
+  follow-on task).
+
+* Result
+
+- reflect-cpp wired into the build; JSON serialisers regenerated.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_02.org= → /Add serialisation support
+for reflect-cpp/.

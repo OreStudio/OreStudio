@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 14d86f4f-3fe2-4f3a-bcf1-b91cf9d7ac35
+:END:
+#+title: Add Gemini action
+#+description: Wire a Gemini-based PR review action into GitHub Actions.
+#+type: task
+#+level: s1
+#+filetags: :ci:github_actions:gemini:code_review:sprint_02_housekeeping:
+#+owner: marco
+#+created: 2025-09-05
+#+updated: 2025-09-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-09-10]
+:END:
+
+** Now
+Completed 2025-09-10.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-10
+
+* Goal
+
+Add a Gemini-driven code-review action so every PR receives an
+automated review pass, complementing the Claude review the project
+already uses.
+
+* Acceptance
+
+- A Gemini action exists under =.github/workflows/= and runs on PRs.
+- The action produces a review comment.
+- Failures do not block the PR (advisory mode).
+
+* Notes
+
+- Stand-alone CLI variant was deferred (POSTPONED: =Fix gemini cli
+  action=).
+
+* Result
+
+- Gemini PR-review action enabled in CI.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_02.org= → /Add gemini action/.

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 1dbc88f2-f004-45f8-bcd2-67d6ac646e97
+:END:
+#+title: Add tests to CLI parser
+#+description: Add Catch2 tests covering the CLI parser's main flag and command paths.
+#+type: task
+#+level: s1
+#+filetags: :cli:testing:catch2:parser:cli_refactor_and_test:
+#+owner: marco
+#+created: 2025-10-16
+#+updated: 2025-10-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-10-20]
+:END:
+
+** Now
+Completed 2025-10-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-10-20
+
+* Goal
+
+Add a Catch2 test suite to the CLI parser covering the main flag
+and command paths, so future changes to the parser are caught by
+CI.
+
+* Acceptance
+
+- A Catch2 test target exists for the CLI parser.
+- Tests cover help, unknown flag, valid flag combos, and the
+  subcommand resolution path.
+- All tests pass in CI.
+
+* Notes
+
+- Test the parser only — command execution touches the full stack
+  and is covered by integration tests elsewhere.
+
+* Result
+
+- CLI parser test suite committed; green in CI.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_02.org= → /Add tests to cli parser/.

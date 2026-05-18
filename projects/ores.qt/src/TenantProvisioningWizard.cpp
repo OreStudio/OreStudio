@@ -44,6 +44,7 @@
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
 
@@ -115,6 +116,19 @@ void TenantProvisioningWizard::clearBootstrapFlag() {
                                   << (result->message.empty() ? "Unknown error" : result->message);
     } else {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap flag cleared successfully";
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Marking tenant active";
+    iam::messaging::complete_tenant_provisioning_command activateReq;
+    auto activateResult = clientManager_->process_authenticated_request(
+        std::move(activateReq));
+    if (!activateResult) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to mark tenant active: no response from server";
+    } else if (!activateResult->success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to mark tenant active: "
+            << (activateResult->message.empty() ? "Unknown error" : activateResult->message);
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Tenant marked active successfully";
     }
 }
 

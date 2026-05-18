@@ -242,6 +242,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_tenant_history_request::nats_subject, qg,
         [th](ores::nats::message msg) { th->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        complete_tenant_provisioning_command::nats_subject, qg,
+        [th](ores::nats::message msg) { th->complete_provisioning(std::move(msg)); }));
 
     // --- Tenant statuses ---
     auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);

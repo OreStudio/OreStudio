@@ -107,7 +107,7 @@ public:
         {
             .column = Status,
             .header = std::string_view("Status"),
-            .style = column_style::text_left,
+            .style = column_style::badge_centered,
             .hidden_by_default = false,
             .default_width = kColumnWidthAuto
         },

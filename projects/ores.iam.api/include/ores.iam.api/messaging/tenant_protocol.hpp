@@ -75,6 +75,17 @@ struct get_tenant_history_response {
     std::vector<ores::iam::domain::tenant> versions;
 };
 
+struct complete_tenant_provisioning_command {
+    using response_type = struct complete_tenant_provisioning_response;
+    static constexpr std::string_view nats_subject =
+        "iam.v1.tenants.complete-provisioning";
+};
+
+struct complete_tenant_provisioning_response {
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

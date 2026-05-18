@@ -46,10 +46,12 @@ TenantController::TenantController(
     ClientManager* clientManager,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           tenant_event_name, parent),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -66,7 +68,7 @@ void TenantController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new TenantMdiWindow(clientManager_, username_);
+    listWindow_ = new TenantMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &TenantMdiWindow::statusChanged,

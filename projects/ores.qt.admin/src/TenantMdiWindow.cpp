@@ -26,6 +26,7 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -40,10 +41,12 @@ using namespace ores::logging;
 TenantMdiWindow::TenantMdiWindow(
     ClientManager* clientManager,
     const QString& username,
+    BadgeCache* badgeCache,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
+      badgeCache_(badgeCache),
       toolbar_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
@@ -129,7 +132,7 @@ void TenantMdiWindow::setupToolbar() {
 
     resetAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
+            Icon::Warning, IconUtils::DefaultIconColor),
         tr("Reset"));
     resetAction_->setToolTip(tr("Reset tenant to bootstrap state"));
     resetAction_->setEnabled(false);
@@ -157,8 +160,21 @@ void TenantMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientTenantModel::columnStyles(), tableView_));
+
+    auto* delegate = new EntityItemDelegate(
+        ClientTenantModel::columnStyles(), tableView_);
+    delegate->set_badge_color_resolver(ClientTenantModel::Status,
+        [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair default_gray{
+                QColor(0x6B, 0x72, 0x80), Qt::white};
+            if (!cache) return default_gray;
+            auto* def = cache->resolve("tenant_status", value.toStdString());
+            if (!def) return default_gray;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    tableView_->setItemDelegate(delegate);
+
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 

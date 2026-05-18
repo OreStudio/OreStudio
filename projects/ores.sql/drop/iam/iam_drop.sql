@@ -23,6 +23,7 @@
 \ir ./iam_tenant_deprovisioner_drop.sql
 \ir ./iam_tenant_reset_drop.sql
 \ir ./iam_tenant_bootstrap_reset_drop.sql
+\ir ./iam_tenant_activate_drop.sql
 \ir ./iam_system_reset_drop.sql
 \ir ./iam_tenant_provisioner_drop.sql
 

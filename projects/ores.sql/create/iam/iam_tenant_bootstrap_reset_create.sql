@@ -53,13 +53,16 @@
 -- Tenant bootstrap reset
 -- -----------------------------------------------------------------------------
 create or replace function ores_iam_reset_tenant_bootstrap_fn(
-    p_tenant_code text
+    p_tenant_code text,
+    p_actor text default null
 ) returns void as $$
 declare
     v_tenant_id uuid;
     v_system_tenant_id uuid;
+    v_actor text;
 begin
     v_system_tenant_id := ores_utility_system_tenant_id_fn();
+    v_actor := coalesce(nullif(p_actor, ''), current_user);
 
     -- Verify we're in system tenant context
     if ores_iam_current_tenant_id_fn() != v_system_tenant_id then
@@ -112,6 +115,25 @@ begin
     );
 
     raise notice 'Bootstrap mode re-enabled for tenant: %', p_tenant_code;
+
+    -- =========================================================================
+    -- Step 3: Set tenant status to 'bootstrapping'
+    -- =========================================================================
+    -- Insert a new temporal version of the tenant record with status='bootstrapping'.
+    -- The INSERT trigger handles: soft-deleting the old row, incrementing version,
+    -- setting valid_from/valid_to timestamps.
+    insert into ores_iam_tenants_tbl (
+        id, type, code, name, description, hostname, status, version,
+        modified_by, change_reason_code, change_commentary
+    )
+    select id, type, code, name, description, hostname, 'bootstrapping', version,
+        v_actor, 'system.admin_reset',
+        'Tenant reset to bootstrap state - provisioning wizards will re-fire on next login'
+    from ores_iam_tenants_tbl
+    where id = v_tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    raise notice 'Tenant status set to bootstrapping: %', p_tenant_code;
     raise notice 'Tenant bootstrap reset complete: %', p_tenant_code;
     raise notice 'On next login: TenantProvisioningWizard and PartyProvisioningWizard will fire.';
 end;

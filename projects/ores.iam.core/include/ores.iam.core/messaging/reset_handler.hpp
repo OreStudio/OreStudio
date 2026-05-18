@@ -85,8 +85,8 @@ public:
 
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
             execute_parameterized_multi_column_query(sys_ctx,
-                "SELECT ores_iam_reset_tenant_bootstrap_fn($1)",
-                {req->tenant_code},
+                "SELECT ores_iam_reset_tenant_bootstrap_fn($1, $2)",
+                {req->tenant_code, ctx_expected->actor()},
                 reset_handler_lg(), "reset_tenant");
 
             BOOST_LOG_SEV(reset_handler_lg(), info)

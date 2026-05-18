@@ -99,7 +99,7 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 
     tenantController_ = std::make_unique<TenantController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+        ctx_.change_reason_cache, ctx_.username, ctx_.badge_cache, this);
     connectControllerSignals(tenantController_.get());
     connect(tenantController_.get(), &TenantController::onboardRequested,
             this, &AdminPlugin::show_onboarding_wizard);
@@ -182,7 +182,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         smc.system_menu->addSeparator();
 
         act_reset_system_ = smc.system_menu->addAction(
-            ico(Icon::ArrowRotateCounterclockwise), tr("Reset &System..."));
+            ico(Icon::Warning), tr("Reset &System..."));
         act_reset_system_->setToolTip(
             tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
         connect(act_reset_system_, &QAction::triggered,

@@ -1,0 +1,325 @@
+#+TITLE: Menu Structure Analysis and Simplification
+#+DATE: 2026-05-18
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSED
+#+OPTIONS: toc:t num:nil
+
+* Related Plans
+
+- [[file:2026-04-08-qt-qpluginloader-architecture.org][Qt Plugin Architecture]] — established the plugin pattern where each plugin
+  contributes menus via ~create_menus()~; any restructuring must stay within
+  that contract.
+- [[file:2026-05-15-qt-plugin-isolation.org][Qt Plugin Isolation]] — ongoing work to sharpen plugin boundaries; menu
+  ownership is part of the same concern.
+
+* Problem Statement
+
+The application currently has 14 top-level menu entries (excluding File, System,
+Window, Help).  Several are confusing or under-populated:
+
+| Menu | Problem |
+|------+---------|
+| ~&Identity~ | Mixes personal account actions with system-wide admin (Accounts, Roles, Tenants). Admin items belong in System. |
+| ~&Organisation~ | Standalone menu for parties and counterparties, separate from ~&Reference Data~ which already holds classification and coding-scheme data.  Users expect org data alongside other reference entities. |
+| ~&Workflows~ | Two items only (Execution List, Definitions); the name does not communicate what workflows are for.  Overlaps conceptually with ~&Scheduler~. |
+| ~&Workspaces~ | One item only (Manage Workspaces).  A single-item top-level menu adds clutter without navigation value. |
+| ~&Data Transfer~ | Name is not intuitive for its content (Data Catalogue, Data Librarian, Import).  "Transfer" implies movement; the menu is really about data management. |
+| ~&Pricing~ | Three items under a name that suggests only one function.  The menu is really a model-configuration panel. |
+
+Secondary issues:
+- ~&Trading Codes~ (a shared submenu pre-created by MainWindow) mixes refdata
+  contributed by ~RefdataPlugin~ with codes contributed by ~TradingPlugin~,
+  making ownership unclear.
+- The total entry count (14 domain + 4 fixed = 18) is high; cognitive load
+  increases sharply above ~10 top-level entries.
+
+* Current Menu Inventory
+
+** Top-level bar (left to right)
+
+~File~ | ~Identity~ | ~Reference Data~ | ~Data Transfer~ | ~Trading~ |
+~Pricing~ | ~Reporting~ | ~Compute~ | ~Market Data~ | ~Organisation~ |
+~Scheduler~ | ~Workflows~ | ~Workspaces~ | ~System~ | ~Window~ | ~Help~
+
+** Identity
+- My Account...
+- My Sessions...
+- /separator/
+- Accounts /(admin)/
+- Roles /(admin)/
+- /separator/
+- Tenants /(admin)/
+- Tenant Types /(admin)/
+- /separator/
+- Onboard Tenant... /(admin)/
+
+** Reference Data
+- Currencies, Countries
+- Trading Conventions (submenu: Day Count, BDC, Floating Index, Payment Freq, Leg Types)
+- Conventions (submenu: Zero, Deposit, Swap, OIS, FRA, IBOR, Overnight, FX, CDS)
+- Classifications (submenu: Coding Schemes, Code Domains, Authority Types)
+- Currency Codes (submenu: Monetary Natures, Rounding Types)
+- Audit Trail (submenu: Change Reason Categories, Change Reasons)
+- Trading Codes (shared submenu: Purpose Types, Book Statuses)
+
+** Data Transfer
+- Data Catalogue (submenu: Domains, Subject Areas, Catalogues, Bundles, Methodologies,
+  Origin/Nature/Treatment Dimensions)
+- Data Librarian
+- Import ORE Data...
+
+** Trading
+- Portfolios, Books
+- Portfolio Explorer, Org Explorer
+- Trades
+- Trading Codes (submenu: Purpose Types, Book Statuses)
+
+** Pricing
+- Model Configurations, Model Products, Model Product Parameters
+- Pricing Codes (submenu: Pricing Engine Types)
+
+** Reporting
+- Report Definitions, Report Instances
+- Reporting Codes (submenu: Report Types, Concurrency Policies)
+
+** Compute
+- Dashboard, Console
+- Apps, App Versions
+
+** Market Data
+- Market Series, Market Fixings
+- Currency Market Tiers
+
+** Organisation
+- Parties, Counterparties
+- Business Centres, Business Units
+- Organisation Codes (submenu: Party Types, Party Statuses, Party ID Schemes,
+  Contact Types, Business Unit Types)
+
+** Scheduler
+- Job Definitions, Job Instances
+- Monitor
+
+** Workflows
+- Execution List
+- Definitions
+
+** Workspaces
+- Manage Workspaces
+
+** System
+- Telemetry (submenu: Log Viewer, Event Viewer, Console, Protocol, Settings)
+- Configuration (submenu: System Settings, Badge Definitions, Badge Severities)
+- Message Queue (submenu: Queue Monitor)
+- Service Dashboard
+
+* Proposed Structure
+
+** Design principles
+
+1. *No single-item top-level menus.*  An item that lives alone at the top level
+   belongs either one level down or as a toolbar action.
+2. *Personal vs. administrative actions are separated.*  "My Account" actions
+   stay in a personal menu; administrative actions (Accounts, Roles, Tenants)
+   move to System.
+3. *Reference data is one place.*  Any data that primarily configures or
+   classifies other entities (parties, org codes) belongs under Reference Data.
+4. *Names describe content, not implementation.*  "Data Management" is clearer
+   than "Data Transfer"; "Models" is clearer than "Pricing"; "Automation" is
+   clearer than "Workflows".
+5. *Target ≤ 10 domain entries* in the top-level bar.
+
+** Proposed top-level bar
+
+~File~ | ~Account~ | ~Trading~ | ~Market Data~ | ~Analytics~ | ~Reference Data~ |
+~Data~ | ~Operations~ | ~System~ | ~Window~ | ~Help~
+
+14 → 11 total entries (9 domain + File/Window/Help + System).
+
+** Proposed menu contents
+
+*** Account /(renamed from Identity, personal actions only)/
+- My Profile...
+- My Sessions...
+
+*** Trading /(unchanged content)/
+- Portfolios, Books
+- Portfolio Explorer, Org Explorer
+- /separator/
+- Trades
+- /separator/
+- Trading Codes (submenu: Purpose Types, Book Statuses)
+
+*** Market Data /(unchanged)/
+- Market Series, Market Fixings
+- Currency Market Tiers
+
+*** Analytics /(replaces Pricing; absorbs Compute items)/
+- Model Configurations, Model Products, Model Product Parameters
+- /separator/
+- Report Definitions, Report Instances
+- /separator/
+- Compute Dashboard, Compute Console
+- Apps, App Versions
+- /separator/
+- Analytics Codes (submenu: Pricing Engine Types, Report Types, Concurrency Policies)
+
+*** Reference Data /(absorbs Organisation)/
+- Currencies, Countries
+- /separator/
+- Parties, Counterparties
+- Business Centres, Business Units
+- /separator/
+- Trading Conventions (submenu — unchanged)
+- Conventions (submenu — unchanged)
+- /separator/
+- Classifications (submenu — unchanged)
+- Currency Codes (submenu — unchanged)
+- Audit Trail (submenu — unchanged)
+- /separator/
+- Organisation Codes (submenu: Party Types, Statuses, ID Schemes, Contact Types,
+  Business Unit Types)
+
+*** Data /(renamed from Data Transfer)/
+- Data Catalogue (submenu — unchanged)
+- Data Librarian
+- /separator/
+- Import ORE Data...
+
+*** Operations /(replaces Scheduler + Workflows)/
+- Job Definitions, Job Instances
+- Job Monitor
+- /separator/
+- Workflow Definitions
+- Workflow Executions
+
+*** System /(expanded with admin items from Identity)/
+- Telemetry (submenu — unchanged)
+- Configuration (submenu — unchanged)
+- Message Queue (submenu — unchanged)
+- Service Dashboard
+- /separator/
+- Administration (new submenu):
+  - Accounts
+  - Roles
+  - /separator/
+  - Tenants
+  - Tenant Types
+  - /separator/
+  - Onboard Tenant...
+
+*** Workspaces
+Removed as a top-level menu.  ~Manage Workspaces~ becomes a toolbar action
+and/or accessible from the Window menu (alongside open-window management).
+This is consistent with how workspace switching is expected to work —
+a quick-access affordance rather than a navigation destination.
+
+** Items not moved
+
+~File~, ~Window~, and ~Help~ are unchanged.  ~Compute~ items move into
+~Analytics~ but the underlying plugin structure is unaffected.
+
+* Implementation Notes
+
+** Plugin contract impact
+
+~create_menus()~ in each plugin currently returns a ~QMenu*~ that MainWindow
+inserts between File and System.  The proposed changes affect:
+
+| Plugin | Change |
+|--------+--------|
+| ~AdminPlugin~ | Admin items (Accounts, Roles, Tenants…) move to System > Administration submenu rather than Identity. |
+| ~AnalyticsPlugin~ | Menu renamed from Pricing to Analytics; Compute items joined here. |
+| ~ComputePlugin~ | No longer creates a top-level menu; contributes to Analytics. |
+| ~PartyPlugin~ | No longer creates a top-level menu; contributes to Reference Data. |
+| ~SchedulerPlugin~ | No longer creates a top-level menu; contributes to Operations. |
+| ~WorkflowPlugin~ | No longer creates a top-level menu; contributes to Operations. |
+| ~WorkspacePlugin~ | ~Manage Workspaces~ promoted to toolbar action; plugin stops creating a menu. |
+| ~RefdataPlugin~ | Absorbs Organisation Codes submenu from PartyPlugin. |
+
+The shared-menu mechanism (where MainWindow pre-creates a named menu and
+plugins contribute to it by looking it up by object name) already supports
+this pattern for ~&Reference Data~ and ~&Data Transfer~.  The same approach
+will be extended to ~&Analytics~ and ~&Operations~.
+
+** Menu lookup names
+
+Each merged menu will have a stable ~objectName~ set by MainWindow so that
+contributing plugins can locate it without hard-coding creation order:
+
+| Menu | Object name |
+|------+-------------|
+| Analytics | ~menu_analytics~ |
+| Reference Data | ~menu_refdata~ |
+| Data | ~menu_data~ |
+| Operations | ~menu_operations~ |
+| System | ~menu_system~ |
+
+* Execution Plan
+
+** Phase 1 — Inventory and sign-off
+
+1. Review this plan; confirm proposed structure and naming.
+2. Identify any items in the current inventory that are missing from the
+   proposed structure (no item should be lost).
+3. Confirm ~Manage Workspaces~ as toolbar action (requires toolbar slot in
+   MainWindow or WorkspacePlugin).
+
+** Phase 2 — System menu: absorb admin items
+
+1. Move Accounts, Roles, Tenants, Tenant Types, Onboard Tenant from
+   ~AdminPlugin::create_menus()~ into a new ~System > Administration~ submenu.
+2. Rename ~Identity~ menu to ~Account~ and remove admin items.
+3. Verify all action connections still work.
+
+** Phase 3 — Reference Data: absorb Organisation
+
+1. Pre-create ~menu_refdata~ in MainWindow with a Parties section placeholder.
+2. Modify ~PartyPlugin::create_menus()~ to contribute into ~menu_refdata~
+   instead of creating its own top-level menu.
+3. Move Organisation Codes submenu into Reference Data; remove ~Organisation~
+   top-level entry.
+
+** Phase 4 — Analytics: merge Pricing and Compute
+
+1. Pre-create ~menu_analytics~ in MainWindow.
+2. Rename ~AnalyticsPlugin~ menu contribution to Analytics; add Compute items.
+3. Modify ~ComputePlugin::create_menus()~ to contribute to ~menu_analytics~.
+4. Remove ~Compute~ and ~Pricing~ as separate top-level entries.
+
+** Phase 5 — Operations: merge Scheduler and Workflows
+
+1. Pre-create ~menu_operations~ in MainWindow.
+2. Modify ~SchedulerPlugin~ and ~WorkflowPlugin~ to contribute into
+   ~menu_operations~.
+3. Remove ~Scheduler~ and ~Workflows~ as separate top-level entries.
+
+** Phase 6 — Data: rename Data Transfer
+
+1. Rename ~Data Transfer~ to ~Data~ (object name ~menu_data~, display name ~&Data~).
+2. No content changes required.
+
+** Phase 7 — Workspaces: toolbar action
+
+1. Add ~Manage Workspaces~ as a toolbar action in ~WorkspacePlugin~.
+2. Remove ~WorkspacePlugin::create_menus()~ (or return ~nullptr~).
+
+** Phase 8 — Final QA
+
+1. Walk every menu item in the new structure; confirm no action is missing.
+2. Verify login/logout enable-disable state still works for all items.
+3. Test with a freshly logged-in session and an admin session.
+
+* Acceptance Criteria
+
+- Top-level domain menu count is ≤ 9 (excluding File, System, Window, Help).
+- No top-level menu contains fewer than 3 items.
+- All actions present in the current structure are present in the new structure
+  (none dropped, none duplicated).
+- Personal account actions (My Profile, My Sessions) are in ~Account~.
+- Administrative actions (Accounts, Roles, Tenants) are under ~System~.
+- Organisation entities (Parties, Counterparties, Business Centres, Business
+  Units) are under ~Reference Data~.
+- Scheduler and Workflow items are both under ~Operations~.
+- ~Manage Workspaces~ is accessible from the toolbar.
+- Login/logout menu enable-disable behaviour is unaffected.

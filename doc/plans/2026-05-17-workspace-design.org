@@ -296,26 +296,39 @@ caller's permissions against their JWT claims before any service operation.
 | ~workspace::workspaces:archive_any~ | ~TenantAdmin~ |
 | ~workspace::live_workspace:archive~ | ~SuperAdmin~ only |
 
-*** Handler enforcement — archive operation
+*** Handler enforcement
+
+All handlers validate a JWT-derived ~database::context~ via
+~make_request_context~ before any operation.  Permission checks use
+~has_permission(ctx, "...")~ from ~handler_helpers.hpp~.
+
+| Operation | Required permission |
+|-----------+---------------------|
+| list | ~workspace::workspaces:read~ |
+| create | ~workspace::workspaces:write~ |
+| archive (Live workspace) | ~workspace::live_workspace:archive~ |
+| archive (own workspace) | ~workspace::workspaces:archive~ |
+| archive (another user's workspace) | ~workspace::workspaces:archive_any~ |
+| set_trade_scope | ~workspace::workspaces:write~ |
+| clear_trade_scope | ~workspace::workspaces:write~ |
+
+Ownership is determined by comparing ~ws.owner_id~ to ~ctx.party_id()~.
+The Live workspace is identified by ~ores::utility::uuid::live_workspace_uuid_str~
+(~aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa~).
 
 #+begin_src cpp
-void archive(ores::nats::message msg) {
-    auto ctx = make_request_context(ctx_, msg, verifier_);
-    const auto target_id = req.id;
-    const bool is_live = (target_id == ores::utility::nil_uuid());
-    const bool is_owner = svc.is_owner(target_id, ctx.party_id());
-
-    if (is_live)
-        require_permission(ctx, "workspace::live_workspace:archive");
-    else if (!is_owner)
-        require_permission(ctx, "workspace::workspaces:archive_any");
-    else
-        require_permission(ctx, "workspace::workspaces:archive");
+// Implemented in workspace_handler.hpp — archive method:
+const bool is_live = (req->id == ores::utility::uuid::live_workspace_uuid_str);
+if (is_live) {
+    if (!has_permission(ctx, "workspace::live_workspace:archive")) → forbidden;
+} else {
+    const auto ws = svc.get_workspace(req->id);
+    const bool is_owner = ws && ctx.party_id() && (ws->owner_id == *ctx.party_id());
+    const auto required = is_owner ? "workspace::workspaces:archive"
+                                   : "workspace::workspaces:archive_any";
+    if (!has_permission(ctx, required)) → forbidden;
 }
 #+end_src
-
-All create/write operations require ~workspace::workspaces:write~.  Read
-operations require ~workspace::workspaces:read~.
 
 ** Trade scope whitelist (optional further narrowing)
 
@@ -697,10 +710,13 @@ remains Live-only; non-live workspace report definitions run on-demand only.
    Delete the hand-written ~workspace_create.sql~.
 3. Add ~archived~ badge to ~dq_badge_system_populate.sql~.
 4. Add ~workspace_status~ badge mapping rows (active → active, archived → archived).
-5. Add ~workspace::workspaces:archive_any~ and ~workspace::live_workspace:archive~
-   to ~iam_permissions_populate.sql~.
-6. Assign ~workspace::live_workspace:archive~ to ~SuperAdmin~ role;
-   assign ~workspace::workspaces:archive_any~ to ~TenantAdmin~ role.
+5. Add ~workspace::workspaces:archive~, ~workspace::workspaces:archive_any~,
+   and ~workspace::live_workspace:archive~ to ~iam_permissions_populate.sql~.
+   Grant read/write/archive to ~Trading~; read to ~Viewer~.
+   ~archive_any~ and ~live_workspace:archive~ are covered by existing ~*~
+   wildcards on ~TenantAdmin~ and ~SuperAdmin~ respectively. ✓
+6. Enforce permissions in ~workspace_handler.hpp~: list→read, create/trade-scope→write,
+   archive→ownership-aware three-tier check. ✓
 7. Create ~ores_workspaces_tbl~ (bitemporal, UUID PK); seed Live workspace
    with nil UUID.
 8. Create ~ores_workspace_trade_scope_tbl~.

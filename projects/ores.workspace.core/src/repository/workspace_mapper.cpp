@@ -20,7 +20,7 @@
 #include "ores.workspace.core/repository/workspace_mapper.hpp"
 
 #include <stdexcept>
-#include <boost/lexical_cast.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::workspace::repository {
@@ -30,21 +30,20 @@ using namespace ores::database::repository;
 domain::workspace workspace_mapper::map(const workspace_entity& e) {
     domain::workspace ws;
 
-    ws.id = boost::lexical_cast<boost::uuids::uuid>(e.id.value());
+    boost::uuids::string_generator gen;
+    ws.id = gen(e.id.value());
     ws.version = e.version;
     ws.name = e.name;
     ws.description = e.description;
     ws.source_path = e.source_path;
 
     if (e.parent_workspace_id)
-        ws.parent_workspace_id =
-            boost::lexical_cast<boost::uuids::uuid>(*e.parent_workspace_id);
+        ws.parent_workspace_id = gen(*e.parent_workspace_id);
 
     if (e.scope_portfolio_id)
-        ws.scope_portfolio_id =
-            boost::lexical_cast<boost::uuids::uuid>(*e.scope_portfolio_id);
+        ws.scope_portfolio_id = gen(*e.scope_portfolio_id);
 
-    ws.owner_id = boost::lexical_cast<boost::uuids::uuid>(e.owner_id);
+    ws.owner_id = gen(e.owner_id);
     ws.status_code = e.status_code;
     ws.modified_by = e.modified_by;
     ws.performed_by = e.performed_by;

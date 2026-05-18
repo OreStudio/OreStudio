@@ -32,6 +32,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 #include "ores.workspace.core/service/workspace_service.hpp"
 
@@ -48,6 +49,7 @@ inline auto& workspace_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
@@ -68,6 +70,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "workspace::workspaces:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::workspace_service svc(ctx);
         list_workspaces_response resp;
         auto req = decode<list_workspaces_request>(msg);
@@ -98,6 +104,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "workspace::workspaces:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::workspace_service svc(ctx);
         auto req = decode<create_workspace_request>(msg);
         if (!req) {
@@ -131,7 +141,6 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        service::workspace_service svc(ctx);
         auto req = decode<archive_workspace_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workspace_handler_lg(), warn)
@@ -140,6 +149,34 @@ public:
                 .success = false, .message = "Failed to decode request"});
             return;
         }
+
+        // Three-tier permission check per design:
+        //   live workspace    → workspace::live_workspace:archive  (SuperAdmin)
+        //   caller's own ws   → workspace::workspaces:archive      (Trading+)
+        //   another user's ws → workspace::workspaces:archive_any  (TenantAdmin+)
+        const bool is_live =
+            (req->id == ores::utility::uuid::live_workspace_uuid_str);
+
+        service::workspace_service svc(ctx);
+
+        if (is_live) {
+            if (!has_permission(ctx, "workspace::live_workspace:archive")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+        } else {
+            const auto ws = svc.get_workspace(req->id);
+            const bool is_owner = ws.has_value() && ctx.party_id().has_value() &&
+                                  (ws->owner_id == *ctx.party_id());
+            const auto required = is_owner
+                ? "workspace::workspaces:archive"
+                : "workspace::workspaces:archive_any";
+            if (!has_permission(ctx, required)) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+        }
+
         try {
             svc.archive_workspace(req->id, req->modified_by,
                 req->change_reason_code, req->change_commentary);
@@ -194,6 +231,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "workspace::workspaces:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::workspace_service svc(ctx);
         auto req = decode<set_trade_scope_request>(msg);
         if (!req) {
@@ -231,6 +272,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "workspace::workspaces:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::workspace_service svc(ctx);
         auto req = decode<clear_trade_scope_request>(msg);
         if (!req) {

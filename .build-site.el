@@ -27,6 +27,7 @@
 (require 'package)
 (require 'org)
 (require 'org-id)
+(require 'ob-shell)
 (require 'oc-bibtex)
 (require 'ox-publish)
 (require 'org-element)

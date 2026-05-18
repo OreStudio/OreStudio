@@ -237,9 +237,11 @@ the ancestor slugs from the =--parent-dir= path (following the
 
 ** task
 
-- Path :: =versions/<v>/<sprint>/<story>/<task_slug>.org= — a flat file
-  inside the story folder, /not/ a subfolder. Tasks are leaves; only
-  composition nodes (story, sprint, version) get folders.
+- Path :: =versions/<v>/<sprint>/<story>/task_<task_slug>.org= — a
+  flat file inside the story folder, /not/ a subfolder. Tasks are
+  leaves; only composition nodes (story, sprint, version) get
+  folders. The =task_= prefix sorts tasks together (after =story.org=)
+  and makes their type obvious in =ls=.
 - Level :: =s1=
 - Size constraint :: one PR; soft limits ≤ ~10 files changed, ≤ ~400 LOC
   delta, one coherent concept. Tasks exceeding this should be split or

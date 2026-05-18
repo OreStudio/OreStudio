@@ -9,7 +9,7 @@ file that already follows the contract in
 
 | Type | Output path |
 |------|-------------|
-| task | `<parent-dir>/<slug>.org` (flat file under the story folder; tasks are leaves and don't need a folder) |
+| task | `<parent-dir>/task_<slug>.org` (flat file under the story folder; `task_` prefix sorts tasks together and makes their type obvious in `ls`). Pass `--slug add_thing` and the generator prepends `task_` — passing `task_add_thing` works too and isn't double-prefixed. |
 | story | `<parent-dir>/<slug>/story.org` |
 | sprint | `<parent-dir>/<slug>/sprint.org` |
 | version | `<parent-dir>/<slug>/version.org` |

@@ -299,14 +299,21 @@ def main(argv=None):
     rendered = renderer.render(template_text, variables)
 
     # Layouts:
-    # - component: <parent-dir>/<slug>.org    (existing modeling convention)
-    # - recipe:    <parent-dir>/<slug>.org    (e.g. how_do_i_x.org)
+    # - component: <parent-dir>/<slug>.org        (existing modeling convention)
+    # - recipe:    <parent-dir>/<slug>.org        (slug typically how_do_i_*)
     # - knowledge: <parent-dir>/<slug>.org
-    # - task:      <parent-dir>/<slug>.org    (flat file under story folder)
+    # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
+    #              "t" so they sort below story.org and stand apart from any
+    #              future siblings in the story folder)
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
     # - story / sprint / version: <parent-dir>/<slug>/<type>.org
     #   (these are composition nodes; they hold children)
-    if args.type in ("component", "recipe", "knowledge", "task"):
+    if args.type == "task":
+        # Don't double-prefix if the caller already passed task_<slug>.
+        leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type in ("component", "recipe", "knowledge"):
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "skill":

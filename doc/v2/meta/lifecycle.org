@@ -149,13 +149,14 @@ On release, TODO moves to =RELEASED= and a release note is generated.
 
 * Plan lifecycle
 
-Plans are not on a TODO. They live as =plan.org= inside a task or story
-folder.
+Plans are not on a TODO. They live as a =* Plan= section /inside/ the
+task or story document. (Tasks are flat files, not folders, so there
+is no separate =plan.org=.)
 
 - Created when System 1 or System 2 needs to think before acting.
-- Closed when the task lands: decisions distil into the story's
-  =* Decisions= section. The =plan.org= is then deleted or archived in
-  place. Plans /must not/ outlive their task.
+- Closed when the task lands: decisions distil into the parent story's
+  =* Decisions= section. The =* Plan= section is then cleared or
+  summarised into =* Notes=. Plans /must not/ outlive their task.
 
 * Knowledge, recipes, functions
 

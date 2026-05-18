@@ -237,11 +237,17 @@ the ancestor slugs from the =--parent-dir= path (following the
 
 ** task
 
-- Folder :: =versions/<v>/<sprint>/<story>/<task_slug>/task.org=
+- Path :: =versions/<v>/<sprint>/<story>/<task_slug>.org= — a flat file
+  inside the story folder, /not/ a subfolder. Tasks are leaves; only
+  composition nodes (story, sprint, version) get folders.
 - Level :: =s1=
 - Size constraint :: one PR; soft limits ≤ ~10 files changed, ≤ ~400 LOC
   delta, one coherent concept. Tasks exceeding this should be split or
   promoted to stories.
+- Supporting files :: rare. When a task genuinely needs extra artefacts
+  (screenshots, attached data), promote that single task to a folder
+  ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
+  files). The default remains the flat file.
 
 *** Task frontmatter (additions on top of the standard set)
 
@@ -272,6 +278,10 @@ happening right now/; the others describe the work itself.
   this task produce.
 - =* Acceptance= — bulleted criteria. A task is done when these all
   hold.
+- =* Plan= — transient implementation strategy. Written when the agent
+  starts work; distilled into the parent story's =* Decisions= and
+  cleared (or summarised in =* Notes=) when the task closes. Plans do
+  not outlive their task.
 - =* Notes= — chronological log of decisions, observations, discovered
   work. Append-only. Most recent at the bottom, dated.
 - =* Result= — filled when task closes: PR link, commit hashes,
@@ -492,11 +502,13 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 ** plan
 
-- Lives /inside/ a task or story folder as =plan.org=. Not its own
-  top-level folder.
+- Lives /inside/ a task or story document as the =* Plan= section.
+  Not a separate file. (Previously =plan.org= as a sibling file;
+  that was retired when tasks became flat files.)
 - Level :: =s1= (task plan) or =s2= (story plan).
-- Transient :: deleted or archived when the task or story closes;
-  distilled content moves to =* Decisions= on the story.
+- Transient :: cleared or summarised in =* Notes= when the task or
+  story closes; distilled content moves to =* Decisions= on the
+  parent story. Plans do not outlive their task.
 
 ** decision
 

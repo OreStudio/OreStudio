@@ -302,9 +302,11 @@ def main(argv=None):
     # - component: <parent-dir>/<slug>.org    (existing modeling convention)
     # - recipe:    <parent-dir>/<slug>.org    (e.g. how_do_i_x.org)
     # - knowledge: <parent-dir>/<slug>.org
+    # - task:      <parent-dir>/<slug>.org    (flat file under story folder)
     # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
-    # - task / story / sprint / version: <parent-dir>/<slug>/<type>.org
-    if args.type in ("component", "recipe", "knowledge"):
+    # - story / sprint / version: <parent-dir>/<slug>/<type>.org
+    #   (these are composition nodes; they hold children)
+    if args.type in ("component", "recipe", "knowledge", "task"):
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "skill":

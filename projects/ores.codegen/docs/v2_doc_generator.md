@@ -9,7 +9,7 @@ file that already follows the contract in
 
 | Type | Output path |
 |------|-------------|
-| task | `<parent-dir>/<slug>/task.org` |
+| task | `<parent-dir>/<slug>.org` (flat file under the story folder; tasks are leaves and don't need a folder) |
 | story | `<parent-dir>/<slug>/story.org` |
 | sprint | `<parent-dir>/<slug>/sprint.org` |
 | version | `<parent-dir>/<slug>/version.org` |

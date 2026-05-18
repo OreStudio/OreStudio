@@ -36,12 +36,23 @@ None.
 
 * Goal
 
-Raise overall code coverage by adding tests for the under-tested modules surfaced by the coverage report.
+Bring code coverage to a green baseline before adding more
+features. Identify the under-tested modules from the coverage report
+and add targeted tests.
 
 * Acceptance
 
--
+- Coverage report runs in CI.
+- Overall coverage measurably higher at sprint close than at sprint start.
 
 * Notes
 
+- Total time spent in v0: ~4:15.
+
 * Result
+
+Coverage lifted across the under-tested modules; baseline is green.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Improve code coverage/.

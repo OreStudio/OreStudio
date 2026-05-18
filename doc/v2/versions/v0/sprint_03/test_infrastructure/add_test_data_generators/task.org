@@ -36,12 +36,26 @@ None.
 
 * Goal
 
-Add deterministic data generators so each test can build representative input without ad-hoc fixtures.
+Replace the very synthetic hand-rolled test inputs with realistic
+generated data using the faker library. Make generated values consistent
+with the temporal-aware domain types from sprint 02.
 
 * Acceptance
 
--
+- A library of generators that produces representative inputs.
+- Existing tests migrated off ad-hoc fixtures onto the generators.
+- Generator code lives under =ores.synthetic= (renamed from the earlier =ores.fake=).
 
 * Notes
 
+- Total time spent in v0: ~7:40.
+- Renamed =fake= to =synthetic= in the process — better signals the role of the helper.
+
 * Result
+
+=ores.synthetic= library in place; tests build representative inputs from
+it rather than ad-hoc fixtures.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Add generators for test data generation/.

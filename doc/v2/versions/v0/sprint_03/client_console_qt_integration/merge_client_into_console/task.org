@@ -36,12 +36,26 @@ None.
 
 * Goal
 
-Fold the standalone client into the console application so there's one user-facing binary.
+Fold the standalone client into the console application so there's
+one user-facing binary. The client was a thin wrapper that didn't earn
+its keep — adding a =client= mode to the console covers the same
+surface with less ceremony.
 
 * Acceptance
 
--
+- The standalone client binary is removed.
+- Console (renamed to =cli=) gains a =client= mode.
+- Connection details (port, certificate path, etc.) are passed as configuration variables read from the environment.
 
 * Notes
 
+- From the v0 notes: rename console to cli; add a =client= mode; port and other connection params become configuration variables; certificate location becomes a configuration variable; all read from the environment.
+
 * Result
+
+=ores.cli= absorbs the client mode; the standalone =ores.client= binary is
+retired.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Merge client into console/.

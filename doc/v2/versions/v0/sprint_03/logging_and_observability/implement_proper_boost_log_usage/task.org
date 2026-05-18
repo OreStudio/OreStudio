@@ -36,12 +36,27 @@ None.
 
 * Goal
 
-Replace ad-hoc logging with the supported Boost.Log idioms (severity channels, attribute scopes, sinks).
+Replace the project's use of function-local =static= logger objects
+with class-level loggers using idiomatic Boost.Log severity channels,
+attribute scopes, and sinks. The local-static pattern was a suspected
+source of the Valgrind noise the team had been chasing.
 
 * Acceptance
 
--
+- No function-local =static= loggers remain.
+- Loggers live as class-level objects with explicit channels.
+- Valgrind noise from logger construction/destruction goes away (or the trace narrows enough to isolate any remaining real leaks).
 
 * Notes
 
+- Total time spent in v0: ~8:02.
+- Hypothesis going in: local statics for loggers were causing memory-allocation oddities surfacing as Valgrind noise.
+
 * Result
+
+Class-level logging adopted; v0 noted that whatever caused the Valgrind
+chatter is now isolated to OpenSSL (see /Investigate Valgrind leaks/).
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Implement logging according to correct boost.log usage/.

@@ -36,12 +36,28 @@ None.
 
 * Goal
 
-Domain type, repository, and end-to-end import/export path for user accounts.
+Introduce the =account= domain type with its repository, JSON / XML
+codecs, and the end-to-end import/export path. Lays the foundation for
+session-based authentication and any later authorisation work.
 
 * Acceptance
 
--
+- =account= domain type defined.
+- Repository supports CRUD via sqlgen.
+- Account-locking behaviour wired (n failed attempts → locked account).
+- Round-trip tests for the JSON / XML codecs.
 
 * Notes
 
+- Locking behaviour requires writing booleans back to Postgres; a known sqlgen issue blocks direct boolean updates (=getml/sqlgen #74=). v0 worked around it by representing the locked flag as an integer.
+- Reference reading collected at the time: AzerothCore's account model (creating accounts; account record); MongoDB built-in roles.
+- Carries the longer-tail authentication-bootstrap workflow as POSTPONED to a successor sprint.
+
 * Result
+
+Account domain type, repository, and round-trip path land. Lockout logic
+in place via integer-as-bool workaround.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Add account support/ and /Add locking up logic/.

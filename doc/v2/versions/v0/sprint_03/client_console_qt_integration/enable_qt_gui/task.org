@@ -36,12 +36,28 @@ None.
 
 * Goal
 
-Wire the Qt GUI to the cobalt-based client so it runs over the new socket layer.
+Bring the Qt GUI back online. It had been disabled in sprint 02
+because of build pressure (Qt-from-vcpkg consumed too much disk on CI).
+Now that the dynamic-library work has reduced disk pressure we can
+turn Qt back on.
 
 * Acceptance
 
--
+- The Qt GUI compiles and launches against the cobalt-based client.
+- CI builds the Qt artefacts as part of the standard pipeline.
 
 * Notes
 
+- Total time spent in v0: ~4:13.
+- Attempted first: remove the SQL dependency to see if Qt fits without it. Not enough.
+- Then attempted: dynamic-library build (separate task). Not sufficient either.
+- Adopted: distro-supplied Qt via overlays. Works on CI and dev machines.
+
 * Result
+
+Qt GUI re-enabled; runs over the cobalt client. The dynamic-library +
+distro-Qt combination keeps CI disk usage under budget.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Enable qt gui/.

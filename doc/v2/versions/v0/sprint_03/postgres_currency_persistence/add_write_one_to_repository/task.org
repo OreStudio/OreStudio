@@ -36,12 +36,25 @@ None.
 
 * Goal
 
-Add a single-row write entry point to the repository alongside batch writes.
+Add a =write_one= entry point to the repository API alongside the
+existing batch =write_many=. The current API forces callers to build a
+vector for a single insert; mirroring MongoDB's pattern of having both
+is more honest about the call sites.
 
 * Acceptance
 
--
+- Repository exposes both =write_one= and =write_many=.
+- Existing call sites that previously wrapped single rows in a vector are updated to use =write_one=.
 
 * Notes
 
+- From the v0 entry: "We should follow the mongo patterns and have a write one and write many repository methods. At present we have to create a vector just to write a single entity."
+
 * Result
+
+=write_one= available across repositories; redundant single-element vectors
+removed from call sites.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Add write one to repository/.

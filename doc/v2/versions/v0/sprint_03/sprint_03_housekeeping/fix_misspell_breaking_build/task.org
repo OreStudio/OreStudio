@@ -36,12 +36,25 @@ None.
 
 * Goal
 
-Repair a misspelled symbol that surfaces as a build break.
+Fix a build break caused by =misspell-fixer= choking on URL typos in
+the project's org-mode files. The fixer was treating bits of the URL as
+words and trying to correct them, producing nonsense edits or failing
+outright.
 
 * Acceptance
 
--
+- The build runs =misspell-fixer -svn .= without errors.
+- Existing org-mode URLs are accepted (i.e. the rule that triggered the fault is excluded or the misspell-fixer config is adjusted).
 
 * Notes
 
+- Total time spent in v0: ~0:12.
+- To reproduce locally: =misspell-fixer -svn .= from the project root.
+
 * Result
+
+Build no longer breaks on URL-driven misspell-fixer faults.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Fix misspell that causes build to break/.

@@ -36,12 +36,24 @@ None.
 
 * Goal
 
-Persist currency reference data through the Postgres repository layer end-to-end.
+Add the read and write paths for currencies through a Postgres
+repository — closing the loop on the sprint 02 sqlgen / reflect-cpp
+work for the first reference-data type.
 
 * Acceptance
 
--
+- Currencies can be persisted to Postgres.
+- Currencies can be loaded from Postgres into the in-memory model.
+- Existing XML / JSON round-trip tests continue to pass alongside the new Postgres path.
 
 * Notes
 
+- From the v0 entry: "We need to have the ability to read and write currencies from a postgres database."
+
 * Result
+
+Currency repository persists and loads through Postgres.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Add postgres support for currency/.

@@ -36,12 +36,24 @@ None.
 
 * Goal
 
-Add a CMake preset and toolchain wiring for clang-cl on Windows alongside MSVC.
+Set up a CMake preset and toolchain wiring for clang-cl on Windows
+alongside the existing MSVC preset. Lets us share the bulk of the
+Linux clang warning configuration on Windows builds.
 
 * Acceptance
 
--
+- A working =windows-msvc-clang-cl-debug-ninja= preset.
+- The preset configures and builds in CI.
 
 * Notes
 
+- From the v0 entry: "We need to setup a build for MSVC clang."
+
 * Result
+
+=windows-msvc-clang-cl-{debug,release}-ninja= presets added in
+=CMakePresets.json=; CI exercises both.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /Add support for =windows-msvc-clang-cl=/.

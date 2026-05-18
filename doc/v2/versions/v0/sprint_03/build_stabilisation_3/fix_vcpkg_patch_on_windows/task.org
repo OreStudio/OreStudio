@@ -36,12 +36,26 @@ None.
 
 * Goal
 
-Diagnose and work around vcpkg failing to apply a port patch on Windows.
+Diagnose and work around vcpkg failing to apply our sqlgen port
+patches on Windows. The error was =Applying patch failed: error:
+corrupt patch at line 21= — patches that applied cleanly on Linux were
+rejected on Windows runners.
 
 * Acceptance
 
--
+- sqlgen vcpkg port builds on Windows CI.
+- Patches apply without =corrupt patch= errors.
 
 * Notes
 
+- Total time spent in v0: ~1:46.
+- Root cause: line endings. Patch files were being checked out with CRLF on Windows; the patch tool then saw the trailing CRs as corruption.
+- Fix: =.gitattributes= entry to force =.patch= files to binary mode (LF-only).
+
 * Result
+
+sqlgen patches apply on Windows CI runs.
+
+* Legacy reference
+
+=doc/agile/v0/sprint_backlog_03.org= → /vcpkg cannot apply patch on windowws/ (sic).

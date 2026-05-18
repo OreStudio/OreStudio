@@ -47,15 +47,17 @@ class LeiEntityPicker;
 /**
  * @brief Wizard for first-time tenant setup after provisioning.
  *
- * Guides a tenant admin through initial setup:
+ * Collect phase (zero backend writes):
  * 1. Welcome              - explains the setup process
  * 2. Bundle Selection     - choose a reference data bundle to publish
- * 3. Bundle Install       - publish the selected bundle
- * 4. Data Source          - choose GLEIF registry or synthetic data
- * 5. Party Setup          - (GLEIF only) select root LEI entity
- * 6. Party Organisation   - publish party hierarchy and org structure;
- *                           associates the tenant admin with all created parties
- * 7. Summary              - clear bootstrap flag and show results
+ * 3. Data Source          - choose GLEIF registry or synthetic data
+ * 4. Party Setup          - (GLEIF only) select root LEI entity and dataset size
+ *
+ * Execute phase (single page, all backend work):
+ * 5. Execute              - publishes bundle, runs party setup, associates admin,
+ *                           clears bootstrap flag; shows live workflow progress
+ *
+ * 6. Summary              - shows results; no further backend calls
  *
  * This wizard appears automatically on first login to a tenant that is in
  * bootstrap mode. It clears the bootstrap flag on completion or cancel.
@@ -80,10 +82,9 @@ public:
     enum PageId {
         Page_Welcome,
         Page_BundleSelection,
-        Page_BundleInstall,
         Page_DataSourceSelection,
         Page_PartySetup,
-        Page_PartyOrganisation,
+        Page_Execute,
         Page_Summary
     };
 
@@ -165,7 +166,7 @@ public:
     void setPartiesLinkedCount(int n) { partiesLinkedCount_ = n; }
 
     /**
-     * @brief Clears the system.bootstrap_mode flag for the current tenant.
+     * @brief Clears the system.bootstrap_mode flag and marks the tenant active.
      */
     void clearBootstrapFlag();
 
@@ -205,10 +206,9 @@ private:
 // Forward declarations
 class ProvisioningWelcomePage;
 class BundleSelectionPage;
-class BundleInstallPage;
 class TenantDataSourceSelectionPage;
 class TenantPartySetupPage;
-class TenantPartyOrganisationPage;
+class TenantExecutePage;
 class TenantApplyAndSummaryPage;
 
 /**
@@ -246,39 +246,6 @@ private:
     QComboBox* bundleCombo_;
     QLabel* descriptionLabel_;
     QLabel* statusLabel_;
-};
-
-/**
- * @brief Page for async publication of the selected bundle.
- */
-class BundleInstallPage final : public QWizardPage {
-    Q_OBJECT
-
-private:
-    inline static std::string_view logger_name =
-        "ores.qt.bundle_install_page";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    explicit BundleInstallPage(TenantProvisioningWizard* wizard);
-    void initializePage() override;
-    bool isComplete() const override;
-
-private:
-    void startPublish();
-    void appendLog(const QString& message);
-
-    TenantProvisioningWizard* wizard_;
-    QLabel* statusLabel_;
-    QProgressBar* progressBar_;
-    QTextEdit* logOutput_;
-    bool publishComplete_ = false;
-    bool publishSuccess_ = false;
 };
 
 /**
@@ -349,15 +316,22 @@ private:
 };
 
 /**
- * @brief Page that publishes party hierarchy (GLEIF or synthetic) and
- *        associates the tenant admin with all created parties.
+ * @brief Executes all backend work in sequence and shows live progress.
+ *
+ * Phase 1: Publish base bundle (with LEI params when GLEIF mode + root LEI selected).
+ *          Workflow progress is shown via WorkflowStepsWidget.
+ * Phase 2: Synthetic organisation generation (synthetic mode only).
+ * Phase 3: Associate tenant admin with all Operational parties.
+ * Phase 4: Clear bootstrap flag and mark tenant active.
+ *
+ * The Next button is only enabled after all phases complete successfully.
  */
-class TenantPartyOrganisationPage final : public QWizardPage {
+class TenantExecutePage final : public QWizardPage {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.tenant_party_organisation_page";
+        "ores.qt.tenant_execute_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -366,7 +340,7 @@ private:
     }
 
 public:
-    explicit TenantPartyOrganisationPage(TenantProvisioningWizard* wizard);
+    explicit TenantExecutePage(TenantProvisioningWizard* wizard);
     void initializePage() override;
     bool isComplete() const override;
 
@@ -374,23 +348,27 @@ private slots:
     void onWorkflowComplete(bool success);
 
 private:
-    void startPublish();
     void startBundlePublish();
-    void startPartyAssociation();
     void startSyntheticGeneration();
+    void startPartyAssociation();
+    void startFinalize();
+    void markFailed(const QString& errorMsg);
+    void appendLog(const QString& msg);
 
     TenantProvisioningWizard* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
     WorkflowStepsWidget* stepsWidget_ = nullptr;
-    bool publishComplete_ = false;
-    bool publishSuccess_ = false;
-    // Stored for party association phase (phase 2)
+    QTextEdit* logOutput_;
+
+    bool allComplete_ = false;
+    bool allSuccess_ = false;
     std::string publishedBy_;
+    int partiesLinked_ = 0;
 };
 
 /**
- * @brief Final summary page that clears the bootstrap flag.
+ * @brief Final summary page; purely informational, no backend calls.
  */
 class TenantApplyAndSummaryPage final : public QWizardPage {
     Q_OBJECT

@@ -403,3 +403,10 @@ To add a new model-template pair:
 1. Add your JSON model to the =models/= directory
 2. Add your Mustache template to =library/templates/=
 3. Update the mapping in =src/generator.py= in the =get_template_mappings()= function
+
+* Recipes
+
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — venv setup, wrapper invocation, profiles,
+  output location.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generate task / story / sprint /
+  version org documents from Mustache templates.

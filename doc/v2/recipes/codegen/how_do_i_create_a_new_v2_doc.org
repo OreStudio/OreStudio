@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 3153aa4b-23d4-4111-9710-5a4971102edc
+:END:
+#+title: How do I create a new v2 doc?
+#+description: Use generate_v2_doc.sh to create a task, story, sprint, or version with frontmatter, UUID, and skeleton sections pre-filled.
+#+type: recipe
+#+level: cross
+#+filetags: :codegen:v2_docs:templates:agile:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the contract every generated document follows (frontmatter,
+sections, TODO vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]]. For background on
+the generator itself, see [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
+
+* Question
+
+How do I create a new v2 information-architecture document — a task,
+story, sprint, or version — without hand-writing the frontmatter?
+
+* Answer
+
+Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug,
+parent directory, and the document's title and description. The
+script fills in a fresh UUID, today's dates, the required frontmatter,
+an initial =* Status= headline at the type's default TODO state, and
+the skeleton sections — leaving only the content for you to fill in.
+
+** New task
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type task --slug fix_broken_link \
+  --parent-dir doc/v2/versions/v0/sprint_17/audit_tooling \
+  --title "Fix broken id-links surfaced by audit" \
+  --description "Audit reports two unresolved id-links; fix them." \
+  --tags "audit,bug_fix" \
+  --parent-id <uuid-of-parent-story> \
+  --parent-slug audit_tooling \
+  --parent-title "Audit tooling"
+#+end_src
+
+** New story
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type story --slug audit_tooling \
+  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --title "Audit tooling" \
+  --description "Scripts that enforce the v2 information-architecture invariants." \
+  --tags "audit,scripts" \
+  --parent-id <uuid-of-sprint-17> \
+  --parent-slug sprint_17 \
+  --parent-title "Sprint 17"
+#+end_src
+
+** New story continuing from a previous sprint
+
+Add =--predecessor-id= and =--predecessor-title=. The script renders
+=#+predecessor:= in the frontmatter and a =Continued from:= line in
+the body:
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type story --slug currencies_temporal_continued \
+  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --title "Currencies temporal (continued)" \
+  --description "Pick up where sprint 02 left off." \
+  --tags "currencies,temporal,reference_data" \
+  --parent-id <uuid-of-sprint-17> \
+  --parent-slug sprint_17 \
+  --parent-title "Sprint 17" \
+  --predecessor-id ed5bc735-fb54-4ce0-9a08-6dab88c242d0 \
+  --predecessor-title "Currencies temporal and export"
+#+end_src
+
+After the script runs, /manually/ update the predecessor story: add
+=#+successor: <new-uuid>= to its frontmatter and a
+=Continued in: [[id:<new-uuid>][...]]= note in its =* Decisions=
+section.
+
+** New sprint
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type sprint --slug sprint_17 \
+  --parent-dir doc/v2/versions/v0 \
+  --title "Sprint 17" \
+  --description "Sprint 17 — describe its mission in one sentence." \
+  --tags "v0" \
+  --parent-id e6fd30ed-963e-4705-b414-91bf471c23d0 \
+  --parent-slug v0 \
+  --parent-title "Version 0"
+#+end_src
+
+** New version
+
+#+begin_src sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type version --slug v1 \
+  --parent-dir doc/v2/versions \
+  --title "Version 1" \
+  --description "First production release." \
+  --tags "v1"
+#+end_src
+
+* What the script does
+
+- Generates a fresh UUID and puts it in =:ID:=.
+- Sets =#+created= and =#+updated= to today.
+- Adds =--parent-slug= as a filetag, so the parent-tag invariant holds.
+- Renders the type's Mustache template from
+  =projects/ores.codegen/library/templates/=.
+- Creates =<parent-dir>/<slug>/= and writes the file. Prints the path
+  it wrote.
+- Refuses to overwrite an existing file unless =--force= is passed.
+
+* Tested by
+
+Manual smoke tests during initial development. No automated test yet
+— [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] does not currently exercise the v2-doc generator in CI.
+
+* See also
+
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++ model-driven generator on the same
+  infrastructure.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the contract every generated document follows.
+- [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
+- =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
+  reference.

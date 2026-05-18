@@ -68,10 +68,10 @@ begin
     if not exists (
         select 1 from ores_iam_tenants_tbl
         where id = v_tenant_id
-        and status = 'active'
+        and status in ('active', 'bootstrapping')
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid or inactive tenant_id: %. Tenant must exist and be active.',
+        raise exception 'Invalid or inactive tenant_id: %. Tenant must exist and be active or bootstrapping.',
             v_tenant_id using errcode = '23503';
     end if;
 

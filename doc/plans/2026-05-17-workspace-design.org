@@ -2,7 +2,7 @@
 #+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSED
+#+STATUS: REVISED (2026-05-18: bitemporal redesign, audit trail, ownership permissions, badge status)
 #+OPTIONS: toc:t num:nil
 
 * Related Plans
@@ -13,6 +13,10 @@
 - [[file:2026-03-01-reporting-component-design.org][Reporting Component Design]] — defines ~report_definition~ and
   ~risk_report_config~.  Workspaces extend this infrastructure by adding
   ~workspace_id~ to report definitions; no new tables are introduced.
+- [[file:2026-03-28-badge-system-design.org][Badge System Design]] — badge infrastructure reused for workspace
+  ~status_code~ rendering.
+- [[file:2026-05-18-codegen-iam-permissions.org][Codegen IAM Permissions]] — will eventually auto-generate the workspace
+  permission entries added in this revision.
 
 * Dependencies
 
@@ -136,16 +140,17 @@ Key properties:
 - *Non-promotable directly*: data cannot be directly promoted from a workspace
   to live.  A deliberate /copy/ operation is used instead.
 
-** Workspace 0 — the live workspace
+** Live workspace — the nil UUID
 
-Workspace with ~id = 0~ is the live data space.  It always exists, cannot be
-deleted or archived, and has no parents.  It is the root of all inheritance
-chains.  All existing data in OreStudio implicitly belongs to workspace 0.
+The Live workspace uses the well-known nil UUID
+(~00000000-0000-0000-0000-000000000000~) as its stable identifier.  It always
+exists, is the root of all inheritance chains, and is protected against
+archival by a dedicated elevated permission (see §Permissions below).
 
-Using ~id = 0~ rather than ~NULL~ means:
-- Uniform FK semantics across all tables — no nullable FK special-casing.
-- Existing queries need only a ~WHERE workspace_id = 0~ clause added.
-- Workspace 0 participates in copy and inheritance like any other workspace.
+Using the nil UUID rather than an integer ~0~ aligns with the bitemporal UUID
+primary key on all other first-class entities.  All tables that previously
+defaulted ~workspace_id~ to integer ~0~ default instead to
+~ores_utility_nil_uuid_fn()~.
 
 * Data Model
 
@@ -154,29 +159,152 @@ Using ~id = 0~ rather than ~NULL~ means:
 Single-parent inheritance and portfolio scope live directly on the workspace
 row.  No separate parents or scope tables are needed at the workspace level.
 
+The workspace table is *bitemporal*: every mutation creates a new version row,
+and the full history of all changes is retained.  This is the same pattern
+used by all first-class domain entities (service definitions, report
+definitions, etc.).
+
 #+begin_src sql
 create table ores_workspaces_tbl (
-    id                  integer      not null generated always as identity primary key,
+    id                  uuid         not null,
+    version             integer      not null,
     name                text         not null,
     description         text         not null default '',
-    source_path         text         not null default '',  -- original import path, if any
-    parent_workspace_id integer      null references ores_workspaces_tbl(id),
-    -- Portfolio scope: NULL = inherit all books from parent chain.
-    -- Non-null = only trades in the books of this portfolio are visible.
-    scope_portfolio_id  uuid         null references ores_trading_portfolios_tbl(id),
-    created_at          timestamptz  not null default now(),
-    created_by          text         not null,
-    status              text         not null default 'active',  -- active | archived
-    constraint ores_workspaces_name_uq unique (name),
-    constraint ores_workspaces_no_self_parent check (id != parent_workspace_id)
+    source_path         text         not null default '',
+    parent_workspace_id uuid         null references ores_workspaces_tbl(id),
+    scope_portfolio_id  uuid         null,
+    owner_id            uuid         not null,  -- FK to ores_iam_accounts_tbl
+    status_code         text         not null default 'active',
+    modified_by         text         not null,
+    performed_by        text         not null,
+    change_reason_code  text         not null,
+    change_commentary   text         not null,
+    valid_from          timestamptz  not null,
+    valid_to            timestamptz  not null,
+    primary key (id, valid_from, valid_to),
+    exclude using gist (id with =, tstzrange(valid_from, valid_to) with &&),
+    check (valid_from < valid_to),
+    check (id <> ores_utility_nil_uuid_fn()),
+    check (status_code in ('active', 'archived')),
+    check (parent_workspace_id is distinct from id)
 );
 
--- Seed the live workspace (id must be 0; override the identity sequence).
--- Live has no parent and no portfolio scope — it sees everything.
-insert into ores_workspaces_tbl (id, name, description, created_by)
-overriding system value
-values (0, 'Live', 'Live production data space', 'system');
+-- Indexes for common access patterns.
+create unique index workspaces_name_uniq_idx
+    on ores_workspaces_tbl(name)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index workspaces_status_idx
+    on ores_workspaces_tbl(status_code)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Insert trigger: version management, valid_from/valid_to, audit fields.
+-- Delete rule: set valid_to = now() (soft close).
+-- Both generated by the standard bitemporal codegen template.
+
+-- Seed the Live workspace using the nil UUID as its stable identifier.
+-- Owner is the system account; no parent; no portfolio scope.
+insert into ores_workspaces_tbl
+    (id, version, name, description, owner_id, status_code,
+     modified_by, performed_by, change_reason_code, change_commentary,
+     valid_from, valid_to)
+values (
+    ores_utility_nil_uuid_fn(), 1, 'Live', 'Live production data space',
+    ores_utility_nil_uuid_fn(), 'active',
+    'system', 'system', 'initial_data', 'Seed Live workspace',
+    now(), ores_utility_infinity_timestamp_fn()
+);
 #+end_src
+
+*** C++ domain struct (bitemporal)
+
+#+begin_src cpp
+struct workspace final {
+    boost::uuids::uuid id = {};
+    int version = 0;
+    std::string name;
+    std::string description;
+    std::string source_path;
+    std::optional<boost::uuids::uuid> parent_workspace_id;
+    std::optional<boost::uuids::uuid> scope_portfolio_id;
+    boost::uuids::uuid owner_id = {};
+    std::string status_code;        // 'active' | 'archived'
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at = {};
+};
+#+end_src
+
+Both the SQL and C++ struct are generated from the codegen model
+(~workspace_domain_entity.json~) using the standard temporal templates.
+The hand-written ~workspace_create.sql~ is deleted once codegen output
+is verified.
+
+** Workspace status — badge integration
+
+Workspace status is backed by the badge system rather than a raw text column.
+A new code domain ~workspace_status~ maps each status code to a visual badge:
+
+| ~status_code~ | Badge code | Display | Colour |
+|--------------+------------+---------+--------|
+| ~active~     | ~active~   | Active  | green (#22c55e) |
+| ~archived~   | ~archived~ | Archived | red (#ef4444) |
+
+The ~active~ badge already exists in ~ores_dq_badge_definitions_tbl~.  A new
+~archived~ badge (danger/red) is added to ~dq_badge_system_populate.sql~
+alongside the ~workspace_status~ mapping rows.  The Qt workspace list renders
+each row's status column via the badge-lookup infrastructure, consistent with
+party, book, portfolio, and report FSM status rendering.
+
+** Permissions
+
+Three tiers of workspace permission are enforced in the NATS handler.  The
+handler holds a reference to the IAM authorisation service and validates the
+caller's permissions against their JWT claims before any service operation.
+
+*** Permission definitions
+
+| Permission | Purpose |
+|------------+---------|
+| ~workspace::workspaces:read~ | List and view workspaces |
+| ~workspace::workspaces:write~ | Create workspaces; update own workspace metadata |
+| ~workspace::workspaces:archive~ | Archive a workspace the caller owns |
+| ~workspace::workspaces:archive_any~ | Archive any workspace regardless of ownership |
+| ~workspace::live_workspace:archive~ | Archive the Live (nil UUID) workspace — highly restricted |
+| ~workspace::*~ | Full access (held by WorkspaceService service account) |
+
+*** Role assignments
+
+| Permission | Default role holders |
+|------------+---------------------|
+| ~workspace::workspaces:read~ | All authenticated users (via tenant default grants) |
+| ~workspace::workspaces:write~ | All authenticated users |
+| ~workspace::workspaces:archive~ | All authenticated users (own workspaces only) |
+| ~workspace::workspaces:archive_any~ | ~TenantAdmin~ |
+| ~workspace::live_workspace:archive~ | ~SuperAdmin~ only |
+
+*** Handler enforcement — archive operation
+
+#+begin_src cpp
+void archive(ores::nats::message msg) {
+    auto ctx = make_request_context(ctx_, msg, verifier_);
+    const auto target_id = req.id;
+    const bool is_live = (target_id == ores::utility::nil_uuid());
+    const bool is_owner = svc.is_owner(target_id, ctx.party_id());
+
+    if (is_live)
+        require_permission(ctx, "workspace::live_workspace:archive");
+    else if (!is_owner)
+        require_permission(ctx, "workspace::workspaces:archive_any");
+    else
+        require_permission(ctx, "workspace::workspaces:archive");
+}
+#+end_src
+
+All create/write operations require ~workspace::workspaces:write~.  Read
+operations require ~workspace::workspaces:read~.
 
 ** Trade scope whitelist (optional further narrowing)
 
@@ -186,8 +314,8 @@ whitelist provides exact selection.
 
 #+begin_src sql
 create table ores_workspace_trade_scope_tbl (
-    workspace_id  integer  not null references ores_workspaces_tbl(id),
-    trade_id      uuid     not null,  -- references ores_trading_trades_tbl(id)
+    workspace_id  uuid  not null,  -- references current version of ores_workspaces_tbl
+    trade_id      uuid  not null,  -- references ores_trading_trades_tbl(id)
     primary key (workspace_id, trade_id)
 );
 #+end_src
@@ -226,15 +354,19 @@ array:
 
 #+begin_src sql
 with recursive chain(id, depth) as (
-    select id, 0 from ores_workspaces_tbl where id = :target_workspace_id
+    select id, 0
+    from ores_workspaces_tbl
+    where id = :target_workspace_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
     union all
     select w.parent_workspace_id, c.depth + 1
     from ores_workspaces_tbl w
     join chain c on c.id = w.id
     where w.parent_workspace_id is not null
+      and w.valid_to = ores_utility_infinity_timestamp_fn()
 )
 select id from chain order by depth;
--- Returns e.g. [8, 5, 0] for workspace 8
+-- Returns e.g. [<uuid-8>, <uuid-5>, <nil-uuid>] for a workspace two levels deep
 #+end_src
 
 This array is passed as ~:resolution_order~ to all workspace-aware queries.
@@ -245,8 +377,7 @@ Every table that holds user or import data gains a ~workspace_id~ column:
 
 #+begin_src sql
 alter table <table_name>
-    add column workspace_id integer not null default 0
-    references ores_workspaces_tbl(id);
+    add column workspace_id uuid not null default ores_utility_nil_uuid_fn();
 
 create index on <table_name> (workspace_id);
 #+end_src
@@ -541,16 +672,33 @@ remains Live-only; non-live workspace report definitions run on-demand only.
 
 * Implementation Phases
 
-** Phase 1: Core schema
+** Phase 1: Codegen model and core schema
 
-1. Create ~ores_workspaces_tbl~ with ~parent_workspace_id~ and
-   ~scope_portfolio_id~ nullable FKs; seed Live workspace (~id = 0~).
-2. Create ~ores_workspace_trade_scope_tbl~.
-3. Add ~workspace_id integer not null default 0~ to all affected tables.
-4. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
-   ~parent_workspace_id~ inserts/updates.
-5. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~.
-6. Run ~recreate_database.sh~; validate schemas.
+1. Rewrite ~projects/ores.codegen/models/workspace/workspace_domain_entity.json~:
+   - Change primary key from ~integer~ to ~uuid~.
+   - Add ~owner_id~ (uuid, not null).
+   - Rename ~status~ → ~status_code~; update check constraint values.
+   - Remove ~created_by~ / ~created_at~ (absorbed by bitemporal audit columns).
+   - The temporal template auto-generates ~version~, ~modified_by~,
+     ~performed_by~, ~change_reason_code~, ~change_commentary~, ~valid_from~,
+     ~valid_to~ and the insert trigger / delete rule.
+2. Run codegen; verify generated ~workspace_create.sql~ and ~workspace.hpp~.
+   Delete the hand-written ~workspace_create.sql~.
+3. Add ~archived~ badge to ~dq_badge_system_populate.sql~.
+4. Add ~workspace_status~ badge mapping rows (active → active, archived → archived).
+5. Add ~workspace::workspaces:archive_any~ and ~workspace::live_workspace:archive~
+   to ~iam_permissions_populate.sql~.
+6. Assign ~workspace::live_workspace:archive~ to ~SuperAdmin~ role;
+   assign ~workspace::workspaces:archive_any~ to ~TenantAdmin~ role.
+7. Create ~ores_workspaces_tbl~ (bitemporal, UUID PK); seed Live workspace
+   with nil UUID.
+8. Create ~ores_workspace_trade_scope_tbl~.
+9. Add ~workspace_id uuid not null default ores_utility_nil_uuid_fn()~ to all
+   affected tables.
+10. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
+    ~parent_workspace_id~ inserts/updates (updated for UUID FK).
+11. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~.
+12. Run ~recreate_database.sh -k -y~; validate schemas.
 
 ** Phase 2: Service layer
 
@@ -611,8 +759,14 @@ remains Live-only; non-live workspace report definitions run on-demand only.
    as data override).  UI should show which workspace a report definition comes
    from.
 
-3. *Archive semantics*: proposed: immediate hide from normal selectors; data
-   retained; restoration allowed via explicit "show archived" filter.
+3. *Archive semantics*: resolved.  Archive is a bitemporal soft-close (sets
+   ~valid_to~ = now; data retained).  Status badge changes to red/Archived.
+   Archived workspaces are hidden from normal selectors; a "Show archived"
+   filter reveals them.  Restoration is an explicit re-open write.  The Live
+   workspace cannot be archived without ~workspace::live_workspace:archive~
+   (SuperAdmin only).  A user may archive their own workspace with
+   ~workspace::workspaces:archive~; archiving another user's workspace requires
+   ~workspace::workspaces:archive_any~ (TenantAdmin).
 
 4. *Workspace storage reporting*: large ORE sample imports may need per-workspace
    row counts or storage estimates visible in the Data Workshop.  The product

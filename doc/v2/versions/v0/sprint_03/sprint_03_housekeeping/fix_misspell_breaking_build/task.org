@@ -5,7 +5,7 @@
 #+description: Repair a misspelled symbol that surfaces as a build break.
 #+type: task
 #+level: s1
-#+filetags: :build:bug_fix:sprint_03_housekeeping:
+#+filetags: :build:bug_fix:sprint_03_housekeeping:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

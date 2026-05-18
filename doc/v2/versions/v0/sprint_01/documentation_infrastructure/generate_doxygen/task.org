@@ -5,7 +5,7 @@
 #+description: Wire Doxygen into the build and publish its output as part of the project site.
 #+type: task
 #+level: s1
-#+filetags: :documentation:doxygen:api:documentation_infrastructure:
+#+filetags: :documentation:doxygen:api:documentation_infrastructure:sprint_01:v0:
 #+owner: marco
 #+created: 2024-07-01
 #+updated: 2024-07-01

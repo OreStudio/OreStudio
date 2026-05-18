@@ -5,7 +5,7 @@
 #+description: Replace the hand-rolled XML parsing path with reflect-cpp's XML codec.
 #+type: task
 #+level: s1
-#+filetags: :serialisation:reflect_cpp:xml:refactor:modernise_serialisation_and_storage:
+#+filetags: :serialisation:reflect_cpp:xml:refactor:modernise_serialisation_and_storage:sprint_02:v0:
 #+owner: marco
 #+created: 2025-09-29
 #+updated: 2025-10-05

@@ -5,7 +5,7 @@
 #+description: Bring Windows and macOS builds to green; sort vcpkg binary caching; remove ImGui; suppress Valgrind noise.
 #+type: story
 #+level: s2
-#+filetags: :build:ci:windows:macos:vcpkg:sprint_02:
+#+filetags: :build:ci:windows:macos:vcpkg:sprint_02:v0:
 #+created: 2025-08-01
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED

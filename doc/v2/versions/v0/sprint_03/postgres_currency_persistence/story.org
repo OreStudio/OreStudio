@@ -5,7 +5,7 @@
 #+description: Currency repository write path, service command-line DB args, staging directory layout.
 #+type: story
 #+level: s2
-#+filetags: :currencies:postgres:storage:sprint_03:
+#+filetags: :currencies:postgres:storage:sprint_03:v0:
 #+created: 2025-11-05
 #+updated: 2025-11-25
 #+todo: BACKLOG STARTED | DONE ABANDONED

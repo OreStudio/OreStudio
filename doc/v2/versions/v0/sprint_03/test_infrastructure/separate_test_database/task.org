@@ -5,7 +5,7 @@
 #+description: Use a dedicated Postgres database for tests so they don't collide with the dev/app database.
 #+type: task
 #+level: s1
-#+filetags: :testing:postgres:isolation:test_infrastructure:
+#+filetags: :testing:postgres:isolation:test_infrastructure:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

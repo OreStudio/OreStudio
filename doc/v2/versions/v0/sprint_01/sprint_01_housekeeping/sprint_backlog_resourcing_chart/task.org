@@ -5,7 +5,7 @@
 #+description: Produce a per-story resourcing bar chart from the sprint's clocktable for the sprint report.
 #+type: task
 #+level: s1
-#+filetags: :agile:reporting:instrumentation:sprint_01_housekeeping:
+#+filetags: :agile:reporting:instrumentation:sprint_01_housekeeping:sprint_01:v0:
 #+owner: marco
 #+created: 2024-07-15
 #+updated: 2024-07-21

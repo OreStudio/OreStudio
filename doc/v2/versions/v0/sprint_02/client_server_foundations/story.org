@@ -5,7 +5,7 @@
 #+description: Introduce a client/server split via a cobalt-based runtime, a comms library, and risk messaging — recording GRPC/0MQ pivots.
 #+type: story
 #+level: s2
-#+filetags: :client_server:cobalt:comms:messaging:sprint_02:
+#+filetags: :client_server:cobalt:comms:messaging:sprint_02:v0:
 #+created: 2025-08-15
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED

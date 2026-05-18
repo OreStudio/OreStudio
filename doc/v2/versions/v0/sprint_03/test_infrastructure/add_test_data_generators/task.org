@@ -5,7 +5,7 @@
 #+description: Add deterministic data generators so each test can build representative input without ad-hoc fixtures.
 #+type: task
 #+level: s1
-#+filetags: :testing:generators:fixtures:test_infrastructure:
+#+filetags: :testing:generators:fixtures:test_infrastructure:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

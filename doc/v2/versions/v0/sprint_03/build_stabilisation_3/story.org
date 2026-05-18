@@ -5,7 +5,7 @@
 #+description: Windows clang-cl, dynamic libraries, vcpkg patching on Windows, Postgres in CI.
 #+type: story
 #+level: s2
-#+filetags: :build:ci:windows:sprint_03:
+#+filetags: :build:ci:windows:sprint_03:v0:
 #+created: 2025-11-01
 #+updated: 2025-11-15
 #+todo: BACKLOG STARTED | DONE ABANDONED

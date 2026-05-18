@@ -5,7 +5,7 @@
 #+description: Introduce a top-level container for ORE example data so groups of related files can be loaded together.
 #+type: task
 #+level: s1
-#+filetags: :data:examples:structure:currencies_temporal_and_export:
+#+filetags: :data:examples:structure:currencies_temporal_and_export:sprint_02:v0:
 #+owner: marco
 #+created: 2025-08-15
 #+updated: 2025-08-25

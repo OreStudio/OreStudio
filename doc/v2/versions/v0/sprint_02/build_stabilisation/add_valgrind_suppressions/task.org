@@ -5,7 +5,7 @@
 #+description: Suppress known third-party false positives so Valgrind output highlights real issues.
 #+type: task
 #+level: s1
-#+filetags: :build:valgrind:ci:bug_fix:build_stabilisation:
+#+filetags: :build:valgrind:ci:bug_fix:build_stabilisation:sprint_02:v0:
 #+owner: marco
 #+created: 2025-10-10
 #+updated: 2025-10-15

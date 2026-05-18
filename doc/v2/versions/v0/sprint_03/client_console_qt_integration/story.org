@@ -5,7 +5,7 @@
 #+description: Merge the client into the console, run the Qt GUI over the new socket layer, locking and Prodigy tag work.
 #+type: story
 #+level: s2
-#+filetags: :client:qt:ux:sprint_03:
+#+filetags: :client:qt:ux:sprint_03:v0:
 #+created: 2025-11-15
 #+updated: 2025-12-15
 #+todo: BACKLOG STARTED | DONE ABANDONED

@@ -5,7 +5,7 @@
 #+description: Integrate reflect-cpp into the build and use it to generate JSON serialisers for the existing types.
 #+type: task
 #+level: s1
-#+filetags: :serialisation:reflect_cpp:json:modernise_serialisation_and_storage:
+#+filetags: :serialisation:reflect_cpp:json:modernise_serialisation_and_storage:sprint_02:v0:
 #+owner: marco
 #+created: 2025-09-22
 #+updated: 2025-09-28

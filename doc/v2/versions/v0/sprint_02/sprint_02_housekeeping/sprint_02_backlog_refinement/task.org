@@ -5,7 +5,7 @@
 #+description: Curate sprint 02 backlog and groom the product backlog as work progresses.
 #+type: task
 #+level: s1
-#+filetags: :agile:backlog:sprint_02_housekeeping:
+#+filetags: :agile:backlog:sprint_02_housekeeping:sprint_02:v0:
 #+owner: marco
 #+created: 2025-08-01
 #+updated: 2025-10-23

@@ -5,7 +5,7 @@
 #+description: Install all required toolchains, libraries, and editor configuration on the dev laptop.
 #+type: task
 #+level: s1
-#+filetags: :setup:tooling:bootstrap:sprint_01_housekeeping:
+#+filetags: :setup:tooling:bootstrap:sprint_01_housekeeping:sprint_01:v0:
 #+owner: marco
 #+created: 2024-07-09
 #+updated: 2024-07-15

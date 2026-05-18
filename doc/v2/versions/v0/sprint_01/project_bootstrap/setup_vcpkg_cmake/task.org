@@ -5,7 +5,7 @@
 #+description: Configure a basic CMake build that resolves its dependencies through vcpkg.
 #+type: task
 #+level: s1
-#+filetags: :build:vcpkg:cmake:bootstrap:project_bootstrap:
+#+filetags: :build:vcpkg:cmake:bootstrap:project_bootstrap:sprint_01:v0:
 #+owner: marco
 #+created: 2024-06-22
 #+updated: 2024-06-22

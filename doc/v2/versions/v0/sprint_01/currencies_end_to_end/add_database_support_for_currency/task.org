@@ -5,7 +5,7 @@
 #+description: Create the first project database table and write currency reference data to it.
 #+type: task
 #+level: s1
-#+filetags: :currencies:sql:reference_data:currencies_end_to_end:
+#+filetags: :currencies:sql:reference_data:currencies_end_to_end:sprint_01:v0:
 #+owner: marco
 #+created: 2024-07-11
 #+updated: 2024-07-12

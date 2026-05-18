@@ -5,7 +5,7 @@
 #+description: Replace hand-written Postgres CRUD with sqlgen-generated code.
 #+type: task
 #+level: s1
-#+filetags: :storage:postgres:sqlgen:codegen:modernise_serialisation_and_storage:
+#+filetags: :storage:postgres:sqlgen:codegen:modernise_serialisation_and_storage:sprint_02:v0:
 #+owner: marco
 #+created: 2025-10-05
 #+updated: 2025-10-10

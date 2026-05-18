@@ -5,7 +5,7 @@
 #+description: Add a single-row write entry point to the repository alongside batch writes.
 #+type: task
 #+level: s1
-#+filetags: :repository:postgres:api:postgres_currency_persistence:
+#+filetags: :repository:postgres:api:postgres_currency_persistence:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

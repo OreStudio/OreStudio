@@ -5,7 +5,7 @@
 #+description: Restore green Windows and macOS CI by fixing CMake errors and platform-specific build issues.
 #+type: task
 #+level: s1
-#+filetags: :build:ci:windows:macos:bug_fix:build_stabilisation:
+#+filetags: :build:ci:windows:macos:bug_fix:build_stabilisation:sprint_02:v0:
 #+owner: marco
 #+created: 2025-09-15
 #+updated: 2025-09-25

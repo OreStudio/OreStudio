@@ -5,7 +5,7 @@
 #+description: Add a basic GitHub Actions workflow that builds the project and surfaces results in CDash.
 #+type: task
 #+level: s1
-#+filetags: :ci:github_actions:cdash:bootstrap:project_bootstrap:
+#+filetags: :ci:github_actions:cdash:bootstrap:project_bootstrap:sprint_01:v0:
 #+owner: marco
 #+created: 2024-06-22
 #+updated: 2024-06-22

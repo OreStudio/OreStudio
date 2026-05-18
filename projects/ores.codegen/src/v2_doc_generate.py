@@ -65,13 +65,18 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {"version", "component", "recipe", "knowledge", "skill"}
 
 
-def build_filetags(tags_input, parent_slug):
+def build_filetags(tags_input, ancestor_slugs):
     """
-    Combine user-supplied tags with the parent-slug tag in org-mode form.
+    Combine user-supplied tags with ancestor-slug tags in org-mode form.
 
-    Accepts the tag string in either comma- or colon-separated form, and
-    also tolerates leading/trailing colons (the org-mode native shape).
-    Empty fields and duplicates are dropped.
+    `ancestor_slugs` is a list of slugs for the document's ancestors in
+    the composition tree (immediate parent first). Stories carry their
+    sprint + version slugs; tasks carry their story + sprint + version
+    slugs; sprints carry their version slug. This lets a single grep
+    find every task in a sprint (or version) without two-step lookups.
+
+    Tag input accepts either commas or colons or already-formatted
+    `:a:b:c:`. Empties and duplicates are dropped.
     """
     tags = []
     if tags_input:
@@ -83,9 +88,32 @@ def build_filetags(tags_input, parent_slug):
             t = raw.strip()
             if t and t not in tags:
                 tags.append(t)
-    if parent_slug and parent_slug not in tags:
-        tags.append(parent_slug)
+    for slug in ancestor_slugs:
+        if slug and slug not in tags:
+            tags.append(slug)
     return ":" + ":".join(tags) + ":" if tags else ""
+
+
+def derive_ancestor_slugs(doc_type, parent_dir):
+    """
+    Walk the composition tree upward from `parent_dir` and return the
+    ancestor slugs as a list (immediate parent first).
+
+    Tasks: [story, sprint, version]
+    Stories: [sprint, version]
+    Sprints: [version]
+    Anything else: []
+
+    Relies on the path convention versions/<version>/<sprint>/<story>/.
+    """
+    pd = Path(parent_dir)
+    if doc_type == "task":
+        return [pd.name, pd.parent.name, pd.parent.parent.name]
+    if doc_type == "story":
+        return [pd.name, pd.parent.name]
+    if doc_type == "sprint":
+        return [pd.name]
+    return []
 
 
 def read_parent_info(parent_file):
@@ -238,7 +266,15 @@ def main(argv=None):
             prompt_label="Predecessor title")
 
     state = args.state or DEFAULT_INITIAL_STATE[args.type]
-    filetags = build_filetags(args.tags, args.parent_slug)
+
+    # Compose ancestor tags: walk the composition tree upward from the
+    # parent dir. An explicit --parent-slug (if it doesn't coincide with
+    # the derived immediate parent) is prepended so the explicit value
+    # always lands as a tag.
+    ancestor_slugs = derive_ancestor_slugs(args.type, parent_dir)
+    if args.parent_slug and args.parent_slug not in ancestor_slugs:
+        ancestor_slugs.insert(0, args.parent_slug)
+    filetags = build_filetags(args.tags, ancestor_slugs)
     today = date.today().isoformat()
     new_id = str(uuid.uuid4())
 

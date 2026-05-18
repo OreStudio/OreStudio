@@ -5,7 +5,7 @@
 #+description: Raise overall code coverage by adding tests for the under-tested modules surfaced by the coverage report.
 #+type: task
 #+level: s1
-#+filetags: :testing:coverage:logging_and_observability:
+#+filetags: :testing:coverage:logging_and_observability:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Stand up a basic project site, generated from the org-mode sources.
 #+type: task
 #+level: s1
-#+filetags: :documentation:site:documentation_infrastructure:
+#+filetags: :documentation:site:documentation_infrastructure:sprint_01:v0:
 #+owner: marco
 #+created: 2024-06-23
 #+updated: 2024-06-23

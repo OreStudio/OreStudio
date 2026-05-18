@@ -5,7 +5,7 @@
 #+description: Explore GRPC as the client/server substrate. Abandoned in favour of cobalt.
 #+type: task
 #+level: s1
-#+filetags: :client_server:grpc:abandoned:client_server_foundations:
+#+filetags: :client_server:grpc:abandoned:client_server_foundations:sprint_02:v0:
 #+owner: marco
 #+created: 2025-09-01
 #+updated: 2025-09-10

@@ -5,7 +5,7 @@
 #+description: Refactor the contents of the renamed =risk= module so the structure reflects the new name.
 #+type: task
 #+level: s1
-#+filetags: :refactor:risk:risk_module_extraction:
+#+filetags: :refactor:risk:risk_module_extraction:sprint_02:v0:
 #+owner: marco
 #+created: 2025-10-03
 #+updated: 2025-10-05

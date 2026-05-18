@@ -5,7 +5,7 @@
 #+description: Sprint-level sundries — backlog refinement, architecture whiteboarding, dev-environment fixes, Gemini action.
 #+type: story
 #+level: s2
-#+filetags: :housekeeping:agile:tooling:sprint_02:
+#+filetags: :housekeeping:agile:tooling:sprint_02:v0:
 #+created: 2025-08-01
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED

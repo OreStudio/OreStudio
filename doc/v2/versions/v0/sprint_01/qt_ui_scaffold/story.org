@@ -5,7 +5,7 @@
 #+description: Stand up the initial Qt application shell — hello world, splash, refactor toward a usable layout, and icon set.
 #+type: story
 #+level: s2
-#+filetags: :qt:ux:scaffold:sprint_01:
+#+filetags: :qt:ux:scaffold:sprint_01:v0:
 #+created: 2024-06-22
 #+updated: 2026-05-18
 #+todo: BACKLOG STARTED | DONE ABANDONED

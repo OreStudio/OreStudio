@@ -5,7 +5,7 @@
 #+description: Read and write currencies from ORE's XML format, using the ORE examples as the import corpus.
 #+type: task
 #+level: s1
-#+filetags: :currencies:xml:reference_data:import:currencies_end_to_end:
+#+filetags: :currencies:xml:reference_data:import:currencies_end_to_end:sprint_01:v0:
 #+owner: marco
 #+created: 2024-06-23
 #+updated: 2024-07-11

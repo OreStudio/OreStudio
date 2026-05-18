@@ -5,7 +5,7 @@
 #+description: Pure rename of the =core= module to =risk= — no semantic changes.
 #+type: task
 #+level: s1
-#+filetags: :refactor:rename:risk:risk_module_extraction:
+#+filetags: :refactor:rename:risk:risk_module_extraction:sprint_02:v0:
 #+owner: marco
 #+created: 2025-10-01
 #+updated: 2025-10-02

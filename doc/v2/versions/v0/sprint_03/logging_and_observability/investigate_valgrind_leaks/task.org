@@ -5,7 +5,7 @@
 #+description: Triage the leaks Valgrind reports and fix or suppress them with documented rationale.
 #+type: task
 #+level: s1
-#+filetags: :valgrind:leaks:observability:logging_and_observability:
+#+filetags: :valgrind:leaks:observability:logging_and_observability:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

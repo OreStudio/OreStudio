@@ -5,7 +5,7 @@
 #+description: Register each Catch2 suite as its own ctest entry so the dashboard reports per-suite status.
 #+type: task
 #+level: s1
-#+filetags: :testing:ctest:catch2:test_infrastructure:
+#+filetags: :testing:ctest:catch2:test_infrastructure:sprint_03:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -184,38 +184,43 @@ dimension from the tag itself.
 - A sprint focused on Qt UI work:
   =:qt:ux:sprint:=
 
-** Parent tags
+** Ancestor tags
 
-Every stateful document carries a tag equal to the slug of its direct
-parent in the composition hierarchy. This duplicates the =#+links=
-relationship in a grep-friendly form: =#+links= drives the org-roam
-graph, the parent tag drives the shell.
+Every stateful document carries one tag for each of its ancestors in
+the composition tree (immediate parent first). This duplicates the
+=#+links= relationship in a grep-friendly form: =#+links= drives the
+org-roam graph, the ancestor tags drive the shell.
 
-- A task tags with its story's slug.
-- A story tags with its sprint's slug.
+- A task tags with its story's slug, /and/ its sprint's slug, /and/
+  its version's slug.
+- A story tags with its sprint's slug, /and/ its version's slug.
 - A sprint tags with its version's slug.
 
-Examples:
+Examples (filetags only, content tags omitted):
 
-- A task in story =currencies_end_to_end= → =:currencies_end_to_end:=.
-- A story in sprint =sprint_01= → =:sprint_01:=.
-- A sprint in version =v0= → =:v0:=.
+- A task in =versions/v0/sprint_03/login_and_sessions/= →
+  =:login_and_sessions:sprint_03:v0:=.
+- A story in =versions/v0/sprint_03/= → =:sprint_03:v0:=.
+- A sprint in =versions/v0/= → =:v0:=.
 
-This makes lateral queries trivial:
+Single-step lateral queries:
 
 #+begin_src sh
-# every task in story currencies_end_to_end
+# every task / story / file in sprint_03
+grep -lR ":sprint_03:" doc/v2/versions/
+
+# every story in story currencies_end_to_end (which is one, but you
+# can grep for siblings on the same theme by switching the tag)
 grep -lR ":currencies_end_to_end:" doc/v2/versions/
 
-# every story in sprint_01
-grep -lR ":sprint_01:" doc/v2/versions/
-
-# every sprint in v0
+# every file in version v0
 grep -lR ":v0:" doc/v2/versions/
 #+end_src
 
-The audit may build transitive indexes (e.g. /every task in v0/) by
-chaining these queries.
+The generator at =projects/ores.codegen/generate_v2_doc.sh= derives
+the ancestor slugs from the =--parent-dir= path (following the
+=versions/<version>/<sprint>/<story>/= layout) and adds them all to
+=#+filetags= automatically, on top of any =--tags= the user supplies.
 
 ** Governance
 

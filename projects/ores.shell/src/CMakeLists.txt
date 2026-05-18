@@ -27,13 +27,8 @@ file(GLOB_RECURSE files RELATIVE
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-# STATIC: ores.shell has no export.hpp / BOOST_SYMBOL_EXPORT annotations, so on
-# Windows its symbols are not exported from a DLL. It is consumed only by
-# ores.shell.exe and (transiently) ores.qt.lib's ShellMdiWindow, which is then
-# pulled into the plugin DLLs (ores.qt.compute, ores.qt.workflow) and fails to
-# link against an unexported repl::repl / repl::run. Building STATIC bakes the
-# objects into each consumer and bypasses the DLL-export requirement.
-add_library(${lib_target_name} STATIC ${lib_files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_SHELL_LIBRARY)
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}

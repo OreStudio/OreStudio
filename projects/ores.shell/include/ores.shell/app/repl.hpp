@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include "ores.shell/export.hpp"
 
 namespace cli {
 
@@ -42,7 +43,7 @@ namespace ores::shell::app {
  * Provides a command-line interface for interacting with the ORE Studio server,
  * including commands for connection management and data retrieval.
  */
-class repl final {
+class ORES_SHELL_EXPORT repl final {
 private:
     inline static std::string_view logger_name =
         "ores.shell.app.repl";

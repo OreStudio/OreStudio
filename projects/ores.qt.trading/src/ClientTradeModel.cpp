@@ -31,11 +31,11 @@ using namespace ores::logging;
 
 namespace {
     std::string trade_key_extractor(const trading::domain::trade& t) {
-        return t.external_id;
+        return t.identity.external_id;
     }
     std::chrono::system_clock::time_point trade_timestamp_extractor(
         const trading::domain::trade& t) {
-        return t.recorded_at;
+        return t.audit.recorded_at;
     }
 }
 
@@ -82,32 +82,32 @@ QVariant ClientTradeModel::data(
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case ExternalId:
-            return QString::fromStdString(trade.external_id);
+            return QString::fromStdString(trade.identity.external_id);
         case TradeType:
-            return QString::fromStdString(trade.trade_type);
+            return QString::fromStdString(trade.classification.trade_type);
         case LifecycleEvent:
-            return QString::fromStdString(trade.activity_type_code);
+            return QString::fromStdString(trade.classification.activity_type_code);
         case TradeDate:
-            return QString::fromStdString(trade.trade_date.value_or(""));
+            return QString::fromStdString(trade.lifecycle.trade_date.value_or(""));
         case EffectiveDate:
-            return QString::fromStdString(trade.effective_date.value_or(""));
+            return QString::fromStdString(trade.lifecycle.effective_date.value_or(""));
         case TerminationDate:
-            return QString::fromStdString(trade.termination_date.value_or(""));
+            return QString::fromStdString(trade.lifecycle.termination_date.value_or(""));
         case NettingSetId:
-            return QString::fromStdString(trade.netting_set_id);
+            return QString::fromStdString(trade.classification.netting_set_id);
         case Version:
-            return trade.version;
+            return trade.identity.version;
         case ModifiedBy:
-            return QString::fromStdString(trade.modified_by);
+            return QString::fromStdString(trade.audit.modified_by);
         case RecordedAt:
-            return relative_time_helper::format(trade.recorded_at);
+            return relative_time_helper::format(trade.audit.recorded_at);
         default:
             return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(trade.external_id);
+        return recency_foreground_color(trade.identity.external_id);
     }
 
     return {};

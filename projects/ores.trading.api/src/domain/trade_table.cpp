@@ -35,13 +35,15 @@ std::string convert_to_table(const std::vector<trade>& v) {
           << fort::endr;
 
     for (const auto& tr : v) {
-        table << boost::uuids::to_string(tr.id)
-              << boost::uuids::to_string(tr.party_id)
-              << tr.trade_type << tr.activity_type_code
-              << tr.trade_date.value_or("")
-              << tr.effective_date.value_or("")
-              << tr.termination_date.value_or("")
-              << tr.modified_by << tr.version
+        table << boost::uuids::to_string(tr.identity.id)
+              << boost::uuids::to_string(tr.identity.party_id)
+              << tr.classification.trade_type
+              << tr.classification.activity_type_code
+              << tr.lifecycle.trade_date.value_or("")
+              << tr.lifecycle.effective_date.value_or("")
+              << tr.lifecycle.termination_date.value_or("")
+              << tr.audit.modified_by
+              << tr.identity.version
               << fort::endr;
     }
     return table.to_string();

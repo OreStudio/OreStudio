@@ -74,35 +74,37 @@ trade_service::find_trade(const std::string& id) {
 
 void trade_service::save_trade(const domain::trade& v,
     const fsm_transition_map& transitions) {
-    if (v.id.is_nil())
+    if (v.identity.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.identity.id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     const std::optional<boost::uuids::uuid> current =
-        t.status_id.is_nil() ? std::nullopt
-                             : std::make_optional(t.status_id);
-    t.status_id = trade_status_service::resolve_status(
-        ctx_, t.activity_type_code, current, transitions);
+        t.classification.status_id.is_nil() ? std::nullopt
+                             : std::make_optional(t.classification.status_id);
+    t.classification.status_id = trade_status_service::resolve_status(
+        ctx_, t.classification.activity_type_code, current, transitions);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade: " << t.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade: " << t.identity.id;
 }
 
 void trade_service::save_trades(const std::vector<domain::trade>& trades,
     const fsm_transition_map& transitions) {
     for (const auto& t : trades) {
-        if (t.id.is_nil())
+        if (t.identity.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
     auto resolved = trades;
     for (auto& t : resolved) {
-        stamp(t, ctx_);
+        stamp(t.identity, ctx_);
+        stamp(t.audit, ctx_);
         const std::optional<boost::uuids::uuid> current =
-            t.status_id.is_nil() ? std::nullopt
-                                 : std::make_optional(t.status_id);
-        t.status_id = trade_status_service::resolve_status(
-            ctx_, t.activity_type_code, current, transitions);
+            t.classification.status_id.is_nil() ? std::nullopt
+                                 : std::make_optional(t.classification.status_id);
+        t.classification.status_id = trade_status_service::resolve_status(
+            ctx_, t.classification.activity_type_code, current, transitions);
     }
     repo_.write(ctx_, resolved);
 }

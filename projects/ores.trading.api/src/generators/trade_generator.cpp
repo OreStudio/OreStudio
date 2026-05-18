@@ -35,25 +35,25 @@ domain::trade generate_synthetic_trade(
         std::string(generation_keys::modified_by), "system");
 
     domain::trade r;
-    r.version = 1;
-    r.id = ctx.generate_uuid();
-    r.external_id = std::string();
-    r.book_id = ctx.generate_uuid();
-    r.portfolio_id = ctx.generate_uuid();
-    r.successor_trade_id = std::nullopt;
-    r.trade_type = std::string("Swap");
-    r.netting_set_id = std::string("NS-001");
-    r.activity_type_code = std::string("new_booking");
-    r.status_id = boost::uuids::nil_uuid();
-    r.trade_date = std::string("2025-01-15");
-    r.execution_timestamp = std::string("2025-01-15 10:00:00");
-    r.effective_date = std::string("2025-01-16");
-    r.termination_date = std::string("2026-01-15");
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.identity.version = 1;
+    r.identity.id = ctx.generate_uuid();
+    r.identity.external_id = std::string();
+    r.parties.book_id = ctx.generate_uuid();
+    r.parties.portfolio_id = ctx.generate_uuid();
+    r.parties.successor_trade_id = std::nullopt;
+    r.classification.trade_type = std::string("Swap");
+    r.classification.netting_set_id = std::string("NS-001");
+    r.classification.activity_type_code = std::string("new_booking");
+    r.classification.status_id = boost::uuids::nil_uuid();
+    r.lifecycle.trade_date = std::string("2025-01-15");
+    r.lifecycle.execution_timestamp = std::string("2025-01-15 10:00:00");
+    r.lifecycle.effective_date = std::string("2025-01-16");
+    r.lifecycle.termination_date = std::string("2026-01-15");
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

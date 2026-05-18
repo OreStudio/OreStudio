@@ -292,6 +292,24 @@ def is_service_registry_model(model_filename):
     return model_filename.endswith("_service_registry.json")
 
 
+def is_field_group_model(model_filename):
+    """
+    Check if a model file is a field-group model.
+
+    Field-group models describe plain C++ structs that group related
+    fields from a parent entity to reduce per-struct field count (e.g.
+    for rfl::Flatten<T> composition to avoid MSVC C1202).  They have no
+    primary key, no audit columns, no DB table, and no repository layer.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a field-group model
+    """
+    return model_filename.endswith("_field_group.json")
+
+
 def get_model_type(model_filename):
     """
     Determine the model type from the filename.
@@ -301,12 +319,14 @@ def get_model_type(model_filename):
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
-             'component', 'service_registry', or 'unknown')
+             'component', 'field_group', 'service_registry', or 'unknown')
     """
     if is_domain_entity_model(model_filename):
         return 'domain_entity'
     elif is_junction_model(model_filename):
         return 'junction'
+    elif is_field_group_model(model_filename):
+        return 'field_group'
     elif is_service_registry_model(model_filename):
         return 'service_registry'
     elif is_component_model(model_filename):
@@ -396,6 +416,18 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component}', component)
         result = result.replace('{junction_name}', junction_name)
         result = result.replace('{entity}', name_singular)
+        result = result.replace('{EntityPascal}', entity_pascal)
+
+    elif model_type == 'field_group' and 'field_group' in model_data:
+        fg = model_data['field_group']
+        component = fg.get('component', 'unknown')
+        component_include = fg.get('component_include', component)
+        entity_singular = fg.get('entity_singular', 'unknown')
+        entity_pascal = snake_to_pascal(entity_singular)
+
+        result = result.replace('{component_include}', component_include)
+        result = result.replace('{component}', component)
+        result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
     elif model_type == 'enum' and 'enum' in model_data:
@@ -957,6 +989,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_enum = is_enum_model(model_filename)
     is_component = is_component_model(model_filename)
     is_service_registry = is_service_registry_model(model_filename)
+    is_field_group = is_field_group_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -975,6 +1008,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     elif is_enum:
         # Enum models use a specific template
         templates_to_process = [t[0] for t in get_enum_template_mappings()]
+    elif is_field_group:
+        # Field-group models must be used via the field-group profile (no default templates)
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Field-group model '{model_filename}' requires --profile field-group")
+            return
     elif is_component:
         # Component scaffold models must be used via a profile (no default templates)
         if target_template:
@@ -1595,6 +1635,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for key, value in junction['repository'].items():
                 junction[key] = value
         data['junction'] = junction
+
+    # Special processing for field-group models
+    if is_field_group and isinstance(model, dict) and 'field_group' in model:
+        fg = model['field_group']
+        # Split description into lines for C++ doxygen comments
+        if 'description' in fg:
+            fg['description_lines'] = fg['description'].split('\n')
+        # Compute include-guard and namespace components from component_include
+        component = fg.get('component', 'unknown')
+        component_include = fg.get('component_include', component)
+        fg['component_include'] = component_include
+        fg['component_include_upper'] = component_include.replace('.', '_').upper()
+        # Compute include-guard suffix from entity_singular
+        if 'entity_singular' in fg:
+            fg['entity_singular_upper'] = fg['entity_singular'].upper()
+        data['field_group'] = fg
 
     # Special processing for enum models
     if is_enum and isinstance(model, dict) and 'enum' in model:

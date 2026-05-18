@@ -265,7 +265,7 @@ void TradeMdiWindow::viewHistorySelected() {
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* trade = model_->getTrade(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug) << "Emitting showTradeHistory for code: "
-                                   << trade->external_id;
+                                   << trade->identity.external_id;
         emit showTradeHistory(*trade);
     }
 }
@@ -288,8 +288,8 @@ void TradeMdiWindow::deleteSelected() {
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* trade = model_->getTrade(sourceIndex.row())) {
-            ids.push_back(trade->id);
-            codes.push_back(trade->external_id);
+            ids.push_back(trade->identity.id);
+            codes.push_back(trade->identity.external_id);
         }
     }
 

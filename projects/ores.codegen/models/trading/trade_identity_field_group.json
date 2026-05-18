@@ -1,0 +1,49 @@
+{
+  "field_group": {
+    "product": "ores",
+    "component": "trading",
+    "component_include": "trading.api",
+    "entity_singular": "trade_identity",
+    "brief": "Ownership and surrogate key fields for a trade.",
+    "description": "One of five field-groups that compose trading::domain::trade via\nrfl::Flatten<T>.  Splitting trade into small sub-structs keeps each\nper-struct rfl field-uniqueness check (O(n²)) shallow enough to avoid\nthe MSVC C1202 recursive-template-depth error.\n\nThis group carries the identity / surrogate-key fields that\nuniquely identify the trade record within a tenant.",
+
+    "cpp": {
+      "namespace": "ores::trading::domain",
+      "includes": [
+        "<string>",
+        "<boost/uuid/uuid.hpp>",
+        "\"ores.utility/uuid/tenant_id.hpp\""
+      ]
+    },
+
+    "fields": [
+      {
+        "name": "tenant_id",
+        "cpp_type": "utility::uuid::tenant_id",
+        "default_value": "utility::uuid::tenant_id::system()",
+        "description": "Tenant identifier for multi-tenancy isolation."
+      },
+      {
+        "name": "id",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "UUID surrogate key for this trade record."
+      },
+      {
+        "name": "version",
+        "cpp_type": "int",
+        "default_value": "0",
+        "description": "Optimistic-locking version counter."
+      },
+      {
+        "name": "party_id",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "Internal party that owns this trade (denormalised from book_id)."
+      },
+      {
+        "name": "external_id",
+        "cpp_type": "std::string",
+        "description": "Optional external trade identifier (e.g. UTI prefix or legacy system ID)."
+      }
+    ]
+  }
+}

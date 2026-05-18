@@ -111,10 +111,10 @@ importer::import_calendar_adjustments(const std::filesystem::path& path) {
 std::string importer::validate_trade(const trade& t) {
     std::ostringstream errors;
 
-    if (t.external_id.empty())
+    if (t.identity.external_id.empty())
         errors << "External ID is required\n";
 
-    if (t.trade_type.empty())
+    if (t.classification.trade_type.empty())
         errors << "Trade type is required\n";
 
     return errors.str();
@@ -159,21 +159,21 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                 using ores::trading::domain::composite_instrument_data;
                 using ores::trading::domain::scripted_instrument;
                 if constexpr (std::is_same_v<T, swap_instrument_data>)
-                    item.trade.product_type = product_type::swap;
+                    item.trade.classification.product_type = product_type::swap;
                 else if constexpr (std::is_same_v<T, fx_instrument_variant>)
-                    item.trade.product_type = product_type::fx;
+                    item.trade.classification.product_type = product_type::fx;
                 else if constexpr (std::is_same_v<T, bond_instrument>)
-                    item.trade.product_type = product_type::bond;
+                    item.trade.classification.product_type = product_type::bond;
                 else if constexpr (std::is_same_v<T, credit_instrument>)
-                    item.trade.product_type = product_type::credit;
+                    item.trade.classification.product_type = product_type::credit;
                 else if constexpr (std::is_same_v<T, equity_instrument_variant>)
-                    item.trade.product_type = product_type::equity;
+                    item.trade.classification.product_type = product_type::equity;
                 else if constexpr (std::is_same_v<T, commodity_instrument>)
-                    item.trade.product_type = product_type::commodity;
+                    item.trade.classification.product_type = product_type::commodity;
                 else if constexpr (std::is_same_v<T, composite_instrument_data>)
-                    item.trade.product_type = product_type::composite;
+                    item.trade.classification.product_type = product_type::composite;
                 else if constexpr (std::is_same_v<T, scripted_instrument>)
-                    item.trade.product_type = product_type::scripted;
+                    item.trade.classification.product_type = product_type::scripted;
             }, item.instrument);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)

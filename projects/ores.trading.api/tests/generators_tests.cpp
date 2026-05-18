@@ -224,13 +224,13 @@ TEST_CASE("trade_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_trade(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated trade id: " << sut.id;
+    BOOST_LOG_SEV(lg, info) << "Generated trade id: " << sut.identity.id;
 
-    CHECK(sut.version == 1);
-    CHECK(!sut.id.is_nil());
-    CHECK(!sut.modified_by.empty());
-    CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.test");
+    CHECK(sut.identity.version == 1);
+    CHECK(!sut.identity.id.is_nil());
+    CHECK(!sut.audit.modified_by.empty());
+    CHECK(!sut.audit.performed_by.empty());
+    CHECK(sut.audit.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_generator_produces_multiple_instances", tags) {
@@ -241,8 +241,8 @@ TEST_CASE("trade_generator_produces_multiple_instances", tags) {
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+        CHECK(!item.identity.id.is_nil());
+        CHECK(item.identity.version == 1);
     }
 }
 

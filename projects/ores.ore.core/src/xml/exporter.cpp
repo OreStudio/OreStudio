@@ -64,10 +64,10 @@ std::string read_header(const std::filesystem::path& file) {
 }
 
 void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
-    static_cast<std::string&>(t.id) = src.external_id;
-    if (!src.netting_set_id.empty()) {
+    static_cast<std::string&>(t.id) = src.identity.external_id;
+    if (!src.classification.netting_set_id.empty()) {
         domain::_NettingSetId_t nsid;
-        static_cast<std::string&>(nsid) = src.netting_set_id;
+        static_cast<std::string&>(nsid) = src.classification.netting_set_id;
         domain::nettingSetGroup_group_t nsg;
         nsg.NettingSetId = nsid;
         domain::envelope env;
@@ -107,7 +107,7 @@ std::string exporter::export_portfolio(
     domain::portfolio p;
     for (const auto& item : items) {
         const auto& tr = item.trade;
-        const auto& tt = tr.trade_type;
+        const auto& tt = tr.classification.trade_type;
 
         std::visit([&](const auto& r) {
             using T = std::decay_t<decltype(r)>;
@@ -115,7 +115,7 @@ std::string exporter::export_portfolio(
 
             if constexpr (std::is_same_v<T, std::monostate>) {
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Skipping unmapped trade: " << tr.external_id;
+                    << "Skipping unmapped trade: " << tr.identity.external_id;
                 return;
             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                 if (tt == "Swap" || tt == "CrossCurrencySwap")

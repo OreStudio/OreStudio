@@ -97,25 +97,25 @@ ore_import_plan ore_import_planner::plan() {
             for (const auto& source_file : node.source_files) {
                 auto items = xml::importer::import_portfolio_with_context(source_file);
                 for (auto& item : items) {
-                    item.trade.id           = uuid_gen();
+                    item.trade.identity.id = uuid_gen();
                     if (!std::holds_alternative<std::monostate>(item.instrument)) {
                         const auto instr_id = uuid_gen();
-                        trading::domain::stamp_ids(item.instrument, instr_id, item.trade.id);
-                        item.trade.instrument_id = instr_id;
+                        trading::domain::stamp_ids(item.instrument, instr_id, item.trade.identity.id);
+                        item.trade.classification.instrument_id = instr_id;
                     }
-                    item.trade.book_id      = target_book_id;
-                    item.trade.portfolio_id = target_portfolio_id;
-                    item.trade.party_id     = choices_.party_id;
+                    item.trade.parties.book_id      = target_book_id;
+                    item.trade.parties.portfolio_id = target_portfolio_id;
+                    item.trade.identity.party_id    = choices_.party_id;
                     if (!defs.trade_date.empty())
-                        item.trade.trade_date = defs.trade_date;
+                        item.trade.lifecycle.trade_date = defs.trade_date;
                     if (!defs.effective_date.empty())
-                        item.trade.effective_date = defs.effective_date;
+                        item.trade.lifecycle.effective_date = defs.effective_date;
                     if (!defs.termination_date.empty())
-                        item.trade.termination_date = defs.termination_date;
+                        item.trade.lifecycle.termination_date = defs.termination_date;
                     if (!defs.activity_type_code.empty())
-                        item.trade.activity_type_code = defs.activity_type_code;
+                        item.trade.classification.activity_type_code = defs.activity_type_code;
                     if (defs.default_counterparty_id)
-                        item.trade.counterparty_id = defs.default_counterparty_id;
+                        item.trade.parties.counterparty_id = defs.default_counterparty_id;
                     result.trades.push_back(std::move(item));
                 }
             }
@@ -218,26 +218,26 @@ ore_import_plan ore_import_planner::plan() {
                 xml::importer::import_portfolio_with_context(source_file);
 
             for (auto& item : items) {
-                item.trade.id = uuid_gen();
+                item.trade.identity.id = uuid_gen();
                 if (!std::holds_alternative<std::monostate>(item.instrument)) {
                     const auto instr_id = uuid_gen();
-                    trading::domain::stamp_ids(item.instrument, instr_id, item.trade.id);
-                    item.trade.instrument_id = instr_id;
+                    trading::domain::stamp_ids(item.instrument, instr_id, item.trade.identity.id);
+                    item.trade.classification.instrument_id = instr_id;
                 }
-                item.trade.book_id = b.id;
-                item.trade.portfolio_id = book_parent_id;
-                item.trade.party_id = choices_.party_id;
+                item.trade.parties.book_id = b.id;
+                item.trade.parties.portfolio_id = book_parent_id;
+                item.trade.identity.party_id = choices_.party_id;
 
                 if (!defs.trade_date.empty())
-                    item.trade.trade_date = defs.trade_date;
+                    item.trade.lifecycle.trade_date = defs.trade_date;
                 if (!defs.effective_date.empty())
-                    item.trade.effective_date = defs.effective_date;
+                    item.trade.lifecycle.effective_date = defs.effective_date;
                 if (!defs.termination_date.empty())
-                    item.trade.termination_date = defs.termination_date;
+                    item.trade.lifecycle.termination_date = defs.termination_date;
                 if (!defs.activity_type_code.empty())
-                    item.trade.activity_type_code = defs.activity_type_code;
+                    item.trade.classification.activity_type_code = defs.activity_type_code;
                 if (defs.default_counterparty_id)
-                    item.trade.counterparty_id = defs.default_counterparty_id;
+                    item.trade.parties.counterparty_id = defs.default_counterparty_id;
 
                 result.trades.push_back(std::move(item));
             }

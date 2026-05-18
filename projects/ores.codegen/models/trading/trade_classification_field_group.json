@@ -1,0 +1,59 @@
+{
+  "field_group": {
+    "product": "ores",
+    "component": "trading",
+    "component_include": "trading.api",
+    "entity_singular": "trade_classification",
+    "brief": "Product and instrument classification fields for a trade.",
+    "description": "One of five field-groups that compose trading::domain::trade via\nrfl::Flatten<T>.  See trade_identity_field_group.json for the\nrationale behind the sub-struct decomposition.\n\nThis group carries the product/instrument classification fields\n(trade type, product type, instrument, asset class, netting set,\nactivity type, and status).",
+
+    "cpp": {
+      "namespace": "ores::trading::domain",
+      "includes": [
+        "<optional>",
+        "<string>",
+        "<boost/uuid/uuid.hpp>",
+        "\"ores.trading.api/domain/product_type.hpp\""
+      ]
+    },
+
+    "fields": [
+      {
+        "name": "trade_type",
+        "cpp_type": "std::string",
+        "description": "Trade type code (e.g. Swap, FRA, Option)."
+      },
+      {
+        "name": "product_type",
+        "cpp_type": "domain::product_type",
+        "default_value": "domain::product_type::unknown",
+        "description": "Broad product classification enum."
+      },
+      {
+        "name": "instrument_id",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "description": "Optional instrument (soft FK to ores_refdata_instruments_tbl)."
+      },
+      {
+        "name": "asset_class",
+        "cpp_type": "std::optional<std::string>",
+        "description": "Optional asset class override (e.g. Rates, Credit, FX)."
+      },
+      {
+        "name": "netting_set_id",
+        "cpp_type": "std::string",
+        "description": "Netting set identifier for collateral/margin grouping."
+      },
+      {
+        "name": "activity_type_code",
+        "cpp_type": "std::string",
+        "description": "Lifecycle activity code (e.g. New, Amendment, Novation, Termination)."
+      },
+      {
+        "name": "status_id",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "Trade status (soft FK to ores_refdata_trade_statuses_tbl)."
+      }
+    ]
+  }
+}

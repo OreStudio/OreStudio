@@ -1,0 +1,41 @@
+{
+  "field_group": {
+    "product": "ores",
+    "component": "trading",
+    "component_include": "trading.api",
+    "entity_singular": "trade_lifecycle",
+    "brief": "Key dates and timestamps for a trade.",
+    "description": "One of five field-groups that compose trading::domain::trade via\nrfl::Flatten<T>.  See trade_identity_field_group.json for the\nrationale behind the sub-struct decomposition.\n\nThis group carries the temporal dimension fields (trade date,\neffective date, termination date, and execution timestamp).\nAll are optional because not every trade type requires all dates\nat creation time.",
+
+    "cpp": {
+      "namespace": "ores::trading::domain",
+      "includes": [
+        "<optional>",
+        "<string>"
+      ]
+    },
+
+    "fields": [
+      {
+        "name": "trade_date",
+        "cpp_type": "std::optional<std::string>",
+        "description": "Date on which the trade was agreed (ISO-8601 date string)."
+      },
+      {
+        "name": "effective_date",
+        "cpp_type": "std::optional<std::string>",
+        "description": "Date from which the trade becomes effective (ISO-8601 date string)."
+      },
+      {
+        "name": "termination_date",
+        "cpp_type": "std::optional<std::string>",
+        "description": "Scheduled end date of the trade (ISO-8601 date string)."
+      },
+      {
+        "name": "execution_timestamp",
+        "cpp_type": "std::optional<std::string>",
+        "description": "Exact moment the trade was executed (ISO-8601 timestamp string)."
+      }
+    ]
+  }
+}

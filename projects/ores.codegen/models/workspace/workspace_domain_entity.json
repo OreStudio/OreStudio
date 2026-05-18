@@ -1,0 +1,98 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "workspace",
+    "entity_singular": "workspace",
+    "entity_plural": "workspaces",
+    "entity_title": "Workspace",
+    "brief": "Named, isolated data context for workspace-level operations.",
+    "description": "Workspaces provide Docker-layer-style inheritance: data not present in a\nworkspace is resolved from the parent chain up to workspace 0 (Live).\n\nWorkspace 0 is the production (Live) view and cannot be modified or archived.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "integer",
+      "cpp_type": "int",
+      "description": "Auto-generated integer primary key."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique workspace name."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description."
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Lifecycle status: active or archived."
+      },
+      {
+        "name": "created_by",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Username that created this workspace."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_workspaces_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "workspace",
+      "entity_plural_short": "workspaces",
+      "entity_singular_words": "workspace",
+      "entity_plural_words": "workspaces"
+    },
+
+    "qt": {
+      "domain_include": "ores.workspace.api/domain/workspace.hpp",
+      "domain_class": "workspace::domain::workspace",
+      "protocol_include": "ores.workspace.api/messaging/workspace_protocol.hpp",
+      "collection_name": "workspaces",
+      "item_var": "workspace",
+      "key_field": "id",
+      "has_uuid_primary_key": false,
+      "has_integer_primary_key": true,
+      "has_pagination": false,
+      "has_history": false,
+      "has_description_column": true,
+
+      "get_request_class": "workspace::messaging::list_workspaces_request",
+      "get_response_class": "workspace::messaging::list_workspaces_response",
+      "get_message_type": "list_workspaces_request",
+      "save_request_class": "workspace::messaging::create_workspace_request",
+      "save_response_class": "workspace::messaging::create_workspace_response",
+      "save_message_type": "create_workspace_request",
+      "delete_request_class": "workspace::messaging::archive_workspace_request",
+      "delete_response_class": "workspace::messaging::archive_workspace_response",
+      "delete_message_type": "archive_workspace_request",
+
+      "columns": [
+        {"enum_name": "Id",          "field": "id",          "header": "ID",         "is_int": true,    "width": 60},
+        {"enum_name": "Name",        "field": "name",        "header": "Name",       "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description","is_string": true, "width": 340},
+        {"enum_name": "Status",      "field": "status",      "header": "Status",     "is_string": true, "width": 90},
+        {"enum_name": "CreatedBy",   "field": "created_by",  "header": "Created By", "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "WorkspaceListWindow",
+      "window_title": "Workspaces",
+      "icon": "Layers"
+    }
+  }
+}

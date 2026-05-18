@@ -65,11 +65,24 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {"version", "component", "recipe", "knowledge", "skill"}
 
 
-def build_filetags(tags_csv, parent_slug):
-    """Combine user-supplied tags with the parent-slug tag in org-mode form."""
+def build_filetags(tags_input, parent_slug):
+    """
+    Combine user-supplied tags with the parent-slug tag in org-mode form.
+
+    Accepts the tag string in either comma- or colon-separated form, and
+    also tolerates leading/trailing colons (the org-mode native shape).
+    Empty fields and duplicates are dropped.
+    """
     tags = []
-    if tags_csv:
-        tags.extend(t.strip() for t in tags_csv.split(",") if t.strip())
+    if tags_input:
+        # Strip leading/trailing colons so ":a:b:" is accepted unchanged.
+        stripped = tags_input.strip().strip(":")
+        # Split on comma first; if no comma was present, fall through to colon.
+        parts = stripped.split(",") if "," in stripped else stripped.split(":")
+        for raw in parts:
+            t = raw.strip()
+            if t and t not in tags:
+                tags.append(t)
     if parent_slug and parent_slug not in tags:
         tags.append(parent_slug)
     return ":" + ":".join(tags) + ":" if tags else ""

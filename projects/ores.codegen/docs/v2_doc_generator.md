@@ -32,7 +32,7 @@ projects/ores.codegen/generate_v2_doc.sh \
   [--parent-dir <path-where-the-new-doc-is-created>] \
   [--title "<human-readable title>"] \
   [--description "<one-liner ≤ 120 chars>"] \
-  [--tags "tag1,tag2,..."] \
+  [--tags "tag1,tag2,..."] \           # commas or colons (`:tag1:tag2:`) both accepted
   [--owner <handle>]                          # tasks; default: marco
   [--parent-id <uuid>]                        # auto-detected from <parent-dir>/<parent-type>.org
   [--parent-slug <slug>]                      # defaults to basename of <parent-dir>

@@ -22,7 +22,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
-#include <array>
 #include <chrono>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -74,62 +73,11 @@ void PartyProvisioningWizard::setupPages() {
     WidgetUtils::setupComboBoxes(this);
     setPage(Page_Welcome,          new PartyWelcomePage(this));
     setPage(Page_CounterpartySetup, new PartyCounterpartySetupPage(this));
-    setPage(Page_OrganisationSetup, new PartyOrganisationSetupPage(this));
     setPage(Page_ReportSetup,      new PartyReportSetupPage(this));
-    setPage(Page_ReportInstall,    new PartyReportInstallPage(this));
+    setPage(Page_Execute,          new PartyExecutePage(this));
     setPage(Page_Summary,          new PartyApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
-}
-
-bool PartyProvisioningWizard::markPartyActive() {
-    BOOST_LOG_SEV(lg(), info) << "Setting current party status to Active";
-
-    const auto party_id = clientManager_->currentPartyId();
-
-    refdata::messaging::get_parties_request list_req;
-    list_req.offset = 0;
-    list_req.limit = 1000;
-    auto list_result = clientManager_->process_authenticated_request(std::move(list_req));
-    if (!list_result) {
-        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to fetch parties: "
-                                  << list_result.error();
-        return false;
-    }
-
-    refdata::domain::party party;
-    bool found = false;
-    for (const auto& p : list_result->parties) {
-        if (p.id == party_id) {
-            party = p;
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: party not found in list";
-        return false;
-    }
-
-    party.status = "Active";
-    party.change_commentary = "Party setup wizard completed";
-
-    refdata::messaging::save_party_request save_req;
-    save_req.data = std::move(party);
-    auto save_result = clientManager_->process_authenticated_request(std::move(save_req));
-    if (!save_result) {
-        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to save party: "
-                                  << save_result.error();
-        return false;
-    }
-    if (!save_result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: save_party failed: "
-                                  << (save_result->message.empty()
-                                      ? "Unknown error" : save_result->message);
-        return false;
-    }
-    BOOST_LOG_SEV(lg(), info) << "Party status set to Active successfully";
-    return true;
 }
 
 // ============================================================================
@@ -170,12 +118,12 @@ void PartyWelcomePage::setupUI() {
     stepsLabel->setTextFormat(Qt::RichText);
     stepsLabel->setText(
         tr("<ol>"
-           "<li><b>Counterparty Setup</b> - Select dataset size and import "
+           "<li><b>Counterparty Setup</b> - Select dataset size for importing "
            "counterparties from the GLEIF LEI registry.</li>"
-           "<li><b>Organisation Setup</b> - Publish business units, "
-           "portfolios, and trading books.</li>"
-           "<li><b>Report Definitions</b> - Optionally create a set of "
-           "standard risk report definitions.</li>"
+           "<li><b>Report Definitions</b> - Optionally select standard risk "
+           "report definitions to create.</li>"
+           "<li><b>Execute</b> - All data is published and configured in one "
+           "step with live progress tracking.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -237,174 +185,6 @@ void PartyCounterpartySetupPage::setupUI() {
 bool PartyCounterpartySetupPage::validatePage() {
     wizard_->setLeiDatasetSize(datasetSizeCombo_->currentData().toString());
     return true;
-}
-
-// ============================================================================
-// PartyOrganisationSetupPage
-// ============================================================================
-
-PartyOrganisationSetupPage::PartyOrganisationSetupPage(
-    PartyProvisioningWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
-
-    setTitle(tr("Organisation Setup"));
-    setSubTitle(tr("Importing counterparties and publishing organisation structure."));
-    setFinalPage(false);
-
-    auto* layout = new QVBoxLayout(this);
-
-    statusLabel_ = new QLabel(tr("Starting..."), this);
-    statusLabel_->setStyleSheet("font-weight: bold;");
-    layout->addWidget(statusLabel_);
-
-    progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0);
-    progressBar_->setTextVisible(false);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
-    layout->addWidget(progressBar_);
-
-    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
-    stepsWidget_->setVisible(false);
-    layout->addWidget(stepsWidget_, 1);
-}
-
-bool PartyOrganisationSetupPage::isComplete() const {
-    return publishComplete_;
-}
-
-void PartyOrganisationSetupPage::initializePage() {
-    publishComplete_ = false;
-    publishSuccess_ = false;
-    stepsWidget_->setVisible(false);
-    progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
-
-    statusLabel_->setText(tr("Importing counterparties and organisation data..."));
-    startPublish();
-}
-
-void PartyOrganisationSetupPage::startPublish() {
-    const std::string publishedBy = wizard_->clientManager()->currentUsername();
-    ClientManager* clientManager = wizard_->clientManager();
-    const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
-    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-    const std::string size = datasetSize.empty() ? "small" : datasetSize;
-
-    BOOST_LOG_SEV(lg(), info) << "Publishing counterparties (dataset: " << size
-                              << ") and organisation structure";
-
-    using ResponseType = dq::messaging::publish_bundle_response;
-
-    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
-        watcher->deleteLater();
-
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
-        if (!result || !result->success) {
-            publishSuccess_ = false;
-            progressBar_->setRange(0, 1);
-            progressBar_->setValue(1);
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Organisation publication: no server response";
-                statusLabel_->setText(tr("Failed to communicate with server."));
-            } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Organisation publication failed: "
-                    << result->error_message;
-                statusLabel_->setText(tr("Publication failed: %1").arg(
-                    QString::fromStdString(result->error_message)));
-            }
-            statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
-        } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Organisation publication workflow started: "
-                << result->datasets_dispatched << " datasets dispatched";
-            statusLabel_->setText(
-                tr("Organisation workflow started — %1 datasets dispatched.")
-                    .arg(result->datasets_dispatched));
-            if (!result->instance_id.empty()) {
-                progressBar_->setVisible(false);
-                stepsWidget_->setVisible(true);
-                stepsWidget_->setInstance(
-                    QUuid::fromString(
-                        QString::fromStdString(result->instance_id)));
-            }
-            publishSuccess_ = true;
-            wizard_->setOrganisationPublished(true);
-        }
-
-        publishComplete_ = true;
-        emit completeChanged();
-    });
-
-    // Run both publishes sequentially on a background thread
-    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, publishedBy, selectedBundle, size]()
-            -> std::optional<ResponseType> {
-
-            // Step 1: Re-publish the selected bundle opting in counterparties only.
-            // No root_lei filtering — counterparties are the full GLEIF dataset.
-            dq::messaging::publish_bundle_params leiParams;
-            leiParams.opted_in_datasets.push_back(
-                "gleif.lei_counterparties." + size);
-            const std::string leiParamsJson =
-                dq::messaging::build_params_json(leiParams);
-
-            dq::messaging::publish_bundle_request leiRequest;
-            leiRequest.bundle_code = selectedBundle;
-            leiRequest.mode = dq::domain::publication_mode::upsert;
-            leiRequest.published_by = publishedBy;
-            leiRequest.atomic = true;
-            leiRequest.params_json = leiParamsJson;
-
-            auto leiResult = clientManager->process_authenticated_request(
-                std::move(leiRequest), std::chrono::minutes(5));
-
-            if (!leiResult) {
-                return std::nullopt;
-            }
-            if (!leiResult->success) {
-                return *leiResult;
-            }
-
-            // Step 2: Publish organisation bundle (business units, portfolios, books)
-            // Pass the current party_id so publish functions scope data to this
-            // party rather than resolving the tenant's root party.
-            dq::messaging::publish_bundle_params orgParams;
-            orgParams.party_id = boost::uuids::to_string(
-                clientManager->currentPartyId());
-            dq::messaging::publish_bundle_request orgRequest;
-            orgRequest.bundle_code = "organisation";
-            orgRequest.mode = dq::domain::publication_mode::upsert;
-            orgRequest.published_by = publishedBy;
-            orgRequest.atomic = true;
-            orgRequest.params_json = dq::messaging::build_params_json(orgParams);
-
-            auto orgResult = clientManager->process_authenticated_request(
-                std::move(orgRequest), std::chrono::minutes(5));
-
-            if (!orgResult) {
-                return std::nullopt;
-            }
-            return *orgResult;
-        }
-    );
-
-    watcher->setFuture(future);
 }
 
 // ============================================================================
@@ -490,7 +270,7 @@ void PartyReportSetupPage::loadTemplates() {
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
     connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
+            this, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
@@ -559,26 +339,17 @@ bool PartyReportSetupPage::validatePage() {
     return true;
 }
 
-int PartyReportSetupPage::nextId() const {
-    int checked = 0;
-    for (int i = 0; i < reportList_->count(); ++i) {
-        if (reportList_->item(i)->checkState() == Qt::Checked) {
-            ++checked;
-        }
-    }
-    return checked > 0
-        ? PartyProvisioningWizard::Page_ReportInstall
-        : PartyProvisioningWizard::Page_Summary;
-}
-
 // ============================================================================
-// PartyReportInstallPage
+// PartyExecutePage
 // ============================================================================
 
-PartyReportInstallPage::PartyReportInstallPage(PartyProvisioningWizard* wizard)
+PartyExecutePage::PartyExecutePage(PartyProvisioningWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Creating Report Definitions"));
+    setTitle(tr("Setting Up Party"));
+    setSubTitle(tr("Importing counterparties and configuring organisation structure. "
+                   "Please wait — this may take several minutes."));
+    setCommitPage(true); // Disable Back once execution starts to prevent re-running.
     setFinalPage(false);
 
     auto* layout = new QVBoxLayout(this);
@@ -596,89 +367,305 @@ PartyReportInstallPage::PartyReportInstallPage(PartyProvisioningWizard* wizard)
         "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    layout->addWidget(stepsWidget_, 1);
+
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
     logOutput_->setFont(FontUtils::monospace());
+    logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
 }
 
-bool PartyReportInstallPage::isComplete() const {
-    return installComplete_;
+bool PartyExecutePage::isComplete() const {
+    return allComplete_;
 }
 
-void PartyReportInstallPage::initializePage() {
-    installComplete_ = false;
-    installSuccess_ = false;
+void PartyExecutePage::initializePage() {
+    allComplete_ = false;
+    allSuccess_ = false;
+    publishedBy_ = wizard_->clientManager()->currentUsername();
+
     logOutput_->clear();
-    statusLabel_->setText(tr("Creating report definitions..."));
+    stepsWidget_->setVisible(false);
     progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
         "background: #2d2d2d; height: 20px; }"
         "QProgressBar::chunk { background-color: #4a9eff; }");
+    statusLabel_->setStyleSheet("font-weight: bold;");
 
-    startInstall();
+    // Disconnect any previous workflow connection to avoid duplicate signals.
+    disconnect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+               this, nullptr);
+
+    startCounterpartyPublish();
 }
 
-void PartyReportInstallPage::appendLog(const QString& message) {
-    logOutput_->append(message);
+void PartyExecutePage::appendLog(const QString& msg) {
+    logOutput_->append(msg);
     auto cursor = logOutput_->textCursor();
     cursor.movePosition(QTextCursor::End);
     logOutput_->setTextCursor(cursor);
 }
 
-void PartyReportInstallPage::startInstall() {
-    const auto specs = wizard_->selectedReports();
-    const std::string username = wizard_->clientManager()->currentUsername();
+void PartyExecutePage::markFailed(const QString& errorMsg) {
+    BOOST_LOG_SEV(lg(), error) << "Party setup failed: " << errorMsg.toStdString();
+    statusLabel_->setText(tr("Setup failed: %1").arg(errorMsg));
+    statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
+    progressBar_->setRange(0, 1);
+    progressBar_->setValue(1);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #cc0000; }");
+    appendLog(tr("ERROR: %1").arg(errorMsg));
+    allSuccess_ = false;
+    allComplete_ = true;
+    emit completeChanged();
+}
+
+// Phase 1: Publish counterparties only (opted_in_datasets filter targets the selected size).
+void PartyExecutePage::startCounterpartyPublish() {
+    ClientManager* clientManager = wizard_->clientManager();
+    const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
+    const std::string size = wizard_->leiDatasetSize().toStdString().empty()
+        ? "small" : wizard_->leiDatasetSize().toStdString();
+    const std::string datasetCode = "gleif.lei_counterparties." + size;
+
+    statusLabel_->setText(tr("Importing counterparties (%1 dataset)...")
+        .arg(wizard_->leiDatasetSize()));
+    appendLog(tr("Phase 1: importing counterparties from dataset: %1")
+        .arg(QString::fromStdString(datasetCode)));
+    BOOST_LOG_SEV(lg(), info) << "Phase 1: counterparty publish, dataset=" << datasetCode;
+
+    struct BundleResult {
+        bool success = false;
+        std::string error_message;
+        std::string instance_id;
+        int datasets_dispatched = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished,
+            this, [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Counterparty workflow started: instance="
+            << result.instance_id;
+        appendLog(tr("Counterparty workflow started: %1 dataset(s) dispatched.")
+            .arg(result.datasets_dispatched));
+        statusLabel_->setText(tr("Importing counterparties..."));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+
+        // Connect for this workflow phase.
+        connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+                this, &PartyExecutePage::onCounterpartyWorkflowComplete,
+                Qt::SingleShotConnection);
+        stepsWidget_->setInstance(
+            QUuid::fromString(QString::fromStdString(result.instance_id)));
+    });
+
+    QFuture<BundleResult> future = QtConcurrent::run(
+        [clientManager, selectedBundle, datasetCode,
+         publishedBy = publishedBy_]() -> BundleResult {
+
+            BundleResult result;
+            dq::messaging::publish_bundle_params params;
+            params.opted_in_datasets.push_back(datasetCode);
+            const std::string paramsJson = dq::messaging::build_params_json(params);
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code  = selectedBundle;
+            request.mode         = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic       = true;
+            request.params_json  = paramsJson;
+
+            auto resp = clientManager->process_authenticated_request(
+                std::move(request), std::chrono::minutes(5));
+
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (counterparty publish)";
+                return result;
+            }
+            if (!resp->success) {
+                result.error_message = resp->error_message;
+                return result;
+            }
+            result.success            = true;
+            result.instance_id        = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void PartyExecutePage::onCounterpartyWorkflowComplete(bool success) {
+    stepsWidget_->setVisible(false);
+    progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
+
+    if (!success) {
+        markFailed(tr("Counterparty import workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 1 complete: counterparty workflow succeeded";
+    appendLog(tr("Counterparties imported successfully."));
+    statusLabel_->setText(tr("Publishing organisation structure..."));
+    startOrgPublish();
+}
+
+// Phase 2: Publish organisation bundle (business units, portfolios, books).
+void PartyExecutePage::startOrgPublish() {
     ClientManager* clientManager = wizard_->clientManager();
 
-    BOOST_LOG_SEV(lg(), info) << "Creating " << specs.size()
-                              << " report definitions";
+    appendLog(tr("Phase 2: publishing organisation structure..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 2: organisation bundle publish";
 
-    appendLog(tr("Looking up system party..."));
+    struct BundleResult {
+        bool success = false;
+        std::string error_message;
+        std::string instance_id;
+        int datasets_dispatched = 0;
+    };
 
-    struct InstallResult {
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished,
+            this, [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Organisation workflow started: instance="
+            << result.instance_id;
+        appendLog(tr("Organisation workflow started: %1 dataset(s) dispatched.")
+            .arg(result.datasets_dispatched));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+
+        connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+                this, &PartyExecutePage::onOrgWorkflowComplete,
+                Qt::SingleShotConnection);
+        stepsWidget_->setInstance(
+            QUuid::fromString(QString::fromStdString(result.instance_id)));
+    });
+
+    QFuture<BundleResult> future = QtConcurrent::run(
+        [clientManager, publishedBy = publishedBy_]() -> BundleResult {
+
+            BundleResult result;
+            dq::messaging::publish_bundle_params orgParams;
+            orgParams.party_id = boost::uuids::to_string(
+                clientManager->currentPartyId());
+
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code  = "organisation";
+            request.mode         = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic       = true;
+            request.params_json  = dq::messaging::build_params_json(orgParams);
+
+            auto resp = clientManager->process_authenticated_request(
+                std::move(request), std::chrono::minutes(5));
+
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (org publish)";
+                return result;
+            }
+            if (!resp->success) {
+                result.error_message = resp->error_message;
+                return result;
+            }
+            result.success            = true;
+            result.instance_id        = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void PartyExecutePage::onOrgWorkflowComplete(bool success) {
+    stepsWidget_->setVisible(false);
+    progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
+
+    if (!success) {
+        markFailed(tr("Organisation setup workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 2 complete: org workflow succeeded";
+    appendLog(tr("Organisation structure published successfully."));
+    wizard_->setOrganisationPublished(true);
+
+    const auto& reports = wizard_->selectedReports();
+    if (!reports.empty()) {
+        statusLabel_->setText(tr("Creating report definitions..."));
+        startReportInstall();
+    } else {
+        statusLabel_->setText(tr("Activating party..."));
+        startActivate();
+    }
+}
+
+// Phase 3: Create selected report definitions (sequential, non-workflow).
+void PartyExecutePage::startReportInstall() {
+    const auto specs = wizard_->selectedReports();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    appendLog(tr("Phase 3: creating %1 report definition(s)...")
+        .arg(static_cast<int>(specs.size())));
+    BOOST_LOG_SEV(lg(), info) << "Phase 3: creating " << specs.size() << " reports";
+
+    struct ReportResult {
         bool success = false;
         int created = 0;
         std::string error;
     };
 
-    auto* watcher = new QFutureWatcher<InstallResult>(this);
-    connect(watcher, &QFutureWatcher<InstallResult>::finished,
-            [this, watcher]() {
+    auto* watcher = new QFutureWatcher<ReportResult>(this);
+    connect(watcher, &QFutureWatcher<ReportResult>::finished,
+            this, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Report install failed: "
-                                       << result.error;
-            statusLabel_->setText(tr("Failed to create report definitions."));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error)));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            installSuccess_ = false;
-        } else {
-            BOOST_LOG_SEV(lg(), info) << "Created " << result.created
-                                      << " report definitions";
-            statusLabel_->setText(
-                tr("Created %1 report definition(s) successfully.")
-                    .arg(result.created));
-            installSuccess_ = true;
+            markFailed(QString::fromStdString(result.error));
+            return;
         }
 
-        installComplete_ = true;
-        emit completeChanged();
+        BOOST_LOG_SEV(lg(), info) << "Phase 3 complete: " << result.created << " reports created";
+        appendLog(tr("Created %1 report definition(s).").arg(result.created));
+        statusLabel_->setText(tr("Activating party..."));
+        startActivate();
     });
 
-    QFuture<InstallResult> future = QtConcurrent::run(
-        [clientManager, specs, username]() -> InstallResult {
-            InstallResult result;
+    QFuture<ReportResult> future = QtConcurrent::run(
+        [clientManager, specs, publishedBy = publishedBy_]() -> ReportResult {
+            ReportResult result;
 
-            // Step 1: find system party
+            // Find the system party to assign reports to.
             refdata::messaging::get_parties_request partiesReq;
             partiesReq.limit = 10;
             auto partiesRes = clientManager->process_authenticated_request(
@@ -689,7 +676,6 @@ void PartyReportInstallPage::startInstall() {
                 return result;
             }
 
-            // Use the System-category party (root, no parent). Fall back to first.
             boost::uuids::uuid partyId = partiesRes->parties.front().id;
             for (const auto& p : partiesRes->parties) {
                 if (p.party_category == "System") {
@@ -698,10 +684,7 @@ void PartyReportInstallPage::startInstall() {
                 }
             }
 
-            // Step 2: create each selected report definition
             boost::uuids::random_generator gen;
-            namespace reason = ores::database::domain::change_reason_constants;
-
             for (const auto& spec : specs) {
                 reporting::domain::report_definition def;
                 def.id = gen();
@@ -711,12 +694,11 @@ void PartyReportInstallPage::startInstall() {
                 def.schedule_expression = spec.schedule_expression;
                 def.concurrency_policy = spec.concurrency_policy;
                 def.party_id = partyId;
-                def.modified_by = username;
-                def.performed_by = username;
+                def.modified_by = publishedBy;
+                def.performed_by = publishedBy;
                 def.change_reason_code =
                     std::string(reason::codes::new_record);
-                def.change_commentary =
-                    "Created during party provisioning";
+                def.change_commentary = "Created during party provisioning";
 
                 reporting::messaging::save_report_definition_request req;
                 req.definition = std::move(def);
@@ -729,7 +711,6 @@ void PartyReportInstallPage::startInstall() {
                         (res ? res->message : "no server response");
                     return result;
                 }
-
                 ++result.created;
             }
 
@@ -739,9 +720,100 @@ void PartyReportInstallPage::startInstall() {
     );
 
     watcher->setFuture(future);
+}
 
-    appendLog(tr("Creating %1 report definition(s)...")
-        .arg(static_cast<int>(specs.size())));
+// Phase 4: Mark party status as Active.
+void PartyExecutePage::startActivate() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    appendLog(tr("Phase 4: activating party..."));
+    BOOST_LOG_SEV(lg(), info) << "Phase 4: marking party active";
+
+    struct ActivateResult {
+        bool success = false;
+        std::string error;
+    };
+
+    auto* watcher = new QFutureWatcher<ActivateResult>(this);
+    connect(watcher, &QFutureWatcher<ActivateResult>::finished,
+            this, [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result.success) {
+            // Non-fatal: party may need manual activation.
+            BOOST_LOG_SEV(lg(), warn) << "Party activation failed: " << result.error;
+            appendLog(tr("Warning: could not activate party: %1")
+                .arg(QString::fromStdString(result.error)));
+            appendLog(tr("The party setup wizard may reappear on your next login."));
+        } else {
+            appendLog(tr("Party activated successfully."));
+        }
+
+        statusLabel_->setText(tr("Setup complete!"));
+        statusLabel_->setStyleSheet("font-weight: bold; color: #228B22;");
+        progressBar_->setStyleSheet(
+            "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+            "background: #2d2d2d; height: 20px; }"
+            "QProgressBar::chunk { background-color: #228B22; }");
+
+        allSuccess_ = result.success;
+        allComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<ActivateResult> future = QtConcurrent::run(
+        [clientManager]() -> ActivateResult {
+            ActivateResult result;
+
+            const auto party_id = clientManager->currentPartyId();
+
+            refdata::messaging::get_parties_request list_req;
+            list_req.offset = 0;
+            list_req.limit = 1000;
+            auto list_result = clientManager->process_authenticated_request(
+                std::move(list_req));
+            if (!list_result) {
+                result.error = "Failed to fetch parties";
+                return result;
+            }
+
+            refdata::domain::party party;
+            bool found = false;
+            for (const auto& p : list_result->parties) {
+                if (p.id == party_id) {
+                    party = p;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                result.error = "Party not found in list";
+                return result;
+            }
+
+            party.status = "Active";
+            party.change_commentary = "Party setup wizard completed";
+
+            refdata::messaging::save_party_request save_req;
+            save_req.data = std::move(party);
+            auto save_result = clientManager->process_authenticated_request(
+                std::move(save_req));
+            if (!save_result || !save_result->success) {
+                result.error = save_result
+                    ? save_result->message : "no server response";
+                return result;
+            }
+
+            result.success = true;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
 }
 
 // ============================================================================
@@ -796,16 +868,7 @@ void PartyApplyAndSummaryPage::setupUI() {
 }
 
 void PartyApplyAndSummaryPage::initializePage() {
-    const bool activated = wizard_->markPartyActive();
-
-    QString summary;
-    if (!activated) {
-        summary = tr("<p><b>Warning:</b> Could not activate the party — "
-                     "the party setup wizard may reappear on your next login. "
-                     "Please contact your administrator.</p>");
-    } else {
-        summary = tr("<p>Your party setup has been completed successfully.</p>");
-    }
+    QString summary = tr("<p>Your party setup has been completed successfully.</p>");
 
     if (wizard_->organisationPublished()) {
         summary += tr("<p><b>Organisation data:</b> Counterparties, business units, "

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: b69989f6-19e1-430d-ac6d-b2416e4c433f
+:END:
+#+title: Compass
+#+description: Entry point for the ORE Studio cybernetic information management architecture. Read this first to orient yourself.
+#+type: meta
+#+level: cross
+#+filetags: :meta:overview:entry_point:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Purpose
+
+This directory defines /how/ ORE Studio organises its information. Read these
+documents before producing any content under =doc/v2/=. The contract they
+define is what makes the rest of the system work.
+
+* Reading order
+
+1. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]] — what we mean by task, story, sprint, version, function,
+   plan, recipe.
+2. [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic_levels]] — the five levels of concern and what each is
+   responsible for.
+3. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — every document type, its frontmatter contract, and
+   where it lives.
+4. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — state transitions and how folders represent state.
+5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution_model]] — how LLMs and agents operate inside this system.
+
+* Core invariants
+
+- Every stateful document carries the standard frontmatter described in
+  [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]].
+- Folders encode composition, not state. A document's TODO state lives
+  on its =* Status= headline as an org-mode TODO keyword.
+- Composition is strict: a version is made up of one or more sprints;
+  a sprint is made up of one or more stories; a story is made up of
+  one or more tasks; a task is one PR. No exceptions.
+- Plans are transient. Decisions distil into the story; the plan dies
+  with the task.
+- The user is not responsible for filing. Periodic audit jobs catch
+  drift.
+
+* Out of scope here
+
+How to /do/ things (recipes), what the product /is/ (identity), what we
+/know/ (knowledge). Those live elsewhere — the meta-documents only define
+the form.

@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 2cf90d10-890d-4cb0-a71b-5e8c3261bc54
+:END:
+#+title: Sprint 01
+#+description: Bootstrap project infrastructure and bring currencies end-to-end through the stack.
+#+type: sprint
+#+level: s3
+#+filetags: :bootstrap:currencies:v0:
+#+created: 2024-06-15
+#+updated: 2026-05-18
+#+todo: STARTED | DONE
+
+Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-28]
+:END:
+
+** Now
+Sprint closed 2024-07-28. All stories merged.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-28
+
+* Mission
+
+Bootstrap project infrastructure and bring currencies end-to-end through
+the stack.
+
+(Synthesised from the original two-bullet mission: "Create basic project
+infrastructure" and "Handle currencies front to back".)
+
+* Stories
+
+In execution order:
+
+- [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] — diffuse story covering repo, build, CI, and
+  packaging. The plumbing every later story stands on.
+- [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] — initial Qt application: hello world, splash,
+  refactor toward a usable layout, icon set.
+- [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] — project site, Doxygen, README, seed
+  domain notes.
+- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] — nightly memcheck, Valgrind stabilisation, C++
+  standard bump, vcpkg warning hygiene.
+- [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] — tight story: bring currency data through
+  XML, JSON, the database, and the Qt UI as the pathfinder data type.
+- [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]] — sprint-level work that doesn't fit a
+  product story: sprint instrumentation, dev setup, community channels.
+
+* Retrospective
+
+Filled in retrospect, from the v0 record:
+
+- /What worked/ :: tight time-boxing (~80 hours total), small per-entry
+  work units (median ~30 minutes), explicit acceptance via "Result:"
+  sections.
+- /What did not/ :: the v0 model conflated "story" with "task"; the actual
+  user-visible outcomes (e.g. "currencies end-to-end") were never
+  surfaced as units, so the sprint mission had to do double duty as both
+  intent and acceptance.
+- /Carry forward to v2/ :: the discipline of one PR per task and the
+  habit of recording outcomes inline are preserved; the missing story
+  layer is what the v2 information architecture restores.
+
+* Legacy reference
+
+Original sprint record: =doc/agile/v0/sprint_backlog_01.org=. Includes
+clocktable, per-entry CLOCK logs, and the resourcing/tag PNG charts. The
+v2 task documents below preserve total time and outcomes, but drop the
+per-minute clock entries.
+
+* Notes on the conversion
+
+This sprint was the drive-test for the v2 information architecture. All
+six stories converted (2 in the first pass, 4 implied stories added in
+the second pass). Each story has 3 representative tasks migrated; the
+remaining ~25 v0 entries are listed under each story's /Additional
+tasks belonging to this story in v0 but not migrated in the drive-test/
+section. See =doc/v2/meta/= for the contract these documents follow.

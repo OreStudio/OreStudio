@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: e6fd30ed-963e-4705-b414-91bf471c23d0
+:END:
+#+title: Version 0
+#+description: The pre-1.0 alpha version. Establishes architecture, models all ORE inputs/outputs, and adds GUI for all data operations.
+#+type: version
+#+level: s4
+#+filetags: :v0:alpha:
+#+created: 2024-06-15
+#+updated: 2026-05-18
+#+todo: STARTED | RELEASED
+
+* STARTED Status
+
+** Now
+V0 is the active version. Sprint 16 is the current sprint.
+
+** Waiting on
+Nothing structural; v0 is in flight.
+
+** Next
+Close out remaining v0 sprints toward the definition of done.
+
+** Last touched
+2026-05-18
+
+* Identity
+
+Version 0 is the alpha line — the pre-1.0 effort that lays down the
+architectural foundations and brings every ORE input and output into a
+persistent, GUI-driven environment. It is not feature-complete; it is the
+version where the shape of ORE Studio is settled.
+
+What makes v0 distinct from v1.0: v0 is allowed to be incomplete and to
+break compatibility freely. The product identity (what we are building) is
+durable; the implementation in v0 is not.
+
+* Mission
+
+- Establish the main architectural tiers (database, services, UI).
+- Model all ORE XML inputs and outputs.
+- Add GUI support for every data operation.
+
+* Definition of done
+
+V0 closes when a user can load any ORE sample, execute it, and view the
+results graphically inside ORE Studio.
+
+* Sprints
+
+In lexicographic order. The lexicographically highest sprint folder
+is the current sprint; the rest are closed.
+
+- [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] — Bootstrap project infrastructure and bring currencies
+  end-to-end.
+- Sprint 02 — (to be migrated).
+- ... through Sprint 16.
+
+* Release scope
+
+In scope for v0:
+
+- All ORE XML input types modelled and importable.
+- All ORE output types displayable in the GUI.
+- Persistent storage for every data operation.
+- A working Qt UI that exercises the end-to-end pipeline.
+
+Deferred to later versions:
+
+- Performance optimisation beyond "fast enough to demo".
+- Multi-user / multi-tenant features beyond the minimum scaffolding.
+- Cloud deployment.
+
+* Legacy reference
+
+Original v0 plan: =doc/agile/v0/version_zero.org= (preserved unchanged).

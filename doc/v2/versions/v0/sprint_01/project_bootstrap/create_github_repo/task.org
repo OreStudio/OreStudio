@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: f491ba45-287b-46fb-bf80-7db6f66f59a3
+:END:
+#+title: Create GitHub repository
+#+description: Create the OreStudio GitHub organisation and the initial OreStudio repository with vcpkg support.
+#+type: task
+#+level: s1
+#+filetags: :infrastructure:github:bootstrap:project_bootstrap:
+#+owner: marco
+#+created: 2024-06-15
+#+updated: 2024-06-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-06-15]
+:END:
+
+** Now
+Completed 2024-06-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-06-15
+
+* Goal
+
+Create the project's home on GitHub: a new organisation and an initial
+repository containing a minimal project skeleton with vcpkg support.
+
+* Acceptance
+
+- A GitHub organisation =OreStudio= exists.
+- An =OreStudio/OreStudio= repository exists and is publicly accessible.
+- The repository contains a minimal vcpkg-compatible project that
+  compiles locally.
+
+* Context
+
+This is the seed task for the project. Every later task in v0 assumes
+the repository exists.
+
+* Notes
+
+- Total time spent in v0: ~0:35 (per the v0 clocktable).
+- This task pre-dates the use of feature branches; work was direct to
+  =main=.
+
+* Result
+
+- Repository: [[https://github.com/OreStudio/OreStudio/]]
+- Organisation: =OreStudio= on GitHub.
+
+* Legacy reference
+
+Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Create a basic
+git hub repository/.

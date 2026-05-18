@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 47b71a1d-2848-4842-bad4-9f0c49797fc6
+:END:
+#+title: Set up GitHub Actions
+#+description: Add a basic GitHub Actions workflow that builds the project and surfaces results in CDash.
+#+type: task
+#+level: s1
+#+filetags: :ci:github_actions:cdash:bootstrap:project_bootstrap:
+#+owner: marco
+#+created: 2024-06-22
+#+updated: 2024-06-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-06-22]
+:END:
+
+** Now
+Completed 2024-06-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-06-22
+
+* Goal
+
+Get a basic green build running on every push, with results surfaced in
+CDash so quality data is visible from day one.
+
+* Acceptance
+
+- A GitHub Actions workflow exists and runs on push.
+- The workflow builds the project end-to-end.
+- Results are reported to CDash.
+- At least one pipeline run is green.
+
+* Context
+
+Depends on =Set up vcpkg and CMake= for the build to be reproducible
+inside the runner.
+
+* Notes
+
+- Total time spent in v0: ~1:21.
+- Self-hosted runners considered but rejected for operational simplicity.
+
+* Result
+
+- Workflow definitions:
+  https://github.com/OreStudio/OreStudio/tree/main/.github/workflows
+- Pipelines:
+  https://github.com/OreStudio/OreStudio/actions
+
+* Legacy reference
+
+Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Setup github
+actions/.

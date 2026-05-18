@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: f8642abc-e5b4-48c2-b3e9-9c6028b3cab1
+:END:
+#+title: Add a splash screen to the application
+#+description: Show a brief splash with the project logo during application startup.
+#+type: task
+#+level: s1
+#+filetags: :qt:ux:splash:qt_ui_scaffold:
+#+owner: marco
+#+created: 2024-06-23
+#+updated: 2024-06-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-06-23]
+:END:
+
+** Now
+Completed 2024-06-23.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-06-23
+
+* Goal
+
+Surface the project's identity from the first moment a user runs the
+application: a short splash screen with the logo while the main window
+is being constructed.
+
+* Acceptance
+
+- A =QSplashScreen= appears at startup, ahead of the main window.
+- The splash dismisses cleanly once the main window is shown.
+
+* Notes
+
+- Total time spent in v0: ~0:41.
+- Followed Qt's standard =QSplashScreen= pattern; no custom timer
+  needed.
+
+* Result
+
+- Splash code integrated into the =ores.qt= startup path.
+
+* Legacy reference
+
+Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add a splash
+screen to applciation/ (sic — original typo).

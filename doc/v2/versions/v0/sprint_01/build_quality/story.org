@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 1d334356-f123-43b5-a98e-317ebad2848a
+:END:
+#+title: Build quality
+#+description: Raise the build's quality floor — nightly memcheck, Valgrind, C++ standard alignment, vcpkg hygiene.
+#+type: story
+#+level: s2
+#+filetags: :build:ci:quality:sprint_01:
+#+created: 2024-06-23
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-28]
+:END:
+
+** Now
+Story closed; nightlies green, Valgrind stable, C++ standard bumped,
+vcpkg warnings tamed.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-28
+
+* Goal
+
+Bring the build's quality floor up to a level the rest of v0 can rely
+on: nightly memcheck running, Valgrind clean, the chosen C++ standard
+applied consistently, vcpkg warnings suppressed.
+
+* Acceptance
+
+- A nightly pipeline runs with memcheck enabled.
+- Valgrind runs the unit tests without crashing.
+- Unit tests appear exactly once in nightly reports (no duplicates).
+- vcpkg warnings are silenced or suppressed with a clear rationale.
+- The C++ standard is bumped to the project's chosen version.
+
+* Tasks
+
+In execution order:
+
+- [[id:125319dd-7a6e-4df9-a3f7-0458f4c11256][Add nightly support with memcheck]]
+- [[id:ed38a636-d4c7-4069-9a49-b19c71903ead][Fix Valgrind failing to run unit tests]]
+- [[id:326556b2-f83d-4e55-9e20-63d8ef83ce8e][Update C++ standard]]
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Ignore vcpkg warnings.
+- Unit tests show up twice in nightlies.
+- Add badges from JKQTPlotter.
+- Setup code quality actions (postponed).
+
+* Decisions
+
+- /Memcheck as the canonical nightly check/ :: lighter than ASan +
+  TSan permutations at this stage; we revisit once we have more
+  threading code.
+- /Valgrind fix on the platform side/ :: route taken was to address
+  the symptom in the test harness rather than patch Valgrind itself.
+
+* Out of scope
+
+- Coverage tracking (deferred to its own story).
+- Performance benchmarks (deferred).
+
+* Legacy reference
+
+Source entries in =doc/agile/v0/sprint_backlog_01.org= under the
+=:infra:= tag relating to build, CI, and test infrastructure.

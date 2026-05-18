@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 6030cced-00fd-4375-8798-fed75d2385cd
+:END:
+#+title: Generate Doxygen documentation and add it to the site
+#+description: Wire Doxygen into the build and publish its output as part of the project site.
+#+type: task
+#+level: s1
+#+filetags: :documentation:doxygen:api:documentation_infrastructure:
+#+owner: marco
+#+created: 2024-07-01
+#+updated: 2024-07-01
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-01]
+:END:
+
+** Now
+Completed 2024-07-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-01
+
+* Goal
+
+Generate Doxygen output for the project's public API surface and
+publish it as a section of the project site, so the API can be
+browsed without checking out the source.
+
+* Acceptance
+
+- A Doxyfile exists and is invoked from CMake.
+- Doxygen HTML output is generated as part of the build.
+- The output is linked from the project site.
+
+* Notes
+
+- Total time spent in v0: ~0:51.
+- Doxygen integrated through CMake's =find_package(Doxygen)= and a
+  custom target; no scripting outside CMake.
+
+* Result
+
+- Doxygen output linked from the project site.
+
+* Legacy reference
+
+Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Generate
+Doxygen documentation and add it to site/.

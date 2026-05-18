@@ -57,8 +57,3 @@ the repository exists.
 
 - Repository: [[https://github.com/OreStudio/OreStudio/]]
 - Organisation: =OreStudio= on GitHub.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Create a basic
-git hub repository/.

@@ -72,8 +72,3 @@ In execution order:
 - [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — knowledge doc for the codegen
   internals.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup sqlgen targets.
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_02.org= covering the
-reflect-cpp and sqlgen threads.

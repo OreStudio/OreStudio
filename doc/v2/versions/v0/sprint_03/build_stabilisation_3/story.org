@@ -82,7 +82,3 @@ Additional v0 entries belonging here, not migrated as full tasks:
   recipes that exercise the stabilised build paths.
 - [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) and [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02)
   — predecessor stories in the same thread.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → infra and Windows entries.

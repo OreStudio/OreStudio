@@ -51,8 +51,3 @@ covering the known false positives.
 
 - Suppression file in place; nightly noise reduced to a useful
   signal-to-noise ratio.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add suppression to valgrind
-errors/.

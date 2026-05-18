@@ -51,8 +51,3 @@ browsed without checking out the source.
 * Result
 
 - Doxygen output linked from the project site.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Generate
-Doxygen documentation and add it to site/.

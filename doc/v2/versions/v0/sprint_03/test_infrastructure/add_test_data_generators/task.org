@@ -55,7 +55,3 @@ with the temporal-aware domain types from sprint 02.
 
 =ores.synthetic= library in place; tests build representative inputs from
 it rather than ad-hoc fixtures.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add generators for test data generation/.

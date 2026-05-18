@@ -69,13 +69,6 @@ Filled in retrospect, from the v0 record:
   habit of recording outcomes inline are preserved; the missing story
   layer is what the v2 information architecture restores.
 
-* Legacy reference
-
-Original sprint record: =doc/agile/v0/sprint_backlog_01.org=. Includes
-clocktable, per-entry CLOCK logs, and the resourcing/tag PNG charts. The
-v2 task documents below preserve total time and outcomes, but drop the
-per-minute clock entries.
-
 * Notes on the conversion
 
 This sprint was the drive-test for the v2 information architecture. All

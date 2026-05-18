@@ -58,8 +58,3 @@ the import-to-storage half of the currencies-end-to-end story.
 
 - Working XML import + export for currencies, used by every later
   reference-data type as the pattern template.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add XML parsing
-support for currency/.

@@ -53,7 +53,3 @@ with credentials looked up via tags (so the launcher reads from
 
 Prodigy launcher integration reads credentials from auth-tagged sources;
 no secrets in the launcher config.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Update prodigy to use tags/.

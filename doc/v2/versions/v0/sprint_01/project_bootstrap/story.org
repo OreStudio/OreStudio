@@ -87,8 +87,3 @@ not migrated in the drive-test:
   recipes that exercise what this story put in place.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the first downstream consumer of the build (its
   generators run as part of the project build).
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_01.org=, under the
-=:infra:= tag from the COMPLETED block.

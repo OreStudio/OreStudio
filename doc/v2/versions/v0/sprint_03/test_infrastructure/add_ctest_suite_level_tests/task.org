@@ -55,7 +55,3 @@ is isolated per-suite, the per-case granularity is too slow.
 Suite-level CTest registration adopted. The follow-up issue (CTest only
 running the first case of a suite under certain conditions) carries
 forward to a successor sprint as a =BLOCKED= predecessor link.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add tests at test suite level to ctest/.

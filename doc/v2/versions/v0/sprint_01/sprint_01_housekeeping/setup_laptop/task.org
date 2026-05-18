@@ -53,8 +53,3 @@ integrations needed to work day-to-day.
 * Result
 
 - Dev laptop set up; project builds and tests pass.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Setup laptop
-for development/.

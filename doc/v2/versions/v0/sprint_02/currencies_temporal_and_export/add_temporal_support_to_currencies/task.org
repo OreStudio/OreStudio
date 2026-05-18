@@ -55,8 +55,3 @@ reference-data type uses.
 
 - Currency table bitemporal; pattern propagated to other reference
   types in later sprints.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add temporal support to
-currencies/.

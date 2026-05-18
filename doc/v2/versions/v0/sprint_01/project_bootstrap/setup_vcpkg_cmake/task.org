@@ -56,8 +56,3 @@ for any meaningful project work.
 
 - vcpkg config in repository:
   [[https://github.com/OreStudio/OreStudio/]]
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Setup vcpkg and
-cmake/.

@@ -51,8 +51,3 @@ fetched from a cache hit on most runs.
 
 - vcpkg binary caching restored; CI dependency stage drops from
   minutes to seconds on cache hit.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Investigate build warning
-for vcpkg binary caching/ and /vcpkg caching seems disabled/.

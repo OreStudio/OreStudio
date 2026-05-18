@@ -60,8 +60,3 @@ currency/ and /Add XML parsing support for currency/.
 
 - A working tree/list view of currencies inside =ores.qt=, the first
   data-bound UI in the project.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add basic
-widgets to display currencies/.

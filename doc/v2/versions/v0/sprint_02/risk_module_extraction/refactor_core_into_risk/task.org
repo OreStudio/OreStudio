@@ -52,7 +52,3 @@ the public API to expose risk concepts.
 
 - =risk= module restructured; later sprints build on its public
   surface.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Refactor core into risk/.

@@ -52,8 +52,3 @@ blank page.
 
 - Initial domain notes integrated into the project documentation
   tree.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Copy domain
-notes on core concepts/.

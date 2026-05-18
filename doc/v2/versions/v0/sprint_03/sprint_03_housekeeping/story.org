@@ -74,8 +74,3 @@ tasks in the drive-test:
   housekeeping stories (one per sprint pattern).
 - [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] (this sprint) — partial owner of the
   POSTPONED authentication-bootstrap work that lands fully later.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → various entries under the
-=:agile:= tag, plus the misspell-fix and postponed/cancelled items.

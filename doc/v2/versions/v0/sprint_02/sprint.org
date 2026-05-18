@@ -77,12 +77,6 @@ Filled in retrospect, from the v0 record:
   *not* using GRPC or 0MQ. This is exactly the kind of provenance
   that is missing in the v0 model.
 
-* Legacy reference
-
-Original sprint record: =doc/agile/v0/sprint_backlog_02.org=. The v2
-documents below preserve total time and outcomes; per-minute clock
-entries are dropped.
-
 * Notes on the conversion
 
 Sprint 02 was the second sprint converted to the v2 layout (commit

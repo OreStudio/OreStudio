@@ -85,8 +85,3 @@ the drive-test:
 - [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] / [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — recipes
   that exercise the stabilised pipelines.
 - [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) — predecessor story this builds on.
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_02.org= under the
-=:infra:= and build-related =:code:= tags.

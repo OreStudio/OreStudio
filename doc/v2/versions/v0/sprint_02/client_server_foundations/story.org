@@ -91,8 +91,3 @@ the drive-test:
   server consumes.
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate the comms library builds on.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — destination of the network surface in sprint 03.
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_02.org= covering the
-client/server, comms, GRPC, and 0MQ threads.

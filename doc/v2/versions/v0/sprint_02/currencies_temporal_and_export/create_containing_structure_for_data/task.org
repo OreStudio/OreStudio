@@ -53,9 +53,3 @@ example as a unit.
 * Result
 
 - Containing structure committed; ORE examples loadable as units.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Create a containing
-structure for data/. Originally a POSTPONED entry from
-=doc/agile/v0/sprint_backlog_01.org=.

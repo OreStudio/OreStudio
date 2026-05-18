@@ -49,8 +49,3 @@ CMake presets, the toolchain file, and any per-target overrides.
 * Result
 
 - C++ standard bumped; documented in =CLAUDE.md=.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Update C++
-standard/.

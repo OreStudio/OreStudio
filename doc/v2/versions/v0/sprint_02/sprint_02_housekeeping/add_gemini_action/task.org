@@ -50,7 +50,3 @@ already uses.
 * Result
 
 - Gemini PR-review action enabled in CI.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add gemini action/.

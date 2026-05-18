@@ -55,7 +55,3 @@ rejected on Windows runners.
 * Result
 
 sqlgen patches apply on Windows CI runs.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /vcpkg cannot apply patch on windowws/ (sic).

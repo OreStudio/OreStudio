@@ -57,7 +57,3 @@ integration.
 DB connection params come from the command line / environment, not from
 hard-coded constants; Prodigy and the service share one configuration
 surface.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add command line arguments for database to service/.

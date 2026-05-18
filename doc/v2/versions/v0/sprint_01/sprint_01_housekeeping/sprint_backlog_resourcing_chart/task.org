@@ -51,8 +51,3 @@ story as a bar, length proportional to time spent.
 
 - =sprint_backlog_01_stories.png= committed; visible in the rendered
   sprint report.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Use a bar
-chart for sprint resourcing cost/.

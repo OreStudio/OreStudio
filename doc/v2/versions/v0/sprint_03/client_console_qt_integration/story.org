@@ -77,7 +77,3 @@ Additional v0 entries belonging here, not migrated as full tasks:
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the console host that absorbs the standalone client.
 - [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (sprint 02) — predecessor story.
 - [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] (sprint 01) — predecessor story.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → client/console/Qt entries.

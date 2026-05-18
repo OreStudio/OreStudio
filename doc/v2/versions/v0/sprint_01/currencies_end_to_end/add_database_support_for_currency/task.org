@@ -58,8 +58,3 @@ project.
 
 - Initial currency table committed to the project database under
   =ores.refdata= (then later moved as the schema evolved).
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add database
-support for currency/.

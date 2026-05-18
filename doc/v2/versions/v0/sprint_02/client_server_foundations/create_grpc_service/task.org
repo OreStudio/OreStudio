@@ -60,8 +60,3 @@ The follow-on task =Remove GRPC support= cleaned up the experiment.
 * Result
 
 - No code merged. GRPC removed from the project.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Create a GRPC based service/
-(CANCELLED in v0).

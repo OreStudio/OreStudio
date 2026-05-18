@@ -60,7 +60,3 @@ own SOs/ dynamically and keeping vcpkg deps statically linked.
 Project builds dynamic libraries by default; vcpkg dependencies stay
 static; Qt comes from the distro on Linux. Linker times and CI disk
 pressure both improved.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Build using dynamic libraries/.

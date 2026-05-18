@@ -48,8 +48,3 @@ pipeline produces useful output rather than crashing partway.
 * Result
 
 - Valgrind nightly stabilised; no further crash reports.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Valgrind
-fails to run unit tests/.

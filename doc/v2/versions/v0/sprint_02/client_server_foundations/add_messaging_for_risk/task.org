@@ -51,7 +51,3 @@ client and server, and prove it works end-to-end.
 * Result
 
 - Risk request/response operational over cobalt.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add messaging for risk/.

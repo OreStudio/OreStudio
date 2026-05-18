@@ -48,8 +48,3 @@ backlog as discoveries surface.
 * Result
 
 - Backlog state at sprint close matched delivered work.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Sprint and product backlog
-refinement/.

@@ -79,8 +79,3 @@ Additional v0 entries belonging here, not migrated as full tasks:
 - [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset / output-directory reference used by the
   test pipeline.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — Postgres setup the test-database isolation builds on.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → test-related entries plus the
-BLOCKED CTest item.

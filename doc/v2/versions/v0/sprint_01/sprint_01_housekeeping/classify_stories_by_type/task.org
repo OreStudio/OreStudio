@@ -51,8 +51,3 @@ resourcing-per-type chart can be generated.
 * Result
 
 - Stories tagged; =sprint_backlog_01_tags.png= generated.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Classify
-stories by type/.

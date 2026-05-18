@@ -53,7 +53,3 @@ Linux clang warning configuration on Windows builds.
 
 =windows-msvc-clang-cl-{debug,release}-ninja= presets added in
 =CMakePresets.json=; CI exercises both.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add support for =windows-msvc-clang-cl=/.

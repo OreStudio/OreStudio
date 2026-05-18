@@ -51,8 +51,3 @@ same generated layer drives both JSON and XML.
 
 - XML parsing unified under reflect-cpp; the bespoke XML layer
   retired.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Replace XML parsing with
-reflect cpp/.

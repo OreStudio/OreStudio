@@ -52,8 +52,3 @@ process owns what, and how messages flow.
 
 - Architecture sketch captured; implementation work referenced it
   throughout.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /White-boarding for new
-architecture/ (=:analysis:= tag).

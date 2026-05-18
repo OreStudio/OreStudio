@@ -50,8 +50,3 @@ sync as Linux work raced ahead.
 * Result
 
 - Windows + macOS CI pipelines green.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Fix windows and osx builds/
-and /Windows builds have cmake errors/.

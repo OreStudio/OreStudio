@@ -57,8 +57,3 @@ sprint report.
 
 Sprint and product backlog state at sprint close matched delivered
 work; charts regenerated.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Sprint and product backlog
-refinement/.

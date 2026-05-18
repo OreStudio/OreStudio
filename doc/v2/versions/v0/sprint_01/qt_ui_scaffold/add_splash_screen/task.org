@@ -50,8 +50,3 @@ is being constructed.
 * Result
 
 - Splash code integrated into the =ores.qt= startup path.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add a splash
-screen to applciation/ (sic — original typo).

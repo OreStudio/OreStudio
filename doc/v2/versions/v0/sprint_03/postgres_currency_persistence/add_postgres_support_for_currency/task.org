@@ -53,7 +53,3 @@ work for the first reference-data type.
 * Result
 
 Currency repository persists and loads through Postgres.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add postgres support for currency/.

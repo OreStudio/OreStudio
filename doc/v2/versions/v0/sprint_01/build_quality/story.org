@@ -83,8 +83,3 @@ the drive-test:
 - [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) and [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]]
   (sprint 03) — successor stories that addressed the longer-tail
   build issues this story left open.
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_01.org= under the
-=:infra:= tag relating to build, CI, and test infrastructure.

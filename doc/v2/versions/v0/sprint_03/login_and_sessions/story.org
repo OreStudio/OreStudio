@@ -77,7 +77,3 @@ Additional v0 entries belonging here, not migrated as full tasks:
   put the socket layer in place.
 - [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client console and Qt integration]] (this sprint) — the sibling
   story that wires the UI to use what this story landed.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → account / session entries.

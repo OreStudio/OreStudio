@@ -50,8 +50,3 @@ the regular feedback loop.
 
 - Nightly memcheck workflow added under
   =.github/workflows/nightly-linux.yml=.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add nightly
-support with memcheck/.

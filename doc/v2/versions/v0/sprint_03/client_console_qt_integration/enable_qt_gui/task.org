@@ -57,7 +57,3 @@ turn Qt back on.
 
 Qt GUI re-enabled; runs over the cobalt client. The dynamic-library +
 distro-Qt combination keeps CI disk usage under budget.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Enable qt gui/.

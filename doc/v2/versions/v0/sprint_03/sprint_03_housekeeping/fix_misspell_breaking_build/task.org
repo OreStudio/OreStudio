@@ -54,7 +54,3 @@ outright.
 * Result
 
 Build no longer breaks on URL-driven misspell-fixer faults.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Fix misspell that causes build to break/.

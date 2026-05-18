@@ -51,8 +51,3 @@ vcpkg + Qt + CI chain works end-to-end.
 
 - Qt project:
   https://github.com/OreStudio/OreStudio/tree/main/projects/ores.qt
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add a Qt
-hello world/.

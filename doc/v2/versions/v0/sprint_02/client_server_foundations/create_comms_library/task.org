@@ -52,7 +52,3 @@ code on either side.
 * Result
 
 - =ores.comms= library committed; client and server consume it.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Create a =comms= library/.

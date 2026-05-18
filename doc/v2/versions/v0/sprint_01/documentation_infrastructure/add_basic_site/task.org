@@ -48,8 +48,3 @@ it. This becomes the home for everything written about the project.
 * Result
 
 - Project site published; org-mode is the source of truth.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Add basic
-site/.

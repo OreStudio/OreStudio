@@ -51,8 +51,3 @@ application that can issue requests.
 * Result
 
 - Cobalt server/client running; basic round-trip working end-to-end.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Implement a cobalt based
-server and client/.

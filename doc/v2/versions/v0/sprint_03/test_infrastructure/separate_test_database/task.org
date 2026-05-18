@@ -58,7 +58,3 @@ other.
 
 Tests run against an isolated database with no overlap into the
 application's state; env-var namespaces no longer collide.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Separate test database usage from application/.

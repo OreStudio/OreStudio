@@ -56,7 +56,3 @@ source of the Valgrind noise the team had been chasing.
 
 Class-level logging adopted; v0 noted that whatever caused the Valgrind
 chatter is now isolated to OpenSSL (see /Investigate Valgrind leaks/).
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Implement logging according to correct boost.log usage/.

@@ -59,8 +59,3 @@ the main-window-following table size.
 
 - Refactored Qt UI in =projects/ores.qt= covering all six acceptance
   points.
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Refactor Qt
-UI/.

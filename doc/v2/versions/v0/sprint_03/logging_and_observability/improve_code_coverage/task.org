@@ -52,7 +52,3 @@ and add targeted tests.
 * Result
 
 Coverage lifted across the under-tested modules; baseline is green.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Improve code coverage/.

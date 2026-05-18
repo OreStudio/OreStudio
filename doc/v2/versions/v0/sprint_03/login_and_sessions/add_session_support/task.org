@@ -54,7 +54,3 @@ log in and log out.
 * Result
 
 Login and logout work end-to-end across client and server.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add session support/.

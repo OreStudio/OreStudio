@@ -54,7 +54,3 @@ is more honest about the call sites.
 
 =write_one= available across repositories; redundant single-element vectors
 removed from call sites.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add write one to repository/.

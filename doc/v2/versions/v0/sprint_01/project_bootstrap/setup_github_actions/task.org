@@ -58,8 +58,3 @@ inside the runner.
   https://github.com/OreStudio/OreStudio/tree/main/.github/workflows
 - Pipelines:
   https://github.com/OreStudio/OreStudio/actions
-
-* Legacy reference
-
-Original entry: =doc/agile/v0/sprint_backlog_01.org= → /Setup github
-actions/.

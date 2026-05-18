@@ -49,8 +49,3 @@ database against an ORE example.
 * Result
 
 - =currencies dump= command shipped; integration tests green.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add command to dump
-currencies/.

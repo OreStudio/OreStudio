@@ -55,7 +55,3 @@ a suppression rather than a fix.
 
 Project-side leaks resolved; OpenSSL-induced leaks suppressed; remaining
 OpenSSL items isolated and tracked as carry-over.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Investigate leaks from valgrind/.

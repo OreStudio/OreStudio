@@ -70,9 +70,3 @@ Filled in retrospect, from the v0 record:
   over to a later sprint.
 - /Carry forward to v2/ :: blocked items become explicit successors
   rather than disappearing into retro bullets.
-
-* Legacy reference
-
-Original sprint record: =doc/agile/v0/sprint_backlog_03.org=. The v2
-documents below preserve total time and outcomes; per-minute clock
-entries are dropped.

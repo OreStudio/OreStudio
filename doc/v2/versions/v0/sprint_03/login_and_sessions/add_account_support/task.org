@@ -57,7 +57,3 @@ session-based authentication and any later authorisation work.
 
 Account domain type, repository, and round-trip path land. Lockout logic
 in place via integer-as-bool workaround.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Add account support/ and /Add locking up logic/.

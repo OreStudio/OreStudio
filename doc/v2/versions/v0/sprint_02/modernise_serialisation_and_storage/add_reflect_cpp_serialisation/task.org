@@ -52,8 +52,3 @@ serialisation code.
 * Result
 
 - reflect-cpp wired into the build; JSON serialisers regenerated.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Add serialisation support
-for reflect-cpp/.

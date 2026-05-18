@@ -90,8 +90,3 @@ the drive-test:
   site renders.
 - [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] (v2 entry point) — successor of the org-publish driven site
   for the new information architecture.
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_01.org=, under the
-=:doc:= and =:infra:= tags relating to site/documentation work.

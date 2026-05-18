@@ -84,8 +84,3 @@ the drive-test:
 - [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — v2 retired the per-entry tag classification (its v0
   tag-by-letter mechanism became the v2 multi-dimensional filetag
   system).
-
-* Legacy reference
-
-Source entries in =doc/agile/v0/sprint_backlog_01.org= under the
-=:agile:= tag plus the Discord and laptop setup entries.

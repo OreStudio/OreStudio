@@ -51,7 +51,3 @@ documentation. No semantic changes; only a name change.
 
 - Rename PR merged. Follow-on refactor task picked up the semantic
   cleanup.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_02.org= → /Rename =core= to =risk=/.

@@ -55,7 +55,3 @@ surface with less ceremony.
 
 =ores.cli= absorbs the client mode; the standalone =ores.client= binary is
 retired.
-
-* Legacy reference
-
-=doc/agile/v0/sprint_backlog_03.org= → /Merge client into console/.

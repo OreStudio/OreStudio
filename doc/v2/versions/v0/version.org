@@ -74,7 +74,3 @@ Deferred to later versions:
 - Performance optimisation beyond "fast enough to demo".
 - Multi-user / multi-tenant features beyond the minimum scaffolding.
 - Cloud deployment.
-
-* Legacy reference
-
-Original v0 plan: =doc/agile/v0/version_zero.org= (preserved unchanged).

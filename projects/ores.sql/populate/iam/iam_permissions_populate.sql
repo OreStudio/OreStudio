@@ -195,6 +195,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::*', 'Full access to all reference data operations');
 
     -- =============================================================================
+    -- Workspace Component Permissions
+    -- =============================================================================
+
+    -- Workspace management permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:read',   'View workspace details');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:write',  'Create and modify workspaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:delete', 'Archive workspaces');
+
+    -- Workspace component wildcard
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::*', 'Full access to all workspace operations');
+
+    -- =============================================================================
     -- Variability Component Permissions
     -- =============================================================================
 

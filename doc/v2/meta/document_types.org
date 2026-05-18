@@ -327,6 +327,35 @@ has gone stale.
 The parent sprint link sits as a one-line =Parent sprint: [[id:...][...]]= after
 the frontmatter.
 
+*** Cross-sprint stories — predecessor and successor
+
+A story belongs to exactly one sprint. When work cannot fit a single
+sprint, the story closes =DONE= with whatever landed and a /successor/
+story is created in the next sprint. Optional frontmatter fields link
+the two:
+
+#+begin_src org
+,#+predecessor: <id-of-prior-story>    ; on the successor: where the work began
+,#+successor:   <id-of-next-story>     ; on the predecessor: where the work continues
+#+end_src
+
+Both fields carry the target story's =:ID:= (not its slug — slugs may
+collide across sprints).
+
+Inline body conventions:
+
+- On the successor :: =Continued from: [[id:<predecessor>][...]]= sits
+  immediately after the parent-sprint link, so a reader sees the
+  history at the top.
+- On the predecessor :: a =Continued in: [[id:<successor>][...]]= note
+  goes into =* Decisions=, recorded when the successor is created.
+
+The successor's slug is the original slug suffixed with =_continued=,
+=_phase_2=, or similar — pick whichever reads better in context.
+
+Audit verifies bidirectional links: every =#+predecessor= has a
+matching =#+successor= pointing back.
+
 ** sprint
 
 - Folder :: =versions/<v>/<sprint_NN>/sprint.org=

@@ -95,6 +95,19 @@ keyword (state) and four subheadings (=** Now=, =** Waiting on=,
 detail. Updated every time an orchestrator or agent acts on the
 document.
 
+* Predecessor story
+
+A story in a prior sprint that the current story continues. Captured
+as =#+predecessor: <id>= frontmatter plus a =Continued from: [[id:...][...]]=
+line in the body. See cross-sprint stories in [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]].
+
+* Successor story
+
+A story in a later sprint that picks up where this one left off.
+Captured as =#+successor: <id>= frontmatter plus a =Continued in:
+[[id:...][...]]= note in =* Decisions=. Audit verifies bidirectional
+linkage.
+
 * Agent
 
 A subprocess forked by a System 2 orchestrator LLM to execute one task.

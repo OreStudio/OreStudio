@@ -35,6 +35,9 @@ define is what makes the rest of the system work.
 - Composition is strict: a version is made up of one or more sprints;
   a sprint is made up of one or more stories; a story is made up of
   one or more tasks; a task is one PR. No exceptions.
+- A story belongs to exactly one sprint. Work that spans sprints
+  closes the current story and opens a /successor/ in the next sprint,
+  with =#+predecessor=/=#+successor= links.
 - Plans are transient. Decisions distil into the story; the plan dies
   with the task.
 - The user is not responsible for filing. Periodic audit jobs catch

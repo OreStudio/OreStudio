@@ -94,6 +94,37 @@ Transitions:
 - =* → ABANDONED= :: the story is dropped. Record why in
   =* Decisions=.
 
+** Cross-sprint stories
+
+A story belongs to exactly one sprint. When work does not fit, the
+preferred pattern is /not/ to drag the story across sprints but to
+close it in the current sprint and continue under a new story in the
+next:
+
+1. At sprint close, the story in sprint N moves to =DONE= reflecting
+   whatever landed. Tasks that didn't make it are either moved to the
+   successor's =BACKLOG= or recorded in the predecessor's
+   =* Out of scope=.
+2. A successor story is created in sprint N+1 with:
+   - A fresh =:ID:= and a slug suffixed with =_continued= or =_phase_2=.
+   - =#+predecessor: <id-of-prior-story>= frontmatter.
+   - A =Continued from: [[id:...][...]]= line under the parent-sprint
+     link.
+3. The predecessor is updated:
+   - =#+successor: <id-of-successor-story>= frontmatter.
+   - A =Continued in: [[id:...][...]]= note in =* Decisions=.
+
+The same pattern applies across version boundaries.
+
+Tasks /can/ carry over in practice (an attempted task in sprint N
+finishes in sprint N+1). The task itself lives where it finished; we
+don't track per-task predecessor links. If the original attempt was
+substantial enough to matter, it is mentioned in the task's =* Notes=.
+
+Discovered work that doesn't fit /either/ the current sprint or the
+next goes to the product backlog rather than into a sprint. System 3
+(sprint planning) pulls it into a sprint when it fits.
+
 * Sprint lifecycle
 
 TODO vocabulary: =STARTED | DONE=.
@@ -145,3 +176,5 @@ these documents do not change state through the lifecycle machinery.
 - =STARTED= stories have at least one task in =STARTED=, =BLOCKED=, or
   =DONE= within the last N days.
 - Every id-link resolves.
+- For every story carrying =#+predecessor=, the target story has a
+  matching =#+successor= pointing back (and vice versa).

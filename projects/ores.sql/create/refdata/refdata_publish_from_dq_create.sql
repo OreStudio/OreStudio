@@ -2069,7 +2069,10 @@ begin
         raise exception 'LEI dataset not found for size: %', v_dataset_size;
     end if;
 
-    v_root_lei := p_params ->> 'root_lei';
+    v_root_lei := coalesce(
+        p_params ->> 'root_lei',
+        p_params -> 'lei_parties' ->> 'root_lei'
+    );
     if v_root_lei is null or v_root_lei = '' then
         raise exception 'root_lei parameter is required for LEI parties publication';
     end if;

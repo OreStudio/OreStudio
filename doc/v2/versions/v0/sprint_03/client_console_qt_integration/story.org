@@ -69,6 +69,15 @@ Additional v0 entries belonging here, not migrated as full tasks:
 - A bespoke Qt theme.
 - Multi-window layouts (deferred).
 
+* See also
+
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component the story rewires.
+- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] — the connection primitives the Qt client speaks.
+- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate underneath.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the console host that absorbs the standalone client.
+- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (sprint 02) — predecessor story.
+- [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] (sprint 01) — predecessor story.
+
 * Legacy reference
 
 =doc/agile/v0/sprint_backlog_03.org= → client/console/Qt entries.

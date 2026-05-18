@@ -65,6 +65,16 @@ In execution order:
 - Read-replica support (deferred).
 - Connection pooling tuning beyond defaults (deferred).
 
+* See also
+
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component that hosts the
+  currency repository.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup; sqlgen targets this.
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — host of the new database CLI flags.
+- [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] (sprint 01) and [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal and
+  export]] (sprint 02) — predecessor stories in the currency thread.
+- [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] (domain note).
+
 * Legacy reference
 
 =doc/agile/v0/sprint_backlog_03.org= → Postgres / currency / db CLI

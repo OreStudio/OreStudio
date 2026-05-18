@@ -71,6 +71,15 @@ Additional v0 entries belonging here, not migrated as full tasks:
 - Replacing Boost.Log with another logging library.
 - Distributed tracing (introduced later in a telemetry story).
 
+* See also
+
+- [[id:1fbcc86b-8e04-4f81-8558-85c0b6c54836][ores.logging]] — the logging component this story rewires onto
+  proper Boost.Log usage.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the Valgrind / suppression details this story
+  refers to.
+- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) and [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02)
+  — predecessor stories that first surfaced the Valgrind issues.
+
 * Legacy reference
 
 =doc/agile/v0/sprint_backlog_03.org= → logging / Valgrind / coverage

@@ -109,7 +109,7 @@ Opening a single task document must answer four questions: /what is
 this task, what is the LLM doing right now, what is it waiting for,
 what is next/. The =* Status= headline carries the TODO state and its
 subheadings carry the operational detail. See =task= in
-[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] for the structure.
+[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] for the structure.
 
 The implication for the orchestrator and agent: /every meaningful
 action updates Status and =#+updated= before control yields/. This is

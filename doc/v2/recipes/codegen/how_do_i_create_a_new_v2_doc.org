@@ -10,7 +10,7 @@
 #+updated: 2026-05-18
 
 For the contract every generated document follows (frontmatter,
-sections, TODO vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]]. For background on
+sections, TODO vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on
 the generator itself, see [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
 
 * Question
@@ -185,7 +185,7 @@ Manual smoke tests during initial development. No automated test yet
 
 - [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++ model-driven generator on the same
   infrastructure.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the contract every generated document follows.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the contract every generated document follows.
 - [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — cross-sprint stories use =#+predecessor=/=#+successor=.
 - =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
   reference.

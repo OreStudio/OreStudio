@@ -12,7 +12,7 @@
 * Task
 
 The smallest unit of executable work. One task = one PR. Bounded by a
-concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]]). Owned by System 1.
+concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]). Owned by System 1.
 
 * Story
 
@@ -111,7 +111,7 @@ linkage.
 * Agent
 
 A subprocess forked by a System 2 orchestrator LLM to execute one task.
-Operates at System 1. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution_model]].
+Operates at System 1. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]].
 
 * Orchestrator
 

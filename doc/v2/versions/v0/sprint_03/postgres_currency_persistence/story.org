@@ -51,7 +51,7 @@ configurable via CLI flags.
 In execution order:
 
 - [[id:662f38b1-2474-4815-805c-3545d942a861][Add Postgres support for currency]]
-- [[id:4960fbb8-43bd-4936-b407-a1d9c797d7be][Add write_one to repository]]
+- [[id:4960fbb8-43bd-4936-b407-a1d9c797d7be][Add write-one to repository]]
 - [[id:db5b3729-820d-4d11-8dc4-5a2fed022463][Add database command-line arguments to service]]
 
 * Decisions

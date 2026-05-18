@@ -10,7 +10,7 @@
 #+updated: 2026-05-18
 
 For the convention on which recipes should carry a =#+RESULTS:=
-snapshot, see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] (the recipe section).
+snapshot, see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] (the recipe section).
 
 * Question
 
@@ -92,5 +92,5 @@ exercised in CI.
   snapshot.
 - [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the publish pipeline also runs emacs in
   batch mode against the org tree.
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — recipe section, where the snapshot convention
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — recipe section, where the snapshot convention
   is defined.

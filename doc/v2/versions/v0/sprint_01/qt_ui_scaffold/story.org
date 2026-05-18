@@ -72,6 +72,16 @@ drive-test:
 - Multiple themes (deferred; one theme to start).
 - Docking widgets (deferred).
 - Localisation.
+- Wiring the UI to a network layer — that pivot comes in sprint 03's
+  [[id:eda3d069-f3c1-43b5-93fb-e5705a8f9adc][Client console and Qt integration]], once cobalt is in place.
+
+* See also
+
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the component model this story stood up. The model/view
+  pattern and FastTrack-derived settings hooks land here first and
+  propagate to every later widget.
+- [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] (this sprint) — the first widget that
+  consumes the model/view pattern.
 
 * Legacy reference
 

@@ -78,6 +78,19 @@ the drive-test:
 - A separate developer manual vs. user manual (deferred — handled by
   generated views in v2).
 
+* See also
+
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — recipe for the =deploy_site= CMake
+  target that this story stood up.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — sibling pipeline for the Claude Code
+  skill bundle.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — the diagram pipeline that
+  later replaced the abandoned org-babel PlantUML conversion.
+- =doc/doc.org= — the top-level v1 documentation index that the basic
+  site renders.
+- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] (v2 entry point) — successor of the org-publish driven site
+  for the new information architecture.
+
 * Legacy reference
 
 Source entries in =doc/agile/v0/sprint_backlog_01.org=, under the

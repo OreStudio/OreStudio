@@ -70,8 +70,19 @@ the drive-test:
 
 * Out of scope
 
-- Coverage tracking (deferred to its own story).
+- Coverage tracking — deferred to sprint 03's [[id:1a411b50-2c3a-4248-9ae7-59a835ef6774][Logging and
+  observability]] story.
 - Performance benchmarks (deferred).
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu and the parallel-build configuration
+  this story established.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — the recipe that exercises the test
+  pipeline this story stabilised.
+- [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02) and [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]]
+  (sprint 03) — successor stories that addressed the longer-tail
+  build issues this story left open.
 
 * Legacy reference
 

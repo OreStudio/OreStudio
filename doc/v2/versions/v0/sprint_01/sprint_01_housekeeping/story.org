@@ -77,6 +77,14 @@ the drive-test:
 - Long-term agile tooling beyond what the sprint needs immediately.
 - Cross-sprint instrumentation (would be its own story when needed).
 
+* See also
+
+- [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 02 housekeeping]] / [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]] — successor
+  housekeeping stories. Pattern: one per sprint.
+- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — v2 retired the per-entry tag classification (its v0
+  tag-by-letter mechanism became the v2 multi-dimensional filetag
+  system).
+
 * Legacy reference
 
 Source entries in =doc/agile/v0/sprint_backlog_01.org= under the

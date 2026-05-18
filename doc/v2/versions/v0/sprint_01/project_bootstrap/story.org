@@ -72,9 +72,21 @@ not migrated in the drive-test:
 
 * Out of scope
 
-- Multi-platform CI (only Linux at this point).
+- Multi-platform CI (only Linux at this point — Windows and macOS
+  come back to bite in [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] in sprint 02 and again
+  in sprint 03).
 - Code signing.
-- Code quality gates beyond a green build (deferred to a later story).
+- Code quality gates beyond a green build — picked up by [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build
+  quality]] later in this same sprint.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — the preset menu and output directory layout this
+  story established.
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] / [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] —
+  recipes that exercise what this story put in place.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the first downstream consumer of the build (its
+  generators run as part of the project build).
 
 * Legacy reference
 

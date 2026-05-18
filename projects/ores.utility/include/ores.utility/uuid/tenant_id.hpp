@@ -48,6 +48,22 @@ inline constexpr char nil_uuid_str[] = "00000000-0000-0000-0000-000000000000";
 inline constexpr char max_uuid_str[] = "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
 /**
+ * @brief String representation of the Live workspace sentinel UUID.
+ *
+ * Version nibble 'a' (decimal 10) is outside the valid UUID version range
+ * 1-8, so no standard UUID generator will ever produce this value. It is
+ * used as the stable well-known identifier of the Live (root) workspace.
+ *
+ * The nil UUID is intentionally not used here: it is the default value of a
+ * default-constructed boost::uuids::uuid, which would cause uninitialized
+ * workspace_id fields to silently resolve to Live. The max UUID is reserved
+ * for the system tenant.
+ *
+ * SQL equivalent: ores_utility_live_workspace_id_fn()
+ */
+inline constexpr char live_workspace_uuid_str[] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+
+/**
  * @class tenant_id
  * @brief A strongly-typed wrapper around a UUID representing a tenant identifier.
  *

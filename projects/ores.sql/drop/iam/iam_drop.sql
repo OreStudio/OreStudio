@@ -22,6 +22,8 @@
 \ir ./iam_system_provisioner_drop.sql
 \ir ./iam_tenant_deprovisioner_drop.sql
 \ir ./iam_tenant_reset_drop.sql
+\ir ./iam_tenant_bootstrap_reset_drop.sql
+\ir ./iam_system_reset_drop.sql
 \ir ./iam_tenant_provisioner_drop.sql
 
 -- Account-party association (dropped before accounts and RBAC)

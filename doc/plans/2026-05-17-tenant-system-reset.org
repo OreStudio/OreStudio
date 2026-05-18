@@ -1,0 +1,208 @@
+#+TITLE: Tenant and System Bootstrap Reset
+#+SUBTITLE: Dev-cycle reset from shell scripts through to system-admin UI
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: IN-PROGRESS
+#+OPTIONS: toc:t num:nil
+
+* Background
+
+During development iteration it is necessary to re-run the provisioning
+wizards without recreating the entire database.  Three distinct reset
+levels are needed:
+
+- *Party-level reset* (~ores_iam_reset_tenant_fn~) — soft-deletes
+  admin-created data (counterparties, org units, books, report
+  definitions) and flips Operational parties back to ~Inactive~ so the
+  ~PartyProvisioningWizard~ fires on next login.  This function already
+  exists.
+
+- *Tenant bootstrap reset* — same as party-level reset, plus re-enables
+  ~system.bootstrap_mode~ for the tenant so the ~TenantProvisioningWizard~
+  also fires on next login.
+
+- *System bootstrap reset* — purges all non-system tenants, removes the
+  system admin account, and re-enables ~system.bootstrap_mode~ for the
+  system tenant so the ~SystemProvisionerWizard~ fires on next startup.
+
+Shell scripts (~reset_tenant.sh~, ~reset_system.sh~) and their
+underlying SQL functions (~ores_iam_reset_tenant_bootstrap_fn~,
+~ores_iam_reset_system_fn~) were implemented on branch
+~feature/dq-publish-pattern~, but revealed two issues when smoke-tested:
+
+1. The ~change_reason_code~ ~system.admin_reset~ used in the functions
+   does not exist in ~ores_dq_change_reasons_tbl~.
+
+2. The functions are not ~SECURITY DEFINER~, so they cannot be invoked
+   by a service DB user that lacks DML rights on
+   ~ores_variability_system_settings_tbl~ — a service isolation
+   violation waiting to happen when we add the NATS handler.
+
+This plan addresses both issues and completes the reset feature end-to-end:
+from a correctly seeded change reason and hardened SQL functions through to
+a NATS handler in ~ores.iam.core~ and a UI action in the system admin area.
+
+* Architecture
+
+** Why IAM owns the reset operation
+
+The tenant lifecycle functions (~provision~, ~terminate~, ~deprovision~,
+~purge~, ~reset~) all live in ~ores.iam.core~ and are called from the
+IAM service.  Bootstrap reset is a tenant lifecycle operation, so it
+belongs in the same service.
+
+The SQL functions write across service boundaries (IAM tables and
+~ores_variability_system_settings_tbl~).  This is handled the same way
+as the existing ~ores_iam_create_initial_admin_fn~ provisioner: the
+functions are declared ~SECURITY DEFINER SET search_path = public,
+pg_temp~ so they execute with DDL-owner privileges.  The IAM service DB
+user only needs ~EXECUTE~ on the function — no cross-service DML grant
+is required.
+
+** Change reason code
+
+~system.admin_reset~ is seeded as a new system change reason in the DQ
+change reasons population script.  Using ~system.initial_load~ would
+be semantically incorrect (it means first-ever creation, not re-trigger
+by an administrator).  A dedicated code gives a clear audit trail.
+
+** NATS subjects
+
+Two new subjects in the ~iam.v1.system~ namespace:
+
+| Subject                        | Handler                       |
+|--------------------------------+-------------------------------|
+| ~iam.v1.system.reset-tenant~   | ~reset_tenant_handler~        |
+| ~iam.v1.system.reset~          | ~reset_system_handler~        |
+
+Only a user with the ~SuperAdmin~ role may invoke these subjects.  The
+handler validates the role before executing the SQL function.
+
+** UI placement
+
+- *Reset Tenant* — context menu on the tenant row in the system admin
+  tenant list (the existing ~TenantsWindow~ or equivalent).  Opens a
+  confirmation dialog, then runs the NATS call through the workflow
+  steps widget pattern so progress is visible.
+
+- *Reset System* — a dedicated action in the system settings / admin
+  area, behind a second confirmation (type "yes" style) given its
+  destructive scope.
+
+* Implementation Plan
+
+** Phase 1 — Seed ~system.admin_reset~ change reason   [IN-PROGRESS]
+
+*** Tasks
+
+- [ ] Add ~system.admin_reset~ to the system change reasons population
+  script (~projects/ores.sql/populate/dq/~).  The reason should be
+  seeded for the system tenant only; other tenants inherit system
+  change reasons via the shared-governance lookup in
+  ~ores_dq_validate_change_reason_fn~.
+
+- [ ] Apply to the running database.
+
+- [ ] Verify the reason is visible:
+  #+begin_src sql
+  SELECT code FROM ores_dq_change_reasons_tbl
+  WHERE code = 'system.admin_reset'
+    AND tenant_id = ores_utility_system_tenant_id_fn()
+    AND valid_to = ores_utility_infinity_timestamp_fn();
+  #+end_src
+
+** Phase 2 — Harden SQL functions                      [IN-PROGRESS]
+
+*** Tasks
+
+- [ ] Add ~SECURITY DEFINER SET search_path = public, pg_temp~ to both
+  ~ores_iam_reset_tenant_bootstrap_fn~ and ~ores_iam_reset_system_fn~
+  in their respective ~create/iam/~ SQL files.
+
+- [ ] Change ~change_reason_code~ argument from ~system.initial_load~
+  (placeholder) to ~system.admin_reset~ in both functions.
+
+- [ ] Re-apply both functions to the running database.
+
+- [ ] Smoke-test via shell scripts:
+  #+begin_src sh
+  ./projects/ores.sql/reset_tenant.sh -t barclays_plc -y
+  #+end_src
+
+** Phase 3 — IAM messaging protocol                    [ ]
+
+*** Tasks
+
+- [ ] Add protocol types to ~ores.iam.api~:
+  - ~reset_tenant_command~ (field: ~tenant_code: string~)
+  - ~reset_tenant_result~ (fields: ~success: bool~, ~message: string~)
+  - ~reset_system_command~ (no fields)
+  - ~reset_system_result~ (fields: ~success: bool~, ~message: string~)
+
+- [ ] Declare NATS subjects in the IAM API protocol header:
+  ~iam.v1.system.reset-tenant~ and ~iam.v1.system.reset~.
+
+- [ ] Add entries to the IAM service CMakeLists if any new source files
+  are introduced.
+
+** Phase 4 — IAM service handlers                      [ ]
+
+*** Tasks
+
+- [ ] Implement ~reset_tenant_handler~ in ~ores.iam.core~:
+  - Decode ~reset_tenant_command~
+  - Verify caller has ~SuperAdmin~ role (via ~wf->tenant_id~ and RBAC
+    check helper, same pattern as other privileged handlers)
+  - Call ~ores_iam_reset_tenant_bootstrap_fn(tenant_code)~ via
+    parameterised query
+  - Return ~reset_tenant_result~
+
+- [ ] Implement ~reset_system_handler~ in ~ores.iam.core~:
+  - Decode ~reset_system_command~
+  - Verify caller has ~SuperAdmin~ role
+  - Call ~ores_iam_reset_system_fn()~
+  - Return ~reset_system_result~
+
+- [ ] Subscribe both handlers in the IAM service startup / subscription
+  wiring (wherever ~publish_from_dq_handler~ and similar are wired).
+
+- [ ] Build and verify handlers compile cleanly.
+
+** Phase 5 — Qt UI                                     [ ]
+
+*** Tasks
+
+- [ ] *Reset Tenant* action:
+  - Add a "Reset Tenant…" item to the context menu (or toolbar button)
+    in the system admin tenant management view.
+  - On trigger: show a confirmation dialog explaining what will be
+    wiped and what is preserved (mirror the shell script banner text).
+  - On confirm: send ~iam.v1.system.reset-tenant~ via the workflow
+    steps widget pattern so the user sees progress and the result.
+
+- [ ] *Reset System* action:
+  - Add a "Reset System…" action in the system settings / admin area,
+    clearly separated from routine admin actions.
+  - On trigger: show a two-step confirmation dialog (explain
+    destructive scope; require the user to type "yes").
+  - On confirm: send ~iam.v1.system.reset~ via the workflow steps
+    widget pattern.
+
+- [ ] Emit appropriate signals on success so the tenant list / session
+  state refreshes automatically after a reset.
+
+* Files Affected
+
+| File | Change |
+|------+--------|
+| ~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~ | Add ~system.admin_reset~ reason |
+| ~projects/ores.sql/create/iam/iam_tenant_bootstrap_reset_create.sql~ | SECURITY DEFINER + correct reason code |
+| ~projects/ores.sql/create/iam/iam_system_reset_create.sql~ | SECURITY DEFINER + correct reason code |
+| ~projects/ores.sql/reset_tenant.sh~ | Already created; shell script |
+| ~projects/ores.sql/reset_system.sh~ | Already created; shell script |
+| ~projects/ores.iam.api/include/ores.iam.api/messaging/reset_protocol.hpp~ | New protocol types |
+| ~projects/ores.iam.core/src/messaging/reset_tenant_handler.hpp/.cpp~ | New handler |
+| ~projects/ores.iam.core/src/messaging/reset_system_handler.hpp/.cpp~ | New handler |
+| ~projects/ores.iam.core/src/CMakeLists.txt~ | Wire new handler sources |
+| Qt system admin view (TBD) | Reset Tenant context menu / button |
+| Qt system settings view (TBD) | Reset System action |

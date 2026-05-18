@@ -143,6 +143,17 @@ BEGIN
         50      -- display order
     );
 
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.admin_reset',
+        'Data reset by system administrator for re-provisioning',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (reset modifies existing records)
+        false,  -- not for delete
+        false,  -- no commentary required
+        60      -- display order
+    );
+
     -- =============================================================================
     -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
     -- =============================================================================

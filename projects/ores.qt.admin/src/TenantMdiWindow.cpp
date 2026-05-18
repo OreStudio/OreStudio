@@ -450,6 +450,10 @@ void TenantMdiWindow::resetSelected() {
             emit self->statusChanged(
                 QString("Tenant '%1' reset to bootstrap state").arg(qcode));
             self->model_->refresh();
+            MessageBoxHelper::information(self, "Reset Complete",
+                QString("Tenant '%1' has been reset to bootstrap state.\n\n"
+                        "Provisioning wizards will re-fire on next login.")
+                    .arg(qcode));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Tenant reset failed: " << message;
             const QString msg = QString::fromStdString(message);

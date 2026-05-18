@@ -1,10 +1,21 @@
 """
 Generate a v2 information-architecture document (task, story, sprint,
-or version) from a Mustache template.
+version, or component) from a Mustache template.
 
 The script renders one of the templates under =library/templates/= and
-writes the result to =<parent-dir>/<slug>/<type>.org=, generating a
-fresh UUID for the document's =:ID:= property.
+writes the result, generating a fresh UUID for the document's =:ID:=
+property.
+
+Behaviour at a glance:
+
+- Auto-detects parent info (=:ID:= and =#+title:=) by reading the
+  parent file under =<parent-dir>/=. So you rarely need to type a UUID
+  by hand.
+- When run from a terminal, prompts for any required field that wasn't
+  supplied on the command line. When run non-interactively, missing
+  fields cause an error.
+- Components live directly under their parent dir as =<slug>.org=;
+  everything else gets its own =<slug>/<type>.org=.
 
 See =doc/v2/meta/document_types.org= for the contract every generated
 document is expected to follow.
@@ -36,6 +47,14 @@ DEFAULT_INITIAL_STATE = {
     "component": "",
 }
 
+# Composition: each type's direct parent type.
+PARENT_OF_TYPE = {
+    "task": "story",
+    "story": "sprint",
+    "sprint": "version",
+    # version and component have no parent in the composition tree.
+}
+
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {"version", "component"}
 
@@ -50,31 +69,99 @@ def build_filetags(tags_csv, parent_slug):
     return ":" + ":".join(tags) + ":" if tags else ""
 
 
+def read_parent_info(parent_file):
+    """
+    Read :ID: and #+title: from an existing parent document.
+
+    Returns a dict with keys "id" and/or "title" (only those that were
+    found). Returns an empty dict if the file doesn't exist.
+    """
+    info = {}
+    if not parent_file.exists():
+        return info
+    for line in parent_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith(":ID:") and "id" not in info:
+            info["id"] = stripped[len(":ID:"):].strip()
+        elif stripped.lower().startswith("#+title:") and "title" not in info:
+            info["title"] = stripped[len("#+title:"):].strip()
+        if "id" in info and "title" in info:
+            break
+    return info
+
+
+def is_interactive():
+    return sys.stdin.isatty()
+
+
+def prompt(label, default=None, choices=None):
+    """Prompt for a value. Empty input returns the default. Re-prompts on invalid choice."""
+    if choices:
+        choice_text = "/".join(choices)
+        suffix = f" [{default}]" if default else ""
+        prompt_text = f"{label} ({choice_text}){suffix}: "
+    else:
+        suffix = f" [{default}]" if default else ""
+        prompt_text = f"{label}{suffix}: "
+    while True:
+        try:
+            answer = input(prompt_text).strip()
+        except EOFError:
+            sys.exit("\nerror: input closed before all required fields were supplied.")
+        if not answer:
+            answer = default or ""
+        if choices and answer not in choices:
+            print(f"  please pick one of {choice_text}")
+            continue
+        return answer
+
+
+def fill_required(field, value, *, prompt_label, choices=None):
+    """Return value if set; otherwise prompt (TTY) or error (non-TTY)."""
+    if value:
+        return value
+    if is_interactive():
+        return prompt(prompt_label, choices=choices)
+    sys.exit(f"error: --{field} is required (and stdin is not interactive).")
+
+
+def fill_optional(field, value, *, prompt_label, default=""):
+    """Return value if set; otherwise prompt with default (TTY) or use default (non-TTY)."""
+    if value:
+        return value
+    if is_interactive():
+        return prompt(prompt_label, default=default or None)
+    return default
+
+
 def parse_args(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--type", required=True, choices=TYPE_TO_TEMPLATE)
-    parser.add_argument("--slug", required=True,
-                        help="snake_case slug — used for the folder name.")
-    parser.add_argument("--parent-dir", required=True, type=Path,
-                        help="Folder under which <slug>/<type>.org is created.")
-    parser.add_argument("--title", required=True)
-    parser.add_argument("--description", required=True)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--type", default="", choices=[""] + list(TYPE_TO_TEMPLATE))
+    parser.add_argument("--slug", default="",
+                        help="snake_case slug used for the folder/file name.")
+    parser.add_argument("--parent-dir", default="",
+                        help="Folder under which the new document is created.")
+    parser.add_argument("--title", default="")
+    parser.add_argument("--description", default="")
     parser.add_argument("--tags", default="",
                         help="Comma-separated content tags.")
-    parser.add_argument("--owner", default="marco",
+    parser.add_argument("--owner", default="",
                         help="Task owner (handle). Default: marco.")
     parser.add_argument("--parent-id", default="",
-                        help="UUID of the parent document. Required for non-version types.")
+                        help="UUID of the parent document. Auto-detected from <parent-dir>/ if omitted.")
     parser.add_argument("--parent-slug", default="",
-                        help="Slug of the parent (added as a filetag for the parent-tag invariant).")
+                        help="Slug of the parent. Defaults to basename of <parent-dir>.")
     parser.add_argument("--parent-title", default="",
-                        help="Human-readable title of the parent. Required for non-version types.")
+                        help="Title of the parent. Auto-detected from <parent-dir>/ if omitted.")
     parser.add_argument("--predecessor-id", default="",
                         help="Story only. UUID of a predecessor story (cross-sprint continuation).")
     parser.add_argument("--predecessor-title", default="",
                         help="Story only. Title of the predecessor for the inline link.")
     parser.add_argument("--state", default="",
-                        help="Initial TODO state. Defaults: task/story=BACKLOG, sprint/version=STARTED.")
+                        help="Initial TODO state. Defaults per type.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -83,14 +170,53 @@ def parse_args(argv=None):
 def main(argv=None):
     args = parse_args(argv)
 
-    if args.type not in PARENTLESS_TYPES:
-        if not args.parent_id:
-            sys.exit(f"error: --parent-id is required for type {args.type}.")
-        if not args.parent_title:
-            sys.exit(f"error: --parent-title is required for type {args.type}.")
+    # Type and slug and parent-dir are required for anything to happen.
+    args.type = fill_required("type", args.type,
+                              prompt_label="Type",
+                              choices=list(TYPE_TO_TEMPLATE))
+    args.slug = fill_required("slug", args.slug, prompt_label="Slug (snake_case)")
+    args.parent_dir = fill_required("parent-dir", args.parent_dir,
+                                    prompt_label="Parent directory")
+    parent_dir = Path(args.parent_dir)
 
+    # Auto-detect parent info from the parent document if we can.
+    if args.type not in PARENTLESS_TYPES:
+        parent_type = PARENT_OF_TYPE[args.type]
+        parent_file = parent_dir / f"{parent_type}.org"
+        parent_info = read_parent_info(parent_file)
+        if not args.parent_id and "id" in parent_info:
+            args.parent_id = parent_info["id"]
+        if not args.parent_title and "title" in parent_info:
+            args.parent_title = parent_info["title"]
+        if not args.parent_slug:
+            args.parent_slug = parent_dir.name
+
+        # Anything still missing → prompt or error.
+        args.parent_id = fill_required("parent-id", args.parent_id,
+                                       prompt_label=f"Parent {parent_type} ID")
+        args.parent_title = fill_required("parent-title", args.parent_title,
+                                          prompt_label=f"Parent {parent_type} title")
+
+    # Required content fields.
+    args.title = fill_required("title", args.title, prompt_label="Title")
+    args.description = fill_required("description", args.description,
+                                     prompt_label="Description (one-liner)")
+
+    # Optional fields.
+    args.tags = fill_optional("tags", args.tags,
+                              prompt_label="Tags (comma-separated, optional)")
+    if args.type == "task":
+        args.owner = fill_optional("owner", args.owner,
+                                   prompt_label="Owner",
+                                   default="marco")
+
+    # Story-only fields are not prompted by default; they're set explicitly.
     if args.predecessor_id and args.type != "story":
         sys.exit("error: --predecessor-id is only valid for stories.")
+    if args.predecessor_id and not args.predecessor_title:
+        args.predecessor_title = fill_required(
+            "predecessor-title", "",
+            prompt_label="Predecessor title")
 
     state = args.state or DEFAULT_INITIAL_STATE[args.type]
     filetags = build_filetags(args.tags, args.parent_slug)
@@ -102,7 +228,7 @@ def main(argv=None):
         "title": args.title,
         "description": args.description,
         "filetags": filetags,
-        "owner": args.owner,
+        "owner": args.owner or "marco",
         "date": today,
         "state": state,
         "parent_id": args.parent_id,
@@ -116,14 +242,13 @@ def main(argv=None):
     renderer = pystache.Renderer(escape=lambda value: value)
     rendered = renderer.render(template_text, variables)
 
-    # Component docs live directly under the parent dir as <slug>.org,
-    # matching the existing convention (projects/<comp>/modeling/<comp>.org).
+    # Component docs live directly under the parent dir as <slug>.org.
     # Everything else gets its own folder under the parent.
     if args.type == "component":
-        out_dir = args.parent_dir
+        out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     else:
-        out_dir = args.parent_dir / args.slug
+        out_dir = parent_dir / args.slug
         out_file = out_dir / f"{args.type}.org"
 
     if out_file.exists() and not args.force:

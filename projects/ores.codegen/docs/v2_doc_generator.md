@@ -24,16 +24,16 @@ sections.
 
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
-  --type <task|story|sprint|version|component> \
-  --slug <snake_case_slug> \
-  --parent-dir <path-where-slug-folder-will-be-created> \
-  --title "<human-readable title>" \
-  --description "<one-liner ≤ 120 chars>" \
+  [--type <task|story|sprint|version|component>] \
+  [--slug <snake_case_slug>] \
+  [--parent-dir <path-where-the-new-doc-is-created>] \
+  [--title "<human-readable title>"] \
+  [--description "<one-liner ≤ 120 chars>"] \
   [--tags "tag1,tag2,..."] \
   [--owner <handle>]                          # tasks; default: marco
-  [--parent-id <uuid>]                        # required for non-{version,component}
-  [--parent-slug <slug>]                      # added as filetag (parent-tag invariant)
-  [--parent-title "<title>"]                  # required for non-{version,component}
+  [--parent-id <uuid>]                        # auto-detected from <parent-dir>/<parent-type>.org
+  [--parent-slug <slug>]                      # defaults to basename of <parent-dir>
+  [--parent-title "<title>"]                  # auto-detected from <parent-dir>/<parent-type>.org
   [--predecessor-id <uuid>]                   # story only, cross-sprint continuation
   [--predecessor-title "<title>"]
   [--state <BACKLOG|DISCOVERED|STARTED>]
@@ -41,6 +41,35 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```
 
 The script prints the path of the file it wrote.
+
+### Auto-detection of parent info
+
+For task / story / sprint, the parent document's `:ID:` and `#+title:`
+are read automatically from `<parent-dir>/<parent-type>.org`. So you
+typically only need `--type`, `--slug`, `--parent-dir`, `--title`,
+`--description`, `--tags`. The parent IDs and titles get filled in for
+you.
+
+For example, when creating a task with
+`--parent-dir doc/v2/versions/v0/sprint_17/audit_tooling`, the script
+reads `.../audit_tooling/story.org`, picks up its `:ID:` and
+`#+title:`, and uses `audit_tooling` as the parent slug (from the
+folder basename).
+
+### Interactive prompts
+
+When run from a terminal, any missing required field is prompted for.
+When run non-interactively (piped, hooks, CI), missing required fields
+cause a clear error rather than hanging.
+
+So the shortest interactive invocation is:
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh
+```
+
+— and the script walks you through type, slug, parent dir, title,
+description, and tags.
 
 ## Example — add a component model doc
 

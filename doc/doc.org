@@ -10,6 +10,10 @@ Contains project documentation. This project does not use a wiki or any other
 form of documentation; it is all expected to be in git and used to generate the
 product website.
 
+- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][V2 Information Architecture]]: the cybernetic information architecture
+  under development — versions, sprints, stories, tasks, recipes, and
+  component models, organised around Beer's Viable System Model. Start
+  at /Compass/.
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]: documentation related to the [[https://masd-project.github.io/progen/docs/mde_and_the_software_development_process.html][software development process]] used to
   develop this project.
 - [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain Information]]: assorted documents covering finance related topics. Broad

@@ -2073,8 +2073,10 @@ begin
         p_params ->> 'root_lei',
         p_params -> 'lei_parties' ->> 'root_lei'
     );
+    -- No root_lei: base bundle publish without tenant-specific params — skip gracefully.
     if v_root_lei is null or v_root_lei = '' then
-        raise exception 'root_lei parameter is required for LEI parties publication';
+        return query select 'skipped'::text, 0::bigint;
+        return;
     end if;
 
     if not exists (
@@ -2086,6 +2088,7 @@ begin
         raise exception 'Root LEI not found in staging data: %', v_root_lei;
     end if;
 
+    -- Root party already exists: another size variant already ran — skip gracefully.
     if exists (
         select 1
         from ores_refdata_parties_tbl p
@@ -2094,7 +2097,8 @@ begin
           and p.party_category <> 'System'
           and p.valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Target tenant already has a root party. Cannot publish LEI parties.';
+        return query select 'skipped'::text, 0::bigint;
+        return;
     end if;
 
     create temp table lei_party_subtree (

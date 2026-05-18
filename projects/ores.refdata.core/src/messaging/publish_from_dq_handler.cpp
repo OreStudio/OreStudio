@@ -92,7 +92,8 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name
         << " dataset=" << cmd.dataset_id
         << " mode=" << cmd.mode
-        << " step=" << wf->step_id;
+        << " step=" << wf->step_id
+        << " params=" << (cmd.params_json.empty() ? "(empty)" : cmd.params_json);
 
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(

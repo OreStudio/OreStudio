@@ -175,6 +175,12 @@ void TenantMdiWindow::setupTable() {
         });
     tableView_->setItemDelegate(delegate);
 
+    if (badgeCache_ && !badgeCache_->isLoaded()) {
+        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(),
+                [tv = tableView_]() { tv->viewport()->update(); },
+                Qt::SingleShotConnection);
+    }
+
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 

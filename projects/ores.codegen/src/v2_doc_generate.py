@@ -25,6 +25,7 @@ TYPE_TO_TEMPLATE = {
     "story": "v2_doc_story.org.mustache",
     "sprint": "v2_doc_sprint.org.mustache",
     "version": "v2_doc_version.org.mustache",
+    "component": "v2_doc_component.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -32,7 +33,11 @@ DEFAULT_INITIAL_STATE = {
     "story": "BACKLOG",
     "sprint": "STARTED",
     "version": "STARTED",
+    "component": "",
 }
+
+# Types that don't take a parent (and aren't stateful).
+PARENTLESS_TYPES = {"version", "component"}
 
 
 def build_filetags(tags_csv, parent_slug):
@@ -78,11 +83,11 @@ def parse_args(argv=None):
 def main(argv=None):
     args = parse_args(argv)
 
-    if args.type != "version":
+    if args.type not in PARENTLESS_TYPES:
         if not args.parent_id:
-            sys.exit("error: --parent-id is required for non-version types.")
+            sys.exit(f"error: --parent-id is required for type {args.type}.")
         if not args.parent_title:
-            sys.exit("error: --parent-title is required for non-version types.")
+            sys.exit(f"error: --parent-title is required for type {args.type}.")
 
     if args.predecessor_id and args.type != "story":
         sys.exit("error: --predecessor-id is only valid for stories.")
@@ -111,8 +116,16 @@ def main(argv=None):
     renderer = pystache.Renderer(escape=lambda value: value)
     rendered = renderer.render(template_text, variables)
 
-    out_dir = args.parent_dir / args.slug
-    out_file = out_dir / f"{args.type}.org"
+    # Component docs live directly under the parent dir as <slug>.org,
+    # matching the existing convention (projects/<comp>/modeling/<comp>.org).
+    # Everything else gets its own folder under the parent.
+    if args.type == "component":
+        out_dir = args.parent_dir
+        out_file = out_dir / f"{args.slug}.org"
+    else:
+        out_dir = args.parent_dir / args.slug
+        out_file = out_dir / f"{args.type}.org"
+
     if out_file.exists() and not args.force:
         sys.exit(f"error: refusing to overwrite {out_file} (pass --force).")
 

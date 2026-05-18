@@ -13,6 +13,7 @@ file that already follows the contract in
 | story | `<parent-dir>/<slug>/story.org` |
 | sprint | `<parent-dir>/<slug>/sprint.org` |
 | version | `<parent-dir>/<slug>/version.org` |
+| component | `<parent-dir>/<slug>.org` (no subfolder — matches the existing `projects/<comp>/modeling/<comp>.org` convention) |
 
 Each output has a fresh UUID in `:ID:`, today's date in `#+created`
 and `#+updated`, the standard frontmatter for its type, an initial
@@ -23,23 +24,37 @@ sections.
 
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
-  --type <task|story|sprint|version> \
+  --type <task|story|sprint|version|component> \
   --slug <snake_case_slug> \
   --parent-dir <path-where-slug-folder-will-be-created> \
   --title "<human-readable title>" \
   --description "<one-liner ≤ 120 chars>" \
   [--tags "tag1,tag2,..."] \
-  [--owner <handle>]            # tasks; default: marco
-  [--parent-id <uuid>]          # required for non-version
-  [--parent-slug <slug>]        # added as filetag (parent-tag invariant)
-  [--parent-title "<title>"]    # required for non-version
-  [--predecessor-id <uuid>]     # story only, cross-sprint continuation
+  [--owner <handle>]                          # tasks; default: marco
+  [--parent-id <uuid>]                        # required for non-{version,component}
+  [--parent-slug <slug>]                      # added as filetag (parent-tag invariant)
+  [--parent-title "<title>"]                  # required for non-{version,component}
+  [--predecessor-id <uuid>]                   # story only, cross-sprint continuation
   [--predecessor-title "<title>"]
   [--state <BACKLOG|DISCOVERED|STARTED>]
   [--force]
 ```
 
 The script prints the path of the file it wrote.
+
+## Example — add a component model doc
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type component --slug ores.example \
+  --parent-dir projects/ores.example/modeling \
+  --title "ores.example" \
+  --description "One-line summary of what the component does." \
+  --tags "example,scaffolding"
+```
+
+Components have no parent in the composition tree, so `--parent-id`,
+`--parent-slug`, and `--parent-title` are optional and ignored.
 
 ## Example — start a new sprint
 

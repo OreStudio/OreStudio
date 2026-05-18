@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: fe693595-6693-459b-ad9b-eb7e3abbbc88
+:END:
+#+title: ores.codegen architecture
+#+description: Directory layout, internal modules, template system, model-template mapping, modeline configurations, and features of the code generator.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:architecture:knowledge:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Summary
+
+This document records how =ores.codegen= is built and how its parts
+fit together: where its code and data live, how the generator picks
+templates for models, how it handles modelines and licence headers,
+and the conventions it enforces.
+
+For /what/ the component is and /how to operate it/, see
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] (the component model) and the recipes it links to.
+
+* Detail
+
+** Directory structure
+
+#+begin_example
+projects/ores.codegen/
+├── library/
+│   ├── data/                # Static data (licences, modelines, ...)
+│   │   ├── licence-GPL-v3.txt
+│   │   └── modeline.json
+│   └── templates/           # Mustache templates
+│       ├── sql_*.mustache
+│       └── v2_doc_*.mustache
+├── models/                  # JSON model files driving generation
+│   └── <subject>/
+├── output/                  # Default destination for generated files
+├── scripts/                 # Shell scripts for common operations
+├── src/                     # Python source
+│   ├── generator.py
+│   ├── v2_doc_generate.py
+│   ├── fpml_parser.py
+│   ├── images_generate_sql.py
+│   ├── lei_extract_subset.py
+│   └── iso_generate_metadata_sql.py
+├── modeling/
+│   └── ores.codegen.org     # Component model (the entry point)
+├── docs/
+│   ├── architecture.org     # This document
+│   ├── cpp_generation_analysis.md
+│   └── v2_doc_generator.md
+├── requirements.txt
+├── run_generator.sh
+└── generate_v2_doc.sh
+#+end_example
+
+** Internal modules
+
+| File                                  | Purpose                                                                  |
+|---------------------------------------+--------------------------------------------------------------------------|
+| =src/generator.py=                    | Main generator: JSON models + Mustache templates → SQL / C++ / etc.      |
+| =src/v2_doc_generate.py=              | v2 information-architecture document generator (task/story/sprint/...)   |
+| =src/fpml_parser.py=                  | FPML Genericode XML → JSON models                                        |
+| =src/iso_generate_metadata_sql.py=    | ISO standards → SQL                                                      |
+| =src/images_generate_sql.py=          | Image artefacts (flags, crypto icons) → SQL                              |
+| =src/lei_extract_subset.py=           | LEI dataset subset extractor                                             |
+| =library/data/=                       | Static data files (licences, modelines)                                  |
+| =library/templates/=                  | Mustache templates                                                       |
+| =models/=                             | JSON model files                                                         |
+| =output/=                             | Default destination for generated files                                  |
+
+** Main generator functions
+
+In =src/generator.py=:
+
+- =load_data(data_dir)= — load JSON and text files from a data directory.
+- =format_comment_block(text, lang)= — format text as a language-specific
+  comment block.
+- =generate_license_with_header(license_text, modeline_info, lang)= —
+  build a licence header with modeline and copyright.
+- =render_template(template_path, data)= — render a Mustache template
+  with the given data.
+- =get_template_mappings()= — the model-filename → template mapping.
+- =generate_from_model()= — orchestrate generation for one model.
+
+** Template system
+
+- Mustache via the =pystache= library.
+- Templates live in =library/templates/=.
+- Output is SQL, C++, or org-mode depending on the template family.
+
+** Data files
+
+- =library/data/licence-GPL-v3.txt= — full GPL v3 licence text used in
+  generated headers.
+- =library/data/modeline.json= — per-language editor modeline strings.
+
+** Model-template mapping
+
+*** Standard mappings
+
+| Model file               | Template(s)                                                              |
+|--------------------------+--------------------------------------------------------------------------|
+| =model.json=             | =sql_batch_execute.mustache=                                             |
+| =catalogs.json=          | =sql_catalog_populate.mustache=                                          |
+| =country_currency.json=  | =sql_flag_populate.mustache=, =sql_currency_populate.mustache=, =sql_country_populate.mustache= |
+| =datasets.json=          | =sql_dataset_populate.mustache=, =sql_dataset_dependency_populate.mustache= |
+| =methodologies.json=     | =sql_methodology_populate.mustache=                                      |
+| =tags.json=              | =sql_tag_populate.mustache=                                              |
+
+*** Entity schema mappings (=*_entity.json= files)
+
+| Template                                | Output file                               |
+|-----------------------------------------+-------------------------------------------|
+| =sql_schema_table_create.mustache=      | ={component}_{entity}_create.sql=         |
+| =sql_schema_notify_trigger.mustache=    | ={component}_{entity}_notify_trigger.sql= |
+| =sql_schema_artefact_create.mustache=   | =dq_{entity}_artefact_create.sql=         |
+
+*** Entity populate mappings (=*_data.json= files)
+
+| Template                            | Output file                              |
+|-------------------------------------+------------------------------------------|
+| =sql_populate_refdata.mustache=     | ={component}_{entity}_populate.sql=      |
+
+** Modeline configurations
+
+From =library/data/modeline.json=:
+
+| Language | Modeline                                                            |
+|----------+---------------------------------------------------------------------|
+| SQL      | =sql-product: postgres; tab-width: 4; indent-tabs-mode: nil=        |
+| C++      | =mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4= |
+
+** Features
+
+- /Licence generation/. Generated files carry a licence header with
+  editor modelines, a copyright with the current year, and the
+  appropriate per-language comment formatting.
+- /Multi-language comment support/. SQL and C++ use =/* ... */= with a
+  =* = line prefix; Python uses ="""=, JavaScript uses =/** */=.
+- /Flexible output/. Default output directory is =output/=; overridable
+  via the second positional argument; created automatically if absent.
+- /Overall models/. A =model.json= can orchestrate generation of
+  multiple artefacts in dependency order.
+- /Dynamic prefixing/. A =model_name= property on an overall model
+  prefixes every output file (for example =solvaris_=).
+- /Automatic sibling loading/. JSON models in the same directory are
+  loaded together so a template can cross-reference them.
+- /Enhanced data context/. Subject-area datasets (such as
+  =currencies_dataset=, =countries_dataset=) are surfaced as named
+  variables to templates for direct access.
+
+** Example model structure
+
+From =models/slovaris/catalogs.json=:
+
+#+begin_src json
+[
+    {
+        "name": "Slovaris",
+        "description": "Imaginary world to test all system functions.",
+        "owner": "Testing Team"
+    }
+]
+#+end_src
+
+The =sql_catalog_populate.mustache= template generates SQL that:
+
+1. Includes the enhanced licence header.
+2. Sets the schema to =ores=.
+3. Generates SQL calls to =metadata.upsert_dq_catalogs()=.
+4. Includes summary queries.
+
+** Extending
+
+To add a new model-template pair:
+
+1. Add the JSON model to the =models/= directory.
+2. Add the Mustache template to =library/templates/=.
+3. Update the mapping in =src/generator.py=
+   in =get_template_mappings()=.
+
+* See also
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component model (entry point).
+- [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — operational recipe.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — operational recipe for the
+  org-document generator.
+- =projects/ores.codegen/docs/cpp_generation_analysis.md= — analysis of
+  the C++ code generation paths.
+- =projects/ores.codegen/docs/v2_doc_generator.md= — full CLI
+  reference for =generate_v2_doc.sh=.

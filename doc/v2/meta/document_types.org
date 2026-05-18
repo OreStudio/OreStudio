@@ -421,9 +421,36 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
   - =* Script= — executable code where applicable.
   - =* Tested by= — link to the CI check that exercises the script.
 
+** component
+
+- Folder :: =projects/<comp>/modeling/<comp>.org= — always co-located
+  with the component's code, so the doc updates alongside it.
+- Level :: =cross=.
+- Not stateful — components are durable. No TODO. Audit may attach a
+  =:stale:= tag if the doc has drifted from the code.
+- Size :: 50–100 lines. The component doc is the /index/ into the
+  component, not a full reference. Deeper material (architecture,
+  internals, design decisions) lives in linked =knowledge= documents
+  alongside the code.
+- Required sections ::
+  - =* Summary= — three to five sentences: what the component does
+    and why it exists.
+  - =* Inputs= — what the component consumes (data, dependencies,
+    configuration).
+  - =* Outputs= — what it produces.
+  - =* Entry points= — key files, classes, scripts, or commands,
+    with paths.
+  - =* Dependencies= — other components or libraries this one needs.
+  - =* See also= — id-links to recipes operating on the component
+    and to deeper knowledge documents about it.
+
 ** knowledge
 
-- Folder :: =knowledge/{domain,architecture,components}/=
+- Folder ::
+  - Cross-cutting knowledge (not specific to one component) lives at
+    =doc/v2/knowledge/{domain,architecture,...}/=.
+  - Component-specific knowledge (deeper analyses tied to one
+    component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=
 - Not stateful — no TODO. Audit may flag stale facts via a tag.
 - Required sections ::

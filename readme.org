@@ -255,99 +255,58 @@ prior to building. See the next section for details.
 ** Ubuntu, Debian and WSL
 
 On a fresh [[https://ubuntu.com/][Ubuntu]] or [[https://www.debian.org/][Debian]] installation --- including [[https://learn.microsoft.com/en-us/windows/wsl/install][Windows Subsystem for
-Linux (WSL)]] --- run the following to install all required tools and system
-libraries in one step:
+Linux (WSL)]] --- clone with submodules and install the build dependencies:
 
 #+begin_src sh
-./build/scripts/install_debian_packages.sh --full-install
-#+end_src
-
-This installs from the distro repositories: GCC, Clang, CMake, Ninja,
-PostgreSQL (server and =libpq-dev=), Qt6 development packages
-(=qt6-base-dev=, =libqt6charts6-dev=, etc.), Valgrind, and the X11/GL
-headers needed to build Qt applications. Nothing is downloaded from
-third-party APT repositories.
-
-Once the script completes, initialise the database and proceed with the
-normal build steps described below:
-
-#+begin_src sh
-./projects/ores.sql/recreate_database.sh
-cmake --preset linux-clang-debug
-cmake --build --preset linux-clang-debug
-#+end_src
-
-Our build makes use of [[https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html][CMake Presets]]. To know what these are you can either have
-a look at the presets file [[https://github.com/OreStudio/OreStudio/blob/main/CMakePresets.json][CMakePresets.json]] or, better still, ask CMake:
-
-#+begin_src sh :results verbatim html
-cmake --list-presets
-#+end_src
-
-#+RESULTS:
-#+begin_export html
-Available configure presets:
-
-  "linux-clang-debug"             - Linux Clang Debug
-  "linux-clang-release"           - Linux Clang Release
-  "linux-gcc-debug"               - Linux GCC debug
-  "linux-gcc-release"             - Linux GCC Release
-  "windows-msvc-debug"            - Windows x64 Debug
-  "windows-msvc-release"          - Windows x64 Release
-  "windows-msvc-clang-cl-debug"   - Windows x64 Debug
-  "windows-msvc-clang-cl-release" - Windows x64 Release
-  "macos-clang-debug"             - Mac OSX Debug
-  "macos-clang-release"           - Mac OSX Release
-#+end_export
-
-For the remainder of this document we shall assume =linux-clang-release=, which
-is our preferred preset. If it isn't yours, remember to update the preset name
-to match your desired build.
-
-To checkout ORE Studio, clone as follows:
-
-#+begin_src sh :results verbatim html
 git clone https://github.com/OreStudio/OreStudio.git --recurse-submodules
-#+end_src
-
-The =--recurse-submodules= is needed for the vcpkg submodule setup. As for the
-configure step:
-
-#+begin_src sh :results verbatim html
 cd OreStudio
-cmake --preset linux-clang-release
+./build/scripts/install_debian_packages.sh --full-install
+./projects/ores.sql/recreate_database.sh
 #+end_src
 
-You can then build ORE Studio on all platforms as follows:
+The install script pulls GCC, Clang, CMake, Ninja, PostgreSQL,
+=libpq-dev=, the Qt6 development packages, Valgrind, and the X11/GL
+headers --- all from the distro repositories. Nothing comes from
+third-party APT sources.
 
-#+begin_src sh :results verbatim html
-cmake --build --preset linux-clang-release
-#+end_src
-
-If you'd like to run the project tests, execute the target =run_all_tests= or
-its abbreviation =rat=.
-
-#+begin_src sh :results verbatim html
-cmake --build --preset linux-clang-release --target rat
-#+end_src
-
-A quicker way to do all of these steps in one go is to use the [[https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html#workflow-preset][workflow preset]]:
+Then configure and build with a CMake preset. The day-to-day default
+on Linux is =linux-clang-debug-ninja=:
 
 #+begin_src sh
-cmake --workflow --preset linux-clang-release
+cmake --preset linux-clang-debug-ninja
+cmake --build --preset linux-clang-debug-ninja
 #+end_src
 
-Last but not least, you can start the GUI via the target =run_ores_qt=:
+To run the test suite, target =rat=:
 
 #+begin_src sh
-cmake --build --preset linux-clang-release --target run_ores_qt
+cmake --build --preset linux-clang-release-ninja --target rat
 #+end_src
 
-Note: if you bump into posgres errors, do:
+To launch the Qt GUI:
 
 #+begin_src sh
-ZIC=zic cmake --preset linux-clang-debug
+cmake --build --preset linux-clang-debug-ninja --target run_ores_qt
 #+end_src
+
+A workflow preset chains configure + build in one go:
+
+#+begin_src sh
+cmake --workflow --preset linux-clang-release-ninja
+#+end_src
+
+If you bump into PostgreSQL errors during configure, set =ZIC=:
+
+#+begin_src sh
+ZIC=zic cmake --preset linux-clang-debug-ninja
+#+end_src
+
+** More commands
+
+The above covers the quick start. For the full preset menu, the
+output directory layout, parallel-build configuration, test logging
+options, and the recipes for deploying the site and skills, see
+[[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] and the recipes linked from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]].
 
 * Updating vcpkg
 

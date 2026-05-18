@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: aadbef95-afd8-4dc0-a4ec-505e47b07f86
+:END:
+#+title: How do I list available CMake presets?
+#+description: Run `cmake --list-presets` to see the configure presets defined in CMakePresets.json.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:build:presets:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the preset menu and naming convention, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I list the CMake presets available in ORE Studio?
+
+* Answer
+
+From the project root:
+
+#+begin_src sh
+cmake --list-presets
+#+end_src
+
+This reads =CMakePresets.json= and prints every configure preset by
+name and description.
+
+* Script
+
+The command above. No wrapper.
+
+* Tested by
+
+Implicit — used in CI to validate presets exist.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — what the presets mean and how they are named.
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] — pick a preset and configure.

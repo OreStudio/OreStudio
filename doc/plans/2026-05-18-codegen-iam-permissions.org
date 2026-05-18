@@ -1,0 +1,237 @@
+#+TITLE: Codegen IAM Permissions and Roles Population
+#+DATE: 2026-05-18
+#+AUTHOR: ORE Studio Team
+#+STATUS: PROPOSED
+#+OPTIONS: toc:t num:nil
+
+* Related Plans
+
+- [[file:2026-05-14-codegen-sql-debt.org][Codegen SQL Debt]] — cleared all ~*_create.sql~ hand-written files;
+  this plan extends codegen coverage to the populate layer for IAM permissions
+  and roles.
+- [[file:2026-03-28-service-rbac-design.org][Service RBAC Design]] — original design for per-service IAM role assignments;
+  the service registry already carries ~iam_role~ and ~psql_var~ fields used by
+  the generated ~iam_service_account_roles_populate.sql~.
+
+* Problem Statement
+
+Four IAM populate scripts govern the service RBAC layer.  Two are already
+auto-generated; two are hand-maintained:
+
+| File | Status |
+|------+--------|
+| ~populate/iam/iam_service_accounts_populate.sql~ | AUTO-GENERATED (~sql_service_accounts_populate.mustache~) |
+| ~populate/iam/iam_service_account_roles_populate.sql~ | AUTO-GENERATED (~sql_service_account_roles_populate.mustache~) |
+| ~populate/iam/iam_permissions_populate.sql~ | Hand-maintained |
+| ~populate/iam/iam_roles_populate.sql~ | Hand-maintained |
+
+Adding a new domain service currently requires edits in four places:
+
+1. ~ores_services_service_registry.json~ — adds the service entry (already
+   triggers auto-generation of the two generated files above).
+2. ~iam_permissions_populate.sql~ — add per-entity CRUD permissions and the
+   component wildcard.
+3. ~iam_roles_populate.sql~ — add the service role with its permission
+   assignments.
+4. ~iam_service_db_grants_create.sql~ — already auto-generated from the
+   registry.
+
+Steps 2 and 3 were missed for the workspace service (added in Phase 2 of the
+workspace feature branch), causing ~recreate_database.sh~ to fail at first run
+on a clean database.  This is not an isolated incident: any time a service is
+added or a new entity with permissions is introduced, two hand-maintained files
+must be kept in sync with the registry and the domain models.
+
+The goal of this plan is to reach a state where *adding a new service is
+largely just running codegen*.  A developer adds the service to the registry
+JSON and the domain entity models; codegen produces all the IAM SQL — no
+further manual edits to populate files required.
+
+* Inventory
+
+Before any template work, a full inventory of ~iam_permissions_populate.sql~
+and ~iam_roles_populate.sql~ must be taken to categorise every entry:
+
+| Category | Description | Codegen source |
+|----------+-------------+----------------|
+| Component wildcard | ~<name>::*~ per service | Service registry ~name~ field |
+| Per-entity CRUD | ~<name>::<entity>:read/write/delete~ | Domain entity model ~permissions~ section |
+| Service role | ~<IamRole>~ with permission assignments | Service registry ~iam_permissions~ array |
+| Cross-service read | e.g., ~iam::tenants:read~ granted to non-IAM services | Service registry ~iam_permissions~ array |
+| User/admin roles | SuperAdmin, TenantAdmin, UserRole, etc. | Hand-maintained (not service-driven) |
+
+The inventory will reveal:
+- Which services are missing wildcard or role entries (gap detection).
+- Which cross-service permissions are granted (e.g., scheduler needs
+  ~dq::change_reasons:read~) so they can be captured in the registry.
+- Whether any per-entity permissions are missing from the current hand-written
+  file.
+
+The inventory feeds directly into the data model changes in Phase 1.
+
+* Design
+
+** End state
+
+After all phases are complete:
+
+- ~iam_service_roles_populate.sql~ — AUTO-GENERATED.  One role per service,
+  permissions drawn from ~iam_permissions~ in the registry.
+- ~iam_service_permissions_populate.sql~ — AUTO-GENERATED.  Component
+  wildcards from the registry; per-entity CRUD from domain entity models.
+- ~iam_user_roles_populate.sql~ — Hand-maintained.  SuperAdmin, TenantAdmin,
+  UserRole and other non-service roles only.
+- ~iam_permissions_populate.sql~ — deleted (replaced by the two generated
+  files + the hand-maintained user-roles file).
+- ~iam_roles_populate.sql~ — deleted (replaced by the generated service-roles
+  file + the hand-maintained user-roles file).
+
+Adding a new service requires only:
+1. Add entry to ~ores_services_service_registry.json~ (name, iam_role,
+   iam_permissions, dml_prefixes).
+2. Add domain entity models with ~permissions~ arrays for each exposed entity.
+3. Run codegen.
+
+** Phase 1: Service registry — ~iam_permissions~ array
+
+Add ~iam_permissions~ array to every service entry in the registry.  This
+captures the full set of permissions the service role needs, including
+cross-component reads:
+
+#+BEGIN_SRC json
+{
+  "name": "workspace",
+  "iam_role": "WorkspaceService",
+  "description": "Workspace domain service",
+  "iam_permissions": [
+    "workspace::*",
+    "iam::tenants:read"
+  ]
+}
+#+END_SRC
+
+Source of truth for the initial values: the current ~iam_roles_populate.sql~
+service block.  Every service that currently has a role entry gets its
+permissions transcribed verbatim.  Services missing from ~iam_roles_populate.sql~
+(discovered during inventory) get entries written from first principles.
+
+** Phase 2: Service roles generate (~iam_service_roles_populate.sql~)
+
+New template ~sql_service_roles_populate.mustache~ iterates over the registry
+and emits one role upsert + N permission assignments per service.  Replaces the
+service section of ~iam_roles_populate.sql~.
+
+The non-service roles (SuperAdmin, TenantAdmin, UserRole, etc.) are extracted
+into ~iam_user_roles_populate.sql~ (hand-maintained).  ~setup_schema.sql~ is
+updated to ~\ir~ both files.
+
+** Phase 3: Component wildcard permissions (~iam_service_permissions_populate.sql~)
+
+New template ~sql_service_permissions_populate.mustache~ generates:
+
+#+BEGIN_SRC sql
+-- <Description> component wildcard
+PERFORM ores_iam_permissions_upsert_fn(..., '<name>::*',
+    'Full access to all <description> operations');
+#+END_SRC
+
+One entry per service, derived purely from ~name~ and ~description~ in the
+registry.
+
+** Phase 4: Per-entity CRUD permissions
+
+Each domain entity model gains a ~permissions~ array:
+
+#+BEGIN_SRC json
+{
+  "domain_entity": {
+    "component": "workspace",
+    "entity_plural": "workspaces",
+    "permissions": ["read", "write", "delete"]
+  }
+}
+#+END_SRC
+
+The same ~sql_service_permissions_populate.mustache~ (or a companion template)
+generates the per-operation upserts:
+
+#+BEGIN_SRC sql
+PERFORM ores_iam_permissions_upsert_fn(..., 'workspace::workspaces:read',   'View workspace details');
+PERFORM ores_iam_permissions_upsert_fn(..., 'workspace::workspaces:write',  'Create and modify workspaces');
+PERFORM ores_iam_permissions_upsert_fn(..., 'workspace::workspaces:delete', 'Archive workspaces');
+#+END_SRC
+
+This phase requires updating all existing domain entity models.  The inventory
+(see above) provides the definitive list and ensures no permission currently in
+~iam_permissions_populate.sql~ is dropped.
+
+** Phase 5: Cleanup
+
+- Delete ~iam_permissions_populate.sql~ and ~iam_roles_populate.sql~ (fully
+  replaced by generated equivalents + ~iam_user_roles_populate.sql~).
+- Verify ~recreate_database.sh~ passes on a clean database.
+- Update any documentation referencing the deleted files.
+
+* New Templates
+
+| Template | Output file | Phase |
+|----------+-------------+-------|
+| ~sql_service_roles_populate.mustache~ | ~iam/iam_service_roles_populate.sql~ | 2 |
+| ~sql_service_permissions_populate.mustache~ | ~iam/iam_service_permissions_populate.sql~ | 3 & 4 |
+
+* Execution Plan
+
+** Phase 1 — Inventory and registry update
+
+1. Audit ~iam_permissions_populate.sql~ and ~iam_roles_populate.sql~: classify
+   every entry into the five categories in the Inventory table above.
+2. Identify any gaps (services in the registry with no role entry; entities
+   with no permission entries).
+3. Add ~iam_permissions~ array to every service in
+   ~ores_services_service_registry.json~, sourced from the current
+   ~iam_roles_populate.sql~ service block.
+4. Document gaps found; fix any missing entries in the hand-written files as
+   part of this phase so the baseline is clean before codegen replaces them.
+
+** Phase 2 — Service roles codegen
+
+1. Write ~sql_service_roles_populate.mustache~.
+2. Run codegen; diff output against hand-written service-role block.
+3. Extract non-service roles into ~iam_user_roles_populate.sql~.
+4. Update ~setup_schema.sql~ ~\ir~ references.
+5. Verify ~recreate_database.sh~ passes.
+
+** Phase 3 — Component wildcard permissions codegen
+
+1. Write ~sql_service_permissions_populate.mustache~ (wildcard section only).
+2. Run codegen; verify output matches wildcard lines in ~iam_permissions_populate.sql~.
+3. Remove wildcard lines from ~iam_permissions_populate.sql~; add ~\ir~ for
+   generated file.
+4. Verify ~recreate_database.sh~ passes.
+
+** Phase 4 — Per-entity CRUD permissions codegen
+
+1. Add ~permissions~ array to all domain entity models (guided by inventory).
+2. Extend ~sql_service_permissions_populate.mustache~ to emit per-entity CRUD
+   lines.
+3. Run codegen; diff against remaining entries in ~iam_permissions_populate.sql~.
+4. Replace hand-written per-entity lines with ~\ir~ for generated output.
+5. Verify ~recreate_database.sh~ passes.
+
+** Phase 5 — Cleanup
+
+1. Delete ~iam_permissions_populate.sql~ and ~iam_roles_populate.sql~.
+2. Final clean ~recreate_database.sh~ run.
+3. Update developer documentation.
+
+* Acceptance Criteria
+
+- Adding a new service to ~ores_services_service_registry.json~ (with
+  ~iam_role~, ~iam_permissions~, and ~dml_prefixes~ filled in) plus adding
+  domain entity models with ~permissions~ arrays is sufficient to produce
+  correct IAM SQL with no manual edits to populate files.
+- ~recreate_database.sh~ passes on a clean database after each phase.
+- All generated populate files carry the ~AUTO-GENERATED FILE - DO NOT EDIT
+  MANUALLY~ header.
+- No permission present in the current hand-written files is lost during
+  migration (verified by inventory diff in Phase 1).

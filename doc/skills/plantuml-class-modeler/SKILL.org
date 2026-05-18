@@ -56,7 +56,7 @@ The system-level architecture diagram showing all components and their relations
 ** 2. PlantUML skeleton
 
 #+begin_src plantuml
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+' -*- mode: plantuml; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
 '

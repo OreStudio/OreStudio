@@ -23,6 +23,7 @@
 #include <QWizard>
 #include <QWizardPage>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
@@ -255,19 +256,23 @@ public:
     bool validatePage() override;
 
 private slots:
+    void onNameChanged(const QString& text);
     void onCodeChanged(const QString& text);
+    void onEditCodeClicked();
 
 private:
     void setupUI();
 
     SystemProvisionerWizard* wizard_;
     QLineEdit* codeEdit_;
+    QPushButton* editCodeButton_;
     QLineEdit* nameEdit_;
     QComboBox* typeCombo_;
     QLineEdit* hostnameEdit_;
     QLineEdit* descriptionEdit_;
     QLabel* validationLabel_;
     bool hostnameManuallyEdited_ = false;
+    bool codeManuallyEdited_ = false;
 };
 
 /**

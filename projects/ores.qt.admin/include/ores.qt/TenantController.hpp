@@ -77,6 +77,7 @@ protected:
 private slots:
     void onShowDetails(const iam::domain::tenant& tenant);
     void onAddNewRequested();
+    void onTenantReset(const QString& code);
     void onShowHistory(const iam::domain::tenant& tenant);
     void onRevertVersion(const iam::domain::tenant& tenant);
     void onOpenVersion(const iam::domain::tenant& tenant,

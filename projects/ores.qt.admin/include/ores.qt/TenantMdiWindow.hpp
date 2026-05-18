@@ -67,12 +67,14 @@ signals:
     void addNewRequested();
     void onboardRequested();
     void tenantDeleted(const QString& code);
+    void tenantReset(const QString& code);
     void showTenantHistory(const iam::domain::tenant& tenant);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
+    void resetSelected();
     void viewHistorySelected();
 
 private slots:
@@ -107,6 +109,7 @@ private:
     QAction* onboardAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* resetAction_;
     QAction* historyAction_;
 };
 

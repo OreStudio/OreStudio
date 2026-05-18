@@ -79,6 +79,8 @@ void TenantController::showListWindow() {
             this, &TenantController::onAddNewRequested);
     connect(listWindow_, &TenantMdiWindow::onboardRequested,
             this, &TenantController::onboardRequested);
+    connect(listWindow_, &TenantMdiWindow::tenantReset,
+            this, &TenantController::onTenantReset);
     connect(listWindow_, &TenantMdiWindow::showTenantHistory,
             this, &TenantController::onShowHistory);
 
@@ -140,6 +142,11 @@ void TenantController::onShowDetails(
 void TenantController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new tenant requested";
     showAddWindow();
+}
+
+void TenantController::onTenantReset(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Tenant reset: " << code.toStdString();
+    emit statusMessage(QString("Tenant '%1' has been reset to bootstrap state").arg(code));
 }
 
 void TenantController::onShowHistory(

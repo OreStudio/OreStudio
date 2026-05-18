@@ -31,6 +31,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/reset_protocol.hpp"
 
 namespace ores::qt {
 
@@ -52,6 +53,7 @@ TenantMdiWindow::TenantMdiWindow(
       onboardAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
+      resetAction_(nullptr),
       historyAction_(nullptr) {
 
     setupUi();
@@ -124,6 +126,15 @@ void TenantMdiWindow::setupToolbar() {
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
             &TenantMdiWindow::deleteSelected);
+
+    resetAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
+        tr("Reset"));
+    resetAction_->setToolTip(tr("Reset tenant to bootstrap state"));
+    resetAction_->setEnabled(false);
+    connect(resetAction_, &QAction::triggered, this,
+            &TenantMdiWindow::resetSelected);
 
     historyAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
@@ -205,6 +216,7 @@ void TenantMdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
+    resetAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
 }
 
@@ -370,6 +382,83 @@ void TenantMdiWindow::deleteSelected() {
     });
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void TenantMdiWindow::resetSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Reset requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot reset tenant while disconnected.");
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    auto* tenant = model_->getTenant(sourceIndex.row());
+    if (!tenant) {
+        BOOST_LOG_SEV(lg(), warn) << "Reset requested but tenant not found";
+        return;
+    }
+
+    const std::string code = tenant->code;
+    const QString qcode = QString::fromStdString(code);
+
+    const QString confirmMessage = QString(
+        "Reset tenant '%1' to bootstrap state?\n\n"
+        "This will:\n"
+        "  • Soft-delete all admin-created parties and accounts\n"
+        "  • Re-enable bootstrap mode so provisioning wizards re-fire on next login\n\n"
+        "System-seeded data (roles, permissions, tenant type) is preserved.\n"
+        "This action cannot be undone.").arg(qcode);
+
+    auto reply = MessageBoxHelper::question(this, "Reset Tenant",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Reset cancelled by user";
+        return;
+    }
+
+    QPointer<TenantMdiWindow> self = this;
+    using ResetResult = std::pair<bool, std::string>;
+
+    auto task = [self, code]() -> ResetResult {
+        if (!self) return {false, "Window closed"};
+        BOOST_LOG_SEV(lg(), debug) << "Sending reset-tenant request for: " << code;
+        iam::messaging::reset_tenant_command request;
+        request.tenant_code = code;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+        if (!result)
+            return {false, "Failed to communicate with server"};
+        return {result->success, result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<ResetResult>(self);
+    connect(watcher, &QFutureWatcher<ResetResult>::finished,
+            self, [self, watcher, qcode]() {
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "Tenant reset: " << qcode.toStdString();
+            emit self->tenantReset(qcode);
+            emit self->statusChanged(
+                QString("Tenant '%1' reset to bootstrap state").arg(qcode));
+            self->model_->refresh();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Tenant reset failed: " << message;
+            const QString msg = QString::fromStdString(message);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Reset Failed", msg);
+        }
+    });
+
+    QFuture<ResetResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

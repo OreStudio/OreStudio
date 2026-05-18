@@ -2,7 +2,7 @@
 #+SUBTITLE: Dev-cycle reset from shell scripts through to system-admin UI
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN-PROGRESS
+#+STATUS: DONE
 #+OPTIONS: toc:t num:nil
 
 * Background
@@ -91,19 +91,19 @@ handler validates the role before executing the SQL function.
 
 * Implementation Plan
 
-** Phase 1 — Seed ~system.admin_reset~ change reason   [IN-PROGRESS]
+** Phase 1 — Seed ~system.admin_reset~ change reason   [DONE]
 
 *** Tasks
 
-- [ ] Add ~system.admin_reset~ to the system change reasons population
+- [x] Add ~system.admin_reset~ to the system change reasons population
   script (~projects/ores.sql/populate/dq/~).  The reason should be
   seeded for the system tenant only; other tenants inherit system
   change reasons via the shared-governance lookup in
   ~ores_dq_validate_change_reason_fn~.
 
-- [ ] Apply to the running database.
+- [x] Apply to the running database.
 
-- [ ] Verify the reason is visible:
+- [x] Verify the reason is visible:
   #+begin_src sql
   SELECT code FROM ores_dq_change_reasons_tbl
   WHERE code = 'system.admin_reset'
@@ -111,85 +111,79 @@ handler validates the role before executing the SQL function.
     AND valid_to = ores_utility_infinity_timestamp_fn();
   #+end_src
 
-** Phase 2 — Harden SQL functions                      [IN-PROGRESS]
+** Phase 2 — Harden SQL functions                      [DONE]
 
 *** Tasks
 
-- [ ] Add ~SECURITY DEFINER SET search_path = public, pg_temp~ to both
+- [x] Add ~SECURITY DEFINER SET search_path = public, pg_temp~ to both
   ~ores_iam_reset_tenant_bootstrap_fn~ and ~ores_iam_reset_system_fn~
   in their respective ~create/iam/~ SQL files.
 
-- [ ] Change ~change_reason_code~ argument from ~system.initial_load~
+- [x] Change ~change_reason_code~ argument from ~system.initial_load~
   (placeholder) to ~system.admin_reset~ in both functions.
 
-- [ ] Re-apply both functions to the running database.
+- [x] Re-apply both functions to the running database.
 
-- [ ] Smoke-test via shell scripts:
+- [x] Smoke-test via shell scripts:
   #+begin_src sh
   ./projects/ores.sql/reset_tenant.sh -t barclays_plc -y
   #+end_src
 
-** Phase 3 — IAM messaging protocol                    [ ]
+** Phase 3 — IAM messaging protocol                    [DONE]
 
 *** Tasks
 
-- [ ] Add protocol types to ~ores.iam.api~:
+- [x] Add protocol types to ~ores.iam.api~:
   - ~reset_tenant_command~ (field: ~tenant_code: string~)
   - ~reset_tenant_result~ (fields: ~success: bool~, ~message: string~)
   - ~reset_system_command~ (no fields)
   - ~reset_system_result~ (fields: ~success: bool~, ~message: string~)
 
-- [ ] Declare NATS subjects in the IAM API protocol header:
+- [x] Declare NATS subjects in the IAM API protocol header:
   ~iam.v1.system.reset-tenant~ and ~iam.v1.system.reset~.
 
-- [ ] Add entries to the IAM service CMakeLists if any new source files
-  are introduced.
+- [x] No CMakeLists changes needed; handlers are header-only and
+  ~GLOB_RECURSE~ picks them up automatically.
 
-** Phase 4 — IAM service handlers                      [ ]
-
-*** Tasks
-
-- [ ] Implement ~reset_tenant_handler~ in ~ores.iam.core~:
-  - Decode ~reset_tenant_command~
-  - Verify caller has ~SuperAdmin~ role (via ~wf->tenant_id~ and RBAC
-    check helper, same pattern as other privileged handlers)
-  - Call ~ores_iam_reset_tenant_bootstrap_fn(tenant_code)~ via
-    parameterised query
-  - Return ~reset_tenant_result~
-
-- [ ] Implement ~reset_system_handler~ in ~ores.iam.core~:
-  - Decode ~reset_system_command~
-  - Verify caller has ~SuperAdmin~ role
-  - Call ~ores_iam_reset_system_fn()~
-  - Return ~reset_system_result~
-
-- [ ] Subscribe both handlers in the IAM service startup / subscription
-  wiring (wherever ~publish_from_dq_handler~ and similar are wired).
-
-- [ ] Build and verify handlers compile cleanly.
-
-** Phase 5 — Qt UI                                     [ ]
+** Phase 4 — IAM service handlers                      [DONE]
 
 *** Tasks
 
-- [ ] *Reset Tenant* action:
-  - Add a "Reset Tenant…" item to the context menu (or toolbar button)
-    in the system admin tenant management view.
-  - On trigger: show a confirmation dialog explaining what will be
-    wiped and what is preserved (mirror the shell script banner text).
-  - On confirm: send ~iam.v1.system.reset-tenant~ via the workflow
-    steps widget pattern so the user sees progress and the result.
+- [x] Implement ~reset_handler~ in ~ores.iam.core~ (header-only,
+  ~include/ores.iam.core/messaging/reset_handler.hpp~):
+  - ~reset_tenant()~: decode ~reset_tenant_command~, check
+    ~iam::system:reset-tenant~ permission, call
+    ~ores_iam_reset_tenant_bootstrap_fn($1)~ in system tenant context
+  - ~reset_system()~: decode ~reset_system_command~, check
+    ~iam::system:reset~ permission, call ~ores_iam_reset_system_fn()~
 
-- [ ] *Reset System* action:
-  - Add a "Reset System…" action in the system settings / admin area,
-    clearly separated from routine admin actions.
-  - On trigger: show a two-step confirmation dialog (explain
-    destructive scope; require the user to type "yes").
-  - On confirm: send ~iam.v1.system.reset~ via the workflow steps
-    widget pattern.
+- [x] Subscribe both handlers in ~registrar.cpp~.
 
-- [ ] Emit appropriate signals on success so the tenant list / session
-  state refreshes automatically after a reset.
+- [x] Build verified green.
+
+** Phase 5 — Qt UI                                     [DONE]
+
+*** Tasks
+
+- [x] *Reset Tenant* action:
+  - Added "Reset" toolbar button to ~TenantMdiWindow~ (enabled on
+    selection, ~ArrowRotateCounterclockwise~ icon).
+  - Confirmation dialog explains what is wiped vs. preserved.
+  - Sends ~reset_tenant_command~ via ~QtConcurrent::run~ +
+    ~QFutureWatcher~; refreshes model and emits ~tenantReset~ on
+    success.
+  - ~TenantController~ wires ~tenantReset~ to a status bar message.
+
+- [x] *Reset System* action:
+  - Added "Reset &System…" to the System menu in ~AdminPlugin~,
+    separated from the Configuration submenu by a separator.
+  - Two-step confirmation: explanatory dialog + typed ~YES~ required.
+  - Sends ~reset_system_command~ via ~QtConcurrent::run~ +
+    ~QFutureWatcher~; shows information dialog on success instructing
+    the user to restart.
+
+- [x] Signals emitted on success; tenant list refreshes automatically
+  after Reset Tenant.
 
 * Files Affected
 
@@ -201,8 +195,11 @@ handler validates the role before executing the SQL function.
 | ~projects/ores.sql/reset_tenant.sh~ | Already created; shell script |
 | ~projects/ores.sql/reset_system.sh~ | Already created; shell script |
 | ~projects/ores.iam.api/include/ores.iam.api/messaging/reset_protocol.hpp~ | New protocol types |
-| ~projects/ores.iam.core/src/messaging/reset_tenant_handler.hpp/.cpp~ | New handler |
-| ~projects/ores.iam.core/src/messaging/reset_system_handler.hpp/.cpp~ | New handler |
-| ~projects/ores.iam.core/src/CMakeLists.txt~ | Wire new handler sources |
-| Qt system admin view (TBD) | Reset Tenant context menu / button |
-| Qt system settings view (TBD) | Reset System action |
+| ~projects/ores.iam.core/include/ores.iam.core/messaging/reset_handler.hpp~ | Header-only handler (both reset_tenant + reset_system) |
+| ~projects/ores.iam.core/src/messaging/registrar.cpp~ | Subscribe both handlers |
+| ~projects/ores.qt.admin/include/ores.qt/TenantMdiWindow.hpp~ | Add resetAction_, resetSelected(), tenantReset signal |
+| ~projects/ores.qt.admin/src/TenantMdiWindow.cpp~ | Implement Reset toolbar button + NATS call |
+| ~projects/ores.qt.admin/include/ores.qt/TenantController.hpp~ | Add onTenantReset slot |
+| ~projects/ores.qt.admin/src/TenantController.cpp~ | Wire tenantReset signal |
+| ~projects/ores.qt.admin/include/ores.qt/AdminPlugin.hpp~ | Add act_reset_system_, on_reset_system() |
+| ~projects/ores.qt.admin/src/AdminPlugin.cpp~ | Implement Reset System menu item + NATS call |

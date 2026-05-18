@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -243,20 +244,22 @@ void WorkspaceMdiWindow::deleteSelected() {
         return;
     }
 
-    int workspace_id = 0;
+    std::string workspace_id;
     QString workspace_name;
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* ws = model_->getWorkspace(sourceIndex.row())) {
-        workspace_id = ws->id;
+        workspace_id = boost::uuids::to_string(ws->id);
         workspace_name = QString::fromStdString(ws->name);
     }
 
-    if (workspace_id == 0) {
+    if (workspace_id.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No valid workspace selected for archive";
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Archive requested for workspace id: " << workspace_id;
+
+    const std::string actor = username_.toStdString();
 
     auto reply = MessageBoxHelper::question(this, "Archive Workspace",
         QString("Are you sure you want to archive workspace '%1'?").arg(workspace_name),
@@ -270,11 +273,14 @@ void WorkspaceMdiWindow::deleteSelected() {
     QPointer<WorkspaceMdiWindow> self = this;
     using ArchiveResult = std::pair<bool, std::string>;
 
-    auto task = [self, workspace_id]() -> ArchiveResult {
+    auto task = [self, workspace_id, actor]() -> ArchiveResult {
         if (!self) return {};
         BOOST_LOG_SEV(lg(), debug) << "Sending archive request for workspace id: " << workspace_id;
         workspace::messaging::archive_workspace_request request;
         request.id = workspace_id;
+        request.modified_by = actor;
+        request.change_reason_code = "user.archive";
+        request.change_commentary = "Archived by user";
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) return {false, "Failed to communicate with server"};
         return {result->success, result->message};
@@ -288,7 +294,7 @@ void WorkspaceMdiWindow::deleteSelected() {
 
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Workspace archived: " << workspace_id;
-            emit self->workspaceDeleted(QString::number(workspace_id));
+            emit self->workspaceDeleted(QString::fromStdString(workspace_id));
             self->model_->refresh();
             emit self->statusChanged(
                 QString("Workspace '%1' archived successfully").arg(workspace_name));

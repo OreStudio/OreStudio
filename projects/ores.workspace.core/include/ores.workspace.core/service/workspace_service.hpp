@@ -35,8 +35,8 @@ namespace ores::workspace::service {
 /**
  * @brief Service for managing workspaces.
  *
- * Provides a higher-level interface for workspace operations, wrapping
- * the underlying repository with validation and business rules.
+ * Provides a higher-level interface wrapping the repository with validation
+ * and business rules.
  */
 class ORES_WORKSPACE_CORE_EXPORT workspace_service {
 private:
@@ -52,9 +52,6 @@ private:
 public:
     using context = ores::database::context;
 
-    /**
-     * @brief Constructs a workspace_service with a database context.
-     */
     explicit workspace_service(context ctx);
 
     /**
@@ -63,37 +60,40 @@ public:
     std::vector<domain::workspace> list_workspaces();
 
     /**
-     * @brief Returns a workspace by id, or std::nullopt if not found.
+     * @brief Returns a workspace by UUID string, or nullopt if not found.
      */
-    std::optional<domain::workspace> get_workspace(int id);
+    std::optional<domain::workspace> get_workspace(const std::string& id);
 
     /**
-     * @brief Creates a new workspace and returns its generated id.
+     * @brief Creates a new workspace and returns its UUID string.
      *
-     * @throws std::invalid_argument if name is empty or status is invalid.
+     * @throws std::invalid_argument if name is empty or status_code is invalid.
      */
-    int create_workspace(const domain::workspace& ws);
+    std::string create_workspace(const domain::workspace& ws);
 
     /**
-     * @brief Archives a workspace by id.
+     * @brief Archives a workspace by UUID string.
      */
-    void archive_workspace(int id);
+    void archive_workspace(const std::string& id,
+        const std::string& modified_by,
+        const std::string& change_reason_code,
+        const std::string& change_commentary);
 
     /**
-     * @brief Returns the ancestor resolution chain for a workspace.
+     * @brief Returns the UUID ancestor resolution chain for a workspace.
      */
-    std::vector<int> resolve(int workspace_id);
+    std::vector<std::string> resolve(const std::string& workspace_id);
 
     /**
      * @brief Replaces the trade scope for a workspace.
      */
-    void set_trade_scope(int workspace_id,
+    void set_trade_scope(const std::string& workspace_id,
         const std::vector<boost::uuids::uuid>& trade_ids);
 
     /**
      * @brief Clears all trade scope entries for a workspace.
      */
-    void clear_trade_scope(int workspace_id);
+    void clear_trade_scope(const std::string& workspace_id);
 
 private:
     context ctx_;

@@ -20,6 +20,7 @@
 #ifndef ORES_WORKSPACE_API_DOMAIN_WORKSPACE_HPP
 #define ORES_WORKSPACE_API_DOMAIN_WORKSPACE_HPP
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
@@ -30,13 +31,20 @@ namespace ores::workspace::domain {
  * @brief A named, isolated data context for workspace-level operations.
  *
  * Workspaces provide Docker-layer-style inheritance: data not present in a
- * workspace is resolved from the parent chain up to workspace 0 (Live).
+ * workspace is resolved from the parent chain up to the Live workspace
+ * (ores_utility_live_workspace_id_fn()).
  */
 struct workspace final {
     /**
-     * @brief Auto-generated integer primary key.
+     * @brief UUID primary key. Never nil; Live workspace uses the sentinel
+     * returned by ores_utility_live_workspace_id_fn().
      */
-    int id = 0;
+    boost::uuids::uuid id = {};
+
+    /**
+     * @brief Optimistic-locking version counter.
+     */
+    int version = 0;
 
     /**
      * @brief Unique name of the workspace.
@@ -54,26 +62,51 @@ struct workspace final {
     std::string source_path;
 
     /**
-     * @brief Optional parent workspace for inheritance chain.
+     * @brief Optional parent workspace UUID for inheritance chain.
      */
-    std::optional<int> parent_workspace_id;
+    std::optional<boost::uuids::uuid> parent_workspace_id;
 
     /**
-     * @brief Optional portfolio UUID to scope this workspace to.
+     * @brief Optional portfolio UUID to scope this workspace.
      *
-     * Soft FK to the portfolios table in refdata; no hard DB constraint.
+     * Soft FK to portfolios table; no hard DB constraint.
      */
     std::optional<boost::uuids::uuid> scope_portfolio_id;
 
     /**
-     * @brief Username that created this workspace.
+     * @brief UUID of the IAM account that owns this workspace.
      */
-    std::string created_by;
+    boost::uuids::uuid owner_id = {};
 
     /**
-     * @brief Lifecycle status: "active" or "archived".
+     * @brief Lifecycle status code: "active" or "archived".
      */
-    std::string status;
+    std::string status_code;
+
+    /**
+     * @brief Username of the person who last modified this workspace.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the service/account that performed the operation.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the last change.
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the last change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at = {};
 };
 
 }

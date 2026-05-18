@@ -46,7 +46,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     "upper_barrier" numeric(28, 10) null,
     "underlying_code" text null,
     "description" text null,
-    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

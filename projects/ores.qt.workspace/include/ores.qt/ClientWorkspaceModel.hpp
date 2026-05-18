@@ -59,7 +59,7 @@ public:
         Name,
         Description,
         Status,
-        CreatedBy,
+        ModifiedBy,
         ColumnCount
     };
 

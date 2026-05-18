@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -72,16 +73,6 @@ void WorkspaceDetailDialog::setupUi() {
     // ID is always auto-generated — hide the id field entirely
     ui_->labelId->setVisible(false);
     ui_->codeEdit->setVisible(false);
-
-    // Hide provenance tab — workspace has no temporal versioning fields
-    if (auto* tw = tabWidget()) {
-        for (int i = 0; i < tw->count(); ++i) {
-            if (tw->widget(i) == ui_->provenanceTab) {
-                tw->removeTab(i);
-                break;
-            }
-        }
-    }
 }
 
 void WorkspaceDetailDialog::setupConnections() {
@@ -131,7 +122,20 @@ void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
 void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
-    clearProvenance();
+
+    if (workspace_.version > 0 && provenanceWidget()) {
+        provenanceWidget()->populate(
+            workspace_.version,
+            workspace_.modified_by,
+            workspace_.performed_by,
+            workspace_.recorded_at,
+            workspace_.change_reason_code,
+            workspace_.change_commentary);
+        setProvenanceEnabled(true);
+    } else {
+        clearProvenance();
+    }
+
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -139,7 +143,9 @@ void WorkspaceDetailDialog::updateUiFromWorkspace() {
 void WorkspaceDetailDialog::updateWorkspaceFromUi() {
     workspace_.name = ui_->nameEdit->text().trimmed().toStdString();
     workspace_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    workspace_.created_by = username_;
+    workspace_.modified_by = username_;
+    if (workspace_.change_reason_code.empty())
+        workspace_.change_reason_code = "system.new_record";
 }
 
 void WorkspaceDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -183,7 +189,7 @@ void WorkspaceDetailDialog::onSaveClicked() {
     struct SaveResult {
         bool success;
         std::string message;
-        int id = 0;
+        std::string id;
     };
 
     auto task = [self, workspace = workspace_]() -> SaveResult {
@@ -211,7 +217,7 @@ void WorkspaceDetailDialog::onSaveClicked() {
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Workspace created with id: " << result.id;
-            QString code = QString::number(result.id);
+            QString code = QString::fromStdString(result.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->workspaceSaved(code);
@@ -244,7 +250,8 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Archiving workspace id: " << workspace_.id;
+    BOOST_LOG_SEV(lg(), info) << "Archiving workspace id: "
+                              << boost::uuids::to_string(workspace_.id);
 
     QPointer<WorkspaceDetailDialog> self = this;
 
@@ -253,13 +260,18 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = workspace_.id]() -> ArchiveResult {
+    const std::string ws_id = boost::uuids::to_string(workspace_.id);
+    const std::string actor = username_;
+    auto task = [self, ws_id, actor]() -> ArchiveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         workspace::messaging::archive_workspace_request request;
-        request.id = id;
+        request.id = ws_id;
+        request.modified_by = actor;
+        request.change_reason_code = "user.archive";
+        request.change_commentary = "Archived by user";
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

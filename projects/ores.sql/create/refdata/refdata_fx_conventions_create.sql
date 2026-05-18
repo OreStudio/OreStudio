@@ -41,7 +41,7 @@ create table if not exists "ores_refdata_fx_conventions_tbl" (
     "spot_relative" boolean null,
     "end_of_month" boolean null,
     "convention" text null,
-    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

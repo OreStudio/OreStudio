@@ -6,14 +6,17 @@
     "entity_plural": "workspaces",
     "entity_title": "Workspace",
     "brief": "Named, isolated data context for workspace-level operations.",
-    "description": "Workspaces provide Docker-layer-style inheritance: data not present in a\nworkspace is resolved from the parent chain up to workspace 0 (Live).\n\nWorkspace 0 is the production (Live) view and cannot be modified or archived.",
+    "description": "Workspaces provide Docker-layer-style inheritance: data not present in a\nworkspace is resolved from the parent chain up to the Live workspace\n(ores_utility_live_workspace_id_fn()).",
 
     "primary_key": {
       "column": "id",
-      "type": "integer",
-      "cpp_type": "int",
-      "description": "Auto-generated integer primary key."
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key."
     },
+
+    "bitemporal": true,
+    "has_version": true,
 
     "natural_keys": [
       {
@@ -33,18 +36,74 @@
         "description": "Optional free-text description."
       },
       {
-        "name": "status",
+        "name": "source_path",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional path to source data."
+      },
+      {
+        "name": "parent_workspace_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "Optional parent workspace UUID."
+      },
+      {
+        "name": "scope_portfolio_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "Optional portfolio UUID scope."
+      },
+      {
+        "name": "owner_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "IAM account that owns this workspace."
+      },
+      {
+        "name": "status_code",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
         "description": "Lifecycle status: active or archived."
       },
       {
-        "name": "created_by",
+        "name": "modified_by",
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Username that created this workspace."
+        "description": "Username of the last modifier."
+      },
+      {
+        "name": "performed_by",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Service/account that performed the operation."
+      },
+      {
+        "name": "change_reason_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Code identifying the reason for this change."
+      },
+      {
+        "name": "change_commentary",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Free-text commentary on this change."
+      },
+      {
+        "name": "recorded_at",
+        "type": "timestamptz",
+        "cpp_type": "std::chrono::system_clock::time_point",
+        "nullable": false,
+        "description": "Timestamp when this version was recorded (maps to valid_from)."
       }
     ],
 
@@ -66,10 +125,10 @@
       "collection_name": "workspaces",
       "item_var": "workspace",
       "key_field": "id",
-      "has_uuid_primary_key": false,
-      "has_integer_primary_key": true,
+      "has_uuid_primary_key": true,
+      "has_integer_primary_key": false,
       "has_pagination": false,
-      "has_history": false,
+      "has_history": true,
       "has_description_column": true,
 
       "get_request_class": "workspace::messaging::list_workspaces_request",
@@ -83,11 +142,11 @@
       "delete_message_type": "archive_workspace_request",
 
       "columns": [
-        {"enum_name": "Id",          "field": "id",          "header": "ID",         "is_int": true,    "width": 60},
-        {"enum_name": "Name",        "field": "name",        "header": "Name",       "is_string": true, "width": 200},
-        {"enum_name": "Description", "field": "description", "header": "Description","is_string": true, "width": 340},
-        {"enum_name": "Status",      "field": "status",      "header": "Status",     "is_string": true, "width": 90},
-        {"enum_name": "CreatedBy",   "field": "created_by",  "header": "Created By", "is_string": true, "width": 120}
+        {"enum_name": "Id",          "field": "id",           "header": "ID",          "is_uuid": true,   "width": 280},
+        {"enum_name": "Name",        "field": "name",         "header": "Name",        "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description",  "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "Status",      "field": "status_code",  "header": "Status",      "is_string": true, "width": 90},
+        {"enum_name": "ModifiedBy",  "field": "modified_by",  "header": "Modified By", "is_string": true, "width": 120}
       ],
 
       "settings_group": "WorkspaceListWindow",

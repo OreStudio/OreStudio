@@ -36,7 +36,7 @@ create table if not exists ores_marketdata_fixings_tbl (
     "fixing_date"  date not null,
     "value"        text not null,
     "source"       text,
-    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "valid_from"   timestamp with time zone not null,
     "valid_to"     timestamp with time zone not null,
     primary key (id, fixing_date),

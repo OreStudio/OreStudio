@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
@@ -32,11 +33,11 @@ using namespace ores::logging;
 
 namespace {
     std::string workspace_key_extractor(const workspace::domain::workspace& e) {
-        return std::to_string(e.id);
+        return boost::uuids::to_string(e.id);
     }
     std::chrono::system_clock::time_point workspace_timestamp_extractor(
-        const workspace::domain::workspace&) {
-        return {};
+        const workspace::domain::workspace& e) {
+        return e.recorded_at;
     }
 }
 
@@ -83,22 +84,22 @@ QVariant ClientWorkspaceModel::data(
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case Id:
-            return static_cast<qlonglong>(workspace.id);
+            return QString::fromStdString(boost::uuids::to_string(workspace.id));
         case Name:
             return QString::fromStdString(workspace.name);
         case Description:
             return QString::fromStdString(workspace.description);
         case Status:
-            return QString::fromStdString(workspace.status);
-        case CreatedBy:
-            return QString::fromStdString(workspace.created_by);
+            return QString::fromStdString(workspace.status_code);
+        case ModifiedBy:
+            return QString::fromStdString(workspace.modified_by);
         default:
             return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(std::to_string(workspace.id));
+        return recency_foreground_color(boost::uuids::to_string(workspace.id));
     }
 
     return {};
@@ -118,8 +119,8 @@ QVariant ClientWorkspaceModel::headerData(
         return tr("Description");
     case Status:
         return tr("Status");
-    case CreatedBy:
-        return tr("Created By");
+    case ModifiedBy:
+        return tr("Modified By");
     default:
         return {};
     }

@@ -43,7 +43,7 @@ create table if not exists "ores_trading_equity_asian_option_instruments_tbl" (
     "averaging_start_date" date not null,
     "averaging_end_date" date not null,
     "description" text null,
-    "workspace_id" integer not null default 0 references ores_workspaces_tbl(id),
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -56,7 +56,7 @@ create table if not exists ores_marketdata_series_tbl (
     "asset_class"      text not null,
     "series_subclass"  text not null,
     "is_scalar"        boolean not null default false,
-    "workspace_id"     integer not null default 0 references ores_workspaces_tbl(id),
+    "workspace_id"     uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by"        text not null,
     "performed_by"       text not null,
     "change_reason_code" text not null,

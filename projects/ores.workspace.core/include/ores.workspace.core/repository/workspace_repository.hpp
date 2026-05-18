@@ -34,7 +34,8 @@ namespace ores::workspace::repository {
 /**
  * @brief Reads and writes workspaces to data storage.
  *
- * Uses raw SQL helpers because the workspace table is not bitemporal.
+ * Workspace table is bitemporal: all queries filter on
+ * valid_to = ores_utility_infinity_timestamp_fn().
  */
 class ORES_WORKSPACE_CORE_EXPORT workspace_repository {
 private:
@@ -53,49 +54,49 @@ public:
     explicit workspace_repository(context ctx);
 
     /**
-     * @brief Returns all active workspaces ordered by id.
+     * @brief Returns all active workspaces ordered by name.
      */
     std::vector<domain::workspace> list_active();
 
     /**
-     * @brief Finds a workspace by its integer id.
+     * @brief Finds a workspace by its UUID.
+     */
+    std::optional<domain::workspace> find_by_id(const std::string& id);
+
+    /**
+     * @brief Inserts a new workspace and returns its UUID string.
      *
-     * @return The workspace if found, std::nullopt otherwise.
+     * The caller must set ws.id to a new gen_random_uuid(); the DB trigger
+     * manages version, valid_from, and valid_to.
      */
-    std::optional<domain::workspace> find_by_id(int id);
+    std::string create(const domain::workspace& ws);
 
     /**
-     * @brief Inserts a new workspace and returns its generated id.
+     * @brief Archives the workspace identified by id.
+     *
+     * Uses the bitemporal delete rule (closes valid_to = now()).
      */
-    int create(const domain::workspace& ws);
+    void archive(const std::string& id, const std::string& modified_by,
+        const std::string& change_reason_code,
+        const std::string& change_commentary);
 
     /**
-     * @brief Sets status = 'archived' for the given workspace id.
+     * @brief Returns the UUID ancestor chain for a workspace.
      */
-    void archive(int id);
-
-    /**
-     * @brief Returns the ancestor chain for a workspace (id, parent, ..., root).
-     */
-    std::vector<int> resolution_order(int workspace_id);
+    std::vector<std::string> resolution_order(const std::string& workspace_id);
 
     /**
      * @brief Replaces the trade scope for a workspace.
-     *
-     * Deletes all existing rows for workspace_id then inserts the new set.
      */
-    void set_trade_scope(int workspace_id,
+    void set_trade_scope(const std::string& workspace_id,
         const std::vector<boost::uuids::uuid>& trade_ids);
 
     /**
      * @brief Removes all trade scope entries for a workspace.
      */
-    void clear_trade_scope(int workspace_id);
+    void clear_trade_scope(const std::string& workspace_id);
 
 private:
-    static domain::workspace map_row(
-        const std::vector<std::optional<std::string>>& row);
-
     context ctx_;
 };
 

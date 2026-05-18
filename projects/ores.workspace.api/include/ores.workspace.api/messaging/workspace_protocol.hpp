@@ -54,7 +54,7 @@ struct create_workspace_request {
 struct create_workspace_response {
     bool success = false;
     std::string message;
-    int id = 0;
+    std::string id;  // UUID string of the created workspace
 };
 
 // ---------------------------------------------------------------------------
@@ -64,7 +64,10 @@ struct create_workspace_response {
 struct archive_workspace_request {
     using response_type = struct archive_workspace_response;
     static constexpr std::string_view nats_subject = "workspace.v1.workspaces.archive";
-    int id = 0;
+    std::string id;  // UUID string
+    std::string modified_by;
+    std::string change_reason_code;
+    std::string change_commentary;
 };
 
 struct archive_workspace_response {
@@ -79,11 +82,11 @@ struct archive_workspace_response {
 struct resolve_workspace_request {
     using response_type = struct resolve_workspace_response;
     static constexpr std::string_view nats_subject = "workspace.v1.workspaces.resolve";
-    int workspace_id = 0;
+    std::string workspace_id;  // UUID string
 };
 
 struct resolve_workspace_response {
-    std::vector<int> resolution_order;
+    std::vector<std::string> resolution_order;  // UUID strings
 };
 
 // ---------------------------------------------------------------------------
@@ -93,7 +96,7 @@ struct resolve_workspace_response {
 struct set_trade_scope_request {
     using response_type = struct set_trade_scope_response;
     static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.set";
-    int workspace_id = 0;
+    std::string workspace_id;  // UUID string
     std::vector<std::string> trade_ids;
 };
 
@@ -109,7 +112,7 @@ struct set_trade_scope_response {
 struct clear_trade_scope_request {
     using response_type = struct clear_trade_scope_response;
     static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.clear";
-    int workspace_id = 0;
+    std::string workspace_id;  // UUID string
 };
 
 struct clear_trade_scope_response {

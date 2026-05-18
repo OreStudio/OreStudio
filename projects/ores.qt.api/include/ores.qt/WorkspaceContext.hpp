@@ -29,16 +29,22 @@ namespace ores::qt {
 /**
  * @brief Identifies the active workspace for a UI session.
  *
- * id == 0 / name == "Live" is the production view with no overrides.
+ * id == live_workspace_uuid (aaaaaaaa-...) is the production view.
  * Any other id represents a named workspace whose resolution_order
  * is applied when fetching data from the workspace service.
+ *
+ * @see ores_utility_live_workspace_id_fn() — SQL sentinel.
+ * @see ores::utility::uuid::live_workspace_uuid_str — C++ constant.
  */
 struct ORES_QT_API WorkspaceContext {
-    int id = 0;
-    QString name = QStringLiteral("Live");
-    QVector<int> resolution_order = {0};
+    inline static const QString live_workspace_id =
+        QStringLiteral("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-    bool is_live() const { return id == 0; }
+    QString id = live_workspace_id;
+    QString name = QStringLiteral("Live");
+    QVector<QString> resolution_order = {live_workspace_id};
+
+    bool is_live() const { return id == live_workspace_id; }
 };
 
 }

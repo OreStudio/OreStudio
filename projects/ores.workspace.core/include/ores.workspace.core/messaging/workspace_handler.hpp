@@ -141,7 +141,8 @@ public:
             return;
         }
         try {
-            svc.archive_workspace(req->id);
+            svc.archive_workspace(req->id, req->modified_by,
+                req->change_reason_code, req->change_commentary);
             BOOST_LOG_SEV(workspace_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, archive_workspace_response{.success = true});
@@ -206,9 +207,8 @@ public:
             boost::uuids::string_generator gen;
             std::vector<boost::uuids::uuid> trade_uuids;
             trade_uuids.reserve(req->trade_ids.size());
-            for (const auto& s : req->trade_ids) {
+            for (const auto& s : req->trade_ids)
                 trade_uuids.push_back(gen(s));
-            }
             svc.set_trade_scope(req->workspace_id, trade_uuids);
             BOOST_LOG_SEV(workspace_handler_lg(), debug)
                 << "Completed " << msg.subject;

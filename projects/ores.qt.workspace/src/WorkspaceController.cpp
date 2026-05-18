@@ -22,6 +22,7 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
@@ -118,7 +119,8 @@ void WorkspaceController::reloadListWindow() {
 
 void WorkspaceController::onShowDetails(
     const workspace::domain::workspace& workspace) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << workspace.id;
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: "
+                               << boost::uuids::to_string(workspace.id);
     showDetailWindow(workspace);
 }
 
@@ -162,7 +164,8 @@ void WorkspaceController::showAddWindow() {
 void WorkspaceController::showDetailWindow(
     const workspace::domain::workspace& workspace) {
 
-    const QString identifier = QString::number(workspace.id);
+    const QString identifier =
+        QString::fromStdString(boost::uuids::to_string(workspace.id));
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -170,7 +173,8 @@ void WorkspaceController::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for id: " << workspace.id;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for id: "
+                               << identifier.toStdString();
 
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);

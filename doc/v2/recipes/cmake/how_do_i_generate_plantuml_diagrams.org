@@ -23,7 +23,7 @@ docs and site?
 The =mad= target ("make all diagrams") builds every PlantUML diagram
 declared in the build:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target mad
 #+end_src
 
@@ -32,11 +32,11 @@ cmake --build --preset linux-clang-debug-ninja --target mad
 Component diagrams follow =generate_<component>_diagram= where
 =<component>= uses dots, just like the component name:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target generate_ores.refdata_diagram
 #+end_src
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target generate_ores.comms_diagram
 #+end_src
 
@@ -44,7 +44,7 @@ cmake --build --preset linux-clang-debug-ninja --target generate_ores.comms_diag
 
 For the whole-project view used on the home page:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
 #+end_src
 

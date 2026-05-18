@@ -252,10 +252,10 @@ packages also have dependencies --- particularly on Linux. If you are on Debian
 or Ubuntu, please run the script [[https://github.com/OreStudio/OreStudio/blob/main/build/scripts/install_debian_packages.sh][=build/scripts/install_debian_packages.sh=]]
 prior to building. See the next section for details.
 
-** Ubuntu, Debian and WSL
+** First-time setup (Ubuntu, Debian, WSL)
 
-On a fresh [[https://ubuntu.com/][Ubuntu]] or [[https://www.debian.org/][Debian]] installation --- including [[https://learn.microsoft.com/en-us/windows/wsl/install][Windows Subsystem for
-Linux (WSL)]] --- clone with submodules and install the build dependencies:
+Clone with submodules, install the build dependencies, and initialise
+the database:
 
 #+begin_src sh
 git clone https://github.com/OreStudio/OreStudio.git --recurse-submodules
@@ -269,44 +269,22 @@ The install script pulls GCC, Clang, CMake, Ninja, PostgreSQL,
 headers --- all from the distro repositories. Nothing comes from
 third-party APT sources.
 
-Then configure and build with a CMake preset. The day-to-day default
-on Linux is =linux-clang-debug-ninja=:
+** Building, testing, deploying
+
+Every CMake command — configuring with a preset, building, running the
+test suite, deploying the site, deploying skills, generating PlantUML
+diagrams — lives as an executable recipe under
+=doc/v2/recipes/cmake/=. Start from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]], which
+indexes the seven recipes plus the [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] knowledge document
+(preset menu, output directory layout, parallel-build configuration,
+test-logging knobs).
+
+The fastest path on Linux:
 
 #+begin_src sh
 cmake --preset linux-clang-debug-ninja
 cmake --build --preset linux-clang-debug-ninja
 #+end_src
-
-To run the test suite, target =rat=:
-
-#+begin_src sh
-cmake --build --preset linux-clang-release-ninja --target rat
-#+end_src
-
-To launch the Qt GUI:
-
-#+begin_src sh
-cmake --build --preset linux-clang-debug-ninja --target run_ores_qt
-#+end_src
-
-A workflow preset chains configure + build in one go:
-
-#+begin_src sh
-cmake --workflow --preset linux-clang-release-ninja
-#+end_src
-
-If you bump into PostgreSQL errors during configure, set =ZIC=:
-
-#+begin_src sh
-ZIC=zic cmake --preset linux-clang-debug-ninja
-#+end_src
-
-** More commands
-
-The above covers the quick start. For the full preset menu, the
-output directory layout, parallel-build configuration, test logging
-options, and the recipes for deploying the site and skills, see
-[[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] and the recipes linked from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]].
 
 * Updating vcpkg
 

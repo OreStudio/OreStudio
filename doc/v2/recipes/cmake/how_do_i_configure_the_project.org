@@ -19,13 +19,13 @@ How do I configure ORE Studio with CMake?
 
 From the project root, pick a preset and configure with it:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --preset linux-clang-debug-ninja
 #+end_src
 
 For a release build:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --preset linux-clang-release-ninja
 #+end_src
 
@@ -39,7 +39,7 @@ To enable test logging or any other option, pass =-D<NAME>=<VALUE>= to
 the same command. The build directory is reused; CMake re-configures
 in place:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
 #+end_src
 

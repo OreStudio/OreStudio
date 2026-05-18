@@ -37,6 +37,9 @@ TYPE_TO_TEMPLATE = {
     "sprint": "v2_doc_sprint.org.mustache",
     "version": "v2_doc_version.org.mustache",
     "component": "v2_doc_component.org.mustache",
+    "recipe": "v2_doc_recipe.org.mustache",
+    "knowledge": "v2_doc_knowledge.org.mustache",
+    "skill": "v2_doc_skill.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -45,6 +48,9 @@ DEFAULT_INITIAL_STATE = {
     "sprint": "STARTED",
     "version": "STARTED",
     "component": "",
+    "recipe": "",
+    "knowledge": "",
+    "skill": "",
 }
 
 # Composition: each type's direct parent type.
@@ -52,11 +58,11 @@ PARENT_OF_TYPE = {
     "task": "story",
     "story": "sprint",
     "sprint": "version",
-    # version and component have no parent in the composition tree.
+    # version, component, recipe, knowledge, skill have no composition parent.
 }
 
 # Types that don't take a parent (and aren't stateful).
-PARENTLESS_TYPES = {"version", "component"}
+PARENTLESS_TYPES = {"version", "component", "recipe", "knowledge", "skill"}
 
 
 def build_filetags(tags_csv, parent_slug):
@@ -225,6 +231,7 @@ def main(argv=None):
 
     variables = {
         "id": new_id,
+        "slug": args.slug,
         "title": args.title,
         "description": args.description,
         "filetags": filetags,
@@ -242,11 +249,18 @@ def main(argv=None):
     renderer = pystache.Renderer(escape=lambda value: value)
     rendered = renderer.render(template_text, variables)
 
-    # Component docs live directly under the parent dir as <slug>.org.
-    # Everything else gets its own folder under the parent.
-    if args.type == "component":
+    # Layouts:
+    # - component: <parent-dir>/<slug>.org    (existing modeling convention)
+    # - recipe:    <parent-dir>/<slug>.org    (e.g. how_do_i_x.org)
+    # - knowledge: <parent-dir>/<slug>.org
+    # - skill:     <parent-dir>/<slug>/SKILL.org  (Claude Code skill folder)
+    # - task / story / sprint / version: <parent-dir>/<slug>/<type>.org
+    if args.type in ("component", "recipe", "knowledge"):
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
+    elif args.type == "skill":
+        out_dir = parent_dir / args.slug
+        out_file = out_dir / "SKILL.org"
     else:
         out_dir = parent_dir / args.slug
         out_file = out_dir / f"{args.type}.org"

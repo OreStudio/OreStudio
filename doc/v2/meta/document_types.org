@@ -417,9 +417,14 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
   script fails.
 - Required sections ::
   - =* Question= — the NLP question.
-  - =* Answer= — the steps.
-  - =* Script= — executable code where applicable.
-  - =* Tested by= — link to the CI check that exercises the script.
+  - =* Answer= — the steps. Shell commands inside an =* Answer= belong
+    in =#+begin_src sh :results verbatim= blocks so they can be
+    executed in place (=C-c C-c= in emacs); when the captured output
+    is the value of the recipe (e.g. /list available presets/), keep
+    =#+RESULTS:= alongside as a snapshot.
+  - =* Script= — pointer to the script or wrapper that does the work,
+    where applicable.
+  - =* Tested by= — link to the CI check that exercises the recipe.
 
 ** component
 
@@ -443,6 +448,28 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
   - =* Dependencies= — other components or libraries this one needs.
   - =* See also= — id-links to recipes operating on the component
     and to deeper knowledge documents about it.
+
+** skill
+
+- Folder :: =doc/skills/<slug>/SKILL.org= (the filename is fixed
+  uppercase by Claude Code convention).
+- Level :: =cross=.
+- Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
+  The slug doubles as the Claude Code skill =name:=.
+- Not stateful — no TODO.
+- Required sections ::
+  - A =#+begin_export markdown ... #+end_export= block with
+    =name:= / =description:= / =license:= (Claude Code metadata).
+  - =* When to use this skill= — one or two sentences.
+  - =* How to use this skill= — numbered steps.
+  - =* Recipes= — id-links to the operational recipes the skill
+    indexes.
+  - =* Reference= — id-link to the knowledge document or component
+    model that backs the skill.
+  - =* Artefacts :noexport:= containing the licence (tangled into
+    =LICENCE.txt= at build).
+- Size :: 50–80 lines once skeleton sections are filled in. Skills
+  are /thin indexes/, not reference content.
 
 ** knowledge
 

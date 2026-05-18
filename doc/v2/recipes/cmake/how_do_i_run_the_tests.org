@@ -21,7 +21,7 @@ How do I run the ORE Studio test suite?
 
 The =rat= target runs every test:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-release-ninja --target rat
 #+end_src
 
@@ -29,7 +29,7 @@ cmake --build --preset linux-clang-release-ninja --target rat
 
 For one component's tests, use the =test_<component>= target:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target test_ores.accounts.tests
 #+end_src
 
@@ -40,7 +40,7 @@ Replace =ores.accounts.tests= with the component you want.
 Logging is OFF by default for performance. To enable it at configure
 time (preferred):
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 # Logs to files only
 cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
 
@@ -50,13 +50,13 @@ cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_L
 
 Then run the tests as usual:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target rat
 #+end_src
 
 To turn logging off again:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
 #+end_src
 
@@ -68,7 +68,7 @@ to override at run time without reconfiguring.
 
 After running tests with logging enabled:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 ./scripts/parse_test_results.py \
     build/output/linux-clang-debug-ninja/publish/bin
 #+end_src

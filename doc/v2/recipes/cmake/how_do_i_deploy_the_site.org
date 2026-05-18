@@ -22,7 +22,7 @@ The =deploy_site= CMake target invokes Emacs in batch mode against
 =.build-site.el=, which publishes every =.org= file in the repository
 (excluding =.packages=, =vcpkg=, =build=) to HTML:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target deploy_site
 #+end_src
 

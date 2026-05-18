@@ -19,12 +19,38 @@ How do I list the CMake presets available in ORE Studio?
 
 From the project root:
 
-#+begin_src sh
+#+begin_src sh :results verbatim :exports both
 cmake --list-presets
 #+end_src
 
+#+RESULTS:
+#+begin_example
+Available configure presets:
+
+  "linux-clang-debug-ninja"             - Linux Clang Debug (Ninja)
+  "linux-clang-debug-make"              - Linux Clang Debug (Make)
+  "linux-clang-release-ninja"           - Linux Clang Release (Ninja)
+  "linux-clang-release-make"            - Linux Clang Release (Make)
+  "linux-gcc-debug-ninja"               - Linux GCC Debug (Ninja)
+  "linux-gcc-debug-make"                - Linux GCC Debug (Make)
+  "linux-gcc-release-ninja"             - Linux GCC Release (Ninja)
+  "linux-gcc-release-make"              - Linux GCC Release (Make)
+  "windows-msvc-debug-ninja"            - Windows x64 Debug (Ninja)
+  "windows-msvc-release-ninja"          - Windows x64 Release (Ninja)
+  "windows-msvc-clang-cl-debug-ninja"   - Windows x64 Debug (Ninja)
+  "windows-msvc-clang-cl-release-ninja" - Windows x64 Release (Ninja)
+  "windows-clang-debug-ninja"           - Windows x64 Debug (Ninja)
+  "windows-clang-release-ninja"         - Windows x64 Release (Ninja)
+  "macos-clang-debug-ninja"             - Mac OSX Debug (Ninja)
+  "macos-clang-debug-make"              - Mac OSX Debug (Make)
+  "macos-clang-release-ninja"           - Mac OSX Release (Ninja)
+  "macos-clang-release-make"            - Mac OSX Release (Make)
+#+end_example
+
 This reads =CMakePresets.json= and prints every configure preset by
-name and description.
+name and description. The captured =#+RESULTS:= block above is a
+snapshot — re-evaluate the source block (=C-c C-c= in emacs) to refresh
+it after preset changes.
 
 * Script
 

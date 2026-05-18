@@ -14,6 +14,9 @@ file that already follows the contract in
 | sprint | `<parent-dir>/<slug>/sprint.org` |
 | version | `<parent-dir>/<slug>/version.org` |
 | component | `<parent-dir>/<slug>.org` (no subfolder — matches the existing `projects/<comp>/modeling/<comp>.org` convention) |
+| recipe | `<parent-dir>/<slug>.org` (slug typically starts with `how_do_i_`) |
+| knowledge | `<parent-dir>/<slug>.org` |
+| skill | `<parent-dir>/<slug>/SKILL.org` (slug becomes both the folder name and the Claude Code skill `name:`) |
 
 Each output has a fresh UUID in `:ID:`, today's date in `#+created`
 and `#+updated`, the standard frontmatter for its type, an initial
@@ -24,7 +27,7 @@ sections.
 
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
-  [--type <task|story|sprint|version|component>] \
+  [--type <task|story|sprint|version|component|recipe|knowledge|skill>] \
   [--slug <snake_case_slug>] \
   [--parent-dir <path-where-the-new-doc-is-created>] \
   [--title "<human-readable title>"] \
@@ -70,6 +73,43 @@ projects/ores.codegen/generate_v2_doc.sh
 
 — and the script walks you through type, slug, parent dir, title,
 description, and tags.
+
+## Example — add a recipe
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type recipe --slug how_do_i_clear_the_cache \
+  --parent-dir doc/v2/recipes/cmake \
+  --title "How do I clear the cache?" \
+  --description "Remove the CMake binary cache to force a clean re-configure." \
+  --tags "cmake,build,recipe"
+```
+
+## Example — add a knowledge document
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type knowledge --slug build_system_decisions \
+  --parent-dir doc/v2/knowledge/architecture \
+  --title "Build system decisions" \
+  --description "Why we picked Ninja over Make as the default generator." \
+  --tags "build,architecture,knowledge"
+```
+
+## Example — add a skill
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type skill --slug my-new-skill \
+  --parent-dir doc/skills \
+  --title "My New Skill" \
+  --description "When and how to use the new skill." \
+  --tags "skill"
+```
+
+The slug uses kebab-case for skills (matches existing convention like
+`cmake-runner`). It becomes both the folder name and the `name:` field
+in the Claude Code markdown frontmatter.
 
 ## Example — add a component model doc
 

@@ -22,7 +22,7 @@ The =deploy_skills= CMake target invokes Emacs in batch mode against
 =.build-skills.el=, which exports each skill under =doc/skills/= to
 the format Claude Code expects:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 cmake --build --preset linux-clang-debug-ninja --target deploy_skills
 #+end_src
 

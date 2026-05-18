@@ -2,7 +2,7 @@
 :ID: 3153aa4b-23d4-4111-9710-5a4971102edc
 :END:
 #+title: How do I create a new v2 doc?
-#+description: Use generate_v2_doc.sh to create a task, story, sprint, or version with frontmatter, UUID, and skeleton sections pre-filled.
+#+description: Use generate_v2_doc.sh to create any v2 document type with frontmatter, UUID, and skeleton sections pre-filled.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:v2_docs:templates:agile:recipe:
@@ -15,43 +15,47 @@ the generator itself, see [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codege
 
 * Question
 
-How do I create a new v2 information-architecture document — a task,
-story, sprint, or version — without hand-writing the frontmatter?
+How do I create a new v2 information-architecture document —
+task, story, sprint, version, component, recipe, knowledge, or
+skill — without hand-writing the frontmatter?
 
 * Answer
 
 Call =projects/ores.codegen/generate_v2_doc.sh= with the type, slug,
 parent directory, and the document's title and description. The
 script fills in a fresh UUID, today's dates, the required frontmatter,
-an initial =* Status= headline at the type's default TODO state, and
-the skeleton sections — leaving only the content for you to fill in.
+an initial =* Status= headline at the type's default TODO state (where
+applicable), and the skeleton sections — leaving only the content for
+you to fill in.
+
+For task / story / sprint, parent =:ID:=, title and slug are
+auto-detected from =<parent-dir>/<parent-type>.org= so you usually
+don't need to pass them. Run the script from a terminal and it
+prompts for any missing required field.
 
 ** New task
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type task --slug fix_broken_link \
   --parent-dir doc/v2/versions/v0/sprint_17/audit_tooling \
   --title "Fix broken id-links surfaced by audit" \
   --description "Audit reports two unresolved id-links; fix them." \
-  --tags "audit,bug_fix" \
-  --parent-id <uuid-of-parent-story> \
-  --parent-slug audit_tooling \
-  --parent-title "Audit tooling"
+  --tags "audit,bug_fix"
 #+end_src
+
+Parent story info is auto-detected from
+=doc/v2/versions/v0/sprint_17/audit_tooling/story.org=.
 
 ** New story
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug audit_tooling \
   --parent-dir doc/v2/versions/v0/sprint_17 \
   --title "Audit tooling" \
   --description "Scripts that enforce the v2 information-architecture invariants." \
-  --tags "audit,scripts" \
-  --parent-id <uuid-of-sprint-17> \
-  --parent-slug sprint_17 \
-  --parent-title "Sprint 17"
+  --tags "audit,scripts"
 #+end_src
 
 ** New story continuing from a previous sprint
@@ -60,16 +64,13 @@ Add =--predecessor-id= and =--predecessor-title=. The script renders
 =#+predecessor:= in the frontmatter and a =Continued from:= line in
 the body:
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug currencies_temporal_continued \
   --parent-dir doc/v2/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
   --tags "currencies,temporal,reference_data" \
-  --parent-id <uuid-of-sprint-17> \
-  --parent-slug sprint_17 \
-  --parent-title "Sprint 17" \
   --predecessor-id ed5bc735-fb54-4ce0-9a08-6dab88c242d0 \
   --predecessor-title "Currencies temporal and export"
 #+end_src
@@ -81,21 +82,18 @@ section.
 
 ** New sprint
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type sprint --slug sprint_17 \
   --parent-dir doc/v2/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
-  --tags "v0" \
-  --parent-id e6fd30ed-963e-4705-b414-91bf471c23d0 \
-  --parent-slug v0 \
-  --parent-title "Version 0"
+  --tags "v0"
 #+end_src
 
 ** New version
 
-#+begin_src sh
+#+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type version --slug v1 \
   --parent-dir doc/v2/versions \
@@ -104,15 +102,78 @@ projects/ores.codegen/generate_v2_doc.sh \
   --tags "v1"
 #+end_src
 
+** New component model
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type component --slug ores.example \
+  --parent-dir projects/ores.example/modeling \
+  --title "ores.example" \
+  --description "One-line summary of what the component does." \
+  --tags "example,scaffolding"
+#+end_src
+
+The output sits directly at =projects/ores.example/modeling/ores.example.org=
+(no subfolder), matching the existing convention.
+
+** New recipe
+
+Use the =how_do_i_<thing>= slug convention. The output is
+=<parent-dir>/how_do_i_<thing>.org=:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type recipe --slug how_do_i_clear_the_cache \
+  --parent-dir doc/v2/recipes/cmake \
+  --title "How do I clear the cache?" \
+  --description "Remove the CMake binary cache to force a clean re-configure." \
+  --tags "cmake,build,recipe"
+#+end_src
+
+When the recipe's =* Answer= involves a shell command, write it in
+an =#+begin_src sh :results verbatim= block so the recipe is
+executable in emacs (=C-c C-c=) — see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
+for an example that also captures a =#+RESULTS:= snapshot.
+
+** New knowledge document
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type knowledge --slug build_system_decisions \
+  --parent-dir doc/v2/knowledge/architecture \
+  --title "Build system decisions" \
+  --description "Why we picked Ninja over Make as the default generator." \
+  --tags "build,architecture,knowledge"
+#+end_src
+
+** New Claude Code skill
+
+Use kebab-case for the slug (matches existing =cmake-runner=,
+=v2-doc-author=). The slug becomes both the folder name and the
+=name:= field in the skill's markdown frontmatter:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type skill --slug my-new-skill \
+  --parent-dir doc/skills \
+  --title "My New Skill" \
+  --description "When and how to use the new skill." \
+  --tags "skill"
+#+end_src
+
+Output: =doc/skills/my-new-skill/SKILL.org=.
+
 * What the script does
 
 - Generates a fresh UUID and puts it in =:ID:=.
 - Sets =#+created= and =#+updated= to today.
 - Adds =--parent-slug= as a filetag, so the parent-tag invariant holds.
+- Auto-detects parent =:ID:= and =#+title:= from
+  =<parent-dir>/<parent-type>.org= for task/story/sprint.
 - Renders the type's Mustache template from
   =projects/ores.codegen/library/templates/=.
-- Creates =<parent-dir>/<slug>/= and writes the file. Prints the path
-  it wrote.
+- Writes the file (path varies by type — see the table in
+  =projects/ores.codegen/docs/v2_doc_generator.md=).
 - Refuses to overwrite an existing file unless =--force= is passed.
 
 * Tested by

@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: cb564c6a-f248-4740-8d1c-a1be148ce576
+:END:
+#+title: Qt UX polish
+#+description: Validation of features added during the holidays + assorted dialog fixes (currency, currencies, feature flags, accounts, log viewer).
+#+type: story
+#+level: s2
+#+filetags: :qt:ux:polish:sprint_08:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Validate the holiday-period Qt features end-to-end and resolve the
+snag list across the currency, currencies, feature-flags, and accounts
+dialogs. Add a Qt UI for log viewing.
+
+* Acceptance
+
+- Validation pass complete; bug list filed.
+- Currency, currencies, and feature-flags dialogs polished.
+- Log-viewer panel present with runtime log-level controls.
+- Accounts dialog polish carried forward (POSTPONED).
+
+* Tasks
+
+In execution order:
+
+- [[id:56a07d0e-f2d9-4337-819f-1a20cdfc8c26][Run qt client and validate all new features]]
+- [[id:0933396a-54e5-4496-ac82-3ec2b0151f2e][Assorted fixes to currency dialog]]
+- [[id:f1634788-2c13-4635-8ea4-cd9fe80b8b07][Assorted fixes to currencies dialog (flag and history)]]
+- [[id:ca2dd074-9a85-4d05-ac5c-0f4a4586d44c][Assorted fixes to feature flags dialog]]
+- [[id:574998d9-07c8-4c24-8e6a-1a9f97ed74f5][Add UI for log viewing]]
+- [[id:2ad7863b-31f9-4d50-8c47-2decba543013][Assorted fixes to accounts dialog]]
+
+* Decisions
+
+- /Mark stale rather than auto-reload/ :: keeps the UI responsive when external events arrive; user reloads when they're ready.
+- /Common reload logic shared across entity dialogs/ :: removes a copy-paste path that was drifting per entity.
+- /Accounts dialog deferred/ :: too large to land in-sprint without bumping out the change-management work; carried as BACKLOG.
+
+* Out of scope
+
+- Theming / dark mode.
+- Right-to-left support.
+
+* See also
+
+- [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]] — the change-management protocol drove much of the dialog work this sprint.

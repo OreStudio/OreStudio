@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: d2ced93a-5642-4374-bd26-0c7d5dc2ca13
+:END:
+#+title: HTTP entity creator skill
+#+description: Skill for adding REST endpoints for a domain entity in ores.http.server; coroutine handlers, OpenAPI metadata, JSON via rfl.
+#+type: task
+#+level: s1
+#+filetags: :skills:http:scaffolding:entity_creator_skills:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Skill describing how to add HTTP REST endpoints for a domain entity in =ores.http.server=.
+
+* Acceptance
+
+- Three-phase PR strategy: setup, core CRUD, documentation.
+- Coroutine-based handler pattern, OpenAPI metadata, JSON via =rfl=, integration with service layer.
+- URL/log conventions documented.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Used to validate the HTTP entry point landed in sprint 07.
+
+* Result
+
+Skill present.

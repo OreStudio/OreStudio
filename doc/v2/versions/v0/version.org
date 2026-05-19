@@ -66,6 +66,9 @@ is the current sprint; the rest are closed.
 - [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] — Accounts → IAM rename; RBAC; Wt + HTTP
   introduction; observability and telemetry components; build
   platform follow-up.
+- [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] — Database overhaul; ISO countries; change-
+  management infrastructure; Qt UX polish; comms substrate
+  evolution; entity-creator skills; Wt + observability review.
 - ... through Sprint 16.
 
 * Release scope

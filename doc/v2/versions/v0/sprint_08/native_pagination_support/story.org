@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 40d153e3-4a87-44b6-b605-1e3e28a44d03
+:END:
+#+title: Native pagination support
+#+description: Adopt sqlgen 0.6.0 native offset/limit; drop the single-connection workaround and expand pagination coverage.
+#+type: story
+#+level: s2
+#+filetags: :sqlgen:pagination:refactor:sprint_08:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-07]
+:END:
+
+** Now
+Completed 2026-01-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-07
+
+* Goal
+
+Adopt sqlgen 0.6.0 to land natively what we had hacked around: native
+=offset=/=limit= and sessions that support aggregation.
+
+* Acceptance
+
+- vcpkg sqlgen submodule updated to 0.6.0.
+- Custom overlay ports for sqlgen removed.
+- =single_connection= aggregation hack deleted.
+- Pagination expanded across the repositories that were stubbed without it.
+
+* Tasks
+
+In execution order:
+
+- [[id:422d1b1b-d34c-4aa5-b127-0ff08d627377][Adopt sqlgen 0.6.0 native offset/limit]]
+
+* Decisions
+
+- /Upstream-first/ :: we landed the offset PRs in sqlgen itself and then waited for them to reach vcpkg, rather than carrying indefinite local patches.
+
+* Out of scope
+
+- Cursor-based pagination — offset-based is sufficient at this scale.
+
+* See also
+
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — pagination plumbs through the SQL component.

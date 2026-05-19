@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: ca2dd074-9a85-4d05-ac5c-0f4a4586d44c
+:END:
+#+title: Assorted fixes to feature flags dialog
+#+description: Real-time subscription, recency pulse, badge column, version + recorded_at columns; protocol bump to 20.0.
+#+type: task
+#+level: s1
+#+filetags: :qt:feature_flags:ux:polish:qt_ux_polish:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-08]
+:END:
+
+** Now
+Completed 2026-01-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-08
+
+* Goal
+
+Polish the feature-flags dialog with real-time updates, badges, and richer columns.
+
+* Acceptance
+
+- Subscription to feature-flag change events; UI updates in real time.
+- Recency pulse on recently-changed rows.
+- Green/grey badge for the Enabled column.
+- Version and Recorded At columns.
+- Detail dialog uses a combo box for Enabled and shows Recorded At.
+- Save / external change marks the list stale rather than forcing reload.
+- Protocol bump to 20.0 with =recorded_at= and =version= fields.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Sets the pattern for stale-marking instead of auto-reload across other dialogs.
+
+* Result
+
+Feature flags dialog reactive and informative.

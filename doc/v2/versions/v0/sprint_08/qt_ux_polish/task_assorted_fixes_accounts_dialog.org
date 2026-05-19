@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2ad7863b-31f9-4d50-8c47-2decba543013
+:END:
+#+title: Assorted fixes to accounts dialog
+#+description: Save-button enable-on-change, my-account dialog reshape, session-history non-maximisable, byte counters, status taxonomy (locked/unlocked/reset), right-click menu.
+#+type: task
+#+level: s1
+#+filetags: :qt:accounts:ux:polish:qt_ux_polish:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:cb564c6a-f248-4740-8d1c-a1be148ce576][Qt UX polish]].
+
+* BACKLOG Status
+
+** Now
+POSTPONED in sprint 08; carried forward to a later sprint.
+
+** Waiting on
+Nothing.
+
+** Next
+Return to this once a sprint has the slot.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Address the long tail of accounts-dialog snags surfaced during the validation pass.
+
+* Acceptance
+
+- Save enable-on-change, disable-on-saved.
+- My-account as a regular dialog (keep-open, interact with rest of app).
+- Session history not maximisable.
+- Real byte counters on sessions; instance-id visible.
+- Last-login column fits the screen; reload available.
+- Status taxonomy: locked / unlocked / reset (separate from age: online / never / recent / unused).
+- Right-click menu mirrors toolbar; reload preserves row position.
+- User cannot lock their own account.
+- Server-side session sweep on start.
+- Unlock-by-whom + when visible.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED in v0: the change-management work and Qt-LogViewer absorbed the slot; this task carries forward.
+
+* Result
+
+Not landed in sprint 08; carried forward.

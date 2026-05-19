@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 89d71399-3e8c-4e39-94cf-4f1f173d3ff5
+:END:
+#+title: Add AI-generated sprint summary
+#+description: Produce sprint 08's summary via the AI-summary skill.
+#+type: task
+#+level: s1
+#+filetags: :agile:llm:summary:sprint_08_housekeeping:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]].
+
+* BACKLOG Status
+
+** Now
+POSTPONED in sprint 08; carried forward to a later sprint.
+
+** Waiting on
+Nothing.
+
+** Next
+Return to this once a sprint has the slot.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Generate sprint 08's AI summary using the sprint-summariser skill.
+
+* Acceptance
+
+- Summary committed alongside the v0 backlog.
+- Highlights notable wins, postponed items, and discovered work.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED in v0: deferred to a later pass because the sprint ran long and review priorities took the slot.
+
+* Result
+
+Not produced during sprint 08; carried forward.

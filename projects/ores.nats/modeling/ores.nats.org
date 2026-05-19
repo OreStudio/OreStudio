@@ -10,6 +10,12 @@
 provides all inter-service and client-server communication using
 [[https://nats.io][NATS]], replacing the former binary protocol stack (=ores.comms=).
 
+* Component Architecture
+
+#+attr_html: :width 100% :alt ores.nats Component Diagram
+#+caption: ORE Studio NATS Component Diagram
+[[file:ores.nats.png][file:ores.nats.png]]
+
 * Transport Model
 
 All messaging uses NATS with JSON payloads serialised via =rfl::json=.

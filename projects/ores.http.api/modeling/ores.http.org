@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio HTTP Component Diagram
-[[file:ores.http.png][file:ores.http.png]]
+[[file:ores.http.api.png][file:ores.http.api.png]]
 
 This module provides HTTP server infrastructure using Boost.Beast with JWT
 authentication and OpenAPI support. Key features include:

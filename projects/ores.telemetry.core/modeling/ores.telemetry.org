@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Telemetry Component Diagram
-[[file:ores.telemetry.png][file:ores.telemetry.png]]
+[[file:ores.telemetry.core.png][file:ores.telemetry.core.png]]
 
 The telemetry component provides unified observability infrastructure aligned with
 OpenTelemetry concepts. Key features:

@@ -228,7 +228,7 @@ void PartyReportSetupPage::setupUI() {
 
     loadingLabel_ = new QLabel(tr("Loading report templates..."), this);
     loadingLabel_->setAlignment(Qt::AlignCenter);
-    layout->addWidget(loadingLabel_, 1);
+    layout->addWidget(loadingLabel_);
 
     errorLabel_ = new QLabel(this);
     errorLabel_->setWordWrap(true);
@@ -239,8 +239,9 @@ void PartyReportSetupPage::setupUI() {
     reportList_ = new QListWidget(this);
     reportList_->setSpacing(2);
     reportList_->setAlternatingRowColors(true);
+    reportList_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     reportList_->hide();
-    layout->addWidget(reportList_, 1);
+    layout->addWidget(reportList_);
 
     connect(selectAllBtn, &QPushButton::clicked, this, [this]() {
         for (int i = 0; i < reportList_->count(); ++i) {

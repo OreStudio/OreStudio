@@ -25,6 +25,8 @@
 #include <filesystem>
 #include "ores.cli/config/entity.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -42,7 +44,7 @@ struct import_options final {
     std::vector<std::filesystem::path> targets;
 };
 
-std::ostream& operator<<(std::ostream& s, const import_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const import_options& v);
 
 }
 

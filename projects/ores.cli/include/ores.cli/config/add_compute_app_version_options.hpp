@@ -25,6 +25,8 @@
 #include <vector>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -48,7 +50,7 @@ struct add_compute_app_version_options final {
     std::optional<int> min_ram_mb;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options& v);
 
 }
 

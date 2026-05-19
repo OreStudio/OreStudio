@@ -25,6 +25,8 @@
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -54,7 +56,7 @@ struct export_options final {
     format target_format{format::json};
 };
 
-std::ostream& operator<<(std::ostream& s, const export_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const export_options& v);
 
 }
 

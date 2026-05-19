@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -36,7 +38,7 @@ struct add_change_reason_category_options final {
     std::optional<std::string> change_commentary;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_change_reason_category_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_change_reason_category_options& v);
 
 }
 

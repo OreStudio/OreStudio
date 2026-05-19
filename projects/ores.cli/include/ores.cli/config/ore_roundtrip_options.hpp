@@ -23,6 +23,8 @@
 #include <iosfwd>
 #include <filesystem>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -37,7 +39,7 @@ struct ore_roundtrip_options final {
     std::filesystem::path output_dir;
 };
 
-std::ostream& operator<<(std::ostream& s, const ore_roundtrip_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const ore_roundtrip_options& v);
 
 }
 

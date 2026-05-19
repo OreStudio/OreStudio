@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -44,7 +46,7 @@ struct add_currency_options final {
     std::optional<std::string> market_tier;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_currency_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_currency_options& v);
 
 }
 

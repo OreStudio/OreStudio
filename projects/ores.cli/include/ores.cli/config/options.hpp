@@ -31,6 +31,8 @@
 #include "ores.cli/config/add_options.hpp"
 #include "ores.cli/config/ore_roundtrip_options.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -72,7 +74,7 @@ struct options final {
     ores::database::database_options database;
 };
 
-std::ostream& operator<<(std::ostream& s, const options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const options& v);
 
 }
 

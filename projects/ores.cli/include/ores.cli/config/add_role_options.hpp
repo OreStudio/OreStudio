@@ -25,6 +25,8 @@
 #include <vector>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -39,7 +41,7 @@ struct add_role_options final {
     std::vector<std::string> permission_codes;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_role_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_role_options& v);
 
 }
 

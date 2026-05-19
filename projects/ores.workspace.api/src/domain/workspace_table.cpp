@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.workspace.core/repository/workspace_entity.hpp"
+#include "ores.workspace.api/domain/workspace_table.hpp"
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-namespace ores::workspace::repository {
+namespace ores::workspace::domain {
 
-std::ostream& operator<<(std::ostream& s, const workspace_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+
+std::string convert_to_table(const std::vector<workspace>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "Name" << "Status" << "Version" << "Modified By" << fort::endr;
+
+    for (const auto& ws : v) {
+        table << ws.name << ws.status_code << ws.version << ws.modified_by << fort::endr;
+    }
+    return table.to_string();
 }
 
 }

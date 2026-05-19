@@ -105,7 +105,7 @@ public:
 
 private:
     context ctx_;
-    repository::workspace_repository repo_;
+    repository::workspace_repository repo_{};
 };
 
 }

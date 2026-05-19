@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_API_DOMAIN_WORKSPACE_HPP
-#define ORES_WORKSPACE_API_DOMAIN_WORKSPACE_HPP
+#ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_HPP
+#define ORES_WORKSPACE_DOMAIN_WORKSPACE_HPP
 
 #include <chrono>
 #include <optional>
@@ -28,7 +28,7 @@
 namespace ores::workspace::domain {
 
 /**
- * @brief A named, isolated data context for workspace-level operations.
+ * @brief Named, isolated data context for workspace-level operations.
  *
  * Workspaces provide Docker-layer-style inheritance: data not present in a
  * workspace is resolved from the parent chain up to the Live workspace
@@ -36,18 +36,19 @@ namespace ores::workspace::domain {
  */
 struct workspace final {
     /**
-     * @brief UUID primary key. Never nil; Live workspace uses the sentinel
-     * returned by ores_utility_live_workspace_id_fn().
-     */
-    boost::uuids::uuid id = {};
-
-    /**
-     * @brief Optimistic-locking version counter.
+     * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
 
     /**
-     * @brief Unique name of the workspace.
+     * @brief UUID primary key.
+     *
+     * Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief Unique workspace name.
      */
     std::string name;
 
@@ -57,7 +58,7 @@ struct workspace final {
     std::string description;
 
     /**
-     * @brief Path to the source data for this workspace.
+     * @brief Optional path to source data.
      */
     std::string source_path;
 
@@ -68,18 +69,16 @@ struct workspace final {
 
     /**
      * @brief Optional portfolio UUID to scope this workspace.
-     *
-     * Soft FK to portfolios table; no hard DB constraint.
      */
     std::optional<boost::uuids::uuid> scope_portfolio_id;
 
     /**
      * @brief UUID of the IAM account that owns this workspace.
      */
-    boost::uuids::uuid owner_id = {};
+    boost::uuids::uuid owner_id;
 
     /**
-     * @brief Lifecycle status code: "active" or "archived".
+     * @brief Lifecycle status: active or archived.
      */
     std::string status_code;
 
@@ -89,24 +88,26 @@ struct workspace final {
     std::string modified_by;
 
     /**
-     * @brief Username of the service/account that performed the operation.
+     * @brief Username of the account that performed this action.
      */
     std::string performed_by;
 
     /**
-     * @brief Code identifying the reason for the last change.
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
     /**
-     * @brief Free-text commentary explaining the last change.
+     * @brief Free-text commentary explaining the change.
      */
     std::string change_commentary;
 
     /**
      * @brief Timestamp when this version of the record was recorded.
      */
-    std::chrono::system_clock::time_point recorded_at = {};
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

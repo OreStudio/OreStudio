@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
-#define ORES_WORKSPACE_API_DOMAIN_WORKSPACE_JSON_IO_HPP
+#ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_JSON_IO_HPP
+#define ORES_WORKSPACE_DOMAIN_WORKSPACE_JSON_IO_HPP
 
 #include <iosfwd>
 #include "ores.workspace.api/domain/workspace.hpp"
@@ -26,6 +26,9 @@
 
 namespace ores::workspace::domain {
 
+/**
+ * @brief Dumps the workspace to a stream in JSON format.
+ */
 ORES_WORKSPACE_API_EXPORT std::ostream& operator<<(std::ostream& s, const workspace& v);
 
 }

@@ -19,42 +19,81 @@
  */
 #include "ores.workspace.core/repository/workspace_mapper.hpp"
 
-#include <stdexcept>
-#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.workspace.api/domain/workspace_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::workspace::repository {
 
+using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::workspace workspace_mapper::map(const workspace_entity& e) {
-    domain::workspace ws;
+domain::workspace
+workspace_mapper::map(const workspace_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    boost::uuids::string_generator gen;
-    ws.id = gen(e.id.value());
-    ws.version = e.version;
-    ws.name = e.name;
-    ws.description = e.description;
-    ws.source_path = e.source_path;
+    domain::workspace r;
+    r.version = v.version;
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.name = v.name;
+    r.description = v.description.value_or("");
+    r.source_path = v.source_path.value_or("");
+    r.parent_workspace_id = v.parent_workspace_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_workspace_id)) : std::nullopt;
+    r.scope_portfolio_id = v.scope_portfolio_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scope_portfolio_id)) : std::nullopt;
+    r.owner_id = boost::lexical_cast<boost::uuids::uuid>(v.owner_id);
+    r.status_code = v.status_code;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
 
-    if (e.parent_workspace_id)
-        ws.parent_workspace_id = gen(*e.parent_workspace_id);
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
 
-    if (e.scope_portfolio_id)
-        ws.scope_portfolio_id = gen(*e.scope_portfolio_id);
+workspace_entity
+workspace_mapper::map(const domain::workspace& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    ws.owner_id = gen(e.owner_id);
-    ws.status_code = e.status_code;
-    ws.modified_by = e.modified_by;
-    ws.performed_by = e.performed_by;
-    ws.change_reason_code = e.change_reason_code;
-    ws.change_commentary = e.change_commentary;
+    workspace_entity r;
+    r.id = boost::uuids::to_string(v.id);
+    r.version = v.version;
+    r.name = v.name;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.source_path = v.source_path.empty() ? std::nullopt : std::optional(v.source_path);
+    r.parent_workspace_id = v.parent_workspace_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_workspace_id)) : std::nullopt;
+    r.scope_portfolio_id = v.scope_portfolio_id.has_value() ? std::optional(boost::uuids::to_string(*v.scope_portfolio_id)) : std::nullopt;
+    r.owner_id = boost::uuids::to_string(v.owner_id);
+    r.status_code = v.status_code;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
 
-    if (!e.valid_from)
-        throw std::logic_error("Cannot map workspace entity with null valid_from.");
-    ws.recorded_at = timestamp_to_timepoint(*e.valid_from);
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
 
-    return ws;
+std::vector<domain::workspace>
+workspace_mapper::map(const std::vector<workspace_entity>& v) {
+    return map_vector<workspace_entity, domain::workspace>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<workspace_entity>
+workspace_mapper::map(const std::vector<domain::workspace>& v) {
+    return map_vector<domain::workspace, workspace_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
 }
 
 }

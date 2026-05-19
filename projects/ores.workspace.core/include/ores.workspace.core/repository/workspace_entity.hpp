@@ -23,13 +23,14 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::workspace::repository {
 
-using db_timestamp = ores::database::repository::db_timestamp;
-
+/**
+ * @brief Represents a workspace in the database.
+ */
 struct workspace_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_workspaces_tbl";
@@ -37,8 +38,8 @@ struct workspace_entity {
     sqlgen::PrimaryKey<std::string> id;
     int version = 0;
     std::string name;
-    std::string description;
-    std::string source_path;
+    std::optional<std::string> description;
+    std::optional<std::string> source_path;
     std::optional<std::string> parent_workspace_id;
     std::optional<std::string> scope_portfolio_id;
     std::string owner_id;
@@ -47,7 +48,8 @@ struct workspace_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    std::optional<db_timestamp> valid_from;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const workspace_entity& v);

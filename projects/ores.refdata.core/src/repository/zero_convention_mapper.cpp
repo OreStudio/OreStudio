@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.core/repository/zero_convention_mapper.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/zero_convention_json_io.hpp" // IWYU pragma: keep.
 

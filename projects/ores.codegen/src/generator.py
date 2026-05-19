@@ -1576,6 +1576,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['has_uuid_columns'] = (
             has_uuid_cols or has_uuid_nat_keys
             or domain_entity.get('primary_key', {}).get('is_uuid', False)
+            or domain_entity.get('has_workspace_id', False)
         )
         data['domain_entity'] = domain_entity
 

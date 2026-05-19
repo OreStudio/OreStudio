@@ -32,6 +32,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -774,6 +775,9 @@ void PartyExecutePage::startActivate() {
             ActivateResult result;
 
             const auto party_id = clientManager->currentPartyId();
+            BOOST_LOG_SEV(lg(), info)
+                << "Phase 4: activating party_id="
+                << boost::uuids::to_string(party_id);
 
             refdata::messaging::get_parties_request list_req;
             list_req.offset = 0;
@@ -781,9 +785,12 @@ void PartyExecutePage::startActivate() {
             auto list_result = clientManager->process_authenticated_request(
                 std::move(list_req));
             if (!list_result) {
-                result.error = "Failed to fetch parties";
+                result.error = "Failed to fetch parties: " + list_result.error();
+                BOOST_LOG_SEV(lg(), error) << "Phase 4: " << result.error;
                 return result;
             }
+            BOOST_LOG_SEV(lg(), debug)
+                << "Phase 4: fetched " << list_result->parties.size() << " parties";
 
             refdata::domain::party party;
             bool found = false;
@@ -795,9 +802,16 @@ void PartyExecutePage::startActivate() {
                 }
             }
             if (!found) {
-                result.error = "Party not found in list";
+                result.error = "Party " + boost::uuids::to_string(party_id)
+                    + " not found in list of "
+                    + std::to_string(list_result->parties.size()) + " parties";
+                BOOST_LOG_SEV(lg(), error) << "Phase 4: " << result.error;
                 return result;
             }
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Phase 4: found party '" << party.full_name
+                << "' current status='" << party.status << "'";
 
             party.status = "Active";
             party.change_commentary = "Party setup wizard completed";
@@ -809,9 +823,14 @@ void PartyExecutePage::startActivate() {
             if (!save_result || !save_result->success) {
                 result.error = save_result
                     ? save_result->message : "no server response";
+                BOOST_LOG_SEV(lg(), error)
+                    << "Phase 4: save_party_request failed: " << result.error;
                 return result;
             }
 
+            BOOST_LOG_SEV(lg(), info)
+                << "Phase 4: party " << boost::uuids::to_string(party_id)
+                << " marked Active successfully";
             result.success = true;
             return result;
         }

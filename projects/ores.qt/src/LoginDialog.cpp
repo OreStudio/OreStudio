@@ -732,7 +732,9 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 emit loginSucceeded(usernameEdit_->text().trimmed());
                 if (clientManager_->lastPartySetupRequired()) {
                     BOOST_LOG_SEV(lg(), info)
-                        << "Selected party is inactive - party provisioning wizard required";
+                        << "Selected party is inactive - party provisioning wizard required"
+                        << " party_id=" << clientManager_->currentPartyId()
+                        << " party_name=" << clientManager_->currentPartyName().toStdString();
                     emit partySetupDetected();
                 }
                 emit closeRequested();
@@ -753,7 +755,9 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             emit closeRequested();
         } else if (result.party_setup_required) {
             BOOST_LOG_SEV(lg(), info)
-                << "Party is inactive - party provisioning wizard required";
+                << "Party is inactive - party provisioning wizard required"
+                << " party_id=" << clientManager_->currentPartyId()
+                << " party_name=" << clientManager_->currentPartyName().toStdString();
             statusLabel_->setText("Login successful!");
             emit loginSucceeded(usernameEdit_->text().trimmed());
             emit partySetupDetected();

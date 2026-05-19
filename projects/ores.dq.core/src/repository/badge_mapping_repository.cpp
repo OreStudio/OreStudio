@@ -37,9 +37,8 @@ badge_mapping_repository::badge_mapping_repository(context ctx)
 std::vector<messaging::badge_mapping> badge_mapping_repository::read_all() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active badge mappings";
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("valid_to"_c == max.value()) |
         order_by("code_domain_code"_c, "entity_code"_c);
 
     return execute_read_query<badge_mapping_entity, messaging::badge_mapping>(

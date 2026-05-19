@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: afe9a275-ebbe-47f8-9d93-e04fd90cca88
+:END:
+#+title: Fix misspell that breaks the build
+#+description: Repair a misspelled symbol that surfaces as a build break.
+#+type: task
+#+level: s1
+#+filetags: :build:bug_fix:sprint_03_housekeeping:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-31
+#+updated: 2025-12-31
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bcef2c68-65fe-4848-95ba-6ddb01b2ab9f][Sprint 03 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-31]
+:END:
+
+** Now
+Completed 2025-12-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-31
+
+* Goal
+
+Fix a build break caused by =misspell-fixer= choking on URL typos in
+the project's org-mode files. The fixer was treating bits of the URL as
+words and trying to correct them, producing nonsense edits or failing
+outright.
+
+* Acceptance
+
+- The build runs =misspell-fixer -svn .= without errors.
+- Existing org-mode URLs are accepted (i.e. the rule that triggered the fault is excluded or the misspell-fixer config is adjusted).
+
+* Notes
+
+- Total time spent in v0: ~0:12.
+- To reproduce locally: =misspell-fixer -svn .= from the project root.
+
+* Result
+
+Build no longer breaks on URL-driven misspell-fixer faults.

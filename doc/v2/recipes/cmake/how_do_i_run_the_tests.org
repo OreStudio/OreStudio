@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f
+:END:
+#+title: How do I run the tests?
+#+description: Run the full or per-component test suite, with optional logging and result analysis.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:build:testing:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the test-logging knobs and output layout, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I run the ORE Studio test suite?
+
+* Answer
+
+** All tests
+
+The =rat= target runs every test:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-release-ninja --target rat
+#+end_src
+
+** Specific component
+
+For one component's tests, use the =test_<component>= target:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target test_ores.accounts.tests
+#+end_src
+
+Replace =ores.accounts.tests= with the component you want.
+
+** Enabling test logging
+
+Logging is OFF by default for performance. To enable it at configure
+time (preferred):
+
+#+begin_src sh :results verbatim
+# Logs to files only
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+
+# Logs to files and console
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+#+end_src
+
+Then run the tests as usual:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target rat
+#+end_src
+
+To turn logging off again:
+
+#+begin_src sh :results verbatim
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
+#+end_src
+
+The env-var equivalents (=ORES_TEST_LOG_ENABLED=,
+=ORES_TEST_LOG_LEVEL=, =ORES_TEST_LOG_CONSOLE=) work too if you want
+to override at run time without reconfiguring.
+
+** Analysing failures
+
+After running tests with logging enabled:
+
+#+begin_src sh :results verbatim
+./scripts/parse_test_results.py \
+    build/output/linux-clang-debug-ninja/publish/bin
+#+end_src
+
+The script:
+
+- Parses all =test-results*.xml= files in the directory.
+- Reports total / passed / failed / duration.
+- For each failure: test name, location, exception info, and the
+  matching =ERROR= / =WARN= log entries.
+
+* Script
+
+Commands above. No wrapper.
+
+* Tested by
+
+CI runs =rat= on every push. The =parse_test_results.py= script is
+itself exercised by use in CI failure analysis.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — log paths under =build/output/<preset>/publish/log/=.
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]

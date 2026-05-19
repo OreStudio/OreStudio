@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 926b916e-a57e-498e-99ab-720b583c0362
+:END:
+#+title: Cybernetic Levels
+#+description: Definitions of System 1–5, what each is responsible for, and how they interact.
+#+type: meta
+#+level: cross
+#+filetags: :meta:cybernetics:levels:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Overview
+
+Inspired by Beer's Viable System Model. The five levels separate /concerns/
+across time horizons. A stateful document is tagged with the level it
+serves (=#+level:= frontmatter), so we can find all System-3 artifacts with
+one grep.
+
+The levels are not a strict hierarchy of authority — they are a separation
+of concerns. Higher levels do not override lower ones; they /constrain/
+them.
+
+* System 1 — Operations
+
+- Scope :: a single task.
+- Time horizon :: hours to a day.
+- Thinks about :: how to implement /this/ task within its size budget.
+- Executor :: an agent (subprocess) spawned by an orchestrator.
+- Inputs :: a task document and the codebase.
+- Outputs :: a PR, an updated task document marked done, any discovered
+  tasks filed for triage.
+- Owns :: the implementation of the task. Nothing more.
+
+* System 2 — Coordination
+
+- Scope :: a story and its tasks.
+- Time horizon :: days.
+- Thinks about :: how the story decomposes into tasks, what size each task
+  must be, what order they run in, what to do with discovered tasks.
+- Executor :: the orchestrator LLM the user assigned to the story.
+- Inputs :: a story document, the sprint mission, the codebase.
+- Outputs :: tasks, decisions, review of agent output, story completion.
+- Owns :: scoping, task sizing, in-story prioritisation, review.
+
+* System 3 — Control
+
+- Scope :: the current sprint, with awareness of the previous and next.
+- Time horizon :: weeks.
+- Thinks about :: does the set of stories in the sprint cohere with the
+  sprint mission? Are short-term hacks accumulating? Are sprints linear in
+  intent? Are discovered stories being triaged?
+- Executor :: a session invoked on demand by the user.
+- Inputs :: the sprint backlog, completed sprints, current sprint mission.
+- Outputs :: sprint planning, story prioritisation, retrospectives.
+- Owns :: medium-term planning, sprint coherence.
+
+* System 3* — Audit
+
+- Scope :: the whole information architecture.
+- Time horizon :: continuous.
+- Thinks about :: are invariants holding? Orphan tasks, stale recipes,
+  broken links, completed work not linked to PRs, plans that outlived
+  their task.
+- Executor :: scheduled scripts plus a session invoked on demand.
+- Inputs :: every document under =doc/v2/=.
+- Outputs :: audit reports, automatic state corrections, tasks to fix
+  drift.
+- Owns :: the integrity of the system itself.
+
+* System 4 — Intelligence
+
+- Scope :: the current major version.
+- Time horizon :: months.
+- Thinks about :: does the sequence of sprints lead to a coherent release?
+  Are there sprints missing? Is the version's identity being eroded?
+- Executor :: a session invoked on demand by the user.
+- Inputs :: the version identity, the sprint sequence, the product
+  identity.
+- Outputs :: version plan, sprint sequencing, release scope decisions.
+- Owns :: medium-to-long-term planning.
+
+* System 5 — Policy / Identity
+
+- Scope :: the product as a whole.
+- Time horizon :: indefinite.
+- Thinks about :: is this idea ORE Studio or not? Does a proposed version
+  fit the product? Is a far story in scope?
+- Executor :: a session invoked on demand, usually with the user
+  collaborating.
+- Inputs :: the product identity, candidate versions, candidate far
+  stories.
+- Outputs :: identity updates, scope decisions (accept / reject / defer),
+  out-of-scope notes.
+- Owns :: what ORE Studio /is/ and /is not/.
+
+* Information flow
+
+Downward (constraint): identity → version identity → sprint mission →
+story goal → task goal. Each higher level constrains the space of
+acceptable lower-level work.
+
+Upward (signal): task completion → story completion → sprint retrospective
+→ version release notes → identity check. Each lower level surfaces what
+actually happened to the level above.
+
+Sideways (audit): System 3* observes all levels and reports drift.

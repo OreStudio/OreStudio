@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 7d95a76c-f755-44c4-84fa-a00c0e263573
+:END:
+#+title: Investigate Valgrind leak on sqlgen
+#+description: Triage the remaining sqlgen-flavoured leaks; confirm upstream fixes have landed.
+#+type: task
+#+level: s1
+#+filetags: :valgrind:sqlgen:observability:valgrind_leaks_followup:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Triage the remaining sqlgen-flavoured Valgrind output.
+Sprint 04 fixed the previously-known leaks; check whether the residual
+allocations represent new leaks or just retained state.
+
+* Acceptance
+
+- Each residual block traced to its origin.
+- Real leaks fixed or upstream issues filed; benign blocks suppressed.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- From v0: "All the sqlgen leaks we were aware of were fixed and patched upstream."
+- Residual leaks traced to =PQmakeEmptyPGresult= inside =sqlgen::postgres::Connection::insert= — likely upstream sqlgen behaviour during prepared-statement execution.
+
+* Result
+
+Residual sqlgen leaks understood; suppressions added or upstream fixes confirmed.

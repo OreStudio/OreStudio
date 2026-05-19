@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: ed38a636-d4c7-4069-9a49-b19c71903ead
+:END:
+#+title: Fix Valgrind failing to run unit tests
+#+description: Diagnose and fix the cause of Valgrind crashing during the unit-test run.
+#+type: task
+#+level: s1
+#+filetags: :ci:valgrind:bug_fix:build_quality:sprint_01:v0:
+#+owner: marco
+#+created: 2024-07-08
+#+updated: 2024-07-09
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-09]
+:END:
+
+** Now
+Completed 2024-07-09.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-09
+
+* Goal
+
+Stabilise the test run under Valgrind so the nightly memcheck
+pipeline produces useful output rather than crashing partway.
+
+* Acceptance
+
+- Valgrind runs the unit-test binaries to completion.
+- Nightly output contains memcheck results for every test.
+
+* Notes
+
+- Total time spent in v0: ~1:12.
+- Root cause was on the test-harness side; no Valgrind patch needed.
+
+* Result
+
+- Valgrind nightly stabilised; no further crash reports.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 68777ef7-8d69-4985-88a1-6363ea5ebee9
+:END:
+#+title: Implement authentication bootstrap workflow
+#+description: Implement the bootstrap workflow that creates the first admin account on a fresh database; POSTPONED in sprint 03.
+#+type: task
+#+level: s1
+#+filetags: :login:authentication:bootstrap:authentication_bootstrap_followup:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-22
+#+updated: 2025-11-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-22]
+:END:
+
+** Now
+Completed 2025-11-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-22
+
+* Goal
+
+Land the authentication bootstrap workflow that was
+POSTPONED in sprint 03's =login_and_sessions=. On a fresh database, the
+system needs a way to create the first admin account so anyone can log in
+at all.
+
+* Acceptance
+
+- A bootstrap mode exists that detects an empty accounts table.
+- In bootstrap mode the first login creates the initial admin account.
+- Once the account exists, bootstrap mode disables itself automatically.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- The =bootstrap mode= phrase in the sprint mission is shorthand for this work.
+
+* Result
+
+Authentication bootstrap workflow live; closes sprint 03's POSTPONED item.

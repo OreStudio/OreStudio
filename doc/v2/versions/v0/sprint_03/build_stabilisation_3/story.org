@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: d246ffbe-11ee-4ff9-9309-2a693e2476ef
+:END:
+#+title: Build stabilisation 3
+#+description: Windows clang-cl, dynamic libraries, vcpkg patching on Windows, Postgres in CI.
+#+type: story
+#+level: s2
+#+filetags: :build:ci:windows:sprint_03:v0:
+#+created: 2025-11-01
+#+updated: 2025-11-15
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-15]
+:END:
+
+** Now
+Story closed; Windows clang-cl preset in place, dynamic-library
+build healthy, vcpkg patches apply on Windows, Postgres available in
+CI.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-15
+
+* Goal
+
+Bring the build environment to a state where Windows, Linux, and
+macOS all build cleanly and CI has a real Postgres for integration
+tests.
+
+* Acceptance
+
+- =windows-msvc-clang-cl= preset configures and builds.
+- The build produces dynamic libraries by default.
+- vcpkg ports apply patches successfully on Windows.
+- CI runs against a Postgres instance.
+
+* Tasks
+
+In execution order:
+
+- [[id:1352463b-1ebd-40f9-b1eb-3fdb5ffa319c][Add support for windows-msvc-clang-cl]]
+- [[id:ae610608-cfa8-40d4-b8c4-1f3d2b83ab40][Build using dynamic libraries]]
+- [[id:ea9a3802-114c-4250-97db-a2e172a69e67][Fix vcpkg patch application on Windows]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Fix broken Linux and OSX tests.
+- Fix broken Windows builds.
+- Consider adding a Postgres database to CI.
+- Create a staging directory.
+- CANCELLED: Investigate build warning for qtbase.
+- CANCELLED: Ignore warnings on Windows and OSX.
+
+* Decisions
+
+- /Dynamic libraries by default/ :: cut link times across the board
+  and let plugin-style components (Qt-side widgets, codegen
+  outputs) load incrementally.
+- /clang-cl as a first-class Windows toolchain/ :: lets us share
+  most warnings / sanitisers with the Linux clang build.
+
+* Out of scope
+
+- macOS notarisation, Windows code signing (deferred).
+- ASan / TSan runs (deferred to a logging/observability story).
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu (the new =windows-msvc-clang-cl-debug-ninja=
+  preset this story landed sits here).
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]] / [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] —
+  recipes that exercise the stabilised build paths.
+- [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (sprint 01) and [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] (sprint 02)
+  — predecessor stories in the same thread.

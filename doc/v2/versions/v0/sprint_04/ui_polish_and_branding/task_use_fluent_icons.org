@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 6e1179b7-fd91-4ea7-90a6-a657a23c30a8
+:END:
+#+title: Use Fluent icons
+#+description: Switch the icon set to Microsoft's Fluent icons for a more polished, modern look.
+#+type: task
+#+level: s1
+#+filetags: :qt:ux:icons:branding:ui_polish_and_branding:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-22
+#+updated: 2025-11-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-22]
+:END:
+
+** Now
+Completed 2025-11-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-22
+
+* Goal
+
+Switch the project's icon set to Microsoft's
+=fluentui-system-icons= for a more polished look. Keeps Qt resource embedding
+the same; only the source icons change.
+
+* Acceptance
+
+- Icon set replaced with Fluent.
+- All toolbar and menu icons render correctly.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~0:37.
+- Source: https://github.com/microsoft/fluentui-system-icons
+
+* Result
+
+Fluent icon set adopted.

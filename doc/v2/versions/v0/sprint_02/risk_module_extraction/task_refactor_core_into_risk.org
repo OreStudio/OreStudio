@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: f0501e7e-b681-4c25-a5e8-e350855308ac
+:END:
+#+title: Refactor core into risk
+#+description: Refactor the contents of the renamed =risk= module so the structure reflects the new name.
+#+type: task
+#+level: s1
+#+filetags: :refactor:risk:risk_module_extraction:sprint_02:v0:
+#+owner: marco
+#+created: 2025-10-03
+#+updated: 2025-10-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-10-05]
+:END:
+
+** Now
+Completed 2025-10-05.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-10-05
+
+* Goal
+
+After the rename, refactor the module internals so the file and
+type structure reflects /risk/ rather than /core/. Includes
+splitting catch-all files into domain-specific ones and reworking
+the public API to expose risk concepts.
+
+* Acceptance
+
+- Public headers expose risk-named types where appropriate.
+- Catch-all files split into domain-specific ones.
+- Module documentation updated.
+
+* Notes
+
+- Done on top of the rename so the semantic diff is reviewable
+  separately from the rename diff.
+
+* Result
+
+- =risk= module restructured; later sprints build on its public
+  surface.

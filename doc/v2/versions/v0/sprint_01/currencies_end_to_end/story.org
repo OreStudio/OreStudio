@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: af70cdf6-071f-43a9-91bb-7eb9a59a550f
+:END:
+#+title: Currencies end-to-end
+#+description: Bring currency reference data through XML, JSON, the database, and the Qt UI as the first complete data type.
+#+type: story
+#+level: s2
+#+filetags: :currencies:reference_data:new_feature:e2e:sprint_01:v0:
+#+created: 2024-06-22
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-28]
+:END:
+
+** Now
+Story closed; currency data flows through XML → DB → Qt UI.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-28
+
+* Goal
+
+Use currencies as the pathfinder data type that exercises every tier the
+project will need: XML import, JSON serialisation, database persistence,
+and Qt UI display. The shape of this story dictates the shape of every
+later reference-data story.
+
+* Acceptance
+
+- Currency data can be parsed from the ORE XML input format.
+- Currency data round-trips through JSON serialisation.
+- Currency data persists to the project database.
+- The Qt UI displays currencies in a list/tree widget.
+
+* Tasks
+
+In execution order:
+
+- [[id:fcb09dd7-4f7a-42ff-a82c-423ac15779ad][Add database support for currency]]
+- [[id:33fbfda3-d79b-46ce-8fc8-64786da70a7e][Add XML parsing support for currency]]
+- [[id:cb12dda8-4b02-44a2-95a2-c27090aa53cc][Add basic widgets to display currencies]]
+
+Additional tasks belonging to this story in v0 but not migrated in the
+drive-test:
+
+- Add JSON support for currency.
+- Use Qt SQL classes (cancelled in v0).
+
+* Decisions
+
+- /Currencies first/ :: chosen as the simplest reference-data type with
+  enough variation to exercise the full stack.
+- /Custom XML parser, not ORE's own/ :: keeps the project independent
+  of ORE's internal types and lets the schema evolve in v2 codegen
+  later.
+- /Manual JSON serialisation replaced with a serialiser library/ ::
+  initial hand-written JSON was thrown away in favour of generated
+  code; established the pattern for later types.
+- /Tree + list view/ :: chose Qt model/view over a custom widget to
+  inherit selection, sorting, and filtering for free.
+
+* Out of scope
+
+- Validation of currency codes against ISO 4217 (deferred).
+- Multi-language localisation (deferred).
+- Currency conversion or rate-based calculation (a different concern,
+  belongs in pricing).
+- Temporal versioning — picked up in sprint 02's [[id:ed5bc735-fb54-4ce0-9a08-6dab88c242d0][Currencies temporal
+  and export]] once sqlgen and reflect-cpp are in place.
+- Full Postgres persistence — completed in sprint 03's [[id:3f819ee3-0834-4522-8b01-df4a7d09e77f][Postgres-backed
+  currency persistence]].
+
+* See also
+
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component currencies seed.
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the model/view widgets the display task uses.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup the database task targets.
+- [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] (domain note) — what /currency/ means in the project's
+  domain.

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: e6fd30ed-963e-4705-b414-91bf471c23d0
+:END:
+#+title: Version 0
+#+description: The pre-1.0 alpha version. Establishes architecture, models all ORE inputs/outputs, and adds GUI for all data operations.
+#+type: version
+#+level: s4
+#+filetags: :v0:alpha:
+#+created: 2024-06-15
+#+updated: 2026-05-18
+#+todo: STARTED | RELEASED
+
+* STARTED Status
+
+** Now
+V0 is the active version. Sprint 16 is the current sprint.
+
+** Waiting on
+Nothing structural; v0 is in flight.
+
+** Next
+Close out remaining v0 sprints toward the definition of done.
+
+** Last touched
+2026-05-18
+
+* Identity
+
+Version 0 is the alpha line — the pre-1.0 effort that lays down the
+architectural foundations and brings every ORE input and output into a
+persistent, GUI-driven environment. It is not feature-complete; it is the
+version where the shape of ORE Studio is settled.
+
+What makes v0 distinct from v1.0: v0 is allowed to be incomplete and to
+break compatibility freely. The product identity (what we are building) is
+durable; the implementation in v0 is not.
+
+* Mission
+
+- Establish the main architectural tiers (database, services, UI).
+- Model all ORE XML inputs and outputs.
+- Add GUI support for every data operation.
+
+* Definition of done
+
+V0 closes when a user can load any ORE sample, execute it, and view the
+results graphically inside ORE Studio.
+
+* Sprints
+
+In lexicographic order. The lexicographically highest sprint folder
+is the current sprint; the rest are closed.
+
+- [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] — Bootstrap project infrastructure and bring currencies
+  end-to-end.
+- [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]] — Client/server foundations + serialisation and storage
+  modernisation.
+- [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]] — Wire the new socket code into the UI; finish login,
+  accounts, and sessions.
+- [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] — LLM-driven code review; complete the currencies UI;
+  introduce the Claude Code skills layer.
+- [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] — Authentication bootstrap; finish domain-entity
+  surfaces; CLI/REPL reshape; skills layer growth.
+- [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] — Session cancellation; variability service; comms
+  robustness; logging =string_view= migration; bootstrap polish.
+- [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] — Accounts → IAM rename; RBAC; Wt + HTTP
+  introduction; observability and telemetry components; build
+  platform follow-up.
+- ... through Sprint 16.
+
+* Release scope
+
+In scope for v0:
+
+- All ORE XML input types modelled and importable.
+- All ORE output types displayable in the GUI.
+- Persistent storage for every data operation.
+- A working Qt UI that exercises the end-to-end pipeline.
+
+Deferred to later versions:
+
+- Performance optimisation beyond "fast enough to demo".
+- Multi-user / multi-tenant features beyond the minimum scaffolding.
+- Cloud deployment.

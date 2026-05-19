@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: bfb7fb18-06b9-451f-b0d4-d4d47eedd771
+:END:
+#+title: Add support for project planning
+#+description: Bring across the Dogen-style project-planning approach (Gantt-style milestones in org-mode) and a supporting skill.
+#+type: task
+#+level: s1
+#+filetags: :claude_code:skills:planning:agile:claude_code_skills_expansion:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-17
+#+updated: 2025-11-17
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-17]
+:END:
+
+** Now
+Completed 2025-11-17.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-17
+
+* Goal
+
+Bring across Dogen's approach to project planning: org-mode
+TaskJuggler integration so we can render coarse milestones as a Gantt
+chart. Stand up the supporting skill so future planning passes are
+consistent.
+
+* Acceptance
+
+- TaskJuggler project block lives under the version doc.
+- Skill captures how to add and refresh planning items.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~2:24.
+- Reference: see Dogen's matching planning setup.
+
+* Result
+
+Project-planning approach copied and customised; supporting skill committed.

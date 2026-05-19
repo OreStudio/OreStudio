@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 0879d701-7c3e-494a-9252-217dceced40f
+:END:
+#+title: Implement import dialog for XML import in Qt
+#+description: Qt-side XML import: choose a file, parse, preview, commit. Wraps the existing XML import path with a GUI.
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:import:xml:currencies_ui_polish:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-28
+#+updated: 2025-11-28
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:9836e113-dea9-4605-ae1b-9b0c955b6b73][Currencies UI polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-28]
+:END:
+
+** Now
+Completed 2025-11-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-28
+
+* Goal
+
+Add a Qt dialog that drives currency import from ORE XML
+files: select a file, preview the parsed rows, confirm, persist via the
+repository.
+
+* Acceptance
+
+- A file-picker dialog opens for currency XML import.
+- A preview shows the rows about to be imported.
+- Commit persists through the repository.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- The XML parsing path itself already exists (sprint 02 reflect-cpp work); this is the Qt GUI on top.
+
+* Result
+
+Qt-side XML import dialog shipped for currencies.

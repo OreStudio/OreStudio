@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 552649c1-2541-4dfc-98e6-bcf59994f6d2
+:END:
+#+title: Add UI for roles and permission management
+#+description: Qt UI for listing roles, listing permissions, assigning roles to users, and granting permissions to roles.
+#+type: task
+#+level: s1
+#+filetags: :iam:rbac:qt:ux:roles_and_permissions:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-28]
+:END:
+
+** Now
+Completed 2025-12-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-28
+
+* Goal
+
+Add a Qt UI for managing roles and permissions.
+
+* Acceptance
+
+- List view for roles and for permissions.
+- Assign roles to users; grant permissions to roles.
+- Action paths exercise the new IAM protocol messages.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Mirrors the existing account-management UI pattern; same dialog shape, same table widgets.
+
+* Result
+
+Admins can manage RBAC entirely from Qt.

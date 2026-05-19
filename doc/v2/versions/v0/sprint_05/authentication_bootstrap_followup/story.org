@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: a465d630-5972-484b-a2e8-ad1f91657103
+:END:
+#+title: Authentication bootstrap follow-up
+#+description: Land the authentication bootstrap workflow that was POSTPONED in sprint 03, plus delete-account and feature-flag separation.
+#+type: story
+#+level: s2
+#+filetags: :login:accounts:authentication:sprint_05:v0:
+#+created: 2025-11-22
+#+updated: 2025-11-22
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: b09e0d06-0314-4424-ad57-2da31a335d99
+#+successor: 4b50a7e5-d862-47a6-aebe-353cad55b058
+
+Parent sprint: [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]].
+
+Continued from: [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]].
+
+Continued in: [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]] (sprint 06) — the
+POSTPONED session-cancellation work lands there, along with logout
+and heartbeat.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-22]
+:END:
+
+** Now
+Completed 2025-11-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-22
+
+* Goal
+
+Land the authentication bootstrap workflow that was POSTPONED in
+sprint 03's =login_and_sessions=. Add the closely-related delete-
+account flow. Pull feature flags out of the accounts component so the
+two surfaces can evolve independently.
+
+* Acceptance
+
+- Bootstrap mode creates the first admin account on an empty
+  database; disables itself after.
+- Delete-account flow shipped end-to-end (protocol, repository, CLI).
+- Feature flags live in their own component.
+
+* Tasks
+
+In execution order:
+
+- [[id:68777ef7-8d69-4985-88a1-6363ea5ebee9][Implement authentication bootstrap workflow]]
+- [[id:a2eafe45-eb1f-4771-b053-4e996b78403c][Implement delete account]]
+- [[id:21fb0404-f5be-40c4-b9de-0d703025518f][Split feature flags out of accounts]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- POSTPONED: Implement session cancellation.
+
+* Decisions
+
+- /Bootstrap mode auto-disables/ :: once an admin account exists,
+  the bootstrap entry point is shut. No flag flips to forget.
+- /Feature flags as a peer component/ :: accidentally coupling them to
+  accounts was making the IAM surface larger than it needed to be.
+
+* Out of scope
+
+- MFA, OAuth, SSO (still all deferred from sprint 03).
+- Session cancellation (POSTPONED again).
+
+* See also
+
+- [[id:b09e0d06-0314-4424-ad57-2da31a335d99][Login and sessions]] (sprint 03) — predecessor story.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — the IAM component that hosts the bootstrap workflow.

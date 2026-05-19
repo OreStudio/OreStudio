@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 5aae6900-8488-4e22-9f31-a1b9d5320efb
+:END:
+#+title: CMake setup
+#+description: Preset menu, output directory layout, build types, and parallelism for the ORE Studio CMake build.
+#+type: knowledge
+#+level: cross
+#+filetags: :cmake:build:architecture:knowledge:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Summary
+
+ORE Studio uses CMake with CMakePresets to drive its build across
+Linux, macOS, and Windows. Presets fix the compiler, build type, and
+generator in one name. A small wrapper (=build/scripts/build.sh=)
+provides a shortcut for the day-to-day Make preset. This document
+captures /what the parts are/; the recipes it links to cover /how to
+use them/.
+
+* Detail
+
+** Preset menu
+
+Presets are named as =<platform>-<compiler>-<build_type>-<generator>=
+where:
+
+| Axis        | Values                                         |
+|-------------+------------------------------------------------|
+| platform    | =linux=, =macos=, =windows=                    |
+| compiler    | =clang=, =gcc=, =msvc=, =clang-cl=             |
+| build_type  | =debug=, =release=                             |
+| generator   | =ninja=, =make=                                |
+
+Full list lives in =CMakePresets.json= at the repository root. Typical
+choices:
+
+| Preset                              | Use                                       |
+|-------------------------------------+-------------------------------------------|
+| =linux-clang-debug-ninja=           | Default day-to-day debug build on Linux.  |
+| =linux-clang-release-ninja=         | Release on Linux.                         |
+| =linux-clang-debug-make=            | What =build/scripts/build.sh= uses by default. |
+| =windows-msvc-debug-ninja=          | Default debug on Windows.                 |
+| =macos-clang-debug-ninja=           | Default debug on macOS.                   |
+
+To list at the command line: see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]].
+
+** Output directory layout
+
+All CMake output lands under =build/output=. There is one preset
+subdirectory plus a top-level =site/= for the generated website:
+
+#+begin_example
+build/output/
+├── <preset>/                      e.g. linux-clang-debug-ninja/
+│   └── publish/
+│       ├── bin/                   binaries and test executables
+│       └── log/
+│           ├── <app>.log          per-application logs
+│           └── <component>_TESTS/ test logs, scoped by component
+│               └── <suite>/       e.g. domain_account_tests/
+│                   └── <test>.log e.g. account_serialization_to_json.log
+└── site/                          generated website (deploy_site target)
+#+end_example
+
+Test log paths follow the source layout exactly: =<component>_TESTS/=
+matches =projects/<comp>/tests/= and the suite folder name matches the
+test-suite implementation file's stem.
+
+** Build types
+
+CMake build types come from =CMakePresets.json= base configurations:
+
+- =debug-build= — full debug symbols, no optimisation.
+- =release-build= — optimised, no debug info.
+- =release-with-debug-build= — optimised with debug symbols (used
+  rarely; handy for profiling).
+
+The preset's =build_type= axis picks one of these. The compiler axis
+sets warning levels, the generator axis sets Ninja vs Make.
+
+** The build wrapper
+
+=build/scripts/build.sh= is a thin Make-preset wrapper for local day-
+to-day work:
+
+- Defaults to =linux-clang-debug-make=.
+- Calls =make -C build/output/$PRESET -j$(nproc)=.
+- Refuses to run if the preset's build directory does not exist (run
+  =cmake --preset= first).
+- =ORES_BUILD_PRESET= environment variable overrides the default
+  preset.
+
+Used by the build recipe at [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]].
+
+** Parallel builds and tests
+
+- Ninja auto-detects CPU cores and builds in parallel by default.
+- Make does /not/. =CMAKE_BUILD_PARALLEL_LEVEL= needs to be set in
+  the environment for parallel Make builds.
+- =CTEST_PARALLEL_LEVEL= controls test parallelism (both generators).
+
+Suggested in =~/.bashrc= or equivalent:
+
+#+begin_src sh
+export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+export CTEST_PARALLEL_LEVEL=$(nproc)
+#+end_src
+
+CI workflows set these automatically via =$(nproc)=.
+
+** Test logging
+
+Test logging is disabled by default for performance. Two switches:
+
+- =-DORES_TEST_LOG_LEVEL=<level>= at configure time. Levels: =OFF=
+  (default), =trace=, =debug=, =info=, =warn=, =error=.
+- =-DORES_TEST_LOG_CONSOLE=ON= to mirror logs to stdout (default
+  =OFF=).
+
+Environment-variable equivalents (override the configure-time
+defaults at run time): =ORES_TEST_LOG_ENABLED=,
+=ORES_TEST_LOG_LEVEL=, =ORES_TEST_LOG_CONSOLE=.
+
+Used by the testing recipe at [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]].
+
+* See also
+
+- [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f86][How do I list available presets?]]
+- [[id:7c44751e-54c0-4cb7-b489-1d3ec609a4e3][How do I configure the project?]]
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]]
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]]
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]]
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]] — the skill that bundles all the recipes for
+  Claude Code.

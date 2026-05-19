@@ -1,4 +1,4 @@
-# -*- mode: org; tab-width: 4; indent-tabs-mode: nil -*-
+# -*- mode: org; indent-tabs-mode: nil -*-
 #+TITLE: Server-Side ORE Import
 #+DATE: 2026-04-03
 #+AUTHOR: Marco Craveiro

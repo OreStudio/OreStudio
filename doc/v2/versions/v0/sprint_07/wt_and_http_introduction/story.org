@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: db625c07-811a-4a61-8de8-910b29913744
+:END:
+#+title: Wt and HTTP introduction
+#+description: Set up basic ores.wt infrastructure; expose endpoints via HTTP; fix the resulting compilation surface.
+#+type: story
+#+level: s2
+#+filetags: :wt:http:web:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-30]
+:END:
+
+** Now
+Completed 2025-12-30.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-30
+
+* Goal
+
+Introduce a second presentation tier — Wt for the web frontend
+and an HTTP entry point on comms — without porting the domain to
+another language.
+
+* Acceptance
+
+- Wt scaffolded in via vcpkg; minimal page lists currencies.
+- HTTP endpoint with at least one read and one write path, sharing handlers with the socket path.
+- Build green; both surfaces tested.
+
+* Tasks
+
+In execution order:
+
+- [[id:05935a3c-fcee-4157-9ba9-15e37d71cf23][Setup basic Wt infrastructure]]
+- [[id:9bd1200f-241f-4153-b804-6e7095da56de][Consider exposing endpoints via HTTP]]
+
+* Decisions
+
+- /Wt over a JS frontend/ :: lets us share the same C++ domain types between desktop and web; one source of truth.
+- /HTTP reuses socket handlers/ :: enabled by the type-traits dispatch from the comms story; otherwise we'd have two copies of every handler.
+
+* Out of scope
+
+- A full-blown Wt UI; this story just proves the wiring.
+
+* See also
+
+- [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] — supplies the type-traits dispatch the HTTP path reuses.

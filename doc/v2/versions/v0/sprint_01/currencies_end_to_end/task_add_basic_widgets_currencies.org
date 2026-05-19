@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: cb12dda8-4b02-44a2-95a2-c27090aa53cc
+:END:
+#+title: Add basic widgets to display currencies
+#+description: Display currency reference data in the Qt UI via a model/view tree + list widget.
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:currencies_end_to_end:sprint_01:v0:
+#+owner: marco
+#+created: 2024-06-26
+#+updated: 2024-07-13
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-13]
+:END:
+
+** Now
+Completed 2024-07-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-13
+
+* Goal
+
+Surface the parsed currency data in the Qt UI through a basic tree and
+list view. This is the first UI binding of project data and sets the
+pattern for every reference-data widget that follows.
+
+* Acceptance
+
+- A widget exists that lists currencies loaded from the database.
+- A tree view variant supports hierarchical grouping (e.g. by region or
+  family).
+- Selecting a row shows the currency's details elsewhere in the UI.
+
+* Context
+
+Closes the loop on /currencies end-to-end/: imported via XML, stored in
+the DB, now displayed in the UI. Sibling to /Add database support for
+currency/ and /Add XML parsing support for currency/.
+
+* Notes
+
+- Total time spent in v0: ~1:50.
+- Followed Qt's standard model/view pattern from
+  https://doc.qt.io/qt-6/modelview.html. This choice propagated to
+  every later widget in the project.
+
+* Result
+
+- A working tree/list view of currencies inside =ores.qt=, the first
+  data-bound UI in the project.

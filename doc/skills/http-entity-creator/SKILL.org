@@ -100,7 +100,7 @@ For existing routes class, add to the appropriate header.
 *** Header structure (new routes class)
 
 #+begin_src cpp
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -214,7 +214,7 @@ Implement the route registration and handler functions.
 *** Implementation structure (new routes class)
 
 #+begin_src cpp
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *

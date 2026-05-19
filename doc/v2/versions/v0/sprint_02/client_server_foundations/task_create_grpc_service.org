@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 095140a1-0dd9-41e0-a346-418f1114d259
+:END:
+#+title: Create a GRPC-based service
+#+description: Explore GRPC as the client/server substrate. Abandoned in favour of cobalt.
+#+type: task
+#+level: s1
+#+filetags: :client_server:grpc:abandoned:client_server_foundations:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-01
+#+updated: 2025-09-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]].
+
+* ABANDONED Status
+:PROPERTIES:
+:CLOSED: [2025-09-10]
+:END:
+
+** Now
+Abandoned 2025-09-10 — pivoted to cobalt.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-10
+
+* Goal
+
+Investigate GRPC as the runtime substrate for the client/server
+architecture: build a small prototype, generate the C++ surface,
+wire it through CMake/vcpkg, and decide whether to adopt.
+
+* Acceptance
+
+- A GRPC prototype builds in our toolchain.
+- A round-trip call works in tooling.
+- We can articulate a clear yes/no on adoption.
+
+* Why abandoned
+
+GRPC's codegen and build complexity, combined with the size of the
+GRPC dependency, did not justify its benefits for the project's
+current scope. The pivot was to Boost.cobalt — coroutine-based async
+over plain sockets, no IDL, and a much smaller dependency footprint.
+The follow-on task =Remove GRPC support= cleaned up the experiment.
+
+* Notes
+
+- This record exists to preserve provenance. Without it, a future
+  reader might re-investigate GRPC without knowing it was already
+  considered and rejected.
+- Demonstrates the v2 =ABANDONED= state pattern.
+
+* Result
+
+- No code merged. GRPC removed from the project.

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 7be09d1c-e25a-4783-a911-c37dec55cc43
+:END:
+#+title: CLI / REPL reshape
+#+description: Reorganise the CLI by entity; expand the shell REPL to cover every entity; rename client to repl; synchronous socket ops in REPL.
+#+type: story
+#+level: s2
+#+filetags: :cli:shell:repl:refactor:sprint_05:v0:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 06c56ca2-9846-4dc9-b2f3-271bf4f084ce
+
+Parent sprint: [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]].
+
+Continued in: [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]] (sprint 06) — argument-
+validation snags and top-level shell login/logout land there.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Reshape the CLI and REPL surfaces from /verb-first/ (=ores.cli export
+--entity currencies=) to /entity-first/ (=ores.cli currencies
+export=). Pull every entity into the REPL with the same verb set so
+the CLI and REPL are interchangeable. Rename =client= to =repl= along
+the way.
+
+* Acceptance
+
+- Every CLI command available under =ores.cli <entity> <verb>=.
+- REPL exposes the same verb set per entity.
+- Synchronous socket operations in the REPL.
+- Recipes updated to the new shape; legacy syntax removed.
+
+* Tasks
+
+In execution order:
+
+- [[id:beca4987-76d8-43ac-b62c-f32ead34e44d][Reorganise CLI structure by entity]]
+- [[id:7f80b71d-b377-472f-8537-d1801556ee3f][Update ores.shell with REPL commands for all entities]]
+- [[id:d7591ef4-3bf5-486a-a356-5cfa4dfdcc70][REPL needs synchronous socket operations]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Consider renaming =client= to =repl= (done).
+- CANCELLED: Split console recipes by entity (rolled into the
+  reorganisation work).
+- CANCELLED: Create a /request response/ helper.
+
+* Decisions
+
+- /Entity-first verb syntax/ :: reads naturally, scales to new
+  entities, mirrors the REPL.
+- /Synchronous I/O in the REPL/ :: matches the interactive
+  one-command-then-wait model. Async was overhead.
+
+* Out of scope
+
+- A bespoke REPL command interpreter beyond what =readline=
+  provides.
+
+* See also
+
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL/shell component.
+- [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] (sprint 02) — predecessor.

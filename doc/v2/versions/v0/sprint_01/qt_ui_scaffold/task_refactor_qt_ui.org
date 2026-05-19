@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 742f2310-4678-4a9e-bba9-d73d9dd6b42a
+:END:
+#+title: Refactor Qt UI
+#+description: Tidy the Qt UI — launcher, logging, column names, row sizes, tab opening, table sizing — before more widgets are added.
+#+type: task
+#+level: s1
+#+filetags: :qt:ux:refactor:qt_ui_scaffold:sprint_01:v0:
+#+owner: marco
+#+created: 2024-07-13
+#+updated: 2024-07-23
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-23]
+:END:
+
+** Now
+Completed 2024-07-23.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-23
+
+* Goal
+
+Make a sweep through the Qt UI to fix the small issues that would
+compound as we add more widgets: launcher integration, logging
+wiring, column header names, row sizing, tab opening behaviour, and
+the main-window-following table size.
+
+* Acceptance
+
+- Prodigy launcher integrated.
+- Logging is wired into the UI.
+- Column headers display names.
+- Row heights are sensible.
+- Selecting "Currencies" from the menu opens the Currencies tab.
+- The currencies table follows the main window size.
+
+* Notes
+
+- Total time spent in v0: ~10:05 — large for a single task; in the v2
+  model this would have been split into 3–4 smaller tasks. Migrated
+  as one for historical fidelity.
+- The "rename tree widget" sub-item was carved off into its own
+  story.
+- FastTrack analysis spawned its own story (not migrated).
+
+* Result
+
+- Refactored Qt UI in =projects/ores.qt= covering all six acceptance
+  points.

@@ -188,7 +188,7 @@ The code generator does not yet produce the PlantUML diagram content. Manually
 create one =.puml= file per part, e.g. =projects/ores.COMPONENT.api/modeling/ores.COMPONENT.api.puml=:
 
 #+begin_src plantuml
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+' -*- mode: plantuml; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 '

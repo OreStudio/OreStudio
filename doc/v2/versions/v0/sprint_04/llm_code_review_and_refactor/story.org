@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: f8d6459d-71d3-4bae-8ece-43201cd2b8ba
+:END:
+#+title: LLM code review and refactor
+#+description: Run an LLM review across the codebase; act on its findings — Dogen-style component restructure, splits, moves, UML coverage.
+#+type: story
+#+level: s2
+#+filetags: :code_review:llm:refactor:uml:sprint_04:v0:
+#+created: 2025-11-28
+#+updated: 2025-11-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-28]
+:END:
+
+** Now
+Completed 2025-11-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-28
+
+* Goal
+
+The headline story of sprint 04. Run an LLM-driven review across
+the codebase, then act on the findings: restructure components to a
+consistent =src/modeling/tests/= layout, generate per-component
+PlantUML diagrams, and pick up the smaller refactors (=operator<<=
+splits, table representations, =base32_encode= move, main-window
+split, Catch2 tags).
+
+* Acceptance
+
+- LLM review pass run across every component delivered to date.
+- Findings captured per component; actionable items filed as tasks.
+- Components reorganised under the Dogen-style
+  =component/{src,modeling,tests}= layout.
+- Per-component PlantUML diagrams generated and wired into the build.
+
+* Tasks
+
+In execution order:
+
+- [[id:b08cb742-8e1c-4a0c-87ae-154ba9deefcd][Review all code created so far with an LLM]]
+- [[id:80b50b7c-f56a-4af3-a7ab-a469d8715891][Restructure components to follow the Dogen approach]]
+- [[id:95c39216-f5d9-466d-a051-fbf65466a8ad][Generate PlantUML diagrams for all components]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Consider adding tags to Catch2 tests.
+- Split JSON-based =operator<<= from domain type.
+- Add a table representation of domain types.
+- Add a comint-based emacs mode for the client.
+- Split main window class.
+- Move =base32_encode= to utilities.
+- Improve UML diagrams.
+
+* Decisions
+
+- /Dogen layout as the canonical component shape/ :: =src/=,
+  =modeling/=, =tests/= per component. Public/private include split
+  deferred — left under =src=.
+- /Per-component PlantUML diagrams/ :: every component model points
+  at its own diagram; aggregated by a project-level diagram.
+- /Format-neutral =operator<<=/ :: a domain type's stream operator
+  should not bind to a specific dump format. Dump formats become
+  separate functions/visitors.
+
+* Out of scope
+
+- Public/private include split (deferred).
+- LLM review of every test file (review focused on production code
+  this pass).
+
+* See also
+
+- [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — the codegen patterns the restructure
+  aligns with.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — recipe that exercises the
+  diagrams this story put in place.

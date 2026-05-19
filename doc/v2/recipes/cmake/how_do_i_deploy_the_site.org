@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6930472b-222c-4621-ab37-cfee3070a8bd
+:END:
+#+title: How do I deploy the site?
+#+description: Build the ORE Studio website locally with the `deploy_site` CMake target.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:build:site:website:emacs:recipe:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+For the build script that does the work (=.build-site.el=) and the
+output location, see [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]].
+
+* Question
+
+How do I build the ORE Studio website locally?
+
+* Answer
+
+The =deploy_site= CMake target invokes Emacs in batch mode against
+=.build-site.el=, which publishes every =.org= file in the repository
+(excluding =.packages=, =vcpkg=, =build=) to HTML:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
+#+end_src
+
+Output lands at =build/output/site/=. Open
+=build/output/site/readme.html= (or any other generated page) in a
+browser.
+
+** Prerequisites
+
+- Emacs on PATH. The script uses =org-publish=, =org-id=, and =oc-bibtex=
+  from a default Emacs install with =org-mode= shipped.
+- The project must be configured (=cmake --preset ...=); the target
+  lives in the preset's build directory.
+
+** When to re-run
+
+Any time you add a new =.org= file, change a =:ID:= or =#+title:=, or
+edit anything that affects link resolution. The target wipes
+=build/output/site/= first so links don't stale.
+
+* Script
+
+=.build-site.el= is the Emacs script the target invokes. The CMake
+target definition lives in =CMakeLists.txt= near
+=add_custom_target(deploy_site ...)=.
+
+* Tested by
+
+The =build-site.yml= GitHub Action publishes the site on every push to
+=main=. The action's success is the integration test for this recipe.
+
+* See also
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — output directory layout.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — the parallel target for Claude Code
+  skills.
+- [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — diagrams used inside the
+  generated site.

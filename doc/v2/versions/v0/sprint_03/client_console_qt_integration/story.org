@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: eda3d069-f3c1-43b5-93fb-e5705a8f9adc
+:END:
+#+title: Client console and Qt integration
+#+description: Merge the client into the console, run the Qt GUI over the new socket layer, locking and Prodigy tag work.
+#+type: story
+#+level: s2
+#+filetags: :client:qt:ux:sprint_03:v0:
+#+created: 2025-11-15
+#+updated: 2025-12-15
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-15]
+:END:
+
+** Now
+Story closed; Qt GUI runs over cobalt sockets; client folded into the
+console.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-15
+
+* Goal
+
+Take the cobalt-based client/server runtime from sprint 02 and wire
+it into the user-facing surfaces: the console (with the client
+merged in) and the Qt GUI. This is the /update UI layer to use new
+socket code/ half of the sprint mission.
+
+* Acceptance
+
+- The standalone client is gone; the console hosts it.
+- The Qt GUI uses the cobalt client (no direct DB / RPC calls
+  remain).
+- Prodigy launcher discovers commands by tag.
+- Locking is in place where concurrent UI/server access can race.
+
+* Tasks
+
+In execution order:
+
+- [[id:b26fe789-bb30-4e18-b3cb-ca14c57ddea5][Merge client into console]]
+- [[id:03ef44e6-23e0-41bd-805c-38b3d9d67892][Enable Qt GUI]]
+- [[id:9eb036fa-7c1c-4a61-8491-70c07df71f2d][Update prodigy to use tags]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Add locking up logic.
+
+* Decisions
+
+- /One user-facing binary/ :: collapsing the client into the console
+  removes a redundant entry point and simplifies packaging.
+- /Tag-based launcher discovery/ :: keeps the Prodigy menu in sync
+  automatically as commands gain or lose tags.
+
+* Out of scope
+
+- A bespoke Qt theme.
+- Multi-window layouts (deferred).
+
+* See also
+
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the Qt component the story rewires.
+- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]] — the connection primitives the Qt client speaks.
+- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]] — the messaging substrate underneath.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the console host that absorbs the standalone client.
+- [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] (sprint 02) — predecessor story.
+- [[id:36a36bcb-6d25-4cea-a2de-53741edad563][Qt UI scaffold]] (sprint 01) — predecessor story.

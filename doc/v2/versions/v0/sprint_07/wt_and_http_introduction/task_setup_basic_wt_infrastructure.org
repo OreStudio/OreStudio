@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 05935a3c-fcee-4157-9ba9-15e37d71cf23
+:END:
+#+title: Setup basic Wt infrastructure
+#+description: Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web frontend.
+#+type: task
+#+level: s1
+#+filetags: :wt:web:infrastructure:wt_and_http_introduction:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-29]
+:END:
+
+** Now
+Completed 2025-12-29.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-29
+
+* Goal
+
+Pull Wt in as a peer-of-Qt UI toolkit so the same service can drive a web frontend.
+
+* Acceptance
+
+- Wt available via vcpkg.
+- Minimal Wt-driven page that lists currencies.
+- Build green on Linux.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Wt was chosen because it lets us share the same C++ domain types between Qt and Web — no JS port.
+
+* Result
+
+Wt scaffolding in place; minimal page proves the wiring.

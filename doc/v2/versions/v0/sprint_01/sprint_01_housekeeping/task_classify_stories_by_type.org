@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 617ad8a3-2903-465b-beda-abb7128613a2
+:END:
+#+title: Classify stories by type
+#+description: Apply consistent tag classification to every story in the sprint and reflect the classification in the sprint report.
+#+type: task
+#+level: s1
+#+filetags: :agile:classification:tagging:sprint_01_housekeeping:sprint_01:v0:
+#+owner: marco
+#+created: 2024-07-22
+#+updated: 2024-07-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bca419e2-dff2-474b-969e-cfbd19e7c832][Sprint 01 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-22]
+:END:
+
+** Now
+Completed 2024-07-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-22
+
+* Goal
+
+Tag every story in the sprint with one of the project's canonical
+type tags (=:code:=, =:infra:=, =:doc:=, =:agile:=) so the
+resourcing-per-type chart can be generated.
+
+* Acceptance
+
+- Every sprint-1 story has a type tag.
+- A resourcing-per-tag chart is generated from the clocktable.
+
+* Notes
+
+- Total time spent in v0: ~0:34.
+- This activity is now subsumed by the v2 tag taxonomy
+  (component / domain / activity dimensions). The single-letter
+  classification was a precursor.
+
+* Result
+
+- Stories tagged; =sprint_backlog_01_tags.png= generated.

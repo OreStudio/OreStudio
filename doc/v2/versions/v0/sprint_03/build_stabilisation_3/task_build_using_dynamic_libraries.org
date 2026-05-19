@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: ae610608-cfa8-40d4-b8c4-1f3d2b83ab40
+:END:
+#+title: Build using dynamic libraries
+#+description: Switch the build to produce dynamic libraries to reduce link times and binary footprint.
+#+type: task
+#+level: s1
+#+filetags: :build:cmake:dynamic_libraries:build_stabilisation_3:sprint_03:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-15
+#+updated: 2025-11-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d246ffbe-11ee-4ff9-9309-2a693e2476ef][Build stabilisation 3]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-15]
+:END:
+
+** Now
+Completed 2025-11-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-15
+
+* Goal
+
+Switch the build to produce dynamic libraries to reduce disk
+consumption on CI agents. Initial intent was to also build the vcpkg
+dependencies as shared objects via the =x64-linux-dynamic= triplet, but
+that proved unpackagable on Linux so we settled on building /only our
+own SOs/ dynamically and keeping vcpkg deps statically linked.
+
+* Acceptance
+
+- Project produces shared libraries by default.
+- Linker times measurably lower than the previous static build.
+- Builds package and install correctly.
+
+* Notes
+
+- Total time spent in v0: ~7:24.
+- Attempted: =ZIC=1 cmake --build --target package --preset linux-clang-debug -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic -DBUILD_SHARED_LIBS=ON= — packaging the resulting tree was unworkable, so we backed out.
+- Adopted: distro-supplied Qt via vcpkg overlays (=-DVCPKG_OVERLAY_PORTS=...= pointing at =build/cmake/overlays/=) because building Qt from vcpkg ate too much disk.
+- Useful references: vcpkg overlay ports docs; the Microsoft DevBlogs piece on using system curl/openssl with vcpkg; Düerrenberger's RPATH-with-CMake explainer.
+
+* Result
+
+Project builds dynamic libraries by default; vcpkg dependencies stay
+static; Qt comes from the distro on Linux. Linker times and CI disk
+pressure both improved.

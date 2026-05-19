@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 13b90143-aafd-4381-9e9d-3bccb88b8d3b
+:END:
+#+title: Add Valgrind suppressions
+#+description: Suppress known third-party false positives so Valgrind output highlights real issues.
+#+type: task
+#+level: s1
+#+filetags: :build:valgrind:ci:bug_fix:build_stabilisation:sprint_02:v0:
+#+owner: marco
+#+created: 2025-10-10
+#+updated: 2025-10-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-10-15]
+:END:
+
+** Now
+Completed 2025-10-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-10-15
+
+* Goal
+
+The Valgrind nightly was producing enough noise from third-party
+libraries that real issues were being missed. Add a suppression file
+covering the known false positives.
+
+* Acceptance
+
+- A Valgrind suppression file is committed and used by the nightly.
+- Each suppression entry has a comment explaining the cause.
+- The nightly output is meaningfully shorter.
+
+* Notes
+
+- Suppressions are kept narrow (specific symbols / libraries) to
+  avoid masking real bugs.
+
+* Result
+
+- Suppression file in place; nightly noise reduced to a useful
+  signal-to-noise ratio.

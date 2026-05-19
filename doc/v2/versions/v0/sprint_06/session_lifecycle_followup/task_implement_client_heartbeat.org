@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: b5aa3934-c955-4dcc-ad98-3e0b7153753c
+:END:
+#+title: Implement client heartbeat for disconnect detection
+#+description: Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
+#+type: task
+#+level: s1
+#+filetags: :comms:sessions:heartbeat:reliability:session_lifecycle_followup:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-04
+#+updated: 2025-12-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-04]
+:END:
+
+** Now
+Completed 2025-12-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-04
+
+* Goal
+
+Client sends periodic heartbeats so it (and the server) detect dropped connections rather than waiting on a stalled read.
+
+* Acceptance
+
+- Client heartbeat task running on the cobalt scheduler.
+- Missed-heartbeat threshold triggers disconnect.
+- Server-side heartbeat ack.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Removes a class of "disconnected but nobody noticed" bugs that surfaced during the session-cancellation work.
+
+* Result
+
+Heartbeat in place; disconnect detection now timely.

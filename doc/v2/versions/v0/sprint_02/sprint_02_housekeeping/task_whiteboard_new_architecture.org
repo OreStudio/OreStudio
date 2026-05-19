@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: c2e5852d-6e8d-40b5-976d-6e2687b01b19
+:END:
+#+title: White-boarding for new architecture
+#+description: Whiteboard the client/server architecture that the cobalt and comms work will implement.
+#+type: task
+#+level: s1
+#+filetags: :analysis:architecture:design:sprint_02_housekeeping:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-01
+#+updated: 2025-09-15
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:0fe2033d-180f-4195-a314-998917d570be][Sprint 02 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-09-15]
+:END:
+
+** Now
+Completed 2025-09-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-15
+
+* Goal
+
+Whiteboard the client/server architecture before implementation
+starts: where does the boundary sit, which types cross it, which
+process owns what, and how messages flow.
+
+* Acceptance
+
+- A whiteboard artefact (drawing or org-mode notes) captures the
+  client/server boundary.
+- Message flow for at least one end-to-end operation is sketched.
+- The artefact is referenced from the cobalt implementation tasks.
+
+* Notes
+
+- Total time spent in v0: ~1:52.
+- Output drove the cobalt and comms implementation work.
+
+* Result
+
+- Architecture sketch captured; implementation work referenced it
+  throughout.

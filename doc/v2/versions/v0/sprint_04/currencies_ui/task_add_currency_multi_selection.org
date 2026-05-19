@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: de00d3a0-6519-43e0-b2cd-f6d39ec6706d
+:END:
+#+title: Add multi-selection support to currencies
+#+description: Allow multiple currency rows to be selected and acted on together.
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:selection:currencies_ui:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Allow multiple currency rows to be selected and acted on
+together. Foundation for bulk operations such as delete and export.
+
+* Acceptance
+
+- Multi-selection works in the currency list view.
+- CRUD operations honour the multi-selection.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Closes out a thread that started under =Add currency editing support=.
+
+* Result
+
+Multi-selection in place across the currency list.

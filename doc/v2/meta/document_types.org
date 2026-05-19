@@ -1,0 +1,532 @@
+:PROPERTIES:
+:ID: 8b29a8d8-e004-4e87-b81d-abeaf68f2b98
+:END:
+#+title: Document Types
+#+description: Every type of document, its frontmatter contract, folder, and structure.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:frontmatter:tags:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Standard frontmatter
+
+Every document under =doc/v2/= begins with this block. Fields marked
+/required/ must be present.
+
+#+begin_src org
+,:PROPERTIES:
+,:ID: <UUID4 from `uuidgen`>                       ; required — drives org-roam
+,:END:
+,#+title: <human-readable title>                    ; required
+,#+description: <one-liner, ≤ 120 chars>            ; required
+,#+type: <one of the types below>                   ; required
+,#+filetags: :tag1:tag2:                            ; required (filetags, not tags)
+,#+created: YYYY-MM-DD                              ; required
+,#+updated: YYYY-MM-DD                              ; required
+,#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED  ; required for stateful
+,#+owner: <handle>                                  ; required for tasks
+,#+branch: <git branch>                             ; for executing tasks
+,#+pr: <number-or-url>                              ; once a PR is open
+,#+blocked_on: <review|ci|local_build|external|none> ; for executing tasks
+,#+blocked_since: <YYYY-MM-DD HH:MM>                ; when blocked_on != none
+#+end_src
+
+State is /not/ a frontmatter field. State lives as an org-mode TODO
+keyword on the =* Status= headline inside the document (see /State as
+TODO/ below). Folders never encode state.
+
+The =#+description= line is the load-bearing field. It is what every
+grep, index, and search reads. Write it as if it is the only line anyone
+reads.
+
+Dates are absolute (=2026-05-18=), never relative. If you find yourself
+writing "yesterday" or "next week", convert it.
+
+** Why these specific forms
+
+- =:PROPERTIES: :ID:= — org-roam tracks documents by ID, not by path.
+  Every document needs one; generate with =uuidgen=. Paths can change;
+  IDs do not.
+- =#+filetags:= — the standard org-mode keyword for /applying/ tags to a
+  whole file. =#+tags:= in standard org-mode declares the /allowed/ tag
+  vocabulary for a file, which is a different concern and not what we
+  want here.
+- =#+todo:= — declares the TODO state vocabulary used by the document.
+  Stateful documents use TODO keywords on their =* Status= headline; the
+  folder structure carries /no/ state information.
+- No =#+links:= keyword — links live in the document body as id: links
+  (see /Linking between documents/ below). Org-roam picks them up
+  automatically.
+
+* State as TODO
+
+State lives /inside/ the document, as an org-mode TODO keyword on the
+=* Status= headline. The folder structure encodes composition (which
+task belongs to which story, which story to which sprint, etc.) but
+never state.
+
+** The vocabulary
+
+#+begin_src org
+,#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+end_src
+
+Active states are left of the bar; terminal states are right.
+
+- =DISCOVERED= — found in passing while executing another task; not yet
+  triaged.
+- =BACKLOG= — triaged, scheduled, not started.
+- =STARTED= — an agent is actively working on it. Org auto-stamps the
+  transition via =LOGBOOK=.
+- =BLOCKED= — paused waiting on something. The reason lives in
+  =#+blocked_on= (one of =review=, =ci=, =local_build=, =external=).
+- =DONE= — terminal success. Org auto-stamps =CLOSED:= on the headline.
+- =ABANDONED= — terminal failure. The reason lives in the Status
+  =** Notes= or similar block; audit flags abandoned tasks without one.
+
+** Where the TODO state lives
+
+On the =* Status= headline of every stateful document:
+
+#+begin_src org
+,* STARTED Status
+,:PROPERTIES:
+,:LAST_REPEAT: ...
+,:END:
+,
+,** Now
+,Implementing the XML serialiser; tests passing for ISO 4217 codes.
+,
+,** Waiting on
+,None.
+,
+,** Next
+,Add the round-trip test for unknown currency codes.
+,
+,** Last touched
+,2026-05-18 14:32
+#+end_src
+
+The =* Status= heading carries the TODO keyword; the subheadings carry
+the operational detail.
+
+** Why state-on-headline, not state-in-folder
+
+- /Shallower trees/. The folder structure mirrors composition only
+  (version → sprint → story → task), no state subdivisions.
+- /Native org-mode tooling/. Org-agenda, the org-mode mode line, and
+  TODO cycling (=C-c C-t=) all work out of the box.
+- /Atomic transitions/. Changing state is one edit (or one keystroke in
+  emacs); the diff is small and the LOGBOOK auto-records when.
+- /State-by-grep/. =grep -lR "^\* STARTED Status"= finds every
+  in-flight task in seconds.
+
+* Linking between documents
+
+Every link between v2 documents uses org-roam's id: form:
+
+#+begin_src org
+[[id:<UUID-of-target>][human-readable description]]
+#+end_src
+
+This is what makes the org-roam graph work. =[[file:...]]= links are
+standard org-mode but invisible to org-roam, so we do not use them.
+
+Conventions:
+
+- Every document carries at least one outbound link to its direct parent
+  (a task to its story, a story to its sprint, a sprint to its version).
+- Parent links live in the document's =* Context= or top-level
+  introduction so they are visible at a glance.
+- Sibling links (related tasks, related stories) live in a =* See also=
+  section or inline as the prose calls for them.
+
+* Tags
+
+Tags are required on every document. They are the primary cross-cutting
+index — every grep for "all knowledge about Qt" or "every task touching the
+SQL component" goes through tags. If tags rot, the system loses its lateral
+navigation.
+
+** Format
+
+- Standard org-mode tag syntax: =:tag1:tag2:tag3:= — colons on both sides
+  of each tag, no spaces inside.
+- All lowercase. Multi-word tags use =snake_case=.
+- At least one tag is required. Two to four is typical. More than six is
+  usually a sign the document needs to be split.
+
+** Tag dimensions
+
+A document's tags should cover the dimensions below where applicable.
+Tags are flat (no hierarchy), but readers should be able to infer the
+dimension from the tag itself.
+
+- /Component/ — which area of the codebase: =trading=, =sql=, =qt=,
+  =cli=, =http=, =compute=, =shell=, =codegen=, =modeling=, ...
+- /Domain topic/ — what the content is about: =fx_forward=, =pricing=,
+  =reporting=, =observability=, =ci=, =build=, =release=, =security=,
+  =ux=, ...
+- /Activity/ — what kind of work: =refactor=, =new_feature=, =bug_fix=,
+  =documentation=, =migration=, =cleanup=, =testing=, ...
+- /Status modifier/ (optional) — =blocked=, =needs_review=, =urgent=,
+  =stale=.
+
+** Examples
+
+- A task to add an FX Forward import test:
+  =:trading:fx_forward:testing:new_feature:=
+- A recipe for running the build:
+  =:cmake:build:recipe:=
+- A knowledge doc on the codegen architecture:
+  =:codegen:architecture:knowledge:=
+- A sprint focused on Qt UI work:
+  =:qt:ux:sprint:=
+
+** Ancestor tags
+
+Every stateful document carries one tag for each of its ancestors in
+the composition tree (immediate parent first). This duplicates the
+=#+links= relationship in a grep-friendly form: =#+links= drives the
+org-roam graph, the ancestor tags drive the shell.
+
+- A task tags with its story's slug, /and/ its sprint's slug, /and/
+  its version's slug.
+- A story tags with its sprint's slug, /and/ its version's slug.
+- A sprint tags with its version's slug.
+
+Examples (filetags only, content tags omitted):
+
+- A task in =versions/v0/sprint_03/login_and_sessions/= →
+  =:login_and_sessions:sprint_03:v0:=.
+- A story in =versions/v0/sprint_03/= → =:sprint_03:v0:=.
+- A sprint in =versions/v0/= → =:v0:=.
+
+Single-step lateral queries:
+
+#+begin_src sh
+# every task / story / file in sprint_03
+grep -lR ":sprint_03:" doc/v2/versions/
+
+# every story in story currencies_end_to_end (which is one, but you
+# can grep for siblings on the same theme by switching the tag)
+grep -lR ":currencies_end_to_end:" doc/v2/versions/
+
+# every file in version v0
+grep -lR ":v0:" doc/v2/versions/
+#+end_src
+
+The generator at =projects/ores.codegen/generate_v2_doc.sh= derives
+the ancestor slugs from the =--parent-dir= path (following the
+=versions/<version>/<sprint>/<story>/= layout) and adds them all to
+=#+filetags= automatically, on top of any =--tags= the user supplies.
+
+** Governance
+
+- The audit job (System 3*) lists every tag in use and flags singletons
+  (tags used exactly once) for review — they are usually typos or
+  one-offs that should fold into an existing tag.
+- A canonical tag list lives at =doc/v2/meta/tags.org= and is updated
+  when audit promotes a tag from "in use" to "canonical".
+- Audit also verifies the parent-tag invariant: every task must carry
+  exactly one story slug as a tag; every story must carry exactly one
+  sprint slug; every sprint must carry exactly one version slug.
+
+* Document types
+
+** task
+
+- Path :: =versions/<v>/<sprint>/<story>/task_<task_slug>.org= — a
+  flat file inside the story folder, /not/ a subfolder. Tasks are
+  leaves; only composition nodes (story, sprint, version) get
+  folders. The =task_= prefix sorts tasks together (after =story.org=)
+  and makes their type obvious in =ls=.
+- Level :: =s1=
+- Size constraint :: one PR; soft limits ≤ ~10 files changed, ≤ ~400 LOC
+  delta, one coherent concept. Tasks exceeding this should be split or
+  promoted to stories.
+- Supporting files :: rare. When a task genuinely needs extra artefacts
+  (screenshots, attached data), promote that single task to a folder
+  ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
+  files). The default remains the flat file.
+
+*** Task frontmatter (additions on top of the standard set)
+
+#+begin_src org
+,#+owner: <handle>                                ; required (=marco= today)
+,#+branch: <git branch the task is on>             ; required once started
+,#+pr: <pr number or url>                          ; set when PR is opened
+,#+blocked_on: <review|ci|local_build|external|none> ; required when in STARTED/BLOCKED
+,#+blocked_since: <YYYY-MM-DD HH:MM>               ; set when blocked_on != none
+,#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+end_src
+
+These fields make in-flight work greppable:
+
+- =grep -l "blocked_on: review"= → every task waiting on review.
+- =grep -l "branch: feature/foo"= → which task owns =feature/foo=.
+- =grep -lR "^\* STARTED Status\|^\* BLOCKED Status"= → every in-flight
+  task.
+
+*** Task sections
+
+Required, in this order. The =* Status= section answers /what is
+happening right now/; the others describe the work itself.
+
+- =* Status= — TODO state on the headline (DISCOVERED / BACKLOG /
+  STARTED / BLOCKED / DONE / ABANDONED). See below.
+- =* Goal= — one paragraph: what user-visible-or-internal change does
+  this task produce.
+- =* Acceptance= — bulleted criteria. A task is done when these all
+  hold.
+- =* Plan= — transient implementation strategy. Written when the agent
+  starts work; distilled into the parent story's =* Decisions= and
+  cleared (or summarised in =* Notes=) when the task closes. Plans do
+  not outlive their task.
+- =* Notes= — chronological log of decisions, observations, discovered
+  work. Append-only. Most recent at the bottom, dated.
+- =* Result= — filled when task closes: PR link, commit hashes,
+  follow-up tasks filed.
+
+The parent story link is /not/ a section — it lives as a one-line prose
+=Parent story: [[id:...][...]]= immediately after the frontmatter, so it
+is the first thing a reader sees.
+
+*** The =* Status= headline — TODO + live channel
+
+The =* Status= headline carries the TODO state for the task. Its
+subheadings give the operational detail.
+
+#+begin_src org
+,* STARTED Status
+,
+,** Now
+,Implementing the XML serialiser; tests passing for ISO 4217 codes.
+,
+,** Waiting on
+,None.
+,
+,** Next
+,Add the round-trip test for unknown currency codes.
+,
+,** Last touched
+,2026-05-18 14:32
+#+end_src
+
+State transitions are TODO changes (=C-c C-t= in emacs, or hand-edit
+the keyword). Org auto-stamps =CLOSED:= on transition to a terminal
+state.
+
+For =DONE= and =ABANDONED= tasks, the subheadings reduce: =** Now=
+becomes a single-sentence epitaph (=Completed 2024-07-12.=), =Waiting
+on= and =Next= are empty, =Last touched= equals the closing date.
+
+*Heartbeat rule.* Every time an orchestrator or agent acts on a task,
+it must update the Status subheadings and =#+updated= before yielding
+control. Audit flags tasks in =STARTED= or =BLOCKED= whose =#+updated=
+has gone stale.
+
+** story
+
+- Folder :: =versions/<v>/<sprint>/<story_slug>/story.org=
+- Level :: =s2=
+- TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
+  BLOCKED at story level).
+- Required sections ::
+  - =* Status= — TODO state on the headline; subheadings as for tasks.
+  - =* Goal= — the user-visible outcome.
+  - =* Acceptance= — when is this story done?
+  - =* Tasks= — id-links to its child tasks, in execution order.
+  - =* Decisions= — distilled from plans as tasks land.
+  - =* Out of scope= — what we explicitly /chose/ not to include.
+
+The parent sprint link sits as a one-line =Parent sprint: [[id:...][...]]= after
+the frontmatter.
+
+*** Cross-sprint stories — predecessor and successor
+
+A story belongs to exactly one sprint. When work cannot fit a single
+sprint, the story closes =DONE= with whatever landed and a /successor/
+story is created in the next sprint. Optional frontmatter fields link
+the two:
+
+#+begin_src org
+,#+predecessor: <id-of-prior-story>    ; on the successor: where the work began
+,#+successor:   <id-of-next-story>     ; on the predecessor: where the work continues
+#+end_src
+
+Both fields carry the target story's =:ID:= (not its slug — slugs may
+collide across sprints).
+
+Inline body conventions:
+
+- On the successor :: =Continued from: [[id:<predecessor>][...]]= sits
+  immediately after the parent-sprint link, so a reader sees the
+  history at the top.
+- On the predecessor :: a =Continued in: [[id:<successor>][...]]= note
+  goes into =* Decisions=, recorded when the successor is created.
+
+The successor's slug is the original slug suffixed with =_continued=,
+=_phase_2=, or similar — pick whichever reads better in context.
+
+Audit verifies bidirectional links: every =#+predecessor= has a
+matching =#+successor= pointing back.
+
+** sprint
+
+- Folder :: =versions/<v>/<sprint_NN>/sprint.org=
+- Level :: =s3=
+- TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
+  they exist when they exist, and lexicographic order tells you which
+  is current).
+- Required sections ::
+  - =* Status= — TODO state on the headline.
+  - =* Mission= — one sentence.
+  - =* Stories= — id-links to the sprint's stories, in priority order.
+  - =* Retrospective= — filled at close.
+
+A sprint folder may also contain an =inbox/= subfolder for untriaged
+discovered tasks that didn't fit any existing story at the time of
+discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+
+** version
+
+- Folder :: =versions/<v>/=
+- Level :: =s4=
+- TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
+  the rest are released).
+- Required sections ::
+  - =* Status= — TODO state on the headline.
+  - =* Identity= — what makes this version distinct.
+  - =* Mission= — what the version is for.
+  - =* Sprints= — id-links to its sprints, in order.
+  - =* Release scope= — what is in, what is deferred.
+
+** product_identity
+
+- Folder :: =identity/=
+- Level :: =s5=
+- Files ::
+  - =product_vision.org= — what ORE Studio is.
+  - =out_of_scope.org= — what ORE Studio is not. Equally important.
+- Not stateful — no TODO. These documents are durable.
+
+** function
+
+- Folder :: =functions/=
+- Level :: =cross= or a specific level.
+- Not stateful — no TODO.
+- Required sections ::
+  - =* Purpose=
+  - =* Operates at= — which system levels.
+  - =* Inputs=
+  - =* Outputs=
+  - =* Recipes= — id-links to the recipes the function uses.
+  - =* Owner= — which level / human / LLM role.
+
+** recipe
+
+- Folder :: =recipes/<topic>/=
+- Level :: =cross=
+- Filename :: starts with =how_do_i_= or similar NLP question phrasing.
+- Not stateful by TODO, but audit may set a =:stale:= tag when the
+  script fails.
+- Required sections ::
+  - =* Question= — the NLP question.
+  - =* Answer= — the steps. Shell commands inside an =* Answer= belong
+    in =#+begin_src sh :results verbatim= blocks so they can be
+    executed in place (=C-c C-c= in emacs); when the captured output
+    is the value of the recipe (e.g. /list available presets/), keep
+    =#+RESULTS:= alongside as a snapshot.
+  - =* Script= — pointer to the script or wrapper that does the work,
+    where applicable.
+  - =* Tested by= — link to the CI check that exercises the recipe.
+
+** component
+
+- Folder :: =projects/<comp>/modeling/<comp>.org= — always co-located
+  with the component's code, so the doc updates alongside it.
+- Level :: =cross=.
+- Not stateful — components are durable. No TODO. Audit may attach a
+  =:stale:= tag if the doc has drifted from the code.
+- Size :: 50–100 lines. The component doc is the /index/ into the
+  component, not a full reference. Deeper material (architecture,
+  internals, design decisions) lives in linked =knowledge= documents
+  alongside the code.
+- Required sections ::
+  - =* Summary= — three to five sentences: what the component does
+    and why it exists.
+  - =* Inputs= — what the component consumes (data, dependencies,
+    configuration).
+  - =* Outputs= — what it produces.
+  - =* Entry points= — key files, classes, scripts, or commands,
+    with paths.
+  - =* Dependencies= — other components or libraries this one needs.
+  - =* See also= — id-links to recipes operating on the component
+    and to deeper knowledge documents about it.
+
+** skill
+
+- Folder :: =doc/skills/<slug>/SKILL.org= (the filename is fixed
+  uppercase by Claude Code convention).
+- Level :: =cross=.
+- Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
+  The slug doubles as the Claude Code skill =name:=.
+- Not stateful — no TODO.
+- Required sections ::
+  - A =#+begin_export markdown ... #+end_export= block with
+    =name:= / =description:= / =license:= (Claude Code metadata).
+  - =* When to use this skill= — one or two sentences.
+  - =* How to use this skill= — numbered steps.
+  - =* Recipes= — id-links to the operational recipes the skill
+    indexes.
+  - =* Reference= — id-link to the knowledge document or component
+    model that backs the skill.
+  - =* Artefacts :noexport:= containing the licence (tangled into
+    =LICENCE.txt= at build).
+- Size :: 50–80 lines once skeleton sections are filled in. Skills
+  are /thin indexes/, not reference content.
+
+** knowledge
+
+- Folder ::
+  - Cross-cutting knowledge (not specific to one component) lives at
+    =doc/v2/knowledge/{domain,architecture,...}/=.
+  - Component-specific knowledge (deeper analyses tied to one
+    component's code) lives co-located at =projects/<comp>/docs/=.
+- Level :: =cross=
+- Not stateful — no TODO. Audit may flag stale facts via a tag.
+- Required sections ::
+  - =* Summary= — 3–5 sentence overview.
+  - =* Detail= — the content.
+  - =* See also= — cross-references.
+
+** plan
+
+- Lives /inside/ a task or story document as the =* Plan= section.
+  Not a separate file. (Previously =plan.org= as a sibling file;
+  that was retired when tasks became flat files.)
+- Level :: =s1= (task plan) or =s2= (story plan).
+- Transient :: cleared or summarised in =* Notes= when the task or
+  story closes; distilled content moves to =* Decisions= on the
+  parent story. Plans do not outlive their task.
+
+** decision
+
+- Lives as the =* Decisions= section inside =story.org=, or — when the
+  list grows large — pulled out into =decisions.org= alongside it.
+- Level :: =s2=.
+- Format :: a flat list of decision records, newest first. Each record
+  has context, decision, consequences.
+
+** retrospective, release_note, audit_report
+
+- Generated where possible. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] and the relevant function
+  documents.
+
+** meta
+
+- Folder :: =meta/= (this folder).
+- Level :: =cross=.
+- The documents in this very directory. They describe the system itself.

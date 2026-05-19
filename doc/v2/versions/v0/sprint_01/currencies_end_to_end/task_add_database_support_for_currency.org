@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: fcb09dd7-4f7a-42ff-a82c-423ac15779ad
+:END:
+#+title: Add database support for currency
+#+description: Create the first project database table and write currency reference data to it.
+#+type: task
+#+level: s1
+#+filetags: :currencies:sql:reference_data:currencies_end_to_end:sprint_01:v0:
+#+owner: marco
+#+created: 2024-07-11
+#+updated: 2024-07-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2024-07-12]
+:END:
+
+** Now
+Completed 2024-07-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2024-07-12
+
+* Goal
+
+Establish the first project database table — for currency reference
+data — and the code path that writes parsed currencies into it. This
+task defines the pattern every later reference-data type follows.
+
+* Acceptance
+
+- A table for currency data exists in the project database.
+- Currency rows can be inserted and retrieved.
+- The DB write path is wired into the currency import code path.
+
+* Context
+
+Pathfinder task for the wider /currencies end-to-end/ story. The shape
+chosen here propagates to every subsequent SQL component in the
+project.
+
+* Notes
+
+- Total time spent in v0: ~1:19.
+- This task pre-dated the codegen-driven SQL schema; the table was
+  hand-written. Later cleanup folded it into the generated schema.
+
+* Result
+
+- Initial currency table committed to the project database under
+  =ores.refdata= (then later moved as the schema evolved).

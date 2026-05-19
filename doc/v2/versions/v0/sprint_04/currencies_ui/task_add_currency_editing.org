@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: acb8f76f-844a-48f0-87b2-76840767f452
+:END:
+#+title: Add currency editing support
+#+description: Allow currency rows to be edited from the Qt UI with validation and a save action.
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:edit:currencies_ui:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Allow currency rows to be opened individually and edited from
+the Qt UI; also allow multi-select for bulk delete. Establishes the CRUD
+toolbar pattern that later reference-data widgets will reuse.
+
+* Acceptance
+
+- A currency row can be opened in an edit dialog and saved back.
+- Multiple rows can be selected and deleted in one action.
+- A CRUD toolbar is in place, separate from the connection toolbar.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~2:45.
+- v0 surfaced the question of /what selection a toolbar action applies to/. Settled on: ideally the user selects rows first, then presses the action.
+- Side change in the same task: the splash screen gained a version string.
+
+* Result
+
+Currency edit dialog + multi-row delete shipped; CRUD toolbar established.

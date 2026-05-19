@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: cf13ffb1-4d84-4965-ad65-c38b1d4849ab
+:END:
+#+title: CLI refactor and test
+#+description: Restructure the CLI to follow the new project layout and add tests to the CLI parser.
+#+type: story
+#+level: s2
+#+filetags: :cli:refactor:testing:sprint_02:v0:
+#+created: 2025-09-01
+#+updated: 2026-05-18
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:8cbc2b51-e3d0-4320-8582-3cfd2f96537a][Sprint 02]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-10-10]
+:END:
+
+** Now
+Story closed; CLI restructured under the new project layout, parser
+test suite green.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-10-10
+
+* Goal
+
+The CLI grew up alongside the project's initial layout and no longer
+fits it. Restructure the CLI to follow the new project shape and add
+tests to the parser so future changes are caught.
+
+* Acceptance
+
+- CLI sources live under the new layout (=ores.cli=).
+- CLI commands resolve through the new module structure.
+- CLI parser has a Catch2 test suite covering the main flag and
+  command paths.
+
+* Tasks
+
+In execution order:
+
+- [[id:e452514e-593c-4a4f-8696-471132e15ec1][Refactor CLI to follow new project structure]]
+- [[id:1dbc88f2-f004-45f8-bcd2-67d6ac646e97][Add tests to CLI parser]]
+
+Additional tasks belonging to this story in v0 but not migrated in
+the drive-test:
+
+- Add logging support for tests.
+- CANCELLED: Add console method to drop schema for a table or all
+  tables.
+
+* Decisions
+
+- /Test the parser, not the commands/ :: command execution touches
+  the full stack; the parser is the part with the most surface area
+  for regression and the cheapest to test.
+
+* Out of scope
+
+- A REPL for the CLI (was investigated, separate task).
+- Tab completion (deferred).
+
+* See also
+
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — the CLI component model.
+- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]] — the testing infrastructure the parser tests use.
+- [[id:562ed395-d245-4e05-b8ae-22f8ff689f59][Add command to dump currencies]] (this sprint) — the first user-
+  facing command added on top of the restructured CLI.

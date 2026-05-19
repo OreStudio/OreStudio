@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 396ebda8-ca0d-4bfc-ac5e-01e61cae0a6a
+:END:
+#+title: Implement a cobalt-based server and client
+#+description: Build the runtime split: a Boost.cobalt-based server process and a client embedded in the Qt application.
+#+type: task
+#+level: s1
+#+filetags: :client_server:cobalt:async:client_server_foundations:sprint_02:v0:
+#+owner: marco
+#+created: 2025-09-15
+#+updated: 2025-09-21
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-09-21]
+:END:
+
+** Now
+Completed 2025-09-21.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-09-21
+
+* Goal
+
+Stand up the runtime split: a Boost.cobalt-based server process that
+accepts client connections, and a client embedded in the Qt
+application that can issue requests.
+
+* Acceptance
+
+- The server process runs and accepts at least one client connection.
+- The Qt client connects and issues a round-trip request.
+- The cobalt event loop is integrated cleanly with the Qt event
+  loop.
+
+* Notes
+
+- Total time spent in v0: ~2:53.
+- Followed the whiteboarded architecture from sprint housekeeping.
+
+* Result
+
+- Cobalt server/client running; basic round-trip working end-to-end.

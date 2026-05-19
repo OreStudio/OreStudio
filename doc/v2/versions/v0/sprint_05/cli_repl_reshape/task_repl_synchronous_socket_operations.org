@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: d7591ef4-3bf5-486a-a356-5cfa4dfdcc70
+:END:
+#+title: REPL needs synchronous socket operations
+#+description: Replace async socket calls in the REPL with synchronous ones to match the interactive command flow.
+#+type: task
+#+level: s1
+#+filetags: :shell:repl:sockets:async:cli_repl_reshape:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:7be09d1c-e25a-4783-a911-c37dec55cc43][CLI / REPL reshape]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Replace the REPL's async socket calls with synchronous ones.
+Async made sense when the REPL was the cobalt client; now that it's
+interactive (one command, wait, one result), synchronous is the natural
+shape.
+
+* Acceptance
+
+- REPL command path uses synchronous I/O against the cobalt server.
+- No regression in the REPL's command set.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Surfaced during the rename + reshape work.
+
+* Result
+
+REPL now uses synchronous socket operations.

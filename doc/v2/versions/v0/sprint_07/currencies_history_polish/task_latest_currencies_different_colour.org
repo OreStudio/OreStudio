@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 88f8a3c7-1ed3-43a6-9396-1766896e6586
+:END:
+#+title: Latest currencies should have different colour
+#+description: Visually distinguish the currently-active version of a currency in the history dialog (and the list view).
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:history:currencies_history_polish:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-18]
+:END:
+
+** Now
+Completed 2025-12-18.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-18
+
+* Goal
+
+Visually distinguish the currently-active version of a currency in the history dialog and the main list view.
+
+* Acceptance
+
+- Active row rendered in a distinct colour / weight.
+- Behaviour consistent between the list view and the history dialog.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Small Qt-only change; uses the same accent colour the application already exposes.
+
+* Result
+
+Active version stands out at a glance.

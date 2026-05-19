@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: f315d65f-872f-421e-a22e-6d12cd9f6f88
+:END:
+#+title: Fix issues with logging after string_view change
+#+description: Repair call sites and tests that broke under the string_view migration.
+#+type: task
+#+level: s1
+#+filetags: :logging:bug_fix:logging_refactor:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-12
+#+updated: 2025-12-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-12]
+:END:
+
+** Now
+Completed 2025-12-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-12
+
+* Goal
+
+Repair call sites and tests that broke under the string_view migration.
+
+* Acceptance
+
+- All call sites build and run again.
+- Tests green.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- The usual aftermath of a sweeping API change; mostly mechanical fixes.
+
+* Result
+
+Project builds and tests pass after the string_view migration.

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: b69989f6-19e1-430d-ac6d-b2416e4c433f
+:END:
+#+title: Compass
+#+description: Entry point for the ORE Studio cybernetic information management architecture. Read this first to orient yourself.
+#+type: meta
+#+level: cross
+#+filetags: :meta:overview:entry_point:
+#+created: 2026-05-18
+#+updated: 2026-05-18
+
+* Purpose
+
+This is the entry point for the ORE Studio cybernetic information
+architecture. Read this first; the rest of =doc/v2/= refers back to
+it. The =meta/= subdirectory defines the /contract/ every document
+follows; this file explains the layout that contract sits inside.
+
+* Folder layout
+
+#+begin_example
+doc/v2/
+├── compass.org           ← this file; read first
+├── meta/                 ← the contract: how documents are shaped
+├── versions/             ← the composition tree (the bulk of v2)
+├── recipes/              ← operational how-tos, by topic
+├── knowledge/            ← cross-cutting reference material
+├── identity/             ← (reserved) product vision, out-of-scope
+├── functions/            ← (reserved) named roles across levels
+└── audit/                ← (reserved) invariant-enforcement scripts
+#+end_example
+
+** =meta/= — how documents are shaped
+
+The five contract documents. Read in order on first contact; refer
+back to individual ones as needed.
+
+1. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]] — what we mean by task, story, sprint, version,
+   function, plan, recipe.
+2. [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]] — the five levels of concern and what each
+   is responsible for.
+3. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — every document type, its frontmatter contract,
+   filename convention, required sections.
+4. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — TODO state transitions and where each state lives.
+5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]] — how LLMs and agents operate inside this
+   system.
+
+** =versions/= — the composition tree
+
+Where the operational documents live. Path shape:
+
+#+begin_example
+versions/<version>/<sprint>/<story_folder>/<task_slug>.org
+                                          ↑       ↑
+                                          story.org sits at this level too
+#+end_example
+
+Stories and sprints are folders (they contain children); tasks are
+flat files (they are leaves). One sprint per lexicographic step:
+=sprint_01=, =sprint_02=, ... The lexicographically-highest sprint
+folder is the current sprint.
+
+** =recipes/= — how do I do X?
+
+Short, tested, executable how-tos grouped by topic
+(=recipes/<topic>/how_do_i_xxx.org=). Each recipe answers one NLP
+question. Shell commands inside =#+begin_src sh :results verbatim=
+blocks so they run in place via =C-c C-c=.
+
+** =knowledge/= — durable reference
+
+Cross-cutting knowledge that outlives any sprint. Lives under
+=knowledge/<topic>/=. Component-specific knowledge (e.g. an
+architecture analysis tied to one component's code) lives co-located
+with the code at =projects/<comp>/docs/=, not here.
+
+** Reserved folders
+
+- =identity/= — system-5 docs: product vision; what's out of scope.
+  Empty in this branch; will hold the durable identity statements
+  that filter candidate versions and far stories.
+- =functions/= — system-spanning named roles (PR reviewer, sprint
+  planner, identity steward, audit). Empty in this branch.
+- =audit/= — system-3* scripts and reports enforcing invariants
+  (orphan tasks, stale recipes, broken links, etc.). Empty in this
+  branch.
+
+* Core invariants
+
+- Every stateful document carries the standard frontmatter described
+  in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]].
+- Folders encode composition, not state. A document's TODO state
+  lives on its =* Status= headline as an org-mode TODO keyword.
+- Composition is strict: a version is made up of one or more
+  sprints; a sprint is made up of one or more stories; a story is
+  made up of one or more tasks; a task is one PR. No exceptions.
+- A story belongs to exactly one sprint. Work that spans sprints
+  closes the current story and opens a /successor/ in the next
+  sprint, with =#+predecessor=/=#+successor= links.
+- Plans are transient. They live as the =* Plan= section inside a
+  task or story; decisions distil into the story; the section is
+  cleared when the task closes.
+- Document references are id-links (=[[id:UUID][...]]=), never
+  =[[file:...]]=. Paths can change; IDs don't.
+- The user is not responsible for filing. Periodic audit jobs catch
+  drift.
+
+* Out of scope here
+
+This document /describes/ the layout. The /contract/ that every
+document follows lives in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. The /vocabulary/ used
+across the system lives in [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]].

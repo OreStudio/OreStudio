@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 44039e5b-3435-4bcb-824f-3990af341fbe
+:END:
+#+title: ores.synthetic.api
+#+description: Domain types and NATS protocol schemas for the synthetic data component.
+#+type: component
+#+level: cross
+#+filetags: :synthetic:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.synthetic.api= is a header-only library defining the domain types and
+NATS protocol schemas for the synthetic data component. It provides types for
+generated organisations, generation options, and synthetic catalogs, consumed
+by =ores.synthetic.core= (server) and any client requesting catalog generation.
+
+* Inputs
+
+- Domain entity type definitions: =generated_organisation.hpp=,
+  =generation_options.hpp=, =organisation_generation_options.hpp=,
+  =synthetic_catalog.hpp=.
+
+* Outputs
+
+- C++ headers for all synthetic-data domain types.
+- NATS protocol headers for catalog generation requests and responses.
+
+* Entry points
+
+- =include/ores.synthetic.api/domain/= — all domain entity headers.
+- =include/ores.synthetic.api/messaging/= — NATS protocol message headers.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+
+* See also
+
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — business logic and NATS handlers.
+- [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.

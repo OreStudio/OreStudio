@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 702753e8-0e07-4690-afab-d75514ade660
+:END:
+#+title: ores.synthetic.service
+#+description: NATS service entrypoint for synthetic data generation.
+#+type: component
+#+level: cross
+#+filetags: :synthetic:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.synthetic.service= is the NATS service entrypoint for the synthetic
+data domain. It reads configuration, opens NATS connections, registers all
+message handlers from =ores.synthetic.core=, and runs the event loop. All
+generation logic lives in =ores.synthetic.core=.
+
+* Inputs
+
+- Configuration file: NATS server URL and environment settings.
+- NATS request messages triggering catalog generation operations.
+
+* Outputs
+
+- A running NATS service handling synthetic data generation requests.
+- NATS response messages returned to callers.
+- Structured logs via =ores.logging=.
+
+* Entry points
+
+- =src/main.cpp= — process entry point.
+- =src/app/= — application bootstrap and dependency injection.
+- =src/config/= — configuration parsing and validation.
+
+* Dependencies
+
+- =ores.synthetic.core= — all NATS handlers and generation logic.
+- =ores.synthetic.api= — shared protocol types.
+- =ores.logging= — structured logging infrastructure.
+- =nats.c= — NATS client for connection management.
+
+* See also
+
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — all synthetic data generation logic.

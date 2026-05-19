@@ -34,6 +34,7 @@ Sentinel line:
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 import sys
 from collections import defaultdict
@@ -92,8 +93,6 @@ class TypeInfo:
 
 # Matches C++ compound namespace declarations: namespace a::b::c { or namespace a { namespace b {
 _NS_COMPOUND_RE = re.compile(r'^\s*namespace\s+([\w:]+)\s*\{')
-_NS_SIMPLE_RE = re.compile(r'^\s*namespace\s+(\w+)\s*\{')
-_NS_CLOSE_RE = re.compile(r'^\s*\}')
 
 # Matches struct/class/enum at namespace scope
 _STRUCT_RE = re.compile(r'^\s*struct\s+(?:[A-Z][A-Z0-9_]*\s+)?(\w+)\s*(?:final\s*)?\{')
@@ -117,7 +116,7 @@ _VISIBILITY_RE = re.compile(r'^\s*(public|protected|private)\s*:')
 
 # Skip patterns: template, typedef, using, macros, operators, constructors, destructors
 _SKIP_LINE_RE = re.compile(
-    r'^\s*(template\s*<|typedef|using\s+\w|#|operator|~|explicit\s|'
+    r'^\s*(template\s*<|typedef|using\s|#|operator|~|explicit\s|'
     r'virtual\s|static\s|inline\s|friend\s|//|/\*|\*|return\s)')
 _FUNC_RE = re.compile(r'\(')
 
@@ -126,7 +125,6 @@ def _simplify_type(t: str) -> str:
     """Shorten common std:: prefixes for readability."""
     t = t.strip()
     t = re.sub(r'\bstd::', '', t)
-    t = re.sub(r'\bboost::', 'boost::', t)
     t = re.sub(r'\s+', ' ', t)
     return t
 
@@ -158,14 +156,27 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
         line = lines[i]
         stripped = line.strip()
 
-        # Block comment tracking
-        if '/*' in stripped and '*/' not in stripped:
-            in_comment_block = True
-        if '*/' in stripped:
-            in_comment_block = False
-            i += 1
-            continue
-        if in_comment_block or stripped.startswith('//') or stripped.startswith('*'):
+        # Block comment tracking: strip block comment content from line before parsing
+        if in_comment_block:
+            if '*/' in stripped:
+                in_comment_block = False
+                # Process only the content after the closing */
+                line = line[line.index('*/') + 2:]
+                stripped = line.strip()
+            else:
+                preceding_was_template = False
+                i += 1
+                continue
+        if '/*' in line:
+            if '*/' in line:
+                # Inline block comment: remove it and continue with the rest
+                line = re.sub(r'/\*.*?\*/', '', line)
+                stripped = line.strip()
+            else:
+                in_comment_block = True
+                line = line[:line.index('/*')]
+                stripped = line.strip()
+        if not stripped or stripped.startswith('//') or stripped.startswith('*'):
             preceding_was_template = False
             i += 1
             continue
@@ -524,7 +535,6 @@ def process_project(project_name: str, dry_run: bool) -> bool:
         print(f"  {project_name}: would write {out_path}")
         # Show a diff-style preview of what changed
         if out_path.exists():
-            import difflib
             existing = out_path.read_text(encoding='utf-8')
             diff = list(difflib.unified_diff(
                 existing.splitlines(keepends=True),

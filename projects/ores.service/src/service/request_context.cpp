@@ -90,6 +90,18 @@ make_request_context(
     if (!verifier)
         return base_ctx;
 
+    // Applies workspace ID from X-Workspace-Id header to a successful context.
+    // Absence of the header leaves the default Live workspace sentinel intact.
+    using ctx_result_t = std::expected<ores::database::context, ores::service::error_code>;
+    const auto apply_workspace = [&](ctx_result_t r) -> ctx_result_t {
+        if (!r) return r;
+        const auto ws_it = msg.headers.find(
+            std::string(ores::nats::headers::x_workspace_id));
+        if (ws_it != msg.headers.end() && !ws_it->second.empty())
+            return r->with_workspace(ws_it->second);
+        return r;
+    };
+
     // Check X-Delegated-Authorization first: a downstream service forwarded
     // the original end-user JWT.  Validate it and build the user's full context
     // (tenant, party, actor, roles).  An expired delegated token is a hard
@@ -100,9 +112,9 @@ make_request_context(
         const auto& val = del_it->second;
         if (!val.starts_with(ores::nats::headers::bearer_prefix))
             return std::unexpected(ores::service::error_code::unauthorized);
-        return make_context_from_jwt(
+        return apply_workspace(make_context_from_jwt(
             base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()),
-            *verifier);
+            *verifier));
     }
 
     // Fall through to the standard Authorization header.
@@ -114,8 +126,8 @@ make_request_context(
     if (!val.starts_with(ores::nats::headers::bearer_prefix))
         return std::unexpected(ores::service::error_code::unauthorized);
 
-    return make_context_from_jwt(
-        base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier);
+    return apply_workspace(make_context_from_jwt(
+        base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier));
 }
 
 } // namespace ores::service::service

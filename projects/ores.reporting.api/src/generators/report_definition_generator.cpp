@@ -20,8 +20,9 @@
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/string_generator.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::reporting::generators {
@@ -33,17 +34,17 @@ domain::report_definition generate_synthetic_report_definition(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
-    const auto party_id_str = ctx.env().get_or(
-        std::string(generation_keys::party_id), "");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
-    const auto n = ++counter;
     domain::report_definition r;
     r.version = 1;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "_report_" + std::to_string(n);
-    r.party_id = party_id_str.empty()
-        ? ctx.generate_uuid()
-        : boost::uuids::string_generator{}(party_id_str);
+    r.name = std::string(faker::word::noun()) + "_report";
+    r.party_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
     r.report_type = std::string("risk");
     r.fsm_state_id = std::nullopt;

@@ -24,23 +24,15 @@
 
 namespace ores::reporting::domain {
 
+
 std::string convert_to_table(const std::vector<report_definition>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Name" << "Type" << "Schedule" << "Concurrency"
-          << "Version" << "Modified By" << fort::endr;
+    table << fort::header << "ID" << "Name" << "Type" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& rd : v) {
-        table << boost::uuids::to_string(rd.id)
-              << rd.name
-              << rd.report_type
-              << rd.schedule_expression
-              << rd.concurrency_policy
-              << rd.version
-              << rd.modified_by
-              << fort::endr;
+        table << boost::uuids::to_string(rd.id) << rd.name << rd.report_type << rd.modified_by << rd.version << fort::endr;
     }
     return table.to_string();
 }

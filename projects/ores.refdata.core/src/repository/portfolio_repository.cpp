@@ -20,7 +20,6 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.refdata.api/domain/portfolio_json_io.hpp" // IWYU pragma: keep.
@@ -38,89 +37,73 @@ std::string portfolio_repository::sql() {
     return generate_create_table_sql<portfolio_entity>(lg());
 }
 
-portfolio_repository::portfolio_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void portfolio_repository::write(const domain::portfolio& portfolio) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio to database: "
-                               << portfolio.id;
-    execute_write_query(ctx_, portfolio_mapper::map(portfolio),
-        lg(), "writing portfolio to database");
+void portfolio_repository::write(context ctx, const domain::portfolio& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio: " << v.id;
+    execute_write_query(ctx, portfolio_mapper::map(v),
+        lg(), "Writing portfolio to database.");
 }
 
 void portfolio_repository::write(
-    const std::vector<domain::portfolio>& portfolios) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing portfolios to database. Count: "
-                               << portfolios.size();
-    execute_write_query(ctx_, portfolio_mapper::map(portfolios),
-        lg(), "writing portfolios to database");
+    context ctx, const std::vector<domain::portfolio>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing portfolios. Count: " << v.size();
+    execute_write_query(ctx, portfolio_mapper::map(v),
+        lg(), "Writing portfolios to database.");
 }
 
 std::vector<domain::portfolio>
-portfolio_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+portfolio_repository::read_latest(context ctx) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<portfolio_entity, domain::portfolio>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return portfolio_mapper::map(entities); },
         lg(), "Reading latest portfolios");
 }
 
 std::vector<domain::portfolio>
-portfolio_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. Id: " << id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::uuids::to_string(id);
+portfolio_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. id: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<portfolio_entity, domain::portfolio>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return portfolio_mapper::map(entities); },
         lg(), "Reading latest portfolio by id.");
 }
 
 std::vector<domain::portfolio>
-portfolio_repository::read_latest_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+portfolio_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio versions. id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
-        where("name"_c == code && "valid_to"_c == max.value());
-
-    return execute_read_query<portfolio_entity, domain::portfolio>(
-        ctx_, query,
-        [](const auto& entities) { return portfolio_mapper::map(entities); },
-        lg(), "Reading latest portfolio by code.");
-}
-
-std::vector<domain::portfolio>
-portfolio_repository::read_all(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio versions. Id: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<portfolio_entity>> |
-        where("id"_c == id_str) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
         order_by("version"_c.desc());
 
     return execute_read_query<portfolio_entity, domain::portfolio>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return portfolio_mapper::map(entities); },
         lg(), "Reading all portfolio versions by id.");
 }
 
-void portfolio_repository::remove(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio from database: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
+void portfolio_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<portfolio_entity> |
-        where("id"_c == id_str);
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx_, query, lg(), "removing portfolio from database");
+    execute_delete_query(ctx, query, lg(), "Removing portfolio from database.");
 }
 
 }

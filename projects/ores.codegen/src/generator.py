@@ -1569,8 +1569,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             col.get('is_uuid') or col.get('is_optional_uuid')
             for col in domain_entity.get('columns', [])
         )
+        has_uuid_nat_keys = any(
+            key.get('is_uuid')
+            for key in domain_entity.get('natural_keys', [])
+        )
         domain_entity['has_uuid_columns'] = (
-            has_uuid_cols or domain_entity.get('primary_key', {}).get('is_uuid', False)
+            has_uuid_cols or has_uuid_nat_keys
+            or domain_entity.get('primary_key', {}).get('is_uuid', False)
+            or domain_entity.get('has_workspace_id', False)
         )
         data['domain_entity'] = domain_entity
 

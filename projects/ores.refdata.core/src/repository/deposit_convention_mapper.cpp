@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.core/repository/deposit_convention_mapper.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/deposit_convention_json_io.hpp" // IWYU pragma: keep.
 
@@ -34,6 +36,7 @@ deposit_convention_mapper::map(const deposit_convention_entity& v) {
     domain::deposit_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.index_based = v.index_based;
     r.index = v.index;
@@ -61,6 +64,7 @@ deposit_convention_mapper::map(const domain::deposit_convention& v) {
     deposit_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.index_based = v.index_based;
     r.index = v.index;

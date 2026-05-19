@@ -48,7 +48,7 @@ domain::result generate_synthetic_result(
     r.received_at = std::chrono::system_clock::time_point{};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

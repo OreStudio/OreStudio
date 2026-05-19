@@ -9,13 +9,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
 
 /**
  * @brief Reads and writes {{entity_plural_words}} to data storage.
  */
-class {{entity_singular}}_repository {
+class ORES_{{component_core_upper}}_EXPORT {{entity_singular}}_repository {
 private:
     inline static std::string_view logger_name =
         "ores.{{component}}.repository.{{entity_singular}}_repository";
@@ -37,10 +38,17 @@ public:
     std::vector<domain::{{entity_singular}}> read_latest(context ctx);
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, const std::string& {{primary_key.column}});
+{{#has_batch_read}}
+    std::vector<domain::{{entity_singular}}>
+    read_latest(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
+{{/has_batch_read}}
     std::vector<domain::{{entity_singular}}>
     read_all(context ctx, const std::string& {{primary_key.column}});
 
     void remove(context ctx, const std::string& {{primary_key.column}});
+{{#has_batch_remove}}
+    void remove(context ctx, const std::vector<std::string>& {{primary_key.column}}s);
+{{/has_batch_remove}}
 };
 
 }

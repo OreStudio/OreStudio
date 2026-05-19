@@ -21,7 +21,9 @@
 #define ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
+#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
@@ -44,6 +46,13 @@ struct lifecycle_event final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+
+    /**
      * @brief Unique lifecycle event code.
      *
      * Examples: 'New', 'Amendment', 'Novation'.
@@ -54,6 +63,11 @@ struct lifecycle_event final {
      * @brief Detailed description of the lifecycle event.
      */
     std::string description;
+
+    /**
+     * @brief Optional FSM state identifier associated with this lifecycle event.
+     */
+    std::optional<boost::uuids::uuid> fsm_state_id;
 
     /**
      * @brief Username of the person who last modified this lifecycle event.

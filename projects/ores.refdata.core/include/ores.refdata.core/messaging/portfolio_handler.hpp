@@ -21,7 +21,6 @@
 #define ORES_REFDATA_CORE_MESSAGING_PORTFOLIO_HANDLER_HPP
 
 #include <optional>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -137,9 +136,8 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
             for (const auto& id_str : req->ids)
-                svc.remove_portfolio(gen(id_str));
+                svc.remove_portfolio(id_str);
             BOOST_LOG_SEV(portfolio_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, delete_portfolio_response{.success = true});
@@ -169,8 +167,7 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            auto h = svc.get_portfolio_history(gen(req->id));
+            auto h = svc.get_portfolio_history(req->id);
             BOOST_LOG_SEV(portfolio_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, get_portfolio_history_response{

@@ -20,7 +20,9 @@
 #include "ores.refdata.api/generators/book_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
@@ -30,19 +32,22 @@ using ores::utility::generation::generation_keys;
 domain::book generate_synthetic_book(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
     const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+        std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::book r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.name = std::string("BOOK_") + std::to_string(idx);
+    r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999));
+    r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
+    r.owner_unit_id = std::nullopt;
     r.ledger_ccy = std::string("USD");
     r.gl_account_ref = std::string("GL-10150-TEST");
     r.cost_center = std::string("CC-001");
@@ -50,7 +55,7 @@ domain::book generate_synthetic_book(
     r.is_trading_book = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

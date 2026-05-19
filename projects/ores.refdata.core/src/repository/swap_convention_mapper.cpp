@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.core/repository/swap_convention_mapper.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/swap_convention_json_io.hpp" // IWYU pragma: keep.
 
@@ -34,6 +36,7 @@ swap_convention_mapper::map(const swap_convention_entity& v) {
     domain::swap_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.fixed_calendar = v.fixed_calendar;
     r.fixed_frequency = v.fixed_frequency;
@@ -61,6 +64,7 @@ swap_convention_mapper::map(const domain::swap_convention& v) {
     swap_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.fixed_calendar = v.fixed_calendar;
     r.fixed_frequency = v.fixed_frequency;

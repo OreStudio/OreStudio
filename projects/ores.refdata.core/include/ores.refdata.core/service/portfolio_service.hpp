@@ -70,12 +70,6 @@ public:
     find_portfolio(const boost::uuids::uuid& id);
 
     /**
-     * @brief Finds a portfolio by its code.
-     */
-    std::optional<domain::portfolio>
-    find_portfolio_by_code(const std::string& code);
-
-    /**
      * @brief Saves a portfolio (creates or updates).
      *
      * @param portfolio The portfolio to save
@@ -94,7 +88,7 @@ public:
      *
      * @param id The ID of the portfolio to remove
      */
-    void remove_portfolio(const boost::uuids::uuid& id);
+    void remove_portfolio(const std::string& id);
 
     /**
      * @brief Gets the version history for a portfolio.
@@ -103,7 +97,7 @@ public:
      * @return Vector of all versions, newest first
      */
     std::vector<domain::portfolio>
-    get_portfolio_history(const boost::uuids::uuid& id);
+    get_portfolio_history(const std::string& id);
 
 private:
     context ctx_;

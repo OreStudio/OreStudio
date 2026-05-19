@@ -179,7 +179,6 @@ ore_import_result OreImporter::execute(
         std::map<std::string, boost::uuids::uuid> existing_book_by_name;
         {
             refdata::messaging::get_books_request req;
-            req.limit = 1000;
             const auto resp = cm_->process_authenticated_request(std::move(req));
             if (resp) {
                 for (const auto& b : resp->books)

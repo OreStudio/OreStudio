@@ -23,12 +23,10 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::trading::repository {
-
-using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a trade in the database.
@@ -39,14 +37,15 @@ struct trade_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     std::string party_id;
     std::optional<std::string> external_id;
     std::string book_id;
     std::string portfolio_id;
     std::optional<std::string> successor_trade_id;
-    std::optional<std::string> counterparty_id;
     std::string trade_type;
+    std::optional<std::string> counterparty_id;
     std::optional<std::string> product_type;
     std::optional<std::string> instrument_id;
     std::optional<std::string> asset_class;
@@ -61,8 +60,8 @@ struct trade_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const trade_entity& v);

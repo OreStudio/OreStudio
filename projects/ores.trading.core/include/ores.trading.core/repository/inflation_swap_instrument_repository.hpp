@@ -56,10 +56,9 @@ public:
     std::vector<domain::inflation_swap_instrument>
     read_latest(context ctx, const std::string& instrument_id);
     std::vector<domain::inflation_swap_instrument>
-    read_all(context ctx, const std::string& instrument_id);
-
+    read_latest(context ctx, const std::vector<std::string>& instrument_ids);
     std::vector<domain::inflation_swap_instrument>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_all(context ctx, const std::string& instrument_id);
 
     void remove(context ctx, const std::string& instrument_id);
 };

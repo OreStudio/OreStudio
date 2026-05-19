@@ -19,32 +19,33 @@
  */
 #include "ores.trading.api/domain/trade_table.hpp"
 
+#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o) return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
+
 std::string convert_to_table(const std::vector<trade>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Party ID" << "Trade Type" << "Activity"
-          << "Trade Date" << "Effective Date" << "Termination Date"
-          << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "ID" << "Trade Date" << "Type" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& tr : v) {
-        table << boost::uuids::to_string(tr.identity.id)
-              << boost::uuids::to_string(tr.identity.party_id)
-              << tr.classification.trade_type
-              << tr.classification.activity_type_code
-              << tr.lifecycle.trade_date.value_or("")
-              << tr.lifecycle.effective_date.value_or("")
-              << tr.lifecycle.termination_date.value_or("")
-              << tr.audit.modified_by
-              << tr.identity.version
-              << fort::endr;
+        table << boost::uuids::to_string(tr.identity.id) << opt_str(tr.lifecycle.trade_date)
+              << tr.classification.trade_type << tr.audit.modified_by << tr.identity.version << fort::endr;
     }
     return table.to_string();
 }

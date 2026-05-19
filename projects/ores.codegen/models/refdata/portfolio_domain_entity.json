@@ -1,148 +1,256 @@
 {
-  "domain_entity": {
-    "schema": "public",
-    "product": "ores",
-    "component": "refdata",
-    "has_tenant_id": true,
-    "has_workspace_id": true,
-    "entity_singular": "portfolio",
-    "entity_plural": "portfolios",
-    "entity_title": "Portfolio",
-    "brief": "Logical aggregation node for risk and reporting.",
-    "description": "Represents organizational, risk, or reporting groupings.\nNever holds trades directly. Supports hierarchical structure\nvia self-referencing parent_portfolio_id.",
-
-    "primary_key": {
-      "column": "id",
-      "type": "uuid",
-      "cpp_type": "boost::uuids::uuid",
-      "description": "UUID uniquely identifying this portfolio.",
-      "detail": "Surrogate key for the portfolio record."
-    },
-
-    "natural_keys": [
-      {
-        "column": "name",
-        "type": "text",
-        "cpp_type": "std::string",
-        "description": "Human-readable name for the portfolio.",
-        "detail": "e.g., 'Global Rates', 'APAC Credit'.",
-        "generator_expr": "std::string(faker::company::name()) + \" Portfolio\""
-      }
-    ],
-
-    "columns": [
-      {
-        "name": "parent_portfolio_id",
-        "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
-        "nullable": true,
-        "description": "Self-referencing FK. NULL indicates a root node.",
-        "detail": "Links to the parent portfolio in the hierarchy.",
-        "generator_expr": "boost::uuids::uuid()"
-      },
-      {
-        "name": "owner_unit_id",
-        "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
-        "nullable": true,
-        "description": "Business unit responsible for management.",
-        "detail": "References the business_units table.",
-        "generator_expr": "uuid_gen()"
-      },
-      {
-        "name": "purpose_type",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Portfolio purpose classification.",
-        "detail": "References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).",
-        "generator_expr": "std::string(\"Risk\")"
-      },
-      {
-        "name": "aggregation_ccy",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Currency for P&L/risk aggregation at this node.",
-        "detail": "ISO 4217 currency code.",
-        "generator_expr": "std::string(\"USD\")"
-      },
-      {
-        "name": "is_virtual",
-        "type": "integer",
-        "cpp_type": "int",
-        "nullable": false,
-        "description": "If 1, node is purely for on-demand reporting.",
-        "detail": "Not persisted in trade attribution when virtual.",
-        "generator_expr": "0"
-      }
-    ],
-
-    "sql": {
-      "tablename": "ores_refdata_portfolios_tbl"
-    },
-
-    "repository": {
-      "entity_singular_short": "portfolio",
-      "entity_plural_short": "portfolios",
-      "entity_singular_words": "portfolio",
-      "entity_plural_words": "portfolios"
-    },
-
-    "cpp": {
-      "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
-      },
-      "iterator_var": "pf",
-      "table_display": [
-        {"column": "name", "header": "Name"},
-        {"column": "purpose_type", "header": "Purpose"},
-        {"column": "aggregation_ccy", "header": "Currency"},
-        {"column": "is_virtual", "header": "Virtual"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
-      ]
-    },
-
-    "qt": {
-      "domain_include": "ores.refdata/domain/portfolio.hpp",
-      "domain_class": "refdata::domain::portfolio",
-      "protocol_include": "ores.refdata/messaging/portfolio_protocol.hpp",
-      "collection_name": "portfolios",
-      "item_var": "portfolio",
-      "key_field": "name",
-      "has_uuid_primary_key": true,
-      "get_request_class": "refdata::messaging::get_portfolios_request",
-      "get_response_class": "refdata::messaging::get_portfolios_response",
-      "get_message_type": "get_portfolios_request",
-      "save_request_class": "refdata::messaging::save_portfolio_request",
-      "save_response_class": "refdata::messaging::save_portfolio_response",
-      "save_message_type": "save_portfolio_request",
-      "save_request_item_field": "portfolio",
-      "delete_request_class": "refdata::messaging::delete_portfolio_request",
-      "delete_response_class": "refdata::messaging::delete_portfolio_response",
-      "delete_message_type": "delete_portfolio_request",
-      "history_request_class": "refdata::messaging::get_portfolio_history_request",
-      "history_response_class": "refdata::messaging::get_portfolio_history_response",
-      "history_message_type": "get_portfolio_history_request",
-      "detail_fields": [
-        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit", "is_key": true, "is_required": true, "placeholder": "Enter portfolio name"},
-        {"field": "purpose_type", "label": "Purpose Type", "widget": "purposeTypeEdit", "type": "line_edit", "placeholder": "Enter purpose type"},
-        {"field": "aggregation_ccy", "label": "Aggregation Currency", "widget": "aggregationCcyEdit", "type": "line_edit", "placeholder": "Enter aggregation currency"}
-      ],
-      "columns": [
-        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 250},
-        {"enum_name": "PurposeType", "field": "purpose_type", "header": "Purpose", "is_string": true, "width": 120},
-        {"enum_name": "AggregationCcy", "field": "aggregation_ccy", "header": "Agg. Currency", "is_string": true, "width": 120},
-        {"enum_name": "IsVirtual", "field": "is_virtual", "header": "Virtual", "is_int": true, "width": 70},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
-      ],
-      "settings_group": "PortfolioListWindow",
-      "window_title": "Portfolios",
-      "icon": "Folder"
+    "domain_entity": {
+        "schema": "public",
+        "product": "ores",
+        "component": "refdata",
+        "component_include": "refdata.api",
+        "component_core": "refdata.core",
+        "has_tenant_id": true,
+        "has_workspace_id": true,
+        "entity_singular": "portfolio",
+        "entity_plural": "portfolios",
+        "entity_title": "Portfolio",
+        "brief": "Logical aggregation node for risk and reporting.",
+        "description": "Represents organizational, risk, or reporting groupings.\nNever holds trades directly. Supports hierarchical structure\nvia self-referencing parent_portfolio_id.",
+        "primary_key": {
+            "column": "id",
+            "type": "uuid",
+            "cpp_type": "boost::uuids::uuid",
+            "description": "UUID uniquely identifying this portfolio.",
+            "detail": "Surrogate key for the portfolio record."
+        },
+        "natural_keys": [
+            {
+                "column": "party_id",
+                "type": "uuid",
+                "cpp_type": "boost::uuids::uuid",
+                "description": "Party that owns this portfolio.",
+                "detail": "Set server-side from the authenticated session. Enforced by RLS.",
+                "generator_expr": "ctx.generate_uuid()"
+            },
+            {
+                "column": "name",
+                "type": "text",
+                "cpp_type": "std::string",
+                "description": "Human-readable name for the portfolio.",
+                "detail": "e.g., 'Global Rates', 'APAC Credit'.",
+                "generator_expr": "std::string(faker::company::companyName()) + \" Portfolio\""
+            }
+        ],
+        "columns": [
+            {
+                "name": "description",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Optional free-text description of the portfolio.",
+                "generator_expr": "std::string(faker::lorem::sentence())"
+            },
+            {
+                "name": "parent_portfolio_id",
+                "type": "uuid",
+                "cpp_type": "std::optional<boost::uuids::uuid>",
+                "nullable": true,
+                "description": "Self-referencing FK. NULL indicates a root node.",
+                "detail": "Links to the parent portfolio in the hierarchy.",
+                "generator_expr": "boost::uuids::uuid()"
+            },
+            {
+                "name": "owner_unit_id",
+                "type": "uuid",
+                "cpp_type": "std::optional<boost::uuids::uuid>",
+                "nullable": true,
+                "description": "Business unit responsible for management.",
+                "detail": "References the business_units table.",
+                "generator_expr": "ctx.generate_uuid()"
+            },
+            {
+                "name": "purpose_type",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Portfolio purpose classification.",
+                "detail": "References purpose_types lookup (Risk, Regulatory, ClientReporting, Internal).",
+                "generator_expr": "std::string(\"Risk\")"
+            },
+            {
+                "name": "aggregation_ccy",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Currency for P&L/risk aggregation at this node.",
+                "detail": "ISO 4217 currency code.",
+                "generator_expr": "std::string(\"USD\")"
+            },
+            {
+                "name": "is_virtual",
+                "type": "integer",
+                "cpp_type": "int",
+                "nullable": false,
+                "description": "If 1, node is purely for on-demand reporting.",
+                "detail": "Not persisted in trade attribution when virtual.",
+                "generator_expr": "0"
+            },
+            {
+                "name": "status",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Current lifecycle status (Active, Inactive, Closed).",
+                "generator_expr": "std::string(\"Active\")"
+            }
+        ],
+        "sql": {
+            "tablename": "ores_refdata_portfolios_tbl"
+        },
+        "repository": {
+            "entity_singular_short": "portfolio",
+            "entity_plural_short": "portfolios",
+            "entity_singular_words": "portfolio",
+            "entity_plural_words": "portfolios"
+        },
+        "cpp": {
+            "includes": {
+                "domain": [
+                    "<chrono>",
+                    "<optional>",
+                    "<string>",
+                    "<boost/uuid/uuid.hpp>"
+                ],
+                "entity": [
+                    "<string>",
+                    "\"sqlgen/Timestamp.hpp\"",
+                    "\"sqlgen/PrimaryKey.hpp\""
+                ]
+            },
+            "iterator_var": "pf",
+            "table_display": [
+                {
+                    "column": "name",
+                    "header": "Name"
+                },
+                {
+                    "column": "purpose_type",
+                    "header": "Purpose"
+                },
+                {
+                    "column": "aggregation_ccy",
+                    "header": "Currency"
+                },
+                {
+                    "column": "is_virtual",
+                    "header": "Virtual"
+                },
+                {
+                    "column": "modified_by",
+                    "header": "Modified By"
+                },
+                {
+                    "column": "version",
+                    "header": "Version"
+                }
+            ]
+        },
+        "qt": {
+            "domain_include": "ores.refdata/domain/portfolio.hpp",
+            "domain_class": "refdata::domain::portfolio",
+            "protocol_include": "ores.refdata/messaging/portfolio_protocol.hpp",
+            "collection_name": "portfolios",
+            "item_var": "portfolio",
+            "key_field": "name",
+            "has_uuid_primary_key": true,
+            "get_request_class": "refdata::messaging::get_portfolios_request",
+            "get_response_class": "refdata::messaging::get_portfolios_response",
+            "get_message_type": "get_portfolios_request",
+            "save_request_class": "refdata::messaging::save_portfolio_request",
+            "save_response_class": "refdata::messaging::save_portfolio_response",
+            "save_message_type": "save_portfolio_request",
+            "save_request_item_field": "portfolio",
+            "delete_request_class": "refdata::messaging::delete_portfolio_request",
+            "delete_response_class": "refdata::messaging::delete_portfolio_response",
+            "delete_message_type": "delete_portfolio_request",
+            "history_request_class": "refdata::messaging::get_portfolio_history_request",
+            "history_response_class": "refdata::messaging::get_portfolio_history_response",
+            "history_message_type": "get_portfolio_history_request",
+            "detail_fields": [
+                {
+                    "field": "name",
+                    "label": "Name",
+                    "widget": "nameEdit",
+                    "type": "line_edit",
+                    "is_key": true,
+                    "is_required": true,
+                    "placeholder": "Enter portfolio name"
+                },
+                {
+                    "field": "purpose_type",
+                    "label": "Purpose Type",
+                    "widget": "purposeTypeEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter purpose type"
+                },
+                {
+                    "field": "aggregation_ccy",
+                    "label": "Aggregation Currency",
+                    "widget": "aggregationCcyEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter aggregation currency"
+                }
+            ],
+            "columns": [
+                {
+                    "enum_name": "Name",
+                    "field": "name",
+                    "header": "Name",
+                    "is_string": true,
+                    "width": 250
+                },
+                {
+                    "enum_name": "PurposeType",
+                    "field": "purpose_type",
+                    "header": "Purpose",
+                    "is_string": true,
+                    "width": 120
+                },
+                {
+                    "enum_name": "AggregationCcy",
+                    "field": "aggregation_ccy",
+                    "header": "Agg. Currency",
+                    "is_string": true,
+                    "width": 120
+                },
+                {
+                    "enum_name": "IsVirtual",
+                    "field": "is_virtual",
+                    "header": "Virtual",
+                    "is_int": true,
+                    "width": 70
+                },
+                {
+                    "enum_name": "Version",
+                    "field": "version",
+                    "header": "Version",
+                    "is_int": true,
+                    "width": 80
+                },
+                {
+                    "enum_name": "ModifiedBy",
+                    "field": "modified_by",
+                    "header": "Modified By",
+                    "is_string": true,
+                    "width": 120
+                },
+                {
+                    "enum_name": "RecordedAt",
+                    "field": "recorded_at",
+                    "header": "Recorded At",
+                    "is_timestamp": true,
+                    "width": 150
+                }
+            ],
+            "settings_group": "PortfolioListWindow",
+            "window_title": "Portfolios",
+            "icon": "Folder"
+        }
     }
-  }
 }

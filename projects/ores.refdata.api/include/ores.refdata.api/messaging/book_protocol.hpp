@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_MESSAGING_BOOK_PROTOCOL_HPP
-#define ORES_REFDATA_API_MESSAGING_BOOK_PROTOCOL_HPP
+#ifndef ORES_REFDATA_MESSAGING_BOOK_PROTOCOL_HPP
+#define ORES_REFDATA_MESSAGING_BOOK_PROTOCOL_HPP
 
 #include <string>
 #include <vector>
@@ -28,19 +28,21 @@ namespace ores::refdata::messaging {
 
 struct get_books_request {
     using response_type = struct get_books_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.books.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.books.list";
 };
 
 struct get_books_response {
     std::vector<ores::refdata::domain::book> books;
     int total_available_count = 0;
+    bool success = true;
+    std::string message;
 };
 
 struct save_book_request {
     using response_type = struct save_book_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.books.save";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.books.save";
     ores::refdata::domain::book data;
 };
 
@@ -51,7 +53,8 @@ struct save_book_response {
 
 struct delete_book_request {
     using response_type = struct delete_book_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.books.delete";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.books.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,14 +65,15 @@ struct delete_book_response {
 
 struct get_book_history_request {
     using response_type = struct get_book_history_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.books.history";
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.books.history";
     std::string id;
 };
 
 struct get_book_history_response {
+    std::vector<ores::refdata::domain::book> books;
     bool success = false;
     std::string message;
-    std::vector<ores::refdata::domain::book> versions;
 };
 
 }

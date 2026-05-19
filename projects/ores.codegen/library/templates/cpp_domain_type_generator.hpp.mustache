@@ -4,6 +4,7 @@
 #define ORES_{{component_upper}}_{{generator_facet_name_upper}}_{{entity_singular_upper}}_GENERATOR_HPP
 
 #include <vector>
+#include "ores.{{component_include}}/export.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -12,13 +13,13 @@ namespace ores::{{component}}::{{generator_facet_name}} {
 /**
  * @brief Generates a synthetic {{entity_singular}}.
  */
-domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
+ORES_{{component_include_upper}}_EXPORT domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic {{entity_plural}}.
  */
-std::vector<domain::{{entity_singular}}>
+ORES_{{component_include_upper}}_EXPORT std::vector<domain::{{entity_singular}}>
 generate_synthetic_{{entity_plural}}(std::size_t n,
     utility::generation::generation_context& ctx);
 

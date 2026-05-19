@@ -46,11 +46,23 @@ struct vanilla_swap_instrument final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+
+    /**
      * @brief UUID uniquely identifying this vanilla swap instrument.
      *
      * Surrogate key for the instrument record.
      */
     boost::uuids::uuid instrument_id;
+
+    /**
+     * @brief Trade type code (soft FK to ores_trading_trade_types_tbl).
+     */
+    std::string trade_type_code;
 
     /**
      * @brief Party that owns this instrument.
@@ -85,7 +97,7 @@ struct vanilla_swap_instrument final {
      *
      * Number of business days between execution and effective date.
      */
-    std::optional<int> settlement_lag = std::nullopt;
+    std::optional<int> settlement_lag;
 
     /**
      * @brief Optional netting set identifier.

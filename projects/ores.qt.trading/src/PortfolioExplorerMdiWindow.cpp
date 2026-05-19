@@ -348,7 +348,6 @@ void PortfolioExplorerMdiWindow::doReload() {
                                 .error_message = "Model destroyed"};
 
                     refdata::messaging::get_books_request req;
-                    req.limit = 1000;
                     BOOST_LOG_SEV(lg(), info) << "DIAG: books sending NATS request";
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));

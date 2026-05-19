@@ -21,8 +21,8 @@
 #define ORES_REFDATA_GENERATORS_CDS_CONVENTION_GENERATOR_HPP
 
 #include <vector>
-#include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {

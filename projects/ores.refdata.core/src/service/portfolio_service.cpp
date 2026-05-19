@@ -30,27 +30,17 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 portfolio_service::portfolio_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx) {}
 
 std::vector<domain::portfolio> portfolio_service::list_portfolios() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all portfolios";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_);
 }
 
 std::optional<domain::portfolio>
 portfolio_service::find_portfolio(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding portfolio: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
-}
-
-std::optional<domain::portfolio>
-portfolio_service::find_portfolio_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding portfolio by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty()) {
         return std::nullopt;
     }
@@ -64,7 +54,7 @@ void portfolio_service::save_portfolio(const domain::portfolio& portfolio) {
     BOOST_LOG_SEV(lg(), debug) << "Saving portfolio: " << portfolio.id;
     auto p = portfolio;
     stamp(p, ctx_);
-    repo_.write(p);
+    repo_.write(ctx_, p);
     BOOST_LOG_SEV(lg(), info) << "Saved portfolio: " << portfolio.id;
 }
 
@@ -78,19 +68,19 @@ void portfolio_service::save_portfolios(
     auto stamped = portfolios;
     for (auto& p : stamped)
         stamp(p, ctx_);
-    repo_.write(stamped);
+    repo_.write(ctx_, stamped);
 }
 
-void portfolio_service::remove_portfolio(const boost::uuids::uuid& id) {
+void portfolio_service::remove_portfolio(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed portfolio: " << id;
 }
 
 std::vector<domain::portfolio>
-portfolio_service::get_portfolio_history(const boost::uuids::uuid& id) {
+portfolio_service::get_portfolio_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, id);
 }
 
 }

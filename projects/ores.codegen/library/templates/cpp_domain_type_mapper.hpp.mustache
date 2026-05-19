@@ -6,13 +6,14 @@
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
 
 /**
  * @brief Maps {{entity_singular}} domain entities to data storage layer and vice-versa.
  */
-class {{entity_singular}}_mapper {
+class ORES_{{component_core_upper}}_EXPORT {{entity_singular}}_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.{{component}}.repository.{{entity_singular}}_mapper";
@@ -43,13 +44,14 @@ public:
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.{{component_core}}/export.hpp"
 
 namespace ores::{{component}}::repository {
 
 /**
  * @brief Maps {{name_singular}} domain entities to data storage layer and vice-versa.
  */
-class {{name_singular}}_mapper {
+class ORES_{{component_core_upper}}_EXPORT {{name_singular}}_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.{{component}}.repository.{{name_singular}}_mapper";

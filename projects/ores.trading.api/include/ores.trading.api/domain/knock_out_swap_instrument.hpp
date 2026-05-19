@@ -46,11 +46,23 @@ struct knock_out_swap_instrument final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+
+    /**
      * @brief UUID uniquely identifying this knock-out swap instrument.
      *
      * Surrogate key for the instrument record.
      */
     boost::uuids::uuid instrument_id;
+
+    /**
+     * @brief Trade type code (soft FK to ores_trading_trade_types_tbl).
+     */
+    std::string trade_type_code;
 
     /**
      * @brief Party that owns this instrument.
@@ -88,9 +100,9 @@ struct knock_out_swap_instrument final {
     double barrier_level = 0.0;
 
     /**
-     * @brief Barrier type: UpOut or DownOut.
+     * @brief Barrier type: UpAndOut or DownAndOut.
      *
-     * UpOut knocks out when rate rises above barrier; DownOut when it falls below.
+     * UpAndOut knocks out when rate rises above barrier; DownAndOut when it falls below.
      */
     std::string barrier_type;
 

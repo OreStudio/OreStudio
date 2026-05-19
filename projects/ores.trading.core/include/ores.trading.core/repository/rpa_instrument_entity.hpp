@@ -37,6 +37,7 @@ struct rpa_instrument_entity {
 
     sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     std::string party_id;
     std::optional<std::string> trade_id;
@@ -44,7 +45,7 @@ struct rpa_instrument_entity {
     std::string maturity_date;
     std::string reference_counterparty;
     double participation_rate = 0.0;
-    std::optional<double> protection_fee = std::nullopt;
+    std::optional<double> protection_fee;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

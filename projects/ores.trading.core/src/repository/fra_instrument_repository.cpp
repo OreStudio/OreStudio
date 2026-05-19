@@ -54,8 +54,9 @@ std::vector<domain::fra_instrument>
 fra_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fra_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<fra_instrument_entity, domain::fra_instrument>(
@@ -69,8 +70,9 @@ fra_instrument_repository::read_latest(context ctx, const std::string& instrumen
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FRA instrument. instrument_id: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fra_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<fra_instrument_entity, domain::fra_instrument>(
         ctx, query,
@@ -82,8 +84,9 @@ std::vector<domain::fra_instrument>
 fra_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FRA instrument versions. instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fra_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
         order_by("version"_c.desc());
 
     return execute_read_query<fra_instrument_entity, domain::fra_instrument>(
@@ -96,26 +99,28 @@ void fra_instrument_repository::remove(context ctx, const std::string& instrumen
     BOOST_LOG_SEV(lg(), debug) << "Removing FRA instrument: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<fra_instrument_entity> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing FRA instrument from database.");
 }
 
-
 std::vector<domain::fra_instrument>
 fra_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty()) return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty()) return {};
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fra_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "instrument_id"_c.in(instrument_ids)
               && "valid_to"_c == max.value());
     return execute_read_query<fra_instrument_entity, domain::fra_instrument>(
         ctx, query,
         [](const auto& entities) { return fra_instrument_mapper::map(entities); },
-        lg(), "Reading latest fra_instruments by ids.");
+        lg(), "Reading latest FRA instruments by ids.");
 }
 
 }

@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_PORTFOLIO_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_PORTFOLIO_GENERATOR_HPP
+#ifndef ORES_REFDATA_GENERATORS_PORTFOLIO_GENERATOR_HPP
+#define ORES_REFDATA_GENERATORS_PORTFOLIO_GENERATOR_HPP
 
 #include <vector>
-#include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {

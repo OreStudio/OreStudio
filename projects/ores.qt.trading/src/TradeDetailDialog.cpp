@@ -210,8 +210,6 @@ void TradeDetailDialog::loadBooks() {
     watcher->setFuture(QtConcurrent::run([self]() -> BooksResult {
         if (!self || !self->clientManager_) return {false, {}};
         refdata::messaging::get_books_request req;
-        req.offset = 0;
-        req.limit = 1000;
         auto r = self->clientManager_->process_authenticated_request(std::move(req));
         if (!r) return {false, {}};
         return {true, std::move(r->books)};

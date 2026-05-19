@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BOOK_TABLE_IO_HPP
-#define ORES_REFDATA_API_DOMAIN_BOOK_TABLE_IO_HPP
+#ifndef ORES_REFDATA_DOMAIN_BOOK_TABLE_IO_HPP
+#define ORES_REFDATA_DOMAIN_BOOK_TABLE_IO_HPP
 
 #include <iosfwd>
 #include <vector>

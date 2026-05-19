@@ -20,7 +20,6 @@
 #include "ores.refdata.core/repository/book_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.refdata.api/domain/book_json_io.hpp" // IWYU pragma: keep.
@@ -38,89 +37,73 @@ std::string book_repository::sql() {
     return generate_create_table_sql<book_entity>(lg());
 }
 
-book_repository::book_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void book_repository::write(const domain::book& book) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing book to database: "
-                               << book.id;
-    execute_write_query(ctx_, book_mapper::map(book),
-        lg(), "writing book to database");
+void book_repository::write(context ctx, const domain::book& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing book: " << v.id;
+    execute_write_query(ctx, book_mapper::map(v),
+        lg(), "Writing book to database.");
 }
 
 void book_repository::write(
-    const std::vector<domain::book>& books) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing books to database. Count: "
-                               << books.size();
-    execute_write_query(ctx_, book_mapper::map(books),
-        lg(), "writing books to database");
+    context ctx, const std::vector<domain::book>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing books. Count: " << v.size();
+    execute_write_query(ctx, book_mapper::map(v),
+        lg(), "Writing books to database.");
 }
 
 std::vector<domain::book>
-book_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+book_repository::read_latest(context ctx) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<book_entity, domain::book>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return book_mapper::map(entities); },
         lg(), "Reading latest books");
 }
 
 std::vector<domain::book>
-book_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book. Id: " << id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::uuids::to_string(id);
+book_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book. id: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<book_entity, domain::book>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return book_mapper::map(entities); },
         lg(), "Reading latest book by id.");
 }
 
 std::vector<domain::book>
-book_repository::read_latest_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book. Code: " << code;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+book_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all book versions. id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
-        where("name"_c == code && "valid_to"_c == max.value());
-
-    return execute_read_query<book_entity, domain::book>(
-        ctx_, query,
-        [](const auto& entities) { return book_mapper::map(entities); },
-        lg(), "Reading latest book by code.");
-}
-
-std::vector<domain::book>
-book_repository::read_all(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all book versions. Id: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<book_entity>> |
-        where("id"_c == id_str) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
         order_by("version"_c.desc());
 
     return execute_read_query<book_entity, domain::book>(
-        ctx_, query,
+        ctx, query,
         [](const auto& entities) { return book_mapper::map(entities); },
         lg(), "Reading all book versions by id.");
 }
 
-void book_repository::remove(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book from database: " << id;
-
-    const auto id_str = boost::uuids::to_string(id);
+void book_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<book_entity> |
-        where("id"_c == id_str);
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx_, query, lg(), "removing book from database");
+    execute_delete_query(ctx, query, lg(), "Removing book from database.");
 }
 
 }

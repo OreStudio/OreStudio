@@ -22,6 +22,9 @@ struct {{entity_singular}}_entity {
 {{#has_tenant_id}}
     std::string tenant_id;
 {{/has_tenant_id}}
+{{#has_workspace_id}}
+    std::string workspace_id;
+{{/has_workspace_id}}
     int version = 0;
 {{#natural_keys}}
     std::string {{column}};

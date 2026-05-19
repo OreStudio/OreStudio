@@ -52,10 +52,11 @@ void trade_identifier_repository::write(
 
 std::vector<domain::trade_identifier>
 trade_identifier_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
@@ -67,10 +68,11 @@ trade_identifier_repository::read_latest(context ctx) {
 std::vector<domain::trade_identifier>
 trade_identifier_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. id: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx, query,
@@ -82,8 +84,9 @@ std::vector<domain::trade_identifier>
 trade_identifier_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
         order_by("version"_c.desc());
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
@@ -94,10 +97,11 @@ trade_identifier_repository::read_all(context ctx, const std::string& id) {
 
 void trade_identifier_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<trade_identifier_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing trade identifier from database.");
 }

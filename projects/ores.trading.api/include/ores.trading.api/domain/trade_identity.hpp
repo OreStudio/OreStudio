@@ -44,6 +44,13 @@ struct trade_identity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+
+    /**
      * @brief UUID surrogate key for this trade record.
      */
     boost::uuids::uuid id;

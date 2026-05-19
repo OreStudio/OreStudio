@@ -17,26 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generators/callable_swap_instrument_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::lifecycle_event generate_synthetic_lifecycle_event(
+domain::callable_swap_instrument generate_synthetic_callable_swap_instrument(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
-    domain::lifecycle_event r;
+    domain::callable_swap_instrument r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter);
-    r.description = std::string(faker::lorem::sentence());
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
+    r.workspace_id = utility::uuid::live_workspace_id();
+    r.instrument_id = ctx.generate_uuid();
+    r.trade_type_code = std::string("CallableSwap");
+    r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.maturity_date = std::string("2029-01-15");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -45,13 +55,13 @@ domain::lifecycle_event generate_synthetic_lifecycle_event(
     return r;
 }
 
-std::vector<domain::lifecycle_event>
-generate_synthetic_lifecycle_events(std::size_t n,
+std::vector<domain::callable_swap_instrument>
+generate_synthetic_callable_swap_instruments(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::lifecycle_event> r;
+    std::vector<domain::callable_swap_instrument> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_lifecycle_event(ctx));
+        r.push_back(generate_synthetic_callable_swap_instrument(ctx));
     return r;
 }
 

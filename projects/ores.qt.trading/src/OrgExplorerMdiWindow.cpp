@@ -288,7 +288,6 @@ void OrgExplorerMdiWindow::doReload() {
                                 .error_details = {}};
 
                     refdata::messaging::get_books_request req;
-                    req.limit = 10'000;
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
                     if (!result)

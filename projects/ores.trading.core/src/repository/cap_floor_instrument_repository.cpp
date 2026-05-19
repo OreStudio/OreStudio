@@ -54,8 +54,9 @@ std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
@@ -69,8 +70,9 @@ cap_floor_instrument_repository::read_latest(context ctx, const std::string& ins
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cap/floor instrument. instrument_id: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
         ctx, query,
@@ -82,8 +84,9 @@ std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all cap/floor instrument versions. instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
         order_by("version"_c.desc());
 
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
@@ -96,26 +99,28 @@ void cap_floor_instrument_repository::remove(context ctx, const std::string& ins
     BOOST_LOG_SEV(lg(), debug) << "Removing cap/floor instrument: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<cap_floor_instrument_entity> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing cap/floor instrument from database.");
 }
 
-
 std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty()) return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty()) return {};
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cap_floor_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "instrument_id"_c.in(instrument_ids)
               && "valid_to"_c == max.value());
     return execute_read_query<cap_floor_instrument_entity, domain::cap_floor_instrument>(
         ctx, query,
         [](const auto& entities) { return cap_floor_instrument_mapper::map(entities); },
-        lg(), "Reading latest cap_floor_instruments by ids.");
+        lg(), "Reading latest cap/floor instruments by ids.");
 }
 
 }

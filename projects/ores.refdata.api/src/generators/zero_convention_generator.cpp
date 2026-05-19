@@ -22,6 +22,7 @@
 #include <atomic>
 #include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
@@ -33,9 +34,14 @@ domain::zero_convention generate_synthetic_zero_convention(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::zero_convention r;
     r.version = 1;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = std::string("EUR-ZERO-CONVENTIONS") + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.tenor_based = true;
@@ -49,7 +55,7 @@ domain::zero_convention generate_synthetic_zero_convention(
     r.end_of_month = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

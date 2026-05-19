@@ -35,24 +35,26 @@ book_mapper::map(const book_entity& v) {
 
     domain::book r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
-    r.description = v.description;
+    r.description = v.description.value_or("");
     r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_portfolio_id);
-    if (v.owner_unit_id.has_value() && !v.owner_unit_id->empty())
-        r.owner_unit_id = boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id);
+    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) : std::nullopt;
     r.ledger_ccy = v.ledger_ccy;
-    r.gl_account_ref = v.gl_account_ref;
-    r.cost_center = v.cost_center;
+    r.gl_account_ref = v.gl_account_ref.value_or("");
+    r.cost_center = v.cost_center.value_or("");
     r.book_status = v.book_status;
     r.is_trading_book = v.is_trading_book;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -64,17 +66,17 @@ book_mapper::map(const domain::book& v) {
 
     book_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
-    r.description = v.description;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.parent_portfolio_id = boost::uuids::to_string(v.parent_portfolio_id);
-    if (v.owner_unit_id)
-        r.owner_unit_id = boost::uuids::to_string(*v.owner_unit_id);
+    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::uuids::to_string(*v.owner_unit_id)) : std::nullopt;
     r.ledger_ccy = v.ledger_ccy;
-    r.gl_account_ref = v.gl_account_ref;
-    r.cost_center = v.cost_center;
+    r.gl_account_ref = v.gl_account_ref.empty() ? std::nullopt : std::optional(v.gl_account_ref);
+    r.cost_center = v.cost_center.empty() ? std::nullopt : std::optional(v.cost_center);
     r.book_status = v.book_status;
     r.is_trading_book = v.is_trading_book;
     r.modified_by = v.modified_by;

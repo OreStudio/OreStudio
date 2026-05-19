@@ -1,136 +1,150 @@
 {
-  "domain_entity": {
-    "schema": "public",
-    "product": "ores",
-    "component": "trading",
-    "component_include": "trading.api",
-    "component_core": "trading.core",
-    "entity_singular": "inflation_swap_instrument",
-    "entity_plural": "inflation_swap_instruments",
-    "entity_title": "Inflation Swap Instrument",
-    "has_tenant_id": true,
-    "has_workspace_id": true,
-    "generator_facet_name": "generators",
-    "brief": "Inflation-linked interest rate swap instrument.",
-    "description": "Represents an inflation-linked swap where one leg pays a fixed or floating\nrate and the other is linked to an inflation index (e.g., CPI, RPI).",
-    "primary_key": {
-      "column": "instrument_id",
-      "type": "uuid",
-      "cpp_type": "boost::uuids::uuid",
-      "description": "UUID uniquely identifying this inflation swap instrument.",
-      "detail": "Surrogate key for the instrument record.",
-      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
-    },
-    "columns": [
-      {
-        "name": "trade_type_code",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Trade type code (soft FK to ores_trading_trade_types_tbl).",
-        "generator_expr": "std::string(\"ZeroCouponInflationSwap\")"
-      },
-      {
-        "name": "party_id",
-        "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
-        "nullable": false,
-        "description": "Party that owns this instrument.",
-        "detail": "Set from session variable app.current_party_id."
-      },
-      {
-        "name": "trade_id",
-        "type": "uuid",
-        "cpp_type": "std::optional<boost::uuids::uuid>",
-        "nullable": true,
-        "description": "Optional soft FK to the parent trade.",
-        "detail": "Links instrument to a trade if applicable."
-      },
-      {
-        "name": "start_date",
-        "type": "date",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Swap effective start date.",
-        "detail": "ISO 8601 date string (YYYY-MM-DD)."
-      },
-      {
-        "name": "maturity_date",
-        "type": "date",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Swap maturity date.",
-        "detail": "Must be after start_date."
-      },
-      {
-        "name": "inflation_index_code",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Inflation index code.",
-        "detail": "e.g., UKRPI, USCPI, EUHICPXT."
-      },
-      {
-        "name": "base_cpi",
-        "type": "numeric(18, 10)",
-        "cpp_type": "std::optional<double>",
-        "nullable": true,
-        "description": "Optional base CPI value at inception.",
-        "detail": "Used to calculate the inflation accrual. Must be positive if set."
-      },
-      {
-        "name": "lag_convention",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Optional CPI lag convention.",
-        "detail": "e.g., 3M, 2M. Specifies the publication lag for the inflation index."
-      },
-      {
-        "name": "description",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Optional free-text description.",
-        "detail": "Human-readable notes about this instrument."
-      }
-    ],
-    "sql": {
-      "tablename": "ores_trading_inflation_swap_instruments_tbl",
-      "security_definer": true,
-      "party_id_from_session": true,
-      "extra_checks": [
-        "\"maturity_date\" > \"start_date\"",
-        "\"inflation_index_code\" <> ''",
-        "\"base_cpi\" is null or \"base_cpi\" > 0"
-      ]
-    },
-    "validations": [
-      {
-        "column": "trade_type_code",
-        "validation_function": "ores_trading_validate_trade_type_fn"
-      }
-    ],
-    "indexes": [
-      {"name": "party", "columns": "tenant_id, party_id", "current_only": true},
-      {"unique": true, "name": "trade_id", "columns": "tenant_id, trade_id", "current_only": true, "where_extra": "trade_id is not null"}
-    ],
-    "repository": {
-      "entity_singular_short": "inflation_swap_instrument",
-      "entity_plural_short": "inflation_swap_instruments",
-      "entity_singular_words": "inflation swap instrument",
-      "entity_plural_words": "inflation swap instruments"
-    },
-    "cpp": {
-      "includes": {
-        "domain": [
-          "<chrono>",
-          "<optional>",
-          "<string>",
-          "<boost/uuid/uuid.hpp>"
-        ]
-      },
-      "iterator_var": "is"
+    "domain_entity": {
+        "schema": "public",
+        "product": "ores",
+        "component": "trading",
+        "component_include": "trading.api",
+        "component_core": "trading.core",
+        "entity_singular": "inflation_swap_instrument",
+        "entity_plural": "inflation_swap_instruments",
+        "entity_title": "Inflation Swap Instrument",
+        "has_tenant_id": true,
+        "has_workspace_id": true,
+        "has_batch_read": true,
+        "generator_facet_name": "generators",
+        "brief": "Inflation-linked interest rate swap instrument.",
+        "description": "Represents an inflation-linked swap where one leg pays a fixed or floating\nrate and the other is linked to an inflation index (e.g., CPI, RPI).",
+        "primary_key": {
+            "column": "instrument_id",
+            "type": "uuid",
+            "cpp_type": "boost::uuids::uuid",
+            "description": "UUID uniquely identifying this inflation swap instrument.",
+            "detail": "Surrogate key for the instrument record.",
+            "uuid_check_fn": "ores_utility_nil_uuid_fn()"
+        },
+        "columns": [
+            {
+                "name": "trade_type_code",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Trade type code (soft FK to ores_trading_trade_types_tbl).",
+                "generator_expr": "std::string(\"ZeroCouponInflationSwap\")"
+            },
+            {
+                "name": "party_id",
+                "type": "uuid",
+                "cpp_type": "boost::uuids::uuid",
+                "nullable": false,
+                "description": "Party that owns this instrument.",
+                "detail": "Set from session variable app.current_party_id."
+            },
+            {
+                "name": "trade_id",
+                "type": "uuid",
+                "cpp_type": "std::optional<boost::uuids::uuid>",
+                "nullable": true,
+                "description": "Optional soft FK to the parent trade.",
+                "detail": "Links instrument to a trade if applicable."
+            },
+            {
+                "name": "start_date",
+                "type": "date",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Swap effective start date.",
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2024-01-15\")"
+            },
+            {
+                "name": "maturity_date",
+                "type": "date",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Swap maturity date.",
+                "detail": "Must be after start_date.",
+                "generator_expr": "std::string(\"2034-01-15\")"
+            },
+            {
+                "name": "inflation_index_code",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Inflation index code.",
+                "detail": "e.g., UKRPI, USCPI, EUHICPXT.",
+                "generator_expr": "std::string(\"UKRPI\")"
+            },
+            {
+                "name": "base_cpi",
+                "type": "numeric(18, 10)",
+                "cpp_type": "std::optional<double>",
+                "nullable": true,
+                "description": "Optional base CPI value at inception.",
+                "detail": "Used to calculate the inflation accrual. Must be positive if set."
+            },
+            {
+                "name": "lag_convention",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Optional CPI lag convention.",
+                "detail": "e.g., 3M, 2M. Specifies the publication lag for the inflation index."
+            },
+            {
+                "name": "description",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Optional free-text description.",
+                "detail": "Human-readable notes about this instrument."
+            }
+        ],
+        "sql": {
+            "tablename": "ores_trading_inflation_swap_instruments_tbl",
+            "security_definer": true,
+            "party_id_from_session": true,
+            "extra_checks": [
+                "\"maturity_date\" > \"start_date\"",
+                "\"inflation_index_code\" <> ''",
+                "\"base_cpi\" is null or \"base_cpi\" > 0"
+            ]
+        },
+        "validations": [
+            {
+                "column": "trade_type_code",
+                "validation_function": "ores_trading_validate_trade_type_fn"
+            }
+        ],
+        "indexes": [
+            {
+                "name": "party",
+                "columns": "tenant_id, party_id",
+                "current_only": true
+            },
+            {
+                "unique": true,
+                "name": "trade_id",
+                "columns": "tenant_id, trade_id",
+                "current_only": true,
+                "where_extra": "trade_id is not null"
+            }
+        ],
+        "repository": {
+            "entity_singular_short": "inflation_swap_instrument",
+            "entity_plural_short": "inflation_swap_instruments",
+            "entity_singular_words": "inflation swap instrument",
+            "entity_plural_words": "inflation swap instruments"
+        },
+        "cpp": {
+            "includes": {
+                "domain": [
+                    "<chrono>",
+                    "<optional>",
+                    "<string>",
+                    "<boost/uuid/uuid.hpp>"
+                ]
+            },
+            "iterator_var": "is"
+        }
     }
-  }
 }

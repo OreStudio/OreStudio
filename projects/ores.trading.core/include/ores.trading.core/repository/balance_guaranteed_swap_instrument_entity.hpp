@@ -37,12 +37,14 @@ struct balance_guaranteed_swap_instrument_entity {
 
     sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
+    std::string trade_type_code;
     std::string party_id;
     std::optional<std::string> trade_id;
     std::string start_date;
     std::string maturity_date;
-    std::optional<int> lockout_days = std::nullopt;
+    std::optional<int> lockout_days;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "reporting",
+    "component_include": "reporting.api",
+    "component_core": "reporting.core",
     "entity_singular": "report_definition",
     "entity_plural": "report_definitions",
     "entity_title": "Report Definition",
@@ -48,7 +50,7 @@
         "cpp_type": "boost::uuids::uuid",
         "nullable": false,
         "description": "Party that owns this report definition.",
-        "generator_expr": "boost::uuids::random_generator()()"
+        "generator_expr": "ctx.generate_uuid()"
       },
       {
         "name": "description",
@@ -136,7 +138,14 @@
         "domain": ["<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
         "entity": ["<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"]
       },
-      "iterator_var": "rd"
+      "iterator_var": "rd",
+      "table_display": [
+        {"column": "id", "header": "ID", "is_uuid": true},
+        {"column": "name", "header": "Name"},
+        {"column": "report_type", "header": "Type"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
     },
 
     "qt": {

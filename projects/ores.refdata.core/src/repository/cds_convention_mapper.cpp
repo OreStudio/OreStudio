@@ -19,6 +19,8 @@
  */
 #include "ores.refdata.core/repository/cds_convention_mapper.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/cds_convention_json_io.hpp" // IWYU pragma: keep.
 
@@ -34,6 +36,7 @@ cds_convention_mapper::map(const cds_convention_entity& v) {
     domain::cds_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.settlement_days = v.settlement_days;
     r.calendar = v.calendar;
@@ -64,6 +67,7 @@ cds_convention_mapper::map(const domain::cds_convention& v) {
     cds_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.settlement_days = v.settlement_days;
     r.calendar = v.calendar;

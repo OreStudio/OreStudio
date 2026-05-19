@@ -36,7 +36,9 @@ balance_guaranteed_swap_instrument_mapper::map(const balance_guaranteed_swap_ins
     domain::balance_guaranteed_swap_instrument r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.trade_type_code = v.trade_type_code;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
     r.start_date = v.start_date;
@@ -62,7 +64,9 @@ balance_guaranteed_swap_instrument_mapper::map(const domain::balance_guaranteed_
     balance_guaranteed_swap_instrument_entity r;
     r.instrument_id = boost::uuids::to_string(v.instrument_id);
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.trade_type_code = v.trade_type_code;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.start_date = v.start_date;

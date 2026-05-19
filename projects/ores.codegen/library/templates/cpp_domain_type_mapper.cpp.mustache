@@ -21,8 +21,12 @@ domain::{{entity_singular}}
     domain::{{entity_singular}} r;
     r.version = v.version;
 {{#has_tenant_id}}
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
 {{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+{{/has_workspace_id}}
 {{#primary_key.is_text}}
     r.{{primary_key.column}} = v.{{primary_key.column}}.value();
 {{/primary_key.is_text}}
@@ -30,7 +34,12 @@ domain::{{entity_singular}}
     r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
 {{/primary_key.is_uuid}}
 {{#natural_keys}}
+{{#is_uuid}}
+    r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}});
+{{/is_uuid}}
+{{^is_uuid}}
     r.{{column}} = v.{{column}};
+{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{#is_uuid}}
@@ -78,9 +87,17 @@ domain::{{entity_singular}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id.to_string();
 {{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
+{{/has_workspace_id}}
     r.version = v.version;
 {{#natural_keys}}
+{{#is_uuid}}
+    r.{{column}} = boost::uuids::to_string(v.{{column}});
+{{/is_uuid}}
+{{^is_uuid}}
     r.{{column}} = v.{{column}};
+{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
 {{#is_uuid}}

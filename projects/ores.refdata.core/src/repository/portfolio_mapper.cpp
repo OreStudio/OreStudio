@@ -35,24 +35,25 @@ portfolio_mapper::map(const portfolio_entity& v) {
 
     domain::portfolio r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
-    r.description = v.description;
-    if (v.parent_portfolio_id.has_value() && !v.parent_portfolio_id->empty())
-        r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_portfolio_id);
-    if (v.owner_unit_id.has_value() && !v.owner_unit_id->empty())
-        r.owner_unit_id = boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id);
+    r.description = v.description.value_or("");
+    r.parent_portfolio_id = v.parent_portfolio_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_portfolio_id)) : std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) : std::nullopt;
     r.purpose_type = v.purpose_type;
-    r.aggregation_ccy = v.aggregation_ccy;
+    r.aggregation_ccy = v.aggregation_ccy.value_or("");
     r.is_virtual = v.is_virtual;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    if (!v.valid_from)
+        throw std::logic_error("Cannot map entity with null valid_from to domain object.");
+    r.recorded_at = timestamp_to_timepoint(*v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -64,17 +65,16 @@ portfolio_mapper::map(const domain::portfolio& v) {
 
     portfolio_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
-    r.description = v.description;
-    if (v.parent_portfolio_id)
-        r.parent_portfolio_id = boost::uuids::to_string(*v.parent_portfolio_id);
-    if (v.owner_unit_id)
-        r.owner_unit_id = boost::uuids::to_string(*v.owner_unit_id);
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.parent_portfolio_id = v.parent_portfolio_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_portfolio_id)) : std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::uuids::to_string(*v.owner_unit_id)) : std::nullopt;
     r.purpose_type = v.purpose_type;
-    r.aggregation_ccy = v.aggregation_ccy;
+    r.aggregation_ccy = v.aggregation_ccy.empty() ? std::nullopt : std::optional(v.aggregation_ccy);
     r.is_virtual = v.is_virtual;
     r.status = v.status;
     r.modified_by = v.modified_by;

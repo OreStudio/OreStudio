@@ -53,6 +53,7 @@ std::vector<domain::trade> read_trades_for_books(
     context ctx,
     const std::vector<std::string>& book_ids,
     const std::string& tid,
+    const std::string& wid,
     std::uint32_t offset,
     std::uint32_t limit,
     logging::logger_t& lg) {
@@ -61,8 +62,8 @@ std::vector<domain::trade> read_trades_for_books(
     std::vector<domain::trade> result;
     for (const auto& bid : book_ids) {
         const auto query = sqlgen::read<std::vector<trade_entity>> |
-            where("tenant_id"_c == tid && "valid_to"_c == max
-                  && "book_id"_c == bid) |
+            where("tenant_id"_c == tid && "workspace_id"_c == wid
+                  && "valid_to"_c == max && "book_id"_c == bid) |
             order_by("id"_c);
         auto batch = execute_read_query<trade_entity, domain::trade>(
             ctx, query,
@@ -86,6 +87,7 @@ std::uint32_t count_trades_for_books(
     context ctx,
     const std::vector<std::string>& book_ids,
     const std::string& tid,
+    const std::string& wid,
     logging::logger_t& lg) {
 
     const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
@@ -94,8 +96,8 @@ std::uint32_t count_trades_for_books(
     for (const auto& bid : book_ids) {
         const auto query = sqlgen::select_from<trade_entity>(
             sqlgen::count().as<"count">()) |
-            where("tenant_id"_c == tid && "valid_to"_c == max
-                  && "book_id"_c == bid) |
+            where("tenant_id"_c == tid && "workspace_id"_c == wid
+                  && "valid_to"_c == max && "book_id"_c == bid) |
             sqlgen::to<count_result>;
         const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
         ensure_success(r, lg);
@@ -125,10 +127,11 @@ void trade_repository::write(
 
 std::vector<domain::trade>
 trade_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<trade_entity, domain::trade>(
@@ -144,8 +147,9 @@ trade_repository::read_latest(context ctx, std::uint32_t offset,
                                << offset << " and limit: " << limit;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c) |
         sqlgen::offset(offset) |
         sqlgen::limit(limit);
@@ -160,6 +164,7 @@ std::uint32_t trade_repository::count_latest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Counting latest trades";
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
 
     struct count_result {
         long long count;
@@ -167,7 +172,7 @@ std::uint32_t trade_repository::count_latest(context ctx) {
 
     const auto query = sqlgen::select_from<trade_entity>(
         sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -215,13 +220,14 @@ trade_repository::read_latest_for_node(context ctx,
         return read_latest(ctx, offset, limit);
 
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto nid = boost::uuids::to_string(*node_id);
     BOOST_LOG_SEV(lg(), debug)
         << "Reading trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
         "ores_trading_get_book_ids_for_node_fn",
         tid, nid, lg(), "Fetching book IDs for node subtree");
-    return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
+    return read_trades_for_books(ctx, book_ids, tid, wid, offset, limit, lg());
 }
 
 std::uint32_t
@@ -232,12 +238,13 @@ trade_repository::count_latest_for_node(context ctx,
         return count_latest(ctx);
 
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto nid = boost::uuids::to_string(*node_id);
     BOOST_LOG_SEV(lg(), debug) << "Counting trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
         "ores_trading_get_book_ids_for_node_fn",
         tid, nid, lg(), "Fetching book IDs for node subtree");
-    return count_trades_for_books(ctx, book_ids, tid, lg());
+    return count_trades_for_books(ctx, book_ids, tid, wid, lg());
 }
 
 void trade_repository::remove(context ctx, const std::string& id) {

@@ -36,6 +36,7 @@ trade_identifier_mapper::map(const trade_identifier_entity& v) {
     domain::trade_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.issuing_party_id = v.issuing_party_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.issuing_party_id)) : std::nullopt;
@@ -61,6 +62,7 @@ trade_identifier_mapper::map(const domain::trade_identifier& v) {
     trade_identifier_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.trade_id = boost::uuids::to_string(v.trade_id);
     r.issuing_party_id = v.issuing_party_id.has_value() ? std::optional(boost::uuids::to_string(*v.issuing_party_id)) : std::nullopt;

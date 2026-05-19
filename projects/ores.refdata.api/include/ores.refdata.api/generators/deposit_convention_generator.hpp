@@ -21,8 +21,8 @@
 #define ORES_REFDATA_GENERATORS_DEPOSIT_CONVENTION_GENERATOR_HPP
 
 #include <vector>
-#include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {

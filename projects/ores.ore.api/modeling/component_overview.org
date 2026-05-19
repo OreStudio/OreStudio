@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 0f93b352-f234-4d9d-82e6-05218be645e8
+:END:
+#+title: ores.ore.api
+#+description: Domain types and NATS protocol schemas for the ORE integration component.
+#+type: component
+#+level: cross
+#+filetags: :ore:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.ore.api= is a header-only library defining the shared contract for the
+ORE integration domain. It provides domain types for ORE XML structures and
+mappings, and the NATS protocol schemas consumed by =ores.ore.core= and Qt
+clients that invoke ORE risk runs.
+
+* Inputs
+
+- Domain entity type definitions across =domain/= headers.
+
+* Outputs
+
+- C++ headers for ORE domain types with JSON I/O.
+- NATS protocol headers for ORE invocation and result operations.
+
+* Entry points
+
+- =include/ores.ore.api/domain/= — all domain entity headers.
+- =include/ores.ore.api/messaging/= — NATS protocol message headers.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+
+* See also
+
+- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE import/export logic and NATS handlers.

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: ef8fd20d-0b9c-4379-8bbd-b4fcf2f5f0c7
+:END:
+#+title: ores.ore.service
+#+description: NATS service entrypoint for the ORE integration domain.
+#+type: component
+#+level: cross
+#+filetags: :ore:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.ore.service= is the NATS service entrypoint for the ORE integration
+domain. It reads configuration, opens NATS connections, registers all message
+handlers from =ores.ore.core=, and runs the event loop.
+
+* Inputs
+
+- Configuration file: NATS server URL and environment settings.
+- NATS request messages for ORE XML operations.
+
+* Outputs
+
+- A running NATS service for ORE operations.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =src/main.cpp=, =src/app/=, =src/config/=.
+
+* Dependencies
+
+- =ores.ore.core=, =ores.ore.api=, =ores.logging=, =nats.c=.
+
+* See also
+
+- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — all ORE integration logic.

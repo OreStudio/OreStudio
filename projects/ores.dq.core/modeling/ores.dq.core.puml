@@ -1,0 +1,647 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.dq.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace dq #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class badge_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class change_management_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class coding_scheme_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class data_organization_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class dataset_bundle_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class dataset_bundle_member_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class dataset_dependency_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class dataset_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class dimension_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class fsm_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class lei_entity_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class publication_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class artefact_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +name : string
+                +description : optional<string>
+                +artefact_table : optional<string>
+                +target_table : optional<string>
+                +populate_function : optional<string>
+                +display_order : int
+            }
+            class artefact_type_mapper {
+            }
+            class artefact_type_repository {
+                -ctx_ : context
+            }
+            class badge_definition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +background_colour : string
+                +text_colour : string
+                +severity_code : string
+                +css_class : optional<string>
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class badge_definition_mapper {
+            }
+            class badge_definition_repository {
+            }
+            class badge_mapping_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code_domain_code : string
+                +tenant_id : string
+                +entity_code : string
+                +badge_code : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class badge_mapping_repository {
+                -ctx_ : context
+            }
+            class badge_severity_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class badge_severity_mapper {
+            }
+            class badge_severity_repository {
+            }
+            class catalog_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +name : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : string
+                +owner : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class catalog_mapper {
+            }
+            class catalog_repository {
+                -ctx_ : context
+            }
+            class change_reason_category_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class change_reason_category_mapper {
+            }
+            class change_reason_category_repository {
+                -ctx_ : context
+            }
+            class change_reason_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : string
+                +category_code : string
+                +applies_to_new : bool
+                +applies_to_amend : bool
+                +applies_to_delete : bool
+                +requires_commentary : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class change_reason_mapper {
+            }
+            class change_reason_repository {
+                -ctx_ : context
+            }
+            class code_domain_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class code_domain_mapper {
+            }
+            class code_domain_repository {
+            }
+            class coding_scheme_authority_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class coding_scheme_authority_type_mapper {
+            }
+            class coding_scheme_authority_type_repository {
+                -ctx_ : context
+            }
+            class coding_scheme_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +authority_type : string
+                +subject_area_name : string
+                +domain_name : string
+                +uri : optional<string>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class coding_scheme_mapper {
+            }
+            class coding_scheme_repository {
+                -ctx_ : context
+            }
+            class data_domain_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +name : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class data_domain_mapper {
+            }
+            class data_domain_repository {
+                -ctx_ : context
+            }
+            class dataset_bundle_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class dataset_bundle_mapper {
+            }
+            class dataset_bundle_member_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +bundle_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +dataset_code : string
+                +version : int
+                +display_order : int
+                +optional : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class dataset_bundle_member_mapper {
+            }
+            class dataset_bundle_member_repository {
+                -ctx_ : context
+            }
+            class dataset_bundle_repository {
+                -ctx_ : context
+            }
+            class dataset_dependency_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +dataset_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +dependency_code : string
+                +role : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class dataset_dependency_mapper {
+            }
+            class dataset_dependency_repository {
+                -ctx_ : context
+            }
+            class dataset_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +code : string
+                +catalog_name : optional<string>
+                +subject_area_name : string
+                +domain_name : string
+                +coding_scheme_code : optional<string>
+                +origin_code : string
+                +nature_code : string
+                +treatment_code : string
+                +methodology_id : optional<string>
+                +name : string
+                +description : string
+                +source_system_id : string
+                +business_context : string
+                +upstream_derivation_id : optional<string>
+                +lineage_depth : int
+                +as_of_date : db_timestamp
+                +ingestion_timestamp : db_timestamp
+                +license_info : optional<string>
+                +artefact_type : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class dataset_mapper {
+            }
+            class dataset_repository {
+                -ctx_ : context
+            }
+            class fsm_state_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +machine_id : string
+                +name : string
+                +is_initial : int
+                +is_terminal : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class fsm_state_mapper {
+            }
+            class fsm_state_repository {
+            }
+            class fsm_transition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +machine_id : string
+                +from_state_id : optional<string>
+                +to_state_id : string
+                +name : string
+                +guard_function : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class fsm_transition_mapper {
+            }
+            class fsm_transition_repository {
+            }
+            class methodology_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +logic_reference : optional<string>
+                +implementation_details : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class methodology_mapper {
+            }
+            class methodology_repository {
+                -ctx_ : context
+            }
+            class nature_dimension_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class nature_dimension_mapper {
+            }
+            class nature_dimension_repository {
+                -ctx_ : context
+            }
+            class origin_dimension_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class origin_dimension_mapper {
+            }
+            class origin_dimension_repository {
+                -ctx_ : context
+            }
+            class publication_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +dataset_id : string
+                +dataset_code : string
+                +mode : string
+                +target_table : string
+                +records_inserted : int64_t
+                +records_updated : int64_t
+                +records_skipped : int64_t
+                +records_deleted : int64_t
+                +published_by : string
+                +published_at : db_timestamp
+            }
+            class publication_mapper {
+            }
+            class publication_repository {
+                -ctx_ : context
+            }
+            class subject_area_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +name : sqlgen::PrimaryKey<string>
+                +domain_name : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class subject_area_mapper {
+            }
+            class subject_area_repository {
+                -ctx_ : context
+            }
+            class treatment_dimension_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class treatment_dimension_mapper {
+            }
+            class treatment_dimension_repository {
+                -ctx_ : context
+            }
+        }
+        namespace service #F2F2F2 {
+            class badge_service {
+                -ctx_ : context
+                -sev_repo_ : repository::badge_severity_repository
+                -def_repo_ : repository::badge_definition_repository
+                -dom_repo_ : repository::code_domain_repository
+                -map_repo_ : repository::badge_mapping_repository
+            }
+            class change_management_service {
+                -category_repo_ : repository::change_reason_category_repository
+                -reason_repo_ : repository::change_reason_repository
+            }
+            class coding_scheme_service {
+                -coding_scheme_repo_ : repository::coding_scheme_repository
+                -authority_type_repo_ : repository::coding_scheme_authority_type_repository
+            }
+            class data_organization_service {
+                -catalog_repo_ : repository::catalog_repository
+                -dataset_dependency_repo_ : repository::dataset_dependency_repository
+                -data_domain_repo_ : repository::data_domain_repository
+                -subject_area_repo_ : repository::subject_area_repository
+            }
+            class dataset_bundle_member_service {
+                -repo_ : repository::dataset_bundle_member_repository
+            }
+            class dataset_bundle_service {
+                -repo_ : repository::dataset_bundle_repository
+            }
+            class dataset_service {
+                -dataset_repo_ : repository::dataset_repository
+                -methodology_repo_ : repository::methodology_repository
+            }
+            class dimension_service {
+                -nature_repo_ : repository::nature_dimension_repository
+                -origin_repo_ : repository::origin_dimension_repository
+                -treatment_repo_ : repository::treatment_dimension_repository
+            }
+            class fsm_service {
+                -ctx_ : context
+            }
+            class bundle_dataset_result <<struct>> {
+                +dataset_code : string
+                +dataset_name : string
+                +status : string
+                +error_message : string
+                +records_inserted : uint64_t
+                +records_updated : uint64_t
+                +records_skipped : uint64_t
+                +records_deleted : uint64_t
+            }
+            class publish_bundle_result <<struct>> {
+                +success : bool
+                +error_message : string
+                +datasets_processed : uint32_t
+                +datasets_succeeded : uint32_t
+                +datasets_failed : uint32_t
+                +datasets_skipped : uint32_t
+                +total_records_inserted : uint64_t
+                +total_records_updated : uint64_t
+                +total_records_skipped : uint64_t
+                +total_records_deleted : uint64_t
+                +dataset_results : vector<bundle_dataset_result>
+            }
+            class publication_service {
+                +resolve_dependencies : bool
+                +params_json : const string&
+                +limit : uint32_t
+                -ctx_ : context
+                -dataset_repo_ : repository::dataset_repository
+                -dependency_repo_ : repository::dataset_dependency_repository
+                -publication_repo_ : repository::publication_repository
+                -artefact_type_repo_ : repository::artefact_type_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.dq.core.puml"
+' End:
+@enduml

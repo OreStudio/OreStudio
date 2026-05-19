@@ -1,0 +1,108 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.workflow Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class WorkflowController {
+            +parent : QObject*
+            -mainWindow_ : QMainWindow*
+            -mdiArea_ : QMdiArea*
+            -clientManager_ : ClientManager*
+            -listWindow_ : QPointer<WorkflowMdiWindow>
+            -listSubWindow_ : QPointer<DetachableMdiSubWindow>
+            -defsWindow_ : QPointer<WorkflowDefinitionMdiWindow>
+            -defsSubWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class WorkflowDefinitionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -definitionTable_ : QTableWidget*
+            -splitter_ : QSplitter*
+            -stepsGroup_ : QGroupBox*
+            -stepsTable_ : QTableWidget*
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class WorkflowInstanceDetailDialog {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -workflowId_ : QString
+            -workflowType_ : QString
+            -workflowStatus_ : QString
+            -statusLabel_ : QLabel*
+            -stepsWidget_ : WorkflowStepsWidget*
+            -logWidget_ : WorkflowStepLogWidget*
+        }
+        class WorkflowMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -autoRefreshAction_ : QAction*
+            -autoRefreshTimer_ : QTimer*
+            -tabs_ : QTabWidget*
+            -activeCountLabel_ : QLabel*
+            -failedCountLabel_ : QLabel*
+            -failuresTable_ : QTableWidget*
+            -searchEdit_ : QLineEdit*
+            -statusFilter_ : QComboBox*
+            -instanceTable_ : QTableWidget*
+            -splitter_ : QSplitter*
+            -stepsGroup_ : QGroupBox*
+            -stepsTable_ : QTableWidget*
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -currentInstances_ : vector<ores::workflow::messaging::workflow_instance_summary>
+            -stepsWatcher_ : QFutureWatcher<StepsFetchResult>*
+            -selectedInstanceId_ : QString
+            -currentSteps_ : vector<ores::workflow::messaging::workflow_step_summary>
+        }
+        class WorkflowPlugin {
+            -ctx_ : plugin_context
+            -controller_ : unique_ptr<WorkflowController>
+        }
+        class WorkflowStepLogWidget {
+            -headerLabel_ : QLabel*
+            -logTable_ : QTableWidget*
+        }
+        class WorkflowStepsWidget {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -instanceId_ : QUuid
+            -headerLabel_ : QLabel*
+            -stepsTable_ : QTableWidget*
+            -refreshTimer_ : QTimer*
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -maxVisibleSteps_ : int
+            -terminalReached_ : bool
+            -currentSteps_ : vector<ores::workflow::messaging::workflow_step_summary>
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.workflow.puml"
+' End:
+@enduml

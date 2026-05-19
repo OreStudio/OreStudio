@@ -23,8 +23,25 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace storage #F2F2F2 {
-        ' Domain types to be added.
+        namespace filesystem #F2F2F2 {
+            class archiver {
+            }
+        }
+        namespace net #F2F2F2 {
+            class http_client {
+            }
+            class storage_paths <<struct>> {
+            }
+            class storage_transfer {
+                -http_base_url_ : string
+            }
+        }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.storage.puml"
+' End:
 @enduml

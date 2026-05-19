@@ -1,0 +1,1096 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.refdata.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace refdata #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class asset_class_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class book_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class book_status_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class business_centre_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class business_unit_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class business_unit_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class cds_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class contact_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class counterparty_contact_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class counterparty_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class counterparty_identifier_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class country_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class currency_market_tier_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class deposit_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class fra_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class fx_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ibor_index_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class monetary_nature_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class ois_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class overnight_index_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_contact_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_id_scheme_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_identifier_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_status_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class party_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class portfolio_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class purpose_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class rounding_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class swap_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class zero_convention_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class asset_class_repository {
+                +limit : uint32_t
+            }
+            class book_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +name : string
+                +description : string
+                +parent_portfolio_id : string
+                +owner_unit_id : optional<string>
+                +ledger_ccy : string
+                +gl_account_ref : string
+                +cost_center : string
+                +book_status : string
+                +is_trading_book : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class book_mapper {
+            }
+            class book_repository {
+                -ctx_ : context
+            }
+            class book_status_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class book_status_mapper {
+            }
+            class book_status_repository {
+            }
+            class business_centre_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +source : optional<string>
+                +description : optional<string>
+                +city_name : optional<string>
+                +coding_scheme_code : string
+                +country_alpha2_code : optional<string>
+                +image_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class business_centre_mapper {
+            }
+            class business_centre_repository {
+            }
+            class business_unit_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +unit_name : string
+                +parent_business_unit_id : optional<string>
+                +unit_type_id : optional<string>
+                +unit_code : string
+                +business_centre_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class business_unit_mapper {
+            }
+            class business_unit_repository {
+                -ctx_ : context
+            }
+            class business_unit_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +coding_scheme_code : string
+                +code : string
+                +name : string
+                +level : int
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class business_unit_type_mapper {
+            }
+            class business_unit_type_repository {
+                -ctx_ : context
+            }
+            class cds_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +settlement_days : int
+                +calendar : string
+                +frequency : string
+                +payment_convention : string
+                +rule : string
+                +day_count_fraction : string
+                +settles_accrual : bool
+                +pays_at_default_time : bool
+                +upfront_settlement_days : optional<int>
+                +last_period_day_count_fraction : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class cds_convention_mapper {
+            }
+            class cds_convention_repository {
+            }
+            class contact_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class contact_type_mapper {
+            }
+            class contact_type_repository {
+            }
+            class counterparty_contact_information_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +counterparty_id : string
+                +contact_type : string
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class counterparty_contact_information_mapper {
+            }
+            class counterparty_contact_information_repository {
+                -ctx_ : context
+            }
+            class counterparty_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +full_name : string
+                +short_code : string
+                +transliterated_name : optional<string>
+                +party_type : string
+                +parent_counterparty_id : optional<string>
+                +business_center_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class counterparty_identifier_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +counterparty_id : string
+                +id_scheme : string
+                +id_value : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class counterparty_identifier_mapper {
+            }
+            class counterparty_identifier_repository {
+                -ctx_ : context
+            }
+            class counterparty_mapper {
+            }
+            class counterparty_repository {
+                -ctx_ : context
+            }
+            class country_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +alpha2_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +alpha3_code : string
+                +numeric_code : string
+                +name : string
+                +official_name : string
+                +image_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class country_mapper {
+            }
+            class country_repository {
+            }
+            class currency_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +iso_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +numeric_code : string
+                +symbol : string
+                +fraction_symbol : string
+                +fractions_per_unit : int
+                +rounding_type : string
+                +rounding_precision : int
+                +format : string
+                +monetary_nature : string
+                +market_tier : string
+                +image_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class currency_mapper {
+            }
+            class currency_market_tier_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class currency_market_tier_mapper {
+            }
+            class currency_market_tier_repository {
+            }
+            class currency_repository {
+            }
+            class deposit_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +index_based : bool
+                +index : optional<string>
+                +calendar : optional<string>
+                +convention : optional<string>
+                +end_of_month : optional<bool>
+                +day_count_fraction : optional<string>
+                +settlement_days : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class deposit_convention_mapper {
+            }
+            class deposit_convention_repository {
+            }
+            class fra_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +index : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fra_convention_mapper {
+            }
+            class fra_convention_repository {
+            }
+            class fx_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +spot_days : int
+                +source_currency : string
+                +target_currency : string
+                +points_factor : double
+                +advance_calendar : optional<string>
+                +spot_relative : optional<bool>
+                +end_of_month : optional<bool>
+                +convention : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_convention_mapper {
+            }
+            class fx_convention_repository {
+            }
+            class ibor_index_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +fixing_calendar : string
+                +day_count_fraction : string
+                +settlement_days : int
+                +business_day_convention : string
+                +end_of_month : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class ibor_index_convention_mapper {
+            }
+            class ibor_index_convention_repository {
+            }
+            class monetary_nature_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class monetary_nature_mapper {
+            }
+            class monetary_nature_repository {
+            }
+            class ois_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +spot_lag : int
+                +index : string
+                +fixed_day_count_fraction : string
+                +fixed_calendar : optional<string>
+                +payment_lag : optional<int>
+                +end_of_month : optional<bool>
+                +fixed_frequency : optional<string>
+                +fixed_convention : optional<string>
+                +fixed_payment_convention : optional<string>
+                +rule : optional<string>
+                +payment_calendar : optional<string>
+                +rate_cutoff : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class ois_convention_mapper {
+            }
+            class ois_convention_repository {
+            }
+            class overnight_index_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +fixing_calendar : string
+                +day_count_fraction : string
+                +settlement_days : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class overnight_index_convention_mapper {
+            }
+            class overnight_index_convention_repository {
+            }
+            class party_contact_information_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +contact_type : string
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_contact_information_mapper {
+            }
+            class party_contact_information_repository {
+                -ctx_ : context
+            }
+            class party_counterparty_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +party_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +counterparty_id : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_counterparty_mapper {
+            }
+            class party_counterparty_repository {
+                -ctx_ : context
+            }
+            class party_country_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +party_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +country_alpha2_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_country_mapper {
+            }
+            class party_country_repository {
+                -ctx_ : context
+            }
+            class party_currency_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +party_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +currency_iso_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_currency_mapper {
+            }
+            class party_currency_repository {
+                -ctx_ : context
+            }
+            class party_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +full_name : string
+                +short_code : string
+                +codename : string
+                +transliterated_name : optional<string>
+                +party_category : string
+                +party_type : string
+                +parent_party_id : optional<string>
+                +business_center_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_id_scheme_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +coding_scheme_code : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class party_id_scheme_mapper {
+            }
+            class party_id_scheme_repository {
+            }
+            class party_identifier_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +id_scheme : string
+                +id_value : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class party_identifier_mapper {
+            }
+            class party_identifier_repository {
+                -ctx_ : context
+            }
+            class party_mapper {
+            }
+            class party_repository {
+                -ctx_ : context
+            }
+            class party_status_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class party_status_mapper {
+            }
+            class party_status_repository {
+            }
+            class party_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class party_type_mapper {
+            }
+            class party_type_repository {
+            }
+            class portfolio_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +name : string
+                +description : string
+                +parent_portfolio_id : optional<string>
+                +owner_unit_id : optional<string>
+                +purpose_type : string
+                +aggregation_ccy : string
+                +is_virtual : int
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class portfolio_mapper {
+            }
+            class portfolio_repository {
+                -ctx_ : context
+            }
+            class purpose_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class purpose_type_mapper {
+            }
+            class purpose_type_repository {
+            }
+            class rounding_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class rounding_type_mapper {
+            }
+            class rounding_type_repository {
+            }
+            class swap_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +fixed_calendar : optional<string>
+                +fixed_frequency : string
+                +fixed_convention : optional<string>
+                +fixed_day_count_fraction : string
+                +index : string
+                +float_frequency : optional<string>
+                +sub_periods_coupon_type : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class swap_convention_mapper {
+            }
+            class swap_convention_repository {
+            }
+            class zero_convention_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +tenor_based : bool
+                +day_count_fraction : string
+                +compounding : optional<string>
+                +compounding_frequency : optional<string>
+                +tenor_calendar : optional<string>
+                +spot_lag : optional<int>
+                +spot_calendar : optional<string>
+                +roll_convention : optional<string>
+                +end_of_month : optional<bool>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class zero_convention_mapper {
+            }
+            class zero_convention_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class asset_class_service {
+                +limit : uint32_t
+                -ctx_ : context
+                -repo_ : repository::asset_class_repository
+            }
+            class book_service {
+                -ctx_ : context
+                -repo_ : repository::book_repository
+            }
+            class book_status_service {
+                -ctx_ : context
+                -repo_ : repository::book_status_repository
+            }
+            class business_centre_service {
+                -ctx_ : context
+                -repo_ : repository::business_centre_repository
+            }
+            class business_unit_service {
+                -ctx_ : context
+                -repo_ : repository::business_unit_repository
+            }
+            class cds_convention_service {
+                -ctx_ : context
+                -repo_ : repository::cds_convention_repository
+            }
+            class contact_type_service {
+                -ctx_ : context
+                -repo_ : repository::contact_type_repository
+            }
+            class counterparty_contact_information_service {
+                -ctx_ : context
+                -repo_ : repository::counterparty_contact_information_repository
+            }
+            class counterparty_identifier_service {
+                -ctx_ : context
+                -repo_ : repository::counterparty_identifier_repository
+            }
+            class counterparty_service {
+                +offset : uint32_t
+                -ctx_ : context
+                -repo_ : repository::counterparty_repository
+            }
+            class country_service {
+                -ctx_ : context
+                -repo_ : repository::country_repository
+                -junction_repo_ : repository::party_country_repository
+            }
+            class currency_market_tier_service {
+                -ctx_ : context
+                -repo_ : repository::currency_market_tier_repository
+            }
+            class currency_service {
+                -ctx_ : context
+                -repo_ : repository::currency_repository
+                -junction_repo_ : repository::party_currency_repository
+            }
+            class deposit_convention_service {
+                -ctx_ : context
+                -repo_ : repository::deposit_convention_repository
+            }
+            class fra_convention_service {
+                -ctx_ : context
+                -repo_ : repository::fra_convention_repository
+            }
+            class fx_convention_service {
+                -ctx_ : context
+                -repo_ : repository::fx_convention_repository
+            }
+            class ibor_index_convention_service {
+                -ctx_ : context
+                -repo_ : repository::ibor_index_convention_repository
+            }
+            class monetary_nature_service {
+                -ctx_ : context
+                -repo_ : repository::monetary_nature_repository
+            }
+            class ois_convention_service {
+                -ctx_ : context
+                -repo_ : repository::ois_convention_repository
+            }
+            class overnight_index_convention_service {
+                -ctx_ : context
+                -repo_ : repository::overnight_index_convention_repository
+            }
+            class party_contact_information_service {
+                -ctx_ : context
+                -repo_ : repository::party_contact_information_repository
+            }
+            class party_id_scheme_service {
+                -ctx_ : context
+                -repo_ : repository::party_id_scheme_repository
+            }
+            class party_identifier_service {
+                -ctx_ : context
+                -repo_ : repository::party_identifier_repository
+            }
+            class party_service {
+                -ctx_ : context
+                -repo_ : repository::party_repository
+            }
+            class party_status_service {
+                -ctx_ : context
+                -repo_ : repository::party_status_repository
+            }
+            class party_type_service {
+                -ctx_ : context
+                -repo_ : repository::party_type_repository
+            }
+            class portfolio_service {
+                -ctx_ : context
+                -repo_ : repository::portfolio_repository
+            }
+            class purpose_type_service {
+                -ctx_ : context
+                -repo_ : repository::purpose_type_repository
+            }
+            class rounding_type_service {
+                -ctx_ : context
+                -repo_ : repository::rounding_type_repository
+            }
+            class swap_convention_service {
+                -ctx_ : context
+                -repo_ : repository::swap_convention_repository
+            }
+            class zero_convention_service {
+                -ctx_ : context
+                -repo_ : repository::zero_convention_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.core.puml"
+' End:
+@enduml

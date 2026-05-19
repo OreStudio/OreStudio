@@ -1,0 +1,161 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.scheduler.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace scheduler #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class cron_expression {
+                -expr_ : string
+            }
+            class job_definition <<struct>> {
+                +id : boost::uuids::uuid
+                +tenant_id : optional<boost::uuids::uuid>
+                +party_id : optional<boost::uuids::uuid>
+                +job_name : string
+                +description : string
+                +command : string
+                +schedule_expression : cron_expression
+                +action_type : string
+                +is_active : bool
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class job_instance <<struct>> {
+                +id : int64_t
+                +tenant_id : optional<boost::uuids::uuid>
+                +party_id : optional<boost::uuids::uuid>
+                +job_definition_id : boost::uuids::uuid
+                +action_type : string
+                +status : job_status
+                +triggered_at : chrono::system_clock::time_point
+                +started_at : chrono::system_clock::time_point
+                +completed_at : optional<chrono::system_clock::time_point>
+                +duration_ms : optional<int64_t>
+                +error_message : string
+            }
+            enum job_status {
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_job_definitions_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_job_definitions_response <<struct>> {
+                +definitions : vector<ores::scheduler::domain::job_definition>
+                +total_available_count : int
+            }
+            class schedule_job_request <<struct>> {
+                +definition : ores::scheduler::domain::job_definition
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class schedule_job_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class unschedule_job_request <<struct>> {
+                +job_definition_id : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class unschedule_job_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class schedule_jobs_batch_request <<struct>> {
+                +definitions : vector<ores::scheduler::domain::job_definition>
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class schedule_jobs_batch_response <<struct>> {
+                +success : bool
+                +message : string
+                +scheduled_count : int
+                +failed_ids : vector<string>
+            }
+            class get_job_history_request <<struct>> {
+                +job_definition_id : string
+                +limit : int
+            }
+            class get_job_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +instances : vector<ores::scheduler::domain::job_instance>
+            }
+            class get_job_instances_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class job_instance_summary <<struct>> {
+                +id : int64_t
+                +job_definition_id : string
+                +job_name : string
+                +action_type : string
+                +status : string
+                +triggered_at : string
+                +started_at : string
+                +completed_at : optional<string>
+                +duration_ms : optional<int64_t>
+                +error_message : string
+            }
+            class get_job_instances_response <<struct>> {
+                +success : bool
+                +message : string
+                +instances : vector<job_instance_summary>
+                +total_available_count : int
+            }
+            class get_scheduler_status_request <<struct>> {
+            }
+            class job_schedule_status <<struct>> {
+                +job_definition_id : string
+                +job_name : string
+                +description : string
+                +schedule_expression : string
+                +is_active : bool
+                +last_run_at : optional<string>
+                +last_run_status : optional<string>
+                +next_fire_at : optional<string>
+                +running_count : int
+            }
+            class get_scheduler_status_response <<struct>> {
+                +success : bool
+                +message : string
+                +jobs : vector<job_schedule_status>
+                +total_running : int
+                +total_active : int
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.scheduler.api.puml"
+' End:
+@enduml

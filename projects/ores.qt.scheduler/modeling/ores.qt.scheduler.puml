@@ -1,0 +1,127 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.scheduler Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class ClientJobDefinitionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -definitions_ : vector<scheduler::domain::job_definition>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : JobDefinitionTimestampExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientJobInstanceModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -instances_ : vector<scheduler::messaging::job_instance_summary>
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class JobDefinitionController {
+            +parent : QObject*
+            -changeReasonCache_ : ChangeReasonCache*
+            -listWindow_ : JobDefinitionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class JobDefinitionDetailDialog {
+            -ui_ : Ui::JobDefinitionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -definition_ : scheduler::domain::job_definition
+        }
+        class JobDefinitionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::JobDefinitionHistoryDialog*
+            -job_definition_id_ : boost::uuids::uuid
+            -job_name_ : QString
+            -clientManager_ : ClientManager*
+            -instances_ : vector<scheduler::domain::job_instance>
+        }
+        class JobDefinitionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientJobDefinitionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class JobInstanceController {
+            +parent : QObject*
+            -listWindow_ : JobInstanceMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class JobInstanceDetailDialog {
+            +parent : QWidget*
+        }
+        class JobInstanceMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientJobInstanceModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -autoRefreshAction_ : QAction*
+            -intervalSpin_ : QSpinBox*
+            -autoRefreshTimer_ : QTimer*
+        }
+        class SchedulerMonitorController {
+            +parent : QObject*
+            -mainWindow_ : QMainWindow*
+            -mdiArea_ : QMdiArea*
+            -clientManager_ : ClientManager*
+        }
+        class SchedulerMonitorMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -autoRefreshAction_ : QAction*
+            -intervalSpin_ : QSpinBox*
+            -table_ : QTableWidget*
+            -autoRefreshTimer_ : QTimer*
+        }
+        class SchedulerPlugin {
+            -ctx_ : plugin_context
+            -jobDefinitionController_ : unique_ptr<JobDefinitionController>
+            -jobInstanceController_ : unique_ptr<JobInstanceController>
+            -schedulerMonitorController_ : unique_ptr<SchedulerMonitorController>
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.scheduler.puml"
+' End:
+@enduml

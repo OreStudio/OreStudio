@@ -24,9 +24,28 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace synthetic #F2F2F2 {
         namespace service #F2F2F2 {
-            ' Types to be added.
+            namespace app #F2F2F2 {
+                class application {
+                }
+                class host {
+                }
+            }
+            namespace config #F2F2F2 {
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +nats : ores::nats::config::nats_options
+                    +database : ores::database::database_options
+                }
+                class parser {
+                }
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.service.puml"
+' End:
 @enduml

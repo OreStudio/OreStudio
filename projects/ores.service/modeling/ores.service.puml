@@ -23,10 +23,42 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace service #F2F2F2 {
+        enum error_code {
+            unauthorized
+            token_expired
+            forbidden
+            bad_request
+        }
+        namespace messaging #F2F2F2 {
+            class workflow_step_context <<struct>> {
+                +step_id : string
+                +instance_id : string
+                +tenant_id : string
+                +nats : ores::nats::service::client*
+            }
+            class cached_step_result <<struct>> {
+                +result_json : string
+                +error_message : string
+                +log : vector<ores::workflow::messaging::step_log_entry>
+            }
+        }
         namespace service #F2F2F2 {
-            ' run<RegisterFn>() — domain service lifecycle template
+            enum exit_code {
+            }
+            class heartbeat_publisher {
+                -service_name_ : string
+                -instance_id_ : string
+                -version_ : string
+                -nats_ : ores::nats::service::client&
+                -interval_seconds_ : uint32_t
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.service.puml"
+' End:
 @enduml

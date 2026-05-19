@@ -1,0 +1,474 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.admin Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class AccountDetailDialog {
+            -ui_ : unique_ptr<Ui::AccountDetailDialog>
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -isStale_ : bool
+            -historicalVersion_ : int
+            -modifiedByUsername_ : string
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -clientManager_ : ClientManager*
+            -currentAccount_ : iam::domain::account
+            -currentLoginInfo_ : optional<iam::domain::login_info>
+            -rolesWidget_ : AccountRolesWidget*
+            -partiesWidget_ : AccountPartiesWidget*
+        }
+        class AccountHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::AccountHistoryDialog>
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -history_ : iam::messaging::account_version_history
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class AccountItemDelegate {
+            +parent : QObject*
+            -badgeCache_ : BadgeCache*
+            -monospaceFont_ : QFont
+        }
+        class AccountMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -accountTableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -pagination_widget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -lockAction_ : QAction*
+            -unlockAction_ : QAction*
+            -resetPasswordAction_ : QAction*
+            -historyAction_ : QAction*
+            -sessionsAction_ : QAction*
+            -accountModel_ : unique_ptr<ClientAccountModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -badgeCache_ : BadgeCache*
+        }
+        class AccountPartiesWidget {
+            -partiesGroup_ : QGroupBox*
+            -assignedList_ : QListWidget*
+            -partyCombo_ : QComboBox*
+            -addButton_ : QToolButton*
+            -removeButton_ : QToolButton*
+            -clientManager_ : ClientManager*
+            -accountId_ : boost::uuids::uuid
+            -accountType_ : string
+            -readOnly_ : bool
+            -assignedParties_ : vector<iam::domain::account_party>
+            -allParties_ : vector<refdata::domain::party>
+            -pendingAdds_ : vector<boost::uuids::uuid>
+            -pendingRemoves_ : vector<boost::uuids::uuid>
+        }
+        class AccountRolesWidget {
+            -groupBox_ : QGroupBox*
+            -rolesList_ : QListWidget*
+            -roleCombo_ : QComboBox*
+            -assignButton_ : QToolButton*
+            -revokeButton_ : QToolButton*
+            -clientManager_ : ClientManager*
+            -accountId_ : boost::uuids::uuid
+            -assignedRoles_ : vector<iam::domain::role>
+            -allRoles_ : vector<iam::domain::role>
+            -pendingAdds_ : vector<boost::uuids::uuid>
+            -pendingRemoves_ : vector<boost::uuids::uuid>
+        }
+        class AdminPlugin {
+            -ctx_ : plugin_context
+            -accountController_ : unique_ptr<AccountController>
+            -roleController_ : unique_ptr<RoleController>
+            -tenantController_ : unique_ptr<TenantController>
+            -tenantTypeController_ : unique_ptr<TenantTypeController>
+            -systemSettingController_ : unique_ptr<SystemSettingController>
+            -badgeDefinitionController_ : unique_ptr<BadgeDefinitionController>
+            -badgeSeverityController_ : unique_ptr<BadgeSeverityController>
+        }
+        class BadgeDefinitionController {
+            +parent : QObject*
+            -listWindow_ : BadgeDefinitionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class BadgeDefinitionDetailDialog {
+            -ui_ : Ui::BadgeDefinitionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -definition_ : dq::domain::badge_definition
+        }
+        class BadgeDefinitionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::BadgeDefinitionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::badge_definition>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class BadgeDefinitionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientBadgeDefinitionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class BadgeSeverityController {
+            +parent : QObject*
+            -listWindow_ : BadgeSeverityMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class BadgeSeverityDetailDialog {
+            -ui_ : Ui::BadgeSeverityDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -severity_ : dq::domain::badge_severity
+        }
+        class BadgeSeverityHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::BadgeSeverityHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::badge_severity>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class BadgeSeverityMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientBadgeSeverityModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        enum LoginStatus {
+        }
+        class AccountWithLoginInfo <<struct>> {
+            +account : iam::domain::account
+            +loginInfo : optional<iam::domain::login_info>
+            +partyCount : int
+        }
+        class ClientAccountModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -accounts_ : vector<AccountWithLoginInfo>
+            -watcher_ : QFutureWatcher<FutureWatcherResult>*
+            -recencyTracker_ : RecencyTracker<iam::domain::account, AccountKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientBadgeDefinitionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -definitions_ : vector<dq::domain::badge_definition>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::badge_definition, BadgeDefinitionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientBadgeSeverityModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -severities_ : vector<dq::domain::badge_severity>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::badge_severity, BadgeSeverityKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientRoleModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -roles_ : vector<iam::domain::role>
+            -watcher_ : QFutureWatcher<FutureWatcherResult>*
+        }
+        class ClientSystemSettingModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -flags_ : vector<variability::domain::system_setting>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<variability::domain::system_setting, SystemSettingKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientTenantModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -tenants_ : vector<iam::domain::tenant>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<iam::domain::tenant, TenantKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientTenantTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -tenant_types_ : vector<iam::domain::tenant_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<iam::domain::tenant_type, TenantTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class RoleController {
+            +parent : QObject*
+            -roleListWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class RoleDetailDialog {
+            -ui_ : unique_ptr<Ui::RoleDetailDialog>
+            -currentRole_ : iam::domain::role
+        }
+        class RoleMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -roleTableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -viewAction_ : QAction*
+            -roleModel_ : unique_ptr<ClientRoleModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+        }
+        class SystemSettingController {
+            +parent : QObject*
+            -createMode : bool
+            -listWindow_ : SystemSettingMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class SystemSettingDetailDialog {
+            -ui_ : Ui::SystemSettingDetailDialog*
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -intValidator_ : QIntValidator*
+            -currentFlag_ : variability::domain::system_setting
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -modifiedByUsername_ : string
+            -clientManager_ : ClientManager*
+            -history_ : vector<variability::domain::system_setting>
+            -currentHistoryIndex_ : int
+            -firstVersionAction_ : QAction*
+            -prevVersionAction_ : QAction*
+            -nextVersionAction_ : QAction*
+            -lastVersionAction_ : QAction*
+        }
+        class SystemSettingHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::SystemSettingHistoryDialog>
+            -clientManager_ : ClientManager*
+            -flagName_ : QString
+            -history_ : vector<variability::domain::system_setting>
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class SystemSettingItemDelegate {
+            -monospaceFont_ : QFont
+            -badgeFont_ : QFont
+        }
+        class SystemSettingMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -systemSettingTableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -systemSettingModel_ : unique_ptr<ClientSystemSettingModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+        }
+        class TenantController {
+            +parent : QObject*
+            -listWindow_ : TenantMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class TenantDetailDialog {
+            -ui_ : Ui::TenantDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -tenant_ : iam::domain::tenant
+        }
+        class TenantHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::TenantHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<iam::domain::tenant>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class TenantMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientTenantModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -onboardAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class TenantOnboardingWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -gleifMode_ : bool
+            -tenantCode_ : QString
+            -tenantName_ : QString
+            -tenantHostname_ : QString
+            -tenantDescription_ : QString
+            -rootLei_ : QString
+            -rootLeiName_ : QString
+            -adminUsername_ : QString
+            -adminPassword_ : QString
+            -adminEmail_ : QString
+        }
+        class ModeAndLeiPage {
+            -wizard_ : TenantOnboardingWizard*
+            -blankRadio_ : QRadioButton*
+            -gleifRadio_ : QRadioButton*
+            -leiPicker_ : LeiEntityPicker*
+            -selectedEntityLabel_ : QLabel*
+            -leiLoaded_ : bool
+        }
+        class TenantDetailsPage {
+            -wizard_ : TenantOnboardingWizard*
+            -codeEdit_ : QLineEdit*
+            -nameEdit_ : QLineEdit*
+            -typeCombo_ : QComboBox*
+            -hostnameEdit_ : QLineEdit*
+            -descriptionEdit_ : QLineEdit*
+            -validationLabel_ : QLabel*
+            -hostnameManuallyEdited_ : bool
+        }
+        class OnboardingAdminAccountPage {
+            -wizard_ : TenantOnboardingWizard*
+            -usernameEdit_ : QLineEdit*
+            -emailEdit_ : QLineEdit*
+            -passwordEdit_ : QLineEdit*
+            -confirmPasswordEdit_ : QLineEdit*
+            -showPasswordCheck_ : QCheckBox*
+            -validationLabel_ : QLabel*
+        }
+        class ApplyOnboardingPage {
+            -wizard_ : TenantOnboardingWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -onboardingComplete_ : bool
+            -onboardingSuccess_ : bool
+        }
+        class TenantTypeController {
+            +parent : QObject*
+            -listWindow_ : TenantTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class TenantTypeDetailDialog {
+            -ui_ : Ui::TenantTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -tenant_type_ : iam::domain::tenant_type
+        }
+        class TenantTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::TenantTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<iam::domain::tenant_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class TenantTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientTenantTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        namespace ores #F2F2F2 {
+            namespace qt #F2F2F2 {
+                namespace ores #F2F2F2 {
+                    namespace qt #F2F2F2 {
+                        class AccountController {
+                            +parent : QObject*
+                            -accountListWindow_ : QPointer<DetachableMdiSubWindow>
+                            -changeReasonCache_ : ChangeReasonCache*
+                            -badgeCache_ : BadgeCache*
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.admin.puml"
+' End:
+@enduml

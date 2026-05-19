@@ -24,9 +24,108 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace controller #F2F2F2 {
         namespace api #F2F2F2 {
-            ' Protocol types to be added.
+            namespace domain #F2F2F2 {
+                class service_definition <<struct>> {
+                    +version : int
+                    +service_name : string
+                    +binary_name : string
+                    +desired_replicas : int
+                    +max_restart_count : int
+                    +enabled : int
+                    +args_template : optional<string>
+                    +description : optional<string>
+                    +modified_by : string
+                    +performed_by : string
+                    +change_reason_code : string
+                    +change_commentary : string
+                }
+                class service_event <<struct>> {
+                    +service_name : string
+                    +instance_id : optional<boost::uuids::uuid>
+                    +replica_index : optional<int>
+                    +event_type : string
+                    +message : string
+                }
+                class service_instance <<struct>> {
+                    +service_name : string
+                    +replica_index : int
+                    +pid : optional<int>
+                    +started_at : optional<chrono::system_clock::time_point>
+                    +stopped_at : optional<chrono::system_clock::time_point>
+                    +restart_count : int
+                    +last_error : optional<string>
+                    +last_log_snippet : optional<string>
+                    +last_stderr_snippet : optional<string>
+                    +last_command_line : optional<string>
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class list_service_definitions_request <<struct>> {
+                }
+                class list_service_definitions_response <<struct>> {
+                    +success : bool
+                    +message : string
+                    +service_definitions : vector<domain::service_definition>
+                }
+                class save_service_definition_request <<struct>> {
+                    +service_definition : domain::service_definition
+                    +change_reason_code : string
+                    +change_commentary : string
+                }
+                class save_service_definition_response <<struct>> {
+                    +success : bool
+                    +message : string
+                }
+                class list_service_events_request <<struct>> {
+                    +service_name : string
+                    +limit : int
+                }
+                class list_service_events_response <<struct>> {
+                    +success : bool
+                    +message : string
+                    +service_events : vector<domain::service_event>
+                    +total_count : uint64_t
+                }
+                class list_service_instances_request <<struct>> {
+                    +service_name : string
+                }
+                class list_service_instances_response <<struct>> {
+                    +success : bool
+                    +message : string
+                    +service_instances : vector<domain::service_instance>
+                }
+                class start_service_request <<struct>> {
+                    +service_name : string
+                    +replica_index : optional<int>
+                }
+                class start_service_response <<struct>> {
+                    +success : bool
+                    +message : string
+                }
+                class stop_service_request <<struct>> {
+                    +service_name : string
+                    +replica_index : optional<int>
+                }
+                class stop_service_response <<struct>> {
+                    +success : bool
+                    +message : string
+                }
+                class restart_service_request <<struct>> {
+                    +service_name : string
+                    +replica_index : optional<int>
+                }
+                class restart_service_response <<struct>> {
+                    +success : bool
+                    +message : string
+                }
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.controller.api.puml"
+' End:
 @enduml

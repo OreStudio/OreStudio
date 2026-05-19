@@ -23,10 +23,116 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace controller #F2F2F2 {
-        namespace core #F2F2F2 {
-            ' Core types to be added.
+        namespace messaging #F2F2F2 {
+            class service_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class service_event_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class service_instance_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -supervisor_ : service::process_supervisor*
+            }
+        }
+        namespace repository #F2F2F2 {
+            class service_definition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +version : int
+                +service_name : string
+                +binary_name : string
+                +desired_replicas : int
+                +max_restart_count : int
+                +enabled : int
+                +args_template : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class service_definition_mapper {
+            }
+            class service_definition_repository {
+            }
+            class service_dependency_entity <<struct>> {
+                +schema : constexpr static const char*
+                +service_name : sqlgen::PrimaryKey<string>
+                +depends_on : sqlgen::PrimaryKey<string>
+            }
+            class service_dependency_repository {
+            }
+            class service_event_entity <<struct>> {
+                +schema : constexpr static const char*
+                +occurred_at : sqlgen::PrimaryKey<db_timestamp>
+                +event_id : sqlgen::PrimaryKey<string>
+                +service_name : string
+                +instance_id : optional<string>
+                +replica_index : optional<int>
+                +event_type : string
+                +message : string
+            }
+            class service_event_mapper {
+            }
+            class service_event_repository {
+                +limit : int
+            }
+            class service_instance_entity <<struct>> {
+                +schema : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +service_name : string
+                +replica_index : int
+                +pid : optional<int>
+                +started_at : optional<db_timestamp>
+                +stopped_at : optional<db_timestamp>
+                +restart_count : int
+                +last_error : optional<string>
+                +last_log_snippet : optional<string>
+                +last_stderr_snippet : optional<string>
+                +last_command_line : optional<string>
+                +created_at : db_timestamp
+            }
+            class service_instance_mapper {
+            }
+            class service_instance_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class process_supervisor {
+                +wt_port : int
+                -start_offset : uintmax_t
+                -ioc_ : boost::asio::io_context&
+                -bin_dir_ : filesystem::path
+                -nats_ : ores::nats::config::nats_options
+                -log_level_ : string
+                -db_ctx_ : ores::database::context
+                -http_port_ : int
+                -wt_port_ : int
+                -processes_ : map<process_key, shared_ptr<process_entry>>
+            }
+            namespace ores #F2F2F2 {
+                namespace controller #F2F2F2 {
+                    namespace messaging #F2F2F2 {
+                        class registrar {
+                            +supervisor : service::process_supervisor*
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.controller.core.puml"
+' End:
 @enduml

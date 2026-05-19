@@ -1,0 +1,227 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.wt.service Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace wt #F2F2F2 {
+        namespace service #F2F2F2 {
+            class application_context {
+                -initialized_ : bool
+                -is_bootstrap_mode_ : bool
+                -db_context_ : unique_ptr<database::context>
+                -account_service_ : unique_ptr<iam::service::account_service>
+                -account_setup_service_ : unique_ptr<iam::service::account_setup_service>
+                -authorization_service_ : shared_ptr<iam::service::authorization_service>
+                -system_settings_service_ : shared_ptr<variability::service::system_settings_service>
+                -currency_service_ : unique_ptr<refdata::service::currency_service>
+                -country_service_ : unique_ptr<refdata::service::country_service>
+                -event_bus_ : unique_ptr<eventing::service::event_bus>
+                -event_source_ : unique_ptr<eventing::service::postgres_event_source>
+                -flags_subscription_ : eventing::service::subscription
+            }
+            class login_result <<struct>> {
+                +success : bool
+                +error_message : string
+                +account_id : boost::uuids::uuid
+                +username : string
+                +email : string
+                +password_reset_required : bool
+            }
+            class session_data <<struct>> {
+                +account_id : boost::uuids::uuid
+                +username : string
+                +email : string
+            }
+            class session_manager {
+                -session_ : optional<session_data>
+            }
+            namespace app #F2F2F2 {
+                class account_data <<struct>> {
+                    +id : boost::uuids::uuid
+                    +username : string
+                    +email : string
+                    +password : string
+                    +confirm_password : string
+                    +version : int
+                }
+                class account_dialog {
+                    -mode_ : mode
+                    -username_edit_ : Wt::WLineEdit*
+                    -email_edit_ : Wt::WLineEdit*
+                    -password_edit_ : Wt::WPasswordEdit*
+                    -confirm_password_edit_ : Wt::WPasswordEdit*
+                    -status_text_ : Wt::WText*
+                    -account_id_ : boost::uuids::uuid
+                    -saved_ : Wt::Signal<account_data>
+                }
+                class account_row <<struct>> {
+                    +id : boost::uuids::uuid
+                    +username : string
+                    +email : string
+                    +locked : bool
+                    +online : bool
+                    +failed_logins : int
+                    +version : int
+                }
+                class account_list_widget {
+                    -table_ : Wt::WTable*
+                    -status_text_ : Wt::WText*
+                    -add_button_ : Wt::WPushButton*
+                    -refresh_button_ : Wt::WPushButton*
+                    -accounts_ : vector<account_row>
+                    -add_requested_ : Wt::Signal<>
+                    -edit_requested_ : Wt::Signal<boost::uuids::uuid>
+                    -delete_requested_ : Wt::Signal<boost::uuids::uuid>
+                    -lock_requested_ : Wt::Signal<boost::uuids::uuid>
+                    -unlock_requested_ : Wt::Signal<boost::uuids::uuid>
+                }
+                class country_data <<struct>> {
+                    +alpha2_code : string
+                    +alpha3_code : string
+                    +numeric_code : string
+                    +name : string
+                    +official_name : string
+                    +version : int
+                }
+                class country_dialog {
+                    -mode_ : mode
+                    -alpha2_code_edit_ : Wt::WLineEdit*
+                    -alpha3_code_edit_ : Wt::WLineEdit*
+                    -numeric_code_edit_ : Wt::WLineEdit*
+                    -name_edit_ : Wt::WLineEdit*
+                    -official_name_edit_ : Wt::WLineEdit*
+                    -status_text_ : Wt::WText*
+                    -saved_ : Wt::Signal<country_data>
+                }
+                class country_row <<struct>> {
+                    +alpha2_code : string
+                    +alpha3_code : string
+                    +name : string
+                    +numeric_code : string
+                    +version : int
+                }
+                class country_list_widget {
+                    -table_ : Wt::WTable*
+                    -status_text_ : Wt::WText*
+                    -add_button_ : Wt::WPushButton*
+                    -refresh_button_ : Wt::WPushButton*
+                    -countries_ : vector<country_row>
+                    -add_requested_ : Wt::Signal<>
+                    -edit_requested_ : Wt::Signal<string>
+                    -delete_requested_ : Wt::Signal<string>
+                }
+                class currency_data <<struct>> {
+                    +iso_code : string
+                    +name : string
+                    +numeric_code : string
+                    +symbol : string
+                    +fraction_symbol : string
+                    +fractions_per_unit : int
+                    +rounding_type : string
+                    +rounding_precision : int
+                    +format : string
+                    +monetary_nature : string
+                    +market_tier : string
+                    +version : int
+                }
+                class currency_dialog {
+                    -mode_ : mode
+                    -iso_code_edit_ : Wt::WLineEdit*
+                    -name_edit_ : Wt::WLineEdit*
+                    -numeric_code_edit_ : Wt::WLineEdit*
+                    -symbol_edit_ : Wt::WLineEdit*
+                    -fraction_symbol_edit_ : Wt::WLineEdit*
+                    -fractions_spinbox_ : Wt::WSpinBox*
+                    -rounding_type_combo_ : Wt::WComboBox*
+                    -precision_spinbox_ : Wt::WSpinBox*
+                    -format_edit_ : Wt::WLineEdit*
+                    -monetary_nature_combo_ : Wt::WComboBox*
+                    -market_tier_combo_ : Wt::WComboBox*
+                    -status_text_ : Wt::WText*
+                    -saved_ : Wt::Signal<currency_data>
+                }
+                class currency_row <<struct>> {
+                    +iso_code : string
+                    +name : string
+                    +symbol : string
+                    +numeric_code : string
+                    +monetary_nature : string
+                    +market_tier : string
+                    +version : int
+                }
+                class currency_list_widget {
+                    -table_ : Wt::WTable*
+                    -status_text_ : Wt::WText*
+                    -add_button_ : Wt::WPushButton*
+                    -refresh_button_ : Wt::WPushButton*
+                    -currencies_ : vector<currency_row>
+                    -add_requested_ : Wt::Signal<>
+                    -edit_requested_ : Wt::Signal<string>
+                    -delete_requested_ : Wt::Signal<string>
+                }
+                class login_widget {
+                    -username_edit_ : Wt::WLineEdit*
+                    -password_edit_ : Wt::WPasswordEdit*
+                    -login_button_ : Wt::WPushButton*
+                    -status_text_ : Wt::WText*
+                    -login_attempted_ : Wt::Signal<string, string>
+                }
+                class ore_application {
+                    -session_manager_ : service::session_manager
+                    -login_widget_ : login_widget*
+                    -currency_list_widget_ : currency_list_widget*
+                    -country_list_widget_ : country_list_widget*
+                    -account_list_widget_ : account_list_widget*
+                    -bootstrap_username_ : Wt::WLineEdit*
+                    -bootstrap_email_ : Wt::WLineEdit*
+                    -bootstrap_password_ : Wt::WPasswordEdit*
+                    -bootstrap_confirm_ : Wt::WPasswordEdit*
+                    -bootstrap_button_ : Wt::WPushButton*
+                    -bootstrap_status_ : Wt::WText*
+                }
+            }
+            namespace config #F2F2F2 {
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +database : ores::database::database_options
+                    +nats : ores::nats::config::nats_options
+                }
+                class parser {
+                }
+                class parser_exception {
+                }
+            }
+            namespace messaging #F2F2F2 {
+                class registrar {
+                    +verifier : optional<ores::security::jwt::jwt_authenticator>
+                }
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.wt.service.puml"
+' End:
+@enduml

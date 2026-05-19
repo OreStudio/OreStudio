@@ -1,0 +1,562 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.compute Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class AppController {
+            +parent : QObject*
+            -listWindow_ : AppMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class AppDetailDialog {
+            -ui_ : Ui::AppDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -app_ : compute::domain::app
+        }
+        class AppHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::AppHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<compute::domain::app>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class AppMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientAppModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class AppProvisionerWizard {
+            +parent : QWidget*
+            -client_manager_ : ClientManager*
+            -change_reason_cache_ : ChangeReasonCache*
+            -http_base_url_ : string
+            -app_id_ : boost::uuids::uuid
+            -app_version_id_ : boost::uuids::uuid
+            -app_identity_page_ : AppIdentityPage*
+            -version_details_page_ : VersionDetailsPage*
+            -platforms_page_ : PlatformsPage*
+            -package_upload_page_ : PackageUploadPage*
+            -audit_page_ : AuditPage*
+            -app_provisioner_review_page_ : AppProvisionerReviewPage*
+        }
+        class AppVersionController {
+            +parent : QObject*
+            -listWindow_ : AppVersionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+            -httpBaseUrl_ : string
+        }
+        class AppVersionDetailDialog {
+            -ui_ : Ui::AppVersionDetailDialog*
+            -clientManager_ : ClientManager*
+            -networkManager_ : QNetworkAccessManager*
+            -username_ : string
+            -httpBaseUrl_ : QUrl
+            -app_version_ : compute::domain::app_version
+            -package_rows_ : vector<PackageRow>
+            -appEntries_ : vector<AppEntry>
+            -availablePlatforms_ : vector<PlatformEntry>
+        }
+        class AppVersionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::AppVersionHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<compute::domain::app_version>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class AppVersionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientAppVersionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class BatchDetailDialog {
+            -ui_ : Ui::BatchDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -batch_ : compute::domain::batch
+        }
+        class ClientAppModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -apps_ : vector<compute::domain::app>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::app, AppKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientAppVersionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -app_versions_ : vector<compute::domain::app_version>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::app_version, AppVersionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientBatchModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -batches_ : vector<compute::domain::batch>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::batch, BatchKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientConcurrencyPolicyModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -policies_ : vector<reporting::domain::concurrency_policy>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<reporting::domain::concurrency_policy, ConcurrencyPolicyKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientHostModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -hosts_ : vector<compute::domain::host>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::host, HostKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class queue_row <<struct>> {
+            +name : string
+            +subjects : string
+            +created_at : chrono::system_clock::time_point
+            +last_message_at : optional<chrono::system_clock::time_point>
+        }
+        class ClientQueueModel {
+            +parent : QObject*
+            +role : int
+            +role : int
+            -clientManager_ : ClientManager*
+            -rows_ : vector<queue_row>
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class ClientReportDefinitionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -definitions_ : vector<reporting::domain::report_definition>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -fsm_watcher_ : QFutureWatcher<FsmStateFetchResult>*
+            -fsm_state_map_ : QHash<QString, QString>
+            -recencyTracker_ : RecencyTracker<reporting::domain::report_definition, ReportDefinitionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientReportInstanceModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -instances_ : vector<reporting::domain::report_instance>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<reporting::domain::report_instance, ReportInstanceKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientReportTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<reporting::domain::report_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<reporting::domain::report_type, ReportTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientWorkunitModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -workunits_ : vector<compute::domain::workunit>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::workunit, WorkunitKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ComputeConsoleController {
+            +parent : QObject*
+            -mainWindow_ : QMainWindow*
+            -mdiArea_ : QMdiArea*
+            -clientManager_ : ClientManager*
+            -changeReasonCache_ : ChangeReasonCache*
+            -badgeCache_ : BadgeCache*
+            -http_base_url_ : string
+            -consoleWindow_ : QPointer<ComputeConsoleWindow>
+            -subWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class ComputeConsoleWindow {
+            +parent : QWidget*
+            -client_manager_ : ClientManager*
+            -change_reason_cache_ : ChangeReasonCache*
+            -badge_cache_ : BadgeCache*
+            -http_base_url_ : string
+            -task_model_ : unique_ptr<ComputeTaskViewModel>
+            -app_model_ : unique_ptr<ClientAppModel>
+            -app_version_model_ : unique_ptr<ClientAppVersionModel>
+            -host_model_ : unique_ptr<ClientHostModel>
+            -transfer_model_ : unique_ptr<ComputeTransferModel>
+            -selected_result_id_ : QString
+        }
+        class ComputeDashboardController {
+            +parent : QObject*
+            -mainWindow_ : QMainWindow*
+            -mdiArea_ : QMdiArea*
+            -clientManager_ : ClientManager*
+            -dashboardWindow_ : QPointer<ComputeDashboardMdiWindow>
+            -dashboardSubWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class ComputeDashboardMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -autoRefreshAction_ : QAction*
+            -totalHostsLabel_ : QLabel*
+            -idleHostsLabel_ : QLabel*
+            -totalWorkunitLabel_ : QLabel*
+            -inProgressLabel_ : QLabel*
+            -completedLabel_ : QLabel*
+            -autoRefreshTimer_ : QTimer*
+        }
+        class ComputePlugin {
+            -ctx_ : plugin_context
+            -appController_ : unique_ptr<AppController>
+            -appVersionController_ : unique_ptr<AppVersionController>
+            -computeDashboardController_ : unique_ptr<ComputeDashboardController>
+            -computeConsoleController_ : unique_ptr<ComputeConsoleController>
+            -serviceDashboardController_ : unique_ptr<ServiceDashboardController>
+            -queueMonitorController_ : unique_ptr<QueueMonitorController>
+            -reportTypeController_ : unique_ptr<ReportTypeController>
+            -concurrencyPolicyController_ : unique_ptr<ConcurrencyPolicyController>
+            -reportDefinitionController_ : unique_ptr<ReportDefinitionController>
+            -reportInstanceController_ : unique_ptr<ReportInstanceController>
+        }
+        class compute_task <<struct>> {
+            +result : compute::domain::result
+            +workunit : compute::domain::workunit
+            +batch : compute::domain::batch
+            +batch_ordinal : int
+            +task_ordinal : int
+        }
+        class ComputeTaskViewModel {
+            +parent : QObject*
+            +role : int
+            +role : int
+            -clientManager_ : ClientManager*
+            -tasks_ : vector<compute_task>
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class transfer_item <<struct>> {
+            +filename : QString
+            +progress : int
+            +speed : QString
+            +status : QString
+        }
+        class ComputeTransferModel {
+            +role : int
+            +role : int
+            -transfers_ : vector<transfer_item>
+        }
+        class ConcurrencyPolicyController {
+            +parent : QObject*
+            -listWindow_ : ConcurrencyPolicyMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ConcurrencyPolicyDetailDialog {
+            -ui_ : Ui::ConcurrencyPolicyDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -policy_ : reporting::domain::concurrency_policy
+        }
+        class ConcurrencyPolicyHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::ConcurrencyPolicyHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<reporting::domain::concurrency_policy>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ConcurrencyPolicyMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientConcurrencyPolicyModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class CreateQueueDialog {
+            -nameEdit_ : QLineEdit*
+            -scopeCombo_ : QComboBox*
+            -typeCombo_ : QComboBox*
+            -descriptionEdit_ : QLineEdit*
+            -createButton_ : QPushButton*
+        }
+        class QueueChartWindow {
+            +parent : QWidget*
+            -queueId_ : QString
+            -queueName_ : QString
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -rangeCombo_ : QComboBox*
+            -chartView_ : QChartView*
+        }
+        class QueueDetailDialog {
+            +parent : QWidget*
+            -displayName_ : QString
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -publishAction_ : QAction*
+            -getMessagesAction_ : QAction*
+            -deleteAction_ : QAction*
+            -tabWidget_ : QTabWidget*
+            -publishTab_ : QWidget*
+            -subjectEdit_ : QLineEdit*
+            -payloadEdit_ : QPlainTextEdit*
+            -messagesTab_ : QWidget*
+            -modeCombo_ : QComboBox*
+            -startSeqSpinBox_ : QSpinBox*
+            -countSpinBox_ : QSpinBox*
+            -messagesTable_ : QTableWidget*
+            -publishWatcher_ : QFutureWatcher<PublishResult>*
+            -getWatcher_ : QFutureWatcher<GetMessagesResult>*
+        }
+        class QueueMonitorController {
+            +parent : QObject*
+            -listWindow_ : QueueMonitorMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class QueueMonitorMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientQueueModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -chartAction_ : QAction*
+            -createAction_ : QAction*
+            -deleteQueueAction_ : QAction*
+            -purgeAction_ : QAction*
+        }
+        class ReportDefinitionController {
+            +parent : QObject*
+            -changeReasonCache_ : ChangeReasonCache*
+            -badgeCache_ : BadgeCache*
+            -listWindow_ : ReportDefinitionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ReportDefinitionDetailDialog {
+            -ui_ : Ui::ReportDefinitionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -definition_ : reporting::domain::report_definition
+        }
+        class ReportDefinitionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::ReportDefinitionHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<reporting::domain::report_definition>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ReportDefinitionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -badgeCache_ : BadgeCache*
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientReportDefinitionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -scheduleAction_ : QAction*
+            -unscheduleAction_ : QAction*
+        }
+        class ReportInstanceController {
+            +parent : QObject*
+            -listWindow_ : ReportInstanceMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ReportInstanceDetailDialog {
+            -ui_ : Ui::ReportInstanceDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -instance_ : reporting::domain::report_instance
+        }
+        class ReportInstanceHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::ReportInstanceHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<reporting::domain::report_instance>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ReportInstanceMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientReportInstanceModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ReportTypeController {
+            +parent : QObject*
+            -listWindow_ : ReportTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ReportTypeDetailDialog {
+            -ui_ : Ui::ReportTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : reporting::domain::report_type
+        }
+        class ReportTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::ReportTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<reporting::domain::report_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ReportTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientReportTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ServiceDashboardController {
+            +parent : QObject*
+            -mainWindow_ : QMainWindow*
+            -mdiArea_ : QMdiArea*
+            -clientManager_ : ClientManager*
+            -dashboardWindow_ : QPointer<ServiceDashboardMdiWindow>
+            -dashboardSubWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class ServiceDashboardMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -autoRefreshAction_ : QAction*
+            -table_ : QTableWidget*
+            -detailGroup_ : QGroupBox*
+            -detailServiceLabel_ : QLabel*
+            -replicasSpinBox_ : QSpinBox*
+            -applyReplicasButton_ : QPushButton*
+            -stopButton_ : QPushButton*
+            -restartButton_ : QPushButton*
+            -detailTable_ : QTableWidget*
+            -splitter_ : QSplitter*
+            -autoRefreshTimer_ : QTimer*
+            -savedWindowSize_ : QSize
+            -selectedServiceName_ : string
+            -serviceDefinitions_ : vector<controller::api::domain::service_definition>
+        }
+        class TransferProgressDelegate {
+        }
+        class WorkunitDetailDialog {
+            -ui_ : Ui::WorkunitDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -httpBaseUrl_ : QUrl
+            -workunit_ : compute::domain::workunit
+            -batchEntries_ : vector<IdEntry>
+            -appVersionEntries_ : vector<IdEntry>
+            -selectedInputFilePath_ : QString
+            -selectedConfigFilePath_ : QString
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.compute.puml"
+' End:
+@enduml

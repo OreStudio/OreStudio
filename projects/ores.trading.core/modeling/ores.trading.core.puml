@@ -1,0 +1,1430 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.trading.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace trading #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class bond_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class commodity_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class composite_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class credit_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class instrument_ref_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class rates_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+            }
+            class scripted_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class trade_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -http_base_url_ : string
+            }
+            class typed_equity_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class typed_fx_instrument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class activity_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +category : string
+                +requires_confirmation : bool
+                +description : optional<string>
+                +fpml_event_type_code : optional<string>
+                +fsm_transition_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class activity_type_mapper {
+            }
+            class activity_type_repository {
+            }
+            class balance_guaranteed_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +lockout_days : optional<int>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class balance_guaranteed_swap_instrument_mapper {
+            }
+            class balance_guaranteed_swap_instrument_repository {
+            }
+            class bond_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +issuer : string
+                +currency : string
+                +face_value : double
+                +coupon_rate : double
+                +coupon_frequency_code : string
+                +day_count_code : string
+                +issue_date : string
+                +maturity_date : string
+                +settlement_days : optional<int>
+                +call_date : optional<string>
+                +conversion_ratio : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+                +future_expiry_date : optional<string>
+                +option_type : optional<string>
+                +option_expiry_date : optional<string>
+                +option_strike : optional<double>
+                +trs_return_type : optional<string>
+                +trs_funding_leg_code : optional<string>
+                +ascot_option_type : optional<string>
+            }
+            class bond_instrument_mapper {
+            }
+            class bond_instrument_repository {
+            }
+            class business_day_convention_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class business_day_convention_type_mapper {
+            }
+            class business_day_convention_type_repository {
+            }
+            class callable_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +call_dates_json : optional<string>
+                +call_type : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class callable_swap_instrument_mapper {
+            }
+            class callable_swap_instrument_repository {
+            }
+            class cap_floor_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class cap_floor_instrument_mapper {
+            }
+            class cap_floor_instrument_repository {
+            }
+            class commodity_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +commodity_code : string
+                +currency : string
+                +quantity : double
+                +unit : string
+                +start_date : optional<string>
+                +maturity_date : optional<string>
+                +fixed_price : optional<double>
+                +option_type : optional<string>
+                +strike_price : optional<double>
+                +exercise_type : optional<string>
+                +average_type : optional<string>
+                +averaging_start_date : optional<string>
+                +averaging_end_date : optional<string>
+                +spread_commodity_code : optional<string>
+                +spread_amount : optional<double>
+                +strip_frequency_code : optional<string>
+                +variance_strike : optional<double>
+                +accumulation_amount : optional<double>
+                +knock_out_barrier : optional<double>
+                +barrier_type : optional<string>
+                +lower_barrier : optional<double>
+                +upper_barrier : optional<double>
+                +basket_json : optional<string>
+                +day_count_code : optional<string>
+                +payment_frequency_code : optional<string>
+                +swaption_expiry_date : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class commodity_instrument_mapper {
+            }
+            class commodity_instrument_repository {
+            }
+            class composite_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class composite_instrument_mapper {
+            }
+            class composite_instrument_repository {
+            }
+            class composite_leg_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +instrument_id : string
+                +leg_sequence : int
+                +constituent_trade_id : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class composite_leg_mapper {
+            }
+            class composite_leg_repository {
+            }
+            class credit_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +reference_entity : string
+                +currency : string
+                +notional : double
+                +spread : double
+                +recovery_rate : double
+                +tenor : string
+                +start_date : string
+                +maturity_date : string
+                +day_count_code : string
+                +payment_frequency_code : string
+                +index_name : optional<string>
+                +index_series : optional<int>
+                +seniority : optional<string>
+                +restructuring : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+                +option_type : optional<string>
+                +option_expiry_date : optional<string>
+                +option_strike : optional<double>
+                +linked_asset_code : optional<string>
+                +tranche_attachment : optional<double>
+                +tranche_detachment : optional<double>
+            }
+            class credit_instrument_mapper {
+            }
+            class credit_instrument_repository {
+            }
+            class day_count_fraction_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class day_count_fraction_type_mapper {
+            }
+            class day_count_fraction_type_repository {
+            }
+            class equity_accumulator_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +strike : double
+                +fixing_amount : double
+                +start_date : string
+                +expiry_date : string
+                +fixing_frequency : string
+                +long_short : string
+                +knock_out_level : optional<double>
+                +target_amount : optional<double>
+                +target_type : optional<string>
+                +payoff_type : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_accumulator_instrument_mapper {
+            }
+            class equity_accumulator_instrument_repository {
+            }
+            class equity_asian_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +average_type : string
+                +averaging_start_date : string
+                +averaging_end_date : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_asian_option_instrument_mapper {
+            }
+            class equity_asian_option_instrument_repository {
+            }
+            class equity_barrier_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +lower_barrier : double
+                +lower_barrier_type : string
+                +upper_barrier : optional<double>
+                +upper_barrier_type : optional<string>
+                +rebate : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_barrier_option_instrument_mapper {
+            }
+            class equity_barrier_option_instrument_repository {
+            }
+            class equity_digital_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : optional<string>
+                +strike : optional<double>
+                +barrier_level : optional<double>
+                +barrier_type : optional<string>
+                +expiry_date : string
+                +long_short : string
+                +payout_amount : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_digital_option_instrument_mapper {
+            }
+            class equity_digital_option_instrument_repository {
+            }
+            class equity_forward_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +quantity : double
+                +forward_price : optional<double>
+                +expiry_date : string
+                +long_short : string
+                +settlement_type : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_forward_instrument_mapper {
+            }
+            class equity_forward_instrument_repository {
+            }
+            class equity_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +settlement_type : optional<string>
+                +cliquet_frequency : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_option_instrument_mapper {
+            }
+            class equity_option_instrument_repository {
+            }
+            class equity_position_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +quantity : double
+                +price : optional<double>
+                +option_data_json : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_position_instrument_mapper {
+            }
+            class equity_position_instrument_repository {
+            }
+            class equity_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : optional<string>
+                +basket_json : optional<string>
+                +currency : string
+                +notional : double
+                +return_type : string
+                +start_date : string
+                +maturity_date : string
+                +long_short : string
+                +payment_frequency : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_swap_instrument_mapper {
+            }
+            class equity_swap_instrument_repository {
+            }
+            class equity_variance_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +variance_strike : double
+                +start_date : string
+                +maturity_date : string
+                +long_short : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class equity_variance_swap_instrument_mapper {
+            }
+            class equity_variance_swap_instrument_repository {
+            }
+            class floating_index_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class floating_index_type_mapper {
+            }
+            class floating_index_type_repository {
+            }
+            class fpml_event_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class fpml_event_type_mapper {
+            }
+            class fpml_event_type_repository {
+            }
+            class fra_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +end_date : string
+                +currency : string
+                +rate_index : string
+                +long_short : string
+                +strike : double
+                +notional : double
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fra_instrument_mapper {
+            }
+            class fra_instrument_repository {
+            }
+            class fx_accumulator_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +currency : string
+                +fixing_amount : double
+                +strike : double
+                +underlying_code : string
+                +long_short : string
+                +start_date : string
+                +knock_out_barrier : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_accumulator_instrument_mapper {
+            }
+            class fx_accumulator_instrument_repository {
+            }
+            class fx_asian_forward_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +fx_index : string
+                +reference_currency : optional<string>
+                +reference_notional : optional<double>
+                +settlement_currency : optional<string>
+                +settlement_notional : optional<double>
+                +payment_date : optional<string>
+                +long_short : optional<string>
+                +currency : optional<string>
+                +fixing_amount : optional<double>
+                +target_amount : optional<double>
+                +strike : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_asian_forward_instrument_mapper {
+            }
+            class fx_asian_forward_instrument_repository {
+            }
+            class fx_barrier_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +option_type : optional<string>
+                +expiry_date : string
+                +settlement : optional<string>
+                +barrier_type : string
+                +lower_barrier : double
+                +upper_barrier : optional<double>
+                +underlying_code : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_barrier_option_instrument_mapper {
+            }
+            class fx_barrier_option_instrument_repository {
+            }
+            class fx_digital_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +foreign_currency : string
+                +domestic_currency : string
+                +payoff_currency : string
+                +payoff_amount : double
+                +option_type : optional<string>
+                +expiry_date : string
+                +long_short : string
+                +strike : optional<double>
+                +barrier_type : optional<string>
+                +lower_barrier : optional<double>
+                +upper_barrier : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_digital_option_instrument_mapper {
+            }
+            class fx_digital_option_instrument_repository {
+            }
+            class fx_forward_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +value_date : string
+                +settlement : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_forward_instrument_mapper {
+            }
+            class fx_forward_instrument_repository {
+            }
+            class fx_vanilla_option_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +option_type : string
+                +expiry_date : string
+                +exercise_style : string
+                +settlement : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_vanilla_option_instrument_mapper {
+            }
+            class fx_vanilla_option_instrument_repository {
+            }
+            class fx_variance_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +start_date : string
+                +end_date : string
+                +currency : string
+                +underlying_code : string
+                +long_short : string
+                +strike : double
+                +notional : double
+                +moment_type : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class fx_variance_swap_instrument_mapper {
+            }
+            class fx_variance_swap_instrument_repository {
+            }
+            class inflation_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +inflation_index_code : string
+                +base_cpi : optional<double>
+                +lag_convention : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class inflation_swap_instrument_mapper {
+            }
+            class inflation_swap_instrument_repository {
+            }
+            class knock_out_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +barrier_level : double
+                +barrier_type : string
+                +knock_out_dates_json : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class knock_out_swap_instrument_mapper {
+            }
+            class knock_out_swap_instrument_repository {
+            }
+            class leg_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class leg_type_mapper {
+            }
+            class leg_type_repository {
+            }
+            class lifecycle_event_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class lifecycle_event_mapper {
+            }
+            class lifecycle_event_repository {
+            }
+            class party_role_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class party_role_type_mapper {
+            }
+            class party_role_type_repository {
+            }
+            class payment_frequency_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class payment_frequency_type_mapper {
+            }
+            class payment_frequency_type_repository {
+            }
+            class rpa_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +reference_counterparty : string
+                +participation_rate : double
+                +protection_fee : optional<double>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class rpa_instrument_mapper {
+            }
+            class rpa_instrument_repository {
+            }
+            class scripted_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +trade_type_code : string
+                +script_name : string
+                +script_body : optional<string>
+                +events_json : optional<string>
+                +underlyings_json : optional<string>
+                +parameters_json : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class scripted_instrument_mapper {
+            }
+            class scripted_instrument_repository {
+            }
+            class swap_leg_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +instrument_id : string
+                +leg_number : int
+                +leg_type_code : string
+                +day_count_fraction_code : string
+                +business_day_convention_code : string
+                +payment_frequency_code : string
+                +floating_index_code : optional<string>
+                +fixed_rate : optional<double>
+                +spread : optional<double>
+                +notional : double
+                +currency : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class swap_leg_mapper {
+            }
+            class swap_leg_repository {
+            }
+            class swaption_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +expiry_date : string
+                +exercise_type : string
+                +settlement_type : string
+                +long_short : string
+                +start_date : optional<string>
+                +maturity_date : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class swaption_instrument_mapper {
+            }
+            class swaption_instrument_repository {
+            }
+            class trade_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +external_id : optional<string>
+                +book_id : string
+                +portfolio_id : string
+                +successor_trade_id : optional<string>
+                +counterparty_id : optional<string>
+                +trade_type : string
+                +product_type : optional<string>
+                +instrument_id : optional<string>
+                +asset_class : optional<string>
+                +netting_set_id : string
+                +activity_type_code : string
+                +status_id : string
+                +trade_date : optional<string>
+                +execution_timestamp : optional<string>
+                +effective_date : optional<string>
+                +termination_date : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class trade_id_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class trade_id_type_mapper {
+            }
+            class trade_id_type_repository {
+            }
+            class trade_identifier_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +trade_id : string
+                +issuing_party_id : optional<string>
+                +id_value : string
+                +id_type : string
+                +id_scheme : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class trade_identifier_mapper {
+            }
+            class trade_identifier_repository {
+            }
+            class trade_mapper {
+            }
+            class trade_party_role_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +trade_id : string
+                +counterparty_id : string
+                +role : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class trade_party_role_mapper {
+            }
+            class trade_party_role_repository {
+            }
+            class trade_repository {
+            }
+            class trade_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +description : optional<string>
+                +product_type : string
+                +has_options : bool
+                +has_extension : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class trade_type_mapper {
+            }
+            class trade_type_repository {
+            }
+            class vanilla_swap_instrument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +instrument_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +trade_id : optional<string>
+                +start_date : string
+                +maturity_date : string
+                +settlement_lag : optional<int>
+                +netting_set_id : optional<string>
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class vanilla_swap_instrument_mapper {
+            }
+            class vanilla_swap_instrument_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class activity_type_service {
+                -ctx_ : context
+                -repo_ : repository::activity_type_repository
+            }
+            class balance_guaranteed_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::balance_guaranteed_swap_instrument_repository
+            }
+            class bond_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::bond_instrument_repository
+            }
+            class business_day_convention_type_service {
+                -ctx_ : context
+                -repo_ : repository::business_day_convention_type_repository
+            }
+            class callable_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::callable_swap_instrument_repository
+            }
+            class cap_floor_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::cap_floor_instrument_repository
+            }
+            class commodity_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::commodity_instrument_repository
+            }
+            class composite_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::composite_instrument_repository
+                -leg_repo_ : repository::composite_leg_repository
+            }
+            class credit_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::credit_instrument_repository
+            }
+            class day_count_fraction_type_service {
+                -ctx_ : context
+                -repo_ : repository::day_count_fraction_type_repository
+            }
+            class equity_accumulator_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_accumulator_instrument_repository
+            }
+            class equity_asian_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_asian_option_instrument_repository
+            }
+            class equity_barrier_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_barrier_option_instrument_repository
+            }
+            class equity_digital_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_digital_option_instrument_repository
+            }
+            class equity_forward_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_forward_instrument_repository
+            }
+            class equity_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_option_instrument_repository
+            }
+            class equity_position_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_position_instrument_repository
+            }
+            class equity_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_swap_instrument_repository
+            }
+            class equity_variance_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::equity_variance_swap_instrument_repository
+            }
+            class floating_index_type_service {
+                -ctx_ : context
+                -repo_ : repository::floating_index_type_repository
+            }
+            class fpml_event_type_service {
+                -ctx_ : context
+                -repo_ : repository::fpml_event_type_repository
+            }
+            class fra_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fra_instrument_repository
+                -leg_repo_ : repository::swap_leg_repository
+            }
+            class fx_accumulator_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_accumulator_instrument_repository
+            }
+            class fx_asian_forward_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_asian_forward_instrument_repository
+            }
+            class fx_barrier_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_barrier_option_instrument_repository
+            }
+            class fx_digital_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_digital_option_instrument_repository
+            }
+            class fx_forward_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_forward_instrument_repository
+            }
+            class fx_vanilla_option_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_vanilla_option_instrument_repository
+            }
+            class fx_variance_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::fx_variance_swap_instrument_repository
+            }
+            class inflation_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::inflation_swap_instrument_repository
+            }
+            class knock_out_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::knock_out_swap_instrument_repository
+            }
+            class leg_type_service {
+                -ctx_ : context
+                -repo_ : repository::leg_type_repository
+            }
+            class lifecycle_event_service {
+                -ctx_ : context
+                -repo_ : repository::lifecycle_event_repository
+            }
+            class party_role_type_service {
+                -ctx_ : context
+                -repo_ : repository::party_role_type_repository
+            }
+            class payment_frequency_type_service {
+                -ctx_ : context
+                -repo_ : repository::payment_frequency_type_repository
+            }
+            class rpa_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::rpa_instrument_repository
+            }
+            class scripted_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::scripted_instrument_repository
+            }
+            class swaption_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::swaption_instrument_repository
+            }
+            class trade_id_type_service {
+                -ctx_ : context
+                -repo_ : repository::trade_id_type_repository
+            }
+            class trade_identifier_service {
+                -ctx_ : context
+                -repo_ : repository::trade_identifier_repository
+            }
+            class trade_party_role_service {
+                -ctx_ : context
+                -repo_ : repository::trade_party_role_repository
+            }
+            class trade_service {
+                -ctx_ : context
+                -repo_ : repository::trade_repository
+            }
+            class trade_status_service {
+            }
+            class trade_type_service {
+                -ctx_ : context
+                -repo_ : repository::trade_type_repository
+            }
+            class vanilla_swap_instrument_service {
+                -ctx_ : context
+                -repo_ : repository::vanilla_swap_instrument_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.trading.core.puml"
+' End:
+@enduml

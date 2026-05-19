@@ -1,6 +1,6 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
-' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 '
 ' This program is free software; you can redistribute it and/or modify it under
 ' the terms of the GNU General Public License as published by the Free Software
@@ -8,22 +8,98 @@
 ' version.
 '
 ' This program is distributed in the hope that it will be useful, but WITHOUT
-'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 ' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 '
 ' You should have received a copy of the GNU General Public License along with
-' GNU Emacs; see the file COPYING. If not, write to the Free Software
-' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
 @startuml
 
-title ores.telemetry Component - Observability (Tracing, Logging, Export)
+title ores.telemetry.database Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
+    namespace telemetry #F2F2F2 {
+        namespace database #F2F2F2 {
+            namespace repository #F2F2F2 {
+                class telemetry_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +id : sqlgen::PrimaryKey<string>
+                    +tenant_id : string
+                    +timestamp : sqlgen::PrimaryKey<db_timestamp>
+                    +source : string
+                    +source_name : string
+                    +session_id : optional<string>
+                    +account_id : optional<string>
+                    +level : string
+                    +component : string
+                    +message : string
+                    +tag : string
+                    +recorded_at : db_timestamp
+                }
+                class telemetry_stats_hourly_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +hour : string
+                    +source : string
+                    +source_name : string
+                    +level : string
+                    +log_count : int64_t
+                    +unique_sessions : int64_t
+                    +unique_accounts : int64_t
+                }
+                class telemetry_stats_daily_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +day : string
+                    +source : string
+                    +source_name : string
+                    +component : string
+                    +level : string
+                    +log_count : int64_t
+                    +unique_sessions : int64_t
+                    +unique_accounts : int64_t
+                }
+                class nats_server_sample_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
+                    +tenant_id : sqlgen::PrimaryKey<string>
+                }
+                class service_sample_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
+                    +service_name : sqlgen::PrimaryKey<string>
+                    +instance_id : sqlgen::PrimaryKey<string>
+                    +version : string
+                }
+                class nats_stream_sample_entity <<struct>> {
+                    +schema : constexpr static const char*
+                    +tablename : constexpr static const char*
+                    +sampled_at : sqlgen::PrimaryKey<db_timestamp>
+                    +tenant_id : sqlgen::PrimaryKey<string>
+                    +stream_name : sqlgen::PrimaryKey<string>
+                }
+                class telemetry_mapper {
+                }
+                class telemetry_repository {
+                    +limit : uint32_t
+                    +limit : uint32_t
+                    +hours : uint32_t
+                }
+            }
+        }
+    }
+}
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.database.puml"
 ' End:
 @enduml

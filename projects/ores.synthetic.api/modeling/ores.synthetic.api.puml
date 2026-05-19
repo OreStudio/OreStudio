@@ -1,0 +1,122 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.synthetic.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace synthetic #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class generated_organisation <<struct>> {
+                +seed : uint64_t
+                +parties : vector<refdata::domain::party>
+                +party_contacts : vector<refdata::domain::party_contact_information>
+                +party_identifiers : vector<refdata::domain::party_identifier>
+                +counterparties : vector<refdata::domain::counterparty>
+                +party_counterparties : vector<refdata::domain::party_counterparty>
+                +business_unit_types : vector<refdata::domain::business_unit_type>
+                +business_units : vector<refdata::domain::business_unit>
+                +portfolios : vector<refdata::domain::portfolio>
+                +books : vector<refdata::domain::book>
+            }
+            class generation_options <<struct>> {
+                +seed : optional<uint64_t>
+                +account_count : size_t
+                +catalog_count : size_t
+                +data_domain_count : size_t
+                +subject_areas_per_domain : size_t
+                +origin_dimension_count : size_t
+                +nature_dimension_count : size_t
+                +treatment_dimension_count : size_t
+                +methodology_id : optional<boost::uuids::uuid>
+                +dataset_count : size_t
+                +dependencies : vector<string>
+            }
+            class organisation_generation_options <<struct>> {
+                +seed : optional<uint64_t>
+                +country : string
+                +party_count : size_t
+                +party_max_depth : size_t
+                +counterparty_count : size_t
+                +counterparty_max_depth : size_t
+                +portfolio_leaf_count : size_t
+                +portfolio_max_depth : size_t
+                +books_per_leaf_portfolio : size_t
+                +business_unit_count : size_t
+                +business_unit_max_depth : size_t
+                +generate_addresses : bool
+                +contacts_per_party : size_t
+                +contacts_per_counterparty : size_t
+                +generate_identifiers : bool
+            }
+            class synthetic_catalog <<struct>> {
+                +seed : uint64_t
+                +accounts : vector<iam::domain::account>
+                +catalogs : vector<dq::domain::catalog>
+                +data_domains : vector<dq::domain::data_domain>
+                +subject_areas : vector<dq::domain::subject_area>
+                +origin_dimensions : vector<dq::domain::origin_dimension>
+                +nature_dimensions : vector<dq::domain::nature_dimension>
+                +treatment_dimensions : vector<dq::domain::treatment_dimension>
+                +datasets : vector<dq::domain::dataset>
+                +dependencies : vector<string>
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class generate_organisation_request <<struct>> {
+                +country : string
+                +party_count : uint32_t
+                +party_max_depth : uint32_t
+                +counterparty_count : uint32_t
+                +counterparty_max_depth : uint32_t
+                +portfolio_leaf_count : uint32_t
+                +portfolio_max_depth : uint32_t
+                +books_per_leaf_portfolio : uint32_t
+                +business_unit_count : uint32_t
+                +business_unit_max_depth : uint32_t
+                +generate_addresses : bool
+                +contacts_per_party : uint32_t
+                +contacts_per_counterparty : uint32_t
+                +generate_identifiers : bool
+                +seed : optional<uint64_t>
+            }
+            class generate_organisation_response <<struct>> {
+                +success : bool
+                +error_message : string
+                +seed : uint64_t
+                +parties_count : int
+                +counterparties_count : int
+                +business_unit_types_count : int
+                +business_units_count : int
+                +portfolios_count : int
+                +books_count : int
+                +contacts_count : int
+                +identifiers_count : int
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.api.puml"
+' End:
+@enduml

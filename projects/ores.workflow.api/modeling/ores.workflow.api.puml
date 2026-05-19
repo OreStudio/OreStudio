@@ -1,0 +1,199 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.workflow.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace workflow #F2F2F2 {
+        namespace eventing #F2F2F2 {
+            class workflow_instance_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            enum step_log_level {
+                info
+                warn
+                error
+            }
+            class step_log_entry <<struct>> {
+                +level : step_log_level
+                +message : string
+                +context : string
+            }
+            class get_step_result_request <<struct>> {
+                +step_id : string
+            }
+            class get_step_result_response <<struct>> {
+                +found : bool
+                +outcome : step_outcome
+                +result_json : string
+                +error_message : string
+                +log : vector<step_log_entry>
+            }
+            enum step_outcome {
+                completed
+                completed_with_warnings
+                failed
+            }
+            class step_completed_event <<struct>> {
+                +workflow_instance_id : string
+                +step_id : string
+                +outcome : step_outcome
+                +result_json : string
+                +error_message : string
+                +log : vector<step_log_entry>
+            }
+            class start_workflow_message <<struct>> {
+                +type : string
+                +tenant_id : string
+                +request_json : string
+                +correlation_id : string
+                +instance_id : string
+            }
+            class provision_party_input <<struct>> {
+                +full_name : string
+                +short_code : string
+                +party_category : string
+                +party_type : string
+                +business_center_code : string
+                +parent_party_id : optional<string>
+                +principal : string
+                +password : string
+                +totp_secret : string
+                +email : string
+                +account_type : string
+            }
+            class provision_parties_request <<struct>> {
+                +parties : vector<provision_party_input>
+            }
+            class provision_parties_response <<struct>> {
+                +success : bool
+                +message : string
+                +party_ids : vector<string>
+                +workflow_instance_ids : vector<string>
+                +correlation_id : string
+            }
+            class provision_party_workflow_request <<struct>> {
+                +party_id : string
+                +full_name : string
+                +short_code : string
+                +party_category : string
+                +party_type : string
+                +business_center_code : string
+                +parent_party_id : optional<string>
+                +password : string
+                +totp_secret : string
+                +email : string
+                +account_type : string
+            }
+            class workflow_instance_summary <<struct>> {
+                +id : string
+                +type : string
+                +status : string
+                +current_step_index : int
+                +step_count : int
+                +correlation_id : string
+                +created_by : string
+                +created_at : string
+                +completed_at : optional<string>
+                +error : string
+            }
+            class list_workflow_instances_request <<struct>> {
+                +limit : int
+                +status_filter : optional<string>
+            }
+            class list_workflow_instances_response <<struct>> {
+                +success : bool
+                +message : string
+                +instances : vector<workflow_instance_summary>
+            }
+            class workflow_step_summary <<struct>> {
+                +id : string
+                +name : string
+                +status : string
+                +step_index : int
+                +created_at : string
+                +started_at : optional<string>
+                +completed_at : optional<string>
+                +error : string
+                +log : vector<step_log_entry>
+            }
+            class get_workflow_steps_request <<struct>> {
+                +workflow_instance_id : string
+            }
+            class get_workflow_steps_response <<struct>> {
+                +success : bool
+                +message : string
+                +steps : vector<workflow_step_summary>
+            }
+            class workflow_step_definition_summary <<struct>> {
+                +step_index : int
+                +name : string
+                +description : string
+                +command_subject : string
+                +has_compensation : bool
+            }
+            class workflow_definition_summary <<struct>> {
+                +type_name : string
+                +description : string
+                +step_count : int
+                +steps : vector<workflow_step_definition_summary>
+            }
+            class list_workflow_definitions_request <<struct>> {
+            }
+            class list_workflow_definitions_response <<struct>> {
+                +success : bool
+                +message : string
+                +definitions : vector<workflow_definition_summary>
+            }
+        }
+        namespace service #F2F2F2 {
+            class workflow_step_def <<struct>> {
+                +name : string
+                +description : string
+                +command_subject : string
+                +compensation_subject : string
+            }
+            class materialised_step <<struct>> {
+                +name : string
+                +command_subject : string
+                +compensation_subject : string
+            }
+            class workflow_definition <<struct>> {
+                +type_name : string
+                +description : string
+            }
+            class workflow_registry {
+                -definitions_ : unordered_map<string, workflow_definition>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workflow.api.puml"
+' End:
+@enduml

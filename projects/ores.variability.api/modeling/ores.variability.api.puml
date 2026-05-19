@@ -1,0 +1,91 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.variability.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace variability #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class system_setting <<struct>> {
+                +version : int
+                +tenant_id : string
+                +name : string
+                +value : string
+                +data_type : string
+                +description : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class system_setting_definition <<struct>> {
+                +name : string_view
+                +data_type : string_view
+                +default_value : string_view
+                +description : string_view
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class system_setting_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +setting_names : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class list_settings_request <<struct>> {
+            }
+            class list_settings_response <<struct>> {
+                +settings : vector<ores::variability::domain::system_setting>
+            }
+            class save_setting_request <<struct>> {
+                +data : ores::variability::domain::system_setting
+            }
+            class save_setting_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_setting_request <<struct>> {
+                +name : string
+            }
+            class delete_setting_response <<struct>> {
+                +success : bool
+                +error_message : string
+            }
+            class get_setting_history_request <<struct>> {
+                +name : string
+            }
+            class get_setting_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::variability::domain::system_setting>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.variability.api.puml"
+' End:
+@enduml

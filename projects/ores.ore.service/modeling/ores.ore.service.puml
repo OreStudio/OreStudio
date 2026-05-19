@@ -24,51 +24,53 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
         namespace service #F2F2F2 {
-
             namespace app #F2F2F2 {
                 class application {
-                    + run(io_ctx: io_context&, cfg: options): awaitable<void>
-                    - make_context(db_opts: database_options): context
+                }
+                class application_exception {
+                }
+                class host {
                 }
             }
-
-            namespace messaging #F2F2F2 {
-                class ore_import_handler {
-                    + ore_import(msg: message): void
-                }
-                class registrar {
-                    + {static} register_handlers(nats, ctx, signer, outbound_nats, http_base_url, work_dir): vector<subscription>
-                }
-            }
-
-            namespace service #F2F2F2 {
-                class ore_import_workflow {
-                    + execute(ctx, nats): bool
-                    + compensate(ctx, nats): void
-                    + failure_reason(): string const&
-                    + result(): ore_import_response const&
-                }
-            }
-
             namespace config #F2F2F2 {
-                class options {
-                    + logging: optional<logging_options>
-                    + nats: nats_options
-                    + database: database_options
-                    + http_base_url: string
-                    + work_dir: string
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +nats : ores::nats::config::nats_options
+                    +database : ores::database::database_options
+                    +http_base_url : string
+                    +work_dir : string
                 }
                 class parser {
-                    + parse(args, info, err): optional<options>
+                }
+                class parser_exception {
                 }
             }
-
-            app::application --> messaging::registrar : uses
-            app::application --> config::options : configured by
-            messaging::registrar --> messaging::ore_import_handler : registers
-            messaging::ore_import_handler --> service::ore_import_workflow : executes
+            namespace messaging #F2F2F2 {
+                class ore_import_execute_handler {
+                    -nats_ : ores::nats::service::client&
+                    -outbound_nats_ : ores::nats::service::nats_client
+                    -http_base_url_ : string
+                    -work_dir_ : filesystem::path
+                }
+                class ore_import_handler {
+                    -nats_ : ores::nats::service::client&
+                    -ctx_ : ores::database::context
+                    -signer_ : ores::security::jwt::jwt_authenticator
+                }
+                class registrar {
+                }
+                class report_package_handler {
+                    -nats_ : ores::nats::service::client&
+                    -http_base_url_ : string
+                }
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.service.puml"
+' End:
 @enduml

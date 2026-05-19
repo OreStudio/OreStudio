@@ -1,0 +1,586 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.trading Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class BondInstrumentForm {
+            -ui_ : Ui::BondInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::bond_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class BookController {
+            +parent : QObject*
+            -imageCache_ : ImageCache*
+            -changeReasonCache_ : ChangeReasonCache*
+            -badgeCache_ : BadgeCache*
+            -listWindow_ : BookMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class BookDetailDialog {
+            -ui_ : Ui::BookDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -book_ : refdata::domain::book
+            -portfolioEntries_ : vector<portfolio_entry>
+            -ownerUnitEntries_ : vector<business_unit_entry>
+        }
+        class BookHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::BookHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::book>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class BookMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : QString
+            -badgeCache_ : BadgeCache*
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientBookModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -importAction_ : QAction*
+            -exportXmlAction_ : QAction*
+        }
+        class BookStatusController {
+            +parent : QObject*
+            -listWindow_ : BookStatusMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class BookStatusDetailDialog {
+            -ui_ : Ui::BookStatusDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -status_ : refdata::domain::book_status
+        }
+        class BookStatusHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::BookStatusHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::book_status>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class BookStatusMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientBookStatusModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ClientBookModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -books_ : vector<refdata::domain::book>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::book, BookKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientBookStatusModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -statuses_ : vector<refdata::domain::book_status>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::book_status, BookStatusKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPortfolioModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -portfolios_ : vector<refdata::domain::portfolio>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::portfolio, PortfolioKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientTradeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -items_ : vector<trading::domain::trade>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : TradeTimestampExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class CommodityInstrumentForm {
+            -ui_ : Ui::CommodityInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::commodity_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class CompositeInstrumentForm {
+            -ui_ : Ui::CompositeInstrumentForm*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -instrument_ : trading::domain::composite_instrument
+            -legs_ : vector<trading::domain::composite_leg>
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class CompositeLegsWidget {
+            -ui_ : Ui::CompositeLegsWidget*
+        }
+        class CreditInstrumentForm {
+            -ui_ : Ui::CreditInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::credit_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class EquityInstrumentForm {
+            -ui_ : Ui::EquityInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::equity_option_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxAccumulatorInstrumentForm {
+            -ui_ : Ui::FxAccumulatorInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_accumulator_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxAsianForwardInstrumentForm {
+            -ui_ : Ui::FxAsianForwardInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_asian_forward_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxBarrierOptionInstrumentForm {
+            -ui_ : Ui::FxBarrierOptionInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_barrier_option_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxDigitalOptionInstrumentForm {
+            -ui_ : Ui::FxDigitalOptionInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_digital_option_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxInstrumentForm {
+            -ui_ : Ui::FxInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_forward_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxVanillaOptionInstrumentForm {
+            -ui_ : Ui::FxVanillaOptionInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_vanilla_option_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class FxVarianceSwapInstrumentForm {
+            -ui_ : Ui::FxVarianceSwapInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -instrument_ : trading::domain::fx_variance_swap_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class InstrumentProvenance <<struct>> {
+            +version : int
+            +modified_by : string
+            +performed_by : string
+            +recorded_at : chrono::system_clock::time_point
+            +change_reason_code : string
+            +change_commentary : string
+        }
+        class IInstrumentForm {
+        }
+        class ImportTradeDialog {
+            +parent : QWidget*
+            -book_ : refdata::domain::book
+            -items_ : vector<ore::xml::trade_import_item>
+            -validation_errors_ : vector<string>
+            -counterparties_ : vector<refdata::domain::counterparty>
+            -source_label_ : QString
+            -market_data_dir_ : string
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -tradeDateEdit_ : QDateEdit*
+            -effectiveDateEdit_ : QDateEdit*
+            -terminationDateEdit_ : QDateEdit*
+            -lifecycleEventCombo_ : QComboBox*
+            -defaultNettingSetEdit_ : QLineEdit*
+            -defaultCounterpartyCombo_ : QComboBox*
+            -counterpartyStatusLabel_ : QLabel*
+            -fileLabel_ : QLabel*
+            -bookLabel_ : QLabel*
+            -selectAllCheckbox_ : QCheckBox*
+            -selectionCountLabel_ : QLabel*
+            -tradeTable_ : QTableWidget*
+            -progressBar_ : QProgressBar*
+            -statusLabel_ : QLabel*
+            -importButton_ : QPushButton*
+            -cancelButton_ : QPushButton*
+            -importInProgress_ : bool
+            -cancelRequested_ : atomic<bool>
+        }
+        class InstrumentFormRegistry {
+            -order_ : vector<product_type>
+            -entries_ : map<product_type, Entry>
+            -typeOrder_ : vector<QString>
+            -typeEntries_ : map<QString, TypeEntry>
+        }
+        class InstrumentFormUtils {
+        }
+        class OreImportController {
+            +parent : QObject*
+            +bookName : const string&
+            -clientManager_ : ClientManager*
+            -http_base_url_ : string
+        }
+        class OreImportWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -targetBookName_ : string
+            -scanResult_ : ore::scanner::scan_result
+            -choices_ : ore::planner::import_choices
+            -importPlan_ : ore::planner::ore_import_plan
+            -existingIsoCodes_ : set<string>
+            -existingPortfolioNames_ : vector<string>
+            -ore_dir_ : filesystem::path
+            -http_base_url_ : string
+            -import_response_ : ores::ore::messaging::ore_import_response
+            -importSuccess_ : bool
+            -importError_ : QString
+        }
+        class OreWelcomePage {
+            -wizard_ : OreImportWizard*
+        }
+        class OreDirectoryPage {
+            -wizard_ : OreImportWizard*
+            -dirEdit_ : QLineEdit*
+            -browseBtn_ : QPushButton*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -scanComplete_ : bool
+            -scanning_ : bool
+        }
+        class OreScanSummaryPage {
+            -wizard_ : OreImportWizard*
+            -summaryLabel_ : QLabel*
+            -exclusionList_ : QListWidget*
+            -exclusionEdit_ : QLineEdit*
+            -addBtn_ : QPushButton*
+            -removeBtn_ : QPushButton*
+            -hierarchyLabel_ : QLabel*
+        }
+        class OreCurrencyPage {
+            -wizard_ : OreImportWizard*
+            -allRadio_ : QRadioButton*
+            -missingRadio_ : QRadioButton*
+            -statusLabel_ : QLabel*
+            -countLabel_ : QLabel*
+            -fetchDone_ : bool
+        }
+        class OrePortfolioPage {
+            -wizard_ : OreImportWizard*
+            -parentCombo_ : QComboBox*
+            -hierarchyPreviewLabel_ : QLabel*
+            -fetchDone_ : bool
+            -booksByName_ : map<string, refdata::domain::book>
+        }
+        class OreTradeImportPage {
+            -wizard_ : OreImportWizard*
+            -tradeDateEdit_ : QLineEdit*
+            -lifecycleEventCombo_ : QComboBox*
+            -defaultCounterpartyCombo_ : QComboBox*
+            -counterpartyStatusLabel_ : QLabel*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -importDone_ : bool
+            -importStarted_ : bool
+        }
+        class OreDonePage {
+            -wizard_ : OreImportWizard*
+            -summaryLabel_ : QLabel*
+            -errorBanner_ : QLabel*
+            -workflowIdRow_ : QWidget*
+            -workflowIdEdit_ : QLineEdit*
+            -correlIdRow_ : QWidget*
+            -correlIdEdit_ : QLineEdit*
+            -stepsWidget_ : WorkflowStepsWidget*
+            -importLogWidget_ : WorkflowStepLogWidget*
+        }
+        class OreImporter {
+            -cm_ : ClientManager*
+        }
+        class OrgExplorerMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -countWatchers_ : QList<QFutureWatcher<CountResult>*>
+            -units_ : vector<refdata::domain::business_unit>
+            -books_ : vector<refdata::domain::book>
+        }
+        class OrgExplorerTradeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -items_ : vector<trading::domain::trade>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -filter_book_id_ : optional<boost::uuids::uuid>
+            -filter_business_unit_id_ : optional<boost::uuids::uuid>
+            -cpty_map_ : unordered_map<string, CounterpartyInfo>
+        }
+        class OrgTreeNodeFilter <<struct>> {
+            +book_id : optional<boost::uuids::uuid>
+            +business_unit_id : optional<boost::uuids::uuid>
+        }
+        class OrgTreeNode <<struct>> {
+            +kind : Kind
+            +party_name : QString
+            +unit : refdata::domain::business_unit
+            +book : refdata::domain::book
+            +parent : OrgTreeNode*
+            +children : vector<unique_ptr<OrgTreeNode>>
+            +row_in_parent : int
+        }
+        class OrgExplorerTreeModel {
+            -root_ : unique_ptr<OrgTreeNode>
+            -trade_counts_ : unordered_map<string, uint32_t>
+        }
+        class PortfolioController {
+            +parent : QObject*
+            -imageCache_ : ImageCache*
+            -changeReasonCache_ : ChangeReasonCache*
+            -badgeCache_ : BadgeCache*
+            -listWindow_ : PortfolioMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PortfolioDetailDialog {
+            -ui_ : Ui::PortfolioDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -portfolio_ : refdata::domain::portfolio
+            -portfolioEntries_ : vector<portfolio_entry>
+        }
+        class PortfolioExplorerMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -countWatchers_ : QList<QFutureWatcher<CountResult>*>
+            -portfolios_ : vector<refdata::domain::portfolio>
+            -books_ : vector<refdata::domain::book>
+            -dragStartPos_ : QPoint
+            -dragSourceIndex_ : QModelIndex
+        }
+        class CounterpartyInfo <<struct>> {
+            +short_code : string
+            +full_name : string
+        }
+        class PortfolioExplorerTradeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -items_ : vector<trading::domain::trade>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -filter_book_id_ : optional<boost::uuids::uuid>
+            -filter_portfolio_id_ : optional<boost::uuids::uuid>
+            -cpty_map_ : unordered_map<string, CounterpartyInfo>
+        }
+        class PortfolioTreeNode <<struct>> {
+            +kind : Kind
+            +party_name : QString
+            +portfolio : refdata::domain::portfolio
+            +book : refdata::domain::book
+            +parent : PortfolioTreeNode*
+            +children : vector<unique_ptr<PortfolioTreeNode>>
+            +row_in_parent : int
+        }
+        class TreeNodeFilter <<struct>> {
+            +book_id : optional<boost::uuids::uuid>
+            +portfolio_id : optional<boost::uuids::uuid>
+        }
+        class PortfolioExplorerTreeModel {
+            -root_ : unique_ptr<PortfolioTreeNode>
+            -trade_counts_ : unordered_map<string, uint32_t>
+        }
+        class PortfolioHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PortfolioHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::portfolio>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PortfolioMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : QString
+            -badgeCache_ : BadgeCache*
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPortfolioModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ScriptedInstrumentForm {
+            -ui_ : Ui::ScriptedInstrumentForm*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -instrument_ : trading::domain::scripted_instrument
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class SwapInstrumentForm {
+            -ui_ : Ui::SwapInstrumentForm*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -state_ : SwapFormState
+            -legs_ : vector<trading::domain::swap_leg>
+            -dirty_ : bool
+            -loaded_ : bool
+        }
+        class TradeController {
+            +parent : QObject*
+            -listWindow_ : TradeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class TradeDetailDialog {
+            -ui_ : Ui::TradeDetailDialog*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -trade_ : trading::domain::trade
+            -books_ : vector<refdata::domain::book>
+            -counterparties_ : vector<refdata::domain::counterparty>
+            -instrumentFormRegistry_ : InstrumentFormRegistry
+            -formMap_ : map<trading::domain::product_type, IInstrumentForm*>
+            -typeFormMap_ : map<string, IInstrumentForm*>
+            -activeForm_ : IInstrumentForm*
+            -tradeTypeCache_ : map<string, trading::domain::trade_type>
+            -createTypeTimer_ : QTimer*
+        }
+        class TradeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::TradeHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::trade>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class TradeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientTradeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -importAction_ : QAction*
+        }
+        class TradingPlugin {
+            -ctx_ : plugin_context
+            -oreImportController_ : unique_ptr<OreImportController>
+            -portfolioController_ : unique_ptr<PortfolioController>
+            -bookController_ : unique_ptr<BookController>
+            -bookStatusController_ : unique_ptr<BookStatusController>
+            -tradeController_ : unique_ptr<TradeController>
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.trading.puml"
+' End:
+@enduml

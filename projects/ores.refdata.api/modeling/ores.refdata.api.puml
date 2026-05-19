@@ -1,0 +1,1608 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.refdata.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace refdata #F2F2F2 {
+        namespace csv #F2F2F2 {
+            class exporter {
+            }
+        }
+        namespace domain #F2F2F2 {
+            class asset_class_info <<struct>> {
+                +code : string
+                +description : string
+                +coding_scheme_code : string
+            }
+            class book <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +parent_portfolio_id : boost::uuids::uuid
+                +owner_unit_id : optional<boost::uuids::uuid>
+                +ledger_ccy : string
+                +gl_account_ref : string
+                +cost_center : string
+                +book_status : string
+                +is_trading_book : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class book_status <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class business_centre <<struct>> {
+                +version : int
+                +code : string
+                +source : string
+                +description : string
+                +city_name : string
+                +coding_scheme_code : string
+                +country_alpha2_code : string
+                +image_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class business_day_convention <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class business_unit <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +unit_name : string
+                +parent_business_unit_id : optional<boost::uuids::uuid>
+                +unit_type_id : optional<boost::uuids::uuid>
+                +unit_code : string
+                +business_centre_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class business_unit_type <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +coding_scheme_code : string
+                +code : string
+                +name : string
+                +level : int
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class calendar_adjustment <<struct>> {
+                +version : int
+                +calendar_name : string
+                +base_calendar : optional<string>
+                +additional_holidays : vector<string>
+                +additional_business_days : vector<string>
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class cds_convention <<struct>> {
+                +version : int
+                +id : string
+                +settlement_days : int
+                +calendar : string
+                +frequency : string
+                +payment_convention : string
+                +rule : string
+                +day_count_fraction : string
+                +settles_accrual : bool
+                +pays_at_default_time : bool
+                +upfront_settlement_days : optional<int>
+                +last_period_day_count_fraction : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class compounding_method <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class contact_type <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class counterparty <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +full_name : string
+                +short_code : string
+                +transliterated_name : optional<string>
+                +party_type : string
+                +parent_counterparty_id : optional<boost::uuids::uuid>
+                +business_center_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class counterparty_contact_information <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +contact_type : string
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class counterparty_identifier <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +id_scheme : string
+                +id_value : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class country <<struct>> {
+                +version : int
+                +alpha2_code : string
+                +alpha3_code : string
+                +numeric_code : string
+                +name : string
+                +official_name : string
+                +image_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class currency <<struct>> {
+                +version : int
+                +iso_code : string
+                +name : string
+                +numeric_code : string
+                +symbol : string
+                +fraction_symbol : string
+                +fractions_per_unit : int
+                +rounding_type : string
+                +rounding_precision : int
+                +format : string
+                +monetary_nature : string
+                +market_tier : string
+                +image_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class currency_market_tier <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class currency_version <<struct>> {
+                +data : currency
+                +version_number : int
+                +modified_by : string
+                +recorded_at : chrono::system_clock::time_point
+                +change_summary : string
+            }
+            class currency_version_history <<struct>> {
+                +iso_code : string
+                +versions : vector<currency_version>
+            }
+            class day_count_fraction <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class deposit_convention <<struct>> {
+                +version : int
+                +id : string
+                +index_based : bool
+                +index : optional<string>
+                +calendar : optional<string>
+                +convention : optional<string>
+                +end_of_month : optional<bool>
+                +day_count_fraction : optional<string>
+                +settlement_days : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fra_convention <<struct>> {
+                +version : int
+                +id : string
+                +index : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_convention <<struct>> {
+                +version : int
+                +id : string
+                +spot_days : int
+                +source_currency : string
+                +target_currency : string
+                +points_factor : double
+                +advance_calendar : optional<string>
+                +spot_relative : optional<bool>
+                +end_of_month : optional<bool>
+                +convention : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class ibor_index_convention <<struct>> {
+                +version : int
+                +id : string
+                +fixing_calendar : string
+                +day_count_fraction : string
+                +settlement_days : int
+                +business_day_convention : string
+                +end_of_month : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class monetary_nature <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class ois_convention <<struct>> {
+                +version : int
+                +id : string
+                +spot_lag : int
+                +index : string
+                +fixed_day_count_fraction : string
+                +fixed_calendar : optional<string>
+                +payment_lag : optional<int>
+                +end_of_month : optional<bool>
+                +fixed_frequency : optional<string>
+                +fixed_convention : optional<string>
+                +fixed_payment_convention : optional<string>
+                +rule : optional<string>
+                +payment_calendar : optional<string>
+                +rate_cutoff : optional<int>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class overnight_index_convention <<struct>> {
+                +version : int
+                +id : string
+                +fixing_calendar : string
+                +day_count_fraction : string
+                +settlement_days : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +full_name : string
+                +short_code : string
+                +codename : string
+                +transliterated_name : optional<string>
+                +party_category : string
+                +party_type : string
+                +parent_party_id : optional<boost::uuids::uuid>
+                +business_center_code : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_contact_information <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +contact_type : string
+                +street_line_1 : string
+                +street_line_2 : string
+                +city : string
+                +state : string
+                +country_code : string
+                +postal_code : string
+                +phone : string
+                +email : string
+                +web_page : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_counterparty <<struct>> {
+                +version : int
+                +tenant_id : string
+                +party_id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_country <<struct>> {
+                +version : int
+                +tenant_id : string
+                +party_id : boost::uuids::uuid
+                +country_alpha2_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_currency <<struct>> {
+                +version : int
+                +tenant_id : string
+                +party_id : boost::uuids::uuid
+                +currency_iso_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_id_scheme <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +coding_scheme_code : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_identifier <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +id_scheme : string
+                +id_value : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_status <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_type <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class payment_frequency <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class portfolio <<struct>> {
+                +version : int
+                +tenant_id : string
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +parent_portfolio_id : optional<boost::uuids::uuid>
+                +owner_unit_id : optional<boost::uuids::uuid>
+                +purpose_type : string
+                +aggregation_ccy : string
+                +is_virtual : int
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class purpose_type <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class rounding_type <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class swap_convention <<struct>> {
+                +version : int
+                +id : string
+                +fixed_calendar : optional<string>
+                +fixed_frequency : string
+                +fixed_convention : optional<string>
+                +fixed_day_count_fraction : string
+                +index : string
+                +float_frequency : optional<string>
+                +sub_periods_coupon_type : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class zero_convention <<struct>> {
+                +version : int
+                +id : string
+                +tenor_based : bool
+                +day_count_fraction : string
+                +compounding : optional<string>
+                +compounding_frequency : optional<string>
+                +tenor_calendar : optional<string>
+                +spot_lag : optional<int>
+                +spot_calendar : optional<string>
+                +roll_convention : optional<string>
+                +end_of_month : optional<bool>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class book_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class business_centre_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +codes : vector<string>
+                +tenant_id : string
+            }
+            class business_unit_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class counterparty_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class counterparty_contact_information_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class counterparty_identifier_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class country_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +alpha2_codes : vector<string>
+                +tenant_id : string
+            }
+            class currency_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +iso_codes : vector<string>
+                +tenant_id : string
+            }
+            class currency_market_tier_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +codes : vector<string>
+                +tenant_id : string
+            }
+            class monetary_nature_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +codes : vector<string>
+                +tenant_id : string
+            }
+            class party_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class party_contact_information_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class party_identifier_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class portfolio_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_asset_classes_request <<struct>> {
+                +coding_scheme_code : string
+                +offset : int
+                +limit : int
+            }
+            class get_asset_classes_response <<struct>> {
+                +asset_classes : vector<ores::refdata::domain::asset_class_info>
+                +total_available_count : int
+            }
+            class get_books_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_books_response <<struct>> {
+                +books : vector<ores::refdata::domain::book>
+                +total_available_count : int
+            }
+            class save_book_request <<struct>> {
+                +data : ores::refdata::domain::book
+            }
+            class save_book_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_book_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_book_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_book_history_request <<struct>> {
+                +id : string
+            }
+            class get_book_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::refdata::domain::book>
+            }
+            class get_book_statuses_request <<struct>> {
+            }
+            class get_book_statuses_response <<struct>> {
+                +book_statuses : vector<ores::refdata::domain::book_status>
+            }
+            class save_book_status_request <<struct>> {
+                +data : ores::refdata::domain::book_status
+            }
+            class save_book_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_book_status_request <<struct>> {
+                +status : string
+            }
+            class delete_book_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_book_status_history_request <<struct>> {
+                +status : string
+            }
+            class get_book_status_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::book_status>
+            }
+            class get_business_centres_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_business_centres_response <<struct>> {
+                +business_centres : vector<ores::refdata::domain::business_centre>
+                +total_available_count : int
+            }
+            class save_business_centre_request <<struct>> {
+                +data : ores::refdata::domain::business_centre
+            }
+            class save_business_centre_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_business_centre_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_business_centre_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_business_centre_history_request <<struct>> {
+                +code : string
+            }
+            class get_business_centre_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::business_centre>
+            }
+            class get_business_units_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_business_units_response <<struct>> {
+                +business_units : vector<ores::refdata::domain::business_unit>
+                +total_available_count : int
+            }
+            class save_business_unit_request <<struct>> {
+                +data : ores::refdata::domain::business_unit
+            }
+            class save_business_unit_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_business_unit_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_business_unit_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_business_unit_history_request <<struct>> {
+                +id : string
+            }
+            class get_business_unit_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::business_unit>
+            }
+            class get_business_unit_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_business_unit_types_response <<struct>> {
+                +business_unit_types : vector<ores::refdata::domain::business_unit_type>
+                +total_available_count : int
+            }
+            class save_business_unit_type_request <<struct>> {
+                +data : ores::refdata::domain::business_unit_type
+            }
+            class save_business_unit_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_business_unit_type_request <<struct>> {
+                +type : string
+            }
+            class delete_business_unit_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_business_unit_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_business_unit_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::business_unit_type>
+            }
+            class get_cds_conventions_request <<struct>> {
+            }
+            class get_cds_conventions_response <<struct>> {
+                +cds_conventions : vector<ores::refdata::domain::cds_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_cds_convention_request <<struct>> {
+                +data : ores::refdata::domain::cds_convention
+            }
+            class save_cds_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_cds_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_cds_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_cds_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_cds_convention_history_response <<struct>> {
+                +cds_conventions : vector<ores::refdata::domain::cds_convention>
+                +success : bool
+                +message : string
+            }
+            class get_contact_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_contact_types_response <<struct>> {
+                +contact_types : vector<ores::refdata::domain::contact_type>
+                +total_available_count : int
+            }
+            class save_contact_type_request <<struct>> {
+                +data : ores::refdata::domain::contact_type
+            }
+            class save_contact_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_contact_type_request <<struct>> {
+                +type : string
+            }
+            class delete_contact_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_contact_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_contact_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::contact_type>
+            }
+            class get_counterparty_contact_informations_request <<struct>> {
+                +counterparty_id : string
+            }
+            class get_counterparty_contact_informations_response <<struct>> {
+                +contact_informations : vector<ores::refdata::domain::counterparty_contact_information>
+            }
+            class save_counterparty_contact_information_request <<struct>> {
+                +data : ores::refdata::domain::counterparty_contact_information
+            }
+            class save_counterparty_contact_information_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_counterparty_contact_information_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_counterparty_contact_information_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_counterparty_identifiers_request <<struct>> {
+                +counterparty_id : string
+            }
+            class get_counterparty_identifiers_response <<struct>> {
+                +identifiers : vector<ores::refdata::domain::counterparty_identifier>
+            }
+            class save_counterparty_identifier_request <<struct>> {
+                +data : ores::refdata::domain::counterparty_identifier
+            }
+            class save_counterparty_identifier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_counterparty_identifier_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_counterparty_identifier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_counterparties_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_counterparties_response <<struct>> {
+                +counterparties : vector<ores::refdata::domain::counterparty>
+                +total_available_count : int
+            }
+            class save_counterparty_request <<struct>> {
+                +data : ores::refdata::domain::counterparty
+            }
+            class save_counterparty_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_counterparty_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_counterparty_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_counterparty_history_request <<struct>> {
+                +id : string
+            }
+            class get_counterparty_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::counterparty>
+            }
+            class get_countries_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_countries_response <<struct>> {
+                +countries : vector<ores::refdata::domain::country>
+                +total_available_count : int
+            }
+            class save_country_request <<struct>> {
+                +data : ores::refdata::domain::country
+            }
+            class save_country_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_country_request <<struct>> {
+                +alpha2_codes : vector<string>
+            }
+            class delete_country_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_country_history_request <<struct>> {
+                +alpha2_code : string
+            }
+            class get_country_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::country>
+            }
+            class currency_version_history <<struct>> {
+                +versions : vector<ores::refdata::domain::currency_version>
+            }
+            class get_currency_history_request <<struct>> {
+                +iso_code : string
+            }
+            class get_currency_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : currency_version_history
+            }
+            class get_currency_market_tiers_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_currency_market_tiers_response <<struct>> {
+                +currency_market_tiers : vector<ores::refdata::domain::currency_market_tier>
+                +total_available_count : int
+            }
+            class save_currency_market_tier_request <<struct>> {
+                +data : ores::refdata::domain::currency_market_tier
+            }
+            class save_currency_market_tier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_currency_market_tier_request <<struct>> {
+                +tier : string
+            }
+            class delete_currency_market_tier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_currency_market_tier_history_request <<struct>> {
+                +tier : string
+            }
+            class get_currency_market_tier_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::currency_market_tier>
+            }
+            class get_currencies_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_currencies_response <<struct>> {
+                +currencies : vector<ores::refdata::domain::currency>
+                +total_available_count : int
+            }
+            class save_currency_request <<struct>> {
+                +data : ores::refdata::domain::currency
+            }
+            class save_currency_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_currency_request <<struct>> {
+                +iso_codes : vector<string>
+            }
+            class delete_currency_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_deposit_conventions_request <<struct>> {
+            }
+            class get_deposit_conventions_response <<struct>> {
+                +deposit_conventions : vector<ores::refdata::domain::deposit_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_deposit_convention_request <<struct>> {
+                +data : ores::refdata::domain::deposit_convention
+            }
+            class save_deposit_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_deposit_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_deposit_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_deposit_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_deposit_convention_history_response <<struct>> {
+                +deposit_conventions : vector<ores::refdata::domain::deposit_convention>
+                +success : bool
+                +message : string
+            }
+            class get_fra_conventions_request <<struct>> {
+            }
+            class get_fra_conventions_response <<struct>> {
+                +fra_conventions : vector<ores::refdata::domain::fra_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_fra_convention_request <<struct>> {
+                +data : ores::refdata::domain::fra_convention
+            }
+            class save_fra_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_fra_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_fra_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_fra_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_fra_convention_history_response <<struct>> {
+                +fra_conventions : vector<ores::refdata::domain::fra_convention>
+                +success : bool
+                +message : string
+            }
+            class get_fx_conventions_request <<struct>> {
+            }
+            class get_fx_conventions_response <<struct>> {
+                +fx_conventions : vector<ores::refdata::domain::fx_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_fx_convention_request <<struct>> {
+                +data : ores::refdata::domain::fx_convention
+            }
+            class save_fx_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_fx_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_fx_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_fx_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_fx_convention_history_response <<struct>> {
+                +fx_conventions : vector<ores::refdata::domain::fx_convention>
+                +success : bool
+                +message : string
+            }
+            class get_ibor_index_conventions_request <<struct>> {
+            }
+            class get_ibor_index_conventions_response <<struct>> {
+                +ibor_index_conventions : vector<ores::refdata::domain::ibor_index_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_ibor_index_convention_request <<struct>> {
+                +data : ores::refdata::domain::ibor_index_convention
+            }
+            class save_ibor_index_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_ibor_index_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_ibor_index_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_ibor_index_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_ibor_index_convention_history_response <<struct>> {
+                +ibor_index_conventions : vector<ores::refdata::domain::ibor_index_convention>
+                +success : bool
+                +message : string
+            }
+            class get_monetary_natures_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_monetary_natures_response <<struct>> {
+                +monetary_natures : vector<ores::refdata::domain::monetary_nature>
+                +total_available_count : int
+            }
+            class save_monetary_nature_request <<struct>> {
+                +data : ores::refdata::domain::monetary_nature
+            }
+            class save_monetary_nature_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_monetary_nature_request <<struct>> {
+                +nature : string
+            }
+            class delete_monetary_nature_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_monetary_nature_history_request <<struct>> {
+                +nature : string
+            }
+            class get_monetary_nature_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::monetary_nature>
+            }
+            class get_ois_conventions_request <<struct>> {
+            }
+            class get_ois_conventions_response <<struct>> {
+                +ois_conventions : vector<ores::refdata::domain::ois_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_ois_convention_request <<struct>> {
+                +data : ores::refdata::domain::ois_convention
+            }
+            class save_ois_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_ois_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_ois_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_ois_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_ois_convention_history_response <<struct>> {
+                +ois_conventions : vector<ores::refdata::domain::ois_convention>
+                +success : bool
+                +message : string
+            }
+            class get_overnight_index_conventions_request <<struct>> {
+            }
+            class get_overnight_index_conventions_response <<struct>> {
+                +overnight_index_conventions : vector<ores::refdata::domain::overnight_index_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_overnight_index_convention_request <<struct>> {
+                +data : ores::refdata::domain::overnight_index_convention
+            }
+            class save_overnight_index_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_overnight_index_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_overnight_index_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_overnight_index_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_overnight_index_convention_history_response <<struct>> {
+                +overnight_index_conventions : vector<ores::refdata::domain::overnight_index_convention>
+                +success : bool
+                +message : string
+            }
+            class get_party_contact_informations_request <<struct>> {
+                +party_id : string
+            }
+            class get_party_contact_informations_response <<struct>> {
+                +contact_informations : vector<ores::refdata::domain::party_contact_information>
+            }
+            class save_party_contact_information_request <<struct>> {
+                +data : ores::refdata::domain::party_contact_information
+            }
+            class save_party_contact_information_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_contact_information_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_party_contact_information_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_party_id_schemes_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_party_id_schemes_response <<struct>> {
+                +party_id_schemes : vector<ores::refdata::domain::party_id_scheme>
+                +total_available_count : int
+            }
+            class save_party_id_scheme_request <<struct>> {
+                +data : ores::refdata::domain::party_id_scheme
+            }
+            class save_party_id_scheme_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_id_scheme_request <<struct>> {
+                +scheme : string
+            }
+            class delete_party_id_scheme_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_party_id_scheme_history_request <<struct>> {
+                +scheme : string
+            }
+            class get_party_id_scheme_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::party_id_scheme>
+            }
+            class get_party_identifiers_request <<struct>> {
+                +party_id : string
+            }
+            class get_party_identifiers_response <<struct>> {
+                +identifiers : vector<ores::refdata::domain::party_identifier>
+            }
+            class save_party_identifier_request <<struct>> {
+                +data : ores::refdata::domain::party_identifier
+            }
+            class save_party_identifier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_identifier_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_party_identifier_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_parties_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_parties_response <<struct>> {
+                +parties : vector<ores::refdata::domain::party>
+                +total_available_count : int
+            }
+            class save_party_request <<struct>> {
+                +data : ores::refdata::domain::party
+            }
+            class save_party_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_party_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_party_history_request <<struct>> {
+                +id : string
+            }
+            class get_party_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::party>
+            }
+            class read_parties_for_cache_request <<struct>> {
+                +tenant_id : string
+            }
+            class read_parties_for_cache_response <<struct>> {
+                +success : bool
+                +message : string
+                +parties : vector<ores::refdata::domain::party>
+            }
+            class get_party_statuses_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_party_statuses_response <<struct>> {
+                +party_statuses : vector<ores::refdata::domain::party_status>
+                +total_available_count : int
+            }
+            class save_party_status_request <<struct>> {
+                +data : ores::refdata::domain::party_status
+            }
+            class save_party_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_status_request <<struct>> {
+                +status : string
+            }
+            class delete_party_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_party_status_history_request <<struct>> {
+                +status : string
+            }
+            class get_party_status_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::party_status>
+            }
+            class get_party_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_party_types_response <<struct>> {
+                +party_types : vector<ores::refdata::domain::party_type>
+                +total_available_count : int
+            }
+            class save_party_type_request <<struct>> {
+                +data : ores::refdata::domain::party_type
+            }
+            class save_party_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_party_type_request <<struct>> {
+                +type : string
+            }
+            class delete_party_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_party_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_party_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::party_type>
+            }
+            class get_portfolios_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_portfolios_response <<struct>> {
+                +portfolios : vector<ores::refdata::domain::portfolio>
+                +total_available_count : int
+            }
+            class save_portfolio_request <<struct>> {
+                +data : ores::refdata::domain::portfolio
+            }
+            class save_portfolio_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_portfolio_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_portfolio_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_portfolio_history_request <<struct>> {
+                +id : string
+            }
+            class get_portfolio_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::portfolio>
+            }
+            class get_purpose_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_purpose_types_response <<struct>> {
+                +purpose_types : vector<ores::refdata::domain::purpose_type>
+                +total_available_count : int
+            }
+            class save_purpose_type_request <<struct>> {
+                +data : ores::refdata::domain::purpose_type
+            }
+            class save_purpose_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_purpose_type_request <<struct>> {
+                +type : string
+            }
+            class delete_purpose_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_purpose_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_purpose_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::purpose_type>
+            }
+            class get_rounding_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_rounding_types_response <<struct>> {
+                +rounding_types : vector<ores::refdata::domain::rounding_type>
+                +total_available_count : int
+            }
+            class save_rounding_type_request <<struct>> {
+                +data : ores::refdata::domain::rounding_type
+            }
+            class save_rounding_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_rounding_type_request <<struct>> {
+                +type : string
+            }
+            class delete_rounding_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_rounding_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_rounding_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::refdata::domain::rounding_type>
+            }
+            class get_swap_conventions_request <<struct>> {
+            }
+            class get_swap_conventions_response <<struct>> {
+                +swap_conventions : vector<ores::refdata::domain::swap_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_swap_convention_request <<struct>> {
+                +data : ores::refdata::domain::swap_convention
+            }
+            class save_swap_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_swap_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_swap_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_swap_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_swap_convention_history_response <<struct>> {
+                +swap_conventions : vector<ores::refdata::domain::swap_convention>
+                +success : bool
+                +message : string
+            }
+            class get_zero_conventions_request <<struct>> {
+            }
+            class get_zero_conventions_response <<struct>> {
+                +zero_conventions : vector<ores::refdata::domain::zero_convention>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_zero_convention_request <<struct>> {
+                +data : ores::refdata::domain::zero_convention
+            }
+            class save_zero_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_zero_convention_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_zero_convention_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_zero_convention_history_request <<struct>> {
+                +id : string
+            }
+            class get_zero_convention_history_response <<struct>> {
+                +zero_conventions : vector<ores::refdata::domain::zero_convention>
+                +success : bool
+                +message : string
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.api.puml"
+' End:
+@enduml

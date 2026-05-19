@@ -1,0 +1,414 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.reporting.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace reporting #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class concurrency_policy <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class report_definition <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +name : string
+                +party_id : boost::uuids::uuid
+                +description : string
+                +report_type : string
+                +fsm_state_id : optional<boost::uuids::uuid>
+                +schedule_expression : string
+                +concurrency_policy : string
+                +scheduler_job_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class report_definition_template <<struct>> {
+                +name : string
+                +description : string
+                +report_type : string
+                +schedule_expression : string
+                +concurrency_policy : string
+                +display_order : int
+            }
+            class report_instance <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +party_id : boost::uuids::uuid
+                +definition_id : boost::uuids::uuid
+                +fsm_state_id : optional<boost::uuids::uuid>
+                +trigger_run_id : int64_t
+                +output_message : string
+                +started_at : optional<chrono::system_clock::time_point>
+                +completed_at : optional<chrono::system_clock::time_point>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class report_type <<struct>> {
+                +version : int
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class risk_report_config <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +report_definition_id : boost::uuids::uuid
+                +base_currency : string
+                +observation_model : string
+                +n_threads : int
+                +market_data_type : string
+                +market_data_date : optional<string>
+                +npv_enabled : int
+                +cashflow_enabled : int
+                +curves_enabled : int
+                +sensitivity_enabled : int
+                +simulation_enabled : int
+                +xva_enabled : int
+                +stress_enabled : int
+                +parametric_var_enabled : int
+                +initial_margin_enabled : int
+                +pfe_enabled : int
+                +xva_quantile : double
+                +xva_cva_enabled : int
+                +xva_dva_enabled : int
+                +xva_fva_enabled : int
+                +xva_colva_enabled : int
+                +xva_dim_enabled : int
+                +xva_dim_quantile : double
+                +xva_dim_horizon_calendar_days : int
+                +xva_dim_regression_order : int
+                +var_quantiles : vector<double>
+                +var_method : string
+                +simm_version : string
+                +simm_calculation_currency : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class concurrency_policy_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +codes : vector<string>
+                +tenant_id : string
+            }
+            class report_definition_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class report_instance_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class report_type_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +codes : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_concurrency_policies_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_concurrency_policies_response <<struct>> {
+                +policies : vector<ores::reporting::domain::concurrency_policy>
+                +total_available_count : int
+            }
+            class save_concurrency_policy_request <<struct>> {
+                +policy : ores::reporting::domain::concurrency_policy
+            }
+            class save_concurrency_policy_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_concurrency_policy_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_concurrency_policy_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_concurrency_policy_history_request <<struct>> {
+                +code : string
+            }
+            class get_concurrency_policy_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::reporting::domain::concurrency_policy>
+            }
+            class get_report_definition_templates_request <<struct>> {
+                +bundle_code : string
+            }
+            class get_report_definition_templates_response <<struct>> {
+                +success : bool
+                +message : string
+                +templates : vector<ores::reporting::domain::report_definition_template>
+            }
+            class get_report_definitions_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_report_definitions_response <<struct>> {
+                +definitions : vector<ores::reporting::domain::report_definition>
+                +total_available_count : int
+            }
+            class save_report_definition_request <<struct>> {
+                +definition : ores::reporting::domain::report_definition
+            }
+            class save_report_definition_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_report_definition_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_report_definition_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_report_definition_history_request <<struct>> {
+                +id : string
+            }
+            class get_report_definition_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::reporting::domain::report_definition>
+            }
+            class schedule_report_definitions_request <<struct>> {
+                +ids : vector<string>
+            }
+            class schedule_report_definitions_response <<struct>> {
+                +success : bool
+                +message : string
+                +scheduled_count : int
+                +failed_ids : vector<string>
+            }
+            class unschedule_report_definitions_request <<struct>> {
+                +ids : vector<string>
+            }
+            class unschedule_report_definitions_response <<struct>> {
+                +success : bool
+                +message : string
+                +unscheduled_count : int
+                +failed_ids : vector<string>
+            }
+            class report_execution_request <<struct>> {
+                +report_instance_id : string
+                +definition_id : string
+                +tenant_id : string
+                +correlation_id : string
+            }
+            class gather_trades_request <<struct>> {
+                +report_instance_id : string
+                +definition_id : string
+                +tenant_id : string
+                +correlation_id : string
+            }
+            class gather_trades_result <<struct>> {
+                +success : bool
+                +message : string
+                +trade_count : int
+                +storage_key : string
+            }
+            class gather_market_data_request <<struct>> {
+                +report_instance_id : string
+                +definition_id : string
+                +tenant_id : string
+                +correlation_id : string
+            }
+            class gather_market_data_result <<struct>> {
+                +success : bool
+                +message : string
+                +series_count : int
+                +storage_key : string
+            }
+            class assemble_bundle_request <<struct>> {
+                +report_instance_id : string
+                +definition_id : string
+                +tenant_id : string
+                +correlation_id : string
+                +trades_storage_key : string
+                +market_data_storage_key : string
+                +trade_count : int
+                +series_count : int
+            }
+            class assemble_bundle_result <<struct>> {
+                +success : bool
+                +message : string
+                +bundle_id : string
+            }
+            class prepare_ore_package_request <<struct>> {
+                +report_instance_id : string
+                +bundle_id : string
+                +tenant_id : string
+                +correlation_id : string
+                +trades_storage_key : string
+                +market_data_storage_key : string
+            }
+            class prepare_ore_package_result <<struct>> {
+                +success : bool
+                +message : string
+                +tarball_uris : vector<string>
+            }
+            class submit_compute_request <<struct>> {
+                +report_instance_id : string
+                +tenant_id : string
+                +correlation_id : string
+                +tarball_uris : vector<string>
+            }
+            class submit_compute_result <<struct>> {
+                +success : bool
+                +message : string
+                +batch_id : string
+            }
+            class collect_compute_results_request <<struct>> {
+                +report_instance_id : string
+                +tenant_id : string
+                +correlation_id : string
+                +batch_id : string
+            }
+            class collect_compute_results_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class finalise_report_request <<struct>> {
+                +report_instance_id : string
+                +tenant_id : string
+                +correlation_id : string
+            }
+            class finalise_report_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class fail_report_request <<struct>> {
+                +report_instance_id : string
+                +tenant_id : string
+                +correlation_id : string
+                +error_message : string
+            }
+            class fail_report_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_report_instances_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_report_instances_response <<struct>> {
+                +instances : vector<ores::reporting::domain::report_instance>
+                +total_available_count : int
+            }
+            class save_report_instance_request <<struct>> {
+                +instance : ores::reporting::domain::report_instance
+            }
+            class save_report_instance_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_report_instance_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_report_instance_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_report_instance_history_request <<struct>> {
+                +id : string
+            }
+            class get_report_instance_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::reporting::domain::report_instance>
+            }
+            class trigger_report_instance_message <<struct>> {
+                +report_definition_id : string
+                +tenant_id : string
+                +job_instance_id : int64_t
+            }
+            class get_report_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_report_types_response <<struct>> {
+                +types : vector<ores::reporting::domain::report_type>
+                +total_available_count : int
+            }
+            class save_report_type_request <<struct>> {
+                +type : ores::reporting::domain::report_type
+            }
+            class save_report_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_report_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_report_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_report_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_report_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::reporting::domain::report_type>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.reporting.api.puml"
+' End:
+@enduml

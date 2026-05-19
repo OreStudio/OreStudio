@@ -1,0 +1,367 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.compute.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace compute #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class app <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class app_version <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +app_id : boost::uuids::uuid
+                +wrapper_version : string
+                +engine_version : string
+                +min_ram_mb : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class app_version_platform <<struct>> {
+                +app_version_id : boost::uuids::uuid
+                +platform_id : boost::uuids::uuid
+                +platform_code : string
+                +package_uri : string
+            }
+            class batch <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +external_ref : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class compute_platform <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +display_name : string
+                +description : string
+                +os_family : string
+                +cpu_arch : string
+                +abi : optional<string>
+                +is_active : bool
+            }
+            class grid_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+            }
+            class host <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +external_id : string
+                +display_name : string
+                +location : string
+                +cpu_count : int
+                +ram_mb : int64_t
+                +gpu_type : string
+                +last_rpc_time : chrono::system_clock::time_point
+                +credit_total : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class node_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +host_id : boost::uuids::uuid
+            }
+            class result <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +workunit_id : boost::uuids::uuid
+                +host_id : boost::uuids::uuid
+                +pgmq_msg_id : int64_t
+                +server_state : int
+                +outcome : int
+                +output_uri : string
+                +error_message : string
+                +received_at : chrono::system_clock::time_point
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class workunit <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +batch_id : boost::uuids::uuid
+                +app_version_id : boost::uuids::uuid
+                +input_uri : string
+                +config_uri : string
+                +priority : int
+                +target_redundancy : int
+                +canonical_result_id : boost::uuids::uuid
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class app_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class app_version_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class batch_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class result_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+            class workunit_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +ids : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class list_apps_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_apps_response <<struct>> {
+                +apps : vector<ores::compute::domain::app>
+                +total_available_count : int
+            }
+            class save_app_request <<struct>> {
+                +app : ores::compute::domain::app
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class save_app_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_app_history_request <<struct>> {
+                +id : string
+            }
+            class get_app_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::compute::domain::app>
+            }
+            class list_app_versions_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_app_versions_response <<struct>> {
+                +app_versions : vector<ores::compute::domain::app_version>
+                +total_available_count : int
+            }
+            class save_app_version_request <<struct>> {
+                +app_version : ores::compute::domain::app_version
+                +platforms : vector<ores::compute::domain::app_version_platform>
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class save_app_version_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_app_version_history_request <<struct>> {
+                +id : string
+            }
+            class get_app_version_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::compute::domain::app_version>
+            }
+            class list_app_version_platforms_request <<struct>> {
+                +app_version_id : string
+            }
+            class list_app_version_platforms_response <<struct>> {
+                +success : bool
+                +message : string
+                +platforms : vector<ores::compute::domain::app_version_platform>
+            }
+            class list_batches_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_batches_response <<struct>> {
+                +batches : vector<ores::compute::domain::batch>
+                +total_available_count : int
+            }
+            class save_batch_request <<struct>> {
+                +batch : ores::compute::domain::batch
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class save_batch_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_batch_history_request <<struct>> {
+                +id : string
+            }
+            class get_batch_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::compute::domain::batch>
+            }
+            class list_hosts_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_hosts_response <<struct>> {
+                +hosts : vector<ores::compute::domain::host>
+                +total_available_count : int
+            }
+            class save_host_request <<struct>> {
+                +host : ores::compute::domain::host
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class save_host_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_host_request <<struct>> {
+                +id : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class delete_host_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class list_platforms_request <<struct>> {
+            }
+            class list_platforms_response <<struct>> {
+                +platforms : vector<ores::compute::domain::compute_platform>
+                +success : bool
+                +message : string
+            }
+            class list_results_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_results_response <<struct>> {
+                +results : vector<ores::compute::domain::result>
+                +total_available_count : int
+            }
+            class submit_result_request <<struct>> {
+                +result_id : string
+                +host_id : string
+                +output_uri : string
+                +outcome : int
+                +error_message : string
+            }
+            class submit_result_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_grid_stats_request <<struct>> {
+            }
+            class node_stats_summary <<struct>> {
+                +host_id : string
+            }
+            class get_grid_stats_response <<struct>> {
+                +message : string
+                +sampled_at : string
+                +node_summaries : vector<node_stats_summary>
+            }
+            class node_sample_message <<struct>> {
+                +tenant_id : string
+                +host_id : string
+                +sampled_at : string
+            }
+            class pull_work_request <<struct>> {
+                +host_id : string
+            }
+            class pull_work_response <<struct>> {
+                +success : bool
+                +result_id : string
+                +workunit_id : string
+                +app_version_id : string
+                +input_uri : string
+                +config_uri : string
+                +message : string
+            }
+            class work_assignment_event <<struct>> {
+                +result_id : string
+                +workunit_id : string
+                +app_version_id : string
+            }
+            class heartbeat_message <<struct>> {
+                +host_id : string
+            }
+            class reap_work_message <<struct>> {
+            }
+            class list_workunits_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_workunits_response <<struct>> {
+                +workunits : vector<ores::compute::domain::workunit>
+                +total_available_count : int
+            }
+            class save_workunit_request <<struct>> {
+                +workunit : ores::compute::domain::workunit
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class save_workunit_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+        }
+        namespace net #F2F2F2 {
+            class compute_storage <<struct>> {
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.compute.api.puml"
+' End:
+@enduml

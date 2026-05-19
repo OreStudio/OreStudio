@@ -23,8 +23,94 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace nats #F2F2F2 {
-        ' connection, service, client, jetstream facets to be added.
+        class message <<struct>> {
+            +subject : string
+            +reply_subject : string
+            +data : vector<byte>
+            +headers : unordered_map<string, string>
+        }
+        namespace config #F2F2F2 {
+            class nats_configuration {
+            }
+            class nats_options <<struct>> {
+                +url : string
+                +subject_prefix : string
+                +tls_ca_cert : string
+                +tls_client_cert : string
+                +tls_client_key : string
+            }
+        }
+        namespace domain #F2F2F2 {
+            class consumer_info <<struct>> {
+                +stream_name : string
+                +name : string
+                +num_pending : uint64_t
+                +num_ack_pending : uint64_t
+                +num_redelivered : uint64_t
+                +delivered_count : uint64_t
+                +created_at : chrono::system_clock::time_point
+            }
+            class stream_info <<struct>> {
+                +name : string
+                +subjects : vector<string>
+                +message_count : uint64_t
+                +byte_count : uint64_t
+                +consumer_count : uint64_t
+                +created_at : chrono::system_clock::time_point
+                +first_message_at : chrono::system_clock::time_point
+                +last_message_at : chrono::system_clock::time_point
+            }
+            class stream_message <<struct>> {
+                +subject : string
+                +sequence : uint64_t
+                +timestamp : chrono::system_clock::time_point
+                +data : vector<byte>
+                +headers : unordered_map<string, string>
+            }
+        }
+        namespace service #F2F2F2 {
+            class client {
+                -impl : struct
+                -impl_ : unique_ptr<impl>
+            }
+            class jetstream_admin {
+                +max_age_days : int
+                -js_ctx_ : void*
+            }
+            enum nats_error_kind {
+                server_unreachable
+                tls_error
+                connection_timeout
+                services_unavailable
+                other
+            }
+            class nats_connect_error {
+                -kind_ : nats_error_kind
+            }
+            class session_expired_error {
+            }
+            namespace ores #F2F2F2 {
+                namespace nats #F2F2F2 {
+                    namespace service #F2F2F2 {
+                        class nats_client {
+                            -owned_client_ : shared_ptr<client>
+                            -auth_ : optional<login_info>
+                            -external_client_ : client*
+                            -token_provider_ : token_provider
+                            -delegation_token_ : string
+                            -correlation_id_ : string
+                            -session_id_ : string
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.nats.puml"
+' End:
 @enduml

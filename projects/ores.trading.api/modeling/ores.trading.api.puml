@@ -1,0 +1,1760 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.trading.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace trading #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class activity_type <<struct>> {
+                +version : int
+                +code : string
+                +category : string
+                +requires_confirmation : bool
+                +description : string
+                +fpml_event_type_code : string
+                +fsm_transition_id : optional<boost::uuids::uuid>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class balance_guaranteed_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +lockout_days : optional<int>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class bond_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +security_id : string
+                +issuer : string
+                +currency : string
+                +face_value : double
+                +coupon_rate : double
+                +coupon_frequency_code : string
+                +day_count_code : string
+                +issue_date : string
+                +maturity_date : string
+                +settlement_days : int
+                +call_date : string
+                +conversion_ratio : double
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+                +future_expiry_date : string
+                +option_type : string
+                +option_expiry_date : string
+                +option_strike : optional<double>
+                +trs_return_type : string
+                +trs_funding_leg_code : string
+                +ascot_option_type : string
+            }
+            class business_day_convention_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class callable_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +call_dates_json : string
+                +call_type : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class cap_floor_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class commodity_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +commodity_code : string
+                +currency : string
+                +quantity : double
+                +unit : string
+                +start_date : string
+                +maturity_date : string
+                +fixed_price : optional<double>
+                +option_type : string
+                +strike_price : optional<double>
+                +exercise_type : string
+                +average_type : string
+                +averaging_start_date : string
+                +averaging_end_date : string
+                +spread_commodity_code : string
+                +spread_amount : optional<double>
+                +strip_frequency_code : string
+                +variance_strike : optional<double>
+                +accumulation_amount : optional<double>
+                +knock_out_barrier : optional<double>
+                +barrier_type : string
+                +lower_barrier : optional<double>
+                +upper_barrier : optional<double>
+                +basket_json : string
+                +day_count_code : string
+                +payment_frequency_code : string
+                +swaption_expiry_date : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class composite_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class composite_leg <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +instrument_id : boost::uuids::uuid
+                +leg_sequence : int
+                +constituent_trade_id : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class credit_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +reference_entity : string
+                +currency : string
+                +notional : double
+                +spread : double
+                +recovery_rate : double
+                +tenor : string
+                +start_date : string
+                +maturity_date : string
+                +day_count_code : string
+                +payment_frequency_code : string
+                +index_name : string
+                +index_series : int
+                +seniority : string
+                +restructuring : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+                +option_type : string
+                +option_expiry_date : string
+                +option_strike : optional<double>
+                +linked_asset_code : string
+                +tranche_attachment : optional<double>
+                +tranche_detachment : optional<double>
+            }
+            class day_count_fraction_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_accumulator_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +strike : double
+                +fixing_amount : double
+                +start_date : string
+                +expiry_date : string
+                +fixing_frequency : string
+                +long_short : string
+                +knock_out_level : optional<double>
+                +target_amount : optional<double>
+                +target_type : string
+                +payoff_type : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_asian_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +average_type : string
+                +averaging_start_date : string
+                +averaging_end_date : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_barrier_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +lower_barrier : double
+                +lower_barrier_type : string
+                +upper_barrier : optional<double>
+                +upper_barrier_type : string
+                +rebate : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_digital_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : optional<double>
+                +barrier_level : optional<double>
+                +barrier_type : string
+                +expiry_date : string
+                +long_short : string
+                +payout_amount : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_forward_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +quantity : double
+                +forward_price : optional<double>
+                +expiry_date : string
+                +long_short : string
+                +settlement_type : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +option_type : string
+                +strike : double
+                +expiry_date : string
+                +exercise_type : string
+                +long_short : string
+                +settlement_type : string
+                +cliquet_frequency : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_position_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +quantity : double
+                +price : optional<double>
+                +option_data_json : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +basket_json : string
+                +currency : string
+                +notional : double
+                +return_type : string
+                +start_date : string
+                +maturity_date : string
+                +long_short : string
+                +payment_frequency : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class equity_variance_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +underlying_name : string
+                +currency : string
+                +notional : double
+                +variance_strike : double
+                +start_date : string
+                +maturity_date : string
+                +long_short : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class floating_index_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fpml_event_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fra_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +end_date : string
+                +currency : string
+                +rate_index : string
+                +long_short : string
+                +strike : double
+                +notional : double
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_accumulator_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +currency : string
+                +fixing_amount : double
+                +strike : double
+                +underlying_code : string
+                +long_short : string
+                +start_date : string
+                +knock_out_barrier : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_asian_forward_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +fx_index : string
+                +reference_currency : string
+                +reference_notional : optional<double>
+                +settlement_currency : string
+                +settlement_notional : optional<double>
+                +payment_date : string
+                +long_short : string
+                +currency : string
+                +fixing_amount : optional<double>
+                +target_amount : optional<double>
+                +strike : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_barrier_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +option_type : string
+                +expiry_date : string
+                +settlement : string
+                +barrier_type : string
+                +lower_barrier : double
+                +upper_barrier : optional<double>
+                +underlying_code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_digital_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +foreign_currency : string
+                +domestic_currency : string
+                +payoff_currency : string
+                +payoff_amount : double
+                +option_type : string
+                +expiry_date : string
+                +long_short : string
+                +strike : optional<double>
+                +barrier_type : string
+                +lower_barrier : optional<double>
+                +upper_barrier : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_forward_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +value_date : string
+                +settlement : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_vanilla_option_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +bought_currency : string
+                +bought_amount : double
+                +sold_currency : string
+                +sold_amount : double
+                +option_type : string
+                +expiry_date : string
+                +exercise_style : string
+                +settlement : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class fx_variance_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +start_date : string
+                +end_date : string
+                +currency : string
+                +underlying_code : string
+                +long_short : string
+                +strike : double
+                +notional : double
+                +moment_type : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class inflation_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +inflation_index_code : string
+                +base_cpi : optional<double>
+                +lag_convention : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class knock_out_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +barrier_level : double
+                +barrier_type : string
+                +knock_out_dates_json : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class leg_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class lifecycle_event <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class party_role_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class payment_frequency_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            enum product_type {
+                unknown
+                swap
+                fx
+                bond
+                credit
+                equity
+                commodity
+                composite
+                scripted
+            }
+            class rpa_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +reference_counterparty : string
+                +participation_rate : double
+                +protection_fee : optional<double>
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class scripted_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +trade_type_code : string
+                +script_name : string
+                +script_body : string
+                +events_json : string
+                +underlyings_json : string
+                +parameters_json : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class swap_leg <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +instrument_id : boost::uuids::uuid
+                +leg_number : int
+                +leg_type_code : string
+                +day_count_fraction_code : string
+                +business_day_convention_code : string
+                +payment_frequency_code : string
+                +floating_index_code : string
+                +fixed_rate : double
+                +spread : double
+                +notional : double
+                +currency : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class swaption_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +expiry_date : string
+                +exercise_type : string
+                +settlement_type : string
+                +long_short : string
+                +start_date : string
+                +maturity_date : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade <<struct>> {
+                +identity : trade_identity
+                +parties : trade_parties
+                +classification : trade_classification
+                +lifecycle : trade_lifecycle
+                +audit : trade_audit
+            }
+            class trade_audit <<struct>> {
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_classification <<struct>> {
+                +trade_type : string
+                +product_type : domain::product_type
+                +instrument_id : optional<boost::uuids::uuid>
+                +asset_class : optional<string>
+                +netting_set_id : string
+                +activity_type_code : string
+                +status_id : boost::uuids::uuid
+            }
+            class trade_id_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_identifier <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +trade_id : boost::uuids::uuid
+                +issuing_party_id : optional<boost::uuids::uuid>
+                +id_value : string
+                +id_type : string
+                +id_scheme : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_identity <<struct>> {
+                +id : boost::uuids::uuid
+                +version : int
+                +party_id : boost::uuids::uuid
+                +external_id : string
+            }
+            class trade_lifecycle <<struct>> {
+                +trade_date : optional<string>
+                +effective_date : optional<string>
+                +termination_date : optional<string>
+                +execution_timestamp : optional<string>
+            }
+            class trade_parties <<struct>> {
+                +book_id : boost::uuids::uuid
+                +portfolio_id : boost::uuids::uuid
+                +counterparty_id : optional<boost::uuids::uuid>
+                +successor_trade_id : optional<boost::uuids::uuid>
+            }
+            class trade_party_role <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +trade_id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +role : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_type <<struct>> {
+                +version : int
+                +code : string
+                +description : string
+                +product_type : domain::product_type
+                +has_options : bool
+                +has_extension : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class vanilla_swap_instrument <<struct>> {
+                +version : int
+                +instrument_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +trade_id : optional<boost::uuids::uuid>
+                +start_date : string
+                +maturity_date : string
+                +settlement_lag : optional<int>
+                +netting_set_id : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class trade_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +trade_ids : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_business_day_convention_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_business_day_convention_types_response <<struct>> {
+                +types : vector<ores::trading::domain::business_day_convention_type>
+                +total_available_count : int
+            }
+            class save_business_day_convention_type_request <<struct>> {
+                +data : ores::trading::domain::business_day_convention_type
+            }
+            class save_business_day_convention_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_business_day_convention_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_business_day_convention_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_business_day_convention_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_business_day_convention_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::business_day_convention_type>
+            }
+            class get_day_count_fraction_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_day_count_fraction_types_response <<struct>> {
+                +types : vector<ores::trading::domain::day_count_fraction_type>
+                +total_available_count : int
+            }
+            class save_day_count_fraction_type_request <<struct>> {
+                +data : ores::trading::domain::day_count_fraction_type
+            }
+            class save_day_count_fraction_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_day_count_fraction_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_day_count_fraction_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_day_count_fraction_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_day_count_fraction_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::day_count_fraction_type>
+            }
+            class get_floating_index_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_floating_index_types_response <<struct>> {
+                +types : vector<ores::trading::domain::floating_index_type>
+                +total_available_count : int
+            }
+            class save_floating_index_type_request <<struct>> {
+                +data : ores::trading::domain::floating_index_type
+            }
+            class save_floating_index_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_floating_index_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_floating_index_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_floating_index_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_floating_index_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::floating_index_type>
+            }
+            class save_fx_forward_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_forward_instrument
+            }
+            class save_fx_forward_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_vanilla_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_vanilla_option_instrument
+            }
+            class save_fx_vanilla_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_barrier_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_barrier_option_instrument
+            }
+            class save_fx_barrier_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_digital_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_digital_option_instrument
+            }
+            class save_fx_digital_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_asian_forward_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_asian_forward_instrument
+            }
+            class save_fx_asian_forward_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_accumulator_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_accumulator_instrument
+            }
+            class save_fx_accumulator_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_fx_variance_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::fx_variance_swap_instrument
+            }
+            class save_fx_variance_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_bond_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_bond_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::bond_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_bond_instrument_request <<struct>> {
+                +data : ores::trading::domain::bond_instrument
+            }
+            class save_bond_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_bond_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_bond_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_bond_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_bond_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::bond_instrument>
+            }
+            class get_credit_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_credit_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::credit_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_credit_instrument_request <<struct>> {
+                +data : ores::trading::domain::credit_instrument
+            }
+            class save_credit_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_credit_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_credit_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_credit_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_credit_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::credit_instrument>
+            }
+            class save_equity_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_option_instrument
+            }
+            class save_equity_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_digital_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_digital_option_instrument
+            }
+            class save_equity_digital_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_barrier_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_barrier_option_instrument
+            }
+            class save_equity_barrier_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_asian_option_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_asian_option_instrument
+            }
+            class save_equity_asian_option_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_forward_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_forward_instrument
+            }
+            class save_equity_forward_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_variance_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_variance_swap_instrument
+            }
+            class save_equity_variance_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_swap_instrument
+            }
+            class save_equity_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_accumulator_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_accumulator_instrument
+            }
+            class save_equity_accumulator_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_equity_position_instrument_request <<struct>> {
+                +data : ores::trading::domain::equity_position_instrument
+            }
+            class save_equity_position_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_commodity_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_commodity_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::commodity_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_commodity_instrument_request <<struct>> {
+                +data : ores::trading::domain::commodity_instrument
+            }
+            class save_commodity_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_commodity_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_commodity_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_commodity_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_commodity_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::commodity_instrument>
+            }
+            class get_composite_instrument_legs_request <<struct>> {
+                +instrument_id : string
+            }
+            class get_composite_instrument_legs_response <<struct>> {
+                +legs : vector<ores::trading::domain::composite_leg>
+                +success : bool
+                +message : string
+            }
+            class get_composite_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_composite_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::composite_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_composite_instrument_request <<struct>> {
+                +data : ores::trading::domain::composite_instrument
+                +legs : vector<ores::trading::domain::composite_leg>
+            }
+            class save_composite_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_composite_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_composite_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_composite_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_composite_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::composite_instrument>
+            }
+            class get_scripted_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_scripted_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::scripted_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_scripted_instrument_request <<struct>> {
+                +data : ores::trading::domain::scripted_instrument
+            }
+            class save_scripted_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_scripted_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_scripted_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_scripted_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_scripted_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::scripted_instrument>
+            }
+            class get_fra_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_fra_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::fra_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_fra_instrument_request <<struct>> {
+                +data : ores::trading::domain::fra_instrument
+            }
+            class save_fra_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_fra_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_fra_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_fra_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_fra_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::fra_instrument>
+            }
+            class get_vanilla_swap_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_vanilla_swap_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::vanilla_swap_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_vanilla_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::vanilla_swap_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_vanilla_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_vanilla_swap_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_vanilla_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_vanilla_swap_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_vanilla_swap_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::vanilla_swap_instrument>
+            }
+            class get_cap_floor_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_cap_floor_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::cap_floor_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_cap_floor_instrument_request <<struct>> {
+                +data : ores::trading::domain::cap_floor_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_cap_floor_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_cap_floor_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_cap_floor_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_cap_floor_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_cap_floor_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::cap_floor_instrument>
+            }
+            class get_swaption_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_swaption_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::swaption_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_swaption_instrument_request <<struct>> {
+                +data : ores::trading::domain::swaption_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_swaption_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_swaption_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_swaption_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_swaption_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_swaption_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::swaption_instrument>
+            }
+            class get_balance_guaranteed_swap_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_balance_guaranteed_swap_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::balance_guaranteed_swap_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_balance_guaranteed_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::balance_guaranteed_swap_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_balance_guaranteed_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_balance_guaranteed_swap_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_balance_guaranteed_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_balance_guaranteed_swap_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_balance_guaranteed_swap_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::balance_guaranteed_swap_instrument>
+            }
+            class get_callable_swap_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_callable_swap_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::callable_swap_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_callable_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::callable_swap_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_callable_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_callable_swap_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_callable_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_callable_swap_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_callable_swap_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::callable_swap_instrument>
+            }
+            class get_knock_out_swap_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_knock_out_swap_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::knock_out_swap_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_knock_out_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::knock_out_swap_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_knock_out_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_knock_out_swap_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_knock_out_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_knock_out_swap_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_knock_out_swap_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::knock_out_swap_instrument>
+            }
+            class get_inflation_swap_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_inflation_swap_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::inflation_swap_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_inflation_swap_instrument_request <<struct>> {
+                +data : ores::trading::domain::inflation_swap_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_inflation_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_inflation_swap_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_inflation_swap_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_inflation_swap_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_inflation_swap_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::inflation_swap_instrument>
+            }
+            class get_rpa_instruments_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_rpa_instruments_response <<struct>> {
+                +instruments : vector<ores::trading::domain::rpa_instrument>
+                +total_available_count : int
+                +success : bool
+                +message : string
+            }
+            class save_rpa_instrument_request <<struct>> {
+                +data : ores::trading::domain::rpa_instrument
+                +legs : vector<ores::trading::domain::swap_leg>
+            }
+            class save_rpa_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_rpa_instrument_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_rpa_instrument_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<pair<string, pair<bool, string>>>
+            }
+            class get_rpa_instrument_history_request <<struct>> {
+                +id : string
+            }
+            class get_rpa_instrument_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::rpa_instrument>
+            }
+            class get_leg_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_leg_types_response <<struct>> {
+                +types : vector<ores::trading::domain::leg_type>
+                +total_available_count : int
+            }
+            class save_leg_type_request <<struct>> {
+                +data : ores::trading::domain::leg_type
+            }
+            class save_leg_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_leg_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_leg_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_leg_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_leg_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::leg_type>
+            }
+            class get_payment_frequency_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_payment_frequency_types_response <<struct>> {
+                +types : vector<ores::trading::domain::payment_frequency_type>
+                +total_available_count : int
+            }
+            class save_payment_frequency_type_request <<struct>> {
+                +data : ores::trading::domain::payment_frequency_type
+            }
+            class save_payment_frequency_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_payment_frequency_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_payment_frequency_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_payment_frequency_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_payment_frequency_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::payment_frequency_type>
+            }
+            class get_activity_types_request <<struct>> {
+            }
+            class get_activity_types_response <<struct>> {
+                +activity_types : vector<ores::trading::domain::activity_type>
+            }
+            class trade_export_item <<struct>> {
+                +trade : ores::trading::domain::trade
+                +instrument : ores::trading::domain::trade_instrument
+            }
+            class get_trades_request <<struct>> {
+                +offset : int
+                +limit : int
+                +node_id : string
+            }
+            class get_trades_response <<struct>> {
+                +success : bool
+                +message : string
+                +trades : vector<ores::trading::domain::trade>
+                +total_available_count : int
+            }
+            class get_trade_detail_request <<struct>> {
+                +trade_id : string
+            }
+            class get_trade_detail_response <<struct>> {
+                +success : bool
+                +message : string
+                +trade : ores::trading::domain::trade
+                +instrument : ores::trading::domain::trade_instrument
+            }
+            class get_trade_detail_response_base <<struct>> {
+                +success : bool
+                +message : string
+                +trade : ores::trading::domain::trade
+            }
+            class get_trade_detail_instrument_wrapper <<struct>> {
+                +instrument : ores::trading::domain::trade_instrument
+            }
+            class save_trade_request <<struct>> {
+                +trades : vector<ores::trading::domain::trade>
+            }
+            class save_trade_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_trade_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_trade_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_trade_history_request <<struct>> {
+                +id : string
+            }
+            class get_trade_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::trading::domain::trade>
+            }
+            class export_portfolio_request <<struct>> {
+                +node_id : string
+                +offset : int
+                +limit : int
+            }
+            class export_portfolio_response <<struct>> {
+                +success : bool
+                +message : string
+                +items : vector<trade_export_item>
+            }
+            class export_trades_to_storage_request <<struct>> {
+                +book_ids : vector<string>
+            }
+            class export_trades_to_storage_response <<struct>> {
+                +success : bool
+                +message : string
+                +trade_count : int
+                +storage_key : string
+            }
+            class get_trade_types_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_trade_types_response <<struct>> {
+                +types : vector<ores::trading::domain::trade_type>
+                +total_available_count : int
+            }
+            class save_trade_type_request <<struct>> {
+                +data : ores::trading::domain::trade_type
+            }
+            class save_trade_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_trade_type_request <<struct>> {
+                +codes : vector<string>
+            }
+            class delete_trade_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_trade_type_history_request <<struct>> {
+                +code : string
+            }
+            class get_trade_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::trading::domain::trade_type>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.trading.api.puml"
+' End:
+@enduml

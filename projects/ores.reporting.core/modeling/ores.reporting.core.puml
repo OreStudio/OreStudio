@@ -1,0 +1,245 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.reporting.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace reporting #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class concurrency_policy_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+            }
+            class report_definition_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -svc_nats_ : ores::nats::service::nats_client&
+            }
+            class report_definition_template_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class report_execution_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -svc_nats_ : ores::nats::service::nats_client
+                -instance_states_ : ores::workflow::service::fsm_state_map
+                -http_base_url_ : string
+            }
+            class report_instance_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -instance_states_ : ores::workflow::service::fsm_state_map
+            }
+            class report_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class concurrency_policy_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class concurrency_policy_mapper {
+            }
+            class concurrency_policy_repository {
+            }
+            class report_definition_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +party_id : string
+                +description : string
+                +report_type : string
+                +fsm_state_id : optional<string>
+                +schedule_expression : string
+                +concurrency_policy : string
+                +scheduler_job_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class report_definition_mapper {
+            }
+            class report_definition_repository {
+            }
+            class report_input_bundle_entity <<struct>> {
+                +schema : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +report_instance_id : string
+                +definition_id : string
+                +trades_storage_key : string
+                +market_data_storage_key : string
+                +trade_count : int
+                +series_count : int
+                +created_at : optional<db_timestamp>
+            }
+            class report_input_bundle_repository {
+            }
+            class report_instance_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +party_id : string
+                +definition_id : string
+                +fsm_state_id : optional<string>
+                +trigger_run_id : int64_t
+                +output_message : string
+                +started_at : optional<db_timestamp>
+                +completed_at : optional<db_timestamp>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class report_instance_mapper {
+            }
+            class report_instance_repository {
+            }
+            class report_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class report_type_mapper {
+            }
+            class report_type_repository {
+            }
+            class risk_report_config_entity <<struct>> {
+                +schema : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +report_definition_id : string
+                +base_currency : string
+                +observation_model : string
+                +n_threads : int
+                +market_data_type : string
+                +market_data_date : optional<string>
+                +npv_enabled : int
+                +cashflow_enabled : int
+                +curves_enabled : int
+                +sensitivity_enabled : int
+                +simulation_enabled : int
+                +xva_enabled : int
+                +stress_enabled : int
+                +parametric_var_enabled : int
+                +initial_margin_enabled : int
+                +pfe_enabled : int
+                +xva_quantile : double
+                +xva_cva_enabled : int
+                +xva_dva_enabled : int
+                +xva_fva_enabled : int
+                +xva_colva_enabled : int
+                +xva_dim_enabled : int
+                +xva_dim_quantile : double
+                +xva_dim_horizon_calendar_days : int
+                +xva_dim_regression_order : int
+                +var_method : string
+                +simm_version : string
+                +simm_calculation_currency : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class risk_report_config_mapper {
+            }
+            class risk_report_config_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class concurrency_policy_service {
+                -ctx_ : context
+                -repo_ : repository::concurrency_policy_repository
+            }
+            class report_definition_service {
+                -ctx_ : context
+                -repo_ : repository::report_definition_repository
+            }
+            class report_definition_template_service {
+                -ctx_ : context
+            }
+            class report_instance_service {
+                -ctx_ : context
+                -repo_ : repository::report_instance_repository
+            }
+            class report_scheduling_service {
+                -ctx_ : context
+                -svc_nats_ : ores::nats::service::nats_client
+            }
+            class report_type_service {
+                -ctx_ : context
+                -repo_ : repository::report_type_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.reporting.core.puml"
+' End:
+@enduml

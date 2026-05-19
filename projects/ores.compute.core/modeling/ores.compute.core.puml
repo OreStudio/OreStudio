@@ -1,0 +1,298 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.compute.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace compute #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class app_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class app_version_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class batch_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class host_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class platform_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class report_submit_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+            }
+            class result_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class telemetry_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class work_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class workunit_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class app_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class app_mapper {
+            }
+            class app_repository {
+            }
+            class app_version_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +app_id : string
+                +wrapper_version : string
+                +engine_version : string
+                +min_ram_mb : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class app_version_mapper {
+            }
+            class app_version_platform_repository {
+            }
+            class app_version_repository {
+            }
+            class batch_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +external_ref : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class batch_mapper {
+            }
+            class batch_repository {
+            }
+            class compute_telemetry_repository {
+            }
+            class grid_sample_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +sampled_at : sqlgen::PrimaryKey<db_timestamp>
+                +tenant_id : sqlgen::PrimaryKey<string>
+            }
+            class host_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +external_id : string
+                +display_name : optional<string>
+                +location : optional<string>
+                +cpu_count : int
+                +ram_mb : int64_t
+                +gpu_type : optional<string>
+                +last_rpc_time : optional<db_timestamp>
+                +credit_total : double
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class host_mapper {
+            }
+            class host_repository {
+            }
+            class node_sample_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +sampled_at : sqlgen::PrimaryKey<db_timestamp>
+                +tenant_id : sqlgen::PrimaryKey<string>
+                +host_id : sqlgen::PrimaryKey<string>
+            }
+            class platform_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +code : string
+                +display_name : string
+                +description : string
+                +os_family : string
+                +cpu_arch : string
+                +abi : optional<string>
+                +is_active : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class platform_repository {
+            }
+            class result_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +workunit_id : string
+                +host_id : optional<string>
+                +pgmq_msg_id : optional<int64_t>
+                +server_state : int
+                +outcome : optional<int>
+                +output_uri : optional<string>
+                +error_message : optional<string>
+                +received_at : optional<db_timestamp>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class result_mapper {
+            }
+            class result_repository {
+            }
+            class workflow_batch_link_entity <<struct>> {
+                +schema : constexpr static const char*
+                +batch_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +workflow_step_id : string
+                +workflow_instance_id : string
+                +created_at : optional<db_timestamp>
+            }
+            class workflow_batch_link_repository {
+            }
+            class workunit_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +batch_id : string
+                +app_version_id : string
+                +input_uri : string
+                +config_uri : optional<string>
+                +priority : int
+                +target_redundancy : int
+                +canonical_result_id : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class workunit_mapper {
+            }
+            class workunit_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class app_service {
+                -ctx_ : context
+                -repo_ : repository::app_repository
+            }
+            class app_version_service {
+                -ctx_ : context
+                -repo_ : repository::app_version_repository
+            }
+            class batch_service {
+                -ctx_ : context
+                -repo_ : repository::batch_repository
+            }
+            class host_service {
+                -ctx_ : context
+                -repo_ : repository::host_repository
+            }
+            class result_service {
+                -ctx_ : context
+                -repo_ : repository::result_repository
+            }
+            class workunit_service {
+                -ctx_ : context
+                -repo_ : repository::workunit_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.compute.core.puml"
+' End:
+@enduml

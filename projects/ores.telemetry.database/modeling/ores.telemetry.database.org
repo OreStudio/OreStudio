@@ -7,3 +7,9 @@
 #+startup: inlineimages
 
 Database support for the telemetry component.
+
+* Component Architecture
+
+#+attr_html: :width 100% :alt ores.telemetry.database Component Diagram
+#+caption: ORE Studio Telemetry Database Component Diagram
+[[file:ores.telemetry.database.png][file:ores.telemetry.database.png]]

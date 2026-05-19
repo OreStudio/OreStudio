@@ -1,0 +1,167 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.mktdata Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class ClientCurrencyMarketTierModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<refdata::domain::currency_market_tier>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::currency_market_tier, CurrencyMarketTierKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientMarketFixingModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -series_id_ : boost::uuids::uuid
+            -entries_ : vector<marketdata::domain::market_fixing>
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class ClientMarketObservationModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -series_id_ : boost::uuids::uuid
+            -entries_ : vector<marketdata::domain::market_observation>
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class ClientMarketSeriesModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -entries_ : vector<marketdata::domain::market_series>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -series_type_filter_ : string
+        }
+        class CurrencyMarketTierController {
+            +parent : QObject*
+            -listWindow_ : CurrencyMarketTierMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class CurrencyMarketTierDetailDialog {
+            -ui_ : Ui::CurrencyMarketTierDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : refdata::domain::currency_market_tier
+        }
+        class CurrencyMarketTierHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CurrencyMarketTierHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::currency_market_tier>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CurrencyMarketTierMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientCurrencyMarketTierModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class MarketDataController {
+            +parent : QObject*
+            -seriesListWindow_ : QPointer<MarketSeriesMdiWindow>
+            -seriesListMdiSubWindow_ : QPointer<DetachableMdiSubWindow>
+            -fixingsListWindow_ : QPointer<MarketFixingsMdiWindow>
+            -fixingsListMdiSubWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class MarketFixingDetailMdiWindow {
+            +parent : QWidget*
+            -series_ : marketdata::domain::market_series
+            -verticalLayout_ : QVBoxLayout*
+            -seriesInfoLabel_ : QLabel*
+            -tableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -model_ : unique_ptr<ClientMarketFixingModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+        }
+        class MarketFixingsMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -tableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -viewFixingsAction_ : QAction*
+            -model_ : unique_ptr<ClientMarketSeriesModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+        }
+        class MarketObservationMdiWindow {
+            +parent : QWidget*
+            -series_ : marketdata::domain::market_series
+            -verticalLayout_ : QVBoxLayout*
+            -seriesInfoLabel_ : QLabel*
+            -tableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -model_ : unique_ptr<ClientMarketObservationModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+        }
+        class MarketSeriesMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -tableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -viewObsAction_ : QAction*
+            -assetClassCombo_ : QComboBox*
+            -model_ : unique_ptr<ClientMarketSeriesModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -assetClassWatcher_ : QFutureWatcher<AssetClassFetchResult>*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+        }
+        class MktdataPlugin {
+            -ctx_ : plugin_context
+            -currencyMarketTierController_ : unique_ptr<CurrencyMarketTierController>
+            -marketDataController_ : unique_ptr<MarketDataController>
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.mktdata.puml"
+' End:
+@enduml

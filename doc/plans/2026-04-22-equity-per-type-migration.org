@@ -1,5 +1,6 @@
 #+title: Equity Per-Type Instrument Migration
 #+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+STATUS: DONE
 
 * Overview
 

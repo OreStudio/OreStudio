@@ -1,0 +1,12 @@
+:PROPERTIES:
+:END:
+#+title: ORE Studio Marketdata Service Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Component Architecture
+
+#+attr_html: :width 100% :alt ORE Studio Marketdata Service Component Diagram
+#+caption: ORE Studio Marketdata Service Component Diagram
+[[file:ores.marketdata.service.png][file:ores.marketdata.service.png]]

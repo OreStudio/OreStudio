@@ -1,0 +1,12 @@
+:PROPERTIES:
+:END:
+#+title: ORE Studio Dq Api Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Component Architecture
+
+#+attr_html: :width 100% :alt ORE Studio Dq Api Component Diagram
+#+caption: ORE Studio Dq Api Component Diagram
+[[file:ores.dq.api.png][file:ores.dq.api.png]]

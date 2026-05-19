@@ -1,0 +1,67 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.http.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace http_server #F2F2F2 {
+        namespace routes #F2F2F2 {
+            class assets_routes {
+                -ctx_ : database::context
+                -sessions_ : shared_ptr<iam::service::auth_session_service>
+            }
+            class auth_result <<struct>> {
+                +account_id : boost::uuids::uuid
+                +is_admin : bool
+            }
+            class iam_routes {
+                -operation_name : string_view
+                -ctx_ : database::context
+                -account_service_ : iam::service::account_service
+                -session_repo_ : iam::repository::session_repository
+                -system_flags_ : shared_ptr<variability::service::system_settings_service>
+                -sessions_ : shared_ptr<iam::service::auth_session_service>
+                -auth_service_ : shared_ptr<iam::service::authorization_service>
+                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
+                -geo_service_ : shared_ptr<geo::service::geolocation_service>
+            }
+            class risk_routes {
+                -ctx_ : database::context
+                -sessions_ : shared_ptr<iam::service::auth_session_service>
+            }
+            class storage_routes {
+                -storage_dir_ : string
+            }
+            class variability_routes {
+                -ctx_ : database::context
+                -system_settings_ : shared_ptr<variability::service::system_settings_service>
+                -sessions_ : shared_ptr<iam::service::auth_session_service>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.http.core.puml"
+' End:
+@enduml

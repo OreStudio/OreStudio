@@ -15,7 +15,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt ORE Component Class Diagram
 #+caption: ORE Studio ORE Component Diagram
-[[file:ores.ore.png][file:ores.ore.png]]
+[[file:ores.ore.core.png][file:ores.ore.core.png]]
 
 This component provides ORE (Open Source Risk Engine) specific functionality,
 primarily importing and exporting capabilities. Key features include:

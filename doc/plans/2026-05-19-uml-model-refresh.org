@@ -1,0 +1,177 @@
+#+TITLE: UML Model Refresh
+#+SUBTITLE: Bring all component class diagrams up to date; introduce a generation script
+#+DATE: 2026-05-19
+#+AUTHOR: ORE Studio Team
+#+STATUS: IN PROGRESS
+#+OPTIONS: toc:t num:nil
+
+* Problem Statement
+
+The per-component PlantUML class diagrams in =projects/*/modeling/*.puml= are
+significantly out of date.  They were last systematically updated during the
+early scaffolding phase and have not tracked subsequent domain-model evolution.
+
+** Current state
+
+| Category | Count |
+|----------+-------|
+| Projects with no =modeling/*.puml= at all | 27 |
+| Projects with an empty placeholder =.puml= | 4 |
+| Projects with a stub model ("Core types to be added") | ~20 |
+| Projects with a substantive but stale model | ~10 |
+| Total components needing work | ~61 |
+
+Projects missing entirely:
+=ores.codegen=, =ores.compute.api=, =ores.hpp=, =ores.http=, =ores.http.core=,
+=ores.iam.api=, =ores.iam.client=, =ores.lisp=, =ores.marketdata.api=,
+=ores.marketdata.core=, =ores.qt.admin=, =ores.qt.analytics=, =ores.qt.api=,
+=ores.qt.compute=, =ores.qt.data_transfer=, =ores.qt.mktdata=, =ores.qt.party=,
+=ores.qt.refdata=, =ores.qt.scheduler=, =ores.qt.trading=, =ores.qt.workflow=,
+=ores.refdata.api=, =ores.reporting.api=, =ores.reporting.core=,
+=ores.scheduler.core=, =ores.trading.api=, =ores.workflow.api=.
+
+Projects with empty =.puml=:
+=ores.assets.api=, =ores.scheduler.api=, =ores.synthetic.api=,
+=ores.variability.api=.
+
+** No generation script
+
+The only automation is =projects/ores.codegen/plantuml_er_generate.sh=, which
+generates the SQL schema ER diagram from =ores.sql= definitions.  There is no
+equivalent tool for component class diagrams.  Each =.puml= was hand-authored,
+making them expensive to create and easy to forget to update.
+
+* Goals
+
+1. Create a script (~build/scripts/generate_component_puml.py~) that reads the
+   C++ headers of each component and emits a skeleton PlantUML class diagram.
+2. Run the script to regenerate all existing stubs and create files for the 31
+   components that currently have none.
+3. Manually enrich the generated diagrams for the API and domain-heavy components
+   (relationships, layout hints, notes).
+4. Keep the script in-tree so future model refreshes are a single command, not
+   a multi-day manual exercise.
+
+* Non-goals
+
+- Full relationship extraction from C++ (only fields and class membership are
+  scraped; relationships are added by hand in the enrichment phase).
+- Rendering PNG files as part of CI — PNG generation is a local-tooling concern.
+- Updating the top-level =projects/modeling/ores.puml= system diagram in this
+  plan (tracked separately).
+
+* Approach
+
+** Why a script
+
+At 61+ components with dozens of domain types each, hand-authoring is not
+sustainable.  The pattern is formulaic:
+
+1. Walk =projects/<name>/include/= for =*.hpp= files.
+2. Parse namespace declarations and =struct=/=class= definitions with their
+   public fields and types.
+3. Emit a =@startuml= file following the project's established conventions
+   (=set namespaceSeparator ::=, =namespace ores #F2F2F2 {...}=, class blocks
+   with =#F7E5FF= fill, the standard GPL header).
+
+Enrichment (notes, relationships, layout hints) stays hand-authored and is
+preserved in a dedicated section the script never touches.
+
+** Script design
+
+File: =build/scripts/generate_component_puml.py=
+
+#+begin_src
+usage: generate_component_puml.py [--project <name>] [--all] [--dry-run]
+#+end_src
+
+- *Input*: =projects/<name>/include/= directory tree.
+- *Output*: =projects/<name>/modeling/<name>.puml=.
+- *Parse strategy*: regex-based pass over header files; does not require
+  a full C++ parser. Targets =struct= and =class= blocks at namespace scope,
+  extracts public field declarations. Template specialisations and anonymous
+  types are skipped.
+- *Idempotent*: if a =.puml= already exists, the script regenerates only the
+  auto-generated section (between =@startuml= and the first =' --- manual= sentinel)
+  and leaves everything after the sentinel untouched.
+- *Missing modeling/ dir*: created automatically.
+
+** Sentinel convention
+
+#+begin_src plantuml
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+#+end_src
+
+Anything before the sentinel is regenerated.  Anything after is preserved
+verbatim.  New files start with an empty manual section so enrichment can be
+added incrementally.
+
+* Phase Plan
+
+** Phase 1 — Script
+
+Write and test =build/scripts/generate_component_puml.py=.
+
+Acceptance:
+- =--dry-run --all= prints a diff of what would change without writing files.
+- =--project ores.iam.core= regenerates the auto-generated section of that
+  component's =.puml= without touching the existing hand-authored notes.
+- Running the script twice produces no diff (idempotent).
+
+** Phase 2 — Bulk generation
+
+Run =generate_component_puml.py --all= to:
+
+- Create =modeling/*.puml= for the 27 projects that have none.
+- Populate the 4 empty placeholder files.
+- Regenerate the ~20 stub files.
+- Refresh the auto-generated section of the ~10 substantive existing models.
+
+Commit the result as a single "bulk regeneration" commit.
+
+** Phase 3 — Enrichment (API and domain components)
+
+Hand-enrich the diagrams for the components where relationships and layout
+matter most for documentation purposes.  Priority order:
+
+1. Trading domain: =ores.trading.api= — trade sub-structs, instrument variant,
+   protocol types.
+2. IAM: =ores.iam.api= / =ores.iam.core= — account, session, party graph.
+3. Refdata: =ores.refdata.api= / =ores.refdata.core= — party hierarchy, country.
+4. Workflow: =ores.workflow.api= / =ores.workflow.core= — job, saga, step FSM.
+5. Scheduler: =ores.scheduler.api= / =ores.scheduler.core= — job definition,
+   instance, lifecycle.
+6. Reporting: =ores.reporting.api= / =ores.reporting.core= — report definition,
+   instance, execution status.
+7. Qt plugin layer: =ores.qt.trading=, =ores.qt.compute=, =ores.qt.scheduler= —
+   controller/window pairs, form registry.
+
+Each enrichment is a separate commit per component.  The script is never
+re-run after enrichment without checking that the manual section is intact.
+
+** Phase 4 — PNG render script (optional)
+
+Add =build/scripts/render_puml.sh= that calls =plantuml= on every
+=projects/*/modeling/*.puml= in one pass.  Useful for a local documentation
+build.  Not wired into CI.
+
+* Files
+
+| File | Action |
+|------+--------|
+| =build/scripts/generate_component_puml.py= | New — generation script |
+| =build/scripts/render_puml.sh= | New (Phase 4, optional) — bulk PNG renderer |
+| =projects/*/modeling/*.puml= | Updated — 61 components |
+
+* Effort and Risk
+
+| Item | Effort | Risk |
+|------+--------+------|
+| Phase 1: script | M | Low — regex parsing of well-formed C++ headers |
+| Phase 2: bulk generation | S | Low — script-driven, one commit |
+| Phase 3: enrichment | L | Low — each commit is independent |
+| Phase 4: render script | S | None |
+
+The main risk is the regex parser missing complex template or multi-line
+declarations.  These are logged as warnings and left as stubs; they do not
+block the bulk generation commit.

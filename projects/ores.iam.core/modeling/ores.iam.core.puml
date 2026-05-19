@@ -1,0 +1,424 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.iam.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace iam #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class token_settings <<struct>> {
+                +access_lifetime_s : int
+                +party_selection_lifetime_s : int
+                +max_session_s : int
+                +refresh_threshold_pct : int
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class account_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+                -party_cache_ : shared_ptr<service::party_cache>
+                -token_settings_ : domain::token_settings
+            }
+            class account_party_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class auth_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+                -party_cache_ : shared_ptr<service::party_cache>
+                -token_settings_ : domain::token_settings
+            }
+            class bootstrap_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+                -party_cache_ : shared_ptr<service::party_cache>
+            }
+            class registrar {
+            }
+            class role_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class session_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class tenant_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class tenant_status_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class tenant_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+        }
+        namespace repository #F2F2F2 {
+            class account_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +account_type : string
+                +username : string
+                +password_hash : string
+                +password_salt : string
+                +totp_secret : string
+                +email : string
+                +service_password_hash : optional<string>
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class account_mapper {
+            }
+            class account_party_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +account_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +party_id : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class account_party_mapper {
+            }
+            class account_party_repository {
+                -ctx_ : context
+            }
+            class account_repository {
+                -ctx_ : context
+            }
+            class account_role_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +tenant_id : string
+                +account_id : string
+                +role_id : string
+                +assigned_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +assigned_at : db_timestamp
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class account_role_mapper {
+            }
+            class account_role_repository {
+                -ctx_ : context
+            }
+            class auth_event_repository {
+                -ctx_ : context
+            }
+            class login_info_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +account_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +last_ip : string
+                +last_attempt_ip : string
+                +failed_logins : int
+                +locked : int
+                +last_login : db_timestamp
+                +online : int
+                +password_reset_required : int
+            }
+            class login_info_mapper {
+            }
+            class login_info_repository {
+                -ctx_ : context
+            }
+            class permission_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +code : string
+                +description : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class permission_mapper {
+            }
+            class permission_repository {
+                -ctx_ : context
+            }
+            class role_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class role_mapper {
+            }
+            class role_permission_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +tenant_id : string
+                +role_id : string
+                +permission_id : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class role_permission_mapper {
+            }
+            class role_permission_repository {
+                -ctx_ : context
+            }
+            class role_repository {
+                -ctx_ : context
+            }
+            class session_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +account_id : string
+                +start_time : sqlgen::PrimaryKey<db_timestamp>
+                +end_time : string
+                +client_ip : string
+                +client_identifier : string
+                +client_version_major : int
+                +client_version_minor : int
+                +bytes_sent : int64_t
+                +bytes_received : int64_t
+                +country_code : string
+                +protocol : string
+            }
+            class session_statistics_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +day : string
+                +account_id : string
+                +session_count : int64_t
+                +avg_duration_seconds : double
+                +total_bytes_sent : int64_t
+                +total_bytes_received : int64_t
+            }
+            class session_sample_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +session_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +sample_time : sqlgen::PrimaryKey<db_timestamp>
+                +bytes_sent : int64_t
+                +bytes_received : int64_t
+                +latency_ms : int64_t
+            }
+            class auth_event_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +event_time : sqlgen::PrimaryKey<db_timestamp>
+                +tenant_id : string
+                +account_id : string
+                +event_type : string
+                +username : string
+                +session_id : string
+                +party_id : string
+                +error_detail : string
+            }
+            class session_mapper {
+            }
+            class session_repository {
+                +limit : uint32_t
+                +limit : uint32_t
+                -ctx_ : context
+            }
+            class tenant_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +type : string
+                +code : string
+                +name : string
+                +description : string
+                +hostname : string
+                +status : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class tenant_mapper {
+            }
+            class tenant_repository {
+                -ctx_ : context
+            }
+            class tenant_status_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +status : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class tenant_status_mapper {
+            }
+            class tenant_status_repository {
+            }
+            class tenant_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +type : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : optional<db_timestamp>
+                +valid_to : optional<db_timestamp>
+            }
+            class tenant_type_mapper {
+            }
+            class tenant_type_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class account_party_service {
+                -repo_ : repository::account_party_repository
+            }
+            class account_service {
+                +change_commentary : const string&
+                +change_commentary : const string&
+                -account_repo_ : repository::account_repository
+                -login_info_repo_ : repository::login_info_repository
+                -uuid_generator_ : utility::uuid::uuid_v7_generator
+            }
+            class account_setup_service {
+                +change_commentary : const string&
+                +change_commentary : const string&
+                -account_svc_ : account_service&
+                -auth_svc_ : shared_ptr<authorization_service>
+            }
+            class authorization_service {
+                +event_bus : event_bus*
+                +change_commentary : const string&
+                -permission_repo_ : repository::permission_repository
+                -role_repo_ : repository::role_repository
+                -account_role_repo_ : repository::account_role_repository
+                -role_permission_repo_ : repository::role_permission_repository
+                -uuid_generator_ : utility::uuid::uuid_v7_generator
+                -event_bus_ : event_bus*
+            }
+            class bootstrap_mode_service {
+                -account_repo_ : repository::account_repository
+                -system_settings_service_ : variability::service::system_settings_service
+                -auth_service_ : shared_ptr<authorization_service>
+                -ctx_ : database::context
+            }
+            class database_name_service {
+                +max_attempts : int
+                -ctx_ : database::context
+            }
+            class party_cache {
+                -nats_ : ores::nats::service::client&
+                -mutex_ : mutable shared_mutex
+                -cache_ : unordered_map<string, partition_t>
+            }
+            class service_session_service {
+                +protocol : domain::session_protocol
+                +protocol : domain::session_protocol
+                +bytes_received : uint64_t
+                -session_repo_ : repository::session_repository
+                -account_repo_ : repository::account_repository
+                -uuid_generator_ : utility::uuid::uuid_v7_generator
+            }
+            class signup_result <<struct>> {
+                +success : bool
+                +error_message : string
+                +error_code : ores::utility::serialization::error_code
+                +account_id : boost::uuids::uuid
+                +username : string
+            }
+            class signup_service {
+                -account_repo_ : repository::account_repository
+                -login_info_repo_ : repository::login_info_repository
+                -system_flags_ : shared_ptr<variability::service::system_settings_service>
+                -auth_service_ : shared_ptr<authorization_service>
+                -uuid_generator_ : utility::uuid::uuid_v7_generator
+            }
+            class tenant_status_service {
+                -ctx_ : context
+                -repo_ : repository::tenant_status_repository
+            }
+            class tenant_type_service {
+                -ctx_ : context
+                -repo_ : repository::tenant_type_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.core.puml"
+' End:
+@enduml

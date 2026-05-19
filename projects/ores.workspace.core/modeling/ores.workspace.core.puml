@@ -1,0 +1,72 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.workspace.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace workspace #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class workspace_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class workspace_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +version : int
+                +name : string
+                +description : optional<string>
+                +source_path : optional<string>
+                +parent_workspace_id : optional<string>
+                +scope_portfolio_id : optional<string>
+                +owner_id : string
+                +status_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class workspace_mapper {
+            }
+            class workspace_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class workspace_service {
+                -ctx_ : context
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workspace.core.puml"
+' End:
+@enduml

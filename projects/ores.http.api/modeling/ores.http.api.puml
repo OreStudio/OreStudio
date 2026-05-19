@@ -1,0 +1,192 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.http.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace http #F2F2F2 {
+        namespace domain #F2F2F2 {
+            enum http_method {
+                get
+                post
+                put
+                patch
+                delete_
+                head
+                options
+            }
+            class http_request <<struct>> {
+                +method : http_method
+                +target : string
+                +headers : unordered_map<string, string>
+                +query_params : unordered_map<string, string>
+                +path_params : unordered_map<string, string>
+                +body : string
+                +remote_address : string
+                +http_version_major : uint16_t
+                +http_version_minor : uint16_t
+                +authenticated_user : optional<ores::security::jwt::jwt_claims>
+            }
+            class http_response <<struct>> {
+                +status : http_status
+                +headers : unordered_map<string, string>
+                +body : string
+                +content_type : string
+                +status : http_status
+            }
+            enum http_status {
+                ok
+                created
+                no_content
+                bad_request
+                unauthorized
+                forbidden
+                not_found
+                method_not_allowed
+                internal_server_error
+                not_implemented
+                service_unavailable
+            }
+            class query_param <<struct>> {
+                +name : string
+                +type : string
+                +required : bool
+                +description : string
+                +default_value : optional<string>
+            }
+            class request_body_schema <<struct>> {
+                +content_type : string
+                +required : bool
+                +example_json : string
+            }
+            class response_schema <<struct>> {
+                +status_code : string
+                +description : string
+                +content_type : string
+                +example_json : string
+            }
+            class route <<struct>> {
+                +method : http_method
+                +pattern : string
+                +regex : regex
+                +param_names : vector<string>
+                +handler : request_handler
+                +requires_auth : bool
+                +required_roles : vector<string>
+                +summary : string
+                +description : string
+                +tags : vector<string>
+                +query_params : vector<query_param>
+                +body_schema : optional<request_body_schema>
+                +success_response_schema : optional<response_schema>
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_http_info_request <<struct>> {
+            }
+            class get_http_info_response <<struct>> {
+                +base_url : string
+                +success : bool
+                +message : string
+            }
+        }
+        namespace net #F2F2F2 {
+            class http_server {
+                -io_ctx_ : boost::asio::io_context&
+                -options_ : http_server_options
+                -router_ : shared_ptr<router>
+                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
+                -registry_ : shared_ptr<openapi::endpoint_registry>
+                -acceptor_ : unique_ptr<boost::asio::ip::tcp::acceptor>
+                -bytes_callback_ : session_bytes_callback
+            }
+            class http_server_options <<struct>> {
+                +address : string
+                +port : uint16_t
+                +max_connections : uint32_t
+                +enable_ssl : bool
+                +certificate_file : string
+                +private_key_file : string
+                +jwt_secret : string
+                +jwt_public_key_file : string
+                +jwt_issuer : string
+                +jwt_audience : string
+                +enable_cors : bool
+                +cors_allowed_origins : string
+                +server_identifier : string
+            }
+            class http_session {
+                +bytes_callback : session_bytes_callback
+                -stream_ : boost::beast::tcp_stream
+                -buffer_ : boost::beast::flat_buffer
+                -router_ : shared_ptr<router>
+                -authenticator_ : shared_ptr<ores::security::jwt::jwt_authenticator>
+                -options_ : http_server_options
+                -remote_address_ : string
+                -bytes_callback_ : session_bytes_callback
+            }
+            class route_builder {
+                +default_value : const optional<string>&
+                -method_ : domain::http_method
+                -pattern_ : string
+                -handler_ : domain::request_handler
+                -requires_auth_ : bool
+                -required_roles_ : vector<string>
+                -summary_ : string
+                -description_ : string
+                -tags_ : vector<string>
+                -query_params_ : vector<domain::query_param>
+                -body_schema_ : optional<domain::request_body_schema>
+                -success_response_schema_ : optional<domain::response_schema>
+            }
+            class router {
+                -routes_ : vector<domain::route>
+            }
+        }
+        namespace openapi #F2F2F2 {
+            class api_info <<struct>> {
+                +title : string
+                +description : string
+                +version : string
+                +contact_name : string
+                +contact_email : string
+                +license_name : string
+                +license_url : string
+            }
+            class server_info <<struct>> {
+                +url : string
+                +description : string
+            }
+            class endpoint_registry {
+                -info_ : api_info
+                -servers_ : vector<server_info>
+                -routes_ : vector<domain::route>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.http.api.puml"
+' End:
+@enduml

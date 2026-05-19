@@ -1,0 +1,300 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.telemetry.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace telemetry #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class log_record <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +observed_timestamp : optional<chrono::system_clock::time_point>
+                +severity : severity_level
+                +body : string
+                +trace : optional<trace_id>
+                +span : optional<span_id>
+                +logger_name : string
+                +attrs : attributes
+                +source_resource : shared_ptr<resource>
+            }
+            class nats_server_samples_query <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+            }
+            class nats_stream_samples_query <<struct>> {
+                +stream_name : string
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+            }
+            class nats_server_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+            }
+            class nats_stream_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +stream_name : string
+            }
+            class resource <<struct>> {
+                +attrs : attributes
+            }
+            class service_sample <<struct>> {
+                +sampled_at : chrono::system_clock::time_point
+                +service_name : string
+                +instance_id : string
+                +version : string
+            }
+            class span <<struct>> {
+                +context : span_context
+                +parent_span_id : optional<span_id>
+                +links : vector<span_link>
+                +name : string
+                +kind : span_kind
+                +start_time : chrono::system_clock::time_point
+                +end_time : optional<chrono::system_clock::time_point>
+                +status_code : span_status_code
+                +status_message : string
+                +attrs : attributes
+            }
+            class span_context <<struct>> {
+                +trace : trace_id
+                +span : span_id
+                +trace_flags : uint8_t
+            }
+            class span_id <<struct>> {
+            }
+            enum span_kind {
+                internal
+                server
+                client
+                producer
+                consumer
+            }
+            class span_link <<struct>> {
+                +context : span_context
+                +attrs : attributes
+            }
+            enum span_status_code {
+                unset
+                ok
+                error
+            }
+            class telemetry_batch <<struct>> {
+                +source : telemetry_source
+                +source_name : string
+                +entries : vector<telemetry_log_entry>
+            }
+            class telemetry_context {
+                +kind : span_kind
+                +kind : span_kind
+                -ctx_ : span_context
+                -resource_ : shared_ptr<resource>
+            }
+            class telemetry_log_entry <<struct>> {
+                +id : boost::uuids::uuid
+                +timestamp : chrono::system_clock::time_point
+                +source : telemetry_source
+                +source_name : string
+                +session_id : optional<boost::uuids::uuid>
+                +account_id : optional<boost::uuids::uuid>
+                +level : string
+                +component : string
+                +message : string
+                +tag : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class telemetry_query <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +source : optional<telemetry_source>
+                +source_name : optional<string>
+                +session_id : optional<boost::uuids::uuid>
+                +account_id : optional<boost::uuids::uuid>
+                +level : optional<string>
+                +min_level : optional<string>
+                +component : optional<string>
+                +tag : optional<string>
+                +message_contains : optional<string>
+                +limit : uint32_t
+                +offset : uint32_t
+            }
+            enum stats_granularity {
+                hourly
+                daily
+            }
+            class telemetry_stats_query <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +granularity : stats_granularity
+                +source : optional<telemetry_source>
+                +source_name : optional<string>
+                +level : optional<string>
+                +component : optional<string>
+            }
+            enum telemetry_source {
+                client
+                server
+            }
+            class telemetry_stats <<struct>> {
+                +period_start : chrono::system_clock::time_point
+                +source : telemetry_source
+                +source_name : string
+                +component : string
+                +level : string
+                +log_count : uint64_t
+                +unique_sessions : uint32_t
+                +unique_accounts : uint32_t
+            }
+            class telemetry_summary <<struct>> {
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+                +total_logs : uint64_t
+                +error_count : uint64_t
+                +warn_count : uint64_t
+                +info_count : uint64_t
+                +debug_count : uint64_t
+                +trace_count : uint64_t
+                +unique_sources : uint32_t
+                +unique_sessions : uint32_t
+                +unique_accounts : uint32_t
+            }
+            class trace_id <<struct>> {
+            }
+        }
+        namespace exporting #F2F2F2 {
+            class file_log_exporter {
+                -mutex_ : mutex
+                -file_ : ofstream
+                -is_open_ : bool
+            }
+            class hybrid_log_exporter {
+                +send_callback : send_records_callback
+                -file_mutex_ : mutex
+                -file_ : ofstream
+                -file_path_ : filesystem::path
+                -file_position_ : uint64_t
+                -options_ : telemetry_options
+                -send_callback_ : send_records_callback
+                -batch_mutex_ : mutex
+                -pending_batch_ : vector<domain::log_record>
+                -position_tracker_ : upload_position_tracker
+                -flush_thread_ : thread
+                -flush_cv_ : condition_variable
+                -last_flush_time_ : chrono::steady_clock::time_point
+            }
+            class log_exporter {
+            }
+            class telemetry_configuration {
+            }
+            class telemetry_options <<struct>> {
+                +service_name : string
+                +service_version : string
+                +output_file : filesystem::path
+                +output_directory : filesystem::path
+                +streaming_enabled : bool
+                +batch_size : uint32_t
+            }
+            class upload_position_tracker {
+                -log_file_path_ : filesystem::path
+                -marker_file_path_ : filesystem::path
+                -mutex_ : mutable mutex
+                -position_ : uint64_t
+            }
+        }
+        namespace generators #F2F2F2 {
+            class span_id_generator {
+                -sequence_ : atomic<uint16_t>
+                -last_timestamp_ms_ : uint64_t
+                -random_engine_ : mt19937
+                -mutex_ : mutable mutex
+            }
+            class trace_id_generator {
+                -machine_id_ : uint16_t
+                -random_engine_ : mt19937_64
+                -mutex_ : mutable mutex
+            }
+        }
+        namespace log #F2F2F2 {
+            class lifecycle_manager {
+                +source_name : const string&
+                -telemetry_sink_ : boost::shared_ptr<telemetry_sink_type>
+                -database_sink_ : boost::shared_ptr<database_sink_type>
+            }
+            class trace_context_injector <<struct>> {
+                +ctx : const domain::telemetry_context&
+            }
+            class skip_telemetry_guard {
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class get_nats_server_samples_request <<struct>> {
+                +query : domain::nats_server_samples_query
+            }
+            class get_nats_server_samples_response <<struct>> {
+                +message : string
+                +samples : vector<domain::nats_server_sample>
+            }
+            class get_nats_stream_samples_request <<struct>> {
+                +query : domain::nats_stream_samples_query
+            }
+            class get_nats_stream_samples_response <<struct>> {
+                +message : string
+                +samples : vector<domain::nats_stream_sample>
+            }
+            class service_heartbeat_message <<struct>> {
+                +service_name : string
+                +instance_id : string
+                +version : string
+            }
+            class get_service_samples_request <<struct>> {
+            }
+            class get_service_samples_response <<struct>> {
+                +message : string
+                +samples : vector<domain::service_sample>
+            }
+            class get_telemetry_logs_request <<struct>> {
+                +query : domain::telemetry_query
+            }
+            class get_telemetry_logs_response <<struct>> {
+                +success : bool
+                +message : string
+                +entries : vector<domain::telemetry_log_entry>
+                +total_count : uint64_t
+            }
+            class publish_log_entry_item <<struct>> {
+                +level : string
+                +timestamp_ms : int64_t
+                +component : string
+                +message : string
+            }
+            class publish_log_entries_request <<struct>> {
+                +source_name : string
+                +tag : string
+                +entries : vector<publish_log_entry_item>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.telemetry.core.puml"
+' End:
+@enduml

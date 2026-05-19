@@ -24,46 +24,39 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace compute #F2F2F2 {
         namespace wrapper #F2F2F2 {
-
-            namespace net #F2F2F2 {
-                class http_client {
-                    + {static} download(url: string, dest: path): void
-                    + {static} upload(url: string, src: path): void
-                    - {static} parse_url(url: string): url_parts
-                }
-                class http_client::url_parts {
-                    + host: string
-                    + port: string
-                    + path: string
-                }
-            }
-
             namespace app #F2F2F2 {
-                note "heartbeat_sender is an anonymous-namespace\nhelper class inside application.cpp" as N1
                 class application {
-                    + run(io_ctx: io_context&, cfg: options): awaitable<void>
+                }
+                class host {
                 }
             }
-
             namespace config #F2F2F2 {
-                class options {
-                    + host_id: string
-                    + tenant_id: string
-                    + nats: nats_options
-                    + work_dir: string
-                    + heartbeat_interval_seconds: uint32_t
-                    + http_base_url: string
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +nats : ores::nats::config::nats_options
+                    +host_id : string
+                    +tenant_id : string
+                    +work_dir : string
+                    +http_base_url : string
                 }
                 class parser {
-                    + {static} parse(argc: int, argv: char**): options
                 }
             }
-
-            app::application --> net::http_client : uses
-            app::application --> config::options : configured by
-            config::parser ..> config::options : creates
+            namespace filesystem #F2F2F2 {
+                class archiver {
+                }
+            }
+            namespace net #F2F2F2 {
+                class http_client {
+                }
+            }
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.compute.wrapper.puml"
+' End:
 @enduml

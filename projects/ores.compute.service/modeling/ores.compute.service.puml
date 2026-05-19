@@ -24,71 +24,37 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace compute #F2F2F2 {
         namespace service #F2F2F2 {
-
             namespace app #F2F2F2 {
                 class application {
-                    + run(io_ctx: io_context&, cfg: options): awaitable<void>
-                    - make_context(db_opts: database_options): context
+                }
+                class batch_workflow_bridge {
+                    -interval_seconds_ : uint32_t
+                    -nats_ : ores::nats::service::client&
+                    -ctx_ : ores::database::context
+                }
+                class compute_grid_poller {
+                    -interval_seconds_ : uint32_t
+                    -ctx_ : ores::database::context
+                }
+                class host {
                 }
             }
-
-            namespace messaging #F2F2F2 {
-                class host_handler {
-                    + handle_list(req): response
-                    + handle_save(req): response
-                }
-                class app_handler {
-                    + handle_list(req): response
-                    + handle_save(req): response
-                }
-                class app_version_handler {
-                    + handle_list(req): response
-                    + handle_save(req): response
-                }
-                class batch_handler {
-                    + handle_list(req): response
-                    + handle_save(req): response
-                }
-                class workunit_handler {
-                    + handle_list(req): response
-                    + handle_save(req): response
-                }
-                class result_handler {
-                    + handle_list(req): response
-                    + handle_submit(req): response
-                }
-                class work_handler {
-                    + pull(msg): void
-                    + heartbeat(msg): void
-                    + reap(msg): void
-                }
-                class registrar {
-                    + register_all(nats: client&, db: context&): void
-                }
-            }
-
             namespace config #F2F2F2 {
-                class options {
-                    + logging: optional<logging_options>
-                    + nats: nats_options
-                    + database: database_options
+                class options <<struct>> {
+                    +logging : optional<ores::logging::logging_options>
+                    +nats : ores::nats::config::nats_options
+                    +database : ores::database::database_options
                 }
                 class parser {
-                    + {static} parse(argc: int, argv: char**): options
                 }
             }
-
-            app::application --> messaging::registrar : uses
-            app::application --> config::options : configured by
-            messaging::registrar --> messaging::host_handler : registers
-            messaging::registrar --> messaging::app_handler : registers
-            messaging::registrar --> messaging::app_version_handler : registers
-            messaging::registrar --> messaging::batch_handler : registers
-            messaging::registrar --> messaging::workunit_handler : registers
-            messaging::registrar --> messaging::result_handler : registers
-            messaging::registrar --> messaging::work_handler : registers
         }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.compute.service.puml"
+' End:
 @enduml

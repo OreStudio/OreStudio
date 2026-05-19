@@ -1,0 +1,110 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.workspace.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace workspace #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class workspace <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +source_path : string
+                +parent_workspace_id : optional<boost::uuids::uuid>
+                +scope_portfolio_id : optional<boost::uuids::uuid>
+                +owner_id : boost::uuids::uuid
+                +status_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class list_workspaces_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class list_workspaces_response <<struct>> {
+                +workspaces : vector<ores::workspace::domain::workspace>
+            }
+            class create_workspace_request <<struct>> {
+                +data : ores::workspace::domain::workspace
+            }
+            class create_workspace_response <<struct>> {
+                +success : bool
+                +message : string
+                +id : string
+            }
+            class archive_workspace_request <<struct>> {
+                +id : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class archive_workspace_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class remove_workspace_request <<struct>> {
+                +id : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class remove_workspace_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class resolve_workspace_request <<struct>> {
+                +workspace_id : string
+            }
+            class resolve_workspace_response <<struct>> {
+                +resolution_order : vector<string>
+            }
+            class set_trade_scope_request <<struct>> {
+                +workspace_id : string
+                +trade_ids : vector<string>
+            }
+            class set_trade_scope_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class clear_trade_scope_request <<struct>> {
+                +workspace_id : string
+            }
+            class clear_trade_scope_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workspace.api.puml"
+' End:
+@enduml

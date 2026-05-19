@@ -1,0 +1,162 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.marketdata.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace marketdata #F2F2F2 {
+        namespace domain #F2F2F2 {
+            enum asset_class {
+            }
+            class market_fixing <<struct>> {
+                +fixing_date : chrono::year_month_day
+                +value : string
+                +source : optional<string>
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class market_observation <<struct>> {
+                +observation_date : chrono::year_month_day
+                +point_id : optional<string>
+                +value : string
+                +source : optional<string>
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class market_series <<struct>> {
+                +version : int
+                +series_type : string
+                +metric : string
+                +qualifier : string
+                +asset_class : domain::asset_class
+                +subclass : domain::series_subclass
+                +is_scalar : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            enum series_subclass {
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class import_market_data_request <<struct>> {
+                +market_data_content : string
+                +fixings_content : string
+            }
+            class import_market_data_response <<struct>> {
+                +success : bool
+                +message : string
+                +series_count : int
+                +observation_count : int
+                +fixing_count : int
+            }
+            class get_market_fixings_request <<struct>> {
+                +series_id : string
+                +from_date : string
+                +to_date : string
+            }
+            class get_market_fixings_response <<struct>> {
+                +fixings : vector<domain::market_fixing>
+                +total_available_count : int
+            }
+            class save_market_fixings_request <<struct>> {
+                +fixings : vector<domain::market_fixing>
+            }
+            class save_market_fixings_response <<struct>> {
+                +success : bool
+                +message : string
+                +saved_count : int
+            }
+            class delete_market_fixings_request <<struct>> {
+                +series_id : string
+            }
+            class delete_market_fixings_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_market_observations_request <<struct>> {
+                +series_id : string
+                +from_date : string
+                +to_date : string
+            }
+            class get_market_observations_response <<struct>> {
+                +observations : vector<domain::market_observation>
+                +total_available_count : int
+            }
+            class save_market_observations_request <<struct>> {
+                +observations : vector<domain::market_observation>
+            }
+            class save_market_observations_response <<struct>> {
+                +success : bool
+                +message : string
+                +saved_count : int
+            }
+            class delete_market_observations_request <<struct>> {
+                +series_id : string
+            }
+            class delete_market_observations_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_market_series_request <<struct>> {
+                +offset : int
+                +limit : int
+                +series_type : string
+            }
+            class get_market_series_response <<struct>> {
+                +series : vector<domain::market_series>
+                +total_available_count : int
+            }
+            class save_market_series_request <<struct>> {
+                +series : vector<domain::market_series>
+            }
+            class save_market_series_response <<struct>> {
+                +success : bool
+                +message : string
+                +saved_count : int
+            }
+            class delete_market_series_request <<struct>> {
+                +id : string
+            }
+            class delete_market_series_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class export_market_data_to_storage_request <<struct>> {
+                +storage_bucket : string
+                +storage_key : string
+            }
+            class export_market_data_to_storage_response <<struct>> {
+                +success : bool
+                +message : string
+                +series_count : int
+                +storage_key : string
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.api.puml"
+' End:
+@enduml

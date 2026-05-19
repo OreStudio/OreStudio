@@ -1,0 +1,1823 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.refdata Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class BusinessDayConventionTypeController {
+            +parent : QObject*
+            -listWindow_ : BusinessDayConventionTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class BusinessDayConventionTypeDetailDialog {
+            -ui_ : Ui::BusinessDayConventionTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : trading::domain::business_day_convention_type
+        }
+        class BusinessDayConventionTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::BusinessDayConventionTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::business_day_convention_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class BusinessDayConventionTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientBusinessDayConventionTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class CatalogController {
+            +parent : QObject*
+            -listWindow_ : QPointer<CatalogMdiWindow>
+            -listMdiSubWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class CatalogDetailDialog {
+            -ui_ : Ui::CatalogDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -catalog_ : dq::domain::catalog
+            -createMode_ : bool
+            -readOnly_ : bool
+        }
+        class CatalogHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CatalogHistoryDialog*
+            -name_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::catalog>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CatalogMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -tableView_ : QTableView*
+            -model_ : ClientCatalogModel*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -refreshAction_ : QAction*
+        }
+        class CdsConventionController {
+            +parent : QObject*
+            -listWindow_ : CdsConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class CdsConventionDetailDialog {
+            -ui_ : Ui::CdsConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -cc_ : refdata::domain::cds_convention
+        }
+        class CdsConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CdsConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::cds_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CdsConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientCdsConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ChangeReasonCategoryController {
+            +parent : QObject*
+            -listWindow_ : ChangeReasonCategoryMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ChangeReasonCategoryDetailDialog {
+            -ui_ : Ui::ChangeReasonCategoryDetailDialog*
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -currentCategory_ : dq::domain::change_reason_category
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -modifiedByUsername_ : string
+            -clientManager_ : ClientManager*
+            -history_ : vector<dq::domain::change_reason_category>
+            -currentHistoryIndex_ : int
+            -firstVersionAction_ : QAction*
+            -prevVersionAction_ : QAction*
+            -nextVersionAction_ : QAction*
+            -lastVersionAction_ : QAction*
+        }
+        class ChangeReasonCategoryHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::ChangeReasonCategoryHistoryDialog>
+            -clientManager_ : ClientManager*
+            -code_ : QString
+            -versions_ : vector<dq::domain::change_reason_category>
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ChangeReasonCategoryMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientChangeReasonCategoryModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ChangeReasonController {
+            +parent : QObject*
+            -listWindow_ : ChangeReasonMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+            -changeReasonCache_ : ChangeReasonCache*
+        }
+        class ChangeReasonDetailDialog {
+            -ui_ : Ui::ChangeReasonDetailDialog*
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -currentReason_ : dq::domain::change_reason
+            -categories_ : vector<dq::domain::change_reason_category>
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -modifiedByUsername_ : string
+            -clientManager_ : ClientManager*
+            -history_ : vector<dq::domain::change_reason>
+            -currentHistoryIndex_ : int
+            -firstVersionAction_ : QAction*
+            -prevVersionAction_ : QAction*
+            -nextVersionAction_ : QAction*
+            -lastVersionAction_ : QAction*
+        }
+        class ChangeReasonHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::ChangeReasonHistoryDialog>
+            -clientManager_ : ClientManager*
+            -code_ : QString
+            -versions_ : vector<dq::domain::change_reason>
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ChangeReasonItemDelegate {
+            -monospaceFont_ : QFont
+            -badgeFont_ : QFont
+        }
+        class ChangeReasonMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientChangeReasonModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ClientBusinessDayConventionTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<trading::domain::business_day_convention_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<trading::domain::business_day_convention_type, BusinessDayConventionTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCatalogModel {
+            +parent : QObject*
+            +role : int
+            +role : int
+            -clientManager_ : ClientManager*
+            -catalogs_ : vector<dq::domain::catalog>
+            -recencyTracker_ : RecencyTracker<dq::domain::catalog, CatalogKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCdsConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -cds_conventions_ : vector<refdata::domain::cds_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::cds_convention, CdsConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientChangeReasonCategoryModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -categories_ : vector<dq::domain::change_reason_category>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::change_reason_category, ChangeReasonCategoryKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientChangeReasonModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -reasons_ : vector<dq::domain::change_reason>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::change_reason, ChangeReasonKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCodeDomainModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -domains_ : vector<dq::domain::code_domain>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::code_domain, CodeDomainKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCodingSchemeAuthorityTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -authorityTypes_ : vector<dq::domain::coding_scheme_authority_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::coding_scheme_authority_type, CodingSchemeAuthorityTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCodingSchemeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -schemes_ : vector<dq::domain::coding_scheme>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::coding_scheme, CodingSchemeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCountryModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -countries_ : vector<refdata::domain::country>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::country, CountryKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientCurrencyModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -currencies_ : vector<refdata::domain::currency>
+            -watcher_ : QFutureWatcher<FutureWatcherResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::currency, CurrencyKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+            -synthetic_iso_codes_ : unordered_set<string>
+        }
+        class ClientDataDomainModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -domains_ : vector<dq::domain::data_domain>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::data_domain, DataDomainKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientDatasetDependencyModel {
+            +parent : QObject*
+            +role : int
+            +role : int
+            -clientManager_ : ClientManager*
+            -dependencies_ : vector<dq::domain::dataset_dependency>
+        }
+        class ClientDatasetModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -datasets_ : vector<dq::domain::dataset>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::dataset, DatasetKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientDayCountFractionTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<trading::domain::day_count_fraction_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<trading::domain::day_count_fraction_type, DayCountFractionTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientDepositConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -deposit_conventions_ : vector<refdata::domain::deposit_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::deposit_convention, DepositConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientFloatingIndexTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<trading::domain::floating_index_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<trading::domain::floating_index_type, FloatingIndexTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientFraConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -fra_conventions_ : vector<refdata::domain::fra_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::fra_convention, FraConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientFxConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -fx_conventions_ : vector<refdata::domain::fx_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::fx_convention, FxConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientIborIndexConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -ibor_index_conventions_ : vector<refdata::domain::ibor_index_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::ibor_index_convention, IborIndexConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientLegTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<trading::domain::leg_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<trading::domain::leg_type, LegTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientMethodologyModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -methodologies_ : vector<dq::domain::methodology>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::methodology, MethodologyKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientMonetaryNatureModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<refdata::domain::monetary_nature>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::monetary_nature, MonetaryNatureKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientNatureDimensionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -dimensions_ : vector<dq::domain::nature_dimension>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::nature_dimension, NatureDimensionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientOisConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -ois_conventions_ : vector<refdata::domain::ois_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::ois_convention, OisConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientOriginDimensionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -dimensions_ : vector<dq::domain::origin_dimension>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::origin_dimension, OriginDimensionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientOvernightIndexConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -overnight_index_conventions_ : vector<refdata::domain::overnight_index_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::overnight_index_convention, OvernightIndexConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPaymentFrequencyTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<trading::domain::payment_frequency_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<trading::domain::payment_frequency_type, PaymentFrequencyTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPurposeTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<refdata::domain::purpose_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::purpose_type, PurposeTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientRoundingTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<refdata::domain::rounding_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::rounding_type, RoundingTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientSubjectAreaModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -subject_areas_ : vector<dq::domain::subject_area>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::subject_area, SubjectAreaKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientSwapConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -swap_conventions_ : vector<refdata::domain::swap_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::swap_convention, SwapConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientTreatmentDimensionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -dimensions_ : vector<dq::domain::treatment_dimension>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::treatment_dimension, TreatmentDimensionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientZeroConventionModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -zero_conventions_ : vector<refdata::domain::zero_convention>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<refdata::domain::zero_convention, ZeroConventionKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class CodeDomainController {
+            +parent : QObject*
+            -listWindow_ : CodeDomainMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class CodeDomainDetailDialog {
+            -ui_ : Ui::CodeDomainDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -domain_ : dq::domain::code_domain
+        }
+        class CodeDomainHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CodeDomainHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::code_domain>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CodeDomainMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientCodeDomainModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class CodingSchemeAuthorityTypeController {
+            +parent : QObject*
+            -listWindow_ : CodingSchemeAuthorityTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class CodingSchemeAuthorityTypeDetailDialog {
+            -ui_ : Ui::CodingSchemeAuthorityTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -authorityType_ : dq::domain::coding_scheme_authority_type
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class CodingSchemeAuthorityTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CodingSchemeAuthorityTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::coding_scheme_authority_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CodingSchemeAuthorityTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientCodingSchemeAuthorityTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class CodingSchemeController {
+            +parent : QObject*
+            -listWindow_ : CodingSchemeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class CodingSchemeDetailDialog {
+            -ui_ : Ui::CodingSchemeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -scheme_ : dq::domain::coding_scheme
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class CodingSchemeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::CodingSchemeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::coding_scheme>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CodingSchemeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientCodingSchemeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class CountryController {
+            +parent : QObject*
+            -imageCache_ : ImageCache*
+            -changeReasonCache_ : ChangeReasonCache*
+            -countryListWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class CountryDetailDialog {
+            -ui_ : unique_ptr<Ui::CountryDetailDialog>
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -isStale_ : bool
+            -flagChanged_ : bool
+            -historicalVersion_ : int
+            -username_ : string
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -flagButton_ : QPushButton*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -currentCountry_ : refdata::domain::country
+            -pendingImageId_ : QString
+            -history_ : vector<refdata::domain::country>
+            -currentHistoryIndex_ : int
+            -firstVersionAction_ : QAction*
+            -prevVersionAction_ : QAction*
+            -nextVersionAction_ : QAction*
+            -lastVersionAction_ : QAction*
+        }
+        class CountryHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::CountryHistoryDialog>
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -alpha2Code_ : QString
+            -history_ : vector<refdata::domain::country>
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CountryMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -countryTableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -pagination_widget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -countryModel_ : unique_ptr<ClientCountryModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : QString
+        }
+        class CurrencyController {
+            +parent : QObject*
+            -imageCache_ : ImageCache*
+            -changeReasonCache_ : ChangeReasonCache*
+            -currencyListWindow_ : QPointer<DetachableMdiSubWindow>
+        }
+        class CurrencyDetailDialog {
+            -ui_ : unique_ptr<Ui::CurrencyDetailDialog>
+            -isDirty_ : bool
+            -isAddMode_ : bool
+            -isReadOnly_ : bool
+            -isStale_ : bool
+            -flagChanged_ : bool
+            -historicalVersion_ : int
+            -username_ : string
+            -toolBar_ : QToolBar*
+            -revertAction_ : QAction*
+            -generateAction_ : QAction*
+            -flagButton_ : QPushButton*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -currentCurrency_ : refdata::domain::currency
+            -pendingImageId_ : QString
+            -history_ : refdata::messaging::currency_version_history
+            -currentHistoryIndex_ : int
+            -firstVersionAction_ : QAction*
+            -prevVersionAction_ : QAction*
+            -nextVersionAction_ : QAction*
+            -lastVersionAction_ : QAction*
+        }
+        class CurrencyHistoryDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::CurrencyHistoryDialog>
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -isoCode_ : QString
+            -history_ : refdata::messaging::currency_version_history
+            -toolBar_ : QToolBar*
+            -reloadAction_ : QAction*
+            -openAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class CurrencyMdiWindow {
+            +parent : QWidget*
+            -verticalLayout_ : QVBoxLayout*
+            -currencyTableView_ : QTableView*
+            -toolBar_ : QToolBar*
+            -pagination_widget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+            -generateAction_ : QAction*
+            -currencyModel_ : unique_ptr<ClientCurrencyModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : QString
+        }
+        class DataDomainController {
+            +parent : QObject*
+            -listWindow_ : DataDomainMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class DataDomainDetailDialog {
+            -ui_ : Ui::DataDomainDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -domain_ : dq::domain::data_domain
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class DataDomainHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::DataDomainHistoryDialog*
+            -name_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::data_domain>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class DataDomainMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientDataDomainModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class DataLibrarianWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -badgeCache_ : BadgeCache*
+            -mainSplitter_ : QSplitter*
+            -centralSplitter_ : QSplitter*
+            -navigationTree_ : QTreeView*
+            -navigationModel_ : QStandardItemModel*
+            -toolbar_ : QToolBar*
+            -refreshAction_ : QAction*
+            -viewDatasetAction_ : QAction*
+            -publishAction_ : QAction*
+            -publicationHistoryAction_ : QAction*
+            -originDimensionsAction_ : QAction*
+            -natureDimensionsAction_ : QAction*
+            -treatmentDimensionsAction_ : QAction*
+            -codingSchemesAction_ : QAction*
+            -methodologiesAction_ : QAction*
+            -bundlesAction_ : QAction*
+            -datasetTable_ : QTableView*
+            -datasetModel_ : ClientDatasetModel*
+            -datasetProxyModel_ : QSortFilterProxyModel*
+            -dataDomainModel_ : ClientDataDomainModel*
+            -subjectAreaModel_ : ClientSubjectAreaModel*
+            -catalogModel_ : ClientCatalogModel*
+            -datasetDependencyModel_ : ClientDatasetDependencyModel*
+            -methodologyModel_ : ClientMethodologyModel*
+            -bundleModel_ : ClientDatasetBundleModel*
+            -originDimensionModel_ : ClientOriginDimensionModel*
+            -natureDimensionModel_ : ClientNatureDimensionModel*
+            -treatmentDimensionModel_ : ClientTreatmentDimensionModel*
+            -bundleMemberCache_ : map<QString, QStringList>
+            -statusBar_ : QStatusBar*
+            -loadingProgressBar_ : QProgressBar*
+            -statusLabel_ : QLabel*
+            -selectedCatalogName_ : QString
+            -selectedDomainName_ : QString
+            -selectedSubjectAreaName_ : QString
+            -selectedBundleCode_ : QString
+            -selectedOriginCode_ : QString
+            -selectedNatureCode_ : QString
+            -selectedTreatmentCode_ : QString
+        }
+        class DatasetBundleController {
+            +parent : QObject*
+            -listWindow_ : DatasetBundleMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class DatasetBundleDetailDialog {
+            -ui_ : Ui::DatasetBundleDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -bundle_ : dq::domain::dataset_bundle
+        }
+        class DatasetBundleHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::DatasetBundleHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::dataset_bundle>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class DatasetBundleMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientDatasetBundleModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class DatasetController {
+            +parent : QObject*
+            -listWindow_ : DatasetMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class DatasetDetailDialog {
+            -ui_ : Ui::DatasetDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -dataset_ : dq::domain::dataset
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+            -methodologies_ : vector<pair<boost::uuids::uuid, string>>
+        }
+        class DatasetHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::DatasetHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::dataset>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class DatasetItemDelegate {
+            +parent : QObject*
+            -badgeCache_ : BadgeCache*
+        }
+        class DatasetMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientDatasetModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class DatasetViewDialog {
+            +parent : QWidget*
+            -tabWidget_ : QTabWidget*
+            -overviewTree_ : QTreeWidget*
+            -provenanceTree_ : QTreeWidget*
+            -methodologyTree_ : QTreeWidget*
+            -stepsText_ : QTextBrowser*
+            -lineageView_ : QGraphicsView*
+            -clientManager_ : ClientManager*
+            -dataset_ : dq::domain::dataset
+            -methodologies_ : vector<dq::domain::methodology>
+            -datasetDependencies_ : vector<dq::domain::dataset_dependency>
+            -datasetNames_ : map<string, string>
+        }
+        class DayCountFractionTypeController {
+            +parent : QObject*
+            -listWindow_ : DayCountFractionTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class DayCountFractionTypeDetailDialog {
+            -ui_ : Ui::DayCountFractionTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : trading::domain::day_count_fraction_type
+        }
+        class DayCountFractionTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::DayCountFractionTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::day_count_fraction_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class DayCountFractionTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientDayCountFractionTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class DepositConventionController {
+            +parent : QObject*
+            -listWindow_ : DepositConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class DepositConventionDetailDialog {
+            -ui_ : Ui::DepositConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -dc_ : refdata::domain::deposit_convention
+        }
+        class DepositConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::DepositConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::deposit_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class DepositConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientDepositConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class FloatingIndexTypeController {
+            +parent : QObject*
+            -listWindow_ : FloatingIndexTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class FloatingIndexTypeDetailDialog {
+            -ui_ : Ui::FloatingIndexTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : trading::domain::floating_index_type
+        }
+        class FloatingIndexTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::FloatingIndexTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::floating_index_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class FloatingIndexTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientFloatingIndexTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class FraConventionController {
+            +parent : QObject*
+            -listWindow_ : FraConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class FraConventionDetailDialog {
+            -ui_ : Ui::FraConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -fc_ : refdata::domain::fra_convention
+        }
+        class FraConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::FraConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::fra_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class FraConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientFraConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class FxConventionController {
+            +parent : QObject*
+            -listWindow_ : FxConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class FxConventionDetailDialog {
+            -ui_ : Ui::FxConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -fxc_ : refdata::domain::fx_convention
+        }
+        class FxConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::FxConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::fx_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class FxConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientFxConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class IborIndexConventionController {
+            +parent : QObject*
+            -listWindow_ : IborIndexConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class IborIndexConventionDetailDialog {
+            -ui_ : Ui::IborIndexConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -ic_ : refdata::domain::ibor_index_convention
+        }
+        class IborIndexConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::IborIndexConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::ibor_index_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class IborIndexConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientIborIndexConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ImportCurrencyDialog {
+            +parent : QWidget*
+            -currencies_ : vector<refdata::domain::currency>
+            -validation_errors_ : vector<string>
+            -filename_ : QString
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -filenameLabel_ : QLabel*
+            -selectAllCheckbox_ : QCheckBox*
+            -selectionCountLabel_ : QLabel*
+            -currencyTable_ : QTableWidget*
+            -progressBar_ : QProgressBar*
+            -statusLabel_ : QLabel*
+            -importButton_ : QPushButton*
+            -cancelButton_ : QPushButton*
+            -importInProgress_ : bool
+            -cancelRequested_ : atomic<bool>
+        }
+        class LegTypeController {
+            +parent : QObject*
+            -listWindow_ : LegTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class LegTypeDetailDialog {
+            -ui_ : Ui::LegTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : trading::domain::leg_type
+        }
+        class LegTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::LegTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::leg_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class LegTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientLegTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class MethodologyController {
+            +parent : QObject*
+            -listWindow_ : MethodologyMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class MethodologyDetailDialog {
+            -ui_ : Ui::MethodologyDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -methodology_ : dq::domain::methodology
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class MethodologyHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::MethodologyHistoryDialog*
+            -name_ : string
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::methodology>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class MethodologyMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientMethodologyModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class MonetaryNatureController {
+            +parent : QObject*
+            -listWindow_ : MonetaryNatureMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class MonetaryNatureDetailDialog {
+            -ui_ : Ui::MonetaryNatureDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : refdata::domain::monetary_nature
+        }
+        class MonetaryNatureHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::MonetaryNatureHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::monetary_nature>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class MonetaryNatureMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientMonetaryNatureModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class NatureDimensionController {
+            +parent : QObject*
+            -listWindow_ : NatureDimensionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class NatureDimensionDetailDialog {
+            -ui_ : Ui::NatureDimensionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -dimension_ : dq::domain::nature_dimension
+        }
+        class NatureDimensionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::NatureDimensionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::nature_dimension>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class NatureDimensionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientNatureDimensionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class OisConventionController {
+            +parent : QObject*
+            -listWindow_ : OisConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class OisConventionDetailDialog {
+            -ui_ : Ui::OisConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -oc_ : refdata::domain::ois_convention
+        }
+        class OisConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::OisConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::ois_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class OisConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientOisConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class OriginDimensionController {
+            +parent : QObject*
+            -listWindow_ : OriginDimensionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class OriginDimensionDetailDialog {
+            -ui_ : Ui::OriginDimensionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -dimension_ : dq::domain::origin_dimension
+        }
+        class OriginDimensionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::OriginDimensionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::origin_dimension>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class OriginDimensionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientOriginDimensionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class OvernightIndexConventionController {
+            +parent : QObject*
+            -listWindow_ : OvernightIndexConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class OvernightIndexConventionDetailDialog {
+            -ui_ : Ui::OvernightIndexConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -ni_ : refdata::domain::overnight_index_convention
+        }
+        class OvernightIndexConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::OvernightIndexConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::overnight_index_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class OvernightIndexConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientOvernightIndexConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class PaymentFrequencyTypeController {
+            +parent : QObject*
+            -listWindow_ : PaymentFrequencyTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PaymentFrequencyTypeDetailDialog {
+            -ui_ : Ui::PaymentFrequencyTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : trading::domain::payment_frequency_type
+        }
+        class PaymentFrequencyTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PaymentFrequencyTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<trading::domain::payment_frequency_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PaymentFrequencyTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPaymentFrequencyTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class PublicationHistoryModel {
+            +role : int
+            -publications_ : vector<dq::domain::publication>
+        }
+        class PublicationHistoryDialog {
+            +parent : QWidget*
+            -tableView_ : QTableView*
+            -model_ : PublicationHistoryModel*
+            -clientManager_ : ClientManager*
+            -watcher_ : QFutureWatcher<FetchResult>*
+        }
+        class PublishBundleWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -bundleCode_ : QString
+            -bundleName_ : QString
+            -needsLeiPartyConfig_ : bool
+            -hasOptionalDatasets_ : bool
+            -optedInDatasets_ : QSet<QString>
+            -rootLei_ : QString
+            -rootLeiName_ : QString
+            -members_ : vector<dq::domain::dataset_bundle_member>
+            -atomic_ : bool
+        }
+        class BundleSummaryPage {
+            -wizard_ : PublishBundleWizard*
+            -bundleNameLabel_ : QLabel*
+            -membersTable_ : QTableView*
+            -membersModel_ : QStandardItemModel*
+            -statusLabel_ : QLabel*
+            -membersLoaded_ : bool
+        }
+        class OptionalDatasetsPage {
+            -wizard_ : PublishBundleWizard*
+            -checkboxLayout_ : QVBoxLayout*
+            -checkboxes_ : vector<QCheckBox*>
+        }
+        class LeiPartyConfigPage {
+            -wizard_ : PublishBundleWizard*
+            -leiPicker_ : LeiEntityPicker*
+            -instructionLabel_ : QLabel*
+            -selectedEntityLabel_ : QLabel*
+            -leiLoaded_ : bool
+        }
+        class ConfirmPublishPage {
+            -wizard_ : PublishBundleWizard*
+            -summaryLabel_ : QLabel*
+            -modeCombo_ : QComboBox*
+            -atomicCheckbox_ : QCheckBox*
+        }
+        class PublishProgressPage {
+            -wizard_ : PublishBundleWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -publishComplete_ : bool
+            -publishSuccess_ : bool
+        }
+        class PublishResultsPage {
+            -wizard_ : PublishBundleWizard*
+            -overallStatusLabel_ : QLabel*
+            -resultsTable_ : QTableView*
+            -resultsModel_ : QStandardItemModel*
+            -overallSuccess_ : bool
+            -errorMessage_ : QString
+            -datasetResults_ : vector<dq::messaging::bundle_dataset_result>
+        }
+        class PublishDatasetsDialog {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -datasets_ : vector<dq::domain::dataset>
+            -resolvedDatasets_ : vector<dq::domain::dataset>
+            -requestedIds_ : vector<string>
+            -results_ : vector<dq::domain::publication_result>
+            -lastError_ : QString
+        }
+        class SelectionPage {
+            -wizard_ : PublishDatasetsDialog*
+            -datasetList_ : QListWidget*
+            -countLabel_ : QLabel*
+        }
+        class OptionsPage {
+            -wizard_ : PublishDatasetsDialog*
+            -modeCombo_ : QComboBox*
+            -resolveDependenciesCheck_ : QCheckBox*
+        }
+        class ReviewPage {
+            -wizard_ : PublishDatasetsDialog*
+            -orderTable_ : QTableWidget*
+            -summaryLabel_ : QLabel*
+            -statusLabel_ : QLabel*
+            -resolved_ : bool
+        }
+        class ProgressPage {
+            -wizard_ : PublishDatasetsDialog*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -currentDatasetLabel_ : QLabel*
+            -publishComplete_ : bool
+            -publishSuccess_ : bool
+        }
+        class ResultsPage {
+            -wizard_ : PublishDatasetsDialog*
+            -logOutput_ : QTextEdit*
+            -summaryLabel_ : QLabel*
+        }
+        class PurposeTypeController {
+            +parent : QObject*
+            -listWindow_ : PurposeTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PurposeTypeDetailDialog {
+            -ui_ : Ui::PurposeTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : refdata::domain::purpose_type
+        }
+        class PurposeTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PurposeTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::purpose_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PurposeTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPurposeTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class RefdataPlugin {
+            -ctx_ : plugin_context
+            -currencyController_ : unique_ptr<CurrencyController>
+            -countryController_ : unique_ptr<CountryController>
+            -changeReasonCategoryController_ : unique_ptr<ChangeReasonCategoryController>
+            -changeReasonController_ : unique_ptr<ChangeReasonController>
+            -codingSchemeAuthorityTypeController_ : unique_ptr<CodingSchemeAuthorityTypeController>
+            -codeDomainController_ : unique_ptr<CodeDomainController>
+            -codingSchemeController_ : unique_ptr<CodingSchemeController>
+            -datasetController_ : unique_ptr<DatasetController>
+            -dayCountFractionTypeController_ : unique_ptr<DayCountFractionTypeController>
+            -businessDayConventionTypeController_ : unique_ptr<BusinessDayConventionTypeController>
+            -floatingIndexTypeController_ : unique_ptr<FloatingIndexTypeController>
+            -paymentFrequencyTypeController_ : unique_ptr<PaymentFrequencyTypeController>
+            -legTypeController_ : unique_ptr<LegTypeController>
+            -monetaryNatureController_ : unique_ptr<MonetaryNatureController>
+            -roundingTypeController_ : unique_ptr<RoundingTypeController>
+            -purposeTypeController_ : unique_ptr<PurposeTypeController>
+            -zeroConventionController_ : unique_ptr<ZeroConventionController>
+            -depositConventionController_ : unique_ptr<DepositConventionController>
+            -swapConventionController_ : unique_ptr<SwapConventionController>
+            -oisConventionController_ : unique_ptr<OisConventionController>
+            -fraConventionController_ : unique_ptr<FraConventionController>
+            -iborIndexConventionController_ : unique_ptr<IborIndexConventionController>
+            -overnightIndexConventionController_ : unique_ptr<OvernightIndexConventionController>
+            -fxConventionController_ : unique_ptr<FxConventionController>
+            -cdsConventionController_ : unique_ptr<CdsConventionController>
+            -dataDomainController_ : unique_ptr<DataDomainController>
+            -subjectAreaController_ : unique_ptr<SubjectAreaController>
+            -catalogController_ : unique_ptr<CatalogController>
+            -datasetBundleController_ : unique_ptr<DatasetBundleController>
+            -methodologyController_ : unique_ptr<MethodologyController>
+            -originDimensionController_ : unique_ptr<OriginDimensionController>
+            -natureDimensionController_ : unique_ptr<NatureDimensionController>
+            -treatmentDimensionController_ : unique_ptr<TreatmentDimensionController>
+        }
+        class RoundingTypeController {
+            +parent : QObject*
+            -listWindow_ : RoundingTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class RoundingTypeDetailDialog {
+            -ui_ : Ui::RoundingTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : refdata::domain::rounding_type
+        }
+        class RoundingTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::RoundingTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::rounding_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class RoundingTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientRoundingTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class SubjectAreaController {
+            +parent : QObject*
+            -listWindow_ : SubjectAreaMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class SubjectAreaDetailDialog {
+            -ui_ : Ui::SubjectAreaDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -subject_area_ : dq::domain::subject_area
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class SubjectAreaHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::SubjectAreaHistoryDialog*
+            -name_ : QString
+            -domain_name_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::subject_area>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class SubjectAreaMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientSubjectAreaModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class SwapConventionController {
+            +parent : QObject*
+            -listWindow_ : SwapConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class SwapConventionDetailDialog {
+            -ui_ : Ui::SwapConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -sc_ : refdata::domain::swap_convention
+        }
+        class SwapConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::SwapConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::swap_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class SwapConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientSwapConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class TreatmentDimensionController {
+            +parent : QObject*
+            -listWindow_ : TreatmentDimensionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class TreatmentDimensionDetailDialog {
+            -ui_ : Ui::TreatmentDimensionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -dimension_ : dq::domain::treatment_dimension
+            -isCreateMode_ : bool
+            -isReadOnly_ : bool
+        }
+        class TreatmentDimensionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::TreatmentDimensionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<dq::domain::treatment_dimension>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class TreatmentDimensionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -model_ : ClientTreatmentDimensionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -tableView_ : QTableView*
+            -toolbar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -refreshAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class ZeroConventionController {
+            +parent : QObject*
+            -listWindow_ : ZeroConventionMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class ZeroConventionDetailDialog {
+            -ui_ : Ui::ZeroConventionDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -zc_ : refdata::domain::zero_convention
+        }
+        class ZeroConventionHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::ZeroConventionHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<refdata::domain::zero_convention>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class ZeroConventionMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientZeroConventionModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.refdata.puml"
+' End:
+@enduml

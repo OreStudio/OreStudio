@@ -1,0 +1,225 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.analytics Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace qt #F2F2F2 {
+        class AnalyticsPlugin {
+            -ctx_ : plugin_context
+            -pricingEngineTypeController_ : unique_ptr<PricingEngineTypeController>
+            -pricingModelConfigController_ : unique_ptr<PricingModelConfigController>
+            -pricingModelProductController_ : unique_ptr<PricingModelProductController>
+            -pricingModelProductParameterController_ : unique_ptr<PricingModelProductParameterController>
+        }
+        class ClientPricingEngineTypeModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -types_ : vector<analytics::domain::pricing_engine_type>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<analytics::domain::pricing_engine_type, PricingEngineTypeKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPricingModelConfigModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -configs_ : vector<analytics::domain::pricing_model_config>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<analytics::domain::pricing_model_config, PricingModelConfigKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPricingModelProductModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -products_ : vector<analytics::domain::pricing_model_product>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<analytics::domain::pricing_model_product, PricingModelProductKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class ClientPricingModelProductParameterModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -parameters_ : vector<analytics::domain::pricing_model_product_parameter>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<analytics::domain::pricing_model_product_parameter, PricingModelProductParameterKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class PricingEngineTypeController {
+            +parent : QObject*
+            -listWindow_ : PricingEngineTypeMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PricingEngineTypeDetailDialog {
+            -ui_ : Ui::PricingEngineTypeDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -type_ : analytics::domain::pricing_engine_type
+        }
+        class PricingEngineTypeHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PricingEngineTypeHistoryDialog*
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<analytics::domain::pricing_engine_type>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PricingEngineTypeMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPricingEngineTypeModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class PricingModelConfigController {
+            +parent : QObject*
+            -listWindow_ : PricingModelConfigMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PricingModelConfigDetailDialog {
+            -ui_ : Ui::PricingModelConfigDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -config_ : analytics::domain::pricing_model_config
+        }
+        class PricingModelConfigHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PricingModelConfigHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<analytics::domain::pricing_model_config>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PricingModelConfigMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPricingModelConfigModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class PricingModelProductController {
+            +parent : QObject*
+            -listWindow_ : PricingModelProductMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PricingModelProductDetailDialog {
+            -ui_ : Ui::PricingModelProductDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -product_ : analytics::domain::pricing_model_product
+            -pricingEngineTypes_ : vector<analytics::domain::pricing_engine_type>
+        }
+        class PricingModelProductHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PricingModelProductHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<analytics::domain::pricing_model_product>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PricingModelProductMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPricingModelProductModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+        class PricingModelProductParameterController {
+            +parent : QObject*
+            -listWindow_ : PricingModelProductParameterMdiWindow*
+            -listMdiSubWindow_ : DetachableMdiSubWindow*
+        }
+        class PricingModelProductParameterDetailDialog {
+            -ui_ : Ui::PricingModelProductParameterDetailDialog*
+            -clientManager_ : ClientManager*
+            -username_ : string
+            -parameter_ : analytics::domain::pricing_model_product_parameter
+        }
+        class PricingModelProductParameterHistoryDialog {
+            +parent : QWidget*
+            -ui_ : Ui::PricingModelProductParameterHistoryDialog*
+            -id_ : boost::uuids::uuid
+            -code_ : QString
+            -clientManager_ : ClientManager*
+            -versions_ : vector<analytics::domain::pricing_model_product_parameter>
+            -toolbar_ : QToolBar*
+            -openVersionAction_ : QAction*
+            -revertAction_ : QAction*
+        }
+        class PricingModelProductParameterMdiWindow {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -toolbar_ : QToolBar*
+            -tableView_ : QTableView*
+            -model_ : ClientPricingModelProductParameterModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -paginationWidget_ : PaginationWidget*
+            -reloadAction_ : QAction*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -deleteAction_ : QAction*
+            -historyAction_ : QAction*
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.analytics.puml"
+' End:
+@enduml

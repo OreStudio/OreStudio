@@ -1,0 +1,74 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.variability.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace variability #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class system_setting_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace repository #F2F2F2 {
+            class system_setting_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +name : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +value : string
+                +data_type : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class system_setting_mapper {
+            }
+            class system_settings_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class system_settings_service {
+                -cache_ : unordered_map<string, string>
+                -ctx_ : database::context
+                -tenant_id_ : string
+                -repo_ : repository::system_settings_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.variability.core.puml"
+' End:
+@enduml

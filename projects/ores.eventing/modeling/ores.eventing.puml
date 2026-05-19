@@ -1,6 +1,6 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
-' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 '
 ' This program is free software; you can redistribute it and/or modify it under
 ' the terms of the GNU General Public License as published by the Free Software
@@ -8,276 +8,62 @@
 ' version.
 '
 ' This program is distributed in the hope that it will be useful, but WITHOUT
-'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 ' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 '
 ' You should have received a copy of the GNU General Public License along with
-' GNU Emacs; see the file COPYING. If not, write to the Free Software
-' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
 @startuml
-!pragma layout smetana
 
 title ores.eventing Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Eventing component for entity change notifications." as ores_eventing_note
-    eventing --- ores_eventing_note
-
     namespace eventing #F2F2F2 {
         namespace domain #F2F2F2 {
-            '
-            ' Layout groupings
-            '
-
-            '
-            ' Class definitions
-            '
-
-            struct entity_change_event #F7E5FF {
-                +{field} entity std::string
-                +{field} timestamp std::chrono::system_clock::time_point
+            class entity_change_event <<struct>> {
+                +entity : string
+                +timestamp : chrono::system_clock::time_point
+                +entity_ids : vector<string>
+                +tenant_id : string
             }
-
-            note top of entity_change_event
-            Represents a low-level notification about a change
-            to an entity at the repository level.
-
-            - entity: Fully qualified name of the entity
-              (e.g., "ores.refdata.currency").
-            - timestamp: When the change occurred (UTC).
-            end note
+            class event_channel_info <<struct>> {
+                +name : string
+                +description : string
+            }
         }
-
-        namespace service #F2F2F2 {
-            '
-            ' Layout groupings
-            '
-
-            ' Group: Core event bus
-            together {
-                class subscription
-                class event_bus
-            }
-
-            ' Group: Postgres integration
-            together {
-                class postgres_listener_service
-                class postgres_event_source
-                class registrar
-            }
-
-            ' Stack vertically
-            subscription -[hidden]down- event_bus
-            postgres_listener_service -[hidden]down- postgres_event_source
-            postgres_event_source -[hidden]down- registrar
-
-            '
-            ' Class definitions
-            '
-
-            class subscription #ECECEC {
-                +subscription()
-                +subscription(unsubscribe_fn fn)
-                +~subscription()
-                +is_active() bool
-                +unsubscribe() void
-                -{field} unsubscribe_ std::function<void()>
-            }
-
-            note top of subscription
-            RAII handle for managing event subscriptions.
-            Automatically unsubscribes when destroyed.
-            Can be moved but not copied.
-            end note
-
-            class event_bus #ECECEC {
-                +subscribe<Event>(handler) subscription
-                +publish<Event>(event) void
-                +subscriber_count<Event>() std::size_t
-                -unsubscribe(type_idx, id) void
-                -{field} mutex_ std::mutex
-                -{field} subscribers_ subscriber_map
-                -{field} next_subscriber_id_ subscriber_id
-            }
-
-            note top of event_bus
-            A typed, thread-safe, in-process publish/subscribe
-            event bus.
-
-            Provides decoupled communication between components.
-            Publishers emit events without knowing subscribers,
-            and subscribers receive events without knowing
-            publishers.
-
-            All operations are thread-safe. Callbacks are invoked
-            synchronously during publish().
-            end note
-
-            class postgres_listener_service #ECECEC {
-                +postgres_listener_service(database::context ctx, notification_callback_t callback)
-                +~postgres_listener_service()
-                +start() void
-                +stop() void
-                +subscribe(const std::string& channel_name) void
-                +notify(const std::string& channel_name, const std::string& payload) void
-                -open_connection() bool
-                -issue_pending_listens() void
-                -listen_loop() void
-                -handle_notification(const sqlgen::postgres::Notification& notification) void
-                -{field} ctx_ database::context
-                -{field} notification_callback_ notification_callback_t
-                -{field} mutex_ std::mutex
-                -{field} connection_ std::optional<rfl::Ref<sqlgen::postgres::Connection>>
-                -{field} subscribed_channels_ std::vector<std::string>
-                -{field} listener_thread_ std::thread
-                -{field} running_ std::atomic<bool>
-            }
-
-            note top of postgres_listener_service
-            Manages a dedicated PostgreSQL connection to listen
-            for NOTIFY events.
-
-            Runs a separate thread to continuously listen for
-            asynchronous notifications on configured channels.
-            When a notification is received, it parses the payload
-            into a domain::entity_change_event object and dispatches
-            it via a callback.
-
-            The service maintains its own dedicated connection
-            separate from any connection pool, as LISTEN/NOTIFY
-            requires a persistent connection.
-            end note
-
-            class postgres_event_source #ECECEC {
-                +postgres_event_source(database::context ctx, event_bus& bus)
-                +~postgres_event_source()
-                +register_mapping<Event>(entity_name, channel_name) void
-                +start() void
-                +stop() void
-                -on_entity_change(entity_change_event& e) void
-                -{field} bus_ event_bus&
-                -{field} listener_ postgres_listener_service
-                -{field} entity_mappings_ std::unordered_map<std::string, entity_mapping>
-            }
-
-            note top of postgres_event_source
-            Event source that bridges PostgreSQL LISTEN/NOTIFY
-            to the event bus.
-
-            Wraps postgres_listener_service and translates
-            low-level entity_change_event notifications into
-            typed domain events that are published to the
-            event bus.
-            end note
-
-            class registrar #ECECEC {
-                +{static} register_mapping<Event>(source, entity_name, channel_name) void
-            }
-
-            note top of registrar
-            Helper class for registering entity-to-event
-            mappings with the postgres event source.
-            end note
-
-            ores::eventing::service::event_bus --> ores::eventing::service::subscription : returns
-            ores::eventing::service::postgres_event_source --> ores::eventing::service::event_bus : publishes to
-            ores::eventing::service::postgres_event_source --> ores::eventing::service::postgres_listener_service : wraps
-            ores::eventing::service::registrar ..> ores::eventing::service::postgres_event_source : configures
-        }
-
         namespace generators #F2F2F2 {
-            class entity_change_event_generator <<generator>> #D89EF1 {
-                +{static} generate() domain::entity_change_event
-                +{static} generate_set(size_t n) std::vector<domain::entity_change_event>
+            class entity_change_event_generator {
             }
-
-            note top of entity_change_event_generator
-            Generates random entity change event instances for testing.
-            end note
         }
-
-        namespace tests #F2F2F2 {
-            '
-            ' Layout groupings
-            '
-
-            together {
-                class entity_change_event_tests
-                class service_postgres_listener_service_tests
-                class service_event_bus_tests
+        namespace service #F2F2F2 {
+            class subscription {
+                -unsubscribe_ : unsubscribe_fn
             }
-
-            entity_change_event_tests -[hidden]down- service_postgres_listener_service_tests
-            service_postgres_listener_service_tests -[hidden]down- service_event_bus_tests
-
-            '
-            ' Class definitions
-            '
-
-            class entity_change_event_tests <<test suite>> #C5E1A5 {
-                +entity_change_event_json_serialization() void
-                +entity_change_event_table_serialization() void
-                +entity_change_event_generator() void
+            class event_bus {
+                -mutex_ : mutable mutex
+                -subscribers_ : subscriber_map
+                -next_subscriber_id_ : subscriber_id
             }
-
-            note top of entity_change_event_tests
-            Test suite for entity_change_event domain type.
-
-            Tests cover JSON serialization, table serialization,
-            and generator functionality.
-            end note
-
-            class service_postgres_listener_service_tests <<test suite>> #C5E1A5 {
-                +postgres_listener_service_lifecycle() void
-                +postgres_listener_service_notification_reception() void
-                +postgres_listener_service_no_notification_without_subscribe() void
-                +postgres_listener_service_subscribe_before_start() void
-                +postgres_listener_service_notify_method() void
+            class event_channel_registry {
+                -mutex_ : mutable mutex
+                -channels_ : unordered_map<string, domain::event_channel_info>
             }
-
-            note top of service_postgres_listener_service_tests
-            Test suite for postgres_listener_service.
-
-            Tests cover service lifecycle (start/stop),
-            notification reception, subscription behavior,
-            and the notify method.
-            end note
-
-            class service_event_bus_tests <<test suite>> #C5E1A5 {
-                +event_bus_subscribe_and_publish() void
-                +event_bus_multiple_subscribers() void
-                +event_bus_different_event_types() void
-                +event_bus_unsubscribe_on_destruction() void
-                +event_bus_manual_unsubscribe() void
-                +event_bus_subscription_move() void
-                +event_bus_no_subscribers() void
-                +event_bus_empty_event() void
-                +event_bus_handler_exception_does_not_break_other_handlers() void
-                +event_bus_thread_safety() void
-                +event_bus_concurrent_subscribe_unsubscribe() void
+            class postgres_event_source {
+                -bus_ : event_bus&
+                -listener_ : ores::database::service::postgres_listener_service
+                -entity_mappings_ : unordered_map<string, entity_mapping>
             }
-
-            note top of service_event_bus_tests
-            Test suite for event_bus.
-
-            Tests cover subscribe/publish, multiple subscribers,
-            type isolation, RAII unsubscription, move semantics,
-            exception handling, and thread safety.
-            end note
+            class registrar {
+            }
         }
-
-        ' Relationships
-        ores::eventing::service::postgres_listener_service --> ores::eventing::domain::entity_change_event : dispatches
-        ores::eventing::generators::entity_change_event_generator --> ores::eventing::domain::entity_change_event : generates
-        ores::eventing::tests::entity_change_event_tests ..> ores::eventing::domain::entity_change_event : tests
-        ores::eventing::tests::entity_change_event_tests ..> ores::eventing::generators::entity_change_event_generator : tests
-        ores::eventing::tests::service_postgres_listener_service_tests ..> ores::eventing::service::postgres_listener_service : tests
-        ores::eventing::tests::service_event_bus_tests ..> ores::eventing::service::event_bus : tests
-        ores::eventing::tests::service_event_bus_tests ..> ores::eventing::service::subscription : tests
     }
 }
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.eventing.puml"

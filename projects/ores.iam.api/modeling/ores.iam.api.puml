@@ -1,0 +1,606 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.iam.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace iam #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class account <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +account_type : string
+                +username : string
+                +password_hash : string
+                +password_salt : string
+                +totp_secret : string
+                +email : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class account_party <<struct>> {
+                +version : int
+                +tenant_id : string
+                +account_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class account_role <<struct>> {
+                +account_id : boost::uuids::uuid
+                +role_id : boost::uuids::uuid
+                +assigned_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +assigned_at : chrono::system_clock::time_point
+            }
+            class account_type <<struct>> {
+                +version : int
+                +type : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class account_version <<struct>> {
+                +data : account
+                +version_number : int
+                +modified_by : string
+                +recorded_at : chrono::system_clock::time_point
+                +change_summary : string
+            }
+            class account_version_history <<struct>> {
+                +username : string
+                +versions : vector<account_version>
+            }
+            class login_info <<struct>> {
+                +last_login : chrono::system_clock::time_point
+                +account_id : boost::uuids::uuid
+                +failed_logins : int
+                +locked : bool
+                +online : bool
+                +password_reset_required : bool
+                +last_ip : boost::asio::ip::address
+                +last_attempt_ip : boost::asio::ip::address
+            }
+            class permission <<struct>> {
+                +id : boost::uuids::uuid
+                +code : string
+                +description : string
+            }
+            class role <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+                +permission_codes : vector<string>
+            }
+            class role_permission <<struct>> {
+                +role_id : boost::uuids::uuid
+                +permission_id : boost::uuids::uuid
+            }
+            enum session_protocol {
+                binary
+                http
+            }
+            class session <<struct>> {
+                +id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +visible_party_ids : vector<boost::uuids::uuid>
+                +start_time : chrono::system_clock::time_point
+                +end_time : optional<chrono::system_clock::time_point>
+                +client_ip : boost::asio::ip::address
+                +client_identifier : string
+                +client_version_major : uint16_t
+                +client_version_minor : uint16_t
+                +bytes_sent : uint64_t
+                +bytes_received : uint64_t
+                +country_code : string
+                +protocol : session_protocol
+                +username : string
+            }
+            class session_statistics <<struct>> {
+                +period_start : chrono::system_clock::time_point
+                +period_end : chrono::system_clock::time_point
+                +account_id : boost::uuids::uuid
+                +session_count : uint64_t
+                +avg_duration_seconds : double
+                +total_bytes_sent : uint64_t
+                +total_bytes_received : uint64_t
+                +avg_bytes_sent : double
+                +avg_bytes_received : double
+                +unique_countries : uint32_t
+            }
+            class tenant <<struct>> {
+                +version : int
+                +id : boost::uuids::uuid
+                +code : string
+                +name : string
+                +type : string
+                +description : string
+                +hostname : string
+                +status : string
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class tenant_status <<struct>> {
+                +version : int
+                +status : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class tenant_type <<struct>> {
+                +version : int
+                +type : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +performed_by : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace eventing #F2F2F2 {
+            class account_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +account_ids : vector<string>
+                +tenant_id : string
+            }
+            class account_permissions_changed_event <<struct>> {
+                +account_id : boost::uuids::uuid
+                +permission_codes : vector<string>
+                +timestamp : chrono::system_clock::time_point
+                +tenant_id : string
+            }
+            class permission_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +permission_ids : vector<string>
+                +tenant_id : string
+            }
+            class role_assigned_event <<struct>> {
+                +account_id : boost::uuids::uuid
+                +role_id : boost::uuids::uuid
+                +timestamp : chrono::system_clock::time_point
+            }
+            class role_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +role_ids : vector<string>
+                +tenant_id : string
+            }
+            class role_revoked_event <<struct>> {
+                +account_id : boost::uuids::uuid
+                +role_id : boost::uuids::uuid
+                +timestamp : chrono::system_clock::time_point
+            }
+            class tenant_changed_event <<struct>> {
+                +timestamp : chrono::system_clock::time_point
+                +tenant_ids : vector<string>
+                +tenant_id : string
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class account_version_history <<struct>> {
+                +versions : vector<ores::iam::domain::account_version>
+            }
+            class get_account_history_request <<struct>> {
+                +username : string
+            }
+            class get_account_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : account_version_history
+            }
+            class account_party_key <<struct>> {
+                +account_id : string
+                +party_id : string
+            }
+            class get_account_parties_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_account_parties_response <<struct>> {
+                +account_parties : vector<ores::iam::domain::account_party>
+                +total_available_count : int
+            }
+            class get_account_parties_by_account_request <<struct>> {
+                +account_id : string
+            }
+            class get_account_parties_by_account_response <<struct>> {
+                +account_parties : vector<ores::iam::domain::account_party>
+            }
+            class save_account_party_request <<struct>> {
+                +account_parties : vector<ores::iam::domain::account_party>
+            }
+            class save_account_party_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_account_party_request <<struct>> {
+                +keys : vector<account_party_key>
+            }
+            class delete_account_party_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_accounts_request <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class get_accounts_response <<struct>> {
+                +accounts : vector<ores::iam::domain::account>
+                +total_available_count : int
+            }
+            class save_account_request <<struct>> {
+                +principal : string
+                +password : string
+                +totp_secret : string
+                +email : string
+                +account_type : string
+            }
+            class update_account_request <<struct>> {
+                +account_id : string
+                +email : string
+                +change_reason_code : string
+                +change_commentary : string
+            }
+            class update_account_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class save_account_response <<struct>> {
+                +success : bool
+                +message : string
+                +account_id : string
+            }
+            class delete_account_request <<struct>> {
+                +account_id : string
+            }
+            class delete_account_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class account_operation_result <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class lock_account_request <<struct>> {
+                +account_ids : vector<string>
+            }
+            class lock_account_response <<struct>> {
+                +results : vector<account_operation_result>
+            }
+            class unlock_account_request <<struct>> {
+                +account_ids : vector<string>
+            }
+            class unlock_account_response <<struct>> {
+                +results : vector<account_operation_result>
+            }
+            class list_login_info_request <<struct>> {
+            }
+            class list_login_info_response <<struct>> {
+                +login_infos : vector<ores::iam::domain::login_info>
+            }
+            class reset_password_request <<struct>> {
+                +account_ids : vector<string>
+                +new_password : string
+            }
+            class reset_password_response <<struct>> {
+                +success : bool
+                +message : string
+                +results : vector<account_operation_result>
+            }
+            class change_password_request <<struct>> {
+                +current_password : string
+                +new_password : string
+            }
+            class change_password_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class update_my_email_request <<struct>> {
+                +email : string
+            }
+            class update_my_email_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class select_party_request <<struct>> {
+                +party_id : string
+            }
+            class select_party_response <<struct>> {
+                +success : bool
+                +message : string
+                +token : string
+                +username : string
+                +tenant_name : string
+                +party_name : string
+                +party_setup_required : bool
+                +access_lifetime_s : int
+            }
+            class get_accounts_request_typed <<struct>> {
+                +offset : int
+                +limit : int
+            }
+            class change_password_request_typed <<struct>> {
+                +current_password : string
+                +new_password : string
+            }
+            class list_roles_request <<struct>> {
+            }
+            class list_roles_response <<struct>> {
+                +roles : vector<ores::iam::domain::role>
+            }
+            class list_permissions_request <<struct>> {
+            }
+            class bootstrap_status_request <<struct>> {
+            }
+            class bootstrap_status_response <<struct>> {
+                +is_in_bootstrap_mode : bool
+                +message : string
+            }
+            class create_initial_admin_request <<struct>> {
+                +principal : string
+                +password : string
+                +email : string
+            }
+            class create_initial_admin_response <<struct>> {
+                +success : bool
+                +error_message : string
+                +account_id : string
+                +tenant_name : string
+                +tenant_id : string
+            }
+            class provision_tenant_request <<struct>> {
+                +code : string
+                +name : string
+                +hostname : string
+                +description : string
+                +principal : string
+                +password : string
+                +email : string
+            }
+            class provision_tenant_response <<struct>> {
+                +success : bool
+                +error_message : string
+                +account_id : string
+                +tenant_id : string
+            }
+            class party_summary <<struct>> {
+                +id : string
+                +name : string
+                +party_category : string
+                +business_center_code : string
+            }
+            class login_request <<struct>> {
+                +principal : string
+                +password : string
+            }
+            class login_response <<struct>> {
+                +success : bool
+                +account_id : string
+                +tenant_id : string
+                +tenant_name : string
+                +username : string
+                +email : string
+                +password_reset_required : bool
+                +tenant_bootstrap_mode : bool
+                +party_setup_required : bool
+                +token : string
+                +error_message : string
+                +message : string
+                +selected_party_id : string
+                +available_parties : vector<party_summary>
+                +access_lifetime_s : int
+                +session_id : string
+            }
+            class logout_request <<struct>> {
+            }
+            class logout_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class public_key_request <<struct>> {
+            }
+            class refresh_request <<struct>> {
+            }
+            class refresh_response <<struct>> {
+                +success : bool
+                +token : string
+                +message : string
+                +access_lifetime_s : int
+            }
+            class service_login_request <<struct>> {
+                +username : string
+                +password : string
+            }
+            class service_login_response <<struct>> {
+                +success : bool
+                +token : string
+                +message : string
+                +access_lifetime_s : int
+            }
+            class list_sessions_request <<struct>> {
+                +account_id : string
+                +limit : int
+                +offset : int
+            }
+            class list_sessions_response <<struct>> {
+                +sessions : vector<ores::iam::domain::session>
+                +total_count : int
+            }
+            class get_active_sessions_request <<struct>> {
+            }
+            class get_active_sessions_response <<struct>> {
+                +sessions : vector<ores::iam::domain::session>
+            }
+            class get_session_statistics_request <<struct>> {
+                +account_id : string
+                +start_time : chrono::system_clock::time_point
+                +end_time : chrono::system_clock::time_point
+            }
+            class get_session_statistics_response <<struct>> {
+                +statistics : vector<ores::iam::domain::session_statistics>
+            }
+            class session_sample_dto <<struct>> {
+                +sample_time_ms : uint64_t
+                +bytes_sent : uint64_t
+                +bytes_received : uint64_t
+            }
+            class get_session_samples_request <<struct>> {
+                +session_id : string
+            }
+            class get_session_samples_response <<struct>> {
+                +samples : vector<session_sample_dto>
+            }
+            class signup_request <<struct>> {
+                +principal : string
+                +password : string
+                +email : string
+            }
+            class signup_response <<struct>> {
+                +success : bool
+                +message : string
+                +account_id : string
+            }
+            class get_tenants_request <<struct>> {
+                +include_deleted : bool
+            }
+            class get_tenants_response <<struct>> {
+                +tenants : vector<ores::iam::domain::tenant>
+            }
+            class save_tenant_request <<struct>> {
+                +data : ores::iam::domain::tenant
+            }
+            class save_tenant_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_tenant_request <<struct>> {
+                +ids : vector<string>
+            }
+            class delete_tenant_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_tenant_history_request <<struct>> {
+                +id : string
+            }
+            class get_tenant_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +versions : vector<ores::iam::domain::tenant>
+            }
+            class get_tenant_statuses_request <<struct>> {
+            }
+            class get_tenant_statuses_response <<struct>> {
+                +statuses : vector<ores::iam::domain::tenant_status>
+            }
+            class save_tenant_status_request <<struct>> {
+                +data : ores::iam::domain::tenant_status
+            }
+            class save_tenant_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_tenant_status_request <<struct>> {
+                +status : string
+            }
+            class delete_tenant_status_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_tenant_status_history_request <<struct>> {
+                +status : string
+            }
+            class get_tenant_status_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::iam::domain::tenant_status>
+            }
+            class get_tenant_types_request <<struct>> {
+            }
+            class get_tenant_types_response <<struct>> {
+                +types : vector<ores::iam::domain::tenant_type>
+            }
+            class save_tenant_type_request <<struct>> {
+                +data : ores::iam::domain::tenant_type
+            }
+            class save_tenant_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class delete_tenant_type_request <<struct>> {
+                +type : string
+            }
+            class delete_tenant_type_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class get_tenant_type_history_request <<struct>> {
+                +type : string
+            }
+            class get_tenant_type_history_response <<struct>> {
+                +success : bool
+                +message : string
+                +history : vector<ores::iam::domain::tenant_type>
+            }
+        }
+        namespace service #F2F2F2 {
+            class auth_session_service {
+                -mutex_ : mutable mutex
+                -sessions_ : unordered_map<string, ores::iam::domain::session>
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.iam.api.puml"
+' End:
+@enduml

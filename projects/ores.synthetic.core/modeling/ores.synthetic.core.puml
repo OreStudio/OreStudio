@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.synthetic.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace synthetic #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class organisation_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+            }
+            class registrar {
+                +verifier : optional<ores::security::jwt::jwt_authenticator>
+            }
+        }
+        namespace service #F2F2F2 {
+            class catalog_generator_service {
+            }
+            class organisation_generator_service {
+            }
+            class generate_organisation_result <<struct>> {
+                +success : bool
+                +error_message : string
+                +parties_count : uint32_t
+                +counterparties_count : uint32_t
+                +portfolios_count : uint32_t
+                +books_count : uint32_t
+                +business_unit_types_count : uint32_t
+                +business_units_count : uint32_t
+                +contacts_count : uint32_t
+                +identifiers_count : uint32_t
+            }
+            class organisation_publisher_service {
+                -ctx_ : database::context
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.core.puml"
+' End:
+@enduml

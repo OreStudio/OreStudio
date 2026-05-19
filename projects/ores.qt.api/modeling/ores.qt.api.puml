@@ -1,0 +1,594 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.qt.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace eventing #F2F2F2 {
+        namespace service #F2F2F2 {
+            namespace ores #F2F2F2 {
+                namespace qt #F2F2F2 {
+                    class plugin_context <<struct>> {
+                        +main_window : QMainWindow*
+                        +mdi_area : QMdiArea*
+                        +status_bar : QStatusBar*
+                        +client_manager : ClientManager*
+                        +image_cache : ImageCache*
+                        +change_reason_cache : ChangeReasonCache*
+                        +badge_cache : BadgeCache*
+                        +event_bus : shared_ptr<eventing::service::event_bus>
+                        +username : QString
+                        +http_base_url : string
+                        +workspace_context : WorkspaceContext
+                    }
+                }
+            }
+        }
+    }
+    namespace qt #F2F2F2 {
+        class AbstractClientModel {
+        }
+        class BadgeCache {
+            -clientManager_ : ClientManager*
+            -definitions_ : vector<dq::domain::badge_definition>
+            -mappings_ : vector<dq::messaging::badge_mapping>
+            -index_ : unordered_map<string, size_t>
+            -definition_index_ : unordered_map<string, size_t>
+            -definitions_watcher_ : QFutureWatcher<DefinitionsResult>*
+            -mappings_watcher_ : QFutureWatcher<MappingsResult>*
+        }
+        class ChangeReasonCache {
+            +parent : QObject*
+            -clientManager_ : ClientManager*
+            -reasons_ : vector<dq::domain::change_reason>
+            -categories_ : vector<dq::domain::change_reason_category>
+            -reason_index_ : unordered_map<string, size_t>
+            -reasons_watcher_ : QFutureWatcher<ReasonsResult>*
+            -categories_watcher_ : QFutureWatcher<CategoriesResult>*
+        }
+        class ChangeReasonDialog {
+            +parent : QWidget*
+            -reasons_ : vector<dq::domain::change_reason>
+            -operation_ : OperationType
+            -hasFieldChanges_ : bool
+            -reasonCombo_ : QComboBox*
+            -descriptionLabel_ : QLabel*
+            -commentaryLabel_ : QLabel*
+            -commentaryEdit_ : QTextEdit*
+            -requiredLabel_ : QLabel*
+            -buttonBox_ : QDialogButtonBox*
+            -saveButton_ : QPushButton*
+        }
+        class ClientDatasetBundleModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -bundles_ : vector<dq::domain::dataset_bundle>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<dq::domain::dataset_bundle, DatasetBundleKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class PartyInfo <<struct>> {
+            +id : boost::uuids::uuid
+            +name : QString
+            +party_category : QString
+            +business_center_code : QString
+        }
+        class LoginResult <<struct>> {
+            +success : bool
+            +error_message : QString
+            +password_reset_required : bool
+            +bootstrap_mode : bool
+            +tenant_bootstrap_mode : bool
+            +party_setup_required : bool
+            +selected_party_id : boost::uuids::uuid
+            +available_parties : vector<PartyInfo>
+        }
+        class SignupResult <<struct>> {
+            +success : bool
+            +error_message : QString
+            +username : QString
+        }
+        class SessionListResult <<struct>> {
+            +sessions : vector<iam::domain::session>
+            +total_count : uint32_t
+        }
+        class TradeListResult <<struct>> {
+            +trades : vector<trading::domain::trade>
+            +total_count : uint32_t
+        }
+        class ClientManager {
+            +parent : QObject*
+            +offset : uint32_t
+            +limit : uint32_t
+            -session_ : ores::nats::service::nats_client
+            -subject_prefix_ : string
+            -event_bus_ : shared_ptr<eventing::service::event_bus>
+            -connected_host_ : string
+            -recording_directory_ : filesystem::path
+            -disconnected_since_ : optional<chrono::steady_clock::time_point>
+            -stored_username_ : string
+            -stored_password_ : string
+            -current_account_id_ : optional<boost::uuids::uuid>
+            -current_email_ : string
+            -session_id_ : string
+            -current_party_id_ : boost::uuids::uuid
+            -current_party_name_ : QString
+            -current_party_category_ : QString
+            -last_party_setup_required_ : bool
+            -http_base_url_ : string
+            -nats_subscriptions_ : unordered_map<string, nats::service::subscription>
+            -refresh_timer_ : QTimer*
+        }
+        class ClientResultItemDelegate {
+            -monospaceFont_ : QFont
+        }
+        class ClientResultModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -results_ : vector<compute::domain::result>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -recencyTracker_ : RecencyTracker<compute::domain::result, ResultKeyExtractor>
+            -pulseManager_ : RecencyPulseManager*
+        }
+        class color_constants <<struct>> {
+        }
+        enum column_style {
+        }
+        class ColumnMetadata <<struct>> {
+            +column : int
+            +header : string_view
+            +style : column_style
+            +hidden_by_default : bool
+            +default_width : int
+        }
+        class CronEditorDialog {
+            -descriptionLabel_ : QLabel*
+            -tabWidget_ : QTabWidget*
+            -minuteField_ : CronFieldWidget*
+            -hourField_ : CronFieldWidget*
+            -dayField_ : CronFieldWidget*
+            -monthField_ : CronFieldWidget*
+            -weekdayField_ : CronFieldWidget*
+        }
+        class CronExpressionWidget {
+            -expressionEdit_ : QLineEdit*
+            -builderButton_ : QPushButton*
+        }
+        class FieldConfig <<struct>> {
+            +min_val : int
+            +max_val : int
+            +labels : QStringList
+            +freq_steps : QList<int>
+            +checkboxes_per_row : int
+        }
+        class CronFieldWidget {
+            -cfg_ : FieldConfig
+            -freqRadio_ : QRadioButton*
+            -everyCombo_ : QComboBox*
+            -startCombo_ : QComboBox*
+            -rangeRadio_ : QRadioButton*
+            -minCombo_ : QComboBox*
+            -maxCombo_ : QComboBox*
+            -choiceRadio_ : QRadioButton*
+            -checkboxes_ : QVector<QCheckBox*>
+        }
+        class DelegatePaintUtils <<struct>> {
+            +padding : int
+            +padding : const QFont& font, int
+        }
+        class DetachableMdiSubWindow {
+            -isDetached_ : bool
+            -savedMdiArea_ : QPointer<QMdiArea>
+            -savedMdiPosition_ : QPoint
+            -savedMdiSize_ : QSize
+            -geometryKey_ : QString
+        }
+        class DetailDialogBase {
+            #category : string_view
+            -closeConfirmed_ : bool
+            -changeReasonCache_ : ChangeReasonCache*
+        }
+        class dialog_styles <<struct>> {
+        }
+        class EntityController {
+            +parent : QObject*
+            #mainWindow_ : QMainWindow*
+            #mdiArea_ : QMdiArea*
+            #clientManager_ : QPointer<ClientManager>
+            #username_ : QString
+            #managed_windows_ : QMap<QString, DetachableMdiSubWindow*>
+            #autoReloadOnSave_ : bool
+            -eventName_ : string
+        }
+        class EntityDetailDialog {
+            +parent : QWidget*
+            -ops_ : shared_ptr<entity_detail_operations>
+            -ui_ : Ui::EntityDetailDialog*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -username_ : string
+            -entity_ : entity_data
+            -allEntities_ : vector<parent_entity_entry>
+            -identifierTable_ : QTableWidget*
+            -identifierToolbar_ : QToolBar*
+            -identifiers_ : vector<identifier_entry>
+            -contactTable_ : QTableWidget*
+            -contactToolbar_ : QToolBar*
+            -contacts_ : vector<contact_entry>
+            -idSchemes_ : vector<refdata::domain::party_id_scheme>
+            -countryImageMap_ : unordered_map<string, string>
+            -hierarchyTree_ : QTreeWidget*
+        }
+        class operation_result <<struct>> {
+            +success : bool
+            +message : string
+        }
+        class parent_entity_entry <<struct>> {
+            +id : boost::uuids::uuid
+            +short_code : string
+            +full_name : string
+            +status : string
+            +parent_id : optional<boost::uuids::uuid>
+        }
+        class identifier_entry <<struct>> {
+            +id : boost::uuids::uuid
+            +owner_id : boost::uuids::uuid
+            +id_scheme : string
+            +id_value : string
+            +description : string
+            +modified_by : string
+            +performed_by : string
+        }
+        class contact_entry <<struct>> {
+            +id : boost::uuids::uuid
+            +owner_id : boost::uuids::uuid
+            +contact_type : string
+            +street_line_1 : string
+            +street_line_2 : string
+            +city : string
+            +state : string
+            +country_code : string
+            +postal_code : string
+            +phone : string
+            +email : string
+            +web_page : string
+            +modified_by : string
+            +performed_by : string
+        }
+        class entity_data <<struct>> {
+            +version : int
+            +tenant_id : string
+            +id : boost::uuids::uuid
+            +full_name : string
+            +short_code : string
+            +codename : optional<string>
+            +transliterated_name : optional<string>
+            +party_category : optional<string>
+            +party_type : string
+            +parent_id : optional<boost::uuids::uuid>
+            +business_center_code : string
+            +status : string
+            +modified_by : string
+            +performed_by : string
+            +change_reason_code : string
+            +change_commentary : string
+            +recorded_at : chrono::system_clock::time_point
+        }
+        class load_all_entities_result <<struct>> {
+            +entities : vector<parent_entity_entry>
+            +success : bool
+        }
+        class load_identifiers_result <<struct>> {
+            +identifiers : vector<identifier_entry>
+            +success : bool
+        }
+        class load_contacts_result <<struct>> {
+            +contacts : vector<contact_entry>
+            +success : bool
+        }
+        class entity_detail_operations {
+        }
+        class badge_color_pair <<struct>> {
+            +background : QColor
+            +foreground : QColor
+        }
+        class EntityItemDelegate {
+            +parent : QObject*
+            -styles_ : vector<column_style>
+            -monospaceFont_ : QFont
+            -column_resolvers_ : unordered_map<size_t, badge_color_resolver>
+        }
+        class EntityListMdiWindow {
+            #splitter : QSplitter*
+            -normalReloadIcon_ : QIcon
+            -pulseReloadIcon_ : QIcon
+            -settingsGroup_ : QString
+            -defaultHiddenColumns_ : QVector<int>
+            #savedWindowSize_ : QSize
+        }
+        class exception_helper {
+        }
+        enum FlagSource {
+        }
+        class FlagSelectorDialog {
+            +parent : QWidget*
+            -imageCache_ : ImageCache*
+            -selectedImageId_ : QString
+            -currentImageId_ : QString
+            -searchEdit_ : QLineEdit*
+            -listWidget_ : QListWidget*
+            -previewLabel_ : QLabel*
+            -previewDescLabel_ : QLabel*
+            -clearButton_ : QPushButton*
+            -selectButton_ : QPushButton*
+            -cancelButton_ : QPushButton*
+        }
+        class FontUtils <<struct>> {
+        }
+        class HostDisplayNameCache {
+            -cache_ : QHash<QString, QString>
+        }
+        class IBusinessUnitBrowser {
+        }
+        class shared_menus_context <<struct>> {
+            +system_menu : QMenu*
+            +reference_data_menu : QMenu*
+            +telemetry_menu : QMenu*
+            +identity_menu : QMenu*
+            +data_transfer_menu : QMenu*
+            +trading_codes_menu : QMenu*
+        }
+        class IPlugin {
+        }
+        enum Icon {
+            Add
+            Archive
+            ArrowClockwise
+            ArrowDownload
+            ArrowLeft
+            ArrowNext
+            ArrowPrevious
+            ArrowRight
+            ArrowRotateCounterclockwise
+            ArrowSync
+            ArrowTrending
+            Book
+            BookOpen
+            Briefcase
+            Building
+            BuildingBank
+            BuildingSkyscraper
+            Chart
+            ChartMultiple
+            Checkmark
+            Classification
+            Clock
+            Code
+            ContactCard
+            Copy
+            Currency
+            Database
+            Delete
+            DeleteDismiss
+            Dismiss
+            DocumentCode
+            DocumentTable
+            Edit
+            Error
+            ExportCsv
+            ExportFpml
+            ExportOre
+            Flag
+            Folder
+            FolderOpen
+            Globe
+            Handshake
+            History
+            Histogram
+            ImportCsv
+            ImportFpml
+            ImportOre
+            Info
+            Key
+            KeyMultiple
+            Keyboard
+            Library
+            LockClosed
+            LockOpen
+            NoteEdit
+            Notepad
+            Open
+            Organization
+            PasswordReset
+            PeopleTeam
+            Person
+            PersonAccounts
+            PersonAdd
+            PlugConnected
+            PlugConnectedFilled
+            PlugDisconnected
+            Publish
+            Question
+            Record
+            RecordFilled
+            Save
+            Server
+            ServerLink
+            ServerLinkFilled
+            Settings
+            Star
+            Table
+            Tag
+            TasksApp
+            Terminal
+            Wand
+            Warning
+        }
+        enum IconTheme {
+            FluentUIRegular
+            FluentUIFilled
+            SolarizedLinear
+            SolarizedBold
+        }
+        class IconUtils {
+        }
+        class ImageCache {
+            -clientManager_ : ClientManager*
+            -image_svg_cache_ : unordered_map<string, string>
+            -image_icons_ : unordered_map<string, QIcon>
+            -pending_image_ids_ : vector<string>
+            -currency_ids_watcher_ : QFutureWatcher<ImageIdsResult>*
+            -country_ids_watcher_ : QFutureWatcher<ImageIdsResult>*
+            -incremental_changes_watcher_ : QFutureWatcher<ImageIdsResult>*
+            -images_watcher_ : QFutureWatcher<ImagesResult>*
+            -image_list_watcher_ : QFutureWatcher<ImageListResult>*
+            -single_image_watcher_ : QFutureWatcher<SingleImageResult>*
+            -set_currency_image_watcher_ : QFutureWatcher<SetCurrencyImageResult>*
+            -set_country_image_watcher_ : QFutureWatcher<SetCountryImageResult>*
+            -all_available_watcher_ : QFutureWatcher<ImagesResult>*
+            -available_images_ : vector<assets::messaging::image_info>
+            -pending_image_requests_ : unordered_set<string>
+            -last_load_time_ : optional<chrono::system_clock::time_point>
+            -currency_iso_to_image_id_ : unordered_map<string, string>
+            -country_alpha2_to_image_id_ : unordered_map<string, string>
+            -bc_code_to_country_alpha2_ : unordered_map<string, string>
+            -bc_mapping_watcher_ : QFutureWatcher<BusinessCentreMappingResult>*
+        }
+        class LeiEntityPicker {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -searchEdit_ : QLineEdit*
+            -countryFilter_ : QComboBox*
+            -tableView_ : QTableView*
+            -model_ : QStandardItemModel*
+            -proxyModel_ : QSortFilterProxyModel*
+            -statusLabel_ : QLabel*
+            -selectedLei_ : QString
+            -selectedName_ : QString
+            -countriesLoaded_ : bool
+        }
+        class lookup_result <<struct>> {
+            +type_codes : vector<string>
+            +status_codes : vector<string>
+            +business_centre_codes : vector<string>
+        }
+        class portfolio_entry <<struct>> {
+            +id : string
+            +name : string
+        }
+        class business_unit_entry <<struct>> {
+            +id : string
+            +name : string
+        }
+        class MdiAreaWithBackground {
+            -backgroundLogo_ : QPixmap
+        }
+        class MdiUtils {
+        }
+        class MessageBoxHelper {
+            +buttons : QMessageBox::StandardButtons
+        }
+        class PaginationWidget {
+            -info_label_ : QLabel*
+            -page_size_combo_ : QComboBox*
+            -first_action_ : QAction*
+            -prev_action_ : QAction*
+            -next_action_ : QAction*
+            -last_action_ : QAction*
+            -load_all_action_ : QAction*
+            -nav_toolbar_ : QToolBar*
+            -layout_ : QHBoxLayout*
+        }
+        class PartyPickerDialog {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -parties_ : vector<PartyInfo>
+            -recent_ids_ : vector<boost::uuids::uuid>
+            -systemRadio_ : QRadioButton*
+            -operationalRadio_ : QRadioButton*
+            -operationalContent_ : QWidget*
+            -filterEdit_ : QLineEdit*
+            -centreCombo_ : QComboBox*
+            -listWidget_ : QTreeWidget*
+            -okButton_ : QPushButton*
+            -cancelButton_ : QPushButton*
+            -flagRefreshTimer_ : QTimer*
+            -selectedId_ : boost::uuids::uuid
+            -selectedName_ : QString
+        }
+        class PasswordMatchIndicator <<struct>> {
+        }
+        class PluginBase {
+        }
+        class plugin_load_error <<struct>> {
+        }
+        class PluginRegistry {
+            -loaders_ : QVector<QPluginLoader*>
+            -plugins_ : QVector<IPlugin*>
+            -load_errors_ : QVector<plugin_load_error>
+        }
+        class ProvenanceWidget {
+            -ui_ : Ui::ProvenanceWidget*
+        }
+        class RecencyPulseManager {
+            +max_pulse_cycles : int
+            -timer_ : QTimer*
+            -pulse_interval_ms_ : int
+            -max_pulse_cycles_ : int
+        }
+        class RecencyTracker {
+            -key_extractor_ : KeyExtractor
+            -timestamp_extractor_ : ORES_NO_UNIQUE_ADDRESS TimestampExtractor
+            -recent_keys_ : unordered_set<string>
+            -last_reload_time_ : QDateTime
+        }
+        class relative_time_helper {
+        }
+        class TextUtils <<struct>> {
+        }
+        enum timestamp_display_mode {
+        }
+        class timestamp_formatter {
+        }
+        class UiPersistence {
+            +version : int
+            +version : int
+        }
+        class BoundedListView {
+            -combo_ : QPointer<QComboBox>
+        }
+        class WidgetUtils <<struct>> {
+        }
+        class WorkspaceContext <<struct>> {
+            +id : QString
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.api.puml"
+' End:
+@enduml

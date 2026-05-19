@@ -1,0 +1,205 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.ore.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace ore #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class bond_instrument_mapper {
+            }
+            class calendar_adjustment_mapper {
+            }
+            class commodity_instrument_mapper {
+            }
+            class composite_instrument_mapper {
+            }
+            class mapped_conventions <<struct>> {
+                +zero : vector<refdata::domain::zero_convention>
+                +deposit : vector<refdata::domain::deposit_convention>
+                +swap : vector<refdata::domain::swap_convention>
+                +ois : vector<refdata::domain::ois_convention>
+                +fra : vector<refdata::domain::fra_convention>
+                +ibor_index : vector<refdata::domain::ibor_index_convention>
+                +overnight_index : vector<refdata::domain::overnight_index_convention>
+                +fx : vector<refdata::domain::fx_convention>
+                +cds : vector<refdata::domain::cds_convention>
+            }
+            class conventions_mapper {
+            }
+            class credit_instrument_mapper {
+            }
+            class currency_mapper {
+            }
+            class equity_instrument_mapper {
+            }
+            class fx_instrument_mapper {
+            }
+            class scripted_instrument_mapper {
+            }
+            class swap_instrument_mapper {
+            }
+            class trade_mapper {
+            }
+        }
+        namespace hierarchy #F2F2F2 {
+            class import_node <<struct>> {
+                +name : string
+                +parent_index : optional<size_t>
+                +source_files : vector<filesystem::path>
+            }
+            class ore_hierarchy_builder {
+                -portfolio_files_ : vector<filesystem::path>
+                -root_ : filesystem::path
+                -exclusions_ : unordered_set<string>
+            }
+        }
+        namespace log #F2F2F2 {
+            class ore_log_line <<struct>> {
+                +level : string
+                +timestamp : chrono::system_clock::time_point
+                +source : string
+                +message : string
+            }
+        }
+        namespace market #F2F2F2 {
+            class fixing <<struct>> {
+                +date : chrono::year_month_day
+                +index_name : string
+                +value : string
+                +qualifier : string
+            }
+            class market_datum <<struct>> {
+                +date : chrono::year_month_day
+                +key : string
+                +value : string
+                +series_type : string
+                +metric : string
+                +qualifier : string
+                +point_id : optional<string>
+            }
+            class decomposed_key <<struct>> {
+                +series_type : string
+                +metric : string
+                +qualifier : string
+                +point_id : optional<string>
+            }
+        }
+        namespace planner #F2F2F2 {
+            enum currency_import_mode {
+            }
+            enum reimport_mode {
+                add_trades_only
+                create_new_versions
+            }
+            class trade_defaults <<struct>> {
+                +trade_date : string
+                +effective_date : string
+                +termination_date : string
+                +activity_type_code : string
+                +default_counterparty_id : optional<boost::uuids::uuid>
+            }
+            class import_choices <<struct>> {
+                +currency_mode : currency_import_mode
+                +portfolio_reimport_mode : reimport_mode
+                +parent_portfolio_name : string
+                +create_parent_portfolio : bool
+                +scan_exclusions : vector<string>
+                +defaults : trade_defaults
+                +existing_parent_portfolio_id : optional<boost::uuids::uuid>
+                +existing_target_book_id : optional<boost::uuids::uuid>
+                +party_id : boost::uuids::uuid
+                +aggregation_ccy : string
+                +ledger_ccy : string
+                +purpose_type : string
+            }
+            class ore_import_plan <<struct>> {
+                +currencies : vector<refdata::domain::currency>
+                +portfolios : vector<refdata::domain::portfolio>
+                +books : vector<refdata::domain::book>
+                +trades : vector<xml::trade_import_item>
+            }
+            class ore_import_planner {
+                -scan_result_ : scanner::scan_result
+                -existing_iso_codes_ : set<string>
+                -choices_ : import_choices
+            }
+            class ore_import_result <<struct>> {
+                +success : bool
+                +error : string
+                +currencies : int
+                +portfolios : int
+                +books : int
+                +trades : int
+                +instruments : int
+                +instrument_errors : vector<ore_instrument_error>
+            }
+            class ore_instrument_error <<struct>> {
+                +trade_external_id : string
+                +message : string
+            }
+        }
+        namespace scanner #F2F2F2 {
+            class ore_directory_scanner {
+                -root_ : filesystem::path
+                -exclusions_ : unordered_set<string>
+            }
+            class scan_result <<struct>> {
+                +root : filesystem::path
+                +currency_files : vector<filesystem::path>
+                +portfolio_files : vector<filesystem::path>
+                +ignored_files : vector<filesystem::path>
+            }
+        }
+        namespace xml #F2F2F2 {
+            class roundtrip_summary <<struct>> {
+                +total_xml_files : int
+                +skipped : int
+                +output_files_written : int
+                +trades_mapped : int
+                +trades_passthrough : int
+                +currency_files : int
+                +calendar_files : int
+                +convention_files : int
+                +import_ms : long long
+                +export_ms : long long
+                +total_ms : long long
+            }
+            class exporter {
+            }
+            class trade_import_item <<struct>> {
+                +trade : trading::domain::trade
+                +ore_counterparty_name : string
+                +source_file : filesystem::path
+                +instrument : trading::domain::trade_instrument
+            }
+            class importer {
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.core.puml"
+' End:
+@enduml

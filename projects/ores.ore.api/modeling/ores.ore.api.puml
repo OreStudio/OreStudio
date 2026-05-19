@@ -23,8 +23,59 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
-        ' Protocol types and storage helpers for server-side ORE import.
+        namespace messaging #F2F2F2 {
+            class ore_import_execute_request <<struct>> {
+                +request_id : string
+                +import_choices_json : string
+                +correlation_id : string
+                +bearer_token : string
+            }
+            class ore_import_execute_result <<struct>> {
+                +success : bool
+                +message : string
+                +correlation_id : string
+                +item_errors : vector<ore_import_item_error>
+                +saved_currency_iso_codes : vector<string>
+                +saved_portfolio_ids : vector<string>
+                +saved_book_ids : vector<string>
+                +saved_trade_ids : vector<string>
+            }
+            class ore_import_rollback_request <<struct>> {
+                +correlation_id : string
+                +bearer_token : string
+                +saved_currency_iso_codes : vector<string>
+                +saved_portfolio_ids : vector<string>
+                +saved_book_ids : vector<string>
+                +saved_trade_ids : vector<string>
+            }
+            class ore_import_item_error <<struct>> {
+                +source_file : string
+                +item_id : string
+                +message : string
+            }
+            class ore_import_request <<struct>> {
+                +request_id : string
+                +import_choices_json : string
+                +correlation_id : string
+            }
+            class ore_import_response <<struct>> {
+                +success : bool
+                +message : string
+                +item_errors : vector<ore_import_item_error>
+                +correlation_id : string
+                +workflow_instance_id : string
+            }
+        }
+        namespace net #F2F2F2 {
+            class ore_storage <<struct>> {
+            }
+        }
     }
 }
 
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.api.puml"
+' End:
 @enduml

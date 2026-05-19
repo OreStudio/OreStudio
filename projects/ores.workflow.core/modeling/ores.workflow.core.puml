@@ -1,0 +1,157 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.workflow.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace workflow #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class workflow_instance <<struct>> {
+                +id : boost::uuids::uuid
+                +tenant_id : boost::uuids::uuid
+                +type : string
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +result_json : string
+                +error : string
+                +correlation_id : string
+                +created_by : string
+                +current_step_index : int
+                +step_count : int
+                +materialised_steps_json : string
+                +completed_at : optional<chrono::system_clock::time_point>
+                +last_event_at : optional<chrono::system_clock::time_point>
+                +created_at : chrono::system_clock::time_point
+            }
+            class workflow_step <<struct>> {
+                +id : boost::uuids::uuid
+                +workflow_id : boost::uuids::uuid
+                +step_index : int
+                +name : string
+                +state_id : boost::uuids::uuid
+                +request_json : string
+                +response_json : string
+                +error : string
+                +command_subject : string
+                +command_json : string
+                +command_published_at : optional<chrono::system_clock::time_point>
+                +idempotency_key : string
+                +compensation_subject : string
+                +compensation_json : string
+                +started_at : optional<chrono::system_clock::time_point>
+                +completed_at : optional<chrono::system_clock::time_point>
+                +step_log_json : string
+                +created_at : chrono::system_clock::time_point
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class registrar {
+            }
+            class workflow_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+            }
+            class workflow_query_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -signer_ : ores::security::jwt::jwt_authenticator
+                -instance_state_names_ : hash<boost::uuids::uuid>>
+                -step_state_names_ : hash<boost::uuids::uuid>>
+                -registry_ : shared_ptr<const service::workflow_registry>
+                -instance_repo_ : repository::workflow_instance_repository
+                -step_repo_ : repository::workflow_step_repository
+            }
+        }
+        namespace repository #F2F2F2 {
+            class workflow_instance_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +type : string
+                +state_id : string
+                +request_json : string
+                +result_json : optional<string>
+                +error : optional<string>
+                +correlation_id : optional<string>
+                +created_by : string
+                +current_step_index : int
+                +step_count : int
+                +materialised_steps_json : string
+                +completed_at : optional<db_timestamp>
+                +last_event_at : optional<db_timestamp>
+                +created_at : optional<db_timestamp>
+            }
+            class workflow_instance_mapper {
+            }
+            class workflow_instance_repository {
+            }
+            class workflow_step_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +workflow_id : string
+                +step_index : int
+                +name : string
+                +state_id : string
+                +request_json : string
+                +response_json : optional<string>
+                +error : optional<string>
+                +command_subject : string
+                +command_json : string
+                +command_published_at : optional<db_timestamp>
+                +idempotency_key : string
+                +compensation_subject : string
+                +compensation_json : string
+                +started_at : optional<db_timestamp>
+                +completed_at : optional<db_timestamp>
+                +created_at : optional<db_timestamp>
+                +step_log_json : optional<string>
+            }
+            class workflow_step_mapper {
+            }
+            class workflow_step_repository {
+            }
+        }
+        namespace service #F2F2F2 {
+            class fsm_state_map <<struct>> {
+                +states : unordered_map<string, boost::uuids::uuid>
+            }
+            class workflow_engine {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -registry_ : shared_ptr<const workflow_registry>
+                -instance_states_ : fsm_state_map
+                -step_states_ : fsm_state_map
+                -instance_repo_ : repository::workflow_instance_repository
+                -step_repo_ : repository::workflow_step_repository
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.workflow.core.puml"
+' End:
+@enduml

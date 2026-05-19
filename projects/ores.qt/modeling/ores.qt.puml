@@ -1,6 +1,6 @@
 ' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
-' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 '
 ' This program is free software; you can redistribute it and/or modify it under
 ' the terms of the GNU General Public License as published by the Free Software
@@ -8,1294 +8,602 @@
 ' version.
 '
 ' This program is distributed in the hope that it will be useful, but WITHOUT
-'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 ' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 '
 ' You should have received a copy of the GNU General Public License along with
-' GNU Emacs; see the file COPYING. If not, write to the Free Software
-' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
 @startuml
-!pragma layout smetana
 
 title ores.qt Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Qt based Graphical User Interface for ORE Studio." as ores_qt_note
-    qt --- ores_qt_note
-
     namespace qt #F2F2F2 {
-        '
-        ' Layout groupings
-        '
-
-        ' Group: Core infrastructure
-        together {
-            class ClientManager
-            class MainWindow
+        class AboutDialog {
+            +parent : QWidget*
+            -ui_ : unique_ptr<Ui::AboutDialog>
+            -logoLabel_ : LogoLabel*
+            -clientManager_ : ClientManager*
         }
-
-        ' Group: MDI infrastructure
-        together {
-            class MdiAreaWithBackground
-            class DetachableMdiSubWindow
+        enum ItemType {
+            Folder
+            Environment
+            Connection
         }
-
-        ' Group: Entity Controller Pattern
-        together {
-            class EntityController
-            class CurrencyController
-            class CountryController
-            class BusinessUnitTypeController
+        class AddItemDialog {
+            +parent : QWidget*
+            -manager_ : connections::service::connection_manager*
+            -saveButton_ : QPushButton*
+            -cancelButton_ : QPushButton*
+            -testButton_ : QPushButton*
+            -typeCombo_ : QComboBox*
+            -nameEdit_ : QLineEdit*
+            -folderCombo_ : QComboBox*
+            -descriptionEdit_ : QTextEdit*
+            -environmentLabel_ : QLabel*
+            -environmentCombo_ : QComboBox*
+            -hostLabel_ : QLabel*
+            -hostEdit_ : QLineEdit*
+            -portLabel_ : QLabel*
+            -portSpinBox_ : QSpinBox*
+            -httpPortLabel_ : QLabel*
+            -httpPortSpinBox_ : QSpinBox*
+            -namespaceLabel_ : QLabel*
+            -namespaceEdit_ : QLineEdit*
+            -usernameLabel_ : QLabel*
+            -usernameEdit_ : QLineEdit*
+            -passwordLabel_ : QLabel*
+            -passwordEdit_ : QLineEdit*
+            -showPasswordCheckbox_ : QCheckBox*
+            -passwordWidget_ : QWidget*
+            -tagLabel_ : QLabel*
+            -tagSelector_ : TagSelectorWidget*
+            -folderId_ : boost::uuids::uuid
+            -pureEnvironmentId_ : boost::uuids::uuid
+            -connectionId_ : boost::uuids::uuid
+            -linkedEnvironmentId_ : optional<boost::uuids::uuid>
+            -testCallback_ : TestConnectionCallback
         }
-
-        ' Group: Currency Windows
-        together {
-            class CurrencyMdiWindow
-            class ClientCurrencyModel
-            class CurrencyDetailDialog
-            class CurrencyHistoryDialog
+        class ChangePasswordDialog {
+            -new_password_edit_ : QLineEdit*
+            -confirm_password_edit_ : QLineEdit*
+            -change_button_ : QPushButton*
+            -cancel_button_ : QPushButton*
+            -status_label_ : QLabel*
+            -info_label_ : QLabel*
+            -clientManager_ : ClientManager*
         }
-
-        ' Group: Country Windows
-        together {
-            class CountryMdiWindow
-            class ClientCountryModel
-            class CountryDetailDialog
-            class CountryHistoryDialog
+        class ClientTelemetryLogModel {
+            +parent : QObject*
+            +role : int
+            -clientManager_ : ClientManager*
+            -entries_ : vector<telemetry::domain::telemetry_log_entry>
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -current_session_id_ : optional<boost::uuids::uuid>
+            -start_time_ : chrono::system_clock::time_point
+            -end_time_ : chrono::system_clock::time_point
+            -min_level_ : optional<string>
+            -message_filter_ : optional<string>
+            -tag_filter_ : optional<string>
+            -component_filter_ : optional<string>
         }
-
-        ' Group: BusinessUnitType Windows
-        together {
-            class BusinessUnitTypeMdiWindow
-            class ClientBusinessUnitTypeModel
-            class BusinessUnitTypeDetailDialog
-            class BusinessUnitTypeHistoryDialog
+        class CommandLineParser {
+            -parser_ : QCommandLineParser
         }
-
-        ' Group: Image Caching
-        together {
-            class ImageCache
+        class ConnectionBrowserMdiWindow {
+            +parent : QWidget*
+            -layout_ : QVBoxLayout*
+            -splitter_ : QSplitter*
+            -treeView_ : QTreeView*
+            -detailPanel_ : ConnectionDetailPanel*
+            -toolBar_ : QToolBar*
+            -addAction_ : QAction*
+            -editAction_ : QAction*
+            -copyAction_ : QAction*
+            -deleteAction_ : QAction*
+            -connectAction_ : QAction*
+            -refreshAction_ : QAction*
+            -changeMasterPasswordAction_ : QAction*
+            -purgeDatabaseAction_ : QAction*
+            -model_ : unique_ptr<ConnectionTreeModel>
+            -manager_ : connections::service::connection_manager*
+            -testCallback_ : TestConnectionCallback
+            -mdiArea_ : QMdiArea*
+            -mainWindow_ : QMainWindow*
+            -allDetachableWindows_ : QList<QPointer<DetachableMdiSubWindow>>*
+            -savedWindowSize_ : QSize
         }
-
-        ' Group: Dialogs
-        together {
-            class LoginDialog
-            class AboutDialog
-            class SplashScreen
-            class MyAccountDialog
-            class ChangePasswordDialog
+        class ConnectionDetailPanel {
+            +parent : QWidget*
+            -manager_ : connections::service::connection_manager*
+            -stackedWidget_ : QStackedWidget*
+            -emptyPage_ : QWidget*
+            -folderPage_ : QWidget*
+            -folderNameLabel_ : QLabel*
+            -folderItemCountLabel_ : QLabel*
+            -folderDescriptionLabel_ : QLabel*
+            -environmentPage_ : QWidget*
+            -envNameLabel_ : QLabel*
+            -envHostLabel_ : QLabel*
+            -envPortLabel_ : QLabel*
+            -envHttpPortLabel_ : QLabel*
+            -envNamespaceLabel_ : QLabel*
+            -envDescriptionLabel_ : QLabel*
+            -envTagsContainer_ : QWidget*
+            -connectionPage_ : QWidget*
+            -connNameLabel_ : QLabel*
+            -connHostLabel_ : QLabel*
+            -connPortLabel_ : QLabel*
+            -connNamespaceLabel_ : QLabel*
+            -connUsernameLabel_ : QLabel*
+            -connDescriptionLabel_ : QLabel*
+            -connTagsContainer_ : QWidget*
         }
-
-        ' Group: Helpers
-        together {
-            class CurrencyItemDelegate
-            class CountryItemDelegate
-            class MessageBoxHelper
-            class IconUtils
-            class MdiUtils
-            class LogoLabel
+        class ConnectionItemDelegate {
         }
-
-        ' Group: Data Librarian
-        together {
-            class DataLibrarianWindow
-            class DatasetViewDialog
-            class ClientDatasetModel
+        class ConnectionTreeNode <<struct>> {
+            +name : QString
+            +parent_id : optional<boost::uuids::uuid>
+            +host : QString
+            +username : QString
+            +description : QString
+            +environment_id : optional<boost::uuids::uuid>
+            +children : vector<unique_ptr<ConnectionTreeNode>>
         }
-
-        ' Stack vertically within groups
-        ClientManager -[hidden]down- MainWindow
-        MdiAreaWithBackground -[hidden]down- DetachableMdiSubWindow
-        EntityController -[hidden]down- CurrencyController
-        CurrencyController -[hidden]down- CountryController
-        CountryController -[hidden]down- BusinessUnitTypeController
-        CurrencyMdiWindow -[hidden]down- ClientCurrencyModel
-        ClientCurrencyModel -[hidden]down- CurrencyDetailDialog
-        CurrencyDetailDialog -[hidden]down- CurrencyHistoryDialog
-        CountryMdiWindow -[hidden]down- ClientCountryModel
-        ClientCountryModel -[hidden]down- CountryDetailDialog
-        CountryDetailDialog -[hidden]down- CountryHistoryDialog
-        BusinessUnitTypeMdiWindow -[hidden]down- ClientBusinessUnitTypeModel
-        ClientBusinessUnitTypeModel -[hidden]down- BusinessUnitTypeDetailDialog
-        BusinessUnitTypeDetailDialog -[hidden]down- BusinessUnitTypeHistoryDialog
-        LoginDialog -[hidden]down- AboutDialog
-        AboutDialog -[hidden]down- SplashScreen
-        SplashScreen -[hidden]down- MyAccountDialog
-        MyAccountDialog -[hidden]down- ChangePasswordDialog
-        CurrencyItemDelegate -[hidden]down- CountryItemDelegate
-        CountryItemDelegate -[hidden]down- MessageBoxHelper
-        MessageBoxHelper -[hidden]down- IconUtils
-        IconUtils -[hidden]down- MdiUtils
-        MdiUtils -[hidden]down- LogoLabel
-        DataLibrarianWindow -[hidden]down- DatasetViewDialog
-        DatasetViewDialog -[hidden]down- ClientDatasetModel
-
-        ' Create row structure between groups
-        MainWindow -[hidden]down- MdiAreaWithBackground
-        DetachableMdiSubWindow -[hidden]down- EntityController
-        CountryController -[hidden]down- CurrencyMdiWindow
-        CurrencyHistoryDialog -[hidden]down- CountryMdiWindow
-        CountryHistoryDialog -[hidden]down- BusinessUnitTypeMdiWindow
-        BusinessUnitTypeHistoryDialog -[hidden]down- LoginDialog
-        ChangePasswordDialog -[hidden]down- CurrencyItemDelegate
-        ImageCache -[hidden]down- LoginDialog
-        LogoLabel -[hidden]down- DataLibrarianWindow
-
-        '
-        ' Class definitions
-        '
-
-        ' Client Manager
-        class ClientManager #ECECEC {
-            +ClientManager(std::shared_ptr<eventing::service::event_bus>, QObject* parent)
-            +~ClientManager()
-            +connectAndLogin(const std::string& host, std::uint16_t port, const std::string& username, const std::string& password) LoginResult
-            +disconnect() void
-            +logout() bool
-            +isConnected() bool
-            +isAdmin() bool
-            +currentUsername() const std::string&
-            +currentEmail() const std::string&
-            +setCurrentEmail(const std::string& email) void
-            +sendRequest(comms::messaging::frame request) std::expected<comms::messaging::frame, comms::messaging::error_code>
-            +getClient() std::shared_ptr<comms::net::client>
-            +getExecutor() boost::asio::any_io_executor
-            +subscribeToEvent(const std::string& eventType) void
-            +unsubscribeFromEvent(const std::string& eventType) void
-            +setSupportedCompression(std::uint8_t compression) void
-            -setupIO() void
-            -cleanupIO() void
-            -{field} io_context_ std::unique_ptr<boost::asio::io_context>
-            -{field} work_guard_ std::unique_ptr<boost::asio::executor_work_guard>
-            -{field} io_thread_ std::unique_ptr<std::thread>
-            -{field} client_ std::shared_ptr<comms::net::client>
-            -{field} logged_in_account_id_ std::optional<boost::uuids::uuid>
-            -{field} logged_in_username_ std::string
-            -{field} logged_in_email_ std::string
+        class ConnectionTreeModel {
+            +parent : QObject*
+            +role : int
+            +role : int
+            -manager_ : connections::service::connection_manager*
+            -rootNode_ : unique_ptr<ConnectionTreeNode>
+            -folderIcon_ : QIcon
+            -folderOpenIcon_ : QIcon
+            -serverIcon_ : QIcon
+            -plugIcon_ : QIcon
+            -expandedFolders_ : unordered_set<boost::uuids::uuid>
         }
-        note top of ClientManager
-        Manages the lifecycle of the network client and IO context.
-
-        Maintains a persistent IO context/thread while allowing the client
-        connection to be established and torn down repeatedly. Signals changes
-        in connection state to allow UI components to update accordingly
-        without closing.
-
-        Key features:
-        - Session tracking (account_id, username, email)
-        - Event subscriptions for server push notifications
-        - Compression negotiation
-
-        Signals: connected(), disconnected(), reconnecting(), reconnected(),
-                 connectionError(QString), notificationReceived(QString, QDateTime)
-        end note
-
-        ' Main Window
-        class MainWindow #ECECEC {
-            +MainWindow(QWidget* parent)
-            +~MainWindow()
-            +getClientManager() ClientManager*
-            #closeEvent(QCloseEvent* event) void
-            -onLoginTriggered() void
-            -onDisconnectTriggered() void
-            -onAboutTriggered() void
-            -onDetachAllTriggered() void
-            -onWindowMenuAboutToShow() void
-            -updateMenuState() void
-            -createControllers() void
-            -performDisconnectCleanup() void
-            -{field} ui_ Ui::MainWindow*
-            -{field} mdiArea_ MdiAreaWithBackground*
-            -{field} connectionStatusIconLabel_ QLabel*
-            -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>
-            -{field} connectedIcon_ QIcon
-            -{field} disconnectedIcon_ QIcon
-            -{field} currencyController_ std::unique_ptr<CurrencyController>
-            -{field} clientManager_ ClientManager*
-            -{field} username_ std::string
+        class EventRecord <<struct>> {
+            +timestamp : QDateTime
+            +eventType : QString
+            +source : QString
+            +summary : QString
+            +jsonPayload : QString
         }
-        note top of MainWindow
-        Main application window providing the MDI interface and entity management.
-
-        - ui_: Auto-generated UI elements
-        - mdiArea_: MDI area with custom background
-        - connectionStatusIconLabel_: Status bar connection icon
-        - allDetachableWindows_: List of all detachable windows
-        - connectedIcon_: Connected state icon
-        - disconnectedIcon_: Disconnected state icon
-        - currencyController_: Currency operations controller
-        - clientManager_: Manages client lifecycle
-        - username_: Logged-in username
-        end note
-
-        ' MDI Infrastructure
-        class MdiAreaWithBackground #ECECEC {
-            +MdiAreaWithBackground(QWidget* parent)
-            +setBackgroundLogo(const QString& imagePath) void
-            #paintEvent(QPaintEvent* event) void
-            -{field} backgroundLogo_ QPixmap
+        class EventTableModel {
+            +role : int
+            +role : int
+            -events_ : deque<EventRecord>
         }
-        note top of MdiAreaWithBackground
-        Custom QMdiArea that displays a background logo when no windows are open.
-
-        - backgroundLogo_: Background logo image
-        end note
-
-        class DetachableMdiSubWindow #ECECEC {
-            +DetachableMdiSubWindow(QWidget* parent)
-            +~DetachableMdiSubWindow()
-            +isDetached() bool
-            +detach() void
-            +reattach() void
-            #contextMenuEvent(QContextMenuEvent* event) void
-            #closeEvent(QCloseEvent* event) void
-            -{field} isDetached_ bool
-            -{field} savedMdiArea_ QPointer<QMdiArea>
-            -{field} savedMdiPosition_ QPoint
-            -{field} savedMdiSize_ QSize
+        class EventViewerWindow {
+            +parent : QWidget*
+            -eventBus_ : shared_ptr<eventing::service::event_bus>
+            -clientManager_ : ClientManager*
+            -tableView_ : QTableView*
+            -model_ : EventTableModel*
+            -statusLabel_ : QLabel*
+            -clearButton_ : QPushButton*
+            -subscriptions_ : vector<eventing::service::subscription>
         }
-        note top of DetachableMdiSubWindow
-        QMdiSubWindow that can be detached to become a floating window.
-
-        - isDetached_: Detachment state flag
-        - savedMdiArea_: Saved MDI area reference
-        - savedMdiPosition_: Saved MDI position
-        - savedMdiSize_: Saved MDI size
-        end note
-
-        ' Entity Controller Pattern
-        class EntityController #ECECEC {
-            +EntityController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
-            +~EntityController()
-            +{abstract} showListWindow() void
-            +setClientManager(ClientManager* clientManager, const QString& username) void
-            +setUsername(const QString& username) void
-            +{abstract} closeAllWindows() void
-            #statusMessage(const QString& message)
-            #errorMessage(const QString& message)
-            #detachableWindowCreated(DetachableMdiSubWindow* window)
-            #detachableWindowDestroyed(DetachableMdiSubWindow* window)
-            #build_window_key(const QString& windowType, const QString& identifier) QString
-            #try_reuse_window(const QString& key) bool
-            #bring_window_to_front(DetachableMdiSubWindow* window) void
-            #track_window(const QString& key, DetachableMdiSubWindow* window) void
-            #untrack_window(const QString& key) void
-            #show_managed_window(DetachableMdiSubWindow* window, DetachableMdiSubWindow* referenceWindow, QPoint offset) void
-            #connect_dialog_close(DetailDialogBase* dialog, DetachableMdiSubWindow* window) void
-            #register_detachable_window(DetachableMdiSubWindow* window) void
-            #{field} mainWindow_ QMainWindow*
-            #{field} mdiArea_ QMdiArea*
-            #{field} clientManager_ ClientManager*
-            #{field} username_ QString
-            #{field} managed_windows_ QMap<QString, DetachableMdiSubWindow*>
+        class LoginDialog {
+            -loginTitleLabel_ : QLabel*
+            -usernameEdit_ : QLineEdit*
+            -passwordEdit_ : QLineEdit*
+            -showPasswordCheck_ : QCheckBox*
+            -rememberMeCheck_ : QCheckBox*
+            -loginButton_ : QPushButton*
+            -signUpButton_ : QPushButton*
+            -signUpLabel_ : QLabel*
+            -statusLabel_ : QLabel*
+            -hostEdit_ : QLineEdit*
+            -portSpinBox_ : QSpinBox*
+            -subjectPrefixEdit_ : QLineEdit*
+            -allItems_ : QList<QuickConnectItem>
         }
-        note top of EntityController
-        Base class for entity-specific controllers.
-
-        Provides common window management functionality:
-        - Window tracking and reuse via managed_windows_
-        - Detach-aware window presentation via show_managed_window
-        - Window key generation for unique identification
-        - Signal-based window lifecycle notification
-
-        Key methods:
-        - show_managed_window: Adds window to MDI, handles sizing
-          and detaching if reference window is detached
-        - try_reuse_window: Reactivates existing window if available
-        - track/untrack_window: Window lifecycle management
-        - register_detachable_window: Emits signals for window tracking
-        - connect_dialog_close: Wires up dialog close requests
-
-        Signals:
-        - detachableWindowCreated: Emitted when window is registered
-        - detachableWindowDestroyed: Emitted when window is destroyed
-        end note
-
-        ' BusinessUnitType Controller
-        class BusinessUnitTypeController #ECECEC {
-            +BusinessUnitTypeController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
-            +~BusinessUnitTypeController()
-            +showListWindow() void
-            +closeAllWindows() void
-            +reloadListWindow() void
-            #listWindow() EntityListMdiWindow*
-            -onAddNewRequested() void
-            -onShowDetails(const refdata::domain::business_unit_type& type) void
-            -onShowHistory(const refdata::domain::business_unit_type& type) void
-            -onRevertVersion(const refdata::domain::business_unit_type& type) void
-            -onOpenVersion(const refdata::domain::business_unit_type& type, int versionNumber) void
-            -showAddWindow() void
-            -showDetailWindow(const refdata::domain::business_unit_type* type, bool createMode, bool readOnly, int versionNumber) void
-            -showHistoryWindow(const refdata::domain::business_unit_type& type) void
-            -{field} listWindow_ BusinessUnitTypeMdiWindow*
-            -{field} listMdiSubWindow_ DetachableMdiSubWindow*
+        class LogoLabel {
+            -overlayText_ : QString
         }
-        note top of BusinessUnitTypeController
-        Controller managing all business unit type windows and operations.
-
-        - listWindow_: Pointer to the list MDI window
-        - listMdiSubWindow_: Pointer to the MDI sub-window wrapper
-
-        Subscribes to business_unit_type_changed events for stale marking.
-        Uses inherited show_managed_window(), try_reuse_window(), and
-        register_detachable_window() for window lifecycle management.
-        end note
-
-        ' BusinessUnitType Windows
-        class BusinessUnitTypeMdiWindow #ECECEC {
-            +BusinessUnitTypeMdiWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
-            +~BusinessUnitTypeMdiWindow()
-            +model() ClientBusinessUnitTypeModel*
-            +sizeHint() QSize
-            +reload() void
-            -onDataLoaded() void
-            -onLoadError(const QString& error_message, const QString& details) void
-            -onSelectionChanged() void
-            -onRowDoubleClicked(const QModelIndex& index) void
-            -onConnectionStateChanged() void
-            -addNew() void
-            -editSelected() void
-            -deleteSelected() void
-            -showHistory() void
-            -setupUi() void
-            -setupToolbar() void
-            -updateActionStates() void
-            -{field} verticalLayout_ QVBoxLayout*
-            -{field} tableView_ QTableView*
-            -{field} toolBar_ QToolBar*
-            -{field} paginationWidget_ PaginationWidget*
-            -{field} addAction_ QAction*
-            -{field} editAction_ QAction*
-            -{field} deleteAction_ QAction*
-            -{field} refreshAction_ QAction*
-            -{field} historyAction_ QAction*
-            -{field} model_ ClientBusinessUnitTypeModel*
-            -{field} proxyModel_ QSortFilterProxyModel*
-            -{field} clientManager_ ClientManager*
-            -{field} username_ QString
+        class MainWindow {
+            -ui_ : Ui::MainWindow*
+            -mdiArea_ : MdiAreaWithBackground*
+            -connectionStatusIconLabel_ : QLabel*
+            -userStatusWidget_ : QWidget*
+            -userStatusNameLabel_ : QLabel*
+            -serverStatusWidget_ : QWidget*
+            -serverStatusNameLabel_ : QLabel*
+            -tenantStatusWidget_ : QWidget*
+            -tenantStatusNameLabel_ : QLabel*
+            -partyStatusWidget_ : QWidget*
+            -partyStatusNameLabel_ : QLabel*
+            -envLabelWidget_ : QWidget*
+            -envLabelNameLabel_ : QLabel*
+            -allDetachableWindows_ : QList<QPointer<DetachableMdiSubWindow>>
+            -connectedIcon_ : QIcon
+            -disconnectedIcon_ : QIcon
+            -reconnectingIcon_ : QIcon
+            -recordOffIcon_ : QIcon
+            -recordOnIcon_ : QIcon
+            -plugin_menus_ : QList<QMenu*>
+            -plugin_toolbar_actions_ : QList<QAction*>
+            -eventBus_ : shared_ptr<eventing::service::event_bus>
+            -clientManager_ : ClientManager*
+            -imageCache_ : ImageCache*
+            -changeReasonCache_ : ChangeReasonCache*
+            -badgeCache_ : BadgeCache*
+            -username_ : string
+            -httpBaseUrl_ : string
+            -party_name_ : QString
+            -systemTrayIcon_ : QSystemTrayIcon*
+            -trayContextMenu_ : QMenu*
+            -eventSubscriptions_ : vector<eventing::service::subscription>
+            -instanceName_ : QString
+            -instanceColor_ : QColor
+            -instanceColorIndicator_ : QLabel*
+            -eventViewerWindow_ : DetachableMdiSubWindow*
+            -telemetryViewerWindow_ : DetachableMdiSubWindow*
+            -connectionManager_ : unique_ptr<connections::service::connection_manager>
+            -activeConnectionName_ : QString
+            -masterPassword_ : QString
         }
-        note top of BusinessUnitTypeMdiWindow
-        MDI window for displaying and managing business unit types.
-
-        - tableView_: Table view for business unit types
-        - toolBar_: Toolbar with add/edit/delete/refresh/history actions
-        - paginationWidget_: Pagination control for large datasets
-        - model_: Business unit type data model
-        - proxyModel_: Sort/filter proxy
-
-        Inherits stale indicator support from EntityListMdiWindow.
-        end note
-
-        class ClientBusinessUnitTypeModel #ECECEC {
-            +ClientBusinessUnitTypeModel(ClientManager* clientManager, QObject* parent)
-            +~ClientBusinessUnitTypeModel()
-            +rowCount(const QModelIndex& parent) int
-            +columnCount(const QModelIndex& parent) int
-            +data(const QModelIndex& index, int role) QVariant
-            +headerData(int section, Qt::Orientation orientation, int role) QVariant
-            +refresh() void
-            +clear() void
-            +getType(int row) const refdata::domain::business_unit_type*
-            +page_size() std::uint32_t
-            +set_page_size(std::uint32_t size) void
-            +total_available_count() std::uint64_t
-            +load_page(std::uint32_t offset, std::uint32_t limit) void
-            -onTypesLoaded() void
-            -onPulseStateChanged(bool isOn) void
-            -onPulsingComplete() void
-            -{field} clientManager_ ClientManager*
-            -{field} types_ std::vector<refdata::domain::business_unit_type>
-            -{field} watcher_ QFutureWatcher<FetchResult>*
-            -{field} page_size_ std::uint32_t
-            -{field} total_available_count_ std::uint64_t
-            -{field} is_fetching_ bool
-            -{field} recencyTracker_ RecencyTracker<refdata::domain::business_unit_type>
-            -{field} pulseManager_ RecencyPulseManager*
+        class MasterPasswordDialog {
+            -mode_ : Mode
+            -infoLabel_ : QLabel*
+            -currentPasswordEdit_ : QLineEdit*
+            -newPasswordEdit_ : QLineEdit*
+            -confirmPasswordEdit_ : QLineEdit*
+            -showPasswordCheck_ : QCheckBox*
+            -buttonBox_ : QDialogButtonBox*
         }
-        note top of ClientBusinessUnitTypeModel
-        Table model for displaying business unit types fetched from the server.
-
-        - Columns: Code, Name, Level, CodingScheme, Description, Version, ModifiedBy
-        - Recency tracking for highlighting recently changed items
-        - Async loading with FutureWatcher and pagination support
-
-        Signals: dataLoaded, loadError
-        end note
-
-        class BusinessUnitTypeDetailDialog #ECECEC {
-            +BusinessUnitTypeDetailDialog(QWidget* parent)
-            +~BusinessUnitTypeDetailDialog()
-            +setClientManager(ClientManager* clientManager) void
-            +setUsername(const std::string& username) void
-            +setType(const refdata::domain::business_unit_type& type) void
-            +setCreateMode(bool createMode) void
-            +setReadOnly(bool readOnly) void
-            +hasUnsavedChanges() bool
-            -onSaveClicked() void
-            -onDeleteClicked() void
-            -onCodeChanged(const QString& code) void
-            -onFieldChanged() void
-            +{signal} typeSaved(const QString& code) void
-            +{signal} typeDeleted(const QString& code) void
-            -{field} ui_ Ui::BusinessUnitTypeDetailDialog*
-            -{field} clientManager_ ClientManager*
-            -{field} username_ std::string
-            -{field} type_ refdata::domain::business_unit_type
-            -{field} createMode_ bool
-            -{field} readOnly_ bool
-            -{field} hasChanges_ bool
+        class MyAccountDialog {
+            -toolbar_ : QToolBar*
+            -tabWidget_ : QTabWidget*
+            -username_edit_ : QLineEdit*
+            -email_edit_ : QLineEdit*
+            -save_email_button_ : QPushButton*
+            -email_status_label_ : QLabel*
+            -active_sessions_label_ : QLabel*
+            -current_session_label_ : QLabel*
+            -view_sessions_button_ : QPushButton*
+            -new_password_edit_ : QLineEdit*
+            -confirm_password_edit_ : QLineEdit*
+            -change_password_button_ : QPushButton*
+            -password_status_label_ : QLabel*
+            -clientManager_ : ClientManager*
         }
-        note top of BusinessUnitTypeDetailDialog
-        Dialog for creating and editing business unit types.
-
-        - Inherits from DetailDialogBase for consistent dialog behaviour
-        - Supports create, edit, and read-only (history view) modes
-        - Fields: code, name, level (spinbox), coding scheme, description
-
-        Signals: typeSaved(code), typeDeleted(code)
-        end note
-
-        class BusinessUnitTypeHistoryDialog #ECECEC {
-            +BusinessUnitTypeHistoryDialog(boost::uuids::uuid id, const QString& code, ClientManager* clientManager, QWidget* parent)
-            +~BusinessUnitTypeHistoryDialog()
-            +loadHistory() void
-            +sizeHint() QSize
-            -onVersionSelected() void
-            -onOpenVersionClicked() void
-            -onRevertClicked() void
-            -setupUi() void
-            -setupToolbar() void
-            -setupConnections() void
-            -updateVersionList() void
-            -updateChangesTable() void
-            -updateFullDetails() void
-            -updateActionStates() void
-            +{signal} statusChanged(const QString& message) void
-            +{signal} errorOccurred(const QString& message) void
-            +{signal} openVersionRequested(const refdata::domain::business_unit_type& type, int versionNumber) void
-            +{signal} revertVersionRequested(const refdata::domain::business_unit_type& type) void
-            -{field} ui_ Ui::BusinessUnitTypeHistoryDialog*
-            -{field} id_ boost::uuids::uuid
-            -{field} code_ QString
-            -{field} clientManager_ ClientManager*
-            -{field} versions_ std::vector<refdata::domain::business_unit_type>
-            -{field} toolbar_ QToolBar*
-            -{field} openVersionAction_ QAction*
-            -{field} revertAction_ QAction*
+        class OreLogViewerWidget {
+            +parent : QWidget*
+            -client_manager_ : ClientManager*
+            -current_result_id_ : QString
+            -model_ : unique_ptr<ClientTelemetryLogModel>
         }
-        note top of BusinessUnitTypeHistoryDialog
-        Widget for displaying business unit type version history.
-
-        - Splitter layout: version list on left, details on right
-        - Right panel: Changes tab (field diffs) + Full Details tab
-        - Supports open-as-read-only and revert-to-version actions
-
-        Signals: openVersionRequested, revertVersionRequested
-        end note
-
-        class CurrencyController #ECECEC {
-            +CurrencyController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
-            +~CurrencyController()
-            +showListWindow() void
-            +closeAllWindows() void
-            -onAddNewRequested() void
-            -onShowCurrencyDetails(const refdata::domain::currency& currency) void
-            -onShowCurrencyHistory(const QString& isoCode) void
-            -{field} currencyListWindow_ QPointer<DetachableMdiSubWindow>
+        class PartyProvisioningWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -selectedBundleCode_ : QString
+            -leiDatasetSize_ : QString
+            -organisationPublished_ : bool
+            -selectedReports_ : vector<ReportSpec>
         }
-        note top of CurrencyController
-        Controller managing all currency-related windows and operations.
-
-        - currencyListWindow_: Weak pointer to currency list window
-
-        Uses inherited register_detachable_window() for window tracking.
-        end note
-
-        ' Currency Windows
-        class CurrencyMdiWindow #ECECEC {
-            +CurrencyMdiWindow(ClientManager* clientManager, QWidget* parent)
-            +~CurrencyMdiWindow()
-            +currencyModel() ClientCurrencyModel*
-            +sizeHint() QSize
-            +reload() void
-            +addNew() void
-            +editSelected() void
-            +deleteSelected() void
-            +viewHistorySelected() void
-            +exportToCSV() void
-            +exportToXML() void
-            -onDataLoaded() void
-            -onLoadError(const QString& error_message) void
-            -onRowDoubleClicked(const QModelIndex& index) void
-            -onSelectionChanged() void
-            -updateActionStates() void
-            -{field} verticalLayout_ QVBoxLayout*
-            -{field} currencyTableView_ QTableView*
-            -{field} toolBar_ QToolBar*
-            -{field} addAction_ QAction*
-            -{field} editAction_ QAction*
-            -{field} deleteAction_ QAction*
-            -{field} historyAction_ QAction*
-            -{field} currencyModel_ std::unique_ptr<ClientCurrencyModel>
-            -{field} clientManager_ ClientManager*
+        class PartyWelcomePage {
+            -wizard_ : PartyProvisioningWizard*
         }
-        note top of CurrencyMdiWindow
-        MDI window for displaying currencies.
-
-        - verticalLayout_: Layout for window
-        - currencyTableView_: Table view for currencies
-        - toolBar_: Toolbar with actions
-        - addAction_: Add currency action
-        - editAction_: Edit currency action
-        - deleteAction_: Delete currency action
-        - historyAction_: View history action
-        - currencyModel_: Currency data model
-        - clientManager_: Client manager
-        end note
-
-        class ClientCurrencyModel #ECECEC {
-            +ClientCurrencyModel(ClientManager* clientManager, QObject* parent)
-            +~ClientCurrencyModel()
-            +rowCount(const QModelIndex& parent) int
-            +columnCount(const QModelIndex& parent) int
-            +data(const QModelIndex& index, int role) QVariant
-            +headerData(int section, Qt::Orientation orientation, int role) QVariant
-            +refresh() void
-            +getCurrency(int row) const refdata::domain::currency*
-            +getCurrencies() std::vector<refdata::domain::currency>
-            -onCurrenciesLoaded() void
-            -{field} clientManager_ ClientManager*
-            -{field} currencies_ std::vector<refdata::domain::currency>
-            -{field} watcher_ QFutureWatcher<FutureWatcherResult>*
+        class PartyCounterpartySetupPage {
+            -wizard_ : PartyProvisioningWizard*
+            -datasetSizeCombo_ : QComboBox*
         }
-        note top of ClientCurrencyModel
-        Model for displaying currencies fetched from the server via client.
-
-        - clientManager_: Client manager
-        - currencies_: Currency data
-        - watcher_: Future watcher for async loading
-        end note
-
-        class CurrencyDetailDialog #ECECEC {
-            +CurrencyDetailDialog(QWidget* parent)
-            +~CurrencyDetailDialog()
-            +setClientManager(ClientManager* clientManager) void
-            +setUsername(const std::string& username) void
-            +setCurrency(const refdata::domain::currency& currency) void
-            +getCurrency() refdata::domain::currency
-            +clearDialog() void
-            +save() void
-            -onSaveClicked() void
-            -onResetClicked() void
-            -onDeleteClicked() void
-            -onFieldChanged() void
-            -updateSaveResetButtonState() void
-            -{field} ui_ std::unique_ptr<Ui::CurrencyDetailDialog>
-            -{field} isDirty_ bool
-            -{field} isAddMode_ bool
-            -{field} username_ std::string
-            -{field} toolBar_ QToolBar*
-            -{field} saveAction_ QAction*
-            -{field} deleteAction_ QAction*
-            -{field} clientManager_ ClientManager*
-            -{field} currentCurrency_ refdata::domain::currency
+        class PartyOrganisationSetupPage {
+            -wizard_ : PartyProvisioningWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -publishComplete_ : bool
+            -publishSuccess_ : bool
         }
-        note top of CurrencyDetailDialog
-        Widget for creating/editing currency details.
-
-        - ui_: Auto-generated UI elements
-        - isDirty_: Dirty flag
-        - isAddMode_: Add mode flag
-        - username_: Logged-in username
-        - toolBar_: Toolbar with actions
-        - saveAction_: Save action
-        - deleteAction_: Delete action
-        - clientManager_: Client manager
-        - currentCurrency_: Current currency being edited
-        end note
-
-        class CurrencyHistoryDialog #ECECEC {
-            +CurrencyHistoryDialog(QString iso_code, ClientManager* clientManager, QWidget* parent)
-            +~CurrencyHistoryDialog()
-            +loadHistory() void
-            +sizeHint() QSize
-            -onVersionSelected(int index) void
-            -onHistoryLoaded() void
-            -onHistoryLoadError(const QString& error) void
-            -displayChangesTab(int version_index) void
-            -displayFullDetailsTab(int version_index) void
-            -calculateDiff(const refdata::domain::currency_version& current, const refdata::domain::currency_version& previous) DiffResult
-            -{field} ui_ std::unique_ptr<Ui::CurrencyHistoryDialog>
-            -{field} clientManager_ ClientManager*
-            -{field} isoCode_ QString
-            -{field} history_ refdata::domain::currency_version_history
+        class PartyReportSetupPage {
+            -wizard_ : PartyProvisioningWizard*
+            -loadingLabel_ : QLabel*
+            -errorLabel_ : QLabel*
+            -reportList_ : QListWidget*
         }
-        note top of CurrencyHistoryDialog
-        Widget for displaying currency version history.
-
-        - ui_: Auto-generated UI elements
-        - clientManager_: Client manager
-        - isoCode_: ISO code of currency
-        - history_: Version history data
-        end note
-
-        ' Country Controller
-        class CountryController #ECECEC {
-            +CountryController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, ImageCache* imageCache, const QString& username, QObject* parent)
-            +~CountryController()
-            +showListWindow() void
-            +closeAllWindows() void
-            -onAddNewRequested() void
-            -onShowCountryDetails(const refdata::domain::country& country) void
-            -onShowCountryHistory(const QString& alpha2Code) void
-            -onNotificationReceived(const QString& eventType, const QDateTime& timestamp, const QStringList& entityIds) void
-            -{field} imageCache_ ImageCache*
-            -{field} countryListWindow_ QPointer<DetachableMdiSubWindow>
+        class PartyReportInstallPage {
+            -wizard_ : PartyProvisioningWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -installComplete_ : bool
+            -installSuccess_ : bool
         }
-        note top of CountryController
-        Controller managing all country-related windows and operations.
-
-        - imageCache_: Image cache for country flags
-        - countryListWindow_: Weak pointer to country list window
-
-        Uses inherited register_detachable_window() for window tracking.
-        end note
-
-        ' Country MDI Window
-        class CountryMdiWindow #ECECEC {
-            +CountryMdiWindow(ClientManager* clientManager, ImageCache* imageCache, const QString& username, QWidget* parent)
-            +~CountryMdiWindow()
-            +countryModel() ClientCountryModel*
-            +sizeHint() QSize
-            +reload() void
-            +addNew() void
-            +editSelected() void
-            +deleteSelected() void
-            +viewHistorySelected() void
-            +exportToCSV() void
-            +markAsStale() void
-            +clearStaleIndicator() void
-            -onDataLoaded() void
-            -onLoadError(const QString& error_message) void
-            -onRowDoubleClicked(const QModelIndex& index) void
-            -onSelectionChanged() void
-            -onConnectionStateChanged() void
-            -updateActionStates() void
-            -startPulseAnimation() void
-            -stopPulseAnimation() void
-            -{field} verticalLayout_ QVBoxLayout*
-            -{field} countryTableView_ QTableView*
-            -{field} toolBar_ QToolBar*
-            -{field} pagination_widget_ PaginationWidget*
-            -{field} countryModel_ std::unique_ptr<ClientCountryModel>
-            -{field} proxyModel_ QSortFilterProxyModel*
-            -{field} clientManager_ ClientManager*
-            -{field} imageCache_ ImageCache*
+        class PartyApplyAndSummaryPage {
+            -wizard_ : PartyProvisioningWizard*
+            -summaryLabel_ : QLabel*
         }
-        note top of CountryMdiWindow
-        MDI window for displaying countries.
-
-        - verticalLayout_: Layout for window
-        - countryTableView_: Table view for countries
-        - toolBar_: Toolbar with actions
-        - pagination_widget_: Pagination controls
-        - countryModel_: Country data model
-        - proxyModel_: Sort/filter proxy
-        - clientManager_: Client manager
-        - imageCache_: Image cache for flags
-        end note
-
-        ' Client Country Model
-        class ClientCountryModel #ECECEC {
-            +ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
-            +~ClientCountryModel()
-            +rowCount(const QModelIndex& parent) int
-            +columnCount(const QModelIndex& parent) int
-            +data(const QModelIndex& index, int role) QVariant
-            +headerData(int section, Qt::Orientation orientation, int role) QVariant
-            +refresh(bool replace) void
-            +load_page(std::uint32_t offset, std::uint32_t limit) void
-            +canFetchMore(const QModelIndex& parent) bool
-            +fetchMore(const QModelIndex& parent) void
-            +getCountry(int row) const refdata::domain::country*
-            +getCountries() std::vector<refdata::domain::country>
-            +page_size() std::uint32_t
-            +set_page_size(std::uint32_t size) void
-            +total_available_count() std::uint32_t
-            -onCountriesLoaded() void
-            -onPulseTimerTimeout() void
-            -recency_foreground_color(const std::string& alpha2_code) QVariant
-            -{field} clientManager_ ClientManager*
-            -{field} imageCache_ ImageCache*
-            -{field} countries_ std::vector<refdata::domain::country>
-            -{field} watcher_ QFutureWatcher<FetchResult>*
-            -{field} page_size_ std::uint32_t
-            -{field} total_available_count_ std::uint32_t
+        class SessionHistoryModel {
+            +role : int
+            -sessions_ : vector<iam::domain::session>
+            -activeIcon_ : QIcon
+            -historyIcon_ : QIcon
         }
-        note top of ClientCountryModel
-        Model for displaying countries fetched from the server via client.
-
-        - clientManager_: Client manager
-        - imageCache_: Image cache for flags
-        - countries_: Country data
-        - watcher_: Future watcher for async loading
-        - page_size_: Records per page
-        - total_available_count_: Total records available
-        end note
-
-        ' Country Detail Dialog
-        class CountryDetailDialog #ECECEC {
-            +CountryDetailDialog(QWidget* parent)
-            +~CountryDetailDialog()
-            +setClientManager(ClientManager* clientManager) void
-            +setUsername(const std::string& username) void
-            +setImageCache(ImageCache* imageCache) void
-            +setCountry(const refdata::domain::country& country) void
-            +getCountry() refdata::domain::country
-            +clearDialog() void
-            +save() void
-            +setReadOnly(bool readOnly, int versionNumber) void
-            +markAsStale() void
-            +alpha2Code() QString
-            -onSaveClicked() void
-            -onResetClicked() void
-            -onDeleteClicked() void
-            -onRevertClicked() void
-            -onFieldChanged() void
-            -onSelectFlagClicked() void
-            -updateSaveResetButtonState() void
-            -setFieldsReadOnly(bool readOnly) void
-            -updateFlagDisplay() void
-            -{field} ui_ std::unique_ptr<Ui::CountryDetailDialog>
-            -{field} isDirty_ bool
-            -{field} isAddMode_ bool
-            -{field} isReadOnly_ bool
-            -{field} isStale_ bool
-            -{field} username_ std::string
-            -{field} toolBar_ QToolBar*
-            -{field} saveAction_ QAction*
-            -{field} deleteAction_ QAction*
-            -{field} revertAction_ QAction*
-            -{field} clientManager_ ClientManager*
-            -{field} imageCache_ ImageCache*
-            -{field} currentCountry_ refdata::domain::country
+        class SessionHistoryDialog {
+            +parent : QWidget*
+            -tableView_ : QTableView*
+            -model_ : SessionHistoryModel*
+            -splitter_ : QSplitter*
+            -chartView_ : QChartView*
+            -clientManager_ : ClientManager*
+            -accountId_ : boost::uuids::uuid
+            -username_ : QString
+            -watcher_ : QFutureWatcher<FetchResult>*
+            -samplesWatcher_ : QFutureWatcher<FetchSamplesResult>*
+            -sampleRefreshTimer_ : QTimer*
+            -hasSelectedSession_ : bool
+            -selectedSessionLabel_ : QString
+            -selectedSessionActive_ : bool
         }
-        note top of CountryDetailDialog
-        Widget for creating/editing country details.
-
-        - ui_: Auto-generated UI elements
-        - isDirty_: Dirty flag
-        - isAddMode_: Add mode flag
-        - isReadOnly_: Read-only mode flag
-        - isStale_: Stale data flag
-        - username_: Logged-in username
-        - toolBar_: Toolbar with actions
-        - clientManager_: Client manager
-        - imageCache_: Image cache for flag display
-        - currentCountry_: Current country being edited
-        end note
-
-        ' Country History Dialog
-        class CountryHistoryDialog #ECECEC {
-            +CountryHistoryDialog(QString alpha2_code, ClientManager* clientManager, QWidget* parent)
-            +~CountryHistoryDialog()
-            +loadHistory() void
-            +setImageCache(ImageCache* imageCache) void
-            +sizeHint() QSize
-            +markAsStale() void
-            +alpha2Code() QString
-            -onVersionSelected(int index) void
-            -onHistoryLoaded() void
-            -onHistoryLoadError(const QString& error) void
-            -onOpenClicked() void
-            -onRevertClicked() void
-            -onReloadClicked() void
-            -displayChangesTab(int version_index) void
-            -displayFullDetailsTab(int version_index) void
-            -calculateDiff(const refdata::domain::country& current, const refdata::domain::country& previous) DiffResult
-            -{field} ui_ std::unique_ptr<Ui::CountryHistoryDialog>
-            -{field} clientManager_ ClientManager*
-            -{field} imageCache_ ImageCache*
-            -{field} alpha2Code_ QString
-            -{field} history_ std::vector<refdata::domain::country>
-            -{field} toolBar_ QToolBar*
+        class qt_output_streambuf {
+            -mutex_ : mutex
+            -buffer_ : string
         }
-        note top of CountryHistoryDialog
-        Widget for displaying country version history.
-
-        - ui_: Auto-generated UI elements
-        - clientManager_: Client manager
-        - imageCache_: Image cache for flag display
-        - alpha2Code_: Alpha-2 code of country
-        - history_: Version history data
-        - toolBar_: Toolbar with actions
-        end note
-
-        ' Image Cache
-        class ImageCache #ECECEC {
-            +ImageCache(ClientManager* clientManager, QObject* parent)
-            +~ImageCache()
-            +loadCurrencyMappings() void
-            +loadImagesForCurrencies() void
-            +loadAll() void
-            +getCurrencyIcon(const std::string& iso_code) QIcon
-            +hasCurrencyIcon(const std::string& iso_code) bool
-            +loadCountryMappings() void
-            +loadImagesForCountries() void
-            +getCountryIcon(const std::string& alpha2_code) QIcon
-            +hasCountryIcon(const std::string& alpha2_code) bool
-            +setCountryImage(const std::string& alpha2_code, const std::string& image_id, const std::string& assigned_by) void
-            +getCountryImageId(const std::string& alpha2_code) std::string
-            +cachedIconCount() std::size_t
-            +isLoading() bool
-            +loadImageList() void
-            +availableImages() std::vector<assets::messaging::image_info>
-            +loadImageById(const std::string& image_id) void
-            +loadAllAvailableImages() void
-            +getImageIcon(const std::string& image_id) QIcon
-            +setCurrencyImage(const std::string& iso_code, const std::string& image_id, const std::string& assigned_by) void
-            +getCurrencyImageId(const std::string& iso_code) std::string
-            +getNoFlagImageId() std::string
-            +getNoFlagIcon() QIcon
-            -{field} clientManager_ ClientManager*
-            -{field} currency_to_image_id_ std::unordered_map<std::string, std::string>
-            -{field} country_to_image_id_ std::unordered_map<std::string, std::string>
-            -{field} image_svg_cache_ std::unordered_map<std::string, std::string>
-            -{field} currency_icons_ std::unordered_map<std::string, QIcon>
-            -{field} country_icons_ std::unordered_map<std::string, QIcon>
+        class qt_input_streambuf {
+            -mutex_ : mutex
+            -cv_ : condition_variable
+            -pending_ : deque<string>
+            -current_ : string
         }
-        note top of ImageCache
-        Cache for dynamically loaded images (flags, icons) from the server.
-
-        Manages fetching and caching of images from the server.
-        - currency_to_image_id_: Currency ISO -> image_id mapping
-        - country_to_image_id_: Country alpha-2 -> image_id mapping
-        - image_svg_cache_: image_id -> SVG data cache
-        - currency_icons_: Currency ISO -> QIcon cache
-        - country_icons_: Country alpha-2 -> QIcon cache
-        end note
-
-        ' Dialogs
-        class LoginDialog #ECECEC {
-            +LoginDialog(ClientManager* clientManager, QWidget* parent)
-            +~LoginDialog()
-            +getUsername() std::string
-            -onLoginClicked() void
-            -onConnectionResult(bool success, const QString& error_message) void
-            -onLoginResult(bool success, const QString& error_message) void
-            -setupUI() void
-            -enableForm(bool enabled) void
-            -performLogin(const std::string& username, const std::string& password) void
-            -{field} username_edit_ QLineEdit*
-            -{field} password_edit_ QLineEdit*
-            -{field} host_edit_ QLineEdit*
-            -{field} port_spinbox_ QSpinBox*
-            -{field} login_button_ QPushButton*
-            -{field} cancel_button_ QPushButton*
-            -{field} status_label_ QLabel*
-            -{field} clientManager_ ClientManager*
+        class ShellMdiWindow {
+            +parent : QWidget*
+            -client_manager_ : ClientManager*
+            -toolbar_ : QToolBar*
+            -output_area_ : QPlainTextEdit*
+            -input_line_ : QLineEdit*
+            -output_buf_ : unique_ptr<qt_output_streambuf>
+            -input_buf_ : unique_ptr<qt_input_streambuf>
+            -out_stream_ : unique_ptr<ostream>
+            -in_stream_ : unique_ptr<istream>
+            -shell_session_ : ores::nats::service::nats_client
+            -shell_repl_ : unique_ptr<shell::app::repl>
+            -worker_thread_ : unique_ptr<thread>
+            -command_history_ : vector<string>
         }
-        note top of LoginDialog
-        Dialog for user authentication and server connection.
-
-        - username_edit_: Username input field
-        - password_edit_: Password input field
-        - host_edit_: Server host field
-        - port_spinbox_: Server port field
-        - login_button_: Login button
-        - cancel_button_: Cancel button
-        - status_label_: Status message label
-        - clientManager_: Client manager
-        end note
-
-        class AboutDialog #ECECEC {
-            +AboutDialog(QWidget* parent)
-            +~AboutDialog()
-            #showEvent(QShowEvent* e) void
-            -updateVersionLabels() void
-            -{field} ui_ Ui::AboutDialog
-            -{field} logoLabel_ LogoLabel*
+        class SignUpDialog {
+            -titleLabel_ : QLabel*
+            -usernameEdit_ : QLineEdit*
+            -emailEdit_ : QLineEdit*
+            -passwordEdit_ : QLineEdit*
+            -confirmPasswordEdit_ : QLineEdit*
+            -showPasswordCheck_ : QCheckBox*
+            -signUpButton_ : QPushButton*
+            -loginButton_ : QPushButton*
+            -loginLabel_ : QLabel*
+            -statusLabel_ : QLabel*
+            -hostEdit_ : QLineEdit*
+            -portSpinBox_ : QSpinBox*
+            -registeredUsername_ : QString
         }
-        note top of AboutDialog
-        Modal dialog displaying application version and build metadata.
-
-        - ui_: Auto-generated UI elements
-        - logoLabel_: Logo label with overlay
-        end note
-
-        class SplashScreen #ECECEC {
-            +SplashScreen(const QPixmap& pixmap)
-            +paintEvent(QPaintEvent* e) void
-            +ensureFirstPaint() void
-            +setProgressDuration(int milliseconds) void
-            +setMessage(const QString& message) void
-            -updateProgress() void
-            -{field} painted_ bool
-            -{field} progress_ int
-            -{field} progressTimer_ QTimer*
-            -{field} totalDuration_ int
-            -{field} elapsedTime_ int
-            -{field} updateInterval_ int
-            -{field} messageText_ QString
+        class SystemProvisionerWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -adminUsername_ : QString
+            -adminEmail_ : QString
+            -adminPassword_ : QString
+            -adminAccountId_ : string
+            -multiTenantMode_ : bool
+            -tenantCode_ : QString
+            -tenantName_ : QString
+            -tenantHostname_ : QString
+            -tenantDescription_ : QString
+            -tenantAdminUsername_ : QString
+            -tenantAdminPassword_ : QString
+            -tenantAdminEmail_ : QString
+            -provisionedTenantId_ : QString
         }
-        note top of SplashScreen
-        Splash screen with progress indicator.
-
-        - painted_: Paint state flag
-        - progress_: Current progress value
-        - progressTimer_: Timer for progress updates
-        - totalDuration_: Total duration for progress
-        - elapsedTime_: Elapsed time
-        - updateInterval_: Update interval
-        - messageText_: Status message text
-        end note
-
-        class MyAccountDialog #ECECEC {
-            +MyAccountDialog(ClientManager* clientManager, QWidget* parent)
-            +~MyAccountDialog()
-            -setupUI() void
-            -onChangePasswordClicked() void
-            -onSaveEmailClicked() void
-            -onSaveEmailResult(bool success, const QString& error_message) void
-            -{field} clientManager_ ClientManager*
-            -{field} username_label_ QLabel*
-            -{field} email_edit_ QLineEdit*
-            -{field} save_email_button_ QPushButton*
-            -{field} email_status_label_ QLabel*
-            -{field} change_password_button_ QPushButton*
+        class WelcomePage {
+            -wizard_ : SystemProvisionerWizard*
         }
-        note top of MyAccountDialog
-        Dialog for user self-service account management.
-
-        Allows users to:
-        - View their username (read-only)
-        - Update their email address
-        - Change their password
-
-        - clientManager_: Client manager for network operations
-        - username_label_: Display current username
-        - email_edit_: Email input field
-        - save_email_button_: Save email button
-        - email_status_label_: Status message label
-        - change_password_button_: Opens ChangePasswordDialog
-        end note
-
-        class ChangePasswordDialog #ECECEC {
-            +ChangePasswordDialog(ClientManager* clientManager, QWidget* parent)
-            +~ChangePasswordDialog()
-            -setupUI() void
-            -onChangePasswordClicked() void
-            -onChangePasswordResult(bool success, const QString& error_message) void
-            -validatePasswords() bool
-            -{field} clientManager_ ClientManager*
-            -{field} new_password_edit_ QLineEdit*
-            -{field} confirm_password_edit_ QLineEdit*
-            -{field} change_button_ QPushButton*
-            -{field} status_label_ QLabel*
+        class AdminAccountPage {
+            -wizard_ : SystemProvisionerWizard*
+            -usernameEdit_ : QLineEdit*
+            -emailEdit_ : QLineEdit*
+            -passwordEdit_ : QLineEdit*
+            -confirmPasswordEdit_ : QLineEdit*
+            -showPasswordCheckbox_ : QCheckBox*
+            -validationLabel_ : QLabel*
+            -accountCreated_ : bool
         }
-        note top of ChangePasswordDialog
-        Dialog for changing user password.
-
-        Validates password requirements and confirms password match
-        before sending change request to server.
-
-        - clientManager_: Client manager for network operations
-        - new_password_edit_: New password input
-        - confirm_password_edit_: Confirm password input
-        - change_button_: Change password button
-        - status_label_: Status message label
-        end note
-
-        ' Helpers
-        class CurrencyItemDelegate #ECECEC {
-            +CurrencyItemDelegate(QObject* parent)
-            +paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) void
-            -{field} monospaceFont_ QFont
+        class SetupModePage {
+            -wizard_ : SystemProvisionerWizard*
+            -singleTenantRadio_ : QRadioButton*
+            -multiTenantRadio_ : QRadioButton*
         }
-        note top of CurrencyItemDelegate
-        Custom item delegate for currency display.
-
-        - monospaceFont_: Monospace font for rendering
-        end note
-
-        class CountryItemDelegate #ECECEC {
-            +CountryItemDelegate(QObject* parent)
-            +paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) void
-            -{field} monospaceFont_ QFont
+        class ProvisionerTenantDetailsPage {
+            -wizard_ : SystemProvisionerWizard*
+            -codeEdit_ : QLineEdit*
+            -editCodeButton_ : QPushButton*
+            -nameEdit_ : QLineEdit*
+            -typeCombo_ : QComboBox*
+            -hostnameEdit_ : QLineEdit*
+            -descriptionEdit_ : QLineEdit*
+            -validationLabel_ : QLabel*
+            -hostnameManuallyEdited_ : bool
+            -codeManuallyEdited_ : bool
         }
-        note top of CountryItemDelegate
-        Custom item delegate for country display.
-
-        - monospaceFont_: Monospace font for rendering
-        end note
-
-        class MessageBoxHelper #ECECEC {
-            +{static} question(QWidget* parent, const QString& title, const QString& text, QMessageBox::StandardButtons buttons) QMessageBox::StandardButton
-            +{static} warning(QWidget* parent, const QString& title, const QString& text) void
-            +{static} critical(QWidget* parent, const QString& title, const QString& text) void
-            +{static} information(QWidget* parent, const QString& title, const QString& text) void
-            -{static} createColoredIcon(const QString& svgPath, const QColor& color) QIcon
+        class ProvisionerTenantAdminPage {
+            -wizard_ : SystemProvisionerWizard*
+            -usernameEdit_ : QLineEdit*
+            -emailEdit_ : QLineEdit*
+            -passwordEdit_ : QLineEdit*
+            -confirmPasswordEdit_ : QLineEdit*
+            -showPasswordCheck_ : QCheckBox*
+            -validationLabel_ : QLabel*
         }
-        note top of MessageBoxHelper
-        Utility class for creating message boxes with Fluent icons.
-        end note
-
-        class IconUtils #ECECEC {
-            +{static} createRecoloredIcon(const QString& svgPath, const QColor& color) QIcon
+        class ProvisionerApplyPage {
+            -wizard_ : SystemProvisionerWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -provisioningComplete_ : bool
+            -provisioningSuccess_ : bool
         }
-        note top of IconUtils
-        Utility class for icon manipulation operations.
-        end note
-
-        class MdiUtils #ECECEC {
-            +{static} markParentWindowAsStale(QWidget* widget) bool
-            +{static} clearParentWindowStaleMarker(QWidget* widget) bool
-            -{static}{field} stale_marker const char*
+        class ProvisionerCompletePage {
+            -wizard_ : SystemProvisionerWizard*
+            -summaryLabel_ : QLabel*
+            -nextStepsLabel_ : QLabel*
         }
-        note top of MdiUtils
-        Utility class for MDI window operations.
-
-        - stale_marker: " (Data Changed)" suffix for stale windows
-        end note
-
-        class LogoLabel #ECECEC {
-            +LogoLabel(QWidget* parent)
-            +setTextOverlay(const QString& text) void
-            #paintEvent(QPaintEvent* event) void
-            -{field} overlayText_ QString
+        class TagSelectorWidget {
+            +parent : QWidget*
+            -manager_ : connections::service::connection_manager*
+            -layout_ : QHBoxLayout*
+            -addButton_ : QToolButton*
+            -tagMenu_ : QMenu*
+            -selectedTags_ : vector<connections::domain::tag>
         }
-        note top of LogoLabel
-        Custom QLabel with text overlay capability.
-
-        - overlayText_: Text to overlay on label
-        end note
-
-        ' Data Librarian Window
-        class DataLibrarianWindow #ECECEC {
-            +DataLibrarianWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
-            +~DataLibrarianWindow()
-            +sizeHint() QSize
-            -setupUi() void
-            -setupNavigationSidebar() void
-            -setupCentralWorkspace() void
-            -setupToolbar() void
-            -setupConnections() void
-            -buildNavigationTree() void
-            -showDatasetDetailDialog(const dq::domain::dataset* dataset) void
-            -filterDatasetsByCatalog(const QString& catalogName) void
-            -filterDatasetsByDomain(const QString& domainName) void
-            -filterDatasetsBySubjectArea(const QString& subjectAreaName) void
-            -clearDatasetFilter() void
-            -selectFirstDataset() void
-            -setupColumnVisibility() void
-            -applyDefaultColumnVisibility() void
-            -onNavigationSelectionChanged(const QModelIndex& current, const QModelIndex& previous) void
-            -onDatasetSelectionChanged() void
-            -onDatasetDoubleClicked(const QModelIndex& index) void
-            -onRefreshClicked() void
-            -onViewDatasetClicked() void
-            -onDataLoaded() void
-            -onLoadError(const QString& error_message, const QString& details) void
-            -{field} clientManager_ ClientManager*
-            -{field} username_ QString
-            -{field} mainSplitter_ QSplitter*
-            -{field} navigationTree_ QTreeView*
-            -{field} navigationModel_ QStandardItemModel*
-            -{field} toolbar_ QToolBar*
-            -{field} datasetTable_ QTableView*
-            -{field} datasetModel_ ClientDatasetModel*
-            -{field} datasetProxyModel_ QSortFilterProxyModel*
-            -{field} datasetViewDialog_ DatasetViewDialog*
-            -{field} dataDomainModel_ ClientDataDomainModel*
-            -{field} subjectAreaModel_ ClientSubjectAreaModel*
-            -{field} catalogModel_ ClientCatalogModel*
-            -{field} methodologyModel_ ClientMethodologyModel*
-            -{field} statusBar_ QStatusBar*
-            -{field} loadingProgressBar_ QProgressBar*
+        class TelemetryLogDelegate {
+            -monospaceFont_ : QFont
+            -badgeFont_ : QFont
         }
-        note top of DataLibrarianWindow
-        Data Librarian window for browsing and managing datasets.
-
-        Provides:
-        - Navigation sidebar ("The Stacks"): Domain > Subject Area > Catalog tree
-        - Central workspace ("The Registry"): Dataset table with filtering
-        - Toolbar buttons to open related entity windows
-
-        Signals: statusChanged, errorOccurred, openOriginDimensionsRequested,
-        openNatureDimensionsRequested, openTreatmentDimensionsRequested,
-        openCodingSchemesRequested, openMethodologiesRequested
-        end note
-
-        ' Dataset View Dialog
-        class DatasetViewDialog #ECECEC {
-            +DatasetViewDialog(QWidget* parent)
-            +~DatasetViewDialog()
-            +setDataset(const dq::domain::dataset& dataset) void
-            +setMethodologies(const std::vector<dq::domain::methodology>& methodologies) void
-            -setupUi() void
-            -createOverviewTab() QWidget*
-            -createProvenanceTab() QWidget*
-            -createMethodologyTab() QWidget*
-            -createLineageTab() QWidget*
-            -updateOverviewTab() void
-            -updateProvenanceTab() void
-            -updateMethodologyTab() void
-            -updateLineageView() void
-            -addProperty(QTreeWidget* tree, const QString& name, const QString& value, const QString& tooltip) void
-            -addSectionHeader(QTreeWidget* tree, const QString& title) void
-            -findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) QString
-            -findMethodology(const std::optional<boost::uuids::uuid>& methodologyId) const dq::domain::methodology*
-            -createLineageNode(QGraphicsScene* scene, qreal x, qreal y, const QString& headerText, const QStringList& labels, const QStringList& values, const QColor& headerColor, bool hasInputSocket, bool hasOutputSocket) qreal
-            -drawLineageConnection(QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2) void
-            -{field} tabWidget_ QTabWidget*
-            -{field} overviewTree_ QTreeWidget*
-            -{field} provenanceTree_ QTreeWidget*
-            -{field} methodologyTree_ QTreeWidget*
-            -{field} stepsText_ QTextBrowser*
-            -{field} lineageView_ QGraphicsView*
-            -{field} dataset_ dq::domain::dataset
-            -{field} methodologies_ std::vector<dq::domain::methodology>
-            -{field} lineageBackground_ QColor
-            -{field} lineageNodeBody_ QColor
-            -{field} lineageNodeWidth_ qreal
+        class TelemetryMdiWindow {
+            +parent : QWidget*
+            -mainSplitter_ : QSplitter*
+            -leftPanel_ : QWidget*
+            -rightPanel_ : QWidget*
+            -leftSplitter_ : QSplitter*
+            -sessionTree_ : QTreeWidget*
+            -sessionDetailsGroup_ : QGroupBox*
+            -sessionDetailsTable_ : QTableWidget*
+            -rightLayout_ : QVBoxLayout*
+            -toolBar_ : QToolBar*
+            -logTableView_ : QTableView*
+            -paginationWidget_ : PaginationWidget*
+            -logDetailGroup_ : QGroupBox*
+            -logMessageEdit_ : QTextEdit*
+            -filterTraceBtn_ : QPushButton*
+            -filterDebugBtn_ : QPushButton*
+            -filterInfoBtn_ : QPushButton*
+            -filterWarnBtn_ : QPushButton*
+            -filterErrorBtn_ : QPushButton*
+            -reloadAction_ : QAction*
+            -normalReloadIcon_ : QIcon
+            -staleReloadIcon_ : QIcon
+            -pulseTimer_ : QTimer*
+            -logModel_ : unique_ptr<ClientTelemetryLogModel>
+            -proxyModel_ : QSortFilterProxyModel*
+            -clientManager_ : ClientManager*
+            -username_ : QString
+            -sessionCache_ : unordered_map<string, iam::domain::session>
+            -selectedSessionId_ : optional<boost::uuids::uuid>
         }
-        note top of DatasetViewDialog
-        Read-only dialog for viewing dataset details with tabbed interface.
-
-        Displays dataset information in 4 tabs:
-        - Overview: general info, classification, data governance, audit
-        - Provenance: source, dates, lineage info
-        - Methodology: methodology details and processing steps
-        - Lineage: visual diagram of data flow
-
-        QSS-styleable properties for lineage diagram customization.
-        end note
-
-        ' Client Dataset Model
-        class ClientDatasetModel #ECECEC {
-            +ClientDatasetModel(ClientManager* clientManager, QObject* parent)
-            +~ClientDatasetModel()
-            +rowCount(const QModelIndex& parent) int
-            +columnCount(const QModelIndex& parent) int
-            +data(const QModelIndex& index, int role) QVariant
-            +headerData(int section, Qt::Orientation orientation, int role) QVariant
-            +refresh() void
-            +getDataset(int row) const dq::domain::dataset*
-            -onDatasetsLoaded() void
-            -onPulseStateChanged(bool isOn) void
-            -onPulsingComplete() void
-            -recency_foreground_color(const boost::uuids::uuid& id) QVariant
-            -{field} clientManager_ ClientManager*
-            -{field} datasets_ std::vector<dq::domain::dataset>
-            -{field} watcher_ QFutureWatcher<FetchResult>*
-            -{field} is_fetching_ bool
-            -{field} recencyTracker_ RecencyTracker<dq::domain::dataset>
-            -{field} pulseManager_ RecencyPulseManager*
+        class TelemetrySettingsDialog {
+            -tab_widget_ : QTabWidget*
+            -logging_enabled_checkbox_ : QCheckBox*
+            -log_level_combo_ : QComboBox*
+            -console_output_checkbox_ : QCheckBox*
+            -log_directory_edit_ : QLineEdit*
+            -log_directory_browse_ : QPushButton*
+            -log_filename_edit_ : QLineEdit*
+            -include_pid_checkbox_ : QCheckBox*
+            -tag_filter_edit_ : QLineEdit*
+            -telemetry_enabled_checkbox_ : QCheckBox*
+            -telemetry_output_file_edit_ : QLineEdit*
+            -telemetry_directory_edit_ : QLineEdit*
+            -telemetry_directory_browse_ : QPushButton*
+            -streaming_enabled_checkbox_ : QCheckBox*
+            -batch_size_spin_ : QSpinBox*
+            -flush_interval_spin_ : QSpinBox*
+            -compression_enabled_checkbox_ : QCheckBox*
+            -compression_algorithm_combo_ : QComboBox*
+            -apply_button_ : QPushButton*
+            -cancel_button_ : QPushButton*
         }
-        note top of ClientDatasetModel
-        Table model for displaying datasets fetched from the server.
-
-        Features:
-        - Columns: Name, Catalog, SubjectArea, Domain, Origin, Nature, Treatment, etc.
-        - Recency tracking for highlighting recently changed items
-        - Async loading with FutureWatcher
-
-        Signals: dataLoaded, loadError
-        end note
-
-        ' Relationships - Main Window Structure
-        ores::qt::MainWindow *-- ores::qt::MdiAreaWithBackground
-        ores::qt::MainWindow o-- ores::qt::DetachableMdiSubWindow
-        ores::qt::MainWindow *-- ores::qt::CurrencyController
-        ores::qt::MainWindow *-- ores::qt::CountryController
-        ores::qt::MainWindow *-- ores::qt::BusinessUnitTypeController
-        ores::qt::MainWindow *-- ores::qt::ClientManager
-        ores::qt::MainWindow *-- ores::qt::ImageCache
-
-        ' Relationships - Entity Controller Pattern
-        ores::qt::CurrencyController -up-|> ores::qt::EntityController
-        ores::qt::CountryController -up-|> ores::qt::EntityController
-        ores::qt::BusinessUnitTypeController -up-|> ores::qt::EntityController
-        ores::qt::CurrencyController o-- ores::qt::DetachableMdiSubWindow
-        ores::qt::CountryController o-- ores::qt::DetachableMdiSubWindow
-        ores::qt::BusinessUnitTypeController o-- ores::qt::DetachableMdiSubWindow
-        ores::qt::EntityController o-- ores::qt::ClientManager
-
-        ' Relationships - Currency Components
-        ores::qt::CurrencyMdiWindow *-- ores::qt::ClientCurrencyModel
-        ores::qt::CurrencyMdiWindow ..> ores::qt::CurrencyItemDelegate : uses
-        ores::qt::CurrencyMdiWindow o-- ores::qt::ClientManager
-        ores::qt::ClientCurrencyModel o-- ores::qt::ClientManager
-        ores::qt::CurrencyDetailDialog o-- ores::qt::ClientManager
-        ores::qt::CurrencyHistoryDialog o-- ores::qt::ClientManager
-
-        ' Relationships - Country Components
-        ores::qt::CountryMdiWindow *-- ores::qt::ClientCountryModel
-        ores::qt::CountryMdiWindow ..> ores::qt::CountryItemDelegate : uses
-        ores::qt::CountryMdiWindow o-- ores::qt::ClientManager
-        ores::qt::CountryMdiWindow o-- ores::qt::ImageCache
-        ores::qt::ClientCountryModel o-- ores::qt::ClientManager
-        ores::qt::ClientCountryModel o-- ores::qt::ImageCache
-        ores::qt::CountryDetailDialog o-- ores::qt::ClientManager
-        ores::qt::CountryDetailDialog o-- ores::qt::ImageCache
-        ores::qt::CountryHistoryDialog o-- ores::qt::ClientManager
-        ores::qt::CountryHistoryDialog o-- ores::qt::ImageCache
-        ores::qt::CountryController o-- ores::qt::ImageCache
-
-        ' Relationships - Dialogs
-        ores::qt::AboutDialog *-- ores::qt::LogoLabel
-        ores::qt::LoginDialog o-- ores::qt::ClientManager
-        ores::qt::MyAccountDialog o-- ores::qt::ClientManager
-        ores::qt::ChangePasswordDialog o-- ores::qt::ClientManager
-        ores::qt::MyAccountDialog ..> ores::qt::ChangePasswordDialog : creates
-
-        ' Relationships - MainWindow uses
-        ores::qt::MainWindow ..> ores::qt::LoginDialog : uses
-        ores::qt::MainWindow ..> ores::qt::AboutDialog : uses
-        ores::qt::MainWindow ..> ores::qt::MyAccountDialog : uses
-        ores::qt::MainWindow ..> ores::qt::MessageBoxHelper : uses
-        ores::qt::MainWindow ..> ores::qt::IconUtils : uses
-
-        ' Relationships - CurrencyController creates windows
-        ores::qt::CurrencyController ..> ores::qt::CurrencyMdiWindow : creates
-        ores::qt::CurrencyController ..> ores::qt::CurrencyDetailDialog : creates
-        ores::qt::CurrencyController ..> ores::qt::CurrencyHistoryDialog : creates
-
-        ' Relationships - CountryController creates windows
-        ores::qt::CountryController ..> ores::qt::CountryMdiWindow : creates
-        ores::qt::CountryController ..> ores::qt::CountryDetailDialog : creates
-        ores::qt::CountryController ..> ores::qt::CountryHistoryDialog : creates
-
-        ' Relationships - BusinessUnitType Components
-        ores::qt::BusinessUnitTypeMdiWindow *-- ores::qt::ClientBusinessUnitTypeModel
-        ores::qt::BusinessUnitTypeMdiWindow o-- ores::qt::ClientManager
-        ores::qt::ClientBusinessUnitTypeModel o-- ores::qt::ClientManager
-        ores::qt::BusinessUnitTypeDetailDialog o-- ores::qt::ClientManager
-        ores::qt::BusinessUnitTypeHistoryDialog o-- ores::qt::ClientManager
-
-        ' Relationships - BusinessUnitTypeController creates windows
-        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeMdiWindow : creates
-        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeDetailDialog : creates
-        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeHistoryDialog : creates
-
-        ' Relationships - MdiUtils usage for stale window marking
-        ores::qt::CurrencyDetailDialog ..> ores::qt::MdiUtils : uses
-        ores::qt::CountryDetailDialog ..> ores::qt::MdiUtils : uses
-
-        ' Relationships - ImageCache
-        ores::qt::ImageCache o-- ores::qt::ClientManager
-
-        ' Relationships - Data Librarian
-        ores::qt::MainWindow *-- ores::qt::DataLibrarianWindow
-        ores::qt::DataLibrarianWindow o-- ores::qt::ClientManager
-        ores::qt::DataLibrarianWindow *-- ores::qt::ClientDatasetModel
-        ores::qt::DataLibrarianWindow *-- ores::qt::DatasetViewDialog
-        ores::qt::DataLibrarianWindow ..> ores::qt::DatasetViewDialog : creates
-        ores::qt::ClientDatasetModel o-- ores::qt::ClientManager
+        class TenantProvisioningWizard {
+            +parent : QWidget*
+            -clientManager_ : ClientManager*
+            -selectedBundleCode_ : QString
+            -selectedBundleName_ : QString
+            -dataSourceMode_ : DataSourceMode
+            -rootLei_ : QString
+            -rootLeiName_ : QString
+            -leiDatasetSize_ : QString
+            -syntheticCountry_ : QString
+            -syntheticPartyCount_ : int
+            -syntheticPartyMaxDepth_ : int
+            -syntheticCounterpartyCount_ : int
+            -syntheticCounterpartyMaxDepth_ : int
+            -syntheticPortfolioLeafCount_ : int
+            -syntheticPortfolioMaxDepth_ : int
+            -syntheticBooksPerPortfolio_ : int
+            -syntheticBusinessUnitCount_ : int
+            -syntheticBusinessUnitMaxDepth_ : int
+            -syntheticGenerateAddresses_ : bool
+            -syntheticContactsPerParty_ : int
+            -syntheticContactsPerCounterparty_ : int
+            -syntheticGenerateIdentifiers_ : bool
+            -syntheticSeed_ : optional<uint64_t>
+            -partiesLinkedCount_ : int
+        }
+        class ProvisioningWelcomePage {
+            -wizard_ : TenantProvisioningWizard*
+        }
+        class BundleSelectionPage {
+            -wizard_ : TenantProvisioningWizard*
+            -bundleModel_ : ClientDatasetBundleModel*
+            -bundleCombo_ : QComboBox*
+            -descriptionLabel_ : QLabel*
+            -statusLabel_ : QLabel*
+        }
+        class BundleInstallPage {
+            -wizard_ : TenantProvisioningWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -publishComplete_ : bool
+            -publishSuccess_ : bool
+        }
+        class TenantDataSourceSelectionPage {
+            -wizard_ : TenantProvisioningWizard*
+            -gleifRadio_ : QRadioButton*
+            -syntheticRadio_ : QRadioButton*
+            -syntheticOptions_ : QWidget*
+            -countryCombo_ : QComboBox*
+            -partyCountSpin_ : QSpinBox*
+            -partyMaxDepthSpin_ : QSpinBox*
+            -counterpartyCountSpin_ : QSpinBox*
+            -counterpartyMaxDepthSpin_ : QSpinBox*
+            -portfolioLeafCountSpin_ : QSpinBox*
+            -portfolioMaxDepthSpin_ : QSpinBox*
+            -booksPerPortfolioSpin_ : QSpinBox*
+            -businessUnitCountSpin_ : QSpinBox*
+            -businessUnitMaxDepthSpin_ : QSpinBox*
+            -contactsPerPartySpin_ : QSpinBox*
+            -contactsPerCounterpartySpin_ : QSpinBox*
+            -generateAddressesCheck_ : QCheckBox*
+            -generateIdentifiersCheck_ : QCheckBox*
+            -seedEdit_ : QLineEdit*
+        }
+        class TenantPartySetupPage {
+            -wizard_ : TenantProvisioningWizard*
+            -instructionLabel_ : QLabel*
+            -datasetSizeCombo_ : QComboBox*
+            -leiPicker_ : LeiEntityPicker*
+            -leiLoaded_ : bool
+        }
+        class TenantPartyOrganisationPage {
+            -wizard_ : TenantProvisioningWizard*
+            -statusLabel_ : QLabel*
+            -progressBar_ : QProgressBar*
+            -logOutput_ : QTextEdit*
+            -publishComplete_ : bool
+            -publishSuccess_ : bool
+        }
+        class TenantApplyAndSummaryPage {
+            -wizard_ : TenantProvisioningWizard*
+            -summaryLabel_ : QLabel*
+        }
     }
 }
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.puml"

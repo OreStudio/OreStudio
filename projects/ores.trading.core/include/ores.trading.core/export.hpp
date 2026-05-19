@@ -24,9 +24,6 @@
 
 #ifdef ORES_TRADING_CORE_LIBRARY
 #  define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_EXPORT
-#elif defined(ORES_TRADING_CORE_STATIC)
-// Static archive on Windows: no DLL import decoration needed.
-#  define ORES_TRADING_CORE_EXPORT
 #else
 #  define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT
 #endif

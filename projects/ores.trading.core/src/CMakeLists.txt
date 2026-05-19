@@ -32,10 +32,6 @@ set(lib_files ${files})
 # Build it as a static library on Windows to avoid the limit.
 if(WIN32)
     add_library(${lib_target_name} STATIC ${lib_files})
-    # Propagate STATIC flag to consumers so export.hpp uses an empty macro
-    # instead of __declspec(dllimport), which would cause LNK2019 errors when
-    # linking a static archive.
-    target_compile_definitions(${lib_target_name} INTERFACE ORES_TRADING_CORE_STATIC)
 else()
     add_library(${lib_target_name} ${lib_files})
 endif()

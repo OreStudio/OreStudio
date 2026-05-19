@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.cli/export.hpp"
 
 namespace ores::cli::app {
 
 /**
  * @brief A fatal error has occurred whilst the application was running.
  */
-class application_exception : public virtual std::exception,
+class ORES_CLI_EXPORT application_exception : public virtual std::exception,
                               public virtual boost::exception {
 public:
     explicit application_exception(std::string_view message = "")

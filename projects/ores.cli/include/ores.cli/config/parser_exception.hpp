@@ -22,13 +22,14 @@
 
 #include <string>
 #include <boost/exception/info.hpp>
+#include "ores.cli/export.hpp"
 
 namespace ores::cli::config {
 
 /**
  * @brief A fatal error has occurred during option parsing.
  */
-class parser_exception : public virtual std::exception,
+class ORES_CLI_EXPORT parser_exception : public virtual std::exception,
                          public virtual boost::exception {
 public:
     explicit parser_exception(std::string_view message = "")

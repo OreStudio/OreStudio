@@ -50,13 +50,14 @@
 #include "ores.cli/config/add_floating_index_type_options.hpp"
 #include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
+#include "ores.cli/export.hpp"
 
 namespace ores::cli::app {
 
 /**
  * @brief Entry point for the ores command line application.
  */
-class application final {
+class ORES_CLI_EXPORT application final {
 private:
     inline static std::string_view logger_name =
         "ores.cli.application";

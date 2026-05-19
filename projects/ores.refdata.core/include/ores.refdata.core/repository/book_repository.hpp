@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_BOOK_REPOSITORY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_BOOK_REPOSITORY_HPP
+#ifndef ORES_REFDATA_REPOSITORY_BOOK_REPOSITORY_HPP
+#define ORES_REFDATA_REPOSITORY_BOOK_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/book.hpp"
@@ -48,22 +47,18 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit book_repository(context ctx);
-
     std::string sql();
 
-    void write(const domain::book& book);
-    void write(const std::vector<domain::book>& books);
+    void write(context ctx, const domain::book& v);
+    void write(context ctx, const std::vector<domain::book>& v);
 
-    std::vector<domain::book> read_latest();
-    std::vector<domain::book> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::book> read_latest_by_code(const std::string& code);
+    std::vector<domain::book> read_latest(context ctx);
+    std::vector<domain::book>
+    read_latest(context ctx, const std::string& id);
+    std::vector<domain::book>
+    read_all(context ctx, const std::string& id);
 
-    std::vector<domain::book> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::string& id);
 };
 
 }

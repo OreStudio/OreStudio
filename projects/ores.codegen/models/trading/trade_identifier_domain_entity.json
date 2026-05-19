@@ -2,6 +2,8 @@
   "domain_entity": {
     "schema": "public",
     "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
     "entity_singular": "trade_identifier",
     "entity_plural": "trade_identifiers",
     "entity_title": "Trade Identifier",

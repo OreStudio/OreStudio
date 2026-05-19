@@ -38,14 +38,30 @@ std::vector<domain::{{entity_singular}}>
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
@@ -60,12 +76,26 @@ std::vector<domain::{{entity_singular}}>
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
@@ -79,14 +109,30 @@ std::vector<domain::{{entity_singular}}>
     BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. {{primary_key.column}}: " << {{primary_key.column}};
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
+        order_by("version"_c.desc());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
         order_by("version"_c.desc());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}}) |
+        order_by("version"_c.desc());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("{{primary_key.column}}"_c == {{primary_key.column}}) |
         order_by("version"_c.desc());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
@@ -100,17 +146,106 @@ void {{entity_singular}}_repository::remove(context ctx, const std::string& {{pr
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("tenant_id"_c == tid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("{{primary_key.column}}"_c == {{primary_key.column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 
     execute_delete_query(ctx, query, lg(), "Removing {{entity_singular_words}} from database.");
 }
 
+{{#has_batch_read}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest(
+    context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
+    if ({{primary_key.column}}s.empty()) return {};
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("{{primary_key.column}}"_c.in({{primary_key.column}}s) && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/has_tenant_id}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_plural_words}} by ids.");
+}
+
+{{/has_batch_read}}
+{{#has_batch_remove}}
+void {{entity_singular}}_repository::remove(
+    context ctx, const std::vector<std::string>& {{primary_key.column}}s) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/has_tenant_id}}
+{{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("workspace_id"_c == wid && "{{primary_key.column}}"_c.in({{primary_key.column}}s)
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("{{primary_key.column}}"_c.in({{primary_key.column}}s) && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/has_tenant_id}}
+    execute_delete_query(ctx, query, lg(), "batch removing {{entity_plural_words}}");
+}
+
+{{/has_batch_remove}}
 }
 {{/domain_entity}}
 {{#junction}}

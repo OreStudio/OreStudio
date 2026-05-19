@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "has_workspace_id": true,
     "entity_singular": "book",
@@ -40,6 +42,14 @@
 
     "columns": [
       {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description of the book.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
         "name": "parent_portfolio_id",
         "type": "uuid",
         "cpp_type": "boost::uuids::uuid",
@@ -47,6 +57,15 @@
         "description": "Links to exactly one portfolio.",
         "detail": "Mandatory: Every book must belong to a portfolio.",
         "generator_expr": "uuid_gen()"
+      },
+      {
+        "name": "owner_unit_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Business unit that owns this book.",
+        "detail": "Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.",
+        "generator_expr": "std::nullopt"
       },
       {
         "name": "ledger_ccy",
@@ -108,7 +127,7 @@
 
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
       "iterator_var": "bk",

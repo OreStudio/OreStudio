@@ -54,8 +54,9 @@ std::vector<domain::cds_convention>
 cds_convention_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cds_convention_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<cds_convention_entity, domain::cds_convention>(
@@ -69,8 +70,9 @@ cds_convention_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CDS convention. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cds_convention_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<cds_convention_entity, domain::cds_convention>(
         ctx, query,
@@ -82,8 +84,9 @@ std::vector<domain::cds_convention>
 cds_convention_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all CDS convention versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<cds_convention_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
         order_by("version"_c.desc());
 
     return execute_read_query<cds_convention_entity, domain::cds_convention>(
@@ -96,8 +99,9 @@ void cds_convention_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing CDS convention: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<cds_convention_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing CDS convention from database.");
 }

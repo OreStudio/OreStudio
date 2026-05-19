@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
-#define ORES_REFDATA_CORE_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
+#ifndef ORES_REFDATA_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
+#define ORES_REFDATA_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
@@ -48,22 +47,18 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit portfolio_repository(context ctx);
-
     std::string sql();
 
-    void write(const domain::portfolio& portfolio);
-    void write(const std::vector<domain::portfolio>& portfolios);
+    void write(context ctx, const domain::portfolio& v);
+    void write(context ctx, const std::vector<domain::portfolio>& v);
 
-    std::vector<domain::portfolio> read_latest();
-    std::vector<domain::portfolio> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::portfolio> read_latest_by_code(const std::string& code);
+    std::vector<domain::portfolio> read_latest(context ctx);
+    std::vector<domain::portfolio>
+    read_latest(context ctx, const std::string& id);
+    std::vector<domain::portfolio>
+    read_all(context ctx, const std::string& id);
 
-    std::vector<domain::portfolio> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
-
-private:
-    context ctx_;
+    void remove(context ctx, const std::string& id);
 };
 
 }

@@ -70,12 +70,6 @@ public:
     find_portfolio(const boost::uuids::uuid& id);
 
     /**
-     * @brief Finds a portfolio by its code.
-     */
-    std::optional<domain::portfolio>
-    find_portfolio_by_code(const std::string& code);
-
-    /**
      * @brief Saves a portfolio (creates or updates).
      *
      * @param portfolio The portfolio to save

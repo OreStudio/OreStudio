@@ -37,6 +37,7 @@ struct cds_convention_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     int settlement_days = 0;
     std::string calendar;

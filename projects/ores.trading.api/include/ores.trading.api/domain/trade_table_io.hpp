@@ -23,13 +23,14 @@
 #include <iosfwd>
 #include <vector>
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/export.hpp"
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the trade objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<trade>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<trade>& v);
 
 }
 

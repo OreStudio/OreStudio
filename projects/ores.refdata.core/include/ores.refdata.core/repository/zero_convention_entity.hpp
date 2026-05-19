@@ -37,6 +37,7 @@ struct zero_convention_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     bool tenor_based = false;
     std::string day_count_fraction;

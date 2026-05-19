@@ -53,12 +53,19 @@ struct report_definition final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id;
+
+    /**
      * @brief UUID uniquely identifying this report definition.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique name for the report definition within a tenant.
+     * @brief Unique name for the report definition within a party.
      */
     std::string name;
 
@@ -68,7 +75,7 @@ struct report_definition final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief Optional human-readable description of the report.
+     * @brief Human-readable description of the report.
      */
     std::string description;
 

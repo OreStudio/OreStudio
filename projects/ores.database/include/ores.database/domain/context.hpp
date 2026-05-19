@@ -155,6 +155,26 @@ public:
     }
 
     /**
+     * @brief Gets the workspace ID for this context.
+     *
+     * Defaults to the Live workspace sentinel UUID if not set.
+     */
+    const std::string& workspace_id() const { return workspace_id_; }
+
+    /**
+     * @brief Returns a copy of this context scoped to a specific workspace.
+     *
+     * Does not rebuild the connection pool — Phase 2 uses explicit WHERE
+     * clauses, so pool re-init is not needed. Chain after with_tenant() or
+     * with_party() since those builders create fresh contexts.
+     */
+    [[nodiscard]] context with_workspace(std::string workspace_id) const {
+        auto copy = *this;
+        copy.workspace_id_ = std::move(workspace_id);
+        return copy;
+    }
+
+    /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
      * The service_account is preserved from the base context.
@@ -186,6 +206,7 @@ private:
     sqlgen::postgres::Credentials credentials_;
     std::string service_account_;
     std::vector<std::string> roles_;
+    std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 };
 
 }

@@ -24,17 +24,15 @@
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<lifecycle_event>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Code" << "Description" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << fort::endr;
 
     for (const auto& le : v) {
-        table << le.code << le.description << le.modified_by << le.version
-              << fort::endr;
+        table << fort::endr;
     }
     return table.to_string();
 }

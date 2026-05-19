@@ -24,27 +24,15 @@
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<trade>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Party ID" << "Trade Type" << "Activity"
-          << "Trade Date" << "Effective Date" << "Termination Date"
-          << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << fort::endr;
 
     for (const auto& tr : v) {
-        table << boost::uuids::to_string(tr.identity.id)
-              << boost::uuids::to_string(tr.identity.party_id)
-              << tr.classification.trade_type
-              << tr.classification.activity_type_code
-              << tr.lifecycle.trade_date.value_or("")
-              << tr.lifecycle.effective_date.value_or("")
-              << tr.lifecycle.termination_date.value_or("")
-              << tr.audit.modified_by
-              << tr.identity.version
-              << fort::endr;
+        table << fort::endr;
     }
     return table.to_string();
 }

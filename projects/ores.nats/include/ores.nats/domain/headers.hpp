@@ -51,6 +51,11 @@ inline constexpr std::string_view nats_correlation_id     = "Nats-Correlation-Id
 /// Distinct from Nats-Correlation-Id which is per top-level operation.
 inline constexpr std::string_view nats_session_id         = "Nats-Session-Id";
 
+/// Active workspace for this request.
+/// Set by the Qt client from WorkspaceContext.id; forwarded on inter-service
+/// calls.  Absence means Live workspace (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
+inline constexpr std::string_view x_workspace_id          = "X-Workspace-Id";
+
 } // namespace ores::nats::headers
 
 #endif

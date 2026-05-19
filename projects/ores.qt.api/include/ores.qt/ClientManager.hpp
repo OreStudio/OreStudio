@@ -47,6 +47,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
 
 namespace ores::qt {
@@ -471,6 +472,15 @@ public:
     void subscribeToEvent(const std::string& subject);
     void unsubscribeFromEvent(const std::string& subject);
 
+    /**
+     * @brief Update the active workspace context.
+     *
+     * Called by plugin controllers when the MDI area emits a workspace change.
+     * All subsequent authenticated_request calls will forward the new workspace
+     * id as X-Workspace-Id.
+     */
+    void setWorkspaceContext(const WorkspaceContext& ctx) { workspace_context_ = ctx; }
+
 signals:
     void connected();
     void loggedIn();
@@ -559,6 +569,9 @@ private:
     // Session trace ID generated on login, forwarded on every NATS request
     // as Nats-Session-Id to group all calls from this login session in logs.
     std::string session_id_;
+
+    // Active workspace context; forwarded as X-Workspace-Id on every request.
+    WorkspaceContext workspace_context_;
 
     // Currently selected party context
     boost::uuids::uuid current_party_id_;

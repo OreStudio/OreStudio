@@ -493,7 +493,8 @@ std::string ClientManager::send_authenticated_request(
     const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
     auto scoped = session_
         .with_correlation_id(cid)
-        .with_session_id(session_id_);
+        .with_session_id(session_id_)
+        .with_workspace_id(workspace_context_.id.toStdString());
     auto msg = scoped.authenticated_request(subject, json_body, timeout);
     return std::string(
         reinterpret_cast<const char*>(msg.data.data()),

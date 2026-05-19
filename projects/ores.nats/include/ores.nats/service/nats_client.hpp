@@ -222,6 +222,18 @@ public:
     [[nodiscard]] nats_client with_session_id(std::string sid) const;
 
     /**
+     * @brief Returns a new nats_client that forwards an X-Workspace-Id
+     * header on every authenticated_request call.
+     *
+     * Set from WorkspaceContext.id on the Qt client side; forwarded on
+     * inter-service calls so repositories can filter on workspace_id.
+     * Absence means Live workspace (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
+     *
+     * Thread-safe: the returned value is independent of *this.
+     */
+    [[nodiscard]] nats_client with_workspace_id(std::string wid) const;
+
+    /**
      * @brief Return the underlying client (interactive path only).
      *
      * Returns nullptr if constructed via the service path.
@@ -250,6 +262,9 @@ private:
 
     // Optional session ID forwarded as Nats-Session-Id.
     std::string session_id_;
+
+    // Optional workspace ID forwarded as X-Workspace-Id.
+    std::string workspace_id_;
 };
 
 /**

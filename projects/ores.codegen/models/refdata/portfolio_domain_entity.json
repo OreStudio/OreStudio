@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "refdata",
+    "component_include": "refdata.api",
+    "component_core": "refdata.core",
     "has_tenant_id": true,
     "has_workspace_id": true,
     "entity_singular": "portfolio",
@@ -21,6 +23,14 @@
 
     "natural_keys": [
       {
+        "column": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "description": "Party that owns this portfolio.",
+        "detail": "Set server-side from the authenticated session. Enforced by RLS.",
+        "generator_expr": "uuid_gen()"
+      },
+      {
         "column": "name",
         "type": "text",
         "cpp_type": "std::string",
@@ -32,9 +42,17 @@
 
     "columns": [
       {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description of the portfolio.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
         "name": "parent_portfolio_id",
         "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
         "nullable": true,
         "description": "Self-referencing FK. NULL indicates a root node.",
         "detail": "Links to the parent portfolio in the hierarchy.",
@@ -43,7 +61,7 @@
       {
         "name": "owner_unit_id",
         "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
         "nullable": true,
         "description": "Business unit responsible for management.",
         "detail": "References the business_units table.",
@@ -75,6 +93,14 @@
         "description": "If 1, node is purely for on-demand reporting.",
         "detail": "Not persisted in trade attribution when virtual.",
         "generator_expr": "0"
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Current lifecycle status (Active, Inactive, Closed).",
+        "generator_expr": "std::string(\"Active\")"
       }
     ],
 
@@ -91,7 +117,7 @@
 
     "cpp": {
       "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
         "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
       },
       "iterator_var": "pf",

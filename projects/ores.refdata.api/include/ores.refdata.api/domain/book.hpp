@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_BOOK_HPP
-#define ORES_REFDATA_API_DOMAIN_BOOK_HPP
+#ifndef ORES_REFDATA_DOMAIN_BOOK_HPP
+#define ORES_REFDATA_DOMAIN_BOOK_HPP
 
 #include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -43,7 +44,14 @@ struct book final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id;
 
     /**
      * @brief UUID uniquely identifying this book.
@@ -81,8 +89,7 @@ struct book final {
     /**
      * @brief Business unit that owns this book.
      *
-     * Optional FK to business_units. Should reference a unit that is an
-     * owner_unit_id in the book's portfolio ancestry chain.
+     * Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.
      */
     std::optional<boost::uuids::uuid> owner_unit_id;
 
@@ -119,7 +126,7 @@ struct book final {
      *
      * 1 = Trading Book, 0 = Banking Book.
      */
-    int is_trading_book;
+    int is_trading_book = 0;
 
     /**
      * @brief Username of the person who last modified this book.

@@ -34,6 +34,7 @@ ois_convention_mapper::map(const ois_convention_entity& v) {
     domain::ois_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.spot_lag = v.spot_lag;
     r.index = v.index;
@@ -66,6 +67,7 @@ ois_convention_mapper::map(const domain::ois_convention& v) {
     ois_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.spot_lag = v.spot_lag;
     r.index = v.index;

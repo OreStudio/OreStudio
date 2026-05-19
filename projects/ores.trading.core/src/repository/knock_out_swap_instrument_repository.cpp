@@ -54,8 +54,9 @@ std::vector<domain::knock_out_swap_instrument>
 knock_out_swap_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<knock_out_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("instrument_id"_c);
 
     return execute_read_query<knock_out_swap_instrument_entity, domain::knock_out_swap_instrument>(
@@ -69,8 +70,9 @@ knock_out_swap_instrument_repository::read_latest(context ctx, const std::string
     BOOST_LOG_SEV(lg(), debug) << "Reading latest knock-out swap instrument. instrument_id: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<knock_out_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<knock_out_swap_instrument_entity, domain::knock_out_swap_instrument>(
         ctx, query,
@@ -82,8 +84,9 @@ std::vector<domain::knock_out_swap_instrument>
 knock_out_swap_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all knock-out swap instrument versions. instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<knock_out_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id) |
         order_by("version"_c.desc());
 
     return execute_read_query<knock_out_swap_instrument_entity, domain::knock_out_swap_instrument>(
@@ -96,26 +99,28 @@ void knock_out_swap_instrument_repository::remove(context ctx, const std::string
     BOOST_LOG_SEV(lg(), debug) << "Removing knock-out swap instrument: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<knock_out_swap_instrument_entity> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing knock-out swap instrument from database.");
 }
 
-
 std::vector<domain::knock_out_swap_instrument>
 knock_out_swap_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty()) return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty()) return {};
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<knock_out_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "instrument_id"_c.in(instrument_ids)
               && "valid_to"_c == max.value());
     return execute_read_query<knock_out_swap_instrument_entity, domain::knock_out_swap_instrument>(
         ctx, query,
         [](const auto& entities) { return knock_out_swap_instrument_mapper::map(entities); },
-        lg(), "Reading latest knock_out_swap_instruments by ids.");
+        lg(), "Reading latest knock-out swap instruments by ids.");
 }
 
 }

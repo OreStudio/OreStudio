@@ -23,30 +23,30 @@
 #include <string>
 #include <optional>
 #include <ostream>
-#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/Timestamp.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::trading::repository {
-
-using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a lifecycle event in the database.
  */
 struct lifecycle_event_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_trading_fpml_event_types_tbl";
+    constexpr static const char* tablename = "ores_trading_lifecycle_events_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     std::optional<std::string> description;
+    std::optional<std::string> fsm_state_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const lifecycle_event_entity& v);

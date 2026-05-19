@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "trading",
+    "component_include": "trading.api",
+    "component_core": "trading.core",
     "entity_singular": "trade",
     "entity_plural": "trades",
     "entity_title": "Trade",

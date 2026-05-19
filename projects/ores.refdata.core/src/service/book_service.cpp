@@ -30,27 +30,17 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 book_service::book_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx) {}
 
 std::vector<domain::book> book_service::list_books() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all books";
-    return repo_.read_latest();
+    return repo_.read_latest(ctx_);
 }
 
 std::optional<domain::book>
 book_service::find_book(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding book: " << id;
-    auto results = repo_.read_latest(id);
-    if (results.empty()) {
-        return std::nullopt;
-    }
-    return results.front();
-}
-
-std::optional<domain::book>
-book_service::find_book_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding book by code: " << code;
-    auto results = repo_.read_latest_by_code(code);
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty()) {
         return std::nullopt;
     }
@@ -64,7 +54,7 @@ void book_service::save_book(const domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Saving book: " << book.id;
     auto b = book;
     stamp(b, ctx_);
-    repo_.write(b);
+    repo_.write(ctx_, b);
     BOOST_LOG_SEV(lg(), info) << "Saved book: " << book.id;
 }
 
@@ -77,19 +67,19 @@ void book_service::save_books(const std::vector<domain::book>& books) {
     auto stamped = books;
     for (auto& b : stamped)
         stamp(b, ctx_);
-    repo_.write(stamped);
+    repo_.write(ctx_, stamped);
 }
 
 void book_service::remove_book(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
-    repo_.remove(id);
+    repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed book: " << id;
 }
 
 std::vector<domain::book>
 book_service::get_book_history(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for book: " << id;
-    return repo_.read_all(id);
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 }

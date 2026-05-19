@@ -22,8 +22,8 @@
 
 #include <string>
 #include <vector>
-#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.api/export.hpp"
 
 namespace ores::reporting::domain {
 

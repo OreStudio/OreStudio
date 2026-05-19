@@ -37,6 +37,7 @@ struct swap_convention_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
     std::optional<std::string> fixed_calendar;
     std::string fixed_frequency;

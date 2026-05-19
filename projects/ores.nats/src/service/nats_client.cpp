@@ -107,6 +107,8 @@ message nats_client::do_authenticated_request(std::string_view subject,
                 hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
             if (!session_id_.empty())
                 hdrs[std::string(headers::nats_session_id)] = session_id_;
+            if (!workspace_id_.empty())
+                hdrs[std::string(headers::x_workspace_id)] = workspace_id_;
             return hdrs;
         };
         // Reactive re-auth: the server rejected the token as expired. Pass
@@ -139,6 +141,8 @@ message nats_client::do_authenticated_request(std::string_view subject,
         hdrs[std::string(headers::nats_correlation_id)] = correlation_id_;
     if (!session_id_.empty())
         hdrs[std::string(headers::nats_session_id)] = session_id_;
+    if (!workspace_id_.empty())
+        hdrs[std::string(headers::x_workspace_id)] = workspace_id_;
 
     const auto reply = active_client().request_sync(subject, body, hdrs, timeout);
 
@@ -168,6 +172,12 @@ nats_client nats_client::with_correlation_id(std::string cid) const {
 nats_client nats_client::with_session_id(std::string sid) const {
     nats_client copy = *this;
     copy.session_id_ = std::move(sid);
+    return copy;
+}
+
+nats_client nats_client::with_workspace_id(std::string wid) const {
+    nats_client copy = *this;
+    copy.workspace_id_ = std::move(wid);
     return copy;
 }
 

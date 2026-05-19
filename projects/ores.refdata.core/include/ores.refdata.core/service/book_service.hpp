@@ -70,12 +70,6 @@ public:
     find_book(const boost::uuids::uuid& id);
 
     /**
-     * @brief Finds a book by its code.
-     */
-    std::optional<domain::book>
-    find_book_by_code(const std::string& code);
-
-    /**
      * @brief Saves a book (creates or updates).
      *
      * @param book The book to save

@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_PORTFOLIO_HPP
-#define ORES_REFDATA_API_DOMAIN_PORTFOLIO_HPP
+#ifndef ORES_REFDATA_DOMAIN_PORTFOLIO_HPP
+#define ORES_REFDATA_DOMAIN_PORTFOLIO_HPP
 
 #include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -43,7 +44,14 @@ struct portfolio final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id;
 
     /**
      * @brief UUID uniquely identifying this portfolio.
@@ -104,7 +112,7 @@ struct portfolio final {
      *
      * Not persisted in trade attribution when virtual.
      */
-    int is_virtual;
+    int is_virtual = 0;
 
     /**
      * @brief Current lifecycle status (Active, Inactive, Closed).

@@ -3,6 +3,8 @@
     "schema": "public",
     "product": "ores",
     "component": "reporting",
+    "component_include": "reporting.api",
+    "component_core": "reporting.core",
     "entity_singular": "report_definition",
     "entity_plural": "report_definitions",
     "entity_title": "Report Definition",

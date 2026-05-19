@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 6255bc9f-95bc-4fc7-98c8-6060b8679b85
+:END:
+#+title: Roles and permissions
+#+description: Stand up RBAC: domain model + repository, enforcement points across the comms layer, Qt UI for management.
+#+type: story
+#+level: s2
+#+filetags: :iam:rbac:authorization:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-28]
+:END:
+
+** Now
+Completed 2025-12-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-28
+
+* Goal
+
+Introduce role-based access control (RBAC) end-to-end: domain types,
+enforcement at the handler layer, and a Qt UI for management.
+
+* Acceptance
+
+- RBAC primitives — roles, permissions, role-permission, user-role — present and tested.
+- Handlers reject requests the caller is not permitted to make.
+- Qt UI covers role and permission management end-to-end.
+
+* Tasks
+
+In execution order:
+
+- [[id:28ec17eb-b2aa-4e72-bf8c-7aa0b63ea2e0][Add core infrastructure for roles and permissions]]
+- [[id:4d1fd802-ebc4-413d-af97-bbadd0c6467c][Implement RBAC enforcement]]
+- [[id:552649c1-2541-4dfc-98e6-bcf59994f6d2][Add UI for roles and permission management]]
+
+* Decisions
+
+- /Permission required is per-handler/ :: declared on the handler itself so the access surface is greppable.
+- /Type-traits-driven dispatch/ :: lets the RBAC enforcement code read the required permission from the message trait rather than open-coding a switch.
+
+* Out of scope
+
+- Attribute-based access control (ABAC); RBAC is the right starting shape.
+- Per-row authorisation; this story is about API-surface authorisation.
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — the component that owns the RBAC domain types.
+- [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] — the sibling story whose type-traits refactor underpins RBAC enforcement.

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 6146fb9f-24a7-453b-8720-a8cbe63dba02
+:END:
+#+title: Use prebuilt Qt
+#+description: Switch CI and dev installs to a prebuilt Qt rather than building from vcpkg; saves significant time + disk.
+#+type: task
+#+level: s1
+#+filetags: :build:qt:vcpkg:build_platform_followup:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-17]
+:END:
+
+** Now
+Completed 2025-12-17.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-17
+
+* Goal
+
+Switch CI and dev installs to a prebuilt Qt rather than building Qt from vcpkg from source.
+
+* Acceptance
+
+- Prebuilt Qt detected if present; vcpkg Qt build skipped.
+- Fallback to vcpkg build documented for environments without the prebuilt.
+- CI runtime drops measurably.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Qt-from-source dominated CI runtime; this was the single biggest win available.
+
+* Result
+
+CI and local builds substantially faster.

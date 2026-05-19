@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: a0b043a7-efb1-4752-a5d6-de9afe29bb43
+:END:
+#+title: Windows clang build failures
+#+description: Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, signed/unsigned warnings.
+#+type: task
+#+level: s1
+#+filetags: :build:windows:clang:bug_fix:build_platform_followup:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-18]
+:END:
+
+** Now
+Completed 2025-12-18.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-18
+
+* Goal
+
+Resolve the latest Windows clang build breaks: deprecated APIs, missing DLLs, signed/unsigned warnings.
+
+* Acceptance
+
+- Windows clang build green.
+- Warnings treated as errors only where it makes sense.
+- Any required fixes upstreamed (vcpkg ports, etc.) where appropriate.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Routine cross-platform hygiene; rolled into the same PR as the Qt-prebuilt switch where the diff overlapped.
+
+* Result
+
+Windows clang build is green again.

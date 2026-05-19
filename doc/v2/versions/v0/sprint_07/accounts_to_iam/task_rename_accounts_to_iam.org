@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: f98ad7f0-2034-4982-9f1b-efc48e8150c9
+:END:
+#+title: Rename accounts to iam
+#+description: Rename ores.accounts to ores.iam to reflect the broader identity-and-access concern; pure rename PR.
+#+type: task
+#+level: s1
+#+filetags: :iam:refactor:rename:accounts_to_iam:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-25]
+:END:
+
+** Now
+Completed 2025-12-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-25
+
+* Goal
+
+Rename =ores.accounts= to =ores.iam= so the component name reflects the broader Identity-and-Access-Management concern that this sprint expands it to cover.
+
+* Acceptance
+
+- All directories, CMake targets, namespaces, and includes renamed.
+- No references to =ores.accounts= remain (except in historical docs and v0 backlog).
+- Full build green; tests green.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pure-rename PR landed first so subsequent IAM work (lock, reset, sign-up, RBAC) has a stable home.
+
+* Result
+
+Component is now =ores.iam=.

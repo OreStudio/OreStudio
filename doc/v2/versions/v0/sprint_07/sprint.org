@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: a79d42af-1b38-43ee-9607-848a4a84c09a
+:END:
+#+title: Sprint 07
+#+description: IAM rename, RBAC, currencies history polish, Qt UX polish, comms features, observability & telemetry components, Wt + HTTP introduction, build platform follow-up.
+#+type: sprint
+#+level: s3
+#+filetags: :iam:rbac:observability:wt:http:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: STARTED | DONE
+
+Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-30]
+:END:
+
+** Now
+Sprint closed 2025-12-30.
+
+** Waiting on
+None.
+
+** Next
+Sprint 08 picks up the threads opened by Wt/HTTP and observability.
+
+** Last touched
+2025-12-30
+
+* Mission
+
+Broaden accounts into a proper IAM component, add RBAC on top, introduce
+a second presentation tier (Wt + HTTP), stand up observability and
+telemetry as first-class components, and tidy the build platform.
+
+* Stories
+
+In execution order:
+
+- [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]] — recurring per-sprint chores: backlog,
+  AI summary, notebook OCR.
+- [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] — WSL setup, prebuilt Qt, Windows clang
+  build breaks. Continues from sprint 04.
+- [[id:818b6261-1780-4fb3-aa89-da02c91da363][Currencies history polish]] — visual distinction for the active
+  version, revert action, country flags.
+- [[id:72f723f4-378c-4e0a-b6f1-6ba3c29f5bea][Qt UX polish]] — account management UI, exit confirmation,
+  relative-time formatting.
+- [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]] — optional compression, =LISTEN=/=NOTIFY=
+  through the shell, type traits for messages.
+- [[id:6b57c190-4bb7-4f63-bf3d-7fb6d81d8d94][Accounts to IAM]] — rename =ores.accounts= to =ores.iam=, add
+  lock, password reset, sign-up.
+- [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] — RBAC core, enforcement, Qt UI.
+- [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] — new components, MaxMind
+  replacement.
+- [[id:db625c07-811a-4a61-8de8-910b29913744][Wt and HTTP introduction]] — Wt scaffolding, HTTP entry point.
+
+* Retrospective
+
+** What went well
+
+- Pure-rename PR (=ores.accounts= → =ores.iam=) up front kept the
+  IAM and RBAC work clean and uneventful.
+- Type-traits-driven dispatch in the comms story paid back twice in
+  the same sprint: RBAC enforcement and the HTTP entry point both
+  consumed it.
+- Prebuilt Qt landed and immediately cut CI runtime.
+
+** What hurt
+
+- Sprint scope was ambitious — IAM rename + RBAC + Wt + HTTP +
+  observability + telemetry inside one sprint window. Several items
+  carried risk of slipping; the build follow-up landing early bought
+  the budget for the rest.
+- Replacing MaxMind under licence pressure surfaced licensing as an
+  audit dimension we hadn't been tracking; deserves a knowledge doc
+  in a later sprint.
+
+** What changed
+
+- Observability and telemetry now treated as distinct components
+  (durable structured store vs. live trace stream).
+- Compression negotiated per-session rather than per-message — keeps
+  the wire protocol forward-compatible.
+- =ores.iam= now owns both identity and access (RBAC), not just
+  accounts.

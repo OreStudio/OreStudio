@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: b306f938-f939-44ca-9d69-6faedbf91c08
+:END:
+#+title: Comms features
+#+description: Payload compression, listen/notify routed to shell, message-grouping type traits, session recording support.
+#+type: story
+#+level: s2
+#+filetags: :comms:protocol:compression:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-25]
+:END:
+
+** Now
+Completed 2025-12-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-25
+
+* Goal
+
+Stretch the comms substrate: optional payload compression,
+LISTEN/NOTIFY through the shell, and type-traits-based message
+classification.
+
+* Acceptance
+
+- Payload compression negotiated at session setup; benchmarks recorded.
+- Shell receives Postgres notifications via the comms layer.
+- Type traits classify every message; dispatch uses traits.
+
+* Tasks
+
+In execution order:
+
+- [[id:fb1bedbc-243b-4bdc-9c87-d2386516e002][Consider compressing payload]]
+- [[id:297d7314-9875-4707-9561-ef4e21ad74fa][Add listen/notify to shell]]
+- [[id:52bca570-dfe6-475d-90d9-86e3db7d241d][Define type traits for message grouping]]
+
+* Decisions
+
+- /Negotiate compression at setup/ :: keeps the protocol forward-compatible; clients without compression keep working.
+- /Notifications first in the shell/ :: cheap to inspect; Qt wiring comes later once we know the shape works.
+
+* Out of scope
+
+- Per-message dynamic compression policies — we negotiate once per session.
+
+* See also
+
+- [[id:6255bc9f-95bc-4fc7-98c8-6060b8679b85][Roles and permissions]] — consumes the type-traits classification.

@@ -63,7 +63,9 @@ is the current sprint; the rest are closed.
   surfaces; CLI/REPL reshape; skills layer growth.
 - [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] — Session cancellation; variability service; comms
   robustness; logging =string_view= migration; bootstrap polish.
-- Sprint 07 — (to be migrated).
+- [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] — Accounts → IAM rename; RBAC; Wt + HTTP
+  introduction; observability and telemetry components; build
+  platform follow-up.
 - ... through Sprint 16.
 
 * Release scope

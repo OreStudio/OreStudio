@@ -9,8 +9,12 @@
 #+created: 2025-11-20
 #+updated: 2025-11-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: bb39ecbd-1ea5-4d53-a117-a0c88e0463c1
 
 Parent sprint: [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]].
+
+Continued in: [[id:bb39ecbd-1ea5-4d53-a117-a0c88e0463c1][Build platform follow-up]] (sprint 07) — WSL setup,
+prebuilt Qt switch, Windows clang build breaks.
 
 * DONE Status
 :PROPERTIES:

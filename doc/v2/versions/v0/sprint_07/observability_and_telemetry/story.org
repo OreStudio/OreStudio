@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8c4c8429-9328-46dd-88ef-27689fb556f2
+:END:
+#+title: Observability and telemetry
+#+description: Create ores.observability and incorporate the new telemetry component; replace MaxMind for geo lookup.
+#+type: story
+#+level: s2
+#+filetags: :observability:telemetry:geo:sprint_07:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-28]
+:END:
+
+** Now
+Completed 2025-12-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-28
+
+* Goal
+
+Bring up observability and telemetry as first-class components,
+and drop the MaxMind GeoIP dependency in favour of a permissively
+licensed alternative.
+
+* Acceptance
+
+- =ores.observability= component present and emitting structured events.
+- =ores.telemetry= wires trace IDs into logging and exports via OTLP.
+- MaxMind code path removed; geo lookups served by the new provider.
+
+* Tasks
+
+In execution order:
+
+- [[id:af82e4cf-125d-4c32-b52a-cc1cd4ac5246][Create the observability component]]
+- [[id:345e5202-cb02-42df-a355-9d872a53ed29][Incorporate new telemetry component]]
+- [[id:efc673d9-f2f2-4a4d-978d-521dcf61e46c][Replace MaxMind implementation]]
+
+* Decisions
+
+- /Observability and telemetry as separate components/ :: durable store (observability) vs live trace stream (telemetry); kept distinct.
+- /Permissive GeoIP only/ :: MaxMind's licence terms don't match how we want to ship; replacing rather than dual-shipping avoids confusion.
+
+* Out of scope
+
+- Building our own OTLP backend; we just emit, we don't store.
+
+* See also
+
+None.

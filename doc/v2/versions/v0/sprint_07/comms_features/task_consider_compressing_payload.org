@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: fb1bedbc-243b-4bdc-9c87-d2386516e002
+:END:
+#+title: Consider compressing payload
+#+description: Add optional zstd compression to comms payloads; benchmark against representative messages and decide thresholds.
+#+type: task
+#+level: s1
+#+filetags: :comms:compression:performance:comms_features:sprint_07:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b306f938-f939-44ca-9d69-6faedbf91c08][Comms features]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-23]
+:END:
+
+** Now
+Completed 2025-12-23.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-23
+
+* Goal
+
+Evaluate adding payload compression to the comms layer and land an implementation if it pays off.
+
+* Acceptance
+
+- Benchmarks for representative messages (small CRUD, big result sets, history dumps).
+- Decision recorded: which compressor (zstd by default), what size threshold triggers compression.
+- Implementation lands behind a negotiated flag at session setup so both sides can opt in.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Threshold matters: tiny messages get bigger when compressed. Negotiation keeps the protocol forward-compatible.
+
+* Result
+
+Comms payloads are optionally compressed; benchmark numbers recorded in the comms knowledge doc.

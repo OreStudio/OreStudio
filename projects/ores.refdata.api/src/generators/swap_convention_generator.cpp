@@ -41,7 +41,7 @@ domain::swap_convention generate_synthetic_swap_convention(
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = ctx.generate_uuid();
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = std::string("EUR-6M-SWAP-CONVENTIONS") + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.fixed_calendar = std::string("TARGET");

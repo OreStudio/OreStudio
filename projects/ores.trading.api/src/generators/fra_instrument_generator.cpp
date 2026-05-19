@@ -41,7 +41,7 @@ domain::fra_instrument generate_synthetic_fra_instrument(
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = ctx.generate_uuid();
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("FRA");
     r.party_id = ctx.generate_uuid();

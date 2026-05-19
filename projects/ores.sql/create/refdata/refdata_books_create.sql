@@ -90,6 +90,46 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate parent_portfolio_id (soft FK to portfolios)
+    if not exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.',
+            NEW.parent_portfolio_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate party_id (soft FK to parties)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.',
+            NEW.party_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate owner_unit_id (optional soft FK to business_units)
+    if NEW.owner_unit_id is not null then
+        if not exists (
+            select 1 from ores_refdata_business_units_tbl
+            where tenant_id = NEW.tenant_id and id = NEW.owner_unit_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid owner_unit_id: %. No active business unit found.',
+                NEW.owner_unit_id using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate ledger_ccy
+    NEW.ledger_ccy := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.ledger_ccy);
+
+    -- Validate book_status
+    NEW.book_status := ores_refdata_validate_book_status_fn(NEW.tenant_id, NEW.book_status);
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -126,7 +166,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_refdata_books_insert_trg
 before insert on "ores_refdata_books_tbl"

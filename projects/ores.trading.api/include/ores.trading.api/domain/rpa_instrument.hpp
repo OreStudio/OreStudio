@@ -51,7 +51,7 @@ struct rpa_instrument final {
      *
      * Defaults to the Live workspace sentinel.
      */
-    boost::uuids::uuid workspace_id;
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief UUID uniquely identifying this RPA instrument.

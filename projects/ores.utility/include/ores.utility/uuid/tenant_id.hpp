@@ -25,6 +25,7 @@
 #include <expected>
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.utility/export.hpp"
 
 namespace ores::utility::uuid {
@@ -62,6 +63,19 @@ inline constexpr char max_uuid_str[] = "ffffffff-ffff-ffff-ffff-ffffffffffff";
  * SQL equivalent: ores_utility_live_workspace_id_fn()
  */
 inline constexpr char live_workspace_uuid_str[] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+
+/**
+ * @brief Returns the Live workspace sentinel UUID.
+ *
+ * Prefer this factory over default-constructing boost::uuids::uuid, which
+ * yields a nil UUID that resolves silently to Live at the application layer.
+ * Using this function makes the intent explicit.
+ */
+inline boost::uuids::uuid live_workspace_id() {
+    static const boost::uuids::uuid id =
+        boost::uuids::string_generator()(live_workspace_uuid_str);
+    return id;
+}
 
 /**
  * @class tenant_id

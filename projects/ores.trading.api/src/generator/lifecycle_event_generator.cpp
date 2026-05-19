@@ -41,7 +41,7 @@ domain::lifecycle_event generate_synthetic_lifecycle_event(
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = ctx.generate_uuid();
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter) + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.description = std::string(faker::lorem::sentence());

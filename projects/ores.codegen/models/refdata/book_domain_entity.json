@@ -111,8 +111,36 @@
             }
         ],
         "sql": {
-            "tablename": "ores_refdata_books_tbl"
+            "tablename": "ores_refdata_books_tbl",
+            "security_definer": true,
+            "soft_fk_validations": [
+                {
+                    "column": "parent_portfolio_id",
+                    "table": "ores_refdata_portfolios_tbl",
+                    "error_message": "Invalid parent_portfolio_id: %. No active portfolio found with this id.",
+                    "nullable": false,
+                    "use_system_tenant": false
+                },
+                {
+                    "column": "party_id",
+                    "table": "ores_refdata_parties_tbl",
+                    "error_message": "Invalid party_id: %. No active party found with this id.",
+                    "nullable": false,
+                    "use_system_tenant": false
+                },
+                {
+                    "column": "owner_unit_id",
+                    "table": "ores_refdata_business_units_tbl",
+                    "error_message": "Invalid owner_unit_id: %. No active business unit found.",
+                    "nullable": true,
+                    "use_system_tenant": false
+                }
+            ]
         },
+        "validations": [
+            {"column": "ledger_ccy", "validation_function": "ores_refdata_validate_currency_fn"},
+            {"column": "book_status", "validation_function": "ores_refdata_validate_book_status_fn"}
+        ],
         "repository": {
             "entity_singular_short": "book",
             "entity_plural_short": "books",

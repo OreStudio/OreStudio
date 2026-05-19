@@ -41,7 +41,7 @@ domain::rpa_instrument generate_synthetic_rpa_instrument(
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = ctx.generate_uuid();
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.instrument_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.start_date = std::string("2024-01-15");

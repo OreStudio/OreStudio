@@ -20,7 +20,7 @@
             "cpp_type": "std::string",
             "description": "Unique lifecycle event code.",
             "detail": "Examples: 'New', 'Amendment', 'Novation'.",
-            "generator_expr": "std::string(faker::word::noun()) + \"_event_\" + std::to_string(++counter)"
+            "generator_expr": "std::string(faker::word::noun()) + \"_event\""
         },
         "columns": [
             {

@@ -31,7 +31,7 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
         .value_or(utility::uuid::tenant_id::system());
 {{/has_tenant_id}}
 {{#has_workspace_id}}
-    r.workspace_id = ctx.generate_uuid();
+    r.workspace_id = utility::uuid::live_workspace_id();
 {{/has_workspace_id}}
 {{#primary_key.is_text}}
     r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"

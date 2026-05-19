@@ -38,7 +38,7 @@ struct {{entity_singular}} final {
      *
      * Defaults to the Live workspace sentinel.
      */
-    boost::uuids::uuid workspace_id;
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
 {{/has_workspace_id}}
     /**

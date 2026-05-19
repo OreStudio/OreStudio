@@ -39,6 +39,16 @@ add_library(${lib_target_name} SHARED ${files} ${HEADERS} ${FORMS})
 # expands to BOOST_SYMBOL_EXPORT instead of BOOST_SYMBOL_IMPORT.
 target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_API_LIBRARY)
 
+# ClientManagerTrades.cpp calls rfl::json::read with the trade_instrument
+# variant (8 alternatives, ~150 combined fields). rfl's no_duplicate_field_names
+# check is O(n²) in constexpr depth, which exceeds MSVC's default of 512.
+# Raise both limits here rather than fighting the variant structure.
+if(MSVC)
+    target_compile_options(${lib_target_name} PRIVATE
+        /constexpr:depth100000
+        /constexpr:steps10000000)
+endif()
+
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
     AUTOUIC_SEARCH_PATHS ${ORES_QT_API_DIR}/ui

@@ -753,6 +753,7 @@ void TenantExecutePage::startBundlePublish() {
         stepsWidget_->setVisible(true);
         stepsWidget_->setInstance(
             QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
         // onWorkflowComplete fires via instanceReachedTerminalState
     });
 
@@ -791,7 +792,8 @@ void TenantExecutePage::startBundlePublish() {
 
 // Called when the base bundle workflow reaches a terminal state.
 void TenantExecutePage::onWorkflowComplete(bool success) {
-    stepsWidget_->setVisible(false);
+    // Leave stepsWidget_ visible — completed table stays as a record.
+    // Show progressBar_ as a spinner for subsequent non-workflow phases.
     progressBar_->setVisible(true);
     progressBar_->setRange(0, 0);
 

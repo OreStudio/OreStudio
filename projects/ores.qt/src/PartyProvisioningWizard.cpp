@@ -476,6 +476,7 @@ void PartyExecutePage::startCounterpartyPublish() {
                 Qt::SingleShotConnection);
         stepsWidget_->setInstance(
             QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
     });
 
     QFuture<BundleResult> future = QtConcurrent::run(
@@ -516,7 +517,7 @@ void PartyExecutePage::startCounterpartyPublish() {
 }
 
 void PartyExecutePage::onCounterpartyWorkflowComplete(bool success) {
-    stepsWidget_->setVisible(false);
+    // Leave stepsWidget_ visible; show spinner for transition to Phase 2.
     progressBar_->setRange(0, 0);
     progressBar_->setVisible(true);
 
@@ -569,6 +570,7 @@ void PartyExecutePage::startOrgPublish() {
                 Qt::SingleShotConnection);
         stepsWidget_->setInstance(
             QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
     });
 
     QFuture<BundleResult> future = QtConcurrent::run(
@@ -608,7 +610,7 @@ void PartyExecutePage::startOrgPublish() {
 }
 
 void PartyExecutePage::onOrgWorkflowComplete(bool success) {
-    stepsWidget_->setVisible(false);
+    // Leave stepsWidget_ visible; show spinner for transition to Phase 3.
     progressBar_->setRange(0, 0);
     progressBar_->setVisible(true);
 

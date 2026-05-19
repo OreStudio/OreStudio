@@ -184,6 +184,7 @@ void WorkflowStepsWidget::setupUi() {
 void WorkflowStepsWidget::setInstance(const QUuid& instanceId) {
     instanceId_ = instanceId;
     terminalReached_ = false;
+    preSeedCount_ = 0;
     stepsTable_->setRowCount(0);
 
     if (instanceId_.isNull()) {
@@ -229,6 +230,30 @@ void WorkflowStepsWidget::setMaxVisibleSteps(int n) {
     maxVisibleSteps_ = n;
 }
 
+void WorkflowStepsWidget::preSeed(int count) {
+    if (count <= 0) return;
+    preSeedCount_ = count;
+    stepsTable_->setRowCount(count);
+    for (int row = 0; row < count; ++row) {
+        stepsTable_->setItem(row, static_cast<int>(Col::Index),
+            make_item(QString::number(row)));
+        stepsTable_->setItem(row, static_cast<int>(Col::Name),
+            make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::Status),
+            make_badge_item(QStringLiteral("pending"),
+                color_constants::level_trace));
+        stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
+            make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::StartedAt),
+            make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::CompletedAt),
+            make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::Error),
+            make_item(QString{}));
+    }
+    headerLabel_->setText(tr("%1 step(s) queued").arg(count));
+}
+
 void WorkflowStepsWidget::onFetchFinished() {
     const auto result = watcher_->result();
 
@@ -258,10 +283,18 @@ void WorkflowStepsWidget::populateSteps(
     }
 
     currentSteps_ = visible;
-    stepsTable_->setRowCount(static_cast<int>(visible.size()));
 
-    int row = 0;
-    for (const auto& step : visible) {
+    // When pre-seeded, update rows in-place by step_index to avoid row
+    // insertions (which cause layout jumps). Without pre-seeding, fall back
+    // to setting the row count and iterating in order.
+    const bool inPlace = (preSeedCount_ > 0);
+    if (!inPlace)
+        stepsTable_->setRowCount(static_cast<int>(visible.size()));
+
+    for (int i = 0; i < static_cast<int>(visible.size()); ++i) {
+        const auto& step = visible[static_cast<std::size_t>(i)];
+        const int row = inPlace ? step.step_index : i;
+        if (row < 0 || row >= stepsTable_->rowCount()) continue;
 
         stepsTable_->setItem(row, static_cast<int>(Col::Index),
             make_item(QString::number(step.step_index)));
@@ -272,7 +305,7 @@ void WorkflowStepsWidget::populateSteps(
         stepsTable_->setItem(row, static_cast<int>(Col::Status),
             make_badge_item(status, status_color(status)));
 
-        const int issues = count_issues(visible, row);
+        const int issues = count_issues(visible, i);
         if (issues > 0) {
             const bool has_errors = std::any_of(
                 step.log.begin(), step.log.end(),
@@ -300,7 +333,6 @@ void WorkflowStepsWidget::populateSteps(
                 : QStringLiteral("—")));
         stepsTable_->setItem(row, static_cast<int>(Col::Error),
             make_item(QString::fromStdString(step.error)));
-        ++row;
     }
 
     stepsTable_->resizeColumnsToContents();

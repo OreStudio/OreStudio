@@ -20,7 +20,7 @@ How do I list the CMake presets available in ORE Studio?
 From the project root:
 
 #+name: list-presets
-#+begin_src sh :results verbatim :exports both
+#+begin_src sh :eval never :results verbatim :exports both
 cmake --list-presets
 #+end_src
 

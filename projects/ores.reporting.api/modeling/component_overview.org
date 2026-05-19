@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: e5ac5738-0694-494e-823e-0322f4902ad2
+:END:
+#+title: ores.reporting.api
+#+description: Domain types and NATS protocol schemas for the reporting component.
+#+type: component
+#+level: cross
+#+filetags: :reporting:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.reporting.api= is a header-only library defining the shared contract for
+the reporting domain. It provides domain types for report types, definitions,
+instances, concurrency policies, and run status values, together with JSON
+and table I/O via =rfl=, and the NATS protocol schemas consumed by
+=ores.reporting.core= and Qt clients.
+
+* Inputs
+
+- Domain entity type definitions: report type, definition, instance, concurrency
+  policy headers.
+
+* Outputs
+
+- C++ headers for all reporting domain types with JSON and table I/O.
+- NATS protocol headers for report management operations.
+
+* Entry points
+
+- =include/ores.reporting.api/domain/= — all domain entity headers.
+- =include/ores.reporting.api/messaging/= — NATS protocol message headers.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+- =fort= — formatted table rendering.
+
+* See also
+
+- [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]] — business logic, persistence, and NATS handlers.
+- [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] — full NATS subject and message catalogue.

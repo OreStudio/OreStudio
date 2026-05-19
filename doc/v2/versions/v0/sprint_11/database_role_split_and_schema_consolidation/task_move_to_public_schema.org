@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 18d627fb-9eea-4e3b-bd84-744ef0d8ef2e
+:END:
+#+title: Move all database entities back to public schema
+#+description: Reverse the metadata/production split landed in sprint 10; adopt Odoo-style ores_<component>_<entity> prefix in a single public schema. /We traded the illusion of cleanliness for the reality of speed./
+#+type: task
+#+level: s1
+#+filetags: :sql:schema:refactor:public:database_role_split_and_schema_consolidation:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-31]
+:END:
+
+** Now
+Completed 2026-01-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-31
+
+* Goal
+
+Reverse the metadata/production schema split landed in sprint 10; collapse everything into =public= with =ores_<component>_<entity>_<suffix>= naming.
+
+* Acceptance
+
+- All entities live in =public=.
+- Component prefix (=ores_iam_=, =ores_dq_=, =ores_refdata_=, etc.) carries the namespacing that was previously done with separate schemas.
+- search_path complexity gone; foreign keys + migrations simplified.
+- ER diagram regenerated for the single-schema layout.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+/We traded the illusion of cleanliness for the reality of speed./ The Odoo-style namespacing turned out to be the right shape; the schema walls were operational overhead without commensurate benefit.
+
+* Result
+
+Single public schema; one fewer thing for the codebase to fight.

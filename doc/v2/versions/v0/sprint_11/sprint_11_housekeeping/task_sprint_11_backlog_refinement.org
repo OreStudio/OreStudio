@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: caba009d-8b9b-4809-bdbe-419de756a36e
+:END:
+#+title: Sprint and product backlog refinement
+#+description: Maintain sprint 11 backlog and groom the product backlog.
+#+type: task
+#+level: s1
+#+filetags: :agile:backlog:sprint_11_housekeeping:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:572c63f9-9a87-40fb-8609-8d4d7c1ccd39][Sprint 11 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-06]
+:END:
+
+** Now
+Completed 2026-02-06.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-06
+
+* Goal
+
+Maintain the sprint 11 backlog and groom the product backlog as items emerge.
+
+* Acceptance
+
+- Sprint 11 backlog reflects what was actually planned and what landed.
+- Items discovered in flight added to the product backlog.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Bigger sprint than most; the backlog file became important for tracking the multi-tenant cascade.
+
+* Result
+
+Backlog kept current.

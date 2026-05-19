@@ -76,6 +76,10 @@ is the current sprint; the rest are closed.
   reference data; ORE XML codegen via xsdcpp; metadata /
   production schema split; dataset bundles + System
   Provisioner Wizard.
+- [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] — Multi-tenant support end-to-end: RBAC + schema
+  consolidation; tenancy foundation, codegen, and test isolation;
+  per-request tenant context; sqlgen improvements; telemetry
+  database sink; tenant validation across surfaces.
 - ... through Sprint 16.
 
 * Release scope

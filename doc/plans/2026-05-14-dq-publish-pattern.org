@@ -616,7 +616,7 @@ Branch: ~feature/dq-publish-pattern~
 - [X] ~PublishBundleWizard~ — replace results page with ~WorkflowStepsWidget~ bound to ~instance_id~
 - [X] ~TenantProvisioningWizard~ — replace status label with ~WorkflowStepsWidget~ (two-phase: workflow→party association)
 - [X] ~PartyProvisioningWizard~ — replace status label with ~WorkflowStepsWidget~
-- [ ] ~DataLibrarianWindow~ / ~PublishDatasetsDialog~ — replace summary with ~WorkflowStepsWidget~
+- [X] ~DataLibrarianWindow~ / ~PublishDatasetsDialog~ — replace summary with ~WorkflowStepsWidget~
 
 ** Documentation
 

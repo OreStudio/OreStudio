@@ -21,16 +21,24 @@
 #define ORES_DQ_CORE_MESSAGING_DATASET_HANDLER_HPP
 
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <vector>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.dq.core/service/dataset_service.hpp"
 #include "ores.dq.core/service/publication_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -188,6 +196,9 @@ public:
 
     void publish(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Handling " << msg.subject;
+        const auto correlation_id =
+            ores::nats::extract_or_generate_correlation_id(msg);
+
         auto req = decode<publish_datasets_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -204,20 +215,66 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::publication_service svc(ctx);
+
         try {
-            boost::uuids::string_generator gen;
+            boost::uuids::string_generator str_gen;
             std::vector<boost::uuids::uuid> uuids;
             uuids.reserve(req->dataset_ids.size());
             for (const auto& id : req->dataset_ids)
-                uuids.push_back(gen(id));
-            const auto results = svc.publish(
-                uuids, req->mode, req->published_by,
-                req->resolve_dependencies);
+                uuids.push_back(str_gen(id));
+
+            service::publication_service svc(ctx);
+            const auto entries = svc.list_publishable_datasets(
+                uuids, req->resolve_dependencies);
+
+            if (entries.empty()) {
+                publish_datasets_response resp;
+                resp.success = false;
+                resp.message = "No publishable datasets found";
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            const auto tenant_id_str =
+                boost::uuids::to_string(ctx.tenant_id().to_uuid());
+            const std::string mode_str = to_string(req->mode);
+
+            ores::dq::workflow::bundle_publish_workflow_request wf_req;
+            wf_req.tenant_id    = tenant_id_str;
+            wf_req.published_by = req->published_by;
+            for (const auto& entry : entries) {
+                ores::dq::workflow::bundle_publish_workflow_dataset ds;
+                ds.dataset_id     = entry.dataset_id;
+                ds.dataset_code   = entry.dataset_code;
+                ds.target_subject = entry.target_subject;
+                ds.mode           = mode_str;
+                ds.params_json    = "{}";
+                wf_req.datasets.push_back(std::move(ds));
+            }
+
+            boost::uuids::random_generator rng;
+            const auto instance_id = boost::uuids::to_string(rng());
+
+            ores::workflow::messaging::start_workflow_message start_msg;
+            start_msg.type           = "bundle_publish_workflow";
+            start_msg.tenant_id      = tenant_id_str;
+            start_msg.request_json   = rfl::json::write(wf_req);
+            start_msg.correlation_id = correlation_id;
+            start_msg.instance_id    = instance_id;
+
+            const auto json = rfl::json::write(start_msg);
+            const auto data = std::as_bytes(std::span{json.data(), json.size()});
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                data);
+
             publish_datasets_response resp;
-            resp.success = true;
-            resp.results = results;
-            BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
+            resp.success            = true;
+            resp.instance_id        = instance_id;
+            resp.datasets_dispatched = static_cast<int>(entries.size());
+            BOOST_LOG_SEV(dataset_handler_lg(), info)
+                << "Datasets publish workflow started: instance=" << instance_id
+                << " datasets=" << entries.size();
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(dataset_handler_lg(), error) << msg.subject << " failed: " << e.what();

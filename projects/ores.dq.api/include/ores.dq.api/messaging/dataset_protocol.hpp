@@ -25,7 +25,6 @@
 #include <vector>
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
-#include "ores.dq.api/domain/publication_result.hpp"
 
 namespace ores::dq::messaging {
 
@@ -88,7 +87,8 @@ struct publish_datasets_request {
 struct publish_datasets_response {
     bool success = false;
     std::string message;
-    std::vector<ores::dq::domain::publication_result> results;
+    std::string instance_id;
+    int datasets_dispatched = 0;
 };
 
 }

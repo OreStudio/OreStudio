@@ -113,6 +113,21 @@ public:
         const std::string& bundle_code);
 
     /**
+     * @brief Resolves a list of dataset IDs into ordered, publishable entries.
+     *
+     * Combines dependency resolution with artefact-type lookup to produce
+     * the same bundle_publishable_dataset shape used by the workflow engine.
+     * Datasets without a configured target_subject are silently skipped.
+     *
+     * @param dataset_ids The IDs requested by the caller.
+     * @param resolve_dependencies If true, transitive dependencies are included.
+     * @return Ordered entries ready for workflow dispatch.
+     */
+    std::vector<bundle_publishable_dataset> list_publishable_datasets(
+        const std::vector<boost::uuids::uuid>& dataset_ids,
+        bool resolve_dependencies);
+
+    /**
      * @brief Resolves the publication order for datasets.
      *
      * Uses boost.graph to build a dependency graph and performs

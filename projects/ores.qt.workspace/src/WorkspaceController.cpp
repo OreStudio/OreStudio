@@ -22,11 +22,16 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QVariant>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.workspace.api/messaging/workspace_protocol.hpp"
 
 namespace ores::qt {
 
@@ -67,6 +72,8 @@ void WorkspaceController::showListWindow() {
             this, &WorkspaceController::onShowDetails);
     connect(listWindow_, &WorkspaceMdiWindow::addNewRequested,
             this, &WorkspaceController::onAddNewRequested);
+    connect(listWindow_, &WorkspaceMdiWindow::workspaceActivated,
+            this, &WorkspaceController::onWorkspaceActivated);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -220,6 +227,72 @@ void WorkspaceController::showDetailWindow(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void WorkspaceController::onWorkspaceActivated(
+    const workspace::domain::workspace& ws) {
+
+    const std::string ws_id = boost::uuids::to_string(ws.id);
+    BOOST_LOG_SEV(lg(), debug) << "Workspace activation requested: " << ws_id;
+
+    constexpr std::string_view live_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    if (ws_id == live_id) {
+        WorkspaceContext ctx;
+        mdiArea_->setProperty("ores_workspace_context",
+            QVariant::fromValue(ctx));
+        emit statusMessage(tr("Active workspace: Live"));
+        return;
+    }
+
+    QPointer<WorkspaceController> self = this;
+    const std::string ws_name = ws.name;
+
+    struct ResolveResult {
+        bool success;
+        std::vector<std::string> resolution_order;
+        std::string error;
+    };
+
+    auto task = [self, ws_id]() -> ResolveResult {
+        if (!self) return {false, {}, "Controller destroyed"};
+        workspace::messaging::resolve_workspace_request request;
+        request.workspace_id = ws_id;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+        if (!result) return {false, {}, "Failed to communicate with server"};
+        return {true, result->resolution_order, {}};
+    };
+
+    auto* watcher = new QFutureWatcher<ResolveResult>(self);
+    connect(watcher, &QFutureWatcher<ResolveResult>::finished,
+            self, [self, watcher, ws_id, ws_name]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Resolve failed for workspace "
+                                       << ws_id << ": " << result.error;
+            emit self->errorMessage(QString::fromStdString(result.error));
+            return;
+        }
+
+        WorkspaceContext ctx;
+        ctx.id = QString::fromStdString(ws_id);
+        ctx.name = QString::fromStdString(ws_name);
+        ctx.resolution_order.clear();
+        for (const auto& uuid_str : result.resolution_order)
+            ctx.resolution_order.push_back(QString::fromStdString(uuid_str));
+
+        self->mdiArea_->setProperty("ores_workspace_context",
+            QVariant::fromValue(ctx));
+        emit self->statusMessage(
+            tr("Active workspace: %1").arg(QString::fromStdString(ws_name)));
+    });
+
+    QFuture<ResolveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 EntityListMdiWindow* WorkspaceController::listWindow() const {

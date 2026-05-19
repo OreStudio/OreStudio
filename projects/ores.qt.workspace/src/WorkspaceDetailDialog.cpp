@@ -123,6 +123,13 @@ void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
 
+    if (workspace_.parent_workspace_id) {
+        ui_->inheritsFromEdit->setText(QString::fromStdString(
+            boost::uuids::to_string(*workspace_.parent_workspace_id)));
+    } else {
+        ui_->inheritsFromEdit->setText(QString());
+    }
+
     if (workspace_.version > 0 && provenanceWidget()) {
         provenanceWidget()->populate(
             workspace_.version,

@@ -74,6 +74,7 @@ protected:
 private slots:
     void onShowDetails(const workspace::domain::workspace& workspace);
     void onAddNewRequested();
+    void onWorkspaceActivated(const workspace::domain::workspace& workspace);
 
 private:
     void showAddWindow();

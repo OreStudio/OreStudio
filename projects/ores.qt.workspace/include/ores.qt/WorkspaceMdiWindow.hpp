@@ -20,13 +20,15 @@
 #ifndef ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 #define ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 
+#include <vector>
+#include <string>
+#include <unordered_map>
 #include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
-#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 
@@ -35,8 +37,8 @@ namespace ores::qt {
 /**
  * @brief MDI window for displaying and managing workspaces.
  *
- * Provides a table view of workspaces with toolbar actions
- * for reload, add, edit, archive, and delete.
+ * Provides a tree view of workspaces with toolbar actions
+ * for reload, add, open, edit, archive, and delete.
  */
 class WorkspaceMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -64,12 +66,14 @@ signals:
     void showWorkspaceDetails(const workspace::domain::workspace& workspace);
     void addNewRequested();
     void workspaceDeleted(const QString& code);
+    void workspaceActivated(const workspace::domain::workspace& workspace);
 
 public slots:
     void addNew();
     void editSelected();
     void archiveSelected();
     void deleteSelected();
+    void openSelected();
 
 protected:
     void doReload() override;
@@ -78,7 +82,7 @@ private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
-    void onDoubleClicked(const QModelIndex& index);
+    void onItemDoubleClicked(QTreeWidgetItem* item, int column);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -88,22 +92,26 @@ protected:
 private:
     void setupUi();
     void setupToolbar();
-    void setupTable();
+    void setupTree();
     void setupConnections();
     void updateActionStates();
+    void buildTree();
+    void addTreeItems(QTreeWidgetItem* parent,
+        const QString& parent_id_str,
+        const std::unordered_map<std::string,
+            std::vector<const workspace::domain::workspace*>>& children_map);
 
     ClientManager* clientManager_;
     QString username_;
 
     QToolBar* toolbar_;
-    QTableView* tableView_;
+    QTreeWidget* treeWidget_;
     ClientWorkspaceModel* model_;
-    QSortFilterProxyModel* proxyModel_;
-    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
+    QAction* openAction_;
     QAction* editAction_;
     QAction* archiveAction_;
     QAction* deleteAction_;

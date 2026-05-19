@@ -272,7 +272,12 @@ void PartyReportSetupPage::loadTemplates() {
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
     connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        std::optional<ResponseType> result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "template fetch threw: " << e.what();
+        }
         watcher->deleteLater();
 
         loadingLabel_->hide();
@@ -454,7 +459,13 @@ void PartyExecutePage::startCounterpartyPublish() {
     auto* watcher = new QFutureWatcher<BundleResult>(this);
     connect(watcher, &QFutureWatcher<BundleResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 1 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -550,7 +561,13 @@ void PartyExecutePage::startOrgPublish() {
     auto* watcher = new QFutureWatcher<BundleResult>(this);
     connect(watcher, &QFutureWatcher<BundleResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 2 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -652,7 +669,13 @@ void PartyExecutePage::startReportInstall() {
     auto* watcher = new QFutureWatcher<ReportResult>(this);
     connect(watcher, &QFutureWatcher<ReportResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        ReportResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 3 async task threw: " << e.what();
+            result.error = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -742,7 +765,13 @@ void PartyExecutePage::startActivate() {
     auto* watcher = new QFutureWatcher<ActivateResult>(this);
     connect(watcher, &QFutureWatcher<ActivateResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        ActivateResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 4 async task threw: " << e.what();
+            result.error = e.what();
+        }
         watcher->deleteLater();
 
         progressBar_->setRange(0, 1);

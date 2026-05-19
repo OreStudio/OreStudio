@@ -733,7 +733,13 @@ void TenantExecutePage::startBundlePublish() {
     auto* watcher = new QFutureWatcher<BundleResult>(this);
     connect(watcher, &QFutureWatcher<BundleResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 1 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -833,7 +839,13 @@ void TenantExecutePage::startSyntheticGeneration() {
     auto* watcher = new QFutureWatcher<SyntheticResult>(this);
     connect(watcher, &QFutureWatcher<SyntheticResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        SyntheticResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 2 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -924,7 +936,13 @@ void TenantExecutePage::startPartyAssociation() {
     auto* watcher = new QFutureWatcher<AssocResult>(this);
     connect(watcher, &QFutureWatcher<AssocResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        AssocResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 3 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         if (!result.success) {
@@ -1011,7 +1029,13 @@ void TenantExecutePage::startFinalize() {
     auto* watcher = new QFutureWatcher<FinalizeResult>(this);
     connect(watcher, &QFutureWatcher<FinalizeResult>::finished,
             this, [this, watcher]() {
-        const auto result = watcher->result();
+        FinalizeResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 4 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
         progressBar_->setRange(0, 1);

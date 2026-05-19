@@ -245,7 +245,14 @@ void AdminPlugin::on_reset_system() {
     auto* watcher = new QFutureWatcher<ResetResult>(this);
     connect(watcher, &QFutureWatcher<ResetResult>::finished,
             this, [self, watcher]() {
-        auto [success, message] = watcher->result();
+        ResetResult res;
+        try {
+            res = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "system reset task threw: " << e.what();
+            res = {false, e.what()};
+        }
+        auto [success, message] = res;
         watcher->deleteLater();
         if (!self) return;
 

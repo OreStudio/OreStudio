@@ -358,7 +358,18 @@ void TenantMdiWindow::deleteSelected() {
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
     connect(watcher, &QFutureWatcher<DeleteResult>::finished,
             self, [self, watcher]() {
-        auto results = watcher->result();
+        DeleteResult results;
+        try {
+            results = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "tenant delete task threw: " << e.what();
+            watcher->deleteLater();
+            if (!self) return;
+            auto msg = QString("Unexpected error during tenant deletion: %1").arg(e.what());
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+            return;
+        }
         watcher->deleteLater();
 
         int success_count = 0;
@@ -463,7 +474,14 @@ void TenantMdiWindow::resetSelected() {
     auto* watcher = new QFutureWatcher<ResetResult>(self);
     connect(watcher, &QFutureWatcher<ResetResult>::finished,
             self, [self, watcher, qcode]() {
-        auto [success, message] = watcher->result();
+        ResetResult res;
+        try {
+            res = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "tenant reset task threw: " << e.what();
+            res = {false, e.what()};
+        }
+        auto [success, message] = res;
         watcher->deleteLater();
 
         if (success) {

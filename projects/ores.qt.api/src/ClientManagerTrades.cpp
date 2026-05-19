@@ -72,24 +72,31 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
             rfl::json::write(request),
             std::chrono::seconds(30));
 
-        auto response = rfl::json::read<
-            trading::messaging::get_trade_detail_response,
-            rfl::AddTagsToVariants>(raw);
-        if (!response) {
+        auto base = rfl::json::read<
+            trading::messaging::get_trade_detail_response_base>(raw);
+        if (!base) {
             BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail deserialize error: "
-                << response.error().what();
+                << "getTradeDetail deserialize error: " << base.error().what();
             return std::nullopt;
         }
-        if (!response->success) {
+        if (!base->success) {
             BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail server error: " << response->message;
+                << "getTradeDetail server error: " << base->message;
+            return std::nullopt;
+        }
+        auto inst = rfl::json::read<
+            trading::messaging::get_trade_detail_instrument_wrapper,
+            rfl::AddTagsToVariants>(raw);
+        if (!inst) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail instrument deserialize error: "
+                << inst.error().what();
             return std::nullopt;
         }
 
         trading::messaging::trade_export_item item;
-        item.trade = std::move(response->trade);
-        item.instrument = std::move(response->instrument);
+        item.trade = std::move(base->trade);
+        item.instrument = std::move(inst->instrument);
         return item;
     } catch (const ores::nats::service::nats_connect_error&) {
         throw;

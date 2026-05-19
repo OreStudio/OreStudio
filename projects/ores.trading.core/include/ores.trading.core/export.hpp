@@ -22,7 +22,11 @@
 
 #include <boost/config.hpp>
 
-#ifdef ORES_TRADING_CORE_LIBRARY
+// On Windows this library is always a static archive (see src/CMakeLists.txt),
+// so DLL import/export decorations are never needed on that platform.
+#if defined(_WIN32)
+#  define ORES_TRADING_CORE_EXPORT
+#elif defined(ORES_TRADING_CORE_LIBRARY)
 #  define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_EXPORT
 #else
 #  define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT

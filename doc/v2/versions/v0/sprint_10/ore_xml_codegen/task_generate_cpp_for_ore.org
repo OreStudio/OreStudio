@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 2a497ceb-40e2-47ad-8cf5-cfb40226dfbd
+:END:
+#+title: Generate C++ code for ORE via xsdcpp
+#+description: xsdcpp integrated; manually-crafted CurrencyConfig/CurrencyElement replaced by generated types; artefact_type domain centralises target_table + populate_function lookup; dq_populate_*_fn naming convention enforced; currency rounding-type values corrected.
+#+type: task
+#+level: s1
+#+filetags: :ore:xsdcpp:codegen:xml:ore_xml_codegen:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:a1571428-c1bd-4fd1-9434-21ce5b1a6154][ORE XML codegen]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-25]
+:END:
+
+** Now
+Completed 2026-01-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-25
+
+* Goal
+
+Generate C++ types for ORE XML configuration via xsdcpp; centralise publication metadata via an =artefact_type= domain.
+
+* Acceptance
+
+- xsdcpp integrated into the build.
+- Manually-written =CurrencyConfig= / =CurrencyElement= replaced by generated =currencyConfig= / =currencyDefinition=.
+- =artefact_type= domain centralises =target_table= + =populate_function= lookup (removed from =dataset=).
+- =dq_populate_*_fn= naming convention enforced across the SQL functions.
+- Currency rounding-type values corrected: =standard=/=swedish= → =Closest=, =none= → =Down=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+xsdcpp evaluation: =codesynthesis xsd/xsde= work but need their library at runtime and aren't in vcpkg; xsdcpp wins.
+
+* Result
+
+ORE C++ types now generated; manual-craft path retired.

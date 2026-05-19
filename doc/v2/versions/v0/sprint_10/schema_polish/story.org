@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 5bafbeb2-c875-4655-bb78-801a3bf65022
+:END:
+#+title: Schema polish
+#+description: Clean up data-population layers, add rounding type table, add CSV/ORE/FPML labels to icons, add mapping artefact to population functions.
+#+type: story
+#+level: s2
+#+filetags: :sql:schema:polish:refdata:icons:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-26]
+:END:
+
+** Now
+Completed 2026-01-26.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-26
+
+* Goal
+
+Four independent polish strands on the schema and the UI: layer the
+population scripts, add rounding types, label the import/export
+icons, and route the mapping data through the artefact pipeline.
+
+* Acceptance
+
+- Population scripts structured by layer (Foundation / Data Governance / Data Catalogues / Production).
+- Rounding-type table aligned with FpML.
+- Import/export icons carry CSV/ORE/FPML badges.
+- Mapping data routed through artefacts.
+
+* Tasks
+
+In execution order:
+
+- [[id:f2062027-b1fa-4b51-84e8-f589f4e14849][Clean up data layers]]
+- [[id:850e10f2-d84c-4a25-b30b-0328edb33ae8][Add rounding type table]]
+- [[id:47bf0f41-5e6b-4da9-b99d-e73ad80686a5][Add labels (CSV/ORE/FPML) to import/export icons]]
+- [[id:bd7f39d4-46b1-41ce-992b-7feedf0cc59d][Add mapping artefact to population functions]]
+
+* Decisions
+
+- /Layer model first/ :: cleans up population before the wizard consumes it, so the wizard is much simpler.
+- /Track FpML on rounding/ :: avoids translation cost on export.
+
+* Out of scope
+
+- Half-up / banker's rounding — explicitly omitted to stay FpML-aligned.
+
+* See also
+
+None.

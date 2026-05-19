@@ -72,6 +72,10 @@ is the current sprint; the rest are closed.
 - [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] — Data Quality subsystem + Data Librarian;
   connection management; database naming refactor;
   =ores.security=; CLI entity coverage; Qt icon refactor.
+- [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] — Codegen infrastructure; party schemes + FPML
+  reference data; ORE XML codegen via xsdcpp; metadata /
+  production schema split; dataset bundles + System
+  Provisioner Wizard.
 - ... through Sprint 16.
 
 * Release scope

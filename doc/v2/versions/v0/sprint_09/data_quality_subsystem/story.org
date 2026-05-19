@@ -9,8 +9,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 75442a55-dbbb-4bc1-875e-981679e05621
 
 Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
+
+Continued in: [[id:75442a55-dbbb-4bc1-875e-981679e05621][Librarian polish]] (sprint 10) — PR-review feedback on
+the librarian landed here.
 
 * DONE Status
 :PROPERTIES:

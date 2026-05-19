@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: c4a49d31-7c01-477f-b988-63ada3be4c64
+:END:
+#+title: Download and split GLEIF data
+#+description: Script to fetch the GLEIF Golden Copy and produce a representative subset for development use.
+#+type: task
+#+level: s1
+#+filetags: :party:gleif:data:scripts:party_schemes_and_fpml_data:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-23]
+:END:
+
+** Now
+Completed 2026-01-23.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-23
+
+* Goal
+
+Script the download + split of the GLEIF Golden Copy so we have a representative LEI dataset for development.
+
+* Acceptance
+
+- Script fetches the GLEIF Golden Copy.
+- Produces a representative subset (the full dataset is too large for dev use).
+- Documented and runnable from =external/=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Foundation for populating party tables with realistic LEI data.
+
+* Result
+
+GLEIF subset available for dev.

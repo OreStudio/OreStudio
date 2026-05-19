@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 85f8dc6c-1acd-4610-a877-b0fdba871254
+:END:
+#+title: Compute grid analysis (BOINC-based)
+#+description: First-pass design for a BOINC-style distributed compute grid using Postgres + PGMQ + TimescaleDB.
+#+type: story
+#+level: s2
+#+filetags: :compute:distributed:boinc:analysis:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+* BACKLOG Status
+
+** Now
+Postponed in sprint 10; carried forward.
+
+** Waiting on
+A sprint with the slot.
+
+** Next
+Return alongside the related work.
+
+** Last touched
+2026-01-27
+
+* Goal
+
+First-pass design for a BOINC-style distributed compute grid for
+running ORE / ledger / LLM workloads across multiple locations.
+
+* Acceptance
+
+- BOINC lexicon mapped to our domain.
+- Postgres state-machine entities sketched.
+- PGMQ for hot dispatch; TimescaleDB for telemetry.
+- Constraints documented.
+
+* Tasks
+
+In execution order:
+
+- [[id:3e644071-c68b-4a54-9623-87e09bd81d73][BOINC-based compute grid analysis]]
+
+* Decisions
+
+- /Postgres as the central state machine/ :: we already operate Postgres heavily; one fewer system to learn.
+- /Postgres BYTEA for input/output bundles/ :: sub-optimal but sufficient until we hit resource issues.
+
+* Out of scope
+
+- Actually implementing the compute grid — analysis only.
+
+* See also
+
+None.

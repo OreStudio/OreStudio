@@ -9,8 +9,13 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 700d4325-2ad1-4e0d-b6af-900abbe1a66e
 
 Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
+
+Continued in: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) —
+lands the 13 reference-data types needed before party can be
+implemented.
 
 * BACKLOG Status
 

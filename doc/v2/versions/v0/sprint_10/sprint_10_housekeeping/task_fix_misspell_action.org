@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: ede64638-ddc0-45b3-a1db-185d48a68114
+:END:
+#+title: Fix issues with misspell action
+#+description: FPML and GLEIF data break the misspell action; configure folder ignores.
+#+type: task
+#+level: s1
+#+filetags: :ci:misspell:bug_fix:sprint_10_housekeeping:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-23]
+:END:
+
+** Now
+Completed 2026-01-23.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-23
+
+* Goal
+
+FPML and GLEIF data trip the misspell GitHub action; configure folder ignores so the CI stays green.
+
+* Acceptance
+
+- Misspell action skips =external/= subdirectories that contain vendor data.
+- CI green.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Tried to solve it via GLM 4.7 first; the model kept suggesting unhelpful approaches; fixed manually in the end.
+
+* Result
+
+CI green; misspell action no longer trips on vendor data.

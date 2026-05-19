@@ -16,7 +16,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Trading Component Diagram
 #+caption: ORE Studio Trading Component Diagram
-[[file:ores.trading.png][file:ores.trading.png]]
+[[file:ores.trading.core.png][file:ores.trading.core.png]]
 
 Implements the core domain model for trade booking and lifecycle management. Key
 features:

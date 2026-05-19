@@ -15,7 +15,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Data Quality Component Diagram
-[[file:ores.dq.png][file:ores.dq.png]]
+[[file:ores.dq.core.png][file:ores.dq.core.png]]
 
 * Facets
 

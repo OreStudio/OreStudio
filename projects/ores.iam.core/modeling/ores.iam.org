@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio IAM Component Diagram
-[[file:ores.iam.png][file:ores.iam.png]]
+[[file:ores.iam.core.png][file:ores.iam.core.png]]
 
 This module provides comprehensive user account management with secure
 authentication and authorization. Key features include:

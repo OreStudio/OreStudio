@@ -15,7 +15,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Reference Data Component Diagram
 #+caption: ORE Studio Reference Data Component Diagram
-[[file:ores.refdata.png][file:ores.refdata.png]]
+[[file:ores.refdata.core.png][file:ores.refdata.core.png]]
 
 Implements the core domain model for reference data entities. Key features:
 

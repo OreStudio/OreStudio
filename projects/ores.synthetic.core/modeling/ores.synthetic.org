@@ -15,7 +15,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Synthetic Data Generation Component Diagram
 #+caption: ORE Studio Synthetic Data Component Diagram
-[[file:ores.synthetic.png][file:ores.synthetic.png]]
+[[file:ores.synthetic.core.png][file:ores.synthetic.core.png]]
 
 This module provides infrastructure for generating synthetic data catalogs for
 Data Quality (DQ) testing and development purposes. Key features include:

@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Assets Component Diagram
-[[file:ores.assets.png][file:ores.assets.png]]
+[[file:ores.assets.core.png][file:ores.assets.core.png]]
 
 This module provides management of dynamically loaded images (typically SVG),
 tagging support for categorization, and currency-to-image associations. Key

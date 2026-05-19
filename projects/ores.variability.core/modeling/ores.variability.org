@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Variability Component Diagram
-[[file:ores.variability.png][file:ores.variability.png]]
+[[file:ores.variability.core.png][file:ores.variability.core.png]]
 
 This module provides infrastructure for managing system configurability and
 runtime behavior variation. It serves as the foundation for all aspects of

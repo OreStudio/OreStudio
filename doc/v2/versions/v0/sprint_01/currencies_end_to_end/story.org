@@ -86,5 +86,5 @@ drive-test:
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component currencies seed.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the model/view widgets the display task uses.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the Postgres setup the database task targets.
-- [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] (domain note) — what /currency/ means in the project's
+- Currency (domain note) — what /currency/ means in the project's
   domain.

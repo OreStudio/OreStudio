@@ -81,4 +81,4 @@ the drive-test:
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component carrying currencies.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]] — host of the new =currencies dump= command.
 - [[id:af70cdf6-071f-43a9-91bb-7eb9a59a550f][Currencies end-to-end]] (sprint 01) — predecessor story.
-- [[id:2A81E1EB-2B9F-27B4-93B3-266A634E07B3][Currency]] (domain note).
+- Currency (domain note).

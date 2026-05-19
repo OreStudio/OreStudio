@@ -27,11 +27,9 @@ file(GLOB_RECURSE files RELATIVE
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-add_library(${lib_target_name} ${lib_files})
+add_library(${lib_target_name} STATIC ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.cli/include)
@@ -55,7 +53,7 @@ target_link_libraries(${lib_target_name}
         magic_enum::magic_enum
         cli::cli)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)

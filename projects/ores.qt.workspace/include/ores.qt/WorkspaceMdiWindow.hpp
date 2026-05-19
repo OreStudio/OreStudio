@@ -36,7 +36,7 @@ namespace ores::qt {
  * @brief MDI window for displaying and managing workspaces.
  *
  * Provides a table view of workspaces with toolbar actions
- * for reload, add, edit, delete, and viewing history.
+ * for reload, add, edit, archive, and delete.
  */
 class WorkspaceMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -68,6 +68,7 @@ signals:
 public slots:
     void addNew();
     void editSelected();
+    void archiveSelected();
     void deleteSelected();
 
 protected:
@@ -104,6 +105,7 @@ private:
     QAction* reloadAction_;
     QAction* addAction_;
     QAction* editAction_;
+    QAction* archiveAction_;
     QAction* deleteAction_;
 };
 

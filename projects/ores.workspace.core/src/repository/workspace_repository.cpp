@@ -219,6 +219,21 @@ void workspace_repository::archive(const std::string& id,
     execute_raw_command(ctx_, sql, lg(), "Archiving workspace");
 }
 
+void workspace_repository::remove(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing workspace: " << id;
+
+    const std::string del_scope =
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = '"
+        + id + "'::uuid";
+    execute_raw_command(ctx_, del_scope, lg(), "Clearing trade scope before remove");
+
+    const std::string del_ws =
+        "DELETE FROM ores_workspaces_tbl"
+        " WHERE id = '" + id + "'::uuid"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()";
+    execute_raw_command(ctx_, del_ws, lg(), "Soft-closing workspace");
+}
+
 std::vector<std::string>
 workspace_repository::resolution_order(const std::string& workspace_id) {
     BOOST_LOG_SEV(lg(), debug) << "Resolving workspace chain for: " << workspace_id;

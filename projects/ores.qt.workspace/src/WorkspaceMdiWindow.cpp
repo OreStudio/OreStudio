@@ -49,6 +49,7 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
       reloadAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
+      archiveAction_(nullptr),
       deleteAction_(nullptr) {
 
     setupUi();
@@ -104,11 +105,20 @@ void WorkspaceMdiWindow::setupToolbar() {
     connect(editAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::editSelected);
 
+    archiveAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Archive, IconUtils::DefaultIconColor),
+        tr("Archive"));
+    archiveAction_->setToolTip(tr("Archive selected workspace"));
+    archiveAction_->setEnabled(false);
+    connect(archiveAction_, &QAction::triggered, this,
+            &WorkspaceMdiWindow::archiveSelected);
+
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
             Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
-    deleteAction_->setToolTip(tr("Delete selected workspace"));
+    deleteAction_->setToolTip(tr("Permanently soft-delete selected workspace and associated data"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::deleteSelected);
@@ -210,6 +220,7 @@ void WorkspaceMdiWindow::onDoubleClicked(const QModelIndex& index) {
 void WorkspaceMdiWindow::updateActionStates() {
     const bool hasSelection = tableView_->selectionModel()->hasSelection();
     editAction_->setEnabled(hasSelection);
+    archiveAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
 }
 
@@ -231,7 +242,7 @@ void WorkspaceMdiWindow::editSelected() {
     }
 }
 
-void WorkspaceMdiWindow::deleteSelected() {
+void WorkspaceMdiWindow::archiveSelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Archive requested but no row selected";
@@ -271,9 +282,9 @@ void WorkspaceMdiWindow::deleteSelected() {
     }
 
     QPointer<WorkspaceMdiWindow> self = this;
-    using ArchiveResult = std::pair<bool, std::string>;
+    using OpResult = std::pair<bool, std::string>;
 
-    auto task = [self, workspace_id, actor]() -> ArchiveResult {
+    auto task = [self, workspace_id, actor]() -> OpResult {
         if (!self) return {};
         BOOST_LOG_SEV(lg(), debug) << "Sending archive request for workspace id: " << workspace_id;
         workspace::messaging::archive_workspace_request request;
@@ -286,8 +297,8 @@ void WorkspaceMdiWindow::deleteSelected() {
         return {result->success, result->message};
     };
 
-    auto* watcher = new QFutureWatcher<ArchiveResult>(self);
-    connect(watcher, &QFutureWatcher<ArchiveResult>::finished,
+    auto* watcher = new QFutureWatcher<OpResult>(self);
+    connect(watcher, &QFutureWatcher<OpResult>::finished,
             self, [self, watcher, workspace_id, workspace_name]() {
         auto [success, message] = watcher->result();
         watcher->deleteLater();
@@ -307,7 +318,88 @@ void WorkspaceMdiWindow::deleteSelected() {
         }
     });
 
-    QFuture<ArchiveResult> future = QtConcurrent::run(task);
+    QFuture<OpResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void WorkspaceMdiWindow::deleteSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete workspace while disconnected.");
+        return;
+    }
+
+    std::string workspace_id;
+    QString workspace_name;
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* ws = model_->getWorkspace(sourceIndex.row())) {
+        workspace_id = boost::uuids::to_string(ws->id);
+        workspace_name = QString::fromStdString(ws->name);
+    }
+
+    if (workspace_id.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid workspace selected for delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for workspace id: " << workspace_id;
+
+    const std::string actor = username_.toStdString();
+
+    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
+        QString("Permanently delete workspace '%1' and all its associated data?\n\n"
+                "This action cannot be undone.").arg(workspace_name),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
+        return;
+    }
+
+    QPointer<WorkspaceMdiWindow> self = this;
+    using OpResult = std::pair<bool, std::string>;
+
+    auto task = [self, workspace_id, actor]() -> OpResult {
+        if (!self) return {};
+        BOOST_LOG_SEV(lg(), debug) << "Sending delete request for workspace id: " << workspace_id;
+        workspace::messaging::remove_workspace_request request;
+        request.id = workspace_id;
+        request.modified_by = actor;
+        request.change_reason_code = "user.delete";
+        request.change_commentary = "Deleted by user";
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) return {false, "Failed to communicate with server"};
+        return {result->success, result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<OpResult>(self);
+    connect(watcher, &QFutureWatcher<OpResult>::finished,
+            self, [self, watcher, workspace_id, workspace_name]() {
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), debug) << "Workspace deleted: " << workspace_id;
+            emit self->workspaceDeleted(QString::fromStdString(workspace_id));
+            self->model_->refresh();
+            emit self->statusChanged(
+                QString("Workspace '%1' deleted successfully").arg(workspace_name));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed for workspace " << workspace_id
+                                       << ": " << message;
+            auto msg = QString::fromStdString(message);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        }
+    });
+
+    QFuture<OpResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

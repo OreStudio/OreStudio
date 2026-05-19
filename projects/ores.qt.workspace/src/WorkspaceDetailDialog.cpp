@@ -65,7 +65,7 @@ void WorkspaceDetailDialog::setupUi() {
     ui_->saveButton->setEnabled(false);
 
     ui_->deleteButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Archive, IconUtils::DefaultIconColor));
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));

@@ -76,6 +76,24 @@ struct archive_workspace_response {
 };
 
 // ---------------------------------------------------------------------------
+// Remove (soft-delete) workspace
+// ---------------------------------------------------------------------------
+
+struct remove_workspace_request {
+    using response_type = struct remove_workspace_response;
+    static constexpr std::string_view nats_subject = "workspace.v1.workspaces.remove";
+    std::string id;  // UUID string
+    std::string modified_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct remove_workspace_response {
+    bool success = false;
+    std::string message;
+};
+
+// ---------------------------------------------------------------------------
 // Resolve workspace (ancestor chain)
 // ---------------------------------------------------------------------------
 

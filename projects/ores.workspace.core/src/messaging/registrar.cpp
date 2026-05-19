@@ -54,6 +54,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             archive_workspace_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->archive(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
+            remove_workspace_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
             resolve_workspace_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->resolve(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(

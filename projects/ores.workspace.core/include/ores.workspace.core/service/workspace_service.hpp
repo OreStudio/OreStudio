@@ -80,6 +80,14 @@ public:
         const std::string& change_commentary);
 
     /**
+     * @brief Soft-deletes a workspace and its associated data.
+     *
+     * Clears the trade scope then closes the bitemporal record.
+     * @throws std::invalid_argument if the workspace is the Live workspace.
+     */
+    void remove_workspace(const std::string& id);
+
+    /**
      * @brief Returns the UUID ancestor resolution chain for a workspace.
      */
     std::vector<std::string> resolve(const std::string& workspace_id);

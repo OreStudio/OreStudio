@@ -81,6 +81,12 @@ public:
         const std::string& change_commentary);
 
     /**
+     * @brief Soft-deletes the workspace: clears trade scope then closes the
+     * bitemporal record (valid_to = now() via DELETE rule).
+     */
+    void remove(const std::string& id);
+
+    /**
      * @brief Returns the UUID ancestor chain for a workspace.
      */
     std::vector<std::string> resolution_order(const std::string& workspace_id);

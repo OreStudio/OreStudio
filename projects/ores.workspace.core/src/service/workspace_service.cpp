@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::workspace::service {
 
@@ -74,6 +75,13 @@ void workspace_service::archive_workspace(const std::string& id,
 
     BOOST_LOG_SEV(lg(), debug) << "Archiving workspace: " << id;
     repo_.archive(id, modified_by, change_reason_code, change_commentary);
+}
+
+void workspace_service::remove_workspace(const std::string& id) {
+    if (id == ores::utility::uuid::live_workspace_uuid_str)
+        throw std::invalid_argument("Cannot delete the Live workspace.");
+    BOOST_LOG_SEV(lg(), debug) << "Removing workspace: " << id;
+    repo_.remove(id);
 }
 
 std::vector<std::string>

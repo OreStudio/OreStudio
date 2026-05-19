@@ -221,6 +221,59 @@ public:
         reply(nats_, msg, resp);
     }
 
+    void remove(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(workspace_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        auto req = decode<remove_workspace_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, remove_workspace_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+
+        // Three-tier permission: same ownership logic as archive, but :delete permissions.
+        const bool is_live =
+            (req->id == ores::utility::uuid::live_workspace_uuid_str);
+
+        if (is_live) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        service::workspace_service svc(ctx);
+        const auto ws = svc.get_workspace(req->id);
+        const bool is_owner = ws.has_value() && ctx.party_id().has_value() &&
+                              (ws->owner_id == *ctx.party_id());
+        const auto required = is_owner
+            ? "workspace::workspaces:delete"
+            : "workspace::workspaces:delete_any";
+        if (!has_permission(ctx, required)) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        try {
+            svc.remove_workspace(req->id);
+            BOOST_LOG_SEV(workspace_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, remove_workspace_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(workspace_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, remove_workspace_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
     void set_trade_scope(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(workspace_handler_lg(), msg);

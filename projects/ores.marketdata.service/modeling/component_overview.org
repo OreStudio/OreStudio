@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 57182ece-6364-421a-a46f-73841f9961b4
+:END:
+#+title: ores.marketdata.service
+#+description: NATS service entrypoint for the market-data domain.
+#+type: component
+#+level: cross
+#+filetags: :marketdata:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.marketdata.service= is the NATS service entrypoint for the market-data
+domain. It opens database and NATS connections, registers handlers from
+=ores.marketdata.core=, and runs the event loop.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string.
+- NATS request messages for market-data operations.
+
+* Outputs
+
+- A running NATS service for market-data operations.
+
+* Entry points
+
+- =src/main.cpp=, =src/app/=, =src/config/=.
+
+* Dependencies
+
+- =ores.marketdata.core=, =ores.marketdata.api=, =ores.logging=, =nats.c=.
+
+* See also
+
+- [[id:759530d8-2314-44f3-a50e-71ce7ad02558][ores.marketdata.core]] — all market-data business logic.

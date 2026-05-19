@@ -26,7 +26,7 @@ if [[ -f "${ENV_FILE}" ]]; then
 fi
 
 exec nats \
-    --server "${ORES_NATS_URL}" \
+    --server "${ORES_NATS_URL/nats:\/\//tls:\/\/}" \
     --tlsca  "${ORES_NATS_TLS_CA}" \
     --tlscert "${ORES_NATS_TLS_CERT}" \
     --tlskey  "${ORES_NATS_TLS_KEY}" \

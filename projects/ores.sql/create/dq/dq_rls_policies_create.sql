@@ -268,4 +268,61 @@ for all
 using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
+-- -----------------------------------------------------------------------------
+-- Badge Severities
+-- System-owned global registry: seeded by the system tenant and readable by
+-- all tenants. Tenants may define their own severities but cannot modify the
+-- system set.
+-- -----------------------------------------------------------------------------
+alter table ores_dq_badge_severities_tbl enable row level security;
+
+create policy badge_severities_read_policy on ores_dq_badge_severities_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy badge_severities_modification_policy on ores_dq_badge_severities_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- -----------------------------------------------------------------------------
+-- Badge Definitions
+-- System-owned global registry: seeded by the system tenant and readable by
+-- all tenants. Tenants may define their own badge definitions but cannot
+-- modify the system set.
+-- -----------------------------------------------------------------------------
+alter table ores_dq_badge_definitions_tbl enable row level security;
+
+create policy badge_definitions_read_policy on ores_dq_badge_definitions_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy badge_definitions_modification_policy on ores_dq_badge_definitions_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- -----------------------------------------------------------------------------
+-- Badge Mappings
+-- System-owned global registry: seeded by the system tenant and readable by
+-- all tenants. Tenants may define their own mappings but cannot modify the
+-- system set.
+-- -----------------------------------------------------------------------------
+alter table ores_dq_badge_mappings_tbl enable row level security;
+
+create policy badge_mappings_read_policy on ores_dq_badge_mappings_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+create policy badge_mappings_modification_policy on ores_dq_badge_mappings_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
 \ir ./dq_fsm_rls_policies_create.sql

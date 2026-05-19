@@ -58,6 +58,7 @@ public:
     /**
      * @brief Parses an ISO 8601 UTC string to a time point.
      *
+     * Accepted date/time separators: 'T' (ISO 8601 standard) or ' ' (relaxed).
      * Accepted UTC designators: 'Z', '+00', '+00:00'.
      * Throws std::invalid_argument if the designator is absent or the offset
      * is non-zero — callers must not pass ambiguous local-time strings.

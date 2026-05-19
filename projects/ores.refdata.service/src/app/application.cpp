@@ -113,7 +113,7 @@ application::run(boost::asio::io_context& io_ctx,
     ev::service::registrar::register_mapping<rdev::book_changed_event>(
         event_source, "ores.refdata.book", "ores_books");
     ev::service::registrar::register_mapping<rdev::party_changed_event>(
-        event_source, "ores.refdata.party_changed", "ores_parties");
+        event_source, "ores.refdata.party", "ores_parties");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
         event_source, "ores.refdata.portfolio", "ores_portfolios");
 

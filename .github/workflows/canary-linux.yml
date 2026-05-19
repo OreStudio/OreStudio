@@ -155,7 +155,10 @@ jobs:
         run: |
           git diff origin/main...HEAD --name-only 2>/dev/null \
             | grep -E '\.(cpp|hpp|h)$' \
-            | while IFS= read -r f; do [ -f "$f" ] && touch "$f"; done || true
+            | while IFS= read -r f; do
+                [ -f "$f" ] && touch "$f"
+                [[ "$f" == *.cpp ]] && find build/output/linux-gcc-debug-ninja -name "${f##*/}.gcda" -delete 2>/dev/null || true
+              done || true
 
       - name: Run CTest workflow
         run: |

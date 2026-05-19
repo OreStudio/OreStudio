@@ -35,7 +35,7 @@ begin
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
+        'timestamp', to_char(change_timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
         'entity_ids', jsonb_build_array(changed_key),
         'tenant_id', changed_tenant_id
     );

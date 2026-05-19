@@ -157,6 +157,7 @@ private:
     event_bus& bus_;
     ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
+    std::string registered_entities_;
 };
 
 }

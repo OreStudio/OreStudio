@@ -2,7 +2,7 @@
 #+SUBTITLE: Reconciling bulk artefact publishing with strict service table isolation
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSAL
+#+STATUS: IN PROGRESS
 #+OPTIONS: toc:t num:nil
 
 * Background
@@ -573,6 +573,10 @@ publish path is no longer a special case.
 
 * Implementation Status
 
+Core implementation merged as PR #767 (~feature/dq-publish-pattern~).
+Follow-up bug fixes merged as PR #772 (~feature/badge-rls-colours~) —
+see "Post-merge fixes" below.
+
 Branch: ~feature/dq-publish-pattern~
 
 ** SQL phase
@@ -617,6 +621,34 @@ Branch: ~feature/dq-publish-pattern~
 ** Documentation
 
 - [X] ~projects/modeling/system_model.org~ — add "Publish exception" architectural rule
+
+** Post-merge fixes (PR #772)
+
+Bugs surfaced during end-to-end testing of the publish pattern after
+PR #767 merged:
+
+- [X] ~pg_notify~ timestamp format: all 143 notify triggers now emit
+  ISO 8601 UTC (~YYYY-MM-DDThh:mm:ssZ~); ~datetime::from_iso8601_utc~
+  updated to accept both ~T~ and space separators — previously every
+  notification was silently dropped, breaking cache refresh and
+  workflow step events
+- [X] Party cache refresh: ~register_mapping~ in refdata service used
+  ~"ores.refdata.party_changed"~ but the trigger emits
+  ~"ores.refdata.party"~ — party activation never propagated to the IAM
+  cache, causing the party provisioning wizard to reappear on every login
+- [X] Badge RLS: added read policies for ~ores_dq_badge_severities_tbl~,
+  ~ores_dq_badge_definitions_tbl~, ~ores_dq_badge_mappings_tbl~ so
+  system-tenant badge data is visible to all tenants; removed redundant
+  explicit ~tenant_id~ filters from badge repository read methods
+- [X] System reset (~ores_iam_reset_system_fn~): added missing
+  ~iam_tenant_purger_create.sql~ to create/drop sequences; fixed
+  bootstrap detection in ~ores_iam_validate_account_username_fn~ to
+  filter by active accounts only (soft-deleted accounts no longer
+  block re-bootstrap after a reset)
+- [X] ~build/scripts/nats.sh~: use ~tls://~ scheme so mTLS CLI
+  connections succeed
+- [X] ~postgres_event_source~: log registered entity names at startup
+  and in the no-mapping warning path
 
 * Open Questions
 

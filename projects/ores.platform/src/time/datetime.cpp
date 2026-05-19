@@ -66,6 +66,10 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(
     while (!clean.empty() && clean.back() == ' ')
         clean.pop_back();
 
+    // Accept both 'T' (ISO 8601 standard) and ' ' (relaxed) as date/time separator.
+    if (clean.size() > 10 && clean[10] == 'T')
+        clean[10] = ' ';
+
     std::tm tm = {};
     std::istringstream ss(clean);
     ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");

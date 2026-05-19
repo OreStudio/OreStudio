@@ -9,8 +9,13 @@
 #+created: 2025-11-20
 #+updated: 2025-12-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: a465d630-5972-484b-a2e8-ad1f91657103
 
 Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+Continued in: [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] (sprint 05) — the
+POSTPONED bootstrap workflow lands there, along with delete-account
+and the feature-flags split.
 
 * DONE Status
 :PROPERTIES:

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0cd5f988-f59c-47a4-869f-7fec3b5416ec
+:END:
+#+title: Fix Valgrind leaks for comms tests
+#+description: Real leaks surfaced in the ores.comms test suite; fix them and confirm Valgrind is clean.
+#+type: task
+#+level: s1
+#+filetags: :valgrind:comms:bug_fix:testing:valgrind_leaks_followup:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Fix Valgrind leaks surfaced by the =ores.comms= test suite.
+These are real leaks in test setup/teardown, not third-party noise.
+
+* Acceptance
+
+- =ores.comms.tests= runs clean under Valgrind.
+- No new suppressions required.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Caught during the broader leak triage in this sprint.
+
+* Result
+
+ores.comms.tests Valgrind-clean.

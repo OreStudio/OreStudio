@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: c9e69a10-8de8-49c3-acd2-4c470059e947
+:END:
+#+title: Add skill to generate release notes
+#+description: Skill that produces release notes from a sprint backlog automatically.
+#+type: task
+#+level: s1
+#+filetags: :claude_code:skills:release_notes:claude_code_skills_expansion:sprint_05:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-17
+#+updated: 2025-11-17
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-17]
+:END:
+
+** Now
+Completed 2025-11-17.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-17
+
+* Goal
+
+Build on the sprint-summary work: a skill that turns a closed
+sprint backlog into release notes ready for the GitHub release.
+
+* Acceptance
+
+- A =release-notes-generator= skill exists.
+- Output matches the ORE Studio release-notes format.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~0:27.
+
+* Result
+
+Release-notes skill shipped.

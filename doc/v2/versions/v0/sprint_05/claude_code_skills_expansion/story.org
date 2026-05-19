@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2
+:END:
+#+title: Claude Code skills expansion
+#+description: Grow the skills layer: new-sprint skill, release-notes skill, project-planning skill.
+#+type: story
+#+level: s2
+#+filetags: :claude_code:skills:sprint_05:v0:
+#+created: 2025-11-17
+#+updated: 2025-11-17
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-17]
+:END:
+
+** Now
+Completed 2025-11-17.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-17
+
+* Goal
+
+Grow the Claude Code skills layer beyond the PlantUML seed planted in
+sprint 04: a /new-sprint/ skill that automates opening the next
+sprint, a /release-notes/ skill that drives the GitHub release notes
+off the backlog, and project-planning support borrowed from Dogen.
+
+* Acceptance
+
+- =new-sprint= skill exists and runs against this codebase.
+- =release-notes-generator= skill exists.
+- Project planning approach (TaskJuggler in org-mode) ported and
+  documented.
+
+* Tasks
+
+In execution order:
+
+- [[id:79b815f3-9a40-49d5-a7dc-de2eb1099934][Create a Claude Code skill to open a new sprint]]
+- [[id:c9e69a10-8de8-49c3-acd2-4c470059e947][Add skill to generate release notes]]
+- [[id:bfb7fb18-06b9-451f-b0d4-d4d47eedd771][Add support for project planning]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- POSTPONED: Troubleshoot skills in Claude.
+
+* Decisions
+
+- /Skills as the operational front-end/ :: every recurring
+  multi-step task earns a skill rather than a private script.
+
+* Out of scope
+
+- A complete taxonomy of skills (the weaving analysis from sprint 04
+  identifies it as future work).
+
+* See also
+
+- [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] (sprint 04) — predecessor story.
+- [[id:0944e150-a70f-47e3-9219-4177d208c9f8][V2 Document Author Skill]] — descendant of the skills layer this
+  story grew.

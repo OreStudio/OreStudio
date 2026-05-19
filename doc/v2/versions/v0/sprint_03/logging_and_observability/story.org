@@ -9,8 +9,13 @@
 #+created: 2025-12-01
 #+updated: 2025-12-30
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 69c49095-a91f-41d9-9d7e-0e9478143e93
 
 Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+Continued in: [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]] (sprint 05) — the BLOCKED
+OpenSSL leaks are suppressed there, along with sqlgen residuals and
+real leaks in =ores.comms.tests=.
 
 * DONE Status
 :PROPERTIES:

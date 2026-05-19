@@ -59,7 +59,9 @@ is the current sprint; the rest are closed.
   accounts, and sessions.
 - [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] — LLM-driven code review; complete the currencies UI;
   introduce the Claude Code skills layer.
-- Sprint 05 — (to be migrated).
+- [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] — Authentication bootstrap; finish domain-entity
+  surfaces; CLI/REPL reshape; skills layer growth.
+- Sprint 06 — (to be migrated).
 - ... through Sprint 16.
 
 * Release scope

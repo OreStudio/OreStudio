@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9836e113-dea9-4605-ae1b-9b0c955b6b73
+:END:
+#+title: Currencies UI polish
+#+description: Tidy the currency surface: JSON parsing, merged create/update messages, delete-bug fix, open/close bug fix, XML import, pagination.
+#+type: story
+#+level: s2
+#+filetags: :currencies:qt:ux:sprint_05:v0:
+#+created: 2025-11-28
+#+updated: 2025-11-28
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-28]
+:END:
+
+** Now
+Completed 2025-11-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-28
+
+* Goal
+
+Tidy up the currencies surface: matching JSON round-trip (XML was
+already there); collapse the create / update message split into a
+single =save_currency= message; ship a Qt dialog for XML import.
+
+* Acceptance
+
+- Currencies round-trip through JSON.
+- Single =save_currency_request/response= message replaces the
+  create/update pair (breaking protocol change; version bumped).
+- Qt XML-import dialog shipped for currencies.
+
+* Tasks
+
+In execution order:
+
+- [[id:88c04494-05ad-4cd3-b599-80924aea8595][Add JSON parsing support for currency]]
+- [[id:c905ce58-8eb6-4713-8205-3e55ce7a3c70][Merge update and create currency messages]]
+- [[id:0879d701-7c3e-494a-9252-217dceced40f][Implement import dialog for XML import in Qt]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Opening and closing currencies does not work.
+- Delete currency only deletes single currency.
+- Add pagination support.
+- Implement basic XML import XML in Qt (paired with the dialog
+  task).
+
+* Decisions
+
+- /Breaking protocol change is fine here/ :: bitemporal repositories
+  always insert new versions, so the create/update split was never
+  semantically necessary. Protocol version bump signals the break.
+
+* Out of scope
+
+- Clone-a-currency (still deferred from sprint 04).
+
+* See also
+
+- [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] (sprint 04) — predecessor story.
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] — the reference-data component carrying
+  currencies.

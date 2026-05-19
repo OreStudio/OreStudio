@@ -87,6 +87,19 @@ public:
     void setMaxVisibleSteps(int n);
 
     /**
+     * @brief Pre-seeds the table with @p count "pending" rows immediately.
+     *
+     * Call this right after setInstance() when the total step count is known
+     * (e.g. from datasets_dispatched in the publish response).  Subsequent
+     * populateSteps() calls then update rows in-place by step_index rather
+     * than inserting/removing rows, which eliminates the visual jumps caused
+     * by the table growing one row at a time during live refresh.
+     *
+     * Reset automatically by the next setInstance() call.
+     */
+    void preSeed(int count);
+
+    /**
      * @brief Returns the most recently fetched step summaries (including log).
      *
      * Empty until the first successful fetch completes.
@@ -102,6 +115,16 @@ signals:
      * warnings; false if any step failed or the instance was compensated.
      */
     void instanceReachedTerminalState(bool success);
+
+    /**
+     * @brief Emitted on every refresh with the current step counts.
+     *
+     * @p completed  Number of steps that have finished (including warnings).
+     * @p total      Total steps known for this instance.
+     * @p hasWarnings At least one step completed with warnings.
+     * @p hasFailed   At least one step is in the failed state.
+     */
+    void progressUpdated(int completed, int total, bool hasWarnings, bool hasFailed);
 
     /**
      * @brief Emitted when a step is found in the failed state.
@@ -134,6 +157,7 @@ private:
     QTimer* refreshTimer_;
     QFutureWatcher<FetchResult>* watcher_;
     int maxVisibleSteps_ = -1;
+    int preSeedCount_ = 0;
     bool terminalReached_ = false;
     std::vector<ores::workflow::messaging::workflow_step_summary> currentSteps_;
 };

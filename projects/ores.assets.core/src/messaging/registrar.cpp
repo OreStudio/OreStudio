@@ -22,6 +22,7 @@
 #include <vector>
 #include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.assets.core/messaging/image_handler.hpp"
+#include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.assets.core/messaging/registrar.hpp"
 
 namespace ores::assets::messaging {
@@ -32,8 +33,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    auto h = std::make_shared<image_handler>(nats, std::move(ctx),
-        std::move(verifier));
+    auto h = std::make_shared<image_handler>(nats, ctx, std::move(verifier));
 
     subs.push_back(nats.queue_subscribe(
         get_images_request::nats_subject, "ores.assets.service",
@@ -46,6 +46,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         save_image_request::nats_subject, "ores.assets.service",
         [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Publish-from-DQ workflow step handler
+    // ----------------------------------------------------------------
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
+        subs.push_back(nats.queue_subscribe(
+            "assets.v1.images.publish-from-dq", "ores.assets.service",
+            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+    }
 
     return subs;
 }

@@ -2028,7 +2028,7 @@ package "dq_metadata" #E1F5FE {
           description : text
           artefact_table : text
           target_table : text
-          populate_function : text
+          target_subject : text
         * display_order : integer
         * modified_by : text
         * performed_by : text
@@ -2039,7 +2039,7 @@ package "dq_metadata" #E1F5FE {
     }
 
     note right of ores_dq_artefact_types_tbl
-    Artefact Types - Maps artefact type codes to their population functions and tables
+    Artefact Types - Maps artefact type codes to their NATS dispatch subjects
     end note
 
     entity ores_dq_badge_definitions_tbl <<temporal>> #C6F0D8 {

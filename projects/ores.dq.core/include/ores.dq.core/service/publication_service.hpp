@@ -39,29 +39,10 @@
 
 namespace ores::dq::service {
 
-struct bundle_dataset_result {
+struct bundle_publishable_dataset {
+    std::string dataset_id;
     std::string dataset_code;
-    std::string dataset_name;
-    std::string status;
-    std::string error_message;
-    std::uint64_t records_inserted = 0;
-    std::uint64_t records_updated = 0;
-    std::uint64_t records_skipped = 0;
-    std::uint64_t records_deleted = 0;
-};
-
-struct publish_bundle_result {
-    bool success = false;
-    std::string error_message;
-    std::uint32_t datasets_processed = 0;
-    std::uint32_t datasets_succeeded = 0;
-    std::uint32_t datasets_failed = 0;
-    std::uint32_t datasets_skipped = 0;
-    std::uint64_t total_records_inserted = 0;
-    std::uint64_t total_records_updated = 0;
-    std::uint64_t total_records_skipped = 0;
-    std::uint64_t total_records_deleted = 0;
-    std::vector<bundle_dataset_result> dataset_results;
+    std::string target_subject;
 };
 
 /**
@@ -119,26 +100,17 @@ public:
         bool resolve_dependencies = true);
 
     /**
-     * @brief Publishes all datasets in a bundle.
+     * @brief Lists publishable datasets in a bundle for workflow dispatch.
      *
-     * Calls the SQL dq_bundles_publish_fn() which:
-     * 1. Processes datasets in display_order to respect dependencies
-     * 2. Publishes each dataset individually
-     * 3. Records publication history for auditing
+     * Returns datasets in display_order that have both a dataset record and
+     * a target_subject configured. The caller (publication_handler) uses this
+     * list to build the bundle_publish_workflow_request and start the workflow.
      *
-     * @param bundle_code The bundle to publish (e.g., 'base', 'solvaris')
-     * @param mode How to handle conflicts with existing data.
-     * @param published_by Username of the person initiating publication.
-     * @param atomic If true, first failure causes entire bundle to rollback.
-     * @param params_json JSON object with per-dataset parameters, keyed by artefact_type.
-     * @return Publication result with per-dataset details.
+     * @param bundle_code The bundle to query (e.g., 'base', 'solvaris').
+     * @return Ordered list of publishable dataset entries.
      */
-    publish_bundle_result publish_bundle(
-        const std::string& bundle_code,
-        domain::publication_mode mode,
-        const std::string& published_by,
-        bool atomic = true,
-        const std::string& params_json = "");
+    std::vector<bundle_publishable_dataset> list_bundle_publishable_datasets(
+        const std::string& bundle_code);
 
     /**
      * @brief Resolves the publication order for datasets.
@@ -211,12 +183,9 @@ private:
         const std::string& published_by);
 
     /**
-     * @brief Calls the artefact type's populate function.
+     * @brief Calls the artefact type's NATS target subject via SQL (single dataset).
      *
-     * @param dataset The dataset to publish.
-     * @param artefact_type The artefact type with target_table and populate_function.
-     * @param mode The publication mode.
-     * @return Publication result from the database function.
+     * Used by the `publish` path (individual dataset publication).
      */
     domain::publication_result call_populate_function(
         const domain::dataset& dataset,

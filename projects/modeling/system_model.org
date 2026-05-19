@@ -118,6 +118,21 @@ Full rules, patterns, and examples are in the
 [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] document
 under "Service Table Isolation".
 
+** DQ publish-from-DQ pattern
+
+Target services (refdata, assets, reporting, trading) expose
+~<service>.v1.<entity>.publish-from-dq~ NATS subjects. Each handler reads DQ
+artefact tables via a ~SECURITY DEFINER~ SQL function (owned by the DQ schema)
+and writes only to the target service's own tables. This satisfies the isolation
+invariant while allowing DQ-sourced seed data to be materialised into service
+tables.
+
+Publish exception: the ~SECURITY DEFINER~ function runs as the DQ schema owner,
+so it may read ~ores_dq_*~ tables. The calling service user never receives a
+SELECT grant on DQ tables. This pattern is the only permitted cross-service read
+path from service SQL functions; ordinary DML handlers must not query
+~ores_<other_service>_*~ tables directly.
+
 * Useful Pages
 
 - To understand the binary protocol, see the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].

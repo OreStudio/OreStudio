@@ -46,10 +46,12 @@ TenantController::TenantController(
     ClientManager* clientManager,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           tenant_event_name, parent),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -66,7 +68,7 @@ void TenantController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new TenantMdiWindow(clientManager_, username_);
+    listWindow_ = new TenantMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &TenantMdiWindow::statusChanged,
@@ -79,6 +81,8 @@ void TenantController::showListWindow() {
             this, &TenantController::onAddNewRequested);
     connect(listWindow_, &TenantMdiWindow::onboardRequested,
             this, &TenantController::onboardRequested);
+    connect(listWindow_, &TenantMdiWindow::tenantReset,
+            this, &TenantController::onTenantReset);
     connect(listWindow_, &TenantMdiWindow::showTenantHistory,
             this, &TenantController::onShowHistory);
 
@@ -140,6 +144,11 @@ void TenantController::onShowDetails(
 void TenantController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new tenant requested";
     showAddWindow();
+}
+
+void TenantController::onTenantReset(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Tenant reset: " << code.toStdString();
+    emit statusMessage(QString("Tenant '%1' has been reset to bootstrap state").arg(code));
 }
 
 void TenantController::onShowHistory(

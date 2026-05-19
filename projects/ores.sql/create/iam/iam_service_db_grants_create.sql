@@ -215,7 +215,34 @@ select _ores_grant_dml_fn('ores_controller_', :'controller_service_user');
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
 
 -- ---------------------------------------------------------------------------
+-- EXECUTE grants for publish-from-dq SECURITY DEFINER functions
+--
+-- Each target service needs EXECUTE on its own publish-from-dq functions.
+-- The functions run with DB-owner privileges (SECURITY DEFINER) but the
+-- service user must be granted EXECUTE to call them.
+-- ---------------------------------------------------------------------------
+create or replace function _ores_grant_execute_fn(p_prefix text, p_user text)
+returns void language plpgsql as $$
+declare
+    v_fn_sig text;
+begin
+    for v_fn_sig in
+        select oid::regprocedure::text
+        from pg_proc
+        where pronamespace = (select oid from pg_namespace where nspname = 'public')
+          and proname like p_prefix || '%'
+    loop
+        execute format('grant execute on function %s to %I', v_fn_sig, p_user);
+    end loop;
+end $$;
+
+select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
+select _ores_grant_execute_fn('ores_assets_publish_', :'assets_service_user');
+select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
+
+-- ---------------------------------------------------------------------------
 -- Clean up helper functions
 -- ---------------------------------------------------------------------------
 drop function _ores_grant_dml_fn(text, text);
 drop function _ores_grant_select_fn(text, text);
+drop function _ores_grant_execute_fn(text, text);

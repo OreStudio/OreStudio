@@ -24,7 +24,6 @@
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
-#include <array>
 #include <chrono>
 #include <QFormLayout>
 #include <QGridLayout>
@@ -44,6 +43,7 @@
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
 
@@ -83,10 +83,9 @@ void TenantProvisioningWizard::setupPages() {
     WidgetUtils::setupComboBoxes(this);
     setPage(Page_Welcome,             new ProvisioningWelcomePage(this));
     setPage(Page_BundleSelection,     new BundleSelectionPage(this));
-    setPage(Page_BundleInstall,       new BundleInstallPage(this));
     setPage(Page_DataSourceSelection, new TenantDataSourceSelectionPage(this));
     setPage(Page_PartySetup,          new TenantPartySetupPage(this));
-    setPage(Page_PartyOrganisation,   new TenantPartyOrganisationPage(this));
+    setPage(Page_Execute,             new TenantExecutePage(this));
     setPage(Page_Summary,             new TenantApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
@@ -115,6 +114,19 @@ void TenantProvisioningWizard::clearBootstrapFlag() {
                                   << (result->message.empty() ? "Unknown error" : result->message);
     } else {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap flag cleared successfully";
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Marking tenant active";
+    iam::messaging::complete_tenant_provisioning_command activateReq;
+    auto activateResult = clientManager_->process_authenticated_request(
+        std::move(activateReq));
+    if (!activateResult) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to mark tenant active: no response from server";
+    } else if (!activateResult->success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to mark tenant active: "
+            << (activateResult->message.empty() ? "Unknown error" : activateResult->message);
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Tenant marked active successfully";
     }
 }
 
@@ -158,11 +170,10 @@ void ProvisioningWelcomePage::setupUI() {
         tr("<ol>"
            "<li><b>Select Catalogue</b> - Choose a pre-configured set of "
            "reference data (currencies, countries, etc.).</li>"
-           "<li><b>Publish Catalogue</b> - Publish the selected data to your "
-           "tenant.</li>"
-           "<li><b>Party Structure</b> - Set up your organisation's party "
-           "hierarchy from the GLEIF LEI registry or from synthetic data.</li>"
-           "<li><b>Organisation Setup</b> - Publish the party hierarchy.</li>"
+           "<li><b>Party Structure</b> - Choose how to set up your organisation's "
+           "party hierarchy (GLEIF registry or generated data).</li>"
+           "<li><b>Execute</b> - All data is published and configured in one step "
+           "with live progress tracking.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -301,137 +312,6 @@ bool BundleSelectionPage::validatePage() {
     wizard_->setSelectedBundleCode(QString::fromStdString(bundle->code));
     wizard_->setSelectedBundleName(QString::fromStdString(bundle->name));
     return true;
-}
-
-// ============================================================================
-// BundleInstallPage
-// ============================================================================
-
-BundleInstallPage::BundleInstallPage(TenantProvisioningWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
-
-    setTitle(tr("Publishing Catalogue"));
-    setFinalPage(false);
-
-    auto* layout = new QVBoxLayout(this);
-
-    statusLabel_ = new QLabel(tr("Starting..."), this);
-    statusLabel_->setStyleSheet("font-weight: bold;");
-    layout->addWidget(statusLabel_);
-
-    progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0); // indeterminate
-    progressBar_->setTextVisible(false);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
-    layout->addWidget(progressBar_);
-
-    logOutput_ = new QTextEdit(this);
-    logOutput_->setReadOnly(true);
-    logOutput_->setFont(FontUtils::monospace());
-    layout->addWidget(logOutput_);
-}
-
-bool BundleInstallPage::isComplete() const {
-    return publishComplete_;
-}
-
-void BundleInstallPage::initializePage() {
-    publishComplete_ = false;
-    publishSuccess_ = false;
-    logOutput_->clear();
-    statusLabel_->setText(tr("Publishing catalogue '%1'...").arg(
-        wizard_->selectedBundleName()));
-    progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
-
-    startPublish();
-}
-
-void BundleInstallPage::appendLog(const QString& message) {
-    logOutput_->append(message);
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
-}
-
-void BundleInstallPage::startPublish() {
-    const std::string bundleCode = wizard_->selectedBundleCode().toStdString();
-    const std::string publishedBy = wizard_->clientManager()->currentUsername();
-    ClientManager* clientManager = wizard_->clientManager();
-
-    BOOST_LOG_SEV(lg(), info) << "Publishing bundle: " << bundleCode;
-
-    using ResponseType = dq::messaging::publish_bundle_response;
-
-    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
-        watcher->deleteLater();
-
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
-        if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Bundle publication: no server response";
-            statusLabel_->setText(tr("Publication failed!"));
-            appendLog(tr("ERROR: Failed to communicate with server."));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
-        } else if (!result->success) {
-            BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: "
-                                       << result->error_message;
-            statusLabel_->setText(tr("Publication failed!"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result->error_message)));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
-        } else {
-            BOOST_LOG_SEV(lg(), info) << "Bundle publication succeeded: "
-                << result->datasets_succeeded << " datasets";
-            statusLabel_->setText(tr("Publication completed successfully!"));
-            appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                .arg(result->datasets_succeeded)
-                .arg(result->total_records_inserted)
-                .arg(result->total_records_updated));
-            publishSuccess_ = true;
-        }
-
-        publishComplete_ = true;
-        emit completeChanged();
-    });
-
-    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, bundleCode, publishedBy]() -> std::optional<ResponseType> {
-
-            dq::messaging::publish_bundle_request request;
-            request.bundle_code = bundleCode;
-            request.mode = dq::domain::publication_mode::upsert;
-            request.published_by = publishedBy;
-            request.atomic = true;
-
-            auto result = clientManager->process_authenticated_request(
-                std::move(request));
-
-            if (!result) {
-                return std::nullopt;
-            }
-            return *result;
-        }
-    );
-
-    watcher->setFuture(future);
-
-    appendLog(tr("Publishing catalogue '%1'...")
-        .arg(wizard_->selectedBundleName()));
 }
 
 // ============================================================================
@@ -644,8 +524,9 @@ bool TenantDataSourceSelectionPage::validatePage() {
 }
 
 int TenantDataSourceSelectionPage::nextId() const {
+    // Synthetic mode skips the LEI picker page (PartySetup) and goes straight to Execute.
     if (syntheticRadio_->isChecked())
-        return TenantProvisioningWizard::Page_PartyOrganisation;
+        return TenantProvisioningWizard::Page_Execute;
     return TenantProvisioningWizard::Page_PartySetup;
 }
 
@@ -721,15 +602,16 @@ bool TenantPartySetupPage::validatePage() {
 }
 
 // ============================================================================
-// TenantPartyOrganisationPage
+// TenantExecutePage
 // ============================================================================
 
-TenantPartyOrganisationPage::TenantPartyOrganisationPage(
-    TenantProvisioningWizard* wizard)
+TenantExecutePage::TenantExecutePage(TenantProvisioningWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Organisation Setup"));
-    setSubTitle(tr("Setting up your organisation's structure."));
+    setTitle(tr("Setting Up Tenant"));
+    setSubTitle(tr("Publishing reference data and configuring your organisation. "
+                   "Please wait — this may take several minutes."));
+    setCommitPage(true); // Disable Back once execution starts to prevent re-running.
     setFinalPage(false);
 
     auto* layout = new QVBoxLayout(this);
@@ -739,7 +621,7 @@ TenantPartyOrganisationPage::TenantPartyOrganisationPage(
     layout->addWidget(statusLabel_);
 
     progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0); // indeterminate
+    progressBar_->setRange(0, 0);
     progressBar_->setTextVisible(false);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
@@ -747,287 +629,240 @@ TenantPartyOrganisationPage::TenantPartyOrganisationPage(
         "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    stepsWidget_->setMinimumHeight(200);
+    stepsWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    layout->addWidget(stepsWidget_);
+
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
     logOutput_->setFont(FontUtils::monospace());
+    logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
+
+    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+            this, &TenantExecutePage::onWorkflowComplete);
 }
 
-bool TenantPartyOrganisationPage::isComplete() const {
-    return publishComplete_;
+bool TenantExecutePage::isComplete() const {
+    return allComplete_;
 }
 
-void TenantPartyOrganisationPage::initializePage() {
-    publishComplete_ = false;
-    publishSuccess_ = false;
+void TenantExecutePage::initializePage() {
+    allComplete_ = false;
+    allSuccess_ = false;
+    partiesLinked_ = 0;
+    publishedBy_ = wizard_->clientManager()->currentUsername();
+
     logOutput_->clear();
+    stepsWidget_->setVisible(false);
     progressBar_->setRange(0, 0);
+    progressBar_->setVisible(true);
     progressBar_->setStyleSheet(
         "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
         "background: #2d2d2d; height: 20px; }"
         "QProgressBar::chunk { background-color: #4a9eff; }");
+    statusLabel_->setStyleSheet("font-weight: bold;");
+    statusLabel_->setText(tr("Publishing base catalogue '%1'...")
+        .arg(wizard_->selectedBundleName()));
 
-    const bool isSynthetic = wizard_->dataSourceMode() ==
-        TenantProvisioningWizard::DataSourceMode::synthetic;
-
-    if (isSynthetic) {
-        setSubTitle(tr("Generating synthetic party hierarchy."));
-        statusLabel_->setText(tr("Generating synthetic party data..."));
-    } else if (!wizard_->rootLei().isEmpty()) {
-        setSubTitle(tr("Publishing GLEIF party hierarchy for your organisation."));
-        statusLabel_->setText(tr("Publishing GLEIF party hierarchy..."));
-    } else {
-        setSubTitle(tr("Publishing party hierarchy."));
-        statusLabel_->setText(tr("Publishing party data..."));
-    }
-
-    startPublish();
+    startBundlePublish();
 }
 
-void TenantPartyOrganisationPage::appendLog(const QString& message) {
-    logOutput_->append(message);
+void TenantExecutePage::appendLog(const QString& msg) {
+    logOutput_->append(msg);
     auto cursor = logOutput_->textCursor();
     cursor.movePosition(QTextCursor::End);
     logOutput_->setTextCursor(cursor);
 }
 
-void TenantPartyOrganisationPage::startPublish() {
-    const bool isSynthetic = wizard_->dataSourceMode() ==
-        TenantProvisioningWizard::DataSourceMode::synthetic;
-
-    if (isSynthetic)
-        startSyntheticGeneration();
-    else
-        startBundlePublish();
+void TenantExecutePage::markFailed(const QString& errorMsg) {
+    BOOST_LOG_SEV(lg(), error) << "Tenant setup failed: " << errorMsg.toStdString();
+    statusLabel_->setText(tr("Setup failed: %1").arg(errorMsg));
+    statusLabel_->setStyleSheet("font-weight: bold; color: #cc0000;");
+    progressBar_->setRange(0, 1);
+    progressBar_->setValue(1);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #cc0000; }");
+    appendLog(tr("ERROR: %1").arg(errorMsg));
+    allSuccess_ = false;
+    allComplete_ = true;
+    emit completeChanged();
 }
 
-void TenantPartyOrganisationPage::startBundlePublish() {
-    const std::string publishedBy = wizard_->clientManager()->currentUsername();
+// Phase 1: Publish base bundle (with LEI params if GLEIF mode + root LEI selected).
+void TenantExecutePage::startBundlePublish() {
+    const std::string bundleCode = wizard_->selectedBundleCode().toStdString();
     ClientManager* clientManager = wizard_->clientManager();
+
+    // Build params: include LEI data only when we have a root LEI to publish.
+    std::string paramsJson;
+    const bool isGleif = wizard_->dataSourceMode() ==
+        TenantProvisioningWizard::DataSourceMode::gleif;
     const std::string rootLei = wizard_->rootLei().toStdString();
-    const bool hasLei = !rootLei.empty();
-    const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
+    const bool hasLei = isGleif && !rootLei.empty();
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
-                              << (hasLei ? " with root LEI: " : "")
-                              << rootLei;
-
-    // Build LEI params for re-publishing the base bundle with opt-in datasets
-    std::string leiParamsJson = "{}";
     if (hasLei) {
-        dq::messaging::publish_bundle_params leiParams;
-        leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
-        const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-        const std::string size = datasetSize.empty() ? "small" : datasetSize;
-        leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
-        leiParamsJson = dq::messaging::build_params_json(leiParams);
+        dq::messaging::publish_bundle_params params;
+        params.lei_parties = dq::messaging::lei_parties_params{rootLei};
+        paramsJson = dq::messaging::build_params_json(params);
+        appendLog(tr("Publishing catalogue '%1' with GLEIF root LEI: %2 (dataset: %3)")
+            .arg(wizard_->selectedBundleName())
+            .arg(wizard_->rootLeiName())
+            .arg(wizard_->leiDatasetSize()));
+        BOOST_LOG_SEV(lg(), info) << "Phase 1: publishing bundle=" << bundleCode
+            << " root_lei=" << rootLei
+            << " size=" << wizard_->leiDatasetSize().toStdString();
+    } else {
+        appendLog(tr("Publishing catalogue '%1'...")
+            .arg(wizard_->selectedBundleName()));
+        BOOST_LOG_SEV(lg(), info) << "Phase 1: publishing bundle=" << bundleCode
+            << " (no LEI params)";
     }
 
-    struct PublishResult {
+    struct BundleResult {
         bool success = false;
         std::string error_message;
-        bool has_lei = false;
-        int datasets_succeeded = 0;
-        int total_records_inserted = 0;
-        int total_records_updated = 0;
-        int parties_linked = 0;
+        std::string instance_id;
+        int datasets_dispatched = 0;
     };
 
-    auto* watcher = new QFutureWatcher<PublishResult>(this);
-    connect(watcher, &QFutureWatcher<PublishResult>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
+    auto* watcher = new QFutureWatcher<BundleResult>(this);
+    connect(watcher, &QFutureWatcher<BundleResult>::finished,
+            this, [this, watcher]() {
+        BundleResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 1 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Organisation publication failed: " << result.error_message;
-            statusLabel_->setText(tr("Organisation setup failed!"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error_message)));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
-        } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Organisation setup succeeded: "
-                << result.datasets_succeeded << " datasets, "
-                << result.parties_linked << " parties linked"
-                << (result.has_lei ? "" : " (no root LEI selected)");
-            statusLabel_->setText(tr("Organisation setup complete!"));
-            if (result.has_lei) {
-                appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
-                    .arg(result.datasets_succeeded)
-                    .arg(result.total_records_inserted)
-                    .arg(result.total_records_updated));
-            } else {
-                appendLog(tr("No root LEI selected — GLEIF party publication skipped."));
-            }
-            if (result.parties_linked > 0) {
-                appendLog(tr("Tenant admin associated with %1 parties.")
-                    .arg(result.parties_linked));
-            }
-            wizard_->setPartiesLinkedCount(result.parties_linked);
-            publishSuccess_ = true;
+            markFailed(QString::fromStdString(result.error_message));
+            return;
         }
 
-        publishComplete_ = true;
-        emit completeChanged();
+        BOOST_LOG_SEV(lg(), info) << "Bundle workflow started: instance="
+            << result.instance_id
+            << " datasets=" << result.datasets_dispatched;
+        appendLog(tr("Catalogue workflow started: %1 datasets dispatched.")
+            .arg(result.datasets_dispatched));
+        statusLabel_->setText(tr("Publishing datasets... (%1 dispatched)")
+            .arg(result.datasets_dispatched));
+
+        progressBar_->setVisible(false);
+        stepsWidget_->setVisible(true);
+        stepsWidget_->setInstance(
+            QUuid::fromString(QString::fromStdString(result.instance_id)));
+        stepsWidget_->preSeed(result.datasets_dispatched);
+        // onWorkflowComplete fires via instanceReachedTerminalState
     });
 
-    QFuture<PublishResult> future = QtConcurrent::run(
-        [clientManager, publishedBy, leiParamsJson, hasLei, rootLei,
-         selectedBundle,
-         rootLeiName = wizard_->rootLeiName().toStdString(),
-         leiDatasetSize = wizard_->leiDatasetSize().toStdString()]()
-            -> PublishResult {
+    QFuture<BundleResult> future = QtConcurrent::run(
+        [clientManager, bundleCode, paramsJson,
+         publishedBy = publishedBy_]() -> BundleResult {
 
-            PublishResult result;
-            result.has_lei = hasLei;
+            BundleResult result;
+            dq::messaging::publish_bundle_request request;
+            request.bundle_code  = bundleCode;
+            request.mode         = dq::domain::publication_mode::upsert;
+            request.published_by = publishedBy;
+            request.atomic       = true;
+            request.params_json  = paramsJson;
 
-            // Step 1: Re-publish the selected bundle with root_lei params to
-            // filter GLEIF party data to the chosen hierarchy
-            if (hasLei) {
-                dq::messaging::publish_bundle_request leiRequest;
-                leiRequest.bundle_code = selectedBundle;
-                leiRequest.mode = dq::domain::publication_mode::upsert;
-                leiRequest.published_by = publishedBy;
-                leiRequest.atomic = true;
-                leiRequest.params_json = leiParamsJson;
+            auto resp = clientManager->process_authenticated_request(
+                std::move(request), std::chrono::minutes(5));
 
-                auto leiResult = clientManager->process_authenticated_request(
-                    std::move(leiRequest), std::chrono::minutes(5));
-
-                if (!leiResult) {
-                    result.error_message = "Failed to communicate with server "
-                        "(GLEIF parties)";
-                    return result;
-                }
-                if (!leiResult->success) {
-                    result.error_message = leiResult->error_message;
-                    return result;
-                }
-                result.datasets_succeeded     = leiResult->datasets_succeeded;
-                result.total_records_inserted = leiResult->total_records_inserted;
-                result.total_records_updated  = leiResult->total_records_updated;
-            }
-
-            // Step 2: Associate tenant admin with all Operational parties
-            const auto accountId = clientManager->accountId();
-            if (!accountId) {
-                // No account ID available - skip linking (non-fatal)
-                result.success = true;
+            if (!resp) {
+                result.error_message = "Failed to communicate with server (bundle publish)";
                 return result;
             }
-
-            refdata::messaging::get_parties_request partyReq;
-            partyReq.offset = 0;
-            partyReq.limit = 1000;
-            auto partyResult = clientManager->process_authenticated_request(
-                std::move(partyReq));
-
-            if (!partyResult) {
-                // Non-fatal: parties were created, just couldn't link admin
-                result.success = true;
+            if (!resp->success) {
+                result.error_message = resp->error_message;
                 return result;
             }
-
-            iam::messaging::save_account_party_request apReq;
-            for (const auto& party : partyResult->parties) {
-                if (party.party_category != "Operational")
-                    continue;
-                iam::domain::account_party ap;
-                ap.account_id = *accountId;
-                ap.party_id = party.id;
-                ap.tenant_id = party.tenant_id;
-                ap.modified_by = publishedBy;
-                ap.performed_by = publishedBy;
-                ap.change_reason_code =
-                    std::string(reason::codes::new_record);
-                ap.change_commentary =
-                    "Tenant provisioning: tenant admin associated with party";
-                apReq.account_parties.push_back(std::move(ap));
-            }
-
-            if (!apReq.account_parties.empty()) {
-                auto apResult = clientManager->process_authenticated_request(
-                    std::move(apReq));
-                if (apResult && apResult->success) {
-                    result.parties_linked =
-                        static_cast<int>(apReq.account_parties.size());
-                }
-            }
-
-            result.success = true;
+            result.success            = true;
+            result.instance_id        = resp->instance_id;
+            result.datasets_dispatched = resp->datasets_dispatched;
             return result;
         }
     );
 
     watcher->setFuture(future);
+}
 
-    if (hasLei) {
-        appendLog(tr("Publishing GLEIF LEI parties "
-                      "(root: %1, dataset: %2)...")
-            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
+// Called when the base bundle workflow reaches a terminal state.
+void TenantExecutePage::onWorkflowComplete(bool success) {
+    // Leave stepsWidget_ visible — completed table stays as a record.
+    // Show progressBar_ as a spinner for subsequent non-workflow phases.
+    progressBar_->setVisible(true);
+    progressBar_->setRange(0, 0);
+
+    if (!success) {
+        markFailed(tr("Base catalogue workflow completed with errors."));
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 1 complete: base bundle workflow succeeded";
+    appendLog(tr("Reference data published successfully."));
+
+    const bool isSynthetic = wizard_->dataSourceMode() ==
+        TenantProvisioningWizard::DataSourceMode::synthetic;
+
+    if (isSynthetic) {
+        statusLabel_->setText(tr("Generating synthetic organisation data..."));
+        startSyntheticGeneration();
+    } else {
+        statusLabel_->setText(tr("Associating tenant admin with parties..."));
+        startPartyAssociation();
     }
 }
 
-void TenantPartyOrganisationPage::startSyntheticGeneration() {
+// Phase 2 (synthetic mode only): generate synthetic organisation data.
+void TenantExecutePage::startSyntheticGeneration() {
     ClientManager* clientManager = wizard_->clientManager();
 
-    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation data";
+    BOOST_LOG_SEV(lg(), info) << "Phase 2: generating synthetic organisation";
+    appendLog(tr("Generating synthetic organisation data..."));
 
-    struct PublishResult {
+    struct SyntheticResult {
         bool success = false;
         std::string error_message;
         int parties_generated = 0;
-        int parties_linked = 0;
     };
 
-    auto* watcher = new QFutureWatcher<PublishResult>(this);
-    connect(watcher, &QFutureWatcher<PublishResult>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
+    auto* watcher = new QFutureWatcher<SyntheticResult>(this);
+    connect(watcher, &QFutureWatcher<SyntheticResult>::finished,
+            this, [this, watcher]() {
+        SyntheticResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 2 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
         watcher->deleteLater();
 
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Synthetic generation failed: " << result.error_message;
-            statusLabel_->setText(tr("Synthetic generation failed!"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error_message)));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-            publishSuccess_ = false;
-        } else {
-            BOOST_LOG_SEV(lg(), info) << "Synthetic generation succeeded";
-            statusLabel_->setText(tr("Organisation setup complete!"));
-            appendLog(tr("Synthetic organisation data generated (%1 parties).")
-                .arg(result.parties_generated));
-            if (result.parties_linked > 0) {
-                appendLog(tr("Tenant admin associated with %1 parties.")
-                    .arg(result.parties_linked));
-            }
-            wizard_->setPartiesLinkedCount(result.parties_linked);
-            publishSuccess_ = true;
+            markFailed(QString::fromStdString(result.error_message));
+            return;
         }
 
-        publishComplete_ = true;
-        emit completeChanged();
+        BOOST_LOG_SEV(lg(), info) << "Synthetic generation complete: "
+            << result.parties_generated << " parties";
+        appendLog(tr("Synthetic data generated: %1 parties created.")
+            .arg(result.parties_generated));
+        statusLabel_->setText(tr("Associating tenant admin with parties..."));
+        startPartyAssociation();
     });
 
-    using SyntheticResponseType =
-        synthetic::messaging::generate_organisation_response;
-
-    QFuture<PublishResult> future = QtConcurrent::run(
+    QFuture<SyntheticResult> future = QtConcurrent::run(
         [clientManager,
-         publishedBy = wizard_->clientManager()->currentUsername(),
          country               = wizard_->syntheticCountry().toStdString(),
          partyCount            = wizard_->syntheticPartyCount(),
          partyMaxDepth         = wizard_->syntheticPartyMaxDepth(),
@@ -1043,53 +878,93 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
          contactsPerCp         = wizard_->syntheticContactsPerCounterparty(),
          generateIdentifiers   = wizard_->syntheticGenerateIdentifiers(),
          seed                  = wizard_->syntheticSeed()]()
-            -> PublishResult {
+            -> SyntheticResult {
 
-            PublishResult result;
-
+            SyntheticResult result;
             synthetic::messaging::generate_organisation_request request;
             request.country               = country;
-            request.party_count           =
-                static_cast<std::uint32_t>(partyCount);
-            request.party_max_depth       =
-                static_cast<std::uint32_t>(partyMaxDepth);
-            request.counterparty_count    =
-                static_cast<std::uint32_t>(counterpartyCount);
-            request.counterparty_max_depth =
-                static_cast<std::uint32_t>(counterpartyMaxDepth);
-            request.portfolio_leaf_count  =
-                static_cast<std::uint32_t>(portfolioLeafCount);
-            request.portfolio_max_depth   =
-                static_cast<std::uint32_t>(portfolioMaxDepth);
+            request.party_count           = static_cast<std::uint32_t>(partyCount);
+            request.party_max_depth       = static_cast<std::uint32_t>(partyMaxDepth);
+            request.counterparty_count    = static_cast<std::uint32_t>(counterpartyCount);
+            request.counterparty_max_depth = static_cast<std::uint32_t>(counterpartyMaxDepth);
+            request.portfolio_leaf_count  = static_cast<std::uint32_t>(portfolioLeafCount);
+            request.portfolio_max_depth   = static_cast<std::uint32_t>(portfolioMaxDepth);
             request.books_per_leaf_portfolio =
                 static_cast<std::uint32_t>(booksPerPortfolio);
-            request.business_unit_count   =
-                static_cast<std::uint32_t>(businessUnitCount);
+            request.business_unit_count   = static_cast<std::uint32_t>(businessUnitCount);
             request.business_unit_max_depth =
                 static_cast<std::uint32_t>(businessUnitMaxDepth);
             request.generate_addresses    = generateAddresses;
-            request.contacts_per_party    =
-                static_cast<std::uint32_t>(contactsPerParty);
+            request.contacts_per_party    = static_cast<std::uint32_t>(contactsPerParty);
             request.contacts_per_counterparty =
                 static_cast<std::uint32_t>(contactsPerCp);
             request.generate_identifiers  = generateIdentifiers;
             request.seed                  = seed;
 
-            auto genResult = clientManager->process_authenticated_request(
+            auto resp = clientManager->process_authenticated_request(
                 std::move(request), std::chrono::minutes(10));
 
-            if (!genResult) {
+            if (!resp) {
                 result.error_message = "Failed to communicate with synthetic service";
                 return result;
             }
-            if (!genResult->success) {
-                result.error_message = genResult->error_message;
+            if (!resp->success) {
+                result.error_message = resp->error_message;
                 return result;
             }
+            result.success = true;
+            result.parties_generated = resp->parties_count;
+            return result;
+        }
+    );
 
-            result.parties_generated = genResult->parties_count;
+    watcher->setFuture(future);
+}
 
-            // Associate tenant admin with all Operational parties
+// Phase 3: associate the tenant admin account with all Operational parties.
+void TenantExecutePage::startPartyAssociation() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 3: associating tenant admin with parties";
+
+    struct AssocResult {
+        bool success = false;
+        std::string error_message;
+        int parties_linked = 0;
+    };
+
+    auto* watcher = new QFutureWatcher<AssocResult>(this);
+    connect(watcher, &QFutureWatcher<AssocResult>::finished,
+            this, [this, watcher]() {
+        AssocResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 3 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        if (!result.success) {
+            markFailed(QString::fromStdString(result.error_message));
+            return;
+        }
+
+        partiesLinked_ = result.parties_linked;
+        BOOST_LOG_SEV(lg(), info) << "Party association complete: "
+            << partiesLinked_ << " parties linked";
+        appendLog(tr("Admin associated with %1 operational parties.")
+            .arg(partiesLinked_));
+        wizard_->setPartiesLinkedCount(partiesLinked_);
+
+        statusLabel_->setText(tr("Finalizing tenant setup..."));
+        startFinalize();
+    });
+
+    QFuture<AssocResult> future = QtConcurrent::run(
+        [clientManager, publishedBy = publishedBy_]() -> AssocResult {
+            AssocResult result;
+
             const auto accountId = clientManager->accountId();
             if (!accountId) {
                 result.success = true;
@@ -1103,7 +978,7 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
                 std::move(partyReq));
 
             if (!partyResult) {
-                result.success = true;
+                result.success = true; // non-fatal: skip association
                 return result;
             }
 
@@ -1112,14 +987,14 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
                 if (party.party_category != "Operational")
                     continue;
                 iam::domain::account_party ap;
-                ap.account_id = *accountId;
-                ap.party_id = party.id;
-                ap.tenant_id = party.tenant_id;
-                ap.modified_by = publishedBy;
-                ap.performed_by = publishedBy;
+                ap.account_id         = *accountId;
+                ap.party_id           = party.id;
+                ap.tenant_id          = party.tenant_id;
+                ap.modified_by        = publishedBy;
+                ap.performed_by       = publishedBy;
                 ap.change_reason_code =
                     std::string(reason::codes::new_record);
-                ap.change_commentary =
+                ap.change_commentary  =
                     "Tenant provisioning: tenant admin associated with party";
                 apReq.account_parties.push_back(std::move(ap));
             }
@@ -1127,10 +1002,9 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
             if (!apReq.account_parties.empty()) {
                 auto apResult = clientManager->process_authenticated_request(
                     std::move(apReq));
-                if (apResult && apResult->success) {
+                if (apResult && apResult->success)
                     result.parties_linked =
                         static_cast<int>(apReq.account_parties.size());
-                }
             }
 
             result.success = true;
@@ -1139,9 +1013,96 @@ void TenantPartyOrganisationPage::startSyntheticGeneration() {
     );
 
     watcher->setFuture(future);
+}
 
-    appendLog(tr("Generating synthetic parties, counterparties, and "
-                  "organisational structure..."));
+// Phase 4: clear bootstrap flag and mark tenant active (blocking, runs on thread pool).
+void TenantExecutePage::startFinalize() {
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Phase 4: clearing bootstrap flag";
+
+    struct FinalizeResult {
+        bool success = false;
+        std::string error_message;
+    };
+
+    auto* watcher = new QFutureWatcher<FinalizeResult>(this);
+    connect(watcher, &QFutureWatcher<FinalizeResult>::finished,
+            this, [this, watcher]() {
+        FinalizeResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Phase 4 async task threw: " << e.what();
+            result.error_message = e.what();
+        }
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result.success) {
+            // Warn but don't block — bootstrap clearing is best-effort.
+            BOOST_LOG_SEV(lg(), warn) << "Bootstrap clear failed: " << result.error_message;
+            appendLog(tr("Warning: failed to activate organisation: %1")
+                .arg(QString::fromStdString(result.error_message)));
+        } else {
+            appendLog(tr("Organisation activated successfully."));
+        }
+
+        statusLabel_->setText(tr("Setup complete!"));
+        statusLabel_->setStyleSheet("font-weight: bold; color: #228B22;");
+        progressBar_->setStyleSheet(
+            "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+            "background: #2d2d2d; height: 20px; }"
+            "QProgressBar::chunk { background-color: #228B22; }");
+
+        allSuccess_ = true;
+        allComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<FinalizeResult> future = QtConcurrent::run(
+        [clientManager,
+         publishedBy = publishedBy_]() -> FinalizeResult {
+
+            FinalizeResult result;
+
+            variability::domain::system_setting setting;
+            setting.name = "system.bootstrap_mode";
+            setting.value = "false";
+            setting.data_type = "boolean";
+            setting.description = "Bootstrap mode disabled after tenant setup";
+            setting.modified_by = publishedBy;
+            setting.change_reason_code =
+                std::string(reason::codes::new_record);
+            setting.change_commentary = "Tenant setup wizard completed";
+            variability::messaging::save_setting_request req;
+            req.data = std::move(setting);
+
+            auto settingResult = clientManager->process_authenticated_request(
+                std::move(req));
+            if (!settingResult || !settingResult->success) {
+                result.error_message = settingResult
+                    ? settingResult->message : "no response";
+                // Continue to mark tenant active even if setting fails.
+            }
+
+            iam::messaging::complete_tenant_provisioning_command activateReq;
+            auto activateResult = clientManager->process_authenticated_request(
+                std::move(activateReq));
+            if (!activateResult || !activateResult->success) {
+                result.error_message += " / tenant activation failed: "
+                    + (activateResult ? activateResult->message : "no response");
+                return result;
+            }
+
+            result.success = true;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
 }
 
 // ============================================================================
@@ -1179,41 +1140,36 @@ void TenantApplyAndSummaryPage::setupUI() {
 
     layout->addStretch();
 
-    auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
-    auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
-    auto* nextStepsLabel = new QLabel(
-        tr("Log out and log back in, then select a party to complete its "
-           "operational setup. The party setup wizard will appear automatically "
-           "for each party you log into."),
+    auto* logoutBox = new QGroupBox(tr("Action Required"), this);
+    auto* logoutLayout = new QVBoxLayout(logoutBox);
+    auto* logoutLabel = new QLabel(
+        tr("<b>You must log out and log back in to continue.</b><br><br>"
+           "After logging back in, select a party from the party selector. "
+           "The party setup wizard will start automatically for each party "
+           "that has not yet been configured."),
         this);
-    nextStepsLabel->setWordWrap(true);
-    nextStepsLabel->setTextFormat(Qt::RichText);
-    nextStepsLayout->addWidget(nextStepsLabel);
-    layout->addWidget(nextStepsBox);
+    logoutLabel->setWordWrap(true);
+    logoutLabel->setTextFormat(Qt::RichText);
+    logoutLayout->addWidget(logoutLabel);
+    layout->addWidget(logoutBox);
 }
 
 void TenantApplyAndSummaryPage::initializePage() {
-    // Clear the bootstrap flag
-    wizard_->clearBootstrapFlag();
-
-    // Build summary
-    QString summary = tr("<p>Your tenant has been set up successfully.</p>");
+    QString summary = tr("<p>Your organisation has been onboarded successfully.</p>");
 
     if (!wizard_->selectedBundleCode().isEmpty()) {
-        summary += tr("<p><b>Reference data bundle:</b> %1</p>")
+        summary += tr("<p><b>Reference data loaded:</b> %1</p>")
             .arg(wizard_->selectedBundleName());
     }
 
     const int partiesLinked = wizard_->partiesLinkedCount();
     if (partiesLinked > 0) {
-        summary += tr("<p><b>Parties created and linked:</b> %1 "
-                      "(your account has been associated with all of them)</p>")
+        summary += tr("<p><b>Trading entities created:</b> %1 "
+                      "(your administrator account has access to all of them)</p>")
             .arg(partiesLinked);
     }
 
-    summary += tr("<p>The bootstrap mode flag has been cleared. "
-                  "Log out and select a party on next login to complete "
-                  "per-party setup.</p>");
+    summary += tr("<p>Your organisation is now active and ready for use.</p>");
 
     summaryLabel_->setText(summary);
 

@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/messaging/registrar.hpp"
 
+#include <array>
 #include <memory>
 #include <optional>
 #include "ores.nats/service/client.hpp"
@@ -55,6 +56,7 @@
 #include "ores.refdata.core/messaging/overnight_index_convention_handler.hpp"
 #include "ores.refdata.core/messaging/fx_convention_handler.hpp"
 #include "ores.refdata.core/messaging/cds_convention_handler.hpp"
+#include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
@@ -709,6 +711,42 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             get_asset_classes_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Publish-from-DQ workflow step handlers (22 subjects, one handler)
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        static constexpr std::array publish_subjects{
+            "refdata.v1.account-types.publish-from-dq",
+            "refdata.v1.asset-classes.publish-from-dq",
+            "refdata.v1.asset-measures.publish-from-dq",
+            "refdata.v1.benchmark-rates.publish-from-dq",
+            "refdata.v1.books.publish-from-dq",
+            "refdata.v1.business-centres.publish-from-dq",
+            "refdata.v1.business-processes.publish-from-dq",
+            "refdata.v1.business-units.publish-from-dq",
+            "refdata.v1.cashflow-types.publish-from-dq",
+            "refdata.v1.countries.publish-from-dq",
+            "refdata.v1.currencies.publish-from-dq",
+            "refdata.v1.entity-classifications.publish-from-dq",
+            "refdata.v1.lei-counterparties.publish-from-dq",
+            "refdata.v1.lei-parties.publish-from-dq",
+            "refdata.v1.local-jurisdictions.publish-from-dq",
+            "refdata.v1.party-relationships.publish-from-dq",
+            "refdata.v1.party-roles.publish-from-dq",
+            "refdata.v1.person-roles.publish-from-dq",
+            "refdata.v1.portfolios.publish-from-dq",
+            "refdata.v1.regulatory-corporate-sectors.publish-from-dq",
+            "refdata.v1.reporting-regimes.publish-from-dq",
+            "refdata.v1.supervisory-bodies.publish-from-dq",
+        };
+        for (const auto subject : publish_subjects) {
+            subs.push_back(nats.queue_subscribe(
+                subject, queue_group,
+                [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+        }
     }
 
     return subs;

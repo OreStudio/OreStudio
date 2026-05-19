@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class TenantMdiWindow;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -60,6 +61,7 @@ public:
         ClientManager* clientManager,
         ChangeReasonCache* changeReasonCache,
         const QString& username,
+        BadgeCache* badgeCache = nullptr,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -77,6 +79,7 @@ protected:
 private slots:
     void onShowDetails(const iam::domain::tenant& tenant);
     void onAddNewRequested();
+    void onTenantReset(const QString& code);
     void onShowHistory(const iam::domain::tenant& tenant);
     void onRevertVersion(const iam::domain::tenant& tenant);
     void onOpenVersion(const iam::domain::tenant& tenant,
@@ -88,6 +91,7 @@ private:
     void showHistoryWindow(const iam::domain::tenant& tenant);
 
     ChangeReasonCache* changeReasonCache_{nullptr};
+    BadgeCache* badgeCache_{nullptr};
     TenantMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

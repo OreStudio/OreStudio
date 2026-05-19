@@ -21,6 +21,7 @@
 #define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_TEMPLATE_HANDLER_HPP
 
 #include <optional>
+#include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -28,9 +29,8 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.core/service/report_definition_template_service.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
@@ -64,16 +64,40 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        // Template data is system-level seed data; query under the system tenant.
-        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(
-            *ctx_expected);
         get_report_definition_templates_response resp;
         try {
             std::string bundle_code = "ore_analytics";
             if (auto req = decode<get_report_definition_templates_request>(msg))
                 bundle_code = req->bundle_code;
-            service::report_definition_template_service svc(sys_ctx);
-            resp.templates = svc.list_templates(bundle_code);
+
+            ores::dq::messaging::list_dq_report_definition_templates_request dq_req;
+            dq_req.bundle_code = bundle_code;
+            const auto json = rfl::json::write(dq_req);
+            const auto* p = reinterpret_cast<const std::byte*>(json.data());
+            const auto dq_reply = nats_.request_sync(
+                ores::dq::messaging::list_dq_report_definition_templates_request::nats_subject,
+                std::span<const std::byte>(p, json.size()));
+            const std::string_view sv(
+                reinterpret_cast<const char*>(dq_reply.data.data()),
+                dq_reply.data.size());
+            const auto dq_resp =
+                rfl::json::read<ores::dq::messaging::list_dq_report_definition_templates_response>(sv);
+            if (!dq_resp || !dq_resp->success) {
+                resp.success = false;
+                resp.message = dq_resp ? dq_resp->message : dq_resp.error().what();
+                reply(nats_, msg, resp);
+                return;
+            }
+            for (const auto& t : dq_resp->templates) {
+                ores::reporting::domain::report_definition_template tmpl;
+                tmpl.name = t.name;
+                tmpl.description = t.description;
+                tmpl.report_type = t.report_type;
+                tmpl.schedule_expression = t.schedule_expression;
+                tmpl.concurrency_policy = t.concurrency_policy;
+                tmpl.display_order = t.display_order;
+                resp.templates.push_back(std::move(tmpl));
+            }
             resp.success = true;
         } catch (const std::exception& e) {
             resp.success = false;

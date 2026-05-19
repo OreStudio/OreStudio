@@ -67,6 +67,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');
 
+    -- System-level admin reset permissions (SuperAdmin only)
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::system:reset-tenant', 'Bootstrap-reset a tenant so provisioning wizards re-fire on next login');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::system:reset', 'Reset the entire system to pre-bootstrap state (purges all non-system tenants)');
+
     -- Session permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::sessions:read', 'View active sessions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::sessions:write', 'Create sessions (login / service-login)');

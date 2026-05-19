@@ -33,20 +33,27 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.reporting.api/domain/report_definition_template.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 
 /**
  * @brief Wizard for setting up a party after it has been created by tenant provisioning.
  *
- * Assumes the party hierarchy already exists. Guides the party admin through:
+ * Assumes the party hierarchy already exists.
+ *
+ * Collect phase (zero backend writes):
  * 1. Welcome             - explains the setup process
- * 2. Counterparty Setup  - select dataset size and import GLEIF counterparties
- * 3. Organisation Setup  - publish business units, portfolios, and trading books
- * 4. Report Setup        - select initial report definitions to create
- * 5. Report Install      - create the selected report definitions
- * 6. Summary             - set party status to 'Active' and show results
+ * 2. Counterparty Setup  - select dataset size for GLEIF counterparty import
+ * 3. Report Setup        - optionally select initial report definitions to create
+ *
+ * Execute phase (single page, all backend work):
+ * 4. Execute             - publishes counterparties, publishes organisation bundle,
+ *                          creates selected reports, marks party active
+ *
+ * 5. Summary             - shows results; no further backend calls
  *
  * This wizard appears automatically on first login when the selected party's
  * status is 'Inactive'. It sets the party status to 'Active' on completion.
@@ -68,9 +75,8 @@ public:
     enum PageId {
         Page_Welcome,
         Page_CounterpartySetup,
-        Page_OrganisationSetup,
         Page_ReportSetup,
-        Page_ReportInstall,
+        Page_Execute,
         Page_Summary
     };
 
@@ -105,14 +111,6 @@ public:
     std::vector<ReportSpec> selectedReports() const { return selectedReports_; }
     void setSelectedReports(std::vector<ReportSpec> r) { selectedReports_ = std::move(r); }
 
-    /**
-     * @brief Sets the current party's status to 'Active' via save_party_request.
-     *
-     * Called from the summary page on successful completion of the wizard.
-     * Returns false (and logs a warning) if the party cannot be activated.
-     */
-    [[nodiscard]] bool markPartyActive();
-
 signals:
     void provisioningCompleted();
 
@@ -129,9 +127,8 @@ private:
 // Forward declarations
 class PartyWelcomePage;
 class PartyCounterpartySetupPage;
-class PartyOrganisationSetupPage;
 class PartyReportSetupPage;
-class PartyReportInstallPage;
+class PartyExecutePage;
 class PartyApplyAndSummaryPage;
 
 /**
@@ -168,39 +165,6 @@ private:
 };
 
 /**
- * @brief Page for async publication of counterparties and organisation structure.
- */
-class PartyOrganisationSetupPage final : public QWizardPage {
-    Q_OBJECT
-
-private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_organisation_setup_page";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-public:
-    explicit PartyOrganisationSetupPage(PartyProvisioningWizard* wizard);
-    void initializePage() override;
-    bool isComplete() const override;
-
-private:
-    void startPublish();
-    void appendLog(const QString& message);
-
-    PartyProvisioningWizard* wizard_;
-    QLabel* statusLabel_;
-    QProgressBar* progressBar_;
-    QTextEdit* logOutput_;
-    bool publishComplete_ = false;
-    bool publishSuccess_ = false;
-};
-
-/**
  * @brief Page for selecting which initial report definitions to create.
  *
  * Loads available templates from the reporting service on entry via the
@@ -223,12 +187,11 @@ public:
     explicit PartyReportSetupPage(PartyProvisioningWizard* wizard);
     void initializePage() override;
     bool validatePage() override;
-    int nextId() const override;
 
 private:
     void setupUI();
     void loadTemplates();
-    void populateList(const std::vector<ores::reporting::domain::report_definition_template>& templates);
+    void populateList(const std::vector<ores::dq::messaging::dq_report_definition_template>& templates);
 
     PartyProvisioningWizard* wizard_;
     QLabel* loadingLabel_;
@@ -237,14 +200,25 @@ private:
 };
 
 /**
- * @brief Page that asynchronously creates the selected report definitions.
+ * @brief Executes all backend work in sequence and shows live progress.
+ *
+ * Phase 1: Publish counterparties from the GLEIF dataset (opted-in dataset only,
+ *          using the opted_in_datasets filter to target gleif.lei_counterparties.{size}).
+ *          Workflow progress shown via WorkflowStepsWidget.
+ * Phase 2: Publish organisation bundle (business units, portfolios, trading books)
+ *          with party_id param scoped to the current party.
+ *          Workflow progress shown via WorkflowStepsWidget.
+ * Phase 3: Create selected report definitions (sequential, non-workflow).
+ * Phase 4: Mark party status as Active.
+ *
+ * The Next button is only enabled after all phases complete.
  */
-class PartyReportInstallPage final : public QWizardPage {
+class PartyExecutePage final : public QWizardPage {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.party_report_install_page";
+        "ores.qt.party_execute_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -253,24 +227,35 @@ private:
     }
 
 public:
-    explicit PartyReportInstallPage(PartyProvisioningWizard* wizard);
+    explicit PartyExecutePage(PartyProvisioningWizard* wizard);
     void initializePage() override;
     bool isComplete() const override;
 
+private slots:
+    void onCounterpartyWorkflowComplete(bool success);
+    void onOrgWorkflowComplete(bool success);
+
 private:
-    void startInstall();
-    void appendLog(const QString& message);
+    void startCounterpartyPublish();
+    void startOrgPublish();
+    void startReportInstall();
+    void startActivate();
+    void markFailed(const QString& errorMsg);
+    void appendLog(const QString& msg);
 
     PartyProvisioningWizard* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
+    WorkflowStepsWidget* stepsWidget_ = nullptr;
     QTextEdit* logOutput_;
-    bool installComplete_ = false;
-    bool installSuccess_ = false;
+
+    bool allComplete_ = false;
+    bool allSuccess_ = false;
+    std::string publishedBy_;
 };
 
 /**
- * @brief Final summary page that clears the party setup flag.
+ * @brief Final summary page; purely informational, no backend calls.
  */
 class PartyApplyAndSummaryPage final : public QWizardPage {
     Q_OBJECT

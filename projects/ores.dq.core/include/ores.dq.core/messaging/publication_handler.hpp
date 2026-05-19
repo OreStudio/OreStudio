@@ -20,17 +20,25 @@
 #ifndef ORES_DQ_CORE_MESSAGING_PUBLICATION_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_PUBLICATION_HANDLER_HPP
 
+#include <algorithm>
 #include <optional>
+#include <span>
 #include <stdexcept>
-#include <boost/uuid/string_generator.hpp>
+#include <rfl/json.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/domain/correlation.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include "ores.dq.core/service/publication_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -92,6 +100,9 @@ public:
 
     void publish_bundle(ores::nats::message msg) {
         BOOST_LOG_SEV(publication_handler_lg(), debug) << "Handling " << msg.subject;
+        const auto correlation_id =
+            ores::nats::extract_or_generate_correlation_id(msg);
+
         auto req = decode<publish_bundle_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(publication_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -108,42 +119,96 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::publication_service svc(ctx);
+
         try {
-            const auto result = svc.publish_bundle(
-                req->bundle_code,
-                req->mode,
-                req->published_by,
-                req->atomic,
-                req->params_json);
-            publish_bundle_response resp;
-            resp.success = result.success;
-            resp.error_message = result.error_message;
-            resp.datasets_succeeded =
-                static_cast<int>(result.datasets_succeeded);
-            resp.total_records_inserted =
-                static_cast<int>(result.total_records_inserted);
-            resp.total_records_updated =
-                static_cast<int>(result.total_records_updated);
-            for (const auto& dr : result.dataset_results) {
-                bundle_dataset_result bdr;
-                bdr.dataset_code = dr.dataset_code;
-                bdr.success = (dr.status == "success");
-                bdr.error_message = dr.error_message;
-                bdr.records_inserted =
-                    static_cast<int>(dr.records_inserted);
-                bdr.records_updated =
-                    static_cast<int>(dr.records_updated);
-                bdr.records_skipped =
-                    static_cast<int>(dr.records_skipped);
-                bdr.records_deleted =
-                    static_cast<int>(dr.records_deleted);
-                resp.dataset_results.push_back(std::move(bdr));
+            // Query publishable datasets for the bundle
+            service::publication_service svc(ctx);
+            auto entries =
+                svc.list_bundle_publishable_datasets(req->bundle_code);
+
+            // Apply opted_in_datasets whitelist filter when specified.
+            // An empty list means "all datasets" (no filtering).
+            if (!req->params_json.empty()) {
+                auto parsed = rfl::json::read<publish_bundle_params>(
+                    req->params_json);
+                if (parsed && !parsed->opted_in_datasets.empty()) {
+                    const auto& allowed = parsed->opted_in_datasets;
+                    entries.erase(
+                        std::remove_if(entries.begin(), entries.end(),
+                            [&](const auto& e) {
+                                return std::find(allowed.begin(), allowed.end(),
+                                    e.dataset_code) == allowed.end();
+                            }),
+                        entries.end());
+                    BOOST_LOG_SEV(publication_handler_lg(), debug)
+                        << "opted_in_datasets filter applied: "
+                        << entries.size() << " datasets retained";
+                }
             }
-            BOOST_LOG_SEV(publication_handler_lg(), debug) << "Completed " << msg.subject;
+
+            if (entries.empty()) {
+                publish_bundle_response resp;
+                resp.success = false;
+                resp.error_message = "No publishable datasets in bundle: "
+                    + req->bundle_code;
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            // Build workflow request
+            const auto tenant_id_str =
+                boost::uuids::to_string(ctx.tenant_id().to_uuid());
+            const std::string mode_str = to_string(req->mode);
+            const std::string params =
+                req->params_json.empty() ? "{}" : req->params_json;
+
+            ores::dq::workflow::bundle_publish_workflow_request wf_req;
+            wf_req.bundle_code   = req->bundle_code;
+            wf_req.tenant_id     = tenant_id_str;
+            wf_req.published_by  = req->published_by;
+
+            for (const auto& entry : entries) {
+                ores::dq::workflow::bundle_publish_workflow_dataset ds;
+                ds.dataset_id     = entry.dataset_id;
+                ds.dataset_code   = entry.dataset_code;
+                ds.target_subject = entry.target_subject;
+                ds.mode           = mode_str;
+                ds.params_json    = params;
+                wf_req.datasets.push_back(std::move(ds));
+            }
+
+            // Generate instance UUID and start workflow
+            boost::uuids::random_generator gen;
+            const auto instance_id = boost::uuids::to_string(gen());
+
+            ores::workflow::messaging::start_workflow_message start_msg;
+            start_msg.type         = "bundle_publish_workflow";
+            start_msg.tenant_id    = tenant_id_str;
+            start_msg.request_json = rfl::json::write(wf_req);
+            start_msg.correlation_id = correlation_id;
+            start_msg.instance_id  = instance_id;
+
+            const auto json = rfl::json::write(start_msg);
+            const auto data = std::as_bytes(std::span{json.data(), json.size()});
+            nats_.js_publish(
+                ores::workflow::messaging::start_workflow_message::nats_subject,
+                data);
+
+            publish_bundle_response resp;
+            resp.success            = true;
+            resp.instance_id        = instance_id;
+            resp.datasets_dispatched =
+                static_cast<int>(entries.size());
+
+            BOOST_LOG_SEV(publication_handler_lg(), info)
+                << "Bundle publish workflow started: bundle=" << req->bundle_code
+                << " instance=" << instance_id
+                << " datasets=" << entries.size();
             reply(nats_, msg, resp);
+
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(publication_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(publication_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             publish_bundle_response resp;
             resp.success = false;
             resp.error_message = e.what();

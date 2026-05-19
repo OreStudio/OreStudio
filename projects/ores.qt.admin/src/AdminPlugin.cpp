@@ -23,6 +23,12 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include <QStatusBar>
+#include <QMessageBox>
+#include <QPointer>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -35,6 +41,9 @@
 #include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/BadgeDefinitionController.hpp"
 #include "ores.qt/BadgeSeverityController.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.iam.api/messaging/reset_protocol.hpp"
+
 namespace ores::qt {
 
 using namespace ores::logging;
@@ -90,7 +99,7 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 
     tenantController_ = std::make_unique<TenantController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+        ctx_.change_reason_cache, ctx_.username, ctx_.badge_cache, this);
     connectControllerSignals(tenantController_.get());
     connect(tenantController_.get(), &TenantController::onboardRequested,
             this, &AdminPlugin::show_onboarding_wizard);
@@ -169,6 +178,15 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actBadgeSevs, &QAction::triggered, this,
             [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
         // Apps and App Versions live in the Compute menu (see ComputePlugin).
+
+        smc.system_menu->addSeparator();
+
+        act_reset_system_ = smc.system_menu->addAction(
+            ico(Icon::Warning), tr("Reset &System..."));
+        act_reset_system_->setToolTip(
+            tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
+        connect(act_reset_system_, &QAction::triggered,
+                this, &AdminPlugin::on_reset_system);
     }
 }
 
@@ -181,6 +199,80 @@ QList<QAction*> AdminPlugin::toolbar_actions() {
     if (!act_accounts_ || !act_tenants_ || !act_system_settings_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_accounts_, act_tenants_, act_system_settings_};
+}
+
+void AdminPlugin::on_reset_system() {
+    if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
+        MessageBoxHelper::warning(ctx_.main_window, "Disconnected",
+            "Cannot reset system while disconnected.");
+        return;
+    }
+
+    const QString confirmMessage =
+        "Reset the entire system to pre-bootstrap state?\n\n"
+        "This will:\n"
+        "  • Hard-delete all non-system tenants and their data\n"
+        "  • Soft-delete all system admin accounts and sessions\n"
+        "  • Re-enable bootstrap mode so the system provisioner wizard\n"
+        "    re-fires on next startup\n\n"
+        "This is a destructive, irreversible operation.\n"
+        "Type YES to confirm.";
+
+    bool ok = false;
+    const QString typed = QInputDialog::getText(
+        ctx_.main_window, "Reset System", confirmMessage,
+        QLineEdit::Normal, {}, &ok);
+    if (!ok || typed.trimmed() != "YES") {
+        BOOST_LOG_SEV(lg(), debug) << "System reset cancelled by user";
+        return;
+    }
+
+    QPointer<AdminPlugin> self = this;
+    using ResetResult = std::pair<bool, std::string>;
+
+    auto task = [self]() -> ResetResult {
+        if (!self || !self->ctx_.client_manager)
+            return {false, "Plugin unloaded"};
+        BOOST_LOG_SEV(lg(), info) << "Sending reset-system request";
+        iam::messaging::reset_system_command request;
+        auto result = self->ctx_.client_manager->process_authenticated_request(
+            std::move(request));
+        if (!result)
+            return {false, "Failed to communicate with server"};
+        return {result->success, result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<ResetResult>(this);
+    connect(watcher, &QFutureWatcher<ResetResult>::finished,
+            this, [self, watcher]() {
+        ResetResult res;
+        try {
+            res = watcher->result();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "system reset task threw: " << e.what();
+            res = {false, e.what()};
+        }
+        auto [success, message] = res;
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (success) {
+            BOOST_LOG_SEV(lg(), info) << "System reset complete";
+            if (self->ctx_.status_bar)
+                self->ctx_.status_bar->showMessage(
+                    tr("System has been reset to pre-bootstrap state."));
+            MessageBoxHelper::information(self->ctx_.main_window,
+                "System Reset", "System has been reset to pre-bootstrap state.\n"
+                "Please restart the application.");
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "System reset failed: " << message;
+            MessageBoxHelper::critical(self->ctx_.main_window,
+                "Reset Failed", QString::fromStdString(message));
+        }
+    });
+
+    QFuture<ResetResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void AdminPlugin::on_logout() {

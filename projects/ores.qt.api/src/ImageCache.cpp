@@ -205,7 +205,14 @@ void ImageCache::loadCurrencyImageIds() {
 void ImageCache::onCurrencyImageIdsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onCurrencyImageIdsLoaded() callback triggered.";
 
-    auto result = currency_ids_watcher_->result();
+    decltype(currency_ids_watcher_->result()) result;
+    try {
+        result = currency_ids_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading currency image IDs: " << e.what();
+        loadCountryImageIds();
+        return;
+    }
     if (result.success) {
         // Add to pending list (will deduplicate later)
         for (const auto& id : result.image_ids) {
@@ -285,7 +292,14 @@ void ImageCache::loadCountryImageIds() {
 void ImageCache::onCountryImageIdsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onCountryImageIdsLoaded() callback triggered.";
 
-    auto result = country_ids_watcher_->result();
+    decltype(country_ids_watcher_->result()) result;
+    try {
+        result = country_ids_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading country image IDs: " << e.what();
+        loadBusinessCentreMapping();
+        return;
+    }
     if (result.success) {
         for (const auto& id : result.image_ids) {
             pending_image_ids_.push_back(id);
@@ -351,7 +365,14 @@ void ImageCache::loadBusinessCentreMapping() {
 void ImageCache::onBusinessCentreMappingLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onBusinessCentreMappingLoaded() callback triggered.";
 
-    auto result = bc_mapping_watcher_->result();
+    decltype(bc_mapping_watcher_->result()) result;
+    try {
+        result = bc_mapping_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading BC mapping: " << e.what();
+        loadImagesByIds(pending_image_ids_);
+        return;
+    }
     if (result.success) {
         bc_code_to_country_alpha2_ = std::move(result.bc_to_country);
         BOOST_LOG_SEV(lg(), debug) << "Stored " << bc_code_to_country_alpha2_.size()
@@ -488,7 +509,14 @@ void ImageCache::loadIncrementalChanges() {
 void ImageCache::onIncrementalChangesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onIncrementalChangesLoaded() callback triggered.";
 
-    auto result = incremental_changes_watcher_->result();
+    decltype(incremental_changes_watcher_->result()) result;
+    try {
+        result = incremental_changes_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading incremental changes: " << e.what();
+        load_all_in_progress_ = false;
+        return;
+    }
 
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image changes.";
@@ -513,7 +541,14 @@ void ImageCache::onImagesLoaded() {
     load_all_in_progress_ = false;
     pending_image_ids_.clear();
 
-    auto result = images_watcher_->result();
+    decltype(images_watcher_->result()) result;
+    try {
+        result = images_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading images: " << e.what();
+        emit loadError(tr("Failed to load images"));
+        return;
+    }
     BOOST_LOG_SEV(lg(), debug) << "Images result: success=" << result.success
                                << ", images count=" << result.images.size()
                                << ", failed_batches=" << result.failed_batches;
@@ -633,7 +668,13 @@ void ImageCache::loadImageById(const std::string& image_id) {
 }
 
 void ImageCache::onSingleImageLoaded() {
-    auto result = single_image_watcher_->result();
+    decltype(single_image_watcher_->result()) result;
+    try {
+        result = single_image_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading single image: " << e.what();
+        return;
+    }
 
     // Clear pending status
     pending_image_requests_.erase(result.image_id);
@@ -744,7 +785,14 @@ void ImageCache::loadImageList() {
 }
 
 void ImageCache::onImageListLoaded() {
-    auto result = image_list_watcher_->result();
+    decltype(image_list_watcher_->result()) result;
+    try {
+        result = image_list_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading image list: " << e.what();
+        emit loadError(tr("Failed to load image list"));
+        return;
+    }
     if (result.success) {
         available_images_ = std::move(result.images);
 
@@ -808,7 +856,14 @@ void ImageCache::loadAllAvailableImages() {
 void ImageCache::onAllAvailableImagesLoaded() {
     is_loading_all_available_ = false;
 
-    auto result = all_available_watcher_->result();
+    decltype(all_available_watcher_->result()) result;
+    try {
+        result = all_available_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception loading all available images: " << e.what();
+        emit loadError(tr("Failed to load available images"));
+        return;
+    }
     if (result.success) {
         // Cache SVG data and render icons
         for (const auto& img : result.images) {
@@ -942,7 +997,14 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
 }
 
 void ImageCache::onCurrencyImageSet() {
-    auto result = set_currency_image_watcher_->result();
+    decltype(set_currency_image_watcher_->result()) result;
+    try {
+        result = set_currency_image_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception setting currency image: " << e.what();
+        emit currencyImageSet(QString{}, false, tr("Failed to set currency image"));
+        return;
+    }
 
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
@@ -1030,7 +1092,14 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
 }
 
 void ImageCache::onCountryImageSet() {
-    auto result = set_country_image_watcher_->result();
+    decltype(set_country_image_watcher_->result()) result;
+    try {
+        result = set_country_image_watcher_->result();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Exception setting country image: " << e.what();
+        emit countryImageSet(QString{}, false, tr("Failed to set country image"));
+        return;
+    }
 
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Country image set successfully for: "

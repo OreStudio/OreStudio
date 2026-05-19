@@ -80,6 +80,7 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         ores.controller.api.lib
         ores.security.lib
+        ores.qt.workflow.lib
         Qt6::Charts)
 # Note: ores.nats, ores.eventing, ores.iam.api, ores.compute.api, ores.utility,
 # ores.platform, and Qt6 core modules come transitively from ores.qt.api.lib (PUBLIC)

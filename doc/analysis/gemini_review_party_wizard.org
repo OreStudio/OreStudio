@@ -1,0 +1,252 @@
+
+Review of party wizard by Gemini
+
+* First Page: Welcome
+
+Overall, the layout is clean, and the dark mode theme is sleek. However, from a
+UX and technical copy perspective, there are several key areas where we can
+significantly improve the clarity, scannability, and flow for the user.
+
+** De-clutter the Title & Welcome Message
+
+- **The Issue:** You have "Welcome" as a small section header, followed
+  immediately by a giant title that says "Welcome to the party setup wizard."
+  This is redundant. Furthermore, "party setup" sounds like a social gathering
+  planning app until you read the fine print about financial compliance.
+- **The Fix:** Drop the smaller "Welcome" header entirely. Make the main title
+  more descriptive of the actual value.
+- *Alternative:* **Set Up Counterparties & Reports** or **Organization
+  Onboarding Wizard**
+
+** Clarify the Subtext (Terminology Check)
+
+- **The Issue:** The sentence *"The party hierarchy already exists — this wizard
+  will import counterparties and configure the organisational structure"* is
+  slightly contradictory. If the hierarchy already exists, what is it
+  configuring? Also, notice the British English spelling of
+  **"organisational"**—make sure this matches your target audience's locale (use
+  **"organizational"** if targeting US markets).
+- **The Fix:** Reword it to be crisp and action-oriented:
+- *Alternative:* *"This wizard imports external counterparties and maps them to
+  your existing organizational hierarchy."*
+
+** Improve Scannability of the Process Steps
+
+- **The Issue:** The 3-step overview is dense. Bolding just the step names
+  helps, but using dashes followed by a wall of text makes it hard to scan
+  quickly.
+- **The Fix:** Use a clean layout with distinct bullet points or columns, and
+  trim the technical jargon where possible.
+  - **1. Counterparty Setup:** Import legal entities using the GLEIF LEI
+    registry.
+  - **2. Report Definitions:** Select standard risk report templates to
+    generate.
+  - **3. Execute & Track:** Finalize configurations and view live progress.
+
+** Reposition and Rephrase the "Note"
+
+- **The Issue:** The note at the bottom is boxed off, which is good, but the
+  messaging could be tighter. Telling someone they can skip a setup by clicking
+  "Cancel" is a bit counter-intuitive (usually "Cancel" implies discarding
+  changes/quitting entirely, while "Skip" implies moving past it).
+- **The Fix:** Change the button layout or tweak the wording to reassure them:
+- *Alternative:* *"Note: You can safely exit this wizard at any time.
+  Counterparties and reports can also be configured manually later via the main
+  application menus."*
+
+** UI & Navigation Polish
+
+- **The Issue:** The **Next >** button uses an underline under the 'N'
+  (`<u>N</u>ext`), which traditionally indicates an `Alt + N` keyboard shortcut.
+  If that's intentional, awesome! If not, remove the underline.
+- **The Fix:** Ensure proper spacing around the buttons so the primary action
+  ("Next") stands out slightly more than the destructive action ("Cancel").
+
+* Second Page: Step 1: **Counterparty Import**.
+
+This screen handles a vital technical task, but the interface suffers from a
+common wizard pitfall: **text overload**. The user has to read a dense paragraph
+just to interact with a single dropdown menu.
+
+Here are the key areas we can improve to make this step much more intuitive:
+
+** Reduce Text Redundancy
+
+- **The Issue:** The exact same instruction—selecting the dataset size—is
+  repeated three times on this single screen:
+  1. In the subtitle: *"Select the GLEIF dataset size to use..."*
+  2. In the body paragraph: *"Select the dataset size to use for the import."*
+  3. Right next to the dropdown: *"Dataset size:"*
+
+- **The Fix:** Consolidate the body text. Users in a financial compliance tool
+  generally already know what a counterparty is, so you don't need to define it
+  from scratch here.
+
+** Re-write for Better Scannability
+
+- **The Issue:** The current paragraph mixes educational context, operational
+  instructions, and an off-ramp note (*"You can also add counterparties
+  manually..."*) into one block of text.
+- **The Fix:** Keep the layout breathable by using a clean subtitle and moving
+  secondary details to a smaller note.
+
+#+begin_src markdown
+> ### **Counterparty Import**
+>
+>
+> Select the global LEI registry dataset size to import your counterparties.
+> **Dataset size:** `[ Small (~6,000 entities) ▾ ]`
+> *Note: You can also add or modify counterparties manually via the Counterparties window after completing this wizard.*
+#+end_src
+
+
+** Anticipate the User's Questions about "Dataset Size"
+
+- **The Issue:** The dropdown lets the user select "Small (~6,000 entities)". A
+  user will naturally wonder: *What are the other choices? Why would I pick
+  Small over Large? What are the performance or hardware implications?* * **The
+  Fix:** If changing the dataset size affects download time, memory usage, or
+  API limits, state that clearly right below or next to the dropdown.
+- *Example line to add:* "Choosing a larger dataset provides broader registry
+  coverage but may increase initial sync time."
+
+** UI Alignment & Keyboard Shortcuts
+
+- **The Issue:** The text block stretches very wide across the screen, making it
+  fatiguing to read on larger monitors.
+- **The Fix:** Cap the maximum width of the text block to around 600–700 pixels
+  so lines are easier to scan.
+- **Navigation Note:** Excellent job adding the `< Back` button here! Like the
+  `Next >` button, it uses keyboard accelerators (`Alt + B` and `Alt + N`),
+  which is great for power users. Just ensure they are wired up and functioning.
+
+* Third Page: Step 2: **Report Definitions**
+
+This screen packs a massive amount of functionality, which is excellent, but it
+introduces several classic UI layout and text wrapping issues. When a user sees
+text running off the edge of a window with horizontal scrollbars on a text list,
+it instantly decreases their confidence in the software's polish.
+
+Here is how we can fix the layout issues and elevate the user experience on this
+screen:
+
+** Eliminate the Double Scrollbars (The Layout Squash)
+
+- **The Issue:** The central list box is severely cramped. Because the
+  descriptions are long technical sentences, they are getting cut off on the
+  right, triggering a **horizontal scrollbar** at the bottom of the list frame.
+  Horizontal scrolling to read a sentence is a major UX friction point.
+- **The Fix:** * Remove the hard width limit on the list container or allow the
+  text blocks to naturally wrap to a second line.
+  - Expand the list container vertically so fewer items are hidden behind the
+    vertical scrollbar.
+  - Shift the "Select All" and "Deselect All" buttons to align nicely above the
+    checkbox column.
+
+** Separate Titles from Descriptions
+
+- **The Issue:** The bold report titles (e.g., **Model Calibration**, **Yield
+  Curves**) sit directly on top of their description text without any vertical
+  breathing room or indentation. It reads as a wall of dense text.
+- **The Fix:** Give the title and description distinct visual hierarchy. Indent
+  the description slightly to align with the text of the title, not the checkbox
+  itself.
+
+#+begin_src markdown
+> **[✓] Model Calibration**
+> *Calibrates interest rate, FX, and volatility models (LGM, Hull-White, SABR, Black-Scholes) to live market data.*
+#+end_src
+
+** Clean Up the Top Instructions
+
+- **The Issue:** Just like the previous screens, we have a lot of text
+  explaining operational configurations. The second line drops a massive piece
+  of scheduling information casually: *"...scheduled on weekdays and use the
+  'skip' concurrency policy..."* * **The Fix:** If the weekday schedule and
+  'skip' policy apply to **all** choices and cannot be changed here, don't let
+  it clutter the main action text. Move it to a subtle note or a tool-tip.
+
+Streamlined Copy Suggestion:
+
+#+begin_src markdown
+> ### **Report Definitions**
+>
+>
+> Choose the standard risk report definitions to initialize for this party. You can customize these later via the Reporting menu.
+> **Note: Selected reports are automatically scheduled for weekdays with a concurrent 'skip' policy.*
+#+end_src
+
+** UI Alignment & Contrast Check
+
+- **The Buttons:** The "Select All" and "Deselect All" buttons look standard,
+  but ensure they match the padding and styling of the bottom navigation buttons
+  (`Back`, `Next`) for a cohesive UI language.
+- **Groupings (Optional Idea):** Since this is a long list of quantitative
+  finance metrics, you might consider organizing them under sub-headings if the
+  list grows any longer (e.g., **Market Risk** [NPV, Cashflows, Delta/Gamma],
+  **Credit/Counterparty Risk** [Exposure, CVA, DVA], **Pricing & Curves** [Model
+  Calibration, Yield Curves]).
+
+* Fourth Page
+
+Oof, hitting a raw database constraint error at the final stretch is a tough
+user experience! This screen is trying to handle a critical failure state, but
+the interface is giving the user highly conflicting and confusing signals.
+
+Let’s unpack the biggest UI/UX and logical contradictions here and look at how
+to clean them up.
+
+** Eliminate the "Success vs. Failure" Mixed Messaging
+
+- **The Issue:** The screen screams **"Setup failed"** in bright red at the top,
+  but immediately underneath it declares **"All 3 step(s) completed"** with a
+  sea of bright green **"completed"** tags.
+- **The Fix:** The table is only showing Phase 1 or 2 (the data structures), but
+  the wizard actually failed on Phase 3 (creating report definitions). If the
+  overall process fails, the master status text must read **"Setup failed at
+  Phase 3"**. Do not tell the user everything is fine right below a critical
+  error banner.
+
+** Fix the Red "Mystery Bar"
+
+- **The Issue:** There is a solid, completely empty bright red rectangle
+  stretched across the middle of the screen. It looks like a progress bar that
+  broke, or a container meant to hold text that was left blank.
+- **The Fix:** If it's a progress bar, it shouldn't turn solid red and empty on
+  a failure. If it's an error container, it should wrap the actual error text
+  inside it rather than leaving the text floating awkwardly above it.
+
+** Don't Spit Raw SQL Errors at Business Users
+
+- **The Issue:** The error text `Repository error: Executing INSERT failed:
+  ERROR: duplicate key value violates unique constraint
+  "report_definitions_name_uniq_idx"` is great for a developer debugging via
+  API, but it's terrifying and confusing for an end-user. It cuts off abruptly
+  on the main banner too.
+- **The Fix:** Intercept this database exception in your code and map it to a
+  human-readable message.
+- *Better Error Copy:* `"Setup Failed: A report definition named 'Model
+  Calibration' already exists for this party. Please go back and deselect it, or
+  rename the existing report before retrying."`
+
+** The Log Terminal Layout
+
+- **The Issue:** The text box at the bottom is essentially a raw console log
+  dump. It introduces double scrollbars again and forces the user to dig to
+  understand what went wrong.
+- **The Fix:** Keep a "View Log Details" collapse/expand dropdown for
+  developers, but don't make it a permanent, unformatted fixture on the screen
+  taking up valuable UI real estate.
+
+** Destructive/Confusing Button States
+
+- **The Issue:** The wizard has failed, yet the **"Commit"** button at the
+  bottom is active. If the setup failed on a database constraint, clicking
+  "Commit" will likely either do nothing or crash the app further. Meanwhile,
+  the header still says *"Please wait — this may take several minutes,"* even
+  though the process has clearly ground to a halt.
+- **The Fix:** * Change the sub-header from *"Please wait..."* to *"Please
+  review the errors below."* when a failure occurs.
+- Disable the **Commit** button entirely if the state is un-committable.
+- Change the navigation flow so the user can easily click `< Back` to modify
+  their report selections (Step 2) and try again without losing their progress.

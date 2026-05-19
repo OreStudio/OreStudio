@@ -39,6 +39,7 @@
 #include "ores.iam.core/messaging/tenant_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_handler.hpp"
 #include "ores.iam.core/messaging/tenant_type_handler.hpp"
+#include "ores.iam.core/messaging/reset_handler.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
@@ -51,6 +52,7 @@
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.iam.api/messaging/reset_protocol.hpp"
 
 namespace ores::iam::messaging {
 
@@ -240,6 +242,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_tenant_history_request::nats_subject, qg,
         [th](ores::nats::message msg) { th->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        complete_tenant_provisioning_command::nats_subject, qg,
+        [th](ores::nats::message msg) { th->complete_provisioning(std::move(msg)); }));
 
     // --- Tenant statuses ---
     auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);
@@ -270,6 +275,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_tenant_type_history_request::nats_subject, qg,
         [tth](ores::nats::message msg) { tth->history(std::move(msg)); }));
+
+    // --- System reset ---
+    auto rsh = std::make_shared<reset_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        reset_tenant_command::nats_subject, qg,
+        [rsh](ores::nats::message msg) { rsh->reset_tenant(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        reset_system_command::nats_subject, qg,
+        [rsh](ores::nats::message msg) { rsh->reset_system(std::move(msg)); }));
 
     // --- Reload token settings on variability change ---
     // Subscribe to the system_setting_changed event so that any update to

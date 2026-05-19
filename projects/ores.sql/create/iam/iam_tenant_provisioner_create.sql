@@ -104,7 +104,7 @@ begin
         id, type, code, name, description, hostname, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
-        tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'active',
+        tenant_id, p_type, p_code, p_name, p_description, p_hostname, 'bootstrapping',
         v_actor, v_actor, 'system.new_record', 'Tenant provisioned'
     );
 

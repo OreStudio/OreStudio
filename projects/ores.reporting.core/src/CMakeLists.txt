@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.scheduler.api.lib
     PRIVATE
+        ores.dq.api.lib
         ores.iam.api.lib
         ores.marketdata.api.lib
         ores.service.lib

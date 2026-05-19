@@ -763,6 +763,16 @@ public:
             if (const auto p = acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
                 p_name = p->full_name;
                 party_setup_required = p->status == "Inactive";
+                if (party_setup_required) {
+                    BOOST_LOG_SEV(account_handler_lg(), info)
+                        << "select_party: party_setup_required=true for party "
+                        << boost::uuids::to_string(requested_party_id)
+                        << " status=" << p->status;
+                }
+            } else {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "select_party: party not found in cache for party "
+                    << boost::uuids::to_string(requested_party_id);
             }
 
             BOOST_LOG_SEV(account_handler_lg(), debug)

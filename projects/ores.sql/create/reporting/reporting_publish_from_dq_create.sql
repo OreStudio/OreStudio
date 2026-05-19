@@ -19,26 +19,21 @@
  */
 
 /**
- * Report Definitions Publication Function
+ * Reporting Publish-from-DQ Functions
  *
- * Copies report definition artefact data into the reporting table for a target
- * tenant. Each artefact row becomes a report definition scoped to the calling
- * party. The party is resolved from p_params->>'party_id' or by querying the
- * tenant's operational root party.
+ * SECURITY DEFINER functions called by the reporting service NATS handler for the
+ * reporting.v1.<entity>.publish-from-dq subjects. Each function reads DQ artefact
+ * tables (system tenant) and writes only to ores_reporting_* tables.
  *
- * Idempotent: skips if the party already has report definitions for this dataset.
- *
- * @param p_dataset_id       The DQ dataset containing report definition artefacts
- * @param p_target_tenant_id The tenant to publish data to
- * @param p_mode             Population mode (only 'upsert' supported)
- * @param p_params           Optional: {"party_id": "<uuid>"} to override root party
+ * All functions use SECURITY DEFINER set search_path = public, pg_temp so they
+ * execute with the definer's privileges without needing cross-service DML grants.
  */
 
 -- =============================================================================
--- Report Definitions Publication
+-- Report Definitions: reporting.v1.report-definitions.publish-from-dq
 -- =============================================================================
 
-create or replace function ores_dq_report_definitions_publish_fn(
+create or replace function ores_reporting_publish_report_definitions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
     p_mode text default 'upsert',
@@ -68,7 +63,7 @@ begin
         return;
     end if;
 
-    -- Idempotency: skip if this party already has report definitions
+    -- Idempotency: skip if this party already has report definitions for this dataset
     if exists (
         select 1 from ores_reporting_report_definitions_tbl
         where tenant_id = p_target_tenant_id
@@ -92,7 +87,7 @@ begin
         coalesce(a.description, ''), a.report_type, a.schedule_expression, a.concurrency_policy,
         null, null,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
-        'system.external_data_import', 'Published from ore_analytics dataset'
+        'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a
     where a.dataset_id = p_dataset_id
     order by a.display_order, a.name;
@@ -104,4 +99,4 @@ begin
     select 'inserted'::text, v_inserted
     where v_inserted > 0;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;

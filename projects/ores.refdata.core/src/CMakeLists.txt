@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.nats.lib
     PRIVATE
+        ores.dq.api.lib
         ores.service.lib
         pugixml::pugixml
         ores.variability.api.lib

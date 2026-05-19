@@ -108,6 +108,10 @@ BEGIN
         'FSM lifecycle state codes for report definitions.', 11);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_status', 'Tenant Status',
+        'Lifecycle status codes for tenant records (bootstrapping, active, suspended, terminated).', 15);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_origin', 'DQ Origin',
         'Data quality origin dimension codes.', 12);
 
@@ -285,6 +289,11 @@ BEGIN
         'treatment_enriched', 'Enriched', 'Data has been enriched with additional context.',
         '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 31);
 
+    -- Tenant Status: Bootstrapping (provisioning wizards not yet run)
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_bootstrapping', 'Bootstrapping', 'Tenant is awaiting initial provisioning wizard run.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 32);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -420,6 +429,16 @@ BEGIN
         'workspace_status', 'active', 'active');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'workspace_status', 'archived', 'archived');
+
+    -- tenant_status
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_status', 'bootstrapping', 'tenant_bootstrapping');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_status', 'active', 'active');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_status', 'suspended', 'frozen');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_status', 'terminated', 'archived');
 
     -- dq_treatment
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

@@ -38,7 +38,7 @@ artefact_type_mapper::map(const artefact_type_entity& v) {
     r.description = v.description;
     r.artefact_table = v.artefact_table;
     r.target_table = v.target_table;
-    r.populate_function = v.populate_function;
+    r.target_subject = v.target_subject;
     r.display_order = v.display_order;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -56,7 +56,7 @@ artefact_type_mapper::map(const domain::artefact_type& v) {
     r.description = v.description;
     r.artefact_table = v.artefact_table;
     r.target_table = v.target_table;
-    r.populate_function = v.populate_function;
+    r.target_subject = v.target_subject;
     r.display_order = v.display_order;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

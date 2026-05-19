@@ -28,6 +28,8 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -52,6 +54,9 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
+using ores::database::service::tenant_context;
+using ores::database::repository::execute_parameterized_string_query;
+using ores::database::repository::execute_parameterized_command;
 using namespace ores::logging;
 
 class tenant_handler {
@@ -164,6 +169,46 @@ public:
             BOOST_LOG_SEV(tenant_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_tenant_history_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
+    void complete_provisioning(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_handler_lg(), msg);
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+
+            const auto actor = ctx_expected->actor();
+            auto ids = execute_parameterized_string_query(*ctx_expected,
+                "SELECT ores_iam_current_tenant_id_fn()::text",
+                {}, tenant_handler_lg(), "complete_provisioning");
+            if (ids.empty()) {
+                BOOST_LOG_SEV(tenant_handler_lg(), error)
+                    << "complete_provisioning: no tenant ID in context";
+                reply(nats_, msg, complete_tenant_provisioning_response{
+                    .success = false, .message = "No tenant context"});
+                return;
+            }
+
+            auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+            execute_parameterized_command(sys_ctx,
+                "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
+                {ids.front(), actor},
+                tenant_handler_lg(), "complete_provisioning");
+
+            BOOST_LOG_SEV(tenant_handler_lg(), info)
+                << "Tenant marked active: " << ids.front();
+            reply(nats_, msg, complete_tenant_provisioning_response{.success = true});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, complete_tenant_provisioning_response{
                 .success = false, .message = e.what()});
         }
     }

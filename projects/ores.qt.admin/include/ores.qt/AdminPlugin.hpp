@@ -61,12 +61,14 @@ public:
 
 private:
     void show_onboarding_wizard();
+    void on_reset_system();
 
     plugin_context ctx_;
 
     QAction* act_accounts_{nullptr};
     QAction* act_tenants_{nullptr};
     QAction* act_system_settings_{nullptr};
+    QAction* act_reset_system_{nullptr};
 
     std::unique_ptr<AccountController>          accountController_;
     std::unique_ptr<RoleController>             roleController_;

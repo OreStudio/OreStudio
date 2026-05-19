@@ -171,7 +171,7 @@ struct dataset final {
      * @brief Type of artefact this dataset populates.
      *
      * Used for categorization. Links to artefact_type which provides
-     * target_table and populate_function for publication.
+     * target_table and target_subject for publication.
      */
     std::optional<std::string> artefact_type;
 

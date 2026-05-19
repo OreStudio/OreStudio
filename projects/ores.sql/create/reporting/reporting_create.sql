@@ -46,3 +46,4 @@
 \ir ./reporting_report_instances_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql
 \ir ./reporting_resolve_book_ids_fn_create.sql
+\ir ./reporting_publish_from_dq_create.sql

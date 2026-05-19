@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: f2062027-b1fa-4b51-84e8-f589f4e14849
+:END:
+#+title: Clean up data layers
+#+description: Restructure data population around explicit layers (Foundation, Data Governance, Data Catalogues, Production).
+#+type: task
+#+level: s1
+#+filetags: :sql:data:layers:refactor:schema_polish:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:5bafbeb2-c875-4655-bb78-801a3bf65022][Schema polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-26]
+:END:
+
+** Now
+Completed 2026-01-26.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-26
+
+* Goal
+
+Restructure data population around explicit layers (Foundation, Data Governance, Data Catalogues, Production).
+
+* Acceptance
+
+- Each layer has clear scope and ordering.
+- Population scripts respect layer boundaries.
+- Foundation for the System Provisioner Wizard, which provisions layer by layer.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Layer model came out of the wizard analysis; cleaning the population scripts first makes the wizard much simpler.
+
+* Result
+
+Population structured by layer.

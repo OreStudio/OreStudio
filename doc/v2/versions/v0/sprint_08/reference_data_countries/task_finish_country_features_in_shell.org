@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 125b746d-d625-4764-8d1e-ea9d4623880c
+:END:
+#+title: Finish country features in shell
+#+description: Add 'countries get' and 'countries add' commands to ores.comms.shell with formatted table output.
+#+type: task
+#+level: s1
+#+filetags: :shell:countries:cli:reference_data_countries:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:501c05b5-aa7f-4807-a4f2-627b857ce2aa][Reference data: countries]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Cover countries in =ores.comms.shell=: =countries get= to list, =countries add= to create, with formatted table output.
+
+* Acceptance
+
+- =countries= menu registered in the REPL.
+- =countries get= returns the server-side list as a fort-formatted table.
+- =countries add= round-trips client↔server through the country protocol.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First exercise of the new shell-entity-creator skill on a real entity.
+
+* Result
+
+Countries usable from the shell; further entities follow the same template.

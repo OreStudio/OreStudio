@@ -9,8 +9,13 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
 
 Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+Continued in: [[id:cd9e9d04-44d2-4d0d-95ce-719d55c40da4][Observability follow-up]] (sprint 08) — review pass of
+telemetry, comms analyser, and event viewer; implementations carried
+forward.
 
 * DONE Status
 :PROPERTIES:

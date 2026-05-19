@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: aa32b9c6-9c05-4f63-bbc5-51704df4e9b6
+:END:
+#+title: Rename ores.risk to ores.refdata
+#+description: Pure rename: include paths, namespaces, CMake targets, header guards, HTTP routes file (risk_routes.cpp -> refdata_routes.cpp); diagrams + docs aligned.
+#+type: task
+#+level: s1
+#+filetags: :refactor:rename:refdata:database_naming_refactor:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:61485635-64ba-4c31-a35b-2f60d7fb41aa][Database naming refactor]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-14]
+:END:
+
+** Now
+Completed 2026-01-14.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-14
+
+* Goal
+
+Rename =ores.risk= to =ores.refdata= so the component name reflects /reference data/ rather than /risk calculation/.
+
+* Acceptance
+
+- Include paths updated from =ores.risk/= to =ores.refdata/=.
+- C++ namespace from =ores::risk= to =ores::refdata=.
+- CMake targets renamed (e.g. =ores.risk.lib= → =ores.refdata.lib=).
+- Header guards from =ORES_RISK_*= to =ORES_REFDATA_*=.
+- HTTP routes file renamed =risk_routes.cpp= → =refdata_routes.cpp=.
+- PlantUML diagrams + docs aligned.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The =risk= name was a hangover from the original ORE (Open Source Risk Engine) framing; the component had drifted to refdata duty in practice.
+
+* Result
+
+Component renamed; no =risk= references left in live code.

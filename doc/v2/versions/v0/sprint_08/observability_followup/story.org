@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: cd9e9d04-44d2-4d0d-95ce-719d55c40da4
+:END:
+#+title: Observability follow-up
+#+description: Telemetry review, comms-analyser review, event-viewer review — all postponed within the sprint window.
+#+type: story
+#+level: s2
+#+filetags: :telemetry:observability:review:sprint_08:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 8c4c8429-9328-46dd-88ef-27689fb556f2
+
+Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
+
+Continued from: [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — sprint 07
+stood up the components; this story is the review pass which deferred
+all three review items to a later sprint.
+
+* BACKLOG Status
+
+** Now
+Review notes captured in sprint 08; all three implementation
+passes carry forward.
+
+** Waiting on
+A sprint with the slot to land the fixes.
+
+** Next
+Schedule the telemetry/comms-analyser/event-viewer fix passes.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Review the telemetry, comms-analyser, and event-viewer surfaces that
+landed in sprint 07. Raise fix lists. All three review items were
+POSTPONED within this sprint — implementation carries forward.
+
+* Acceptance
+
+- Review notes captured for telemetry, comms analyser, and event viewer.
+- Fix lists filed against the appropriate components.
+- All three implementation passes scheduled forward.
+
+* Tasks
+
+In execution order:
+
+- [[id:d7794c1a-496d-491f-9a92-319c1b92d062][Review telemetry work]]
+- [[id:b091715a-ffa2-4716-90d5-3431f5ff4532][Review comms analyser work]]
+- [[id:67fde70e-e08d-4b55-b420-5f2676763e8e][Event viewer review]]
+
+* Decisions
+
+- /Review without fixing/ :: keeps the review pass crisp and lets us defer the work without losing the findings.
+
+* Out of scope
+
+- Implementing any of the raised fixes — they're scheduled for a later sprint.
+
+* See also
+
+- [[id:8c4c8429-9328-46dd-88ef-27689fb556f2][Observability and telemetry]] (sprint 07) — predecessor.

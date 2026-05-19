@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 91c1e06d-5307-4f45-803d-dea3e841ee84
+:END:
+#+title: Create ores.security module
+#+description: Extract shared security primitives from ores.iam and ores.connections into a new ores.security component; rename password_manager -> password_hasher, encryption_service -> encryption; apply RAII to OpenSSL cipher contexts.
+#+type: task
+#+level: s1
+#+filetags: :security:component:refactor:openssl:security_module:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:8c29b0e8-64ea-4f32-add0-59419769bcd4][Security module]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-13]
+:END:
+
+** Now
+Completed 2026-01-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-13
+
+* Goal
+
+Extract the shared security primitives that =ores.iam= and =ores.connections= both need into a dedicated =ores.security= component.
+
+* Acceptance
+
+- =password_manager= renamed to =password_hasher=; =encryption_service= to =encryption=.
+- RAII for OpenSSL =EVP_CIPHER_CTX= via =std::unique_ptr= + =EVP_CIPHER_CTX_free= deleter.
+- =ores.iam=, =ores.connections=, =ores.cli= link against the new library.
+- Build green; tests pass.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Moves the OpenSSL-handling rules into one place so future audits look at one component, not three.
+
+* Result
+
+Component in place; downstream components linked through it.

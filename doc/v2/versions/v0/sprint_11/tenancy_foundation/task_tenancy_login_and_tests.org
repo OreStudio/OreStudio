@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 73a005de-626e-4b62-8fed-f385aecdf02a
+:END:
+#+title: Tenancy, login and tests
+#+description: BEFORE INSERT triggers populate tenant_id from session variable; ores_iam_validate_tenant_fn coalesces with current session tenant; ores_test_ddl/dml_user default tenant set to system tenant; database_helper::set_system_tenant_context().
+#+type: task
+#+level: s1
+#+filetags: :tenancy:sql:iam:tests:tenancy_foundation:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-01]
+:END:
+
+** Now
+Completed 2026-02-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-01
+
+* Goal
+
+Wire tenancy into login + session creation, and prepare the C++ test infrastructure to set tenant context transparently.
+
+* Acceptance
+
+- BEFORE INSERT triggers on =iam_login_info_tbl= + =iam_sessions_tbl= populate =tenant_id= from =app.current_tenant_id= when not supplied explicitly.
+- =ores_iam_validate_tenant_fn= uses =coalesce(p_tenant_id, ores_iam_current_tenant_id_fn())=.
+- =ores_test_ddl_user= and =ores_test_dml_user= default =app.current_tenant_id= to the system tenant in =setup_template.sql=.
+- C++ =database_helper::set_system_tenant_context()= callable from test constructors.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The triggers are what make pre-existing C++ code 'just work' under tenancy — it doesn't have to know about tenant_id everywhere.
+
+* Result
+
+Tenancy plumbed through login + tests transparently.

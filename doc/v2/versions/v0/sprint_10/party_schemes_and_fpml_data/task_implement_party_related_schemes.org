@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 99881550-e3d4-4692-a07d-a63ef5e2fd03
+:END:
+#+title: Implement party-related schemes via FPML codegen
+#+description: 13 reference-data types (entity_type, party_role, business_center, person_role, account_types, entity_classifications, local_jurisdictions, party_relationships, regulatory_corporate_sectors, reporting_regimes, supervisory_bodies, etc.); codegen parses FpML XML to SQL; per-entity SQL files; business centres linked to country flags.
+#+type: task
+#+level: s1
+#+filetags: :party:fpml:refdata:codegen:party_schemes_and_fpml_data:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-22]
+:END:
+
+** Now
+Completed 2026-01-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-22
+
+* Goal
+
+Implement the 13 reference-data types party requires, end-to-end, via FpML codegen and the DQ artefact workflow.
+
+* Acceptance
+
+- DQ artefact workflow covers 15 FpML entity types across 18 datasets.
+- Automated SQL schema generation: bi-temporal tables, notification triggers, artefact staging tables.
+- Business centres linked to country flags for visual identity.
+- SQL generation produces per-entity files (not concatenated scripts).
+- Dataset records carry =target_table= + =populate_function= directly (consumed later by the artefact_type domain).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The /codegen reads FpML XML/ part is the load-bearing piece — it's what makes the 13-types-in-one-PR scale work.
+
+* Result
+
+Party reference-data layer present; party domain layer unblocked.

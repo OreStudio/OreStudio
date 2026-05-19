@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 4c7782d0-1382-4fed-a9f3-c209a45caf7e
+:END:
+#+title: FPML export and import groundwork
+#+description: ores.fpml component scaffolded for future FPML export/import; full implementation deferred.
+#+type: story
+#+level: s2
+#+filetags: :fpml:component:export_import:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+* BACKLOG Status
+
+** Now
+Postponed in sprint 10; carried forward.
+
+** Waiting on
+A sprint with the slot.
+
+** Next
+Return alongside the related work.
+
+** Last touched
+2026-01-27
+
+* Goal
+
+Scaffold =ores.fpml= as the home for FPML common infrastructure.
+Full export/import implementation is postponed.
+
+* Acceptance
+
+- =ores.fpml= component scaffolded.
+- Reporting view downloaded and configured.
+- Schema repository pattern in place.
+- Partial-validation wrapper documented.
+
+* Tasks
+
+In execution order:
+
+- [[id:b7c0605a-7b13-440b-8099-e628ff5bb0e9][Create ores.fpml component]]
+
+* Decisions
+
+- /Component first, implementation later/ :: lets the next sprint pick up where this one left off without a setup step.
+
+* Out of scope
+
+- Actual FPML export and import — postponed.
+
+* See also
+
+None.

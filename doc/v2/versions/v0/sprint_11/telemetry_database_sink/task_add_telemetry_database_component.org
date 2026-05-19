@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 7edc04f8-907e-4230-bd82-23e9e979ffb1
+:END:
+#+title: Add ores.telemetry.database component
+#+description: Split telemetry repository/mapper/entity into ores.telemetry.database to resolve the ores.telemetry ↔ ores.database circular dependency; Boost.Log database_sink_backend.
+#+type: task
+#+level: s1
+#+filetags: :telemetry:database:component:refactor:telemetry_database_sink:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:2920a00e-538d-455e-9013-44a1c3a7ed36][Telemetry database sink]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-03]
+:END:
+
+** Now
+Completed 2026-02-03.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-03
+
+* Goal
+
+Resolve the =ores.telemetry= ↔ =ores.database= circular dependency by extracting a dedicated =ores.telemetry.database= library.
+
+* Acceptance
+
+- Repository / mapper / entity files moved from =ores.telemetry= to =ores.telemetry.database=.
+- Boost.Log =database_sink_backend= for direct DB logging.
+- Messaging components in =ores.comms.service= reference the new library + namespace.
+- Examples + CMake configurations updated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Circular dep was the blocker; the sink itself was the easy part.
+
+* Result
+
+Dependency cycle broken; database sink available.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 41a9ccc5-8a2b-4f0c-a403-8641c2d0318a
+:END:
+#+title: Refactor Qt icon implementation
+#+description: Introduce enum class Icon + enum class IconTheme in IconUtils; centralise iconPath / createRecoloredIcon; standardise icon colours (DefaultIconColor, ConnectedColor, DisconnectedColor); add Solarized Linear + Bold icon set.
+#+type: task
+#+level: s1
+#+filetags: :qt:icons:refactor:theming:qt_visual_refresh:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3][Qt visual refresh]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-20]
+:END:
+
+** Now
+Completed 2026-01-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-20
+
+* Goal
+
+Replace scattered SVG-path string literals with a semantic icon-enum + theme-aware retrieval.
+
+* Acceptance
+
+- =enum class Icon= and =enum class IconTheme= in =IconUtils.hpp=.
+- =IconUtils::iconPath()= + overloaded =createRecoloredIcon= consume the enums.
+- Standard icon-colour constants (=DefaultIconColor=, =ConnectedColor=, =DisconnectedColor=).
+- Codebase-wide migration: controllers, dialogs, MDI windows.
+- Solarized (Linear + Bold) SVG set added to =resources.qrc=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Enables a future theme switch without touching every file; the icon-set choice becomes a single change.
+
+* Result
+
+Icon usage centralised; theme switching becomes feasible.

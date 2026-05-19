@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 0a69cb02-19df-4df7-bedd-81c57a604737
+:END:
+#+title: Engineering hygiene
+#+description: Past PR-review comments, CI apt-get retries, vcpkg cache backend fix.
+#+type: story
+#+level: s2
+#+filetags: :review:ci:vcpkg:polish:sprint_11:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-06]
+:END:
+
+** Now
+Completed 2026-02-06.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-06
+
+* Goal
+
+Three independent hygiene strands: clear the backlog of past PR review
+comments, harden apt-get against transient failures, and restore vcpkg
+binary caching after the =x-gha= backend was silently removed upstream.
+
+* Acceptance
+
+- Past review comments cleared.
+- apt-get has exponential-backoff retry.
+- vcpkg cache hit-rate restored.
+
+* Tasks
+
+In execution order:
+
+- [[id:12f3d5ed-fb2b-41e6-8cc5-15392522c2c0][Address past review comments]]
+- [[id:1f64c879-3cca-42da-b16c-9f0194346964][Fix apt-get failures on nightly build]]
+- [[id:760fa2b8-3005-494c-aced-53c2d605351d][Fix vcpkg caching (x-gha removed upstream)]]
+
+* Decisions
+
+- /Clear review comments first/ :: technical-debt headwind would have interfered with the multi-tenant work; better to flush it first.
+- /Files-based cache via actions/cache@v4/ :: the =x-gha= upstream removal was silent; this is the recommended replacement and survives upstream churn better.
+
+* Out of scope
+
+- Migrating off =install_debian_packages.sh= to a container image.
+
+* See also
+
+None.

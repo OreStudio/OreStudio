@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: abd80ec4-e7e4-4bb2-b5ae-4fc7f8c46fd3
+:END:
+#+title: Qt visual refresh
+#+description: Centralise Qt icon handling behind a semantic enum + theme system.
+#+type: story
+#+level: s2
+#+filetags: :qt:icons:refactor:theming:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-20]
+:END:
+
+** Now
+Completed 2026-01-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-20
+
+* Goal
+
+Centralise icon handling behind a semantic enum + theme system so
+icon-set or theme changes don't require editing every UI file.
+
+* Acceptance
+
+- =enum class Icon= + =enum class IconTheme= drive icon lookup.
+- All UI files migrated off scattered SVG-path string literals.
+- Standard icon colours defined in one place.
+- Solarized (Linear + Bold) icon set available.
+
+* Tasks
+
+In execution order:
+
+- [[id:41a9ccc5-8a2b-4f0c-a403-8641c2d0318a][Refactor Qt icon implementation]]
+
+* Decisions
+
+- /Enum, not string lookup/ :: the compiler catches typos; the IDE autocompletes; renaming an icon is a single-site change.
+
+* Out of scope
+
+- Switching the default theme — refactor only.
+
+* See also
+
+None.

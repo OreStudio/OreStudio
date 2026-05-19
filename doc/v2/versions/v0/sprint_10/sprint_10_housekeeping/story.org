@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 61f6ab0b-bb2e-43e7-9735-447a7e3d55de
+:END:
+#+title: Sprint 10 housekeeping
+#+description: Sprint backlog refinement, OCR scans, misspell-action fix.
+#+type: story
+#+level: s2
+#+filetags: :agile:housekeeping:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-27]
+:END:
+
+** Now
+Completed 2026-01-27.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-27
+
+* Goal
+
+Recurring per-sprint housekeeping plus the misspell-CI fix that
+external data brought to a head.
+
+* Acceptance
+
+- Sprint 10 backlog reflects reality at close.
+- Notebook OCR continued.
+- Misspell action no longer trips on vendor data.
+
+* Tasks
+
+In execution order:
+
+- [[id:f752c290-2a7a-4bf7-a615-4cdc2a3e0de6][Sprint and product backlog refinement]]
+- [[id:09918430-9725-4129-96fd-52aff4c52ece][OCR scan notebooks for this sprint]]
+- [[id:ede64638-ddc0-45b3-a1db-185d48a68114][Fix issues with misspell action]]
+
+* Decisions
+
+- /Misspell ignores at folder level, not file level/ :: vendor content arrives in bulk; folder-level ignore is the right granularity.
+
+* Out of scope
+
+- AI summary for this sprint — v0 doesn't carry one.
+
+* See also
+
+None.

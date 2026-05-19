@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 1eff8c9c-e4c2-49cc-a563-bb91923ec406
+:END:
+#+title: Tenancy-based test isolation
+#+description: Centralised tenant_context C++ service; per-test tenant provisioning + deprovisioning; RLS policies; --tenant CLI flag; psqlrc support.
+#+type: story
+#+level: s2
+#+filetags: :tenancy:tests:rls:cli:sprint_11:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-01]
+:END:
+
+** Now
+Completed 2026-02-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-01
+
+* Goal
+
+Use tenants as the unit of test isolation: same database, different
+tenant per test. Faster than tear-down + recreate; closer to how the
+system actually runs in production.
+
+* Acceptance
+
+- C++ tenant_context service in =ores.database=.
+- Per-test tenant provisioning + deprovisioning.
+- RLS policies allow the system tenant cross-tenant access.
+- CLI gains =--tenant= + =ORES_TENANT=.
+- =psqlrc= shows the current tenant in the prompt.
+- Provision + deprovision SQL functions in place.
+
+* Tasks
+
+In execution order:
+
+- [[id:9e2e5ca9-31a7-4527-bb9b-3b767ddac0ab][Use tenancy to isolate tests]]
+
+* Decisions
+
+- /Tenant-per-test, not database-per-test/ :: order-of-magnitude faster and more representative of production.
+- /RLS lets the system tenant cross boundaries/ :: necessary for admin / provisioning ops; deliberate widening, not a leak.
+
+* Out of scope
+
+- Per-test connection pools.
+
+* See also
+
+- [[id:f6748da4-e8d7-48b6-b91f-bc05e68f53d8][Tenancy foundation]] — supplies the schema this story builds on.

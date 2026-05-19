@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 4bec02dc-52c4-4d2d-b2cb-6142dfd4ff70
+:END:
+#+title: Update codegen for tenancy
+#+description: Mustache templates (sql_schema_domain_entity_create, sql_schema_table_create) conditionally include tenant_id; PK + exclusion constraints incorporate tenant_id; pgTAP testing skill section; generate_refdata_schema.sh + recreate_entity.sh.
+#+type: task
+#+level: s1
+#+filetags: :codegen:mustache:tenancy:pgtap:scripts:tenancy_codegen_and_entity_types:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:467e909e-ceac-4829-8688-d43179d38f18][Tenancy codegen and entity types]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-02]
+:END:
+
+** Now
+Completed 2026-02-02.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-02
+
+* Goal
+
+Update the codegen templates so tenant-aware tables are generated correctly out of the box.
+
+* Acceptance
+
+- =sql_schema_domain_entity_create.mustache= + =sql_schema_table_create.mustache= conditionally include the =tenant_id= column.
+- PK + exclusion constraints incorporate =tenant_id=.
+- Insert functions emit tenant validation.
+- Detailed plan for consolidating enum/lookup tables onto the system tenant (=tenant 0=).
+- pgTAP testing skill section added; pgTAP test files for =artefact_type=, =tenant_status=, =tenant_type=, =currencies=, refdata validations.
+- =generate_refdata_schema.sh= + =recreate_entity.sh= utilities.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Tenancy is now /the default/ in codegen; tenant-less tables are the exception, not the rule.
+
+* Result
+
+Codegen tenant-aware; pgTAP in place for database-level tests.

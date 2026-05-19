@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: f6748da4-e8d7-48b6-b91f-bc05e68f53d8
+:END:
+#+title: Tenancy foundation
+#+description: Tenant_id on every entity table; system tenant; validation function; seeding scoped to system tenant; auto-populate triggers and test infrastructure.
+#+type: story
+#+level: s2
+#+filetags: :tenancy:sql:iam:seeding:sprint_11:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-01]
+:END:
+
+** Now
+Completed 2026-02-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-01
+
+* Goal
+
+Lay multi-tenant support at the schema and seeding layer, with the
+trigger machinery that lets existing C++ code 'just work'.
+
+* Acceptance
+
+- Tenant tables (types, statuses, tenants) in place.
+- =tenant_id= on ~70 entity tables; unique indexes + tenant_id indexes updated.
+- All INSERT triggers validate via =ores_iam_validate_tenant_fn=.
+- All upsert + populate functions scoped to system tenant.
+- BEFORE INSERT triggers auto-populate =tenant_id= from session.
+- Test users default to the system tenant.
+
+* Tasks
+
+In execution order:
+
+- [[id:59582d45-b4f4-47b9-8cf2-06e597f9651c][Initial tenant setup (schema)]]
+- [[id:27aeb340-b98c-4b6d-aa92-d4da2dc5c629][Tenancy and seeding]]
+- [[id:73a005de-626e-4b62-8fed-f385aecdf02a][Tenancy, login and tests]]
+
+* Decisions
+
+- /System tenant is a real row/ :: gives a stable target for platform-level data and seed code paths.
+- /Triggers populate tenant_id from session variable/ :: keeps the pre-existing C++ code working without per-call audits.
+
+* Out of scope
+
+- RLS policies (handled in the test-isolation story).
+- C++ tenant entity (handled in the codegen story).
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — owns the tenancy schema.

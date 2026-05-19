@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 41c5a11e-0633-4112-9335-ec7ed684682f
+:END:
+#+title: Split god admin account into RBAC roles
+#+description: Introduce ores_owner / ores_rw / ores_ro group roles + LOGIN service users (ores_http_user, etc.); ALTER DEFAULT PRIVILEGES; schema ownership held by the DDL user. Postgres passwords removed from GitHub workflows as part of this.
+#+type: task
+#+level: s1
+#+filetags: :iam:rbac:postgres:security:database_role_split_and_schema_consolidation:sprint_11:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b726d4ea-4e80-4d54-a5cc-0cd895ce883c][Database role split and schema consolidation]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-31]
+:END:
+
+** Now
+Completed 2026-01-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-31
+
+* Goal
+
+Split the single all-rights admin account into the Principle-of-Least-Privilege RBAC roles the project should have always had.
+
+* Acceptance
+
+- Group roles: =ores_owner= (DDL), =ores_rw= (DML), =ores_ro= (read-only).
+- Service LOGIN users (=ores_http_user=, etc.) inherit from group roles.
+- =ALTER DEFAULT PRIVILEGES= so future DDL grants flow naturally.
+- Public schema owned by the DDL user.
+- Dev passwords removed from GitHub workflows as part of this work (= /Remove postgres passwords from github workflows/= done here).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Gemini analysis steered the role hierarchy; the implementation is the standard Postgres pattern.
+
+* Result
+
+Single-role era ends; RBAC is in place ready for tenancy.

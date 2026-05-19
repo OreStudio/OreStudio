@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8c29b0e8-64ea-4f32-add0-59419769bcd4
+:END:
+#+title: Security module
+#+description: Extract shared security primitives into ores.security with RAII OpenSSL contexts.
+#+type: story
+#+level: s2
+#+filetags: :security:refactor:component:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-13]
+:END:
+
+** Now
+Completed 2026-01-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-13
+
+* Goal
+
+Consolidate shared security primitives into a dedicated
+=ores.security= component so future audits look at one component,
+not three.
+
+* Acceptance
+
+- =ores.security= component scaffolded.
+- Password and encryption code migrated from =ores.iam= + =ores.connections=.
+- OpenSSL contexts managed via RAII.
+- Downstream components linked through the new library.
+
+* Tasks
+
+In execution order:
+
+- [[id:91c1e06d-5307-4f45-803d-dea3e841ee84][Create ores.security module]]
+
+* Decisions
+
+- /RAII for OpenSSL/ :: =std::unique_ptr= with a custom =EVP_CIPHER_CTX_free= deleter eliminates the long error-path cleanup that was the source of leak reports.
+- /Clearer naming/ :: =password_hasher= and =encryption= name what they do; =password_manager= and =encryption_service= were vague.
+
+* Out of scope
+
+- Key-rotation tooling (planned separately).
+- Hardware security module integration.
+
+* See also
+
+- [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] — primary consumer alongside IAM.

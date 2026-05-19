@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 6b514406-2fbd-4697-8026-b0cb98a3b93d
+:END:
+#+title: Change reasons UI fixes
+#+description: Polish the change-reason Qt dialogs based on first-pass review: mandatory reason selection, history visibility, save-dialog refactor, protocol bump to 21.1.
+#+type: task
+#+level: s1
+#+filetags: :change_management:qt:ux:change_management_infrastructure:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:150e3c44-aadb-48c8-a11e-322b44a0357a][Change management infrastructure]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Polish the change-reason dialogs based on first-pass review and propagate change-tracking fields through all temporal entities.
+
+* Acceptance
+
+- Mandatory reason on save via =ChangeReasonDialog=.
+- =change_reason_code= + =change_commentary= present on every temporal entity.
+- Client-side =ChangeReasonCache= refreshed by events.
+- History dialog shows the reason and commentary.
+- Protocol bump to 21.1; rename =list= → =get=, =create=/=update= → =save=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Long review-fix list in v0; covered icon guidelines, badge usage, recorded-at humanisation, and a long tail of column-width snags. One item deferred: extract a shared save-dialog.
+
+* Result
+
+Change-management workflow lives across all temporal entities; UI conventions consistent with other dialogs.

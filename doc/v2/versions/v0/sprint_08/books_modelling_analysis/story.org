@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 77211166-9316-40c0-88d6-c92f983a00b5
+:END:
+#+title: Books domain modelling analysis
+#+description: First-cut analysis of the entities needed to support books; FPML-anchored, iterated with LLMs.
+#+type: story
+#+level: s2
+#+filetags: :modelling:books:analysis:fpml:sprint_08:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Produce a first-cut model of the entities required to support books —
+the next major modelling effort after currencies and countries.
+
+* Acceptance
+
+- FPML-anchored model of the books-supporting entities.
+- Iterated with Gemini and Qwen.
+- Known use cases conform or are explicitly marked as too complex.
+
+* Tasks
+
+In execution order:
+
+- [[id:60722e51-beb9-4221-abb1-95b0e08e9a32][Books entity analysis]]
+
+* Decisions
+
+- /FPML as the anchor/ :: the financial industry's vocabulary; keeps our model interoperable with how other systems describe the same concepts.
+- /LLM triangulation/ :: two models disagreeing is a useful signal that the modelling itself is ambiguous.
+
+* Out of scope
+
+- Implementation. This is analysis; code lands in a later sprint.
+
+* See also
+
+None.

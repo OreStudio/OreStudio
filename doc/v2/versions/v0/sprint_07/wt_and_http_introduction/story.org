@@ -9,8 +9,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 13fbe901-b255-49f7-88c3-13b2a2506bf3
 
 Parent sprint: [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]].
+
+Continued in: [[id:13fbe901-b255-49f7-88c3-13b2a2506bf3][Wt and HTTP review]] (sprint 08) — validation of the
+Wt application + HTTP service introduced here.
 
 * DONE Status
 :PROPERTIES:

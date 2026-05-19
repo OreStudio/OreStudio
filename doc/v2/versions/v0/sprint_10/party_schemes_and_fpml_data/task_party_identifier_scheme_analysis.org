@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 53b62f83-fb48-42ed-aa25-851259b0341c
+:END:
+#+title: Party identifier scheme analysis
+#+description: Analysis pass: catalogue the party identifier schemes we need (LEI, BIC, MIC, CEDB, Natural Person, National ID, Internal, ACER, DTCC, AII/MPID).
+#+type: task
+#+level: s1
+#+filetags: :party:analysis:fpml:schemes:party_schemes_and_fpml_data:sprint_10:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-21]
+:END:
+
+** Now
+Completed 2026-01-21.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-21
+
+* Goal
+
+Catalogue the party-identifier schemes the system needs to support before party can be modelled.
+
+* Acceptance
+
+- LEI, BIC, MIC, CEDB, Natural Person, National ID, Internal, ACER Code, DTCC Participant ID, AII/MPID documented.
+- FpML scheme URIs captured for each.
+- Regulatory context (MiFID II, REMIT, FINRA, US clearing) noted where relevant.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Pure analysis; the implementation lands in the next task.
+
+* Result
+
+Scheme catalogue complete and ready for codegen.

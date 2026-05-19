@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0127aa75-dca4-432e-b892-edd1caa334b4
+:END:
+#+title: Shell entity creator skill
+#+description: Skill for adding shell commands for a domain entity: list/add then history; register with REPL; recipe with runnable examples.
+#+type: task
+#+level: s1
+#+filetags: :skills:shell:scaffolding:entity_creator_skills:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:b302b2b6-13f8-49cc-a6af-88418668be31][Entity-creator skills suite]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Skill describing how to add shell commands for a domain entity.
+
+* Acceptance
+
+- Phase 1: list/add commands with REPL registration.
+- Phase 2: history commands and formatting helpers.
+- Phase 3: recipe documentation with runnable examples.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First skill exercised on the countries-in-shell task in this sprint.
+
+* Result
+
+Skill present and validated by the countries-in-shell task.

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 49a3b815-b5e9-4b3d-9213-100bf96c266d
+:END:
+#+title: Codegen infrastructure
+#+description: Stand up a simple in-tree code generator; cover domain-types SQL; auto-generate the ER diagram from SQL.
+#+type: story
+#+level: s2
+#+filetags: :codegen:sql:er_diagram:plantuml:sprint_10:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-24]
+:END:
+
+** Now
+Completed 2026-01-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-24
+
+* Goal
+
+Stand up a simple in-tree code generator and use it on the two
+highest-leverage workloads: domain-types SQL, and the ER diagram
+(which had been drifting against the schema).
+
+* Acceptance
+
+- Simple codegen infrastructure in place; templates + runner pattern.
+- Domain-types SQL emitted from codegen.
+- ER diagram generated from the SQL schema with convention validation.
+
+* Tasks
+
+In execution order:
+
+- [[id:c6879b22-210b-43b3-8463-c84d44105c93][Create a simple code generator]]
+- [[id:8d7be70d-aeef-443e-8a8e-4f078feff833][Add code generation support for domain types SQL]]
+- [[id:3b04427d-b956-4bd0-97e8-b68f445bd5ae][Code-generate ER diagram from SQL]]
+
+* Decisions
+
+- /Codegen pays back tokens/ :: the immediate motivator was the Claude Code token ceiling; the long-run motivator is that generated artefacts can't drift.
+- /ER diagram as derived artefact/ :: a Python parser + Mustache template + validation engine is cheap insurance against schema drift; the validator caught real issues immediately.
+
+* Out of scope
+
+- C++ domain-types codegen — covered in a later sprint.
+
+* See also
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component this story extends.

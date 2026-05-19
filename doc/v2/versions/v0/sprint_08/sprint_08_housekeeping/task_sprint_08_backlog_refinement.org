@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 06c1cb96-b27d-41cd-9b1e-5b450110bc5f
+:END:
+#+title: Sprint and product backlog refinement
+#+description: Maintain sprint 08 backlog and groom the product backlog.
+#+type: task
+#+level: s1
+#+filetags: :agile:backlog:sprint_08_housekeeping:sprint_08:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:f40e0162-a092-4716-a256-206fdba93452][Sprint 08 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-11]
+:END:
+
+** Now
+Completed 2026-01-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-11
+
+* Goal
+
+Maintain the sprint 08 backlog and groom the product backlog as items emerge.
+
+* Acceptance
+
+- Sprint 08 backlog reflects what was actually planned and what landed.
+- Items discovered in flight added to the product backlog rather than smuggled in.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Ongoing during the sprint; the v0 backlog file =sprint_backlog_08.org= was the source of truth.
+
+* Result
+
+Backlog refined at sprint end alongside the AI summary attempt.

@@ -66,6 +66,20 @@ is the current sprint; the rest are closed.
 - [[id:a79d42af-1b38-43ee-9607-848a4a84c09a][Sprint 07]] — Accounts → IAM rename; RBAC; Wt + HTTP
   introduction; observability and telemetry components; build
   platform follow-up.
+- [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] — Database overhaul; ISO countries; change-
+  management infrastructure; Qt UX polish; comms substrate
+  evolution; entity-creator skills; Wt + observability review.
+- [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] — Data Quality subsystem + Data Librarian;
+  connection management; database naming refactor;
+  =ores.security=; CLI entity coverage; Qt icon refactor.
+- [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]] — Codegen infrastructure; party schemes + FPML
+  reference data; ORE XML codegen via xsdcpp; metadata /
+  production schema split; dataset bundles + System
+  Provisioner Wizard.
+- [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]] — Multi-tenant support end-to-end: RBAC + schema
+  consolidation; tenancy foundation, codegen, and test isolation;
+  per-request tenant context; sqlgen improvements; telemetry
+  database sink; tenant validation across surfaces.
 - ... through Sprint 16.
 
 * Release scope

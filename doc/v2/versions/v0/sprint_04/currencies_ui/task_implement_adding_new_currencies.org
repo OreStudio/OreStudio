@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 32448b40-ed11-4ee4-8ff8-49daa81a70a9
+:END:
+#+title: Implement adding new currencies
+#+description: Add a new-currency dialog and wire it to the repository.
+#+type: task
+#+level: s1
+#+filetags: :currencies:qt:ux:add:currencies_ui:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-25
+#+updated: 2025-11-25
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-25]
+:END:
+
+** Now
+Completed 2025-11-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-25
+
+* Goal
+
+Add the ability to /add/ new currencies from the UI: a
+new-currency dialog, wiring to the repository, and a message protocol
+so the server side picks up the new row.
+
+* Acceptance
+
+- A new-currency dialog opens from a menu / toolbar action.
+- Saving the dialog persists the row via the repository.
+- Multiple currencies can be created in one batch where applicable.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~3:17.
+- v0 notes: UI went black on close/reopen (fixed); needed a save action to trigger the server-side message; clone-a-currency surfaced as a future extension; added the new-currency message to the REPL.
+
+* Result
+
+New-currency dialog shipped; repository write path exercised; REPL message added.

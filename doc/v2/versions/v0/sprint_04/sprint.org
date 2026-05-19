@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 38daa167-e791-48fb-afeb-1813615037de
+:END:
+#+title: Sprint 04
+#+description: LLM-driven code review and follow-on refactors; complete the currencies UI; introduce the Claude Code skills layer.
+#+type: sprint
+#+level: s3
+#+filetags: :code_review:skills:currencies_ui:v0:
+#+created: 2025-11-07
+#+updated: 2025-11-30
+#+todo: STARTED | DONE
+
+Parent version: [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-30]
+:END:
+
+** Now
+Sprint closed 2025-11-30. LLM-driven review pass complete across the
+first three components; currencies UI feature-complete; the Claude
+Code skills layer is in the build.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-30
+
+* Mission
+
+LLM-driven code review and follow-on refactors; complete the currencies
+UI; introduce the Claude Code skills layer.
+
+(Synthesised from the v0 mission: /code review all code using LLMs/ and
+/implement Claude Code skills for common functionality/. The currencies
+UI thread emerged organically and dominated the sprint by volume.)
+
+* Stories
+
+In execution order:
+
+- [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]] — backlog refinement plus a new pie-chart
+  resourcing report.
+- [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] — successor of sprint 03's BLOCKED
+  CTest item.
+- [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] — first skill, CMake deploy
+  targets, weaving analysis.
+- [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] — Windows install end-to-end, =localtime=
+  fix, shutdown crash, sqlgen leak fixes.
+- [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]] — splash, Fluent icons, application icon,
+  window-management defaults.
+- [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] — export, edit, add, history, multi-select.
+  Pattern-setter for later reference-data UIs.
+- [[id:f8d6459d-71d3-4bae-8ece-43201cd2b8ba][LLM code review and refactor]] — review pass + Dogen-layout
+  restructure + per-component PlantUML.
+- [[id:13e4f41f-82e1-400a-9c84-e60a587e2647][Documentation polish]] — website restructure following the
+  weaving analysis, Doxygen main-page refresh.
+
+* Retrospective
+
+- /What worked/ :: the LLM review pass produced enough actionable
+  items to fill its own story plus follow-ons in successor sprints.
+  The MASD-influenced weaving analysis turned out to be load-bearing
+  — it's why doc_polish lands now and why the skills layer becomes a
+  real build target rather than a side project.
+- /What did not/ :: two long-tail items carry forward as =BLOCKED=
+  again (CDash warning filters; macOS package via GitHub images).
+  The split between currencies UI work and "UI polish" was fuzzier
+  than it should have been — several entries plausibly belonged to
+  either story.
+- /Carry forward to v2/ :: the BLOCKED-then-resolved pattern (sprint
+  03 → sprint 04 for the CTest item) is the first concrete use of
+  the cross-sprint predecessor/successor link mechanism. Worth
+  preserving in subsequent sprints.
+
+* Notes on the conversion
+
+22 of 45 v0 entries migrated as standalone tasks; the rest are listed
+under each story's /Additional v0 entries belonging here, not
+migrated as full tasks/ section. The longest single v0 entry
+(=Review all code created so far with an LLM=, ~15h) is preserved
+intact.

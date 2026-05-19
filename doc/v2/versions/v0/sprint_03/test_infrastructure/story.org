@@ -9,8 +9,12 @@
 #+created: 2025-11-10
 #+updated: 2025-12-01
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: a9055a54-ae06-4cc4-8b51-2cb9627e0d5a
 
 Parent sprint: [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]].
+
+Continued in: [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]] (sprint 04) — the BLOCKED
+CTest item lands there.
 
 * DONE Status
 :PROPERTIES:

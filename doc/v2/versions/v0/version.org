@@ -57,7 +57,9 @@ is the current sprint; the rest are closed.
   modernisation.
 - [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]] — Wire the new socket code into the UI; finish login,
   accounts, and sessions.
-- Sprint 04 — (to be migrated).
+- [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]] — LLM-driven code review; complete the currencies UI;
+  introduce the Claude Code skills layer.
+- Sprint 05 — (to be migrated).
 - ... through Sprint 16.
 
 * Release scope

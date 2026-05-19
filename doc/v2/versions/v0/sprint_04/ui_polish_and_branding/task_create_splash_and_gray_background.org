@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: bcdd540f-ba92-4063-a279-941319276787
+:END:
+#+title: Create a splash screen and gray background
+#+description: Replace the default splash with a project-branded image; give the MDI background a neutral gray.
+#+type: task
+#+level: s1
+#+filetags: :qt:ux:branding:splash:ui_polish_and_branding:sprint_04:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-11-22
+#+updated: 2025-11-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:2a9269e4-049a-49c3-9354-f26c95390e1f][UI polish and branding]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-22]
+:END:
+
+** Now
+Completed 2025-11-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-22
+
+* Goal
+
+Replace the placeholder splash with a project-branded one;
+give the empty MDI area a neutral gray background reminiscent of VS Code's
+welcome screen.
+
+* Acceptance
+
+- Splash uses a branded image (with version string).
+- Empty MDI shows a neutral gray background.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Total time spent in v0: ~2:26.
+
+* Result
+
+Branded splash and neutral MDI background shipped.

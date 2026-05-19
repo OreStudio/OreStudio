@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 13e4f41f-82e1-400a-9c84-e60a587e2647
+:END:
+#+title: Documentation polish
+#+description: Website cleanup, Doxygen main page, README UI screenshots.
+#+type: story
+#+level: s2
+#+filetags: :documentation:website:sprint_04:v0:
+#+created: 2025-11-30
+#+updated: 2025-11-30
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:38daa167-e791-48fb-afeb-1813615037de][Sprint 04]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-11-30]
+:END:
+
+** Now
+Completed 2025-11-30.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-11-30
+
+* Goal
+
+Act on the /Weaving skills and documentation together/ analysis:
+restructure the org-mode docs that produce the website so each page
+has a clean role, and refresh the Doxygen main page.
+
+* Acceptance
+
+- Build instructions live on their own pages, not in the readme.
+- Stale navigation, broken links, and stale screenshots fixed.
+- Doxygen main page describes the project's API surface usefully.
+
+* Tasks
+
+In execution order:
+
+- [[id:b5e31cfc-772f-4c07-a019-4d9cfea615e9][Clean up product website]]
+- [[id:8d6ff09e-2be2-4600-991c-6c7556ec2484][Update Doxygen main page]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Update readme with UI screenshots.
+
+* Decisions
+
+- /Readme is project framing, not a manual/ :: build instructions
+  and other reference content move to dedicated pages.
+
+* Out of scope
+
+- A second pass on the API documentation content itself (Doxygen
+  page refresh only).
+
+* See also
+
+- [[id:c85f2dca-f7d6-40ae-b796-8b4cf84a7093][Documentation infrastructure]] (sprint 01) — predecessor doc
+  story.
+- [[id:05ef8ee3-b5b1-41e2-809d-edae9418edd3][Weaving skills and documentation together]] (this sprint) — the
+  analysis driving this work.
+- [[id:6930472b-222c-4621-ab37-cfee3070a8bd][How do I deploy the site?]] — the recipe for the publish target.

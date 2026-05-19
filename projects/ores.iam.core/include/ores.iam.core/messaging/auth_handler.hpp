@@ -334,9 +334,16 @@ public:
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(
                         *party_cache_, acct.tenant_id.to_string(), ap.party_id);
-                    if (ap.party_id == party_id)
+                    if (ap.party_id == party_id) {
                         resp.party_setup_required =
                             p && p->status == "Inactive";
+                        if (resp.party_setup_required) {
+                            BOOST_LOG_SEV(auth_handler_lg(), info)
+                                << "login: party_setup_required=true for party "
+                                << boost::uuids::to_string(party_id)
+                                << " status=" << (p ? p->status : "not-in-cache");
+                        }
+                    }
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},

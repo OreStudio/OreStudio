@@ -107,30 +107,8 @@ workspace_repository::find_by_id(const std::string& id) {
 std::string workspace_repository::create(const domain::workspace& ws) {
     BOOST_LOG_SEV(lg(), debug) << "Creating workspace: " << ws.name;
 
-    auto escape_str = [](const std::string& s) -> std::string {
-        std::string r;
-        r.reserve(s.size() + 2);
-        r += '\'';
-        for (char c : s) {
-            if (c == '\'') r += "''";
-            else r += c;
-        }
-        r += '\'';
-        return r;
-    };
-
-    const std::string id_str = boost::uuids::to_string(ws.id);
-    const std::string owner_str = boost::uuids::to_string(ws.owner_id);
-
-    std::string parent_val = "NULL";
-    if (ws.parent_workspace_id.has_value())
-        parent_val = "'" + boost::uuids::to_string(*ws.parent_workspace_id) + "'::uuid";
-
-    std::string portfolio_val = "NULL";
-    if (ws.scope_portfolio_id.has_value())
-        portfolio_val = "'" + boost::uuids::to_string(*ws.scope_portfolio_id) + "'::uuid";
-
-    const std::string sql =
+    // $5/$6 are optional UUIDs — pass empty string and use NULLIF to coerce to NULL.
+    static constexpr std::string_view sql =
         "INSERT INTO ores_workspaces_tbl"
         "  (id, version, name, description, source_path,"
         "   parent_workspace_id, scope_portfolio_id,"
@@ -138,23 +116,28 @@ std::string workspace_repository::create(const domain::workspace& ws) {
         "   modified_by, performed_by, change_reason_code, change_commentary,"
         "   valid_from, valid_to)"
         " VALUES ("
-        "'" + id_str + "'::uuid, 0, "
-        + escape_str(ws.name) + ", "
-        + escape_str(ws.description) + ", "
-        + escape_str(ws.source_path) + ", "
-        + parent_val + ", "
-        + portfolio_val + ", "
-        "'" + owner_str + "'::uuid, "
-        + escape_str(ws.status_code.empty() ? std::string("active") : ws.status_code) + ", "
-        + escape_str(ws.modified_by) + ", "
-        + escape_str(ws.performed_by) + ", "
-        + escape_str(ws.change_reason_code) + ", "
-        + escape_str(ws.change_commentary)
-        + ", now(), 'infinity')"
+        "  $1::uuid, 0, $2, $3, $4,"
+        "  NULLIF($5, '')::uuid, NULLIF($6, '')::uuid,"
+        "  $7::uuid, $8,"
+        "  $9, $10, $11, $12,"
+        "  now(), 'infinity')"
         " RETURNING id::text";
 
-    const auto rows = execute_raw_multi_column_query(
-        ctx_, sql, lg(), "Creating workspace");
+    const std::string parent_val = ws.parent_workspace_id.has_value()
+        ? boost::uuids::to_string(*ws.parent_workspace_id) : "";
+    const std::string portfolio_val = ws.scope_portfolio_id.has_value()
+        ? boost::uuids::to_string(*ws.scope_portfolio_id) : "";
+    const std::string status = ws.status_code.empty() ? "active" : ws.status_code;
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx_, std::string(sql),
+        {boost::uuids::to_string(ws.id),
+         ws.name, ws.description, ws.source_path,
+         parent_val, portfolio_val,
+         boost::uuids::to_string(ws.owner_id), status,
+         ws.modified_by, ws.performed_by,
+         ws.change_reason_code, ws.change_commentary},
+        lg(), "Creating workspace");
 
     if (rows.empty() || !rows.front()[0].has_value())
         throw std::runtime_error("Failed to retrieve generated id after workspace insert");
@@ -172,29 +155,9 @@ void workspace_repository::archive(const std::string& id,
     if (!current.has_value())
         throw std::runtime_error("Workspace not found: " + id);
 
-    auto escape_str = [](const std::string& s) -> std::string {
-        std::string r;
-        r.reserve(s.size() + 2);
-        r += '\'';
-        for (char c : s) {
-            if (c == '\'') r += "''";
-            else r += c;
-        }
-        r += '\'';
-        return r;
-    };
-
-    const std::string owner_str = boost::uuids::to_string(current->owner_id);
-
-    std::string parent_val = "NULL";
-    if (current->parent_workspace_id.has_value())
-        parent_val = "'" + boost::uuids::to_string(*current->parent_workspace_id) + "'::uuid";
-
-    std::string portfolio_val = "NULL";
-    if (current->scope_portfolio_id.has_value())
-        portfolio_val = "'" + boost::uuids::to_string(*current->scope_portfolio_id) + "'::uuid";
-
-    const std::string sql =
+    // $4/$5 are optional UUIDs — pass empty string and use NULLIF to coerce to NULL.
+    // version is passed as $2 (text cast to int) since parameterized API is string-only.
+    static constexpr std::string_view sql =
         "INSERT INTO ores_workspaces_tbl"
         "  (id, version, name, description, source_path,"
         "   parent_workspace_id, scope_portfolio_id,"
@@ -202,36 +165,42 @@ void workspace_repository::archive(const std::string& id,
         "   modified_by, performed_by, change_reason_code, change_commentary,"
         "   valid_from, valid_to)"
         " VALUES ("
-        "'" + id + "'::uuid, " + std::to_string(current->version) + ", "
-        + escape_str(current->name) + ", "
-        + escape_str(current->description) + ", "
-        + escape_str(current->source_path) + ", "
-        + parent_val + ", "
-        + portfolio_val + ", "
-        "'" + owner_str + "'::uuid, "
-        "'archived', "
-        + escape_str(modified_by) + ", "
-        + escape_str(modified_by) + ", "
-        + escape_str(change_reason_code) + ", "
-        + escape_str(change_commentary)
-        + ", now(), 'infinity')";
+        "  $1::uuid, $2::int, $3, $4, $5,"
+        "  NULLIF($6, '')::uuid, NULLIF($7, '')::uuid,"
+        "  $8::uuid, 'archived',"
+        "  $9, $9, $10, $11,"
+        "  now(), 'infinity')";
 
-    execute_raw_command(ctx_, sql, lg(), "Archiving workspace");
+    const std::string parent_val = current->parent_workspace_id.has_value()
+        ? boost::uuids::to_string(*current->parent_workspace_id) : "";
+    const std::string portfolio_val = current->scope_portfolio_id.has_value()
+        ? boost::uuids::to_string(*current->scope_portfolio_id) : "";
+
+    execute_parameterized_command(
+        ctx_, std::string(sql),
+        {id,
+         std::to_string(current->version),
+         current->name, current->description, current->source_path,
+         parent_val, portfolio_val,
+         boost::uuids::to_string(current->owner_id),
+         modified_by, change_reason_code, change_commentary},
+        lg(), "Archiving workspace");
 }
 
 void workspace_repository::remove(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workspace: " << id;
 
-    const std::string del_scope =
-        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = '"
-        + id + "'::uuid";
-    execute_raw_command(ctx_, del_scope, lg(), "Clearing trade scope before remove");
+    execute_parameterized_command(
+        ctx_,
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
+        {id}, lg(), "Clearing trade scope before remove");
 
-    const std::string del_ws =
+    execute_parameterized_command(
+        ctx_,
         "DELETE FROM ores_workspaces_tbl"
-        " WHERE id = '" + id + "'::uuid"
-        "   AND valid_to = ores_utility_infinity_timestamp_fn()";
-    execute_raw_command(ctx_, del_ws, lg(), "Soft-closing workspace");
+        " WHERE id = $1::uuid"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()",
+        {id}, lg(), "Soft-closing workspace");
 }
 
 std::vector<std::string>
@@ -252,35 +221,28 @@ void workspace_repository::set_trade_scope(const std::string& workspace_id,
     BOOST_LOG_SEV(lg(), debug) << "Setting trade scope for workspace: " << workspace_id
                                << " trade count: " << trade_ids.size();
 
-    const std::string del_sql =
-        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = '"
-        + workspace_id + "'::uuid";
-    execute_raw_command(ctx_, del_sql, lg(), "Clearing existing trade scope");
+    execute_parameterized_command(
+        ctx_,
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
+        {workspace_id}, lg(), "Clearing existing trade scope");
 
-    if (trade_ids.empty())
-        return;
-
-    std::string ins_sql =
-        "INSERT INTO ores_workspace_trade_scope_tbl (workspace_id, trade_id) VALUES ";
-    bool first = true;
     for (const auto& tid : trade_ids) {
-        if (!first) ins_sql += ", ";
-        ins_sql += "('" + workspace_id + "'::uuid, '"
-                 + boost::uuids::to_string(tid) + "'::uuid)";
-        first = false;
+        execute_parameterized_command(
+            ctx_,
+            "INSERT INTO ores_workspace_trade_scope_tbl (workspace_id, trade_id)"
+            " VALUES ($1::uuid, $2::uuid)",
+            {workspace_id, boost::uuids::to_string(tid)},
+            lg(), "Inserting trade scope entry");
     }
-
-    execute_raw_command(ctx_, ins_sql, lg(), "Inserting trade scope entries");
 }
 
 void workspace_repository::clear_trade_scope(const std::string& workspace_id) {
     BOOST_LOG_SEV(lg(), debug) << "Clearing trade scope for workspace: " << workspace_id;
 
-    const std::string sql =
-        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = '"
-        + workspace_id + "'::uuid";
-
-    execute_raw_command(ctx_, sql, lg(), "Clearing trade scope");
+    execute_parameterized_command(
+        ctx_,
+        "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
+        {workspace_id}, lg(), "Clearing trade scope");
 }
 
 }

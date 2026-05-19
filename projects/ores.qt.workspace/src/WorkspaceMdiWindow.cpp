@@ -250,8 +250,8 @@ void WorkspaceMdiWindow::archiveSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot archive workspace while disconnected.");
+        MessageBoxHelper::warning(this, tr("Disconnected"),
+            tr("Cannot archive workspace while disconnected."));
         return;
     }
 
@@ -272,8 +272,8 @@ void WorkspaceMdiWindow::archiveSelected() {
 
     const std::string actor = username_.toStdString();
 
-    auto reply = MessageBoxHelper::question(this, "Archive Workspace",
-        QString("Are you sure you want to archive workspace '%1'?").arg(workspace_name),
+    auto reply = MessageBoxHelper::question(this, tr("Archive Workspace"),
+        tr("Are you sure you want to archive workspace '%1'?").arg(workspace_name),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -308,13 +308,13 @@ void WorkspaceMdiWindow::archiveSelected() {
             emit self->workspaceDeleted(QString::fromStdString(workspace_id));
             self->model_->refresh();
             emit self->statusChanged(
-                QString("Workspace '%1' archived successfully").arg(workspace_name));
+                tr("Workspace '%1' archived successfully").arg(workspace_name));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Archive failed for workspace " << workspace_id
                                        << ": " << message;
             auto msg = QString::fromStdString(message);
             emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, "Archive Failed", msg);
+            MessageBoxHelper::critical(self, tr("Archive Failed"), msg);
         }
     });
 
@@ -330,8 +330,8 @@ void WorkspaceMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete workspace while disconnected.");
+        MessageBoxHelper::warning(this, tr("Disconnected"),
+            tr("Cannot delete workspace while disconnected."));
         return;
     }
 
@@ -352,9 +352,9 @@ void WorkspaceMdiWindow::deleteSelected() {
 
     const std::string actor = username_.toStdString();
 
-    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
-        QString("Permanently delete workspace '%1' and all its associated data?\n\n"
-                "This action cannot be undone.").arg(workspace_name),
+    auto reply = MessageBoxHelper::question(this, tr("Delete Workspace"),
+        tr("Permanently delete workspace '%1' and all its associated data?\n\n"
+           "This action cannot be undone.").arg(workspace_name),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -389,13 +389,13 @@ void WorkspaceMdiWindow::deleteSelected() {
             emit self->workspaceDeleted(QString::fromStdString(workspace_id));
             self->model_->refresh();
             emit self->statusChanged(
-                QString("Workspace '%1' deleted successfully").arg(workspace_name));
+                tr("Workspace '%1' deleted successfully").arg(workspace_name));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed for workspace " << workspace_id
                                        << ": " << message;
             auto msg = QString::fromStdString(message);
             emit self->errorOccurred(msg);
-            MessageBoxHelper::critical(self, "Delete Failed", msg);
+            MessageBoxHelper::critical(self, tr("Delete Failed"), msg);
         }
     });
 

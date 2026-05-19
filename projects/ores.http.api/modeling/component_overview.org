@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164
+:END:
+#+title: ores.http.api
+#+description: HTTP server library — Boost.Beast server, JWT authentication, routing, and OpenAPI support.
+#+type: component
+#+level: cross
+#+filetags: :http:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.http.api= is the primary HTTP infrastructure library for ORE Studio. It
+provides an asynchronous HTTP/1.1 server built on Boost.Beast and Boost.Asio,
+JWT authentication middleware (parsing, validation, and claims extraction),
+path-based routing, an OpenAPI endpoint registry, and all domain types for HTTP
+request/response and JWT claims. This is the foundation for the REST-API surface
+exposed to external clients (web, mobile) alongside the NATS-based internal API.
+
+* Inputs
+
+- Incoming HTTP requests on the configured TCP port.
+- JWT tokens in the =Authorization: Bearer= header for authenticated routes.
+- Configuration: bind address, port, JWT public key.
+
+* Outputs
+
+- HTTP responses to clients.
+- Parsed JWT claims injected into request context for downstream handlers.
+- OpenAPI endpoint registry used to generate =openapi.json= at runtime.
+
+* Entry points
+
+- =include/ores.http.api/net/http_server.hpp= — server lifecycle management.
+- =include/ores.http.api/net/router.hpp= — route registration and dispatch.
+- =include/ores.http.api/domain/= — HTTP and JWT domain types.
+- =include/ores.http.api/openapi/= — OpenAPI endpoint registry.
+- =include/ores.http.api/messaging/= — any NATS protocol schemas for HTTP bridge.
+
+* Dependencies
+
+- Boost.Beast, Boost.Asio — async HTTP server.
+- =nlohmann/json= or =rfl= — JWT claim serialisation.
+- =ores.iam.api= — JWT claims types aligned with IAM sessions.
+
+* See also
+
+- [[id:869526b6-6c82-430e-95e1-776d4a11a56b][ores.http.core]] — concrete route implementations (IAM, assets, risk, etc.).
+- [[id:a8b318bc-8653-4d33-a58c-60793e3596d5][ores.http.server]] — server entrypoint.

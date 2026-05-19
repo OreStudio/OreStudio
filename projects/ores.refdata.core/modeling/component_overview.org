@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 204DB292-C32B-03E4-9DDB-BFE634F7CE91
+:END:
+#+title: ores.refdata.core
+#+description: Reference data domain — currencies, countries, counterparties, books, and business structure with temporal persistence.
+#+type: component
+#+level: cross
+#+filetags: :refdata:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.refdata.core= manages the reference-data domain in ORE Studio: over 150
+domain types covering currencies, countries, counterparties, books, business
+units, business centres, and trading structure entities. It provides temporal
+ORM repositories, domain services, NATS message handlers in the 0x3000–0x3FFF
+range, CSV export for selected types, and synthetic-data generators. Reference
+data is consumed by all other domain components (trading, assets, IAM) and
+drives UI drop-downs and validation.
+
+* Inputs
+
+- NATS request messages from Qt clients and peer services (query/create/update
+  for currencies, counterparties, books, etc.) in the 0x3000–0x3FFF range.
+- PostgreSQL connections to =ores_refdata_*= tables with temporal versioning.
+- DQ population events for bulk reference-data loads.
+
+* Outputs
+
+- Reference-data records persisted to the =ores_refdata= schema with full
+  temporal history (=valid_from= / =valid_to=).
+- NATS response messages returned to callers.
+- CSV exports of selected entity types (e.g., currencies).
+
+* Entry points
+
+- =include/ores.refdata.core/ores.refdata.core.hpp= — aggregate include.
+- =include/ores.refdata.core/messaging/registrar.hpp= — registers all NATS
+  handlers with the service host.
+- =include/ores.refdata.core/service/= — per-entity service headers.
+
+* Dependencies
+
+- =ores.refdata.api= — shared domain types and NATS protocol schemas.
+- =ores.dq= — ORM base classes and data-quality infrastructure.
+- =ores.iam.core= — identity and authorisation context.
+- =rfl= — JSON serialisation via reflection.
+- =fort= — formatted table output.
+- =soci= — SQL ORM for PostgreSQL persistence.
+- =nats.c= — NATS messaging client.
+
+* See also
+
+- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — protocol types and domain entities.
+- [[id:e75568d2-588a-4fe2-9ed1-6826b60c0e10][ores.refdata.service]] — NATS service entrypoint.
+- [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message catalogue.
+- [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]] — how parties, books, and business units relate.
+- [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure]] — party, book, portfolio, business-unit, business-centre
+  hierarchy design.

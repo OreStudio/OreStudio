@@ -56,8 +56,13 @@ postgres_event_source::~postgres_event_source() {
 }
 
 void postgres_event_source::start() {
-    BOOST_LOG_SEV(lg(), info) << "Starting postgres event source with "
-                              << entity_mappings_.size() << " registered mappings.";
+    std::string registered;
+    for (const auto& kv : entity_mappings_) {
+        if (!registered.empty()) registered += ", ";
+        registered += kv.first;
+    }
+    BOOST_LOG_SEV(lg(), info) << "Starting postgres event source. Registered entities: ["
+                              << registered << "]";
     listener_.start();
 }
 
@@ -73,9 +78,14 @@ void postgres_event_source::on_entity_change(const domain::entity_change_event& 
 
     auto it = entity_mappings_.find(e.entity);
     if (it == entity_mappings_.end()) {
+        std::string registered;
+        for (const auto& kv : entity_mappings_) {
+            if (!registered.empty()) registered += ", ";
+            registered += kv.first;
+        }
         BOOST_LOG_SEV(lg(), warn)
-            << "No event mapping registered for entity: " << e.entity
-            << " - notification will be ignored";
+            << "No event mapping registered for entity: '" << e.entity
+            << "'. Registered: [" << registered << "] - notification ignored";
         return;
     }
 

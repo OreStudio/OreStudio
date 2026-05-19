@@ -19,8 +19,10 @@
  */
 #include "ores.qt/EntityController.hpp"
 
+#include <QEvent>
 #include <QPointer>
 #include <QVariant>
+#include <QDynamicPropertyChangeEvent>
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
@@ -45,6 +47,14 @@ EntityController::EntityController(
 
     if (!eventName_.empty()) {
         setupEventSubscription();
+    }
+
+    // Watch the MDI area for workspace context changes and forward them to
+    // the client manager so every NATS request carries the right X-Workspace-Id.
+    mdiArea_->installEventFilter(this);
+    const auto wvar = mdiArea_->property("ores_workspace_context");
+    if (wvar.isValid()) {
+        setWorkspaceContext(wvar.value<WorkspaceContext>());
     }
 }
 
@@ -118,6 +128,26 @@ void EntityController::setClientManager(ClientManager* clientManager,
     const QString& username) {
     clientManager_ = clientManager;
     username_ = username;
+}
+
+void EntityController::setWorkspaceContext(const WorkspaceContext& ctx) {
+    if (clientManager_) {
+        clientManager_->setWorkspaceContext(ctx);
+    }
+}
+
+bool EntityController::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == mdiArea_ &&
+        event->type() == QEvent::DynamicPropertyChange) {
+        const auto* pe = static_cast<QDynamicPropertyChangeEvent*>(event);
+        if (pe->propertyName() == "ores_workspace_context") {
+            const auto wvar = mdiArea_->property("ores_workspace_context");
+            if (wvar.isValid()) {
+                setWorkspaceContext(wvar.value<WorkspaceContext>());
+            }
+        }
+    }
+    return QObject::eventFilter(watched, event);
 }
 
 QString EntityController::build_window_key(const QString& windowType,

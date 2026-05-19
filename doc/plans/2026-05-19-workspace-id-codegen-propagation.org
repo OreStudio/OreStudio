@@ -1,6 +1,6 @@
 #+TITLE: Workspace ID Codegen Propagation
 #+DATE: 2026-05-19
-#+STATUS: In Progress
+#+STATUS: Complete
 
 * Overview
 

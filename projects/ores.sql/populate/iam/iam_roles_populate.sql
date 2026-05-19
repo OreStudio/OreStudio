@@ -69,6 +69,10 @@ BEGIN
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'variability::flags:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'workspace::workspaces:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'workspace::workspaces:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'workspace::workspaces:archive');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'workspace::workspaces:delete');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');
@@ -91,6 +95,7 @@ BEGIN
     -- Assign permissions to Viewer role (default for new accounts)
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::currencies:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'variability::flags:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'workspace::workspaces:read');
 
     -- Assign permissions to DataPublisher role
     -- Read access to browse the data catalog
@@ -119,6 +124,11 @@ BEGIN
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'RefdataService', 'Reference Data domain service');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'RefdataService', 'refdata::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'RefdataService', 'iam::tenants:read');
+
+    -- Workspace service: full own-component + tenant read
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'WorkspaceService', 'Workspace domain service');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'WorkspaceService', 'workspace::*');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'WorkspaceService', 'iam::tenants:read');
 
     -- Data Quality service: full own-component + tenant read
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'DqService', 'Data Quality domain service');

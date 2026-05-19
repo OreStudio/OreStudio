@@ -9,6 +9,7 @@
     "entity_plural": "knock_out_swap_instruments",
     "entity_title": "Knock-Out Swap Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Knock-out interest rate swap instrument.",
     "description": "Represents a knock-out interest rate swap that terminates automatically\nif the floating rate breaches a specified barrier level.",

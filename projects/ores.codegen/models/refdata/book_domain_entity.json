@@ -4,6 +4,7 @@
     "product": "ores",
     "component": "refdata",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "entity_singular": "book",
     "entity_plural": "books",
     "entity_title": "Book",

@@ -9,6 +9,7 @@
     "entity_plural": "vanilla_swap_instruments",
     "entity_title": "Vanilla Swap Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Vanilla interest rate swap or cross-currency swap instrument.",
     "description": "Represents a plain vanilla interest rate swap or cross-currency swap\ninstrument linking two legs via the swap_legs table.",

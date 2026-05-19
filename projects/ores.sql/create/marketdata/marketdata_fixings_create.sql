@@ -36,6 +36,7 @@ create table if not exists ores_marketdata_fixings_tbl (
     "fixing_date"  date not null,
     "value"        text not null,
     "source"       text,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "valid_from"   timestamp with time zone not null,
     "valid_to"     timestamp with time zone not null,
     primary key (id, fixing_date),
@@ -61,6 +62,10 @@ on ores_marketdata_fixings_tbl (tenant_id, fixing_date desc);
 create index if not exists fixings_source_idx
 on ores_marketdata_fixings_tbl (tenant_id, source, fixing_date desc)
 where source is not null;
+
+create index if not exists fixings_workspace_idx
+on ores_marketdata_fixings_tbl (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Insert trigger — soft-update pattern.

@@ -1,0 +1,309 @@
+#+TITLE: Workspace ID Codegen Propagation
+#+DATE: 2026-05-19
+#+STATUS: In Progress
+
+* Overview
+
+Propagate ~workspace_id~ end-to-end through the stack for all entities marked
+~has_workspace_id: true~ in their codegen JSON model. The approach (Option B)
+is to update codegen templates once and regenerate all affected entities, rather
+than adding workspace filtering service by service.
+
+The change is implemented in four layers: NATS transport, Qt client,
+server-side database context, and codegen templates. Resolution-order
+inheritance (the "Docker layer" workspace chain) is deferred to Phase 5.
+
+* Scope
+
+~has_workspace_id: true~ appears on 28+ entities across three components:
+- ~ores.refdata~ (conventions, book, portfolio)
+- ~ores.trading~ (trade, instruments, lifecycle events, identifiers)
+- ~ores.reporting~ (report definition)
+
+* Architecture
+
+** Current state
+
+~workspace_id~ already exists in the database (Phase 1 SQL schema added the
+column to all data tables, defaulting to the live workspace sentinel UUID).  The
+C++ stack does not yet carry or filter on this value:
+
+- Qt client sends no ~X-Workspace-Id~ header
+- Server ~make_request_context~ does not read the header
+- ~database::context~ has no ~workspace_id~ field
+- Repository WHERE clauses do not filter on ~workspace_id~
+- The codegen templates for entity, mapper, repository, and domain class
+  have no ~has_workspace_id~ sections
+
+** Target state
+
+#+BEGIN_EXAMPLE
+Qt client (WorkspaceContext.id)
+  │ X-Workspace-Id: <uuid>   [NATS header]
+  ▼
+make_request_context()        [reads header, calls ctx.with_workspace()]
+  │ database::context.workspace_id_
+  ▼
+repository::read_latest()     [WHERE workspace_id = :wid]
+  │
+  ▼
+ores_<component>_<entity>_tbl WHERE workspace_id = :wid
+#+END_EXAMPLE
+
+Phase 5 will replace the exact-match WHERE with a resolution-order IN clause
+and set ~app.current_workspace_id~ via ~tenant_aware_pool~ for use by stored
+procedures.
+
+* Implementation Steps
+
+** Step 1: NATS header constant
+
+File: ~projects/ores.nats/include/ores.nats/domain/headers.hpp~
+
+Add after ~nats_session_id~:
+
+#+BEGIN_SRC cpp
+/// Active workspace for this request.
+/// Set by the Qt client from WorkspaceContext.id; forwarded on inter-service
+/// calls.  Absence means Live workspace (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
+inline constexpr std::string_view x_workspace_id = "X-Workspace-Id";
+#+END_SRC
+
+** Step 2: NATS client workspace header injection
+
+Files:
+- ~projects/ores.nats/include/ores.nats/service/nats_client.hpp~
+- ~projects/ores.nats/src/service/nats_client.cpp~
+
+Add private ~workspace_id_~ field (std::string) and a ~with_workspace_id()~
+builder (same pattern as ~with_session_id()~).  In
+~do_authenticated_request()~, inject the header in both the service path and
+the interactive path (alongside the existing ~session_id_~ injection).
+
+** Step 3: Qt ClientManager workspace propagation
+
+Files:
+- ~projects/ores.qt.api/include/ores.qt/ClientManager.hpp~
+- ~projects/ores.qt.api/src/ClientManager.cpp~
+
+- Add ~workspace_context_~ (type ~WorkspaceContext~) private member.
+- Add ~void setWorkspaceContext(const WorkspaceContext&)~ public slot.
+- In ~send_authenticated_request~, chain
+  ~scoped.with_workspace_id(workspace_context_.id.toStdString())~.
+- The ~WorkspaceContext~ defaults to Live workspace, so existing callers that
+  never call ~setWorkspaceContext~ continue to see Live data.
+
+The MDI area already propagates the ~WorkspaceContext~ to child windows via
+Phase 3 (Qt property).  Each plugin's controller should call
+~clientManager_->setWorkspaceContext(ctx)~ when the workspace changes.
+
+** Step 4: database::context workspace field
+
+File: ~projects/ores.database/include/ores.database/domain/context.hpp~
+
+- Add private ~workspace_id_~ field:
+  #+BEGIN_SRC cpp
+  std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+  #+END_SRC
+
+- Add getter:
+  #+BEGIN_SRC cpp
+  const std::string& workspace_id() const { return workspace_id_; }
+  #+END_SRC
+
+- Add builder (does NOT need to rebuild the pool — Phase 2 uses explicit WHERE,
+  not a session variable):
+  #+BEGIN_SRC cpp
+  [[nodiscard]] context with_workspace(std::string workspace_id) const {
+      auto copy = *this;
+      copy.workspace_id_ = std::move(workspace_id);
+      return copy;
+  }
+  #+END_SRC
+
+Note: ~with_tenant()~ and ~with_party()~ create fresh contexts that lose
+~workspace_id_~.  This is intentional — ~with_workspace()~ is chained AFTER
+those calls in ~make_request_context~, so ordering preserves the value.
+
+** Step 5: make_request_context reads workspace header
+
+File: ~projects/ores.service/src/service/request_context.cpp~
+
+After the existing JWT validation returns a context, read the ~X-Workspace-Id~
+header and chain ~with_workspace()~:
+
+#+BEGIN_SRC cpp
+// At the end of make_request_context, before returning:
+const auto ws_it = msg.headers.find(
+    std::string(ores::nats::headers::x_workspace_id));
+if (ws_it != msg.headers.end() && !ws_it->second.empty()) {
+    ctx = ctx.with_workspace(ws_it->second);
+}
+return ctx;
+#+END_SRC
+
+Must handle both code paths (delegated auth and standard auth).
+
+** Step 6: Codegen template — domain class
+
+File: ~projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache~
+
+After the existing ~{{#has_tenant_id}}~ include block, add:
+
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+#include <boost/uuid/uuid.hpp>
+{{/has_workspace_id}}
+#+END_SRC
+
+After the ~tenant_id~ field in the struct body, add:
+
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+    /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
+     */
+    boost::uuids::uuid workspace_id;
+
+{{/has_workspace_id}}
+#+END_SRC
+
+** Step 7: Codegen template — repository entity
+
+File: ~projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache~
+
+After the ~{{#has_tenant_id}} std::string tenant_id; {{/has_tenant_id}}~ block:
+
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+    std::string workspace_id;
+{{/has_workspace_id}}
+#+END_SRC
+
+** Step 8: Codegen template — mapper
+
+File: ~projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache~
+
+Check whether ~has_uuid_columns~ guard or a separate include is needed for
+~boost/uuid/uuid_io.hpp~ — it is already included when ~has_uuid_columns~ is
+true.  If not all ~has_workspace_id~ entities have other UUID columns, add a
+separate include guard.
+
+In the entity→domain mapping direction, after the ~has_tenant_id~ block:
+
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+{{/has_workspace_id}}
+#+END_SRC
+
+In the domain→entity mapping direction, after the ~has_tenant_id~ block:
+
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
+{{/has_workspace_id}}
+#+END_SRC
+
+** Step 9: Codegen template — repository read_latest
+
+File: ~projects/ores.codegen/library/templates/cpp_domain_type_repository.cpp.mustache~
+
+In ~read_latest(ctx)~ and ~read_latest(ctx, id)~, when ~has_workspace_id~ is
+true, add ~workspace_id~ to the WHERE predicate alongside ~tenant_id~.
+
+Current pattern (has_tenant_id only):
+#+BEGIN_SRC cpp
+where("tenant_id"_c == tid && "valid_to"_c == max.value())
+#+END_SRC
+
+New pattern (has_tenant_id + has_workspace_id):
+#+BEGIN_SRC mustache
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid
+              && "valid_to"_c == max.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        order_by("{{primary_key.column}}"_c);
+{{/has_workspace_id}}
+#+END_SRC
+
+Apply the same pattern to ~read_all()~ and ~read_latest(ctx, id)~.
+
+Note: ~write()~ does not need changes — the mapper already sets ~workspace_id~
+from the domain object; the service/handler is responsible for setting
+~entity.workspace_id~ from the request context before writing.
+
+** Step 10: Codegen run and diff
+
+After template changes, run the codegen tool for all ~has_workspace_id: true~
+entities.  Compare generated output against existing files before overwriting;
+pay attention to:
+
+- Hand-written changes in generated files (use git diff)
+- Column ordering in entity structs
+- Extra methods added by hand in repository/mapper files
+
+Affected entity JSON models (as of 2026-05-19):
+
+| Component  | Entity                              |
+|------------|-------------------------------------|
+| refdata    | deposit_convention                  |
+| refdata    | portfolio                           |
+| refdata    | swap_convention                     |
+| refdata    | ois_convention                      |
+| refdata    | cds_convention                      |
+| refdata    | zero_convention                     |
+| refdata    | overnight_index_convention          |
+| refdata    | ibor_index_convention               |
+| refdata    | fx_convention                       |
+| refdata    | fra_convention                      |
+| refdata    | book                                |
+| trading    | lifecycle_event                     |
+| trading    | fra_instrument                      |
+| trading    | vanilla_swap_instrument             |
+| trading    | rpa_instrument                      |
+| trading    | balance_guaranteed_swap_instrument  |
+| trading    | swaption_instrument                 |
+| trading    | callable_swap_instrument            |
+| trading    | inflation_swap_instrument           |
+| trading    | knock_out_swap_instrument           |
+| trading    | trade_identifier                    |
+| trading    | trade                               |
+| trading    | cap_floor_instrument                |
+| reporting  | report_definition                   |
+
+** Step 11: Wire workspace context into plugin controllers
+
+Each plugin that displays workspace-aware data must call
+~clientManager_->setWorkspaceContext(ctx)~ when the active workspace changes.
+The MDI area already emits the workspace context via Phase 3; the plugin
+controllers need to listen and forward it to the ClientManager.
+
+* Deferred (Phase 5)
+
+- ~tenant_aware_pool~: set ~app.current_workspace_id~ session variable so
+  PL/pgSQL functions can access it without a parameter.
+- ~ores_workspace_resolution_order_fn~: make SECURITY DEFINER so it can be
+  called by service users without cross-service SELECT grants.
+- Replace exact-match WHERE (~workspace_id = :wid~) with resolution-order IN
+  clause (~workspace_id = ANY(:resolution_order_array)~) using
+  DISTINCT ON to keep only the most-specific version of each record.
+
+* Risks
+
+- Template drift: generated files may have hand modifications not covered by
+  templates.  Run codegen, inspect diffs carefully, and resolve conflicts before
+  committing.
+- Entities without ~has_tenant_id~ but with ~has_workspace_id~: check the
+  repository template handles the case where ~has_tenant_id~ is false but
+  ~has_workspace_id~ is true (workspace-only filter, no tenant filter).
+- Mapper include guard: ~boost/lexical_cast.hpp~ needed for UUID round-trip;
+  already included when ~has_uuid_columns~ is true but verify for all entities.

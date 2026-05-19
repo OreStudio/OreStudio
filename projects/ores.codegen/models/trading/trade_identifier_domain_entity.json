@@ -6,6 +6,7 @@
     "entity_plural": "trade_identifiers",
     "entity_title": "Trade Identifier",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generator",
     "brief": "External identifier (UTI, USI, internal) assigned to a trade.",
     "description": "Junction entity assigning external identifiers to trades.\nEach trade can have multiple identifiers of different types.\nThe issuing_party_id references either a party or counterparty.",

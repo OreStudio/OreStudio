@@ -80,6 +80,7 @@ grant usage, select on all sequences in schema public
     to
     :iam_service_user,
     :refdata_service_user,
+    :workspace_service_user,
     :dq_service_user,
     :variability_service_user,
     :assets_service_user,
@@ -100,6 +101,7 @@ alter default privileges in schema public
     to
     :iam_service_user,
     :refdata_service_user,
+    :workspace_service_user,
     :dq_service_user,
     :variability_service_user,
     :assets_service_user,
@@ -127,6 +129,12 @@ select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 -- refdata_service: Reference Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
+
+-- ---------------------------------------------------------------------------
+-- workspace_service: Workspace domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_workspaces_', :'workspace_service_user');
+select _ores_grant_dml_fn('ores_workspace_', :'workspace_service_user');
 
 -- ---------------------------------------------------------------------------
 -- dq_service: Data Quality domain service

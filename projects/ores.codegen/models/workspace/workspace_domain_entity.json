@@ -1,0 +1,141 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "workspace",
+    "component_include": "workspace.api",
+    "component_core": "workspace.core",
+    "has_tenant_id": false,
+    "has_workspace_id": false,
+    "entity_singular": "workspace",
+    "entity_plural": "workspaces",
+    "entity_title": "Workspace",
+    "brief": "Named, isolated data context for workspace-level operations.",
+    "description": "Workspaces provide Docker-layer-style inheritance: data not present in a\nworkspace is resolved from the parent chain up to the Live workspace\n(ores_utility_live_workspace_id_fn()).",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key.",
+      "detail": "Live workspace uses the sentinel aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.",
+      "uuid_check_fn": "ores_utility_nil_uuid_fn()"
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique workspace name."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional free-text description."
+      },
+      {
+        "name": "source_path",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional path to source data."
+      },
+      {
+        "name": "parent_workspace_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional parent workspace UUID for inheritance chain."
+      },
+      {
+        "name": "scope_portfolio_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Optional portfolio UUID to scope this workspace."
+      },
+      {
+        "name": "owner_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "UUID of the IAM account that owns this workspace."
+      },
+      {
+        "name": "status_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Lifecycle status: active or archived."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_workspaces_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "workspace",
+      "entity_plural_short": "workspaces",
+      "entity_singular_words": "workspace",
+      "entity_plural_words": "workspaces"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "<optional>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "ws",
+      "table_display": [
+        {"column": "name",        "header": "Name"},
+        {"column": "status_code", "header": "Status"},
+        {"column": "version",     "header": "Version"},
+        {"column": "modified_by", "header": "Modified By"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.workspace.api/domain/workspace.hpp",
+      "domain_class": "workspace::domain::workspace",
+      "protocol_include": "ores.workspace.api/messaging/workspace_protocol.hpp",
+      "collection_name": "workspaces",
+      "item_var": "workspace",
+      "key_field": "name",
+      "has_uuid_primary_key": true,
+      "has_integer_primary_key": false,
+      "has_pagination": false,
+      "has_history": false,
+      "has_description_column": true,
+
+      "get_request_class": "workspace::messaging::list_workspaces_request",
+      "get_response_class": "workspace::messaging::list_workspaces_response",
+      "get_message_type": "list_workspaces_request",
+      "save_request_class": "workspace::messaging::create_workspace_request",
+      "save_response_class": "workspace::messaging::create_workspace_response",
+      "save_message_type": "create_workspace_request",
+      "save_request_item_field": "workspace",
+      "delete_request_class": "workspace::messaging::archive_workspace_request",
+      "delete_response_class": "workspace::messaging::archive_workspace_response",
+      "delete_message_type": "archive_workspace_request",
+
+      "columns": [
+        {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 340},
+        {"enum_name": "StatusCode",  "field": "status_code", "header": "Status",      "is_string": true, "width": 90},
+        {"enum_name": "Version",     "field": "version",     "header": "Version",     "is_int":    true, "width": 70},
+        {"enum_name": "ModifiedBy",  "field": "modified_by", "header": "Modified By", "is_string": true, "width": 130}
+      ],
+
+      "settings_group": "WorkspaceListWindow",
+      "window_title": "Workspaces",
+      "icon": "Layers"
+    }
+  }
+}

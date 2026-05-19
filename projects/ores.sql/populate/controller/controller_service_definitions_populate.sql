@@ -52,6 +52,7 @@ begin
             -- NATS domain services: standard args template (NULL = use default)
             ('ores.iam.service',        'ores.iam.service',        1, null::text, 'Identity and access management'),
             ('ores.refdata.service',    'ores.refdata.service',    1, null,       'Reference data — currencies, countries, parties'),
+            ('ores.workspace.service',  'ores.workspace.service',  1, null,       'Workspace management and resolution'),
             ('ores.dq.service',         'ores.dq.service',         1, null,       'Data quality governance and cataloguing'),
             ('ores.variability.service','ores.variability.service', 1, null,       'Feature flags and system configuration'),
             ('ores.assets.service',     'ores.assets.service',     1, null,       'Digital assets — images and tags'),

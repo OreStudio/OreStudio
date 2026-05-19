@@ -6,6 +6,7 @@
     "component_include": "refdata.api",
     "component_core": "refdata.core",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "entity_singular": "ibor_index_convention",
     "entity_plural": "ibor_index_conventions",
     "entity_title": "IBOR Index Convention",

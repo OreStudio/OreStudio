@@ -43,7 +43,12 @@
 \ir ./refdata/refdata_drop.sql
 
 -- =============================================================================
--- 3. Data Governance Tables (dropped after operational tables)
+-- 3. Workspace Tables (dropped after refdata — refdata has FKs to workspace)
+-- =============================================================================
+\ir ./workspace/workspace_drop.sql
+
+-- =============================================================================
+-- 4. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
 \ir ./dq/dq_drop.sql
 

@@ -9,6 +9,7 @@
     "entity_plural": "fra_instruments",
     "entity_title": "FRA Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Forward Rate Agreement (FRA) instrument.",
     "description": "Represents a Forward Rate Agreement instrument that fixes a future\ninterest rate for a notional principal amount over a specified period.",

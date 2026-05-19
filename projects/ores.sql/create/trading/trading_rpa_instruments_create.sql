@@ -40,6 +40,7 @@ create table if not exists "ores_trading_rpa_instruments_tbl" (
     "participation_rate" numeric(18, 10) not null,
     "protection_fee" numeric(18, 10) null,
     "description" text null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -85,6 +86,10 @@ create unique index if not exists rpa_instruments_trade_id_idx
 on "ores_trading_rpa_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
+
+create index if not exists rpa_instruments_workspace_idx
+on "ores_trading_rpa_instruments_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_rpa_instruments_insert_fn()
 returns trigger as $$

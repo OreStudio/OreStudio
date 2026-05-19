@@ -42,6 +42,7 @@ create table if not exists "ores_refdata_deposit_conventions_tbl" (
     "end_of_month" boolean null,
     "day_count_fraction" text null,
     "settlement_days" integer null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -69,6 +70,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists deposit_conventions_tenant_idx
 on "ores_refdata_deposit_conventions_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists deposit_conventions_workspace_idx
+on "ores_refdata_deposit_conventions_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_deposit_conventions_insert_fn()

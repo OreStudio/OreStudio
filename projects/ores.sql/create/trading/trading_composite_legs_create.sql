@@ -34,6 +34,7 @@ create table if not exists "ores_trading_composite_legs_tbl" (
     "instrument_id" uuid not null,
     "leg_sequence" integer not null,
     "constituent_trade_id" text not null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -74,6 +75,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- Instrument index for leg lookups
 create index if not exists composite_legs_instrument_idx
 on "ores_trading_composite_legs_tbl" (tenant_id, instrument_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists composite_legs_workspace_idx
+on "ores_trading_composite_legs_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_composite_legs_insert_fn()

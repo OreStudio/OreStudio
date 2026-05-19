@@ -1,0 +1,804 @@
+#+TITLE: Workspace — Isolated Data Context Design
+#+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
+#+DATE: 2026-05-17
+#+AUTHOR: ORE Studio Team
+#+STATUS: REVISED (2026-05-18: bitemporal redesign, audit trail, ownership permissions, badge status)
+#+OPTIONS: toc:t num:nil
+
+* Related Plans
+
+- [[file:2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] — import design that
+  depends on workspaces for Track 1 (educational/sample import).  Track 2
+  (production live import) is independent.
+- [[file:2026-03-01-reporting-component-design.org][Reporting Component Design]] — defines ~report_definition~ and
+  ~risk_report_config~.  Workspaces extend this infrastructure by adding
+  ~workspace_id~ to report definitions; no new tables are introduced.
+- [[file:2026-03-28-badge-system-design.org][Badge System Design]] — badge infrastructure reused for workspace
+  ~status_code~ rendering.
+- [[file:2026-05-18-codegen-iam-permissions.org][Codegen IAM Permissions]] — will eventually auto-generate the workspace
+  permission entries added in this revision.
+
+* Dependencies
+
+- [[file:2026-05-17-virtual-portfolio-design.org][Virtual Portfolio Design]] (PROPOSED, *soft* dependency) — the workspace
+  ~scope_portfolio_id~ may reference a user-created virtual portfolio
+  aggregating books from anywhere in the book tree.  All workspace phases can
+  be implemented and tested without virtual portfolios by using real books as
+  the scope.  Virtual portfolios are only needed for the trader what-if use
+  case where books span multiple desks.  ORE sample workspaces (Phase 5) need
+  no virtual portfolios — they use self-contained books.
+
+* Note on naming
+
+The UI component that manages workspaces needs a name.  Candidates:
+
+- /Data Workshop/ — implies active exploration; not overloaded in finance
+- /Workspace Explorer/ — clear and descriptive
+- /Workspace Browser/ — consistent with existing browser windows
+
+Final naming decision deferred; "Data Workshop" is used as a placeholder.
+
+* Workspace vs Scenario
+
+These two concepts must not be confused.
+
+A *workspace* is a *data context*: a stable, named collection of trades (scoped
+by portfolio and optionally narrowed to specific trade IDs), plus whatever
+market data, conventions, curve configs, pricing engine configs and today's
+market definitions belong to it — either stored locally or inherited from a
+parent workspace.  The workspace answers the question "what data are we working
+with?"  It is long-lived; multiple users can share it; its data does not change
+unless someone explicitly edits or imports into it.
+
+A *scenario* (in the OreStudio sense) is a *computation*: one execution of a
+report definition against a workspace.  "What is the NPV of my EUR book under a
++50bps parallel shift?" is a scenario.  Scenarios are ephemeral — they produce
+results (NPVs, sensitivities, PFE profiles) but do not change the workspace's
+data.  Multiple scenarios can be run against the same workspace without conflict.
+
+The common risk-system usage of "scenario" (a set of market data shocks) maps
+to OreStudio as a *child workspace that inherits from a parent and overrides
+specific curves or rates*.  The shocks live in the workspace; the scenario is
+the report execution that prices the trades against those shocks.
+
+In practice:
+- A trader creates a workspace "EUR rates +50bps" inheriting from Live,
+  overrides the EUR yield curve, sets the portfolio scope to their EUR desk.
+- They then run several report definitions (NPV, delta, bucketed DV01) as
+  separate scenarios within that workspace.
+- The workspace is reusable; each report run is a new scenario instance.
+
+* Problem Statement
+
+** Two import tracks with incompatible data isolation requirements
+
+The [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] design identified two fundamentally different import
+use cases:
+
+*Track 1 — Educational / ORE sample import*: A complete ORE example is
+imported so that a user can explore what it does — run it, see the results,
+understand the trade types and market configuration.  Each ORE sample is a
+self-contained universe: its own market data, conventions, curve configs,
+pricing engine, and trades.  Importing multiple samples into the same data
+space causes them to collide: curve names clash, trade IDs overlap, market
+data overwrites, and results become meaningless.
+
+*Track 2 — Production trade import*: Trades from an external system (FpML,
+CSV, another TMS) are imported into the live book for review and eventual
+booking.  Market data comes from live curated sources.  This track does not
+need isolation — it targets the shared live data space.
+
+The ~is_live~ flag and Pending Book design handles Track 2.  Track 1 has no
+solution without workspace isolation.
+
+** No way to run what-if analysis against live data
+
+Traders routinely want to ask "what happens to my book's NPV if I shock EUR
+rates by 50bps?"  Without an isolation mechanism, any change to market data
+instantly affects all users and all compute runs.  Workspaces give the trader
+an isolated copy of live data in which to apply the shock, run the report, and
+compare results side-by-side against the unshocked live view.
+
+** Live data space is polluted by sample data
+
+Without isolation, importing 30 ORE samples creates hundreds of synthetic
+trades, thousands of curve config rows, and dozens of conventions in the live
+books — all mixed with real production data.  Users cannot distinguish sample
+artefacts from curated data.
+
+* Core Concept: Workspace
+
+A *Workspace* is a named, isolated data context within OreStudio.  It contains
+a complete or partial set of data — trades, market data, conventions, curve
+configs, pricing engine configs, today's market definitions — and can
+optionally inherit missing data from a single parent workspace.
+
+Key properties:
+
+- *Isolated by default*: data in workspace A is not visible to workspace B
+  unless an explicit parent relationship links them.
+- *Layered (single-parent)*: a workspace may declare one parent workspace.
+  Any data not present in the workspace is resolved from the parent, then the
+  grandparent, and so on up the chain — the same model as Docker image layers.
+  The resolution order is the chain from the current workspace to the root
+  (workspace 0).
+- *Trade-scoped via portfolio*: a workspace optionally declares a portfolio
+  scope (a real or virtual portfolio).  Only trades in the scoped books are
+  visible; all other inherited trades are hidden.  A trade whitelist can further
+  narrow the scope to specific trade IDs within those books.
+- *Non-trade data follows trades*: market data, conventions, curve configs,
+  pricing engine configs and today's market definitions are not independently
+  filtered.  They are either stored locally in the workspace (overriding the
+  parent's version for the same natural key) or inherited transparently.  There
+  is no separate scoping mechanism for reference data — it is all available and
+  the compute job uses whatever the workspace resolution chain provides.
+- *Scoped report definitions*: report definitions are scoped to a workspace.
+  Running one (a scenario) generates ORE input files from the workspace's
+  domain objects and submits the job to the compute grid.  See the
+  "Workspace vs Scenario" section above.
+- *Durable*: workspaces are long-lived; not deleted when the session ends.
+- *Non-promotable directly*: data cannot be directly promoted from a workspace
+  to live.  A deliberate /copy/ operation is used instead.
+
+** Live workspace — dedicated sentinel UUID
+
+The Live workspace uses the well-known sentinel UUID
+~aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa~ (returned by
+~ores_utility_live_workspace_id_fn()~) as its stable identifier.  It always
+exists, is the root of all inheritance chains, and is protected against
+archival by a dedicated elevated permission (see §Permissions below).
+
+The nil UUID (~00000000-0000-0000-0000-000000000000~) is deliberately *not*
+used: it is the default C++ value for an uninitialised ~boost::uuids::uuid~,
+so using it for Live would cause an unset ~workspace_id~ to silently resolve
+to the Live data space.  The max UUID (~ffffffff-ffff-ffff-ffff-ffffffffffff~)
+is already reserved for the system tenant (~ores_utility_system_tenant_id_fn()~).
+
+The sentinel value ~aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa~ has version nibble
+~a~ (decimal 10), which falls outside the valid UUID version range 1–8; no
+UUID generator will ever emit it.  It is defined in
+~utility_system_tenant_create.sql~ alongside the nil and max functions so it
+is available at DDL time across all schemas.
+
+All tables that previously defaulted ~workspace_id~ to integer ~0~ default
+instead to ~ores_utility_live_workspace_id_fn()~.
+
+* Data Model
+
+** Workspace table
+
+Single-parent inheritance and portfolio scope live directly on the workspace
+row.  No separate parents or scope tables are needed at the workspace level.
+
+The workspace table is *bitemporal*: every mutation creates a new version row,
+and the full history of all changes is retained.  This is the same pattern
+used by all first-class domain entities (service definitions, report
+definitions, etc.).
+
+#+begin_src sql
+create table ores_workspaces_tbl (
+    id                  uuid         not null,
+    version             integer      not null,
+    name                text         not null,
+    description         text         not null default '',
+    source_path         text         not null default '',
+    parent_workspace_id uuid         null references ores_workspaces_tbl(id),
+    scope_portfolio_id  uuid         null,
+    owner_id            uuid         not null,  -- FK to ores_iam_accounts_tbl
+    status_code         text         not null default 'active',
+    modified_by         text         not null,
+    performed_by        text         not null,
+    change_reason_code  text         not null,
+    change_commentary   text         not null,
+    valid_from          timestamptz  not null,
+    valid_to            timestamptz  not null,
+    primary key (id, valid_from, valid_to),
+    exclude using gist (id with =, tstzrange(valid_from, valid_to) with &&),
+    check (valid_from < valid_to),
+    check (id <> ores_utility_nil_uuid_fn()),
+    check (status_code in ('active', 'archived')),
+    check (parent_workspace_id is distinct from id)
+);
+
+-- Indexes for common access patterns.
+create unique index workspaces_name_uniq_idx
+    on ores_workspaces_tbl(name)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index workspaces_status_idx
+    on ores_workspaces_tbl(status_code)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Insert trigger: version management, valid_from/valid_to, audit fields.
+-- Delete rule: set valid_to = now() (soft close).
+-- Both generated by the standard bitemporal codegen template.
+
+-- Seed the Live workspace using the live-workspace sentinel UUID.
+-- Owner is the system account (nil UUID); no parent; no portfolio scope.
+insert into ores_workspaces_tbl
+    (id, version, name, description, owner_id, status_code,
+     modified_by, performed_by, change_reason_code, change_commentary,
+     valid_from, valid_to)
+values (
+    ores_utility_live_workspace_id_fn(), 1, 'Live', 'Live production data space',
+    ores_utility_nil_uuid_fn(), 'active',
+    'system', 'system', 'initial_data', 'Seed Live workspace',
+    now(), ores_utility_infinity_timestamp_fn()
+);
+#+end_src
+
+*** C++ domain struct (bitemporal)
+
+#+begin_src cpp
+struct workspace final {
+    boost::uuids::uuid id = {};
+    int version = 0;
+    std::string name;
+    std::string description;
+    std::string source_path;
+    std::optional<boost::uuids::uuid> parent_workspace_id;
+    std::optional<boost::uuids::uuid> scope_portfolio_id;
+    boost::uuids::uuid owner_id = {};
+    std::string status_code;        // 'active' | 'archived'
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at = {};
+};
+#+end_src
+
+Both the SQL and C++ struct are generated from the codegen model
+(~workspace_domain_entity.json~) using the standard temporal templates.
+The hand-written ~workspace_create.sql~ is deleted once codegen output
+is verified.
+
+** Workspace status — badge integration
+
+Workspace status is backed by the badge system rather than a raw text column.
+A new code domain ~workspace_status~ maps each status code to a visual badge:
+
+| ~status_code~ | Badge code | Display | Colour |
+|--------------+------------+---------+--------|
+| ~active~     | ~active~   | Active  | green (#22c55e) |
+| ~archived~   | ~archived~ | Archived | red (#ef4444) |
+
+The ~active~ badge already exists in ~ores_dq_badge_definitions_tbl~.  A new
+~archived~ badge (danger/red) is added to ~dq_badge_system_populate.sql~
+alongside the ~workspace_status~ mapping rows.  The Qt workspace list renders
+each row's status column via the badge-lookup infrastructure, consistent with
+party, book, portfolio, and report FSM status rendering.
+
+** Permissions
+
+Three tiers of workspace permission are enforced in the NATS handler.  The
+handler holds a reference to the IAM authorisation service and validates the
+caller's permissions against their JWT claims before any service operation.
+
+*** Permission definitions
+
+| Permission | Purpose |
+|------------+---------|
+| ~workspace::workspaces:read~ | List and view workspaces |
+| ~workspace::workspaces:write~ | Create workspaces; update own workspace metadata |
+| ~workspace::workspaces:archive~ | Archive a workspace the caller owns |
+| ~workspace::workspaces:archive_any~ | Archive any workspace regardless of ownership |
+| ~workspace::live_workspace:archive~ | Archive the Live (nil UUID) workspace — highly restricted |
+| ~workspace::*~ | Full access (held by WorkspaceService service account) |
+
+*** Role assignments
+
+| Permission | Default role holders |
+|------------+---------------------|
+| ~workspace::workspaces:read~ | All authenticated users (via tenant default grants) |
+| ~workspace::workspaces:write~ | All authenticated users |
+| ~workspace::workspaces:archive~ | All authenticated users (own workspaces only) |
+| ~workspace::workspaces:archive_any~ | ~TenantAdmin~ |
+| ~workspace::live_workspace:archive~ | ~SuperAdmin~ only |
+
+*** Handler enforcement
+
+All handlers validate a JWT-derived ~database::context~ via
+~make_request_context~ before any operation.  Permission checks use
+~has_permission(ctx, "...")~ from ~handler_helpers.hpp~.
+
+| Operation | Required permission |
+|-----------+---------------------|
+| list | ~workspace::workspaces:read~ |
+| create | ~workspace::workspaces:write~ |
+| archive (Live workspace) | ~workspace::live_workspace:archive~ |
+| archive (own workspace) | ~workspace::workspaces:archive~ |
+| archive (another user's workspace) | ~workspace::workspaces:archive_any~ |
+| set_trade_scope | ~workspace::workspaces:write~ |
+| clear_trade_scope | ~workspace::workspaces:write~ |
+
+Ownership is determined by comparing ~ws.owner_id~ to ~ctx.party_id()~.
+The Live workspace is identified by ~ores::utility::uuid::live_workspace_uuid_str~
+(~aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa~).
+
+#+begin_src cpp
+// Implemented in workspace_handler.hpp — archive method:
+const bool is_live = (req->id == ores::utility::uuid::live_workspace_uuid_str);
+if (is_live) {
+    if (!has_permission(ctx, "workspace::live_workspace:archive")) → forbidden;
+} else {
+    const auto ws = svc.get_workspace(req->id);
+    const bool is_owner = ws && ctx.party_id() && (ws->owner_id == *ctx.party_id());
+    const auto required = is_owner ? "workspace::workspaces:archive"
+                                   : "workspace::workspaces:archive_any";
+    if (!has_permission(ctx, required)) → forbidden;
+}
+#+end_src
+
+** Trade scope whitelist (optional further narrowing)
+
+When a workspace's portfolio scope still includes more trades than the user
+wants (e.g. they need just three specific trades from a large book), a trade
+whitelist provides exact selection.
+
+#+begin_src sql
+create table ores_workspace_trade_scope_tbl (
+    workspace_id  uuid  not null,  -- references current version of ores_workspaces_tbl
+    trade_id      uuid  not null,  -- references ores_trading_trades_tbl(id)
+    primary key (workspace_id, trade_id)
+);
+#+end_src
+
+Semantics:
+- No rows for a workspace → all trades reachable via the portfolio scope are
+  visible.
+- Rows present → only listed trades are visible (must also be within the
+  portfolio scope; rows referencing out-of-scope trades are ignored).
+
+This is a positive selection (include list), not an exclusion list.  The common
+case of "one book" or "one desk" is handled entirely by ~scope_portfolio_id~
+and needs no whitelist rows at all.
+
+Example inheritance chains:
+
+#+begin_example
+workspace 0 (Live)
+  └─ workspace 5 (EUR shock +50bps)     parent = 0
+       └─ workspace 8 (EUR+credit shock) parent = 5
+
+Resolution order for workspace 8: [8, 5, 0]
+- Data in workspace 8 wins.
+- Data absent from 8 falls through to workspace 5.
+- Data absent from 5 falls through to workspace 0 (Live).
+#+end_example
+
+Cycle prevention is enforced by a trigger that walks the parent chain before
+any insert or update of ~parent_workspace_id~.
+
+** Resolution order computation
+
+When a workspace is opened, its full ancestor chain is computed once via a
+recursive CTE and cached in the application session as an ordered integer
+array:
+
+#+begin_src sql
+with recursive chain(id, depth) as (
+    select id, 0
+    from ores_workspaces_tbl
+    where id = :target_workspace_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    union all
+    select w.parent_workspace_id, c.depth + 1
+    from ores_workspaces_tbl w
+    join chain c on c.id = w.id
+    where w.parent_workspace_id is not null
+      and w.valid_to = ores_utility_infinity_timestamp_fn()
+)
+select id from chain order by depth;
+-- Returns e.g. [<uuid-8>, <uuid-5>, <nil-uuid>] for a workspace two levels deep
+#+end_src
+
+This array is passed as ~:resolution_order~ to all workspace-aware queries.
+
+** workspace_id column on all major tables
+
+Every table that holds user or import data gains a ~workspace_id~ column:
+
+#+begin_src sql
+alter table <table_name>
+    add column workspace_id uuid not null default ores_utility_live_workspace_id_fn();
+
+create index on <table_name> (workspace_id);
+#+end_src
+
+Affected tables (non-exhaustive):
+
+| Category | Tables |
+|----------+--------|
+| Trading | ~ores_trading_trades_tbl~, ~ores_trading_books_tbl~, ~ores_trading_instruments_tbl~ |
+| Reference data | ~ores_refdata_conventions_tbl~, ~ores_refdata_currencies_tbl~, etc. |
+| Market data | ~ores_marketdata_*_tbl~ |
+| Curve config | ~ores_curveconfig_*_tbl~ |
+| Pricing engine | ~ores_pricingengine_*_tbl~ |
+| Today's market | ~ores_todaysmarket_*_tbl~ |
+| Instruments | ~ores_instrument_*_tbl~ |
+| Report definitions | ~ores_reporting_report_definitions_tbl~ |
+
+Tables that are genuinely global (users, IAM, parties, DQ FSM definitions,
+workflow definitions, workspace table itself) do *not* get ~workspace_id~.
+
+** Workspace-aware data queries
+
+Two query patterns cover all cases.
+
+*Trade queries* additionally filter by portfolio scope and (if present) the
+trade whitelist:
+
+#+begin_src sql
+-- All trades visible in workspace :ws_id with resolution order :res_order
+select distinct on (t.id) t.*
+from ores_trading_trades_tbl t
+join ores_trading_books_tbl b on b.id = t.book_id
+-- Portfolio scope: if scope_portfolio_id is set, restrict to books in that portfolio
+left join ores_trading_portfolio_books_tbl pb
+    on pb.book_id = b.id
+    and pb.portfolio_id = (
+        select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id)
+where t.workspace_id = any(:res_order)
+  and (
+      -- No portfolio scope set: include all books
+      (select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id) is null
+      or pb.book_id is not null
+  )
+  and (
+      -- No trade whitelist: include all scoped trades
+      not exists (select 1 from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+      -- Trade whitelist active: only listed trades
+      or t.id in (select trade_id from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+  )
+order by t.id, array_position(:res_order, t.workspace_id);
+#+end_src
+
+*Non-trade data queries* (conventions, curves, market data, etc.) use only the
+resolution order — no portfolio or trade filtering:
+
+#+begin_src sql
+-- Point lookup by natural key
+select * from ores_curveconfig_yieldcurve_tbl
+where name = 'EUR-EONIA'
+  and workspace_id = any(:res_order)
+order by array_position(:res_order, workspace_id)
+limit 1;
+
+-- List query with deduplication on natural key
+select distinct on (name) *
+from ores_curveconfig_yieldcurve_tbl
+where workspace_id = any(:res_order)
+order by name, array_position(:res_order, workspace_id);
+#+end_src
+
+** Report definitions and workspace inheritance
+
+~report_definition~ gains ~workspace_id~ (default 0 = Live/global).  The same
+resolution chain that applies to trade and reference data applies to report
+definitions: when listing report definitions available in workspace W, the
+query returns all report definitions whose ~workspace_id~ is in the resolution
+order ~[W, parent, ..., 0]~, deduplicated on name with the closest workspace
+winning.
+
+*** No duplication — Live report definitions are inherited, not copied
+
+A Live report definition (workspace_id = 0) is automatically available in
+every workspace that has Live in its ancestry chain.  A trader opening their
+"EUR shock +50bps" workspace already sees all Live reports (NPV, DV01,
+Greeks) without any copying.  The workspace only needs its own report
+definition row when it wants to *differ* from the inherited version.
+
+*** Clone-and-modify for parameter variations
+
+When a trader wants a different bump size or simulation setting for a specific
+workspace:
+
+1. They clone an existing report definition into the workspace.  This creates
+   a workspace-local copy (~workspace_id = W~) pre-populated from the source.
+2. They modify the local copy's parameters (bump sizes, as-of date, etc.).
+3. The local copy shadows the parent's version within workspace W and all of
+   its children.
+
+The "Clone to workspace" action is a single write operation in the report
+definition UI — no new mechanism is required beyond the standard workspace
+override pattern.
+
+*** Scheduling is Live-only
+
+Report definitions in non-live workspaces are run on-demand only.  The
+existing scheduler is not extended to non-live workspaces.  This keeps
+scheduling logic simple and avoids the ambiguity of "which workspace should
+a scheduled run use?" evolving over time as parent data changes.
+
+*** ORE sample import creates workspace-local report definitions
+
+When importing an ORE sample, the importer creates a report definition with
+~workspace_id = <sample_workspace_id>~.  These are invisible outside their
+workspace and do not pollute the Live report definition list.  The importer
+parses each ~ore*.xml~ and stores its settings as structured fields — no raw
+XML blob is retained.
+
+*** Compute execution
+
+When the compute job generator runs a report definition against workspace W:
+
+1. Resolves the workspace chain ~[W, parent, ..., 0]~.
+2. Exports trades (filtered by portfolio scope and trade whitelist) and all
+   non-trade domain objects (conventions, curves, market data, pricingengine,
+   todaysmarket) using workspace-aware queries.
+3. Generates ORE input files from those domain objects via the existing mapper.
+4. Generates ~ore.xml~ from the report definition's ~analytics_type~ and
+   exported file paths — exactly as today for live reports.
+5. Submits to compute grid; receives results; stores back on trade rows.
+
+* Import Track Mapping
+
+| Track | Source | Target workspace | Isolation mechanism |
+|-------+--------+------------------+---------------------|
+| 1 — Educational | ORE sample directory | New named workspace | Importer creates workspace per group; report definition per ore.xml |
+| 2 — Production | External trades (FpML, CSV) | Workspace 0 (live) | Pending Book + ~is_live~ flags |
+
+For the educational track, the ORE examples directory structure maps to
+workspaces as follows:
+
+- *One workspace per top-level import group* (e.g. one "MarketRisk" workspace).
+  Shared data (conventions, curveconfig, shared market data) is stored once in
+  the workspace.
+- *One report definition per ~ore*.xml~* within the workspace.  The importer
+  parses the orchestration XML and stores its settings as structured fields on
+  a new report definition record (analytics type, simulation parameters, etc.).
+  No raw XML is retained.
+- Trades imported by different report definitions within the same workspace
+  are tagged with the report definition's ID (via ~source_position~ or a
+  dedicated FK) to keep results distinct.
+
+* Copy Between Workspaces
+
+Promotion is never direct.  The user initiates an explicit copy:
+
+- *Workspace → workspace*: duplicates selected rows into the target workspace.
+  Both workspaces then evolve independently from that point.
+- *Workspace → live (workspace 0)*: copied rows enter the Pending Book /
+  ~is_live = false~ state and require user approval before becoming live.
+  This is the deliberate "import to production" pathway.
+
+Users can copy individual trades, specific data categories (just conventions,
+just market data), or the entire workspace.
+
+Note: workspaces with parent relationships do *not* need copying just to read
+inherited data.  Copying is only needed when the user wants a standalone
+snapshot that no longer inherits, or when moving data to production.
+
+* UI Design
+
+** Multiple workspaces in the same session
+
+Unlike Eclipse (one workspace = one session restart), OreStudio allows multiple
+workspaces to be active simultaneously.  Each MDI subwindow carries its own
+workspace context.  The primary use case is side-by-side comparison:
+
+#+begin_example
++-----------------------------+  +-----------------------------+
+|  TRADES  [Live ▼]           |  |  TRADES  [EUR shock ▼]       |
+|-----------------------------|  |-----------------------------|
+|  IRS_001  NPV:  1,234,500   |  |  IRS_001  NPV:  1,189,200   |
+|  FXF_002  NPV:    456,100   |  |  FXF_002  NPV:    455,900   |
++-----------------------------+  +-----------------------------+
+#+end_example
+
+The trader opens the Trades window twice, sets one to Live and one to the
+shocked workspace, and sees the NPV impact immediately.  The same applies to
+Market Data, Conventions, and any other view.
+
+** Per-window workspace context
+
+Each MDI window carries a workspace context:
+
+- Shown as a chip/badge in the window header: ~[Live]~, ~[MarketRisk]~,
+  ~[EUR shock +50bps]~.  Live workspace shows no badge (it is the default and
+  adding a badge to every window would be noisy).
+- Selectable via a compact combo box in the window toolbar.  Changing the
+  workspace re-queries all data for that window without closing or reopening it.
+- Windows default to workspace 0 (live) on first open.
+
+#+begin_example
++-------------------------------------------------------+
+|  TRADES  [EUR shock ▼]               [Filter] [Cols]  |
++-------------------------------------------------------+
+|  ...trade grid scoped to EUR shock workspace...        |
++-------------------------------------------------------+
+#+end_example
+
+** Data Workshop (workspace manager UI)
+
+A dedicated window in the Data Transfer menu.  Shows all workspaces in a tree,
+grouped by parent/child relationships:
+
+#+begin_example
++-----------------------------------------------------------+
+|  DATA WORKSHOP                          [New] [Import ORE] |
++-----------------------------------------------------------+
+| ▶ Live                          0 local trades  · live    |
+| ▼ MarketRisk                   27 reports · 312 trades    |
+|     ore_sensi                   12 trades  last run 10:15 |
+|     ore_hist                    12 trades  last run 10:17 |
+|     ore_correlation             12 trades  not yet run    |
+|     ...                                                   |
+| ▼ EUR shock +50bps              inherits: Live             |
+|     [no local data — all inherited]                       |
+|     NPV Report                  last run 11:02            |
+| ▶ Legacy · Example_1            1 report · 12 trades      |
+| ▶ Legacy · Example_2            1 report  · 3 trades      |
+| ...                                                       |
++-----------------------------------------------------------+
+| [ Open ] [ Run Report ] [ Copy to... ] [ Archive ]        |
++-----------------------------------------------------------+
+#+end_example
+
+Actions:
+- *Open*: opens the selected workspace in the Data Import Session window (or
+  any other window), scoped to that workspace.
+- *Run Report*: submits the selected report definition to the compute grid.
+- *Copy to...*: copies selected workspace or selection within it to another
+  workspace or to Live (live copy triggers pending/approval workflow).
+- *Archive*: marks workspace archived; data retained but hidden from selectors.
+
+** Workspace indicator in all windows
+
+All windows that display workspace-scoped data show the workspace chip.
+Windows with a non-live workspace display it prominently so users always know
+which data context they are viewing.
+
+* Compute Integration
+
+Running a report definition within a workspace:
+
+1. Compute the workspace's full resolution order.
+2. Export trades (scoped to the report definition's source) using workspace-
+   aware list query → ~portfolio.xml~.
+3. Export market data, conventions, curveconfig, pricingengine, todaysmarket
+   using workspace-aware list queries → corresponding ORE input files.
+4. Retrieve the stored ~ore.xml~ template from the report definition; substitute
+   file path references with the generated file paths.
+5. For NPV-only runs: override ~<Analytics>~ to ~npv~ only.  For full
+   reproduce runs: use the stored ~ore.xml~ verbatim.
+6. Submit to compute grid as a normal ORE job.
+7. Receive results; store NPVs on trade rows tagged with this workspace and
+   report definition.
+
+* Relationship to Existing Plans
+
+** Data Import Session plan
+
+Track 2 of that plan (Pending Book, ~is_live~ flags) is unchanged and
+independent of workspaces.  Track 1 (ORE sample import) creates workspaces
+rather than plain import sessions.  The Data Import Session window is reused
+to browse workspace data since it is already workspace-scoped.
+
+** is_live flags and Pending Book
+
+These are Track 2 concerns only.  Within a workspace, all data is the
+workspace's data — no ~is_live~ distinction is needed because the workspace
+boundary provides the isolation.  The ~is_live~ flag only matters when copying
+workspace data into the live workspace (0).
+
+** Reporting component
+
+The ~report_definition~ table gains ~workspace_id~ (default 0).  ~risk_report_config~
+is extended incrementally with structured fields for ORE orchestration settings
+(starting with NPV analytics; simulation/sensitivity settings added as needed).
+No raw XML is stored; no new analyses table is introduced.  The existing
+scheduling, lifecycle FSM, and execution pipeline are reused.  Scheduling
+remains Live-only; non-live workspace report definitions run on-demand only.
+
+* Implementation Phases
+
+** Phase 1: Codegen model and core schema
+
+1. Rewrite ~projects/ores.codegen/models/workspace/workspace_domain_entity.json~:
+   - Change primary key from ~integer~ to ~uuid~.
+   - Add ~owner_id~ (uuid, not null).
+   - Rename ~status~ → ~status_code~; update check constraint values.
+   - Remove ~created_by~ / ~created_at~ (absorbed by bitemporal audit columns).
+   - The temporal template auto-generates ~version~, ~modified_by~,
+     ~performed_by~, ~change_reason_code~, ~change_commentary~, ~valid_from~,
+     ~valid_to~ and the insert trigger / delete rule.
+2. Run codegen; verify generated ~workspace_create.sql~ and ~workspace.hpp~.
+   Delete the hand-written ~workspace_create.sql~.
+3. Add ~archived~ badge to ~dq_badge_system_populate.sql~.
+4. Add ~workspace_status~ badge mapping rows (active → active, archived → archived).
+5. Add ~workspace::workspaces:archive~, ~workspace::workspaces:archive_any~,
+   and ~workspace::live_workspace:archive~ to ~iam_permissions_populate.sql~.
+   Grant read/write/archive to ~Trading~; read to ~Viewer~.
+   ~archive_any~ and ~live_workspace:archive~ are covered by existing ~*~
+   wildcards on ~TenantAdmin~ and ~SuperAdmin~ respectively. ✓
+6. Enforce permissions in ~workspace_handler.hpp~: list→read, create/trade-scope→write,
+   archive→ownership-aware three-tier check. ✓
+7. Create ~ores_workspaces_tbl~ (bitemporal, UUID PK); seed Live workspace
+   with nil UUID.
+8. Create ~ores_workspace_trade_scope_tbl~.
+9. Add ~workspace_id uuid not null default ores_utility_nil_uuid_fn()~ to all
+   affected tables.
+10. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
+    ~parent_workspace_id~ inserts/updates (updated for UUID FK).
+11. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~.
+12. Run ~recreate_database.sh -k -y~; validate schemas.
+
+** Phase 2: Service layer
+
+1. All service queries gain a ~workspace_id~ (or resolution-order array)
+   parameter; default to ~[0]~ (live only).
+2. Resolution order computation: recursive CTE exposed as a helper function.
+3. New NATS endpoints: ~workspace.v1.list~, ~workspace.v1.create~,
+   ~workspace.v1.archive~, ~workspace.v1.copy~,
+   ~workspace.v1.trade-scope.set~, ~workspace.v1.trade-scope.clear~.
+4. Extend report definition endpoints to accept and return ~workspace_id~;
+   add ~report-definition.v1.clone~ endpoint (creates workspace-local copy).
+
+** Phase 3: UI — workspace context propagation
+
+1. Add workspace resolution order to application session state.
+2. Propagate workspace context to all MDI windows via a ~WorkspaceContext~
+   object passed on window construction and switchable at runtime.
+3. Add workspace chip/badge to window headers.
+4. Add per-window workspace selector (searchable combo in toolbar).
+
+** Phase 4: Data Workshop UI
+
+1. Workspace tree view (parent/child grouped).
+2. Report definition list within workspace — shows local + inherited (with
+   visual distinction: local rows bold, inherited rows dimmed with source
+   workspace labelled).
+3. Open / Run Report / Copy to / Archive / New workspace actions.
+4. Inheritance summary ("inherits: Live · 3 local overrides").
+5. "Clone to workspace" action on any report definition — creates a
+   workspace-local editable copy pre-populated from the source.
+
+** Phase 5: ORE sample importer
+
+1. Implement recursive orchestration XML discoverer (per analysis section of
+   [[file:2026-05-16-trade-import-failed-state.org][Data Import Session]] plan).
+2. Create workspace per top-level import group.
+3. Import all data types into the workspace using workspace-aware inserts.
+4. Parse each orchestration XML; create a report definition per file with
+   structured settings (analytics type, simulation parameters, etc.) — no
+   raw XML stored.
+5. Parent-chain: importer can optionally create a parent workspace for the
+   batch root and make each group workspace a child of it via
+   ~parent_workspace_id~.
+
+* Open Questions
+
+1. *risk_report_config extension scope*: ORE orchestration XMLs contain many
+   settings beyond analytics type (simulation grid, sensitivity configs,
+   scenario definitions, etc.).  Define which settings need structured fields
+   in ~risk_report_config~ for Phase 5 (ORE sample importer) versus which can
+   be deferred.  Minimum for Phase 5: analytics type, as-of date, market
+   configuration references (todaysmarket, curveconfig, conventions, pricingengine
+   selection).
+
+2. *Report definition name deduplication*: when listing report definitions in
+   workspace W, two definitions with the same name may exist in different
+   ancestor workspaces.  Resolution: closest workspace in the chain wins (same
+   as data override).  UI should show which workspace a report definition comes
+   from.
+
+3. *Archive semantics*: resolved.  Archive is a bitemporal soft-close (sets
+   ~valid_to~ = now; data retained).  Status badge changes to red/Archived.
+   Archived workspaces are hidden from normal selectors; a "Show archived"
+   filter reveals them.  Restoration is an explicit re-open write.  The Live
+   workspace cannot be archived without ~workspace::live_workspace:archive~
+   (SuperAdmin only).  A user may archive their own workspace with
+   ~workspace::workspaces:archive~; archiving another user's workspace requires
+   ~workspace::workspaces:archive_any~ (TenantAdmin).
+
+4. *Workspace storage reporting*: large ORE sample imports may need per-workspace
+   row counts or storage estimates visible in the Data Workshop.  The product
+   backlog mentions a Baobab-style map for workspace visualisation.  Deferred
+   to Phase 4.
+
+5. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
+   Phase 4 begins.

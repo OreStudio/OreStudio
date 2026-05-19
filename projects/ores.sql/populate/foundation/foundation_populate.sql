@@ -111,6 +111,14 @@
 \ir ../refdata/refdata_system_party_populate.sql
 
 -- =============================================================================
+-- Workspace (Live root workspace — must come after change control and IAM)
+-- =============================================================================
+
+\echo ''
+\echo '--- Workspace ---'
+\ir ../workspace/workspace_live_populate.sql
+
+-- =============================================================================
 -- Controller Service Definitions
 -- =============================================================================
 -- Must run after IAM (uses ores_iam_validate_account_username_fn) and after

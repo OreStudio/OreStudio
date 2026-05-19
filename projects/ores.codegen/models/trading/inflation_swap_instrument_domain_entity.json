@@ -9,6 +9,7 @@
     "entity_plural": "inflation_swap_instruments",
     "entity_title": "Inflation Swap Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Inflation-linked interest rate swap instrument.",
     "description": "Represents an inflation-linked swap where one leg pays a fixed or floating\nrate and the other is linked to an inflation index (e.g., CPI, RPI).",

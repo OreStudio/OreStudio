@@ -9,6 +9,7 @@
     "entity_plural": "cap_floor_instruments",
     "entity_title": "Cap/Floor Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Interest rate cap or floor instrument.",
     "description": "Represents an interest rate cap or floor instrument.\nLegs are defined separately in the swap_legs table.",

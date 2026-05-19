@@ -28,6 +28,20 @@
         "select_prefixes": []
       },
       {
+        "name": "workspace",
+        "psql_var": "workspace_service",
+        "env_key": "WORKSPACE_SERVICE",
+        "iam_role": "WorkspaceService",
+        "description": "Workspace",
+        "email": "workspace_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_workspaces_"},
+          {"prefix": "ores_workspace_"}
+        ],
+        "select_tables": [],
+        "select_prefixes": []
+      },
+      {
         "name": "dq",
         "psql_var": "dq_service",
         "env_key": "DQ_SERVICE",

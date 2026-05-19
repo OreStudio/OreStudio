@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: A3F7B2D1-E4C9-4A8F-B6D3-7E1C5A9F2B4E
+:END:
+#+title: Adding a New Domain Service
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+Step-by-step checklist for introducing a new domain service into ORE Studio.
+Each step states whether it is a manual edit or driven automatically by codegen
+from the service registry.
+
+* 1. Service Registry (manual)
+
+Add an entry to
+~projects/ores.codegen/models/services/ores_services_service_registry.json~:
+
+#+begin_src json
+{
+  "name": "<name>",
+  "psql_var": "<name>_service",
+  "env_key": "<NAME>_SERVICE",
+  "iam_role": "<Name>Service",
+  "description": "<Human-readable description>",
+  "email": "<name>_service@system.ores",
+  "dml_prefixes": [
+    {"prefix": "ores_<name>_"}
+  ],
+  "select_tables": [],
+  "select_prefixes": []
+}
+#+end_src
+
+This is the source of truth that drives the four auto-generated files below.
+
+* 2. Run Codegen (auto-generates four files)
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-ninja --target codegen
+#+end_src
+
+The following files are regenerated from the service registry automatically;
+do not edit them by hand:
+
+| File | What it generates |
+|------+-------------------|
+| ~populate/iam/iam_service_accounts_populate.sql~ | DB user creation |
+| ~populate/iam/iam_service_account_roles_populate.sql~ | Role assignment |
+| ~create/iam/iam_service_db_grants_create.sql~ | Table DML grants |
+| ~service_vars.sh~ | ~SERVICE_NAMES~ array used by shell scripts |
+
+* 3. IAM Permissions (manual)
+
+Add component wildcard and per-entity CRUD permissions to
+~projects/ores.sql/populate/iam/iam_permissions_populate.sql~:
+
+#+begin_src sql
+-- <Name> Component Permissions
+PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '<name>::<entities>:read',   'View <entity> details');
+PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '<name>::<entities>:write',  'Create and modify <entities>');
+PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '<name>::<entities>:delete', 'Archive <entities>');
+PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(),
+    '<name>::*', 'Full access to all <name> operations');
+#+end_src
+
+Note: This file is hand-maintained until the codegen IAM plan is complete.
+See ~doc/plans/2026-05-18-codegen-iam-permissions.org~.
+
+* 4. IAM Service Role (manual)
+
+Add a service role with its permission assignments to
+~projects/ores.sql/populate/iam/iam_roles_populate.sql~:
+
+#+begin_src sql
+-- <Name> service: full own-component + tenant read
+PERFORM ores_iam_roles_upsert_fn(
+    ores_utility_system_tenant_id_fn(), '<Name>Service',
+    '<Human-readable description>');
+PERFORM ores_iam_role_permissions_assign_fn(
+    ores_utility_system_tenant_id_fn(), '<Name>Service', '<name>::*');
+PERFORM ores_iam_role_permissions_assign_fn(
+    ores_utility_system_tenant_id_fn(), '<Name>Service', 'iam::tenants:read');
+#+end_src
+
+Add cross-service permission assignments here too if the service needs to read
+from another component (e.g. ~dq::change_reasons:read~).
+
+* 5. Controller Service Definition (manual)
+
+Add the service binary to
+~projects/ores.sql/populate/controller/controller_service_definitions_populate.sql~:
+
+#+begin_src sql
+('ores.<name>.service', 'ores.<name>.service', 1, null, '<Description>'),
+#+end_src
+
+Columns: ~(service_name, binary_name, priority, config_path, description)~.
+
+* 6. Controller Service Dependencies (manual)
+
+Add the startup dependency to
+~projects/ores.sql/populate/controller/controller_service_dependencies_populate.sql~:
+
+#+begin_src sql
+('ores.<name>.service', 'ores.iam.service'),
+#+end_src
+
+All domain services depend on ~ores.iam.service~. Add additional dependencies
+if the service requires other services to be up first.
+
+* 7. NATS TLS Certificate (manual)
+
+Add ~ores.<name>.service~ to the ~SERVICES~ array in
+~build/scripts/generate_nats_certs.sh~, then generate the certificate:
+
+#+begin_src sh
+build/scripts/generate_nats_certs.sh
+#+end_src
+
+The script skips existing certificates, so running without ~--force~ is safe
+and will only create the new entry.
+
+* 8. Recreate the Database
+
+Apply all SQL changes to a local development database:
+
+#+begin_src sh
+projects/ores.sql/recreate_database.sh -k -y
+#+end_src
+
+This runs ~setup_schema.sql~ (which calls the ~create~ scripts and grants) and
+then the ~populate~ scripts.  It verifies the new IAM entries, role, service
+account, grants, and controller definitions in a single pass.
+
+* 9. Regenerate the Environment
+
+Update ~.env~ with the new service credentials:
+
+#+begin_src sh
+build/scripts/init-environment.sh
+#+end_src
+
+This adds ~ORES_<NAME>_SERVICE_DB_USER~ and ~ORES_<NAME>_SERVICE_DB_PASSWORD~
+to ~.env~.  Only required on environments that have not yet had the service
+entry added; if the service was in the registry when the environment was last
+initialised the variables will already be present.
+
+* 10. C++ Projects (manual)
+
+Create the three standard C++ sub-projects under ~projects/~:
+
+| Project | Purpose |
+|---------+---------|
+| ~ores.<name>.api~ | Protocol types, JSON serialisation, NATS subject constants |
+| ~ores.<name>.core~ | Repository, service logic, NATS handler, registrar |
+| ~ores.<name>.service~ | ~main~, application host, config parser |
+
+Add all three to ~projects/CMakeLists.txt~:
+
+#+begin_src cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.<name>.api)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.<name>.core)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.<name>.service)
+#+end_src
+
+* 11. Qt Plugin (optional, manual)
+
+If the service needs a UI panel, create ~projects/ores.qt.<name>~ as a Qt
+plugin (shared library with ~Q_PLUGIN_METADATA~, subclassing ~PluginBase~).
+Add it to ~projects/CMakeLists.txt~:
+
+#+begin_src cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.qt.<name>)
+#+end_src
+
+* Summary
+
+| Step | File / Action | Auto-generated? |
+|------+---------------+-----------------|
+| 1 | ~ores_services_service_registry.json~ | No — edit manually |
+| 2 | Run codegen | Generates 4 SQL files + service_vars.sh |
+| 3 | ~iam_permissions_populate.sql~ | No — edit manually |
+| 4 | ~iam_roles_populate.sql~ | No — edit manually |
+| 5 | ~controller_service_definitions_populate.sql~ | No — edit manually |
+| 6 | ~controller_service_dependencies_populate.sql~ | No — edit manually |
+| 7 | ~generate_nats_certs.sh~ + run script | Cert generated by script |
+| 8 | Run ~recreate_database.sh -k -y~ | — |
+| 9 | Run ~init-environment.sh~ | ~.env~ entries generated |
+| 10 | Create ~ores.<name>.api/core/service~ | No — write by hand |
+| 11 | Create ~ores.qt.<name>~ plugin | Optional, write by hand |
+
+Steps 3 and 4 will be eliminated once the codegen IAM plan
+(~doc/plans/2026-05-18-codegen-iam-permissions.org~) is complete.

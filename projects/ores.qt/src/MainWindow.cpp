@@ -50,6 +50,7 @@
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/plugin_context.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -87,7 +88,8 @@ MainWindow::MainWindow(QWidget* parent) :
     userStatusWidget_(nullptr), userStatusNameLabel_(nullptr),
     serverStatusWidget_(nullptr), serverStatusNameLabel_(nullptr),
     tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
-    partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr) {
+    partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr),
+    envLabelWidget_(nullptr), envLabelNameLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -132,11 +134,19 @@ MainWindow::MainWindow(QWidget* parent) :
     tenantStatusWidget_     = tWidget;  tenantStatusNameLabel_ = tName;
     partyStatusWidget_      = pWidget;  partyStatusNameLabel_  = pName;
 
+    auto [eWidget, eName] = makeStatusChip(Icon::Tag);
+    envLabelWidget_    = eWidget;
+    envLabelNameLabel_ = eName;
+
     for (auto* w : {uWidget, sWidget, tWidget, pWidget}) {
         w->setStyleSheet(normalChipStyle);
         w->setVisible(false);
     }
 
+    envLabelWidget_->setStyleSheet(normalChipStyle);
+    envLabelWidget_->setVisible(false);
+
+    ui_->statusbar->addPermanentWidget(envLabelWidget_);
     ui_->statusbar->addPermanentWidget(userStatusWidget_);
     ui_->statusbar->addPermanentWidget(serverStatusWidget_);
     ui_->statusbar->addPermanentWidget(tenantStatusWidget_);
@@ -1233,16 +1243,16 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
         instanceColorIndicator_->hide();
     }
 
+    envLabelNameLabel_->setText(name);
+    envLabelWidget_->setToolTip(tr("Environment: ") + name);
+    envLabelWidget_->setVisible(!name.isEmpty());
+
     updateWindowTitle();
 }
 
 
 void MainWindow::updateWindowTitle() {
-    QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
-
-    if (!instanceName_.isEmpty())
-        title += QString(" [%1]").arg(instanceName_);
-
+    const QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
     setWindowTitle(title);
     updateStatusBarFields();
     BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
@@ -1597,6 +1607,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     ctx.http_base_url = httpBaseUrl_.empty() && clientManager_
         ? clientManager_->httpBaseUrl()
         : httpBaseUrl_;
+    ctx.workspace_context = WorkspaceContext{};
+    mdiArea_->setProperty("ores_workspace_context",
+        QVariant::fromValue(ctx.workspace_context));
 
     // Drive plugin lifecycle in load_order sequence.
     // Menus were already created in the constructor; on_login() wires up controllers.
@@ -1832,13 +1845,12 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     // Populate quick-connect combo with environments (fills host+port) and
     // full connections (fills all fields including credentials).
     if (options.showSavedConnections && initializeConnectionManager() && connectionManager_) {
-        // Auto-tag environments from ORES_CHECKOUT_LABEL so the label filter
+        // Auto-tag environments from the instance name so the label filter
         // works without requiring manual tagging via the connection browser.
-        const QString checkoutLabel = qEnvironmentVariable("ORES_CHECKOUT_LABEL");
-        if (!checkoutLabel.isEmpty()) {
+        if (!instanceName_.isEmpty()) {
             try {
                 connectionManager_->auto_tag_environments_by_label(
-                    checkoutLabel.toStdString());
+                    instanceName_.toStdString());
             } catch (const std::exception& e) {
                 using namespace ores::logging;
                 BOOST_LOG_SEV(lg(), warn)
@@ -1879,8 +1891,8 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
 
         if (!items.isEmpty()) {
             loginWidget->setQuickConnectItems(items);
-            if (!checkoutLabel.isEmpty())
-                loginWidget->setActiveLabel(checkoutLabel);
+            if (!instanceName_.isEmpty())
+                loginWidget->setActiveLabel(instanceName_);
 
             // Environment selected: fill host+port, credentials stay editable
             connect(loginWidget, &LoginDialog::environmentSelected,

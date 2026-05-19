@@ -496,20 +496,29 @@ void ProvisionerTenantDetailsPage::setupUI() {
     auto* formLayout = new QFormLayout();
     formLayout->setSpacing(12);
 
-    // Code
-    codeEdit_ = new QLineEdit(this);
-    codeEdit_->setPlaceholderText(tr("Unique tenant code (e.g., acme)"));
-    codeEdit_->setMaxLength(50);
-    auto* codeValidator = new QRegularExpressionValidator(
-        QRegularExpression("^[a-z][a-z0-9_]{0,49}$"), this);
-    codeEdit_->setValidator(codeValidator);
-    formLayout->addRow(tr("Code:"), codeEdit_);
-
-    // Name
+    // Name (drives auto-computation of Code)
     nameEdit_ = new QLineEdit(this);
     nameEdit_->setPlaceholderText(tr("Display name for the tenant"));
     nameEdit_->setMaxLength(200);
     formLayout->addRow(tr("Name:"), nameEdit_);
+
+    // Code (read-only by default; unlock button lets the user override)
+    codeEdit_ = new QLineEdit(this);
+    codeEdit_->setPlaceholderText(tr("Auto-computed from name"));
+    codeEdit_->setMaxLength(50);
+    auto* codeValidator = new QRegularExpressionValidator(
+        QRegularExpression("^[a-z][a-z0-9_]{0,49}$"), this);
+    codeEdit_->setValidator(codeValidator);
+    codeEdit_->setReadOnly(true);
+
+    editCodeButton_ = new QPushButton(tr("Edit"), this);
+    editCodeButton_->setFixedWidth(60);
+    editCodeButton_->setToolTip(tr("Override the auto-computed code"));
+
+    auto* codeRow = new QHBoxLayout();
+    codeRow->addWidget(codeEdit_);
+    codeRow->addWidget(editCodeButton_);
+    formLayout->addRow(tr("Code:"), codeRow);
 
     // Type
     typeCombo_ = new QComboBox(this);
@@ -539,6 +548,10 @@ void ProvisionerTenantDetailsPage::setupUI() {
 
     layout->addStretch();
 
+    // Auto-compute code from name (unless user has unlocked manual edit)
+    connect(nameEdit_, &QLineEdit::textChanged,
+            this, &ProvisionerTenantDetailsPage::onNameChanged);
+
     // Auto-generate hostname from code
     connect(codeEdit_, &QLineEdit::textChanged,
             this, &ProvisionerTenantDetailsPage::onCodeChanged);
@@ -546,6 +559,10 @@ void ProvisionerTenantDetailsPage::setupUI() {
     // Track manual hostname edits
     connect(hostnameEdit_, &QLineEdit::textEdited,
             this, [this]() { hostnameManuallyEdited_ = true; });
+
+    // Unlock the code field for manual editing
+    connect(editCodeButton_, &QPushButton::clicked,
+            this, &ProvisionerTenantDetailsPage::onEditCodeClicked);
 
     // Register required fields
     registerField("tenantCode*", codeEdit_);
@@ -573,24 +590,46 @@ void ProvisionerTenantDetailsPage::initializePage() {
         descriptionEdit_->setText(wizard_->tenantDescription());
     }
 
-    // In single-tenant mode, make fields read-only
+    // In single-tenant mode, lock all fields (pre-filled defaults, not editable)
     if (!wizard_->isMultiTenantMode()) {
         codeEdit_->setReadOnly(true);
+        editCodeButton_->setEnabled(false);
         nameEdit_->setReadOnly(true);
         typeCombo_->setEnabled(false);
         hostnameEdit_->setReadOnly(true);
     } else {
-        codeEdit_->setReadOnly(false);
+        // Multi-tenant: name is editable; code stays read-only until unlocked
         nameEdit_->setReadOnly(false);
         typeCombo_->setEnabled(true);
         hostnameEdit_->setReadOnly(false);
     }
 }
 
+void ProvisionerTenantDetailsPage::onNameChanged(const QString& text) {
+    if (codeManuallyEdited_)
+        return;
+    // Compute code: lowercase, spaces → underscores, strip non-[a-z0-9_]
+    QString code = text.toLower();
+    code.replace(' ', '_');
+    code.remove(QRegularExpression("[^a-z0-9_]"));
+    // Ensure it starts with a letter; strip leading digits/underscores
+    while (!code.isEmpty() && !code[0].isLetter())
+        code.remove(0, 1);
+    codeEdit_->setText(code.left(50));
+}
+
 void ProvisionerTenantDetailsPage::onCodeChanged(const QString& text) {
     if (!hostnameManuallyEdited_ && !text.isEmpty()) {
         hostnameEdit_->setText(text);
     }
+}
+
+void ProvisionerTenantDetailsPage::onEditCodeClicked() {
+    codeEdit_->setReadOnly(false);
+    codeManuallyEdited_ = true;
+    editCodeButton_->setEnabled(false);
+    codeEdit_->setFocus();
+    codeEdit_->selectAll();
 }
 
 bool ProvisionerTenantDetailsPage::validatePage() {

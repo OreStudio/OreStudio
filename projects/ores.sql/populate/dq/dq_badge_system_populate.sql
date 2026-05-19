@@ -240,9 +240,9 @@ BEGIN
         'fsm_suspended', 'Suspended', 'Report definition is suspended.',
         '#eab308', '#ffffff', 'warning', 'badge bg-warning', 22);
 
-    -- Report FSM: Archived
+    -- Archived (generic; shared by workspace, report definitions, etc.)
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'fsm_archived', 'Archived', 'Report definition has been archived.',
+        'archived', 'Archived', 'Record has been archived and is no longer active.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 23);
 
     -- DQ Origin: Primary
@@ -284,6 +284,14 @@ BEGIN
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'treatment_enriched', 'Enriched', 'Data has been enriched with additional context.',
         '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 31);
+
+    -- =============================================================================
+    -- Code Domains (workspace)
+    -- =============================================================================
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'workspace_status', 'Workspace Status',
+        'Lifecycle status codes for workspace records.', 15);
 
     -- =============================================================================
     -- Badge Mappings
@@ -391,7 +399,7 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'report_fsm_state', 'Suspended', 'fsm_suspended');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'report_fsm_state', 'Archived', 'fsm_archived');
+        'report_fsm_state', 'Archived', 'archived');
 
     -- dq_origin
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -406,6 +414,12 @@ BEGIN
         'dq_nature', 'Estimated', 'nature_estimated');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_nature', 'Simulated', 'nature_simulated');
+
+    -- workspace_status
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'workspace_status', 'active', 'active');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'workspace_status', 'archived', 'archived');
 
     -- dq_treatment
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

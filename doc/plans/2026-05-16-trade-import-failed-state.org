@@ -1,9 +1,40 @@
-#+TITLE: Provisional Blotter and Workflow Partial-Success
-#+SUBTITLE: Source-agnostic pre-book staging area for imported trades; structured workflow failure reporting
+#+TITLE: Data Import Session and Workflow Partial-Success
+#+SUBTITLE: Full ORE data import pipeline; pending trade staging; non-live marker for reference data; structured workflow failure reporting
 #+DATE: 2026-05-16
 #+AUTHOR: ORE Studio Team
 #+STATUS: PROPOSED
 #+OPTIONS: toc:t num:nil
+
+* Related Plans
+
+- [[file:2026-05-15-ore-import-error-reporting.org][ORE Import Error Reporting and Step Warning State]] (COMPLETE) — implements
+  the ~completed_with_warnings~ workflow step outcome, the ~step_log_entry~
+  structured log, and the per-step warning badge in ~WorkflowStepsWidget~.
+  This plan builds on that foundation: the session/pending-book design assumes
+  the warning infrastructure is already in place.
+
+- [[file:2026-04-03-server-side-ore-import.org][Server-Side ORE Import]] — earlier design covering the server-side import
+  handler architecture.  The current plan supersedes the import handler section
+  of that design; the rest remains valid reference.
+
+- [[file:2026-05-17-workspace-design.org][Workspace Design]] (PROPOSED, PREREQUISITE for Track 1) — isolated
+  workspace concept required for ORE sample import.  This plan covers two
+  import tracks: Track 1 (educational/sample import, blocked on workspace
+  implementation) and Track 2 (production live import, independent).  The
+  Pending Book and ~is_live~ mechanisms in this plan serve Track 2 only.
+
+* Import Tracks
+
+This plan covers two fundamentally different import use cases.  They share the
+Data Import Session window but differ in where data lands.
+
+| Track | Source | Target | Isolation mechanism |
+|-------+--------+--------+---------------------|
+| 1 — Educational | ORE sample directory | Named workspace | Workspace (see [[file:2026-05-17-workspace-design.org][workspace plan]]) |
+| 2 — Production | External trades (FpML, CSV) | Live (workspace 0) | Pending Book + ~is_live~ flags |
+
+*Track 1 is blocked* on [[file:2026-05-17-workspace-design.org][Workspace]] implementation.  All phases below
+address Track 2 only unless otherwise noted.
 
 * Problem Statement
 
@@ -16,393 +47,624 @@ counterparties, zero amounts, unrecognised instrument parameters, mismatched
 currencies.  Accepting this data directly into live books is dangerous because:
 
 - Bad trades appear in risk/compute runs immediately.
-- There is no structured way for users to bulk-fix missing reference data
-  (counterparty, book) before committing.
-- Instrument creation failures leave orphaned trade rows that crash the UI when
-  opened (dangling ~instrument_id~ FK with no matching instrument row).
-- There is no clear user workflow to move from "imported" to "verified and live."
+- There is no structured way to bulk-fix missing reference data (counterparty,
+  book) before committing.
+- Instrument creation failures leave orphaned trade rows.
+- There is no clear user workflow from "imported" to "verified and live."
+
+** All non-trade data imported directly with no isolation
+
+Market data, conventions, curves, and pricing engine configurations land in
+the main tables immediately and are indistinguishable from manually curated
+or Bloomberg-sourced data.  Users have no way to know which data came from
+an ORE import and which is production-quality.
+
+** Import entry point is scattered and badly placed
+
+ORE import actions appear in both the Trades window toolbar and Portfolio
+Explorer.  The import entry point should be a dedicated Data Import facility,
+not the live-book views.
+
+** Import workflow is monolithic and mistakenly named
+
+The existing workflow conflates trade staging with market data, conventions,
+curves, and pricing configuration — all of which have different lifecycle
+requirements.
 
 ** Workflow status does not reflect partial failure
 
-The ORE import step already emits ~step_outcome::completed_with_warnings~ when
-some items fail, but the workflow *instance* FSM only has ~completed~ and
-~failed~ terminal states.  A partial import therefore shows ~completed~ in the
-workflow list — indistinguishable from a clean run.
+The workflow instance FSM only has ~completed~ and ~failed~ terminal states.
+A partial import shows ~completed~ — indistinguishable from a clean run.
 
 ** Failed items are not surfaced as a structured list
 
-~ore_import_execute_result.item_errors~ (source_file + item_id + message) is
-already collected per failure and stored in ~response_json~, but
-~workflow_step_summary~ only exposes it via flat log text.  There is no way for
-the UI to render a proper table of failed trade IDs with files and error
-messages.
+~ore_import_execute_result.item_errors~ is already collected but only
+surfaced as flat log text.  There is no way to render a table of failed
+trade IDs with files and error messages.
 
 * Design Overview
 
-** The Provisional Blotter
+** Core concepts
 
-The core concept is a *Provisional Blotter*: a staging area that sits between
-any import source and the live trade table.  Trades land in the provisional
-blotter with relaxed constraints and a validation status.  Users review, enrich
-(assign counterparty, book, fix errors), and explicitly *book* validated trades
-into live books.  Only at booking time does a row appear in
-~ores_trading_trades_tbl~ and an instrument record get created.
+Three concepts drive the new design:
 
-This eliminates the class of orphaned-trade problems entirely: bad trades never
-reach live books.
+1. *Data Import Session* — a single import event that brings in a full ORE
+   data set (trades + market data + conventions + curves + pricing configs).
+   Everything imported in one session shares a common ~session_id~ for lineage.
+
+2. *Pending Book* — a system-defined book that holds imported trades before
+   they are enriched and promoted to a live book.  Trades in the Pending Book
+   are visible in the normal trade views but clearly marked.  They cannot be
+   used in compute runs until booked into a real book.
+
+3. *Non-live marker* — a simple ~is_live boolean not null default false~ on
+   every reference-data table touched by ORE import (conventions, curves,
+   pricing engine configs, market data).  Only rows with ~is_live = true~ are
+   used by compute runs and visible in normal reference-data views.  The import
+   session notebook lets users review and activate imported rows explicitly.
+
+** Full ORE import from day one
+
+The import handler processes a complete ORE data directory in a single pass:
+
+- Portfolio XML files → Pending Book trades (pending trade staging)
+- Market data files → market data tables with ~is_live = false~
+- Conventions XML → convention tables with ~is_live = false~
+- Curve configs → curve config tables with ~is_live = false~
+- Pricing engine configs → pricing engine tables with ~is_live = false~
+
+All rows created in a session carry ~import_session_id~ for lineage.  There
+is no deferred "Phase 2" for reference data — it is imported together with
+trades from the start.
+
+** Data Transfer menu — kept and extended
+
+The "Data Transfer" top-level menu is kept and extended:
 
 #+begin_example
-External Source (ORE XML, FpML, CSV, ...)
-        │
-        ▼
-  Import Session created (source_type, source_reference, metadata)
-        │
-        ▼  1:N
-  Provisional Blotter Entries (status: staged)
-        │
-        ▼  auto-validate
-  ┌─────┴──────┐
-  │            │
-  ▼            ▼
-ready       invalid ──── user edits ────→ re-validate
-  │                                            │
-  └──────────────────────────────────────────→ ready
-  │
-  ▼ user clicks "Book"
-  Live Trade (ores_trading_trades_tbl, status: new)
-  Instrument record created
-  Provisional entry: status = booked
+Data Transfer
+  ├── Data Import        → opens Data Import Session window
+  └── Data Export        → (future)
 #+end_example
 
-** Source-agnostic model
+The scattered import actions in the Trades window and Portfolio Explorer
+are removed; all import activity flows through Data Transfer → Data Import.
 
-The provisional blotter is deliberately source-agnostic.  ORE XML is the only
-supported import source today, but FpML, CSV, and API push sources are
-anticipated.  All source-specific concerns are captured in
-~ores_trading_import_sessions_tbl~; once a trade lands in the provisional
-blotter the remaining enrichment, validation, and booking workflow is identical
-regardless of origin.
+** Import flow
 
-** Isolated schema — relaxed staging, strict live
+#+begin_example
+User clicks Data Transfer → Data Import
+        │
+        ▼
+  Directory picker (selects an ORE data directory or group)
+        │
+        ▼
+  data_import workflow triggered
+        │
+        ├── Portfolio XML → Pending Book trades (staged, validated)
+        ├── Market data   → market data tables (is_live = false)
+        ├── Conventions   → convention tables (is_live = false)
+        ├── Curves        → curve config tables (is_live = false)
+        └── Pricing cfg   → pricing engine tables (is_live = false)
+        │
+        ▼
+  Data Import Session window auto-opens (or refreshes) showing new session
+#+end_example
 
-The live trade table (~ores_trading_trades_tbl~) must have strict database
-constraints (NOT NULL on counterparty, book, valid instrument FK).  The
-provisional blotter table inverts this: all reference-data columns are nullable
-so that dirty data has somewhere to land.  This gives defence-in-depth: even if
-the booking service's application-level validation has a bug, the DB constraints
-on the live table will reject an incomplete row.
+* Data Import Session Window
 
-** Booking is always user-initiated
+** Overview
 
-Even a provisionally valid trade (status = ~ready~) is never automatically
-promoted.  The user must explicitly click "Book" (individually) or "Book All
-Ready" (bulk).  This is the deliberate safety checkpoint before trades affect
-risk runs or P&L.
+A persistent MDI window accessible via Data Transfer → Data Import.  Shows
+import sessions with a two-level selector at the top.  The body is a notebook
+with one tab per data type.  Both selectors scope all tabs simultaneously.
 
-* Existing Foundations
+#+begin_example
++-------------------------------------------------------------------------------------+
+|  DATA IMPORT SESSION                                       [New Import] [Refresh]    |
+|  Batch: [ 2026-05-17 10:15 — ORE XML — /ore/examples           ▼ ]                 |
+|  Unit:  [ All units (34)                                        ▼ ]                 |
++-------------------------------------------------------------------------------------+
+| [ Trades (847) ] [ Market Data (312) ] [ Conventions (45) ] [ Curves ] [ Pricing ] |
++-------------------------------------------------------------------------------------+
+| [ tab-specific grid + actions ]                                                     |
++-------------------------------------------------------------------------------------+
+#+end_example
 
-| Existing asset | Location | Notes |
-|----------------+----------+-------|
-| ~step_outcome::completed_with_warnings~ | ~workflow_events.hpp~ | already emitted by ore import handler |
-| ~ore_import_item_error~ | ~ore_import_protocol.hpp~ | source_file + item_id + message |
-| ~response_json~ on step | ~workflow_workflow_step_create.sql~ | jsonb; contains full item_errors list |
-| ~workflow_step_summary.log~ | ~workflow_query_protocol.hpp~ | log entries reach UI |
-| Trade status FSM | ~dq_fsm_trade_status_populate.sql~ | new, live, expired, cancelled — unchanged |
-| ~UiPersistence~ | ~UiPersistence.hpp~ | save/restore sizes via QSettings |
+** Batch selector
+
+Dropdown listing recent import batches, most recent first.  Each entry shows:
+the batch timestamp, source type (ORE XML, FpML, …), source directory
+(truncated), and a summary badge (e.g. "34 units · 847 trades · 12 invalid").
+A search/filter allows finding batches by date or path.
+
+** Unit selector
+
+Searchable dropdown scoped to the selected batch.  First entry is always
+"All units (N)".  Remaining entries are the display names derived from each
+unit's relative orchestration XML path (see naming heuristic below).
+Selecting a unit narrows every tab to that unit's data only.
+
+** Unit display name heuristic
+
+Given the orchestration XML path relative to the batch root:
+1. Split into directory components; drop the filename.
+2. Remove uninformative folder names: ~Input~, ~ExpectedOutput~, ~Notebooks~,
+   ~Calc~, ~bak~, ~xlwings~, ~Helpers~, ~Dependencies~.
+3. Join remaining components with ~·~ (e.g. ~Legacy · Example_1~).
+4. If the orchestration filename stem is not plain ~ore~, strip the ~ore_~
+   prefix (or ~_ore~ suffix) and append the variant name
+   (e.g. ~MarketRisk · sensi~, ~CurveBuilding · BootstrapConsistency · EUR_xois~).
+5. If two units in the same batch produce the same display name, append a
+   numeric suffix to make them unique.
+
+Examples:
+
+| Relative path | Display name |
+|---------------+--------------|
+| ~Legacy/Example_1/Input/ore.xml~ | ~Legacy · Example_1~ |
+| ~MarketRisk/Input/ore_sensi.xml~ | ~MarketRisk · sensi~ |
+| ~MarketRisk/Input/ParConversion/ore.xml~ | ~MarketRisk · ParConversion~ |
+| ~ExposureWithCollateral/Input/FirstMpor/ore.xml~ | ~ExposureWithCollateral · FirstMpor~ |
+| ~Academy/TA002_IR_Swap/Input/ore.xml~ | ~Academy · TA002_IR_Swap~ |
+| ~CurveBuilding/BootstrapConsistency/Input/EUR_xois_ore.xml~ | ~CurveBuilding · BootstrapConsistency · EUR_xois~ |
+
+** Trades tab (Pending Book view)
+
+This is the actionable tab — trades in the Pending Book need user enrichment
+before they can be booked into a live book.
+
+Layout: filter bar → action bar → virtual-scroll grid → inspector panel (bottom
+30% when a row is selected).
+
+Filter bar:
+- Status: All / Invalid / Ready / Booked / Rejected
+- Error Type: All / Missing Book / Missing Counterparty / Zero Amount / ...
+- Trade Type: All / FxForward / IRS / FxOption / ...
+- Free-text search (External ID, raw counterparty)
+
+Action bar (bulk actions activate on selection):
+
+| Action | Enabled when | Behaviour |
+|--------+--------------+-----------|
+| Assign Book | ≥1 row selected | Book picker; re-validates |
+| Assign Counterparty | ≥1 row selected | Counterparty picker with fuzzy-search |
+| Validate | ≥1 row selected | Re-runs validation |
+| Book Selected | ≥1 ~ready~ row selected | Promotes to live trade table |
+| Reject | ≥1 row selected | Marks rejected; prompts for reason |
+| Value Selected | ≥1 ~ready~ row (future) | Runs ORE engine; populates NPV |
+
+Grid columns:
+
+| Column | Notes |
+|--------+-------|
+| ☐ | Multi-select |
+| Status | ● red Invalid / ○ green Ready / ↻ staged / ✓ booked / ✗ rejected |
+| External ID | From source; monospace |
+| Errors | Badge: count of blocking errors |
+| Trade Type | |
+| Book | "(unassigned)" in amber if null |
+| Counterparty | Raw source string in amber if unmatched |
+| NPV | "—" until valued (future) |
+| Source File | Filename from ~source_position~ |
+
+Cell-level error highlighting: cells with invalid data render with an amber
+background and a hover tooltip from ~validation_errors~ explaining the
+specific error and suggested fix.  Grid uses virtual/lazy rendering
+(QAbstractItemModel + proxy) to stay responsive with large portfolios.
+
+Inspector panel (bottom ~30%, shown on single-row selection):
+
+Left column — Trade Parameters:
+- Parsed fields from ~raw_data~ (read-only)
+- Source provenance: session, directory, file, element index
+- NPV if valued
+
+Right column — Validation Errors + Audit Trail:
+- Errors table: Severity | Field | Message | Fix hint (blocking first in red,
+  warnings in amber)
+- Audit trail: timestamped log of system and user actions
+
+Post-import behaviour:
+- Window auto-opens (or refreshes) filtered to new session
+- Summary banner: "N trades staged — M ready, K invalid"
+- If all valid: "Book All Ready" prompt shown
+- If some invalid: filter pre-set to Invalid subset
+
+** Market Data tab
+
+Read-only grid showing market data rows imported in the session, with their
+~is_live~ status.  Columns: Name | Type | Date | Is Live | Source.
+
+Bulk actions: "Mark as Live" (sets ~is_live = true~ on selection) and
+"Discard" (deletes non-live rows).  Warning shown at activation time if an
+existing live row with the same key would be shadowed.
+
+** Conventions tab
+
+Same pattern as Market Data.  Lists convention rows from the session.
+Bulk "Mark as Live" / "Discard."  Dedup warning if an existing live
+convention has the same code.
+
+** Curves tab
+
+Curve configuration rows from the session.  Same ~is_live~ model.
+
+** Pricing Config tab
+
+Pricing engine configuration rows from the session.  Same ~is_live~ model.
+
+* Pending Book
+
+** Concept
+
+The Pending Book is a system-defined book created at database initialisation.
+It is not selectable by users when creating trades manually.  Its sole purpose
+is to hold imported trades before enrichment.
+
+Pending Book properties:
+- Fixed UUID, seeded in populate scripts
+- Name: "Pending" (or "Import Staging")
+- ~is_system = true~ on the book record — filtered out of book picker dropdowns
+- Visible in the trade list view as a special book with an amber indicator
+
+** Trade lifecycle in the Pending Book
+
+1. Import handler inserts trade into ~ores_trading_trades_tbl~ with
+   ~book_id = pending_book_id~, ~status = pending~ (new FSM state), and
+   ~validation_errors~ populated.
+2. User sees trade in Data Import Session → Trades tab (and in the main
+   Trades window filtered to Pending Book).
+3. User assigns book and counterparty; validation re-runs; status moves to
+   ~ready~.
+4. User clicks "Book Selected" → booking service reassigns ~book_id~ to the
+   target book, clears ~validation_errors~, transitions status from
+   ~pending~ to ~new~.
+
+** Constraint relaxation
+
+Trades in ~pending~ status must tolerate nullable ~counterparty_id~ and nullable
+~book_id~ (the pending book is assigned but the real book is not yet known).
+This means the NOT NULL constraints audit defers to the booking service: the
+service enforces that a real book and counterparty are assigned before
+transition from ~pending~ to ~new~.
+
+* Non-Live Marker for Reference Data
+
+** Mechanism
+
+Add ~is_live boolean not null default false~ and ~import_session_id uuid null~
+to every reference-data table touched by ORE import:
+
+| Table | Notes |
+|-------+-------|
+| conventions | Day count, business day, calendar conventions |
+| curve configs | Yield curve construction configuration |
+| pricing engine configs | Pricing engine model parameters |
+| market data | Fixings, FX rates, yield curve data points |
+
+At import time all rows land with ~is_live = false~.  Compute runs and normal
+UI data-loading queries filter on ~is_live = true~ (or current live rows only).
+
+** Activation
+
+User reviews rows in the relevant tab of the Data Import Session notebook.
+Bulk "Mark as Live" sets ~is_live = true~ on selected rows.
+
+Dedup strategy: before activation, the service checks for an existing live row
+with the same natural key.  If found, it warns the user: "Activating this row
+will supersede existing live [Convention / Curve / ...] with code X."  User
+can proceed or cancel.
+
+** Visibility in normal views
+
+Non-live rows are hidden from normal reference-data grids by default.  A
+"Show Non-Live" toggle (or filter) reveals them with an amber "Pending" badge.
+This keeps normal data management views clean while preserving the data for
+review in the Data Import Session.
 
 * Schema Design
 
-** Import sessions table
-
-Captures everything about the origin of an import event.  One row per import
-action (one file upload, one API push, one manual batch entry).
+** Data import sessions table
 
 #+begin_src sql
-create table ores_trading_import_sessions_tbl (
+create table ores_data_import_sessions_tbl (
     id                uuid        not null default gen_random_uuid(),
     source_type       text        not null,  -- ore_xml | fpml | csv | api | manual
-    source_reference  text        not null,  -- file path, URL, system name, or 'manual'
-    source_checksum   text        null,      -- SHA-256 of source file for dedup detection
-    source_metadata   jsonb       null,      -- format-specific: schema version, namespace, etc.
-    workflow_run_id   uuid        null,      -- FK to workflow instance if import was workflow-driven
+    source_reference  text        not null,  -- directory path, URL, system name
+    source_checksum   text        null,      -- hash of directory manifest for dedup
+    source_metadata   jsonb       null,      -- file counts, schema versions, etc.
+    workflow_run_id   uuid        null,
     imported_by       text        not null,
     imported_at       timestamptz not null default now(),
-    constraint ores_trading_import_sessions_tbl_pk primary key (id)
+    constraint ores_data_import_sessions_tbl_pk primary key (id)
 );
 #+end_src
 
-** Provisional blotter table
+Note: this replaces the earlier ~ores_trading_import_sessions_tbl~ design.
+The session table lives in a shared schema (not trading-specific) since it
+spans all data types.
 
-One row per trade candidate.  Constraints are deliberately relaxed to allow
-dirty data to land.
+** Pending trades
 
-#+begin_src sql
-create table ores_trading_provisional_blotter_tbl (
-    id                    uuid        not null default gen_random_uuid(),
-    import_session_id     uuid        not null,  -- FK → ores_trading_import_sessions_tbl
-    source_position       text        null,      -- position in source: element index, xpath, row number
-    raw_data              text        null,      -- original XML / JSON / CSV fragment
-    external_id           text        not null,  -- trade ID from source
-    trade_type            text        not null,  -- FxForward, Swap, etc.
-    status                text        not null   -- staged | invalid | ready | booked | rejected
-                              default 'staged',
-    validation_errors     jsonb       null,      -- [{field, message, severity, is_blocking}]
-    book_id               uuid        null,      -- assigned by user; null until enriched
-    counterparty_id       uuid        null,      -- matched by user or auto-matched
-    counterparty_raw      text        null,      -- original counterparty name from source
-    booked_trade_id       uuid        null,      -- FK → ores_trading_trades_tbl once booked
-    imported_by           text        not null,
-    imported_at           timestamptz not null default now(),
-    booked_by             text        null,
-    booked_at             timestamptz null,
-    rejected_by           text        null,
-    rejected_at           timestamptz null,
-    rejection_reason      text        null,
-    constraint ores_trading_provisional_blotter_tbl_pk primary key (id),
-    constraint ores_trading_provisional_blotter_session_fk
-        foreign key (import_session_id)
-        references ores_trading_import_sessions_tbl (id)
-);
-#+end_src
-
-** Lineage columns on the live trade table
-
-Add two nullable FKs to ~ores_trading_trades_tbl~ so that every booked trade
-carries full provenance back to its origin:
+Trades in the Pending Book remain in ~ores_trading_trades_tbl~.  Additional
+columns needed:
 
 #+begin_src sql
 alter table ores_trading_trades_tbl
     add column if not exists import_session_id  uuid null,
-    add column if not exists provisional_id     uuid null;
+    add column if not exists validation_errors  jsonb null,
+    add column if not exists source_position    text null,   -- "filename:index"
+    add column if not exists raw_data           text null;   -- original XML fragment
 #+end_src
 
-Manual trades have both null.  Imported and booked trades carry the chain:
-live trade → provisional entry → import session → source file / system.
+The ~status_id~ FK already exists (pointing to the trade status FSM).
+A new ~pending~ state is added to the FSM (see below).
 
-These are intentionally non-FK columns on the temporal trade table (temporal
-rows must be insertable without re-referencing potentially soft-deleted staging
-rows); the application enforces referential integrity at booking time.
+** Lineage on live trades
 
-** Tightening live trade table constraints (audit required)
+After booking (~pending~ → ~new~), the lineage columns persist:
+~import_session_id~ and ~source_position~ remain set so that auditors can trace
+any live trade back to its source file and import session.
 
-As part of this work, audit ~ores_trading_trades_tbl~ for columns that are
-currently nullable but should be NOT NULL (e.g. ~counterparty_id~, ~book_id~).
-Tightening these constraints is the DB-level enforcement that makes the
-provisional blotter pattern correct.  Document any deliberate nullable exceptions
-(e.g. ~instrument_id~ may be nullable for certain trade types).
+** NPV columns (future valuation)
 
-* Provisional Blotter FSM
+#+begin_src sql
+alter table ores_trading_trades_tbl
+    add column if not exists npv             numeric null,
+    add column if not exists npv_currency    text null,
+    add column if not exists npv_computed_at timestamptz null;
+#+end_src
 
-The provisional blotter has its own lifecycle FSM, completely separate from the
-live trade FSM (new → live → expired / cancelled).
+Included now to avoid a future migration.
 
-| State | Description |
-|-------+-------------|
-| ~staged~ | Landed from import; validation not yet complete |
-| ~invalid~ | Validation ran; one or more blocking errors remain |
-| ~ready~ | All blocking validations pass; eligible for booking |
-| ~booked~ | Promoted to live trade; terminal |
-| ~rejected~ | Explicitly rejected by user; terminal |
+** is_live on reference data tables
 
-Transitions:
+#+begin_src sql
+-- Example pattern applied to each affected table:
+alter table ores_refdata_conventions_tbl
+    add column if not exists is_live           boolean not null default false,
+    add column if not exists import_session_id uuid null;
+#+end_src
 
-| Transition | From → To | Trigger |
-|------------+----------+---------|
-| ~validate~ | staged → ready \vert{} invalid | Auto-run after import or user edit |
-| ~fix~ | invalid → staged | User edits a field; re-triggers validation |
-| ~invalidate~ | ready → staged | User edits a field; re-triggers validation |
-| ~book~ | ready → booked | User clicks Book; booking service succeeds |
-| ~reject~ | staged \vert{} invalid \vert{} ready → rejected | User explicitly rejects entry |
+Full list of tables to audit and patch is part of Phase 1 work.
 
-Note: ~staged~ is transient (validation is fast); for UI purposes it renders as
-a spinner / pending state.  ~invalid~ and ~ready~ are the two states the user
-actively works with.
+* Trade Status FSM — New ~pending~ State
 
-* Validation Architecture
-
-Validation logic must live in exactly one place, callable from multiple contexts:
-
-| Context | Invocation | Blocking? |
-|---------+------------+-----------|
-| After import | Batch, async per entry | No — returns results only |
-| User edits a field | Per-entry, synchronous | No — UI re-renders status |
-| User clicks "Validate All" | Batch, on-demand | No |
-| Booking endpoint | Per-entry, synchronous | Yes — booking fails on blocking errors |
-
-A plpgsql function ~validate_provisional_trade(p_id uuid)~ returning a set of
-~(field text, message text, severity text, is_blocking boolean)~ is the single
-canonical implementation.  The service layer calls this function; the UI
-displays the results; the booking endpoint calls it and rejects if any
-~is_blocking = true~ rows are returned.
-
-Example validation rules for the initial implementation:
-
-| Rule | Field | Blocking? |
-|------+-------+-----------|
-| Amount ≠ 0 | notional_amount | Yes |
-| Currency is valid ISO code | currency | Yes |
-| Maturity date > trade date | maturity_date | Yes |
-| Trade type is known | trade_type | Yes |
-| Book is assigned | book_id | Yes |
-| Counterparty is assigned | counterparty_id | Yes |
-| Counterparty has suggested match | counterparty_raw | No (warning) |
-| Maturity is in the future | maturity_date | No (warning) |
-
-Validation is idempotent and re-runnable.  Results are stored in
-~validation_errors jsonb~ on the provisional row and the ~status~ column is
-updated atomically.
-
-* Source-Agnostic Import Model
-
-** Import session source types
-
-| ~source_type~ | Description |
-|---------------+-------------|
-| ~ore_xml~ | ORE portfolio XML file |
-| ~fpml~ | FpML trade document |
-| ~csv~ | Flat CSV file |
-| ~api~ | External system push via API |
-| ~manual~ | User-entered drafts via UI |
-
-~source_metadata~ carries format-specific details as jsonb.  For ~ore_xml~ this
-might include schema version and portfolio element count; for ~fpml~ the
-namespace URI.  The provisional blotter code never reads ~source_metadata~ —
-only tooling and audit queries do.
-
-** ORE import handler changes
-
-The ORE import handler currently writes directly to the trade and instrument
-tables.  Under the new design it:
-
-1. Creates one ~ores_trading_import_sessions_tbl~ row at the start of the
-   import step (source_type = ~ore_xml~, source_reference = archive path,
-   workflow_run_id = current run UUID).
-2. For each trade in the portfolio XML, inserts one
-   ~ores_trading_provisional_blotter_tbl~ row (status = ~staged~, raw_data = the
-   XML fragment, source_position = element index).
-3. Calls the validation function for each entry; updates status to ~ready~ or
-   ~invalid~.
-4. Returns ~step_outcome::completed_with_warnings~ if any entries are ~invalid~;
-   ~completed~ if all are ~ready~.
-5. Does *not* create any trade or instrument records.  Those are created at
-   booking time.
-
-~item_errors~ in the import result maps to entries whose validation produced
-blocking errors.  The item_id is the provisional entry's ~external_id~.
-
-** Booking service
-
-A new NATS endpoint ~ores.trading.v1.provisional.book~ accepts a list of
-provisional entry UUIDs.  For each:
-
-1. Load provisional entry; assert status = ~ready~.
-2. Re-run ~validate_provisional_trade~; reject if any blocking errors (defence
-   in depth — UI may be stale).
-3. Parse ~raw_data~ (using the appropriate parser for the session's
-   ~source_type~) to extract instrument parameters.
-4. Call the instrument-save service to create the instrument record.
-5. Insert a new row into ~ores_trading_trades_tbl~ with status ~new~,
-   ~import_session_id~, ~provisional_id~ set.
-6. Update provisional entry: status = ~booked~, ~booked_trade_id~, ~booked_by~,
-   ~booked_at~.
-7. Return success or failure per entry (bulk booking is best-effort; one failure
-   does not roll back others).
-
-* UI: Provisional Blotter View
-
-** Window
-
-A new MDI window "Provisional Blotter" (accessible from the main menu and
-potentially auto-opened after an import run).  Implemented as a new
-~ProvisionalBlotterController~ and ~ProvisionalBlotterMdiWindow~, following the
-same patterns as ~TradeController~ / ~TradeMdiWindow~.
-
-** List view columns
-
-| Column | Description |
-|--------+-------------|
-| Status | Icon + chip: staged (spinner) \vert{} invalid (red) \vert{} ready (green) \vert{} booked \vert{} rejected |
-| Trade ID | ~external_id~ from source |
-| Type | ~trade_type~ |
-| Book | Assigned book name, or "(unassigned)" in amber |
-| Counterparty | Matched name, or raw source name in amber if unmatched |
-| Source | Import session source_reference (file name) |
-| Imported | ~imported_at~ timestamp |
-| Errors | Count of blocking validation errors, badge style |
-
-** Bulk operations
-
-Select N rows, right-click or toolbar:
-
-- *Assign Book* — opens book picker, applies to selection
-- *Assign Counterparty* — opens counterparty picker with fuzzy-search on ~counterparty_raw~
-- *Validate* — re-runs validation on selection
-- *Book Selected* — books all ~ready~ entries in selection
-- *Reject Selected* — marks selection as rejected with optional reason
-
-** Detail panel / row expansion
-
-Clicking a provisional entry opens an inline or side panel showing:
-
-- Validation errors table: Field | Message | Blocking?
-- Parsed trade parameters (read-only preview from ~raw_data~)
-- Counterparty suggestion and confidence if auto-matched
-- Source provenance: session ID, source file, element position
-
-** Counterparty matching
-
-When an entry arrives with a non-null ~counterparty_raw~, the import handler
-runs a fuzzy match against the counterparty table and stores the best candidate
-and confidence score (in ~source_metadata~ or a dedicated column).  The UI
-shows: "Suggested: [Name] (87% match) — Confirm or change."
-
-* Workflow: ~completed_with_warnings~ State
-
-The workflow instance FSM (in ~dq_fsm_populate.sql~) currently has terminal
-states ~completed~ and ~failed~.  Add:
+Add to the existing trade status machine (~dq_fsm_trade_status_populate.sql~):
 
 | Addition | Type | Description |
 |----------+------+-------------|
-| ~completed_with_warnings~ | state (terminal) | Workflow ran to completion but some items have warnings or errors |
+| ~pending~ | state | Trade is in the Pending Book; awaiting enrichment and booking |
+| ~stage~ | transition | (import) → pending | Trade landed from import |
+| ~book~ | transition | pending → new | User books trade into a real book |
+| ~reject_pending~ | transition | pending → cancelled | User rejects pending trade |
+
+The existing ~new → live → expired / cancelled~ chain is unchanged.
+~pending~ is a pre-entry state that sits before ~new~.
+
+* Workflow: ~data_import~ Workflow Type
+
+The existing monolithic ORE import workflow is renamed ~data_import~.
+It processes a full ORE directory in a single pass, delegating to sub-handlers
+per data type.  The DB workflow definition record is updated accordingly.
+
+* Workflow: ~completed_with_warnings~ State
+
+Add to the workflow instance FSM:
+
+| Addition | Type | Description |
+|----------+------+-------------|
+| ~completed_with_warnings~ | state (terminal) | Completed but some items could not be staged or validated |
 | ~complete_with_warnings~ | transition | in_progress → completed_with_warnings |
 
-The ORE import step uses this when one or more provisional entries end up with
-status ~invalid~ after validation.  The workflow engine selects
-~complete_with_warnings~ vs ~complete~ based on the step outcome when all steps
-are done.
+UI: amber badge in workflow list; tooltip "Completed with warnings"; step
+details show "Show in Data Import Session" link.
 
-UI changes:
-
-- ~completed_with_warnings~ renders with an amber badge in the workflow instance
-  table, distinct from green (~completed~) and red (~failed~).
-- Tooltip: "Completed with warnings — some trades could not be validated."
-- The step details dialog links to the Provisional Blotter filtered to the
-  relevant import session.
+Step result message: "N trades staged (M ready, K invalid); P market data
+items; Q conventions; R curve configs."
 
 * Workflow: Failed Items in Step Summary
 
-Add to ~workflow_step_summary~:
-
 #+begin_src cpp
 struct workflow_failed_item {
-    std::string item_id;      // trade external_id from source
-    std::string source_file;  // relative path in ORE archive
-    std::string message;      // validation or parse error detail
+    std::string item_id;      // trade external_id or data item key
+    std::string source_file;  // filename within scanned directory
+    std::string message;      // parse or validation error
 };
 
 struct workflow_step_summary {
     // ... existing fields ...
-    std::vector<workflow_failed_item> failed_items; // new
+    std::vector<workflow_failed_item> failed_items;
 };
 #+end_src
 
-The workflow query handler populates ~failed_items~ by parsing ~response_json~
-(which already contains ~item_errors~) when building the step summary.  Wrap in
-try/catch; fall back to empty list on parse failure for other step types.
+Rendered in step details as a table: Item ID | Source File | Error, with a
+"Show in Data Import Session" link.
 
-The step details dialog renders ~failed_items~ as a table: Trade ID | Source
-File | Error.  Rows are selectable; a "Show in Provisional Blotter" action
-(future work) can navigate to the relevant entry.
+* ORE Examples Import Unit Analysis
+
+/Analysis performed 2026-05-17 using Opus 4.7 on ~external/ore/examples~./
+
+** Top-level structure
+
+19 top-level subdirectories with mixed PascalCase / hyphenated naming:
+~Academy~, ~AmericanMonteCarlo~, ~CreditRisk~, ~CurveBuilding~, ~Exposure~,
+~ExposureWithCollateral~, ~InitialMargin~, ~Input~, ~Legacy~, ~MarketRisk~,
+~MinimalSetup~, ~ORE-API~, ~ORE-Python~, ~Performance~, ~Products~,
+~ScriptedTrade~, ~TradeGenerator~, ~XvaRisk~.
+
+Two are meta-containers:
+- ~Legacy/~ — 75 numbered child examples (~Example_1~ … ~Example_78~, with gaps).
+- ~Academy/~ — 3 prefix-coded children (~FC003_…~, ~TA001_…~, ~TA002_…~).
+
+Two are non-runnable and must be skipped:
+- ~Input/~ — shared fixture files, no ~ore.xml~, no ~portfolio.xml~.
+- ~TradeGenerator/~ — only a ~Readme.md~.
+
+** Internal structure and file distribution
+
+The universal layout is ~<Group>/Input/<files>~ with ~<Group>/ExpectedOutput/~
+alongside.  All simulation files live inside ~Input/~, never at the group root
+(with one anomaly: ~Legacy/Example_48~ has an ~ore.xml~ at the group root as
+well as under ~Input/~).
+
+Max nesting depth: 5 levels (~ORE-Python/Notebooks/Example_8/Input/Example_57/ore.xml~).
+
+Key file distribution:
+- ~ore.xml~ / ~ore_*.xml~ / ~*_ore.xml~ — always inside ~Input/~ (or a nested
+  ~Input/<Variant>/~ sub-directory).
+- ~portfolio*.xml~ — inside ~Input/~; naming is highly variable (see below).
+- ~market*.txt~, ~fixings*.txt~, ~conventions*.xml~, ~curveconfig*.xml~,
+  ~pricingengine*.xml~, ~todaysmarket*.xml~ — inside ~Input/~; for multi-variant
+  groups, common copies sit at ~Input/~ and per-variant copies sit at
+  ~Input/<Variant>/~.
+
+** Orchestration file counts per group
+
+The plain-name ~ore.xml~ is rare in modern groups.  Most multi-variant groups
+use only ~ore_*.xml~ variants (no plain ~ore.xml~).  Selected counts:
+
+| Group | ~ore_*.xml~ count | Notes |
+|-------+--------------------+-------|
+| ~Exposure~ | 34 | No plain ~ore.xml~ |
+| ~MarketRisk~ | 26 top + ~ParConversion/ore.xml~ | Mixed flat+nested |
+| ~InitialMargin~ | 21 (Dim) + 15 (Dim2) + 7 (Simm) + 1 (DimValidation) | |
+| ~ExposureWithCollateral~ | 13 + ~FirstMpor/ore.xml~ | Nested sub-run |
+| ~Performance~ | 11 | |
+| ~AmericanMonteCarlo~ | 8 | No plain ~ore.xml~ |
+| ~ORE-Python/Notebooks~ | 1 per Notebook/Example_N + 2 deeply-nested | |
+| ~CurveBuilding/BootstrapConsistency~ | 3 × ~*_ore.xml~ suffix (not prefix) | Suffix outlier |
+
+** Portfolio XML naming patterns
+
+Naming is highly variable — ~portfolio.xml~ is only the most common variant:
+- ~portfolio.xml~ (~60 occurrences)
+- ~portfolio_<thing>.xml~ (very common — swap, swaption, capfloor, fxtarf, etc.)
+- ~portfolio<N>.xml~ / ~portfolio_{1..5}.xml~ (~CreditRisk~, ~Legacy/Example_43~,
+  ~Legacy/Example_6~)
+- Instrument-named files: ~irswap.xml~, ~eqoption.xml~, ~swap_eur.xml~
+  (~Academy~, ~InitialMargin/Dim~)
+- ~portfolio_cpr_{0,5,…}.xml~ (parametric suffix — ~Legacy/Example_65~)
+- Never ~Portfolio.xml~ (capitalised) or ~trades.xml~
+
+Portfolio XLM is not reliably discoverable by name alone.  The orchestration
+XML explicitly names the portfolio file in its ~<Portfolio>~ element.
+
+** Trade counts in portfolio XMLs
+
+| Portfolio | Trades |
+|-----------+--------|
+| ~Academy/TA002_IR_Swap/Input/irswap.xml~ | 1 |
+| ~MinimalSetup/Input/portfolio_swap.xml~ | 1 |
+| ~MarketRisk/Input/Correlation/portfolio.xml~ | 2 |
+| ~ExposureWithCollateral/Input/portfolio.xml~ | 3 |
+| ~AmericanMonteCarlo/Input/portfolio.xml~ | 11 |
+| ~Legacy/Example_1/Input/portfolio.xml~ | 12 |
+| ~Exposure/Input/portfolio_swap.xml~ | 39 |
+| ~Legacy/Example_43/Input/portfolio100.xml~ | 100 |
+| ~Products/Input/portfolio.xml~ | 181 |
+
+Typical range: 1–15 for didactic examples; 30–200 for benchmark portfolios.
+
+** Anchor file
+
+Neither ~ore.xml~ alone nor the top-level group folder is a reliable anchor:
+- Literal ~ore.xml~ misses the majority of runs in modern groups (which use
+  ~ore_*.xml~ or ~*_ore.xml~).
+- Top-level group folder is too coarse: ~Legacy/~ wraps 75 unrelated examples.
+
+*The reliable anchor is any orchestration XML* — a file matching the glob
+~ore*.xml~ OR ~*_ore.xml~ in any non-output, non-backup directory.  The
+orchestration XML then serves as the *manifest*: it explicitly names every
+input file (portfolio, market, fixings, conventions, curveconfig, pricingengine,
+todaysmarket, simulation).  The import handler must *parse the orchestration
+XML* to discover the actual file set rather than relying on directory globs.
+
+** Rule-breakers requiring special-casing
+
+1. ~Legacy/~ and ~Academy/~ are meta-containers — one group session per child,
+   not per top-level folder.
+2. ~ORE-Python/~ has its own ~Input/ore.xml~ plus 9 independent notebook
+   sub-examples and 2 deeply-nested sub-runs.
+3. ~MarketRisk/~ — 27 distinct orchestrations in one folder; must be treated as
+   27 units, not one.
+4. ~Exposure/~ — 34 ~ore_*.xml~ orchestrations, flat layout.
+5. ~ExposureWithCollateral/~ — 13 top-level orchestrations plus a self-contained
+   ~FirstMpor/~ nested run (its own ~ore.xml~, portfolio, market data).
+6. ~CurveBuilding/BootstrapConsistency/~ — uses ~*_ore.xml~ suffix
+   (~EUR_xois_ore.xml~, ~ois_ore.xml~, ~USD_xois_ore.xml~); glob ~ore*.xml~
+   alone misses these.  Discovery glob must also match ~*_ore.xml~.
+7. ~Legacy/Example_48~ — ~ore.xml~ at group root AND ~Input/ore.xml~; if
+   identical (packaging artefact) keep one; if different, keep both as two units.
+8. ~Input/~ (top-level) — shared fixtures only; must be skipped.
+9. ~TradeGenerator/~ — no simulation files; skip.
+10. ~Products/Example_Trades/~ and ~Products/SupportedTrades/~ — trade
+    catalogues, not runnable simulations; skip.
+11. Editor backup files (~#ore_sensi.xml#~, etc.) — filter with regex ~^#.*#$~.
+12. ~ExpectedOutput/~ trees — never recurse into directories named
+    ~ExpectedOutput~, ~bak~, ~Calc~, ~xlwings~, ~Helpers~.
+
+** Resolution: recommended strategy
+
+*Option D — Batch import with parent/child sessions, anchored on orchestration
+XML, with file set discovered by parsing the orchestration XML.*
+
+*** Import unit definition
+
+One import unit = the file-set referenced by a single ORE orchestration XML
+(~ore.xml~, ~ore_*.xml~, or ~*_ore.xml~).  The unit boundaries are determined
+by parsing the orchestration XML's ~<Portfolio>~, ~<Markets>~, ~<Conventions>~,
+~<CurveConfig>~, ~<PricingEngine>~ and ~<TodaysMarket>~ elements.
+
+*** Session hierarchy (~parent_session_id~ is required)
+
+A nullable self-referential FK ~parent_session_id~ on
+~ores_data_import_sessions_tbl~ is required.  Recommended two-level hierarchy:
+
+- *Batch session* (~parent_session_id = NULL~): one per import action; records
+  the user-selected root path and timestamp.
+- *Unit session* (~parent_session_id = batch~): one per orchestration XML
+  discovered; holds imported trades, market data, etc.
+
+An optional third level (group session for ~Legacy/~, ~Academy/~) may be added
+later without schema changes.
+
+*** Orchestration XML discovery algorithm
+
+#+begin_example
+1. Recursively walk from the user-selected root.
+2. Skip entire subtrees named: ExpectedOutput, bak, Calc, xlwings, Helpers,
+   Notebooks/Dependencies, ExampleScripts, Example_Trades, SupportedTrades.
+3. Skip top-level Input/ and TradeGenerator/ that contain no ore*.xml at any level.
+4. At each directory: collect files matching ore*.xml OR *_ore.xml,
+   filtering out editor backups (^#.*#$).
+5. Each matched file becomes one unit session anchor.
+6. Parse each orchestration XML to enumerate the actual file set for that unit.
+7. Resolve referenced file paths relative to the orchestration XML's directory,
+   then walk up to the nearest Input/ ancestor if not found locally (handles
+   MarketRisk variants referencing ../conventions.xml).
+#+end_example
+
+*** Handling groups with many orchestrations
+
+Groups like ~MarketRisk~ (27 orchestrations) and ~Exposure~ (34) produce 27 or
+34 unit sessions under a single batch.  The Data Import Session UI must support
+filtering/grouping by batch and by the source group folder.  Deduplication: if
+two unit sessions in the same batch reference the same portfolio file, record
+the file once and link both sessions to it.
+
+*** Exceptions handled by the algorithm above
+
+All rule-breakers listed in the previous section are covered:
+- Meta-containers (~Legacy/~, ~Academy/~): the recursive walk finds orchestration
+  XMLs in children and creates a unit session per orchestration.
+- Suffix outlier (~*_ore.xml~): the double glob covers it.
+- Nested sub-runs (~ExposureWithCollateral/FirstMpor/~, ~ORE-Python~ deep nests):
+  the recursive walk finds them.
+- ~Legacy/Example_48~ root ~ore.xml~: deduplicated against ~Input/ore.xml~ by
+  comparing file content hash.
+- Non-runnable folders: excluded by the skip list in step 2.
 
 * Files to Change
 
@@ -410,167 +672,180 @@ File | Error.  Rows are selectable; a "Show in Provisional Blotter" action
 
 | File | Change |
 |------+--------|
-| ~projects/ores.sql/create/trading/trading_create.sql~ | Include new create scripts |
-| ~projects/ores.sql/create/trading/trading_import_sessions_create.sql~ | New: import sessions table |
-| ~projects/ores.sql/create/trading/trading_provisional_blotter_create.sql~ | New: provisional blotter table |
-| ~projects/ores.sql/create/trading/trading_trades_lineage_add.sql~ | Alter: add ~import_session_id~, ~provisional_id~ to trades table |
-| ~projects/ores.sql/populate/dq/dq_fsm_populate.sql~ | Add ~completed_with_warnings~ state + transition to workflow instance machine |
-| ~projects/ores.sql/service_registry/…~ | Grant DML on new tables to trading service user |
+| ~projects/ores.sql/create/trading/trading_create.sql~ | Include new alter scripts |
+| ~projects/ores.sql/create/shared/data_import_sessions_create.sql~ | New: shared import sessions table (with nullable ~parent_session_id~ FK for batch/unit hierarchy) |
+| ~projects/ores.sql/create/trading/trading_trades_pending_columns_add.sql~ | Alter: add import_session_id, validation_errors, source_position, raw_data, npv columns |
+| ~projects/ores.sql/populate/trading/trading_pending_book_populate.sql~ | New: seed Pending Book record |
+| ~projects/ores.sql/populate/dq/dq_fsm_trade_status_populate.sql~ | Add ~pending~ state + stage/book/reject_pending transitions |
+| ~projects/ores.sql/populate/dq/dq_fsm_populate.sql~ | Add ~completed_with_warnings~ state + transition to workflow instance FSM |
+| ~projects/ores.sql/populate/workflow/…~ | Rename workflow definition to ~data_import~ |
+| Reference data table alter scripts | Add ~is_live~, ~import_session_id~ to conventions, curves, market data, pricing config tables |
+| ~projects/ores.sql/service_registry/…~ | Grants for new session table |
 
 ** Trading API and core
 
 | File | Change |
 |------+--------|
-| ~projects/ores.trading.api/include/…/domain/provisional_blotter_entry.hpp~ | New: provisional blotter domain type |
-| ~projects/ores.trading.api/include/…/messaging/provisional_blotter_protocol.hpp~ | New: list, get, update, book, reject request/response types |
-| ~projects/ores.trading.api/include/…/domain/import_session.hpp~ | New: import session domain type |
-| ~projects/ores.trading.core/include/…/repository/provisional_blotter_entity.hpp~ | New: DB entity |
-| ~projects/ores.trading.core/include/…/repository/import_session_entity.hpp~ | New: DB entity |
-| ~projects/ores.trading.core/src/repository/provisional_blotter_mapper.cpp~ | New: entity ↔ domain mapping |
-| ~projects/ores.trading.core/src/repository/provisional_blotter_repository.cpp~ | New: CRUD + validation call |
-| ~projects/ores.trading.core/src/service/booking_service.cpp~ | New: orchestrates validation → instrument create → trade insert → provisional update |
-| ~projects/ores.trading.service/src/messaging/…~ | New NATS handlers: list_provisional, book_provisional, reject_provisional, update_provisional |
+| ~projects/ores.trading.api/include/…/domain/trade.hpp~ | Add ~validation_errors~, ~source_position~, ~raw_data~, ~npv~ fields |
+| ~projects/ores.trading.core/…/trade_entity.*~ | Map new columns |
+| ~projects/ores.trading.core/src/service/booking_service.cpp~ | New: pending → new promotion service (validate → create instrument → update book/status) |
+| ~projects/ores.trading.service/src/messaging/…~ | New NATS handlers: list_pending, book_pending, reject_pending |
 
-** ORE import service
+** ORE / data import service
 
 | File | Change |
 |------+--------|
-| ~projects/ores.ore.service/src/messaging/ore_import_execute_handler.cpp~ | Stage to provisional blotter instead of writing directly to trade/instrument tables |
+| ~projects/ores.ore.service/src/messaging/ore_import_execute_handler.cpp~ | Rename to ~data_import_execute_handler.cpp~; process full ORE directory; stage trades to Pending Book; stage ref data with is_live=false |
+| ~projects/ores.ore.core/planner/ore_import_planner.*~ | Update to discover all ORE artefact types; return classified file list |
+| ~projects/ores.ore.core/scanner/ore_directory_scanner.*~ | Update to classify files by type (portfolio XML, market data, conventions, etc.) |
 
 ** Workflow
 
 | File | Change |
 |------+--------|
-| ~projects/ores.workflow.api/include/…/messaging/workflow_query_protocol.hpp~ | Add ~workflow_failed_item~ and ~failed_items~ to ~workflow_step_summary~ |
+| ~projects/ores.workflow.api/include/…/messaging/workflow_query_protocol.hpp~ | Add ~workflow_failed_item~ and ~failed_items~ |
 | ~projects/ores.workflow.core/src/messaging/workflow_query_handler.cpp~ | Populate ~failed_items~ from ~response_json~ |
-| ~projects/ores.workflow.core/src/messaging/…~ (step completion handler) | Select ~complete_with_warnings~ transition when outcome = ~completed_with_warnings~ |
+| ~projects/ores.workflow.core/src/messaging/…~ (step completion handler) | Use ~complete_with_warnings~ transition |
 
 ** Qt UI
 
 | File | Change |
 |------+--------|
-| ~projects/ores.qt.trading/include/…/ProvisionalBlotterController.hpp~ | New: controller |
-| ~projects/ores.qt.trading/src/ProvisionalBlotterController.cpp~ | New: controller implementation |
-| ~projects/ores.qt.trading/include/…/ProvisionalBlotterMdiWindow.hpp~ | New: MDI window |
-| ~projects/ores.qt.trading/src/ProvisionalBlotterMdiWindow.cpp~ | New: list view + bulk action toolbar |
-| ~projects/ores.qt.trading/include/…/ProvisionalBlotterDetailPanel.hpp~ | New: inline detail / validation error display |
-| ~projects/ores.qt.trading/src/ProvisionalBlotterDetailPanel.cpp~ | New |
-| ~projects/ores.qt.workflow/src/WorkflowMdiWindow.cpp~ | Render ~completed_with_warnings~ badge; render ~failed_items~ table in step details |
-| ~projects/ores.qt.app/src/MainWindow.cpp~ | Wire ~ProvisionalBlotterController~; add menu item |
+| ~projects/ores.qt.trading/include/…/DataImportSessionController.hpp~ | New |
+| ~projects/ores.qt.trading/src/DataImportSessionController.cpp~ | New: owns import action, session management |
+| ~projects/ores.qt.trading/include/…/DataImportSessionWindow.hpp~ | New: MDI window with session selector + tab notebook |
+| ~projects/ores.qt.trading/src/DataImportSessionWindow.cpp~ | New |
+| ~projects/ores.qt.trading/include/…/PendingTradesTab.hpp~ | New: Trades tab (filter bar, action bar, virtual grid, inspector) |
+| ~projects/ores.qt.trading/src/PendingTradesTab.cpp~ | New |
+| ~projects/ores.qt.trading/include/…/ImportedDataTab.hpp~ | New: reusable tab for market data / conventions / curves / pricing config |
+| ~projects/ores.qt.trading/src/ImportedDataTab.cpp~ | New |
+| ~projects/ores.qt.trading/src/TradeController.cpp~ | Remove ~onImportTradesRequested~, book-selection dialog, related signals |
+| ~projects/ores.qt.trading/src/TradeMdiWindow.cpp~ | Remove import toolbar action and ~importTradesRequested~ signal |
+| ~projects/ores.qt.trading/src/ImportTradeDialog.*~ | Delete |
+| ~projects/ores.qt.workflow/src/WorkflowMdiWindow.cpp~ | Amber badge for ~completed_with_warnings~; ~failed_items~ table; "Show in Data Import Session" link |
+| ~projects/ores.qt.app/src/MainWindow.cpp~ | Data Transfer menu: add Data Import item; wire ~DataImportSessionController~ |
+| Portfolio Explorer source file | Remove import action |
 
 * Implementation Steps
 
-** Phase 1: Database and schema (foundation)
+** Phase 1: Directory analysis and import unit decision (RESOLVED)
 
-1. Create ~ores_trading_import_sessions_tbl~ and
-   ~ores_trading_provisional_blotter_tbl~ scripts.
-2. Add lineage columns to ~ores_trading_trades_tbl~.
-3. Write ~validate_provisional_trade~ plpgsql function with initial rule set.
-4. Add ~completed_with_warnings~ state + transition to workflow instance FSM.
-5. Add grants in service registry for trading service user.
-6. Run ~recreate_database.sh~; run schema validation.
+Analysis completed 2026-05-17.  See "ORE Examples Import Unit Analysis"
+section above for full findings.  Decision: Option D (batch import with
+parent/child sessions) anchored on orchestration XML, file set discovered by
+parsing the orchestration XML.  ~parent_session_id~ is required on the session
+table.  Phase 2 may proceed.
 
-** Phase 2: Trading API, core, and service (backend)
+** Phase 2: Database and schema
 
-1. Define domain types: ~provisional_blotter_entry~, ~import_session~.
-2. Define NATS protocol: list, get, update, book, reject.
-3. Implement repository: CRUD + validation call wrapper.
-4. Implement ~booking_service~: validate → parse raw_data → create instrument →
-   insert trade → update provisional.
-5. Wire NATS handlers in trading service.
-6. Write unit tests for ~booking_service~ and ~validate_provisional_trade~.
+1. Create ~ores_data_import_sessions_tbl~ with nullable ~parent_session_id~
+   (batch → unit session hierarchy; see analysis section).
+2. Add pending columns to ~ores_trading_trades_tbl~.
+3. Seed Pending Book record.
+4. Add ~pending~ state + transitions to trade status FSM.
+5. Add ~completed_with_warnings~ to workflow instance FSM.
+6. Add ~is_live~ + ~import_session_id~ to reference data tables.
+7. Rename workflow definition to ~data_import~.
+8. Add grants; run ~recreate_database.sh~; run schema validation.
 
-** Phase 3: ORE import handler (pipeline change)
+** Phase 3: Trading API, core, and service
 
-1. Update ~ore_import_execute_handler~ to create import session row, stage
-   provisional entries, run validation, return ~completed_with_warnings~ for
-   invalid entries.
-2. Populate ~item_errors~ from invalid provisional entries for the workflow step
-   result.
-3. Remove direct trade/instrument write paths from the import handler.
+1. Add new columns to trade domain type and entity.
+2. Implement ~booking_service~: validate → create instrument → update
+   book/status.
+3. Wire NATS handlers: list_pending, book_pending, reject_pending.
+4. Unit tests.
 
-** Phase 4: Workflow UI — warnings badge and failed items table
+** Phase 4: Data import handler
 
-1. Render ~completed_with_warnings~ status with amber badge in workflow list.
-2. Add ~failed_items~ table to step details dialog (columns: Trade ID | Source
-   File | Error).
-3. Populate ~failed_items~ in workflow query handler from ~response_json~.
-4. Update step-completion handler to use ~complete_with_warnings~ transition.
+1. Rename to ~data_import_execute_handler~.
+2. Implement full directory scan: classify files by type.
+3. Stage trades to Pending Book; stage ref data with ~is_live = false~.
+4. Return ~completed_with_warnings~ for invalid entries.
+5. Update planner/scanner.
 
-** Phase 5: Provisional Blotter UI
+** Phase 5: Workflow UI
 
-1. Implement ~ProvisionalBlotterMdiWindow~: list view, status column, bulk
-   toolbar.
-2. Implement detail panel: validation errors, parsed parameters preview,
-   provenance.
-3. Implement bulk assign (book, counterparty), validate, book, reject actions.
-4. Wire controller; add to main window menu.
-5. Auto-open or notify provisional blotter after import run completes with
-   warnings.
+1. Amber badge for ~completed_with_warnings~.
+2. ~failed_items~ table in step details.
+3. "Show in Data Import Session" link.
+4. Update step-completion handler.
+
+** Phase 6: UI reorganisation
+
+1. Remove import actions from Trades window and Portfolio Explorer.
+2. Delete ~ImportTradeDialog~.
+3. Add Data Import item under Data Transfer menu.
+4. Wire ~DataImportSessionController~.
+
+** Phase 7: Data Import Session UI
+
+1. ~DataImportSessionWindow~: session selector + notebook.
+2. ~PendingTradesTab~: filter bar, action bar, virtual grid, inspector panel.
+3. ~ImportedDataTab~: reusable for market data / conventions / curves / pricing.
+4. Bulk actions: Assign Book, Assign Counterparty, Validate, Book Selected,
+   Reject, Mark as Live, Discard.
+5. Post-import auto-open and summary banner.
+6. Reserve NPV column and "Value Selected" (disabled placeholder).
 
 * Expected Outcome
 
 | Metric | Before | After |
 |--------+--------+-------|
-| Trade with import errors | Written directly to live book; may crash UI | Stays in provisional blotter; never reaches live table |
-| Orphaned instrument records | Possible (instrument_id points to nothing) | Impossible (instruments created only at booking time) |
+| Trade with import errors | Written to live book; may crash UI | Staged in Pending Book; never enters live table until booked |
+| Orphaned instruments | Possible | Impossible — created only at booking time |
+| Non-trade data isolation | None — all data immediately live | ~is_live = false~ until user activates |
 | Workflow after partial import | Shows ~completed~ (misleading) | Shows ~completed_with_warnings~ in amber |
-| Failed trade IDs in workflow | Only in flat log text | Structured table in step details |
-| User path to fix bad trades | None; trade is stuck in broken state | Provisional blotter: fix errors, book when ready |
-| Source traceability on live trade | None | ~import_session_id~ + ~provisional_id~ FK chain to source file |
-| Future import sources (FpML etc.) | Would require new code paths end-to-end | Add new ~source_type~; blotter + booking workflow unchanged |
+| Failed items | Only flat log text | Structured table in step details |
+| Import entry point | Scattered | Single: Data Transfer → Data Import |
+| Book required at import time | Yes | No — assigned post-staging |
+| ORE engine during import | Yes — slow | No — pure parse-and-stage |
+| Data traceability | None | ~import_session_id~ on every imported row |
+| Full ORE data set | Trades only | Trades + market data + conventions + curves + pricing configs |
 
 * Additional Notes
 
 ** Previous ~import_failed~ FSM plan superseded
 
-An earlier iteration of this plan proposed adding an ~import_failed~ state to
-the live trade FSM and a ~mark_trade_import_failed~ endpoint to handle orphaned
-trades.  That approach is superseded by the provisional blotter: bad trades
-never reach the live table, so there is nothing to mark.  The ~import_failed~
-state, the ~import_error~ column, and the ~mark_trade_import_failed~ endpoint
-are not required.
+Bad trades stay in the Pending Book rather than reaching the live table in a
+broken state.  The ~import_failed~ state, ~import_error~ column, and
+~mark_trade_import_failed~ endpoint from earlier design iterations are not
+required.
 
-** Provisional blotter and compute runs
+** Pending trades and compute runs
 
-Only trades in ~ores_trading_trades_tbl~ (live book) are visible to compute
-runs.  Provisional entries are invisible to the risk engine by design — no
-guard is needed in the compute pipeline.
+Only trades with ~status = new~ (or later) in a real book are visible to
+compute runs.  Pending Book trades are invisible to the risk engine by design.
 
-** Counterparty matching scope
+** Compute runs and ~is_live~
 
-Auto-matching counterparty names from imported source data (fuzzy matching
-against the counterparty table) is desirable but can be implemented
-incrementally.  Phase 5 may ship with manual-only counterparty assignment;
-auto-matching can follow as a subsequent task.
+The compute service must be audited to ensure all reference-data queries filter
+on ~is_live = true~.  This is a correctness requirement, not just a UI concern.
 
-** Re-import and idempotency
+** Dedup and shadowing
 
-The ~source_checksum~ on import sessions enables detection of duplicate file
-uploads.  A future guard can warn the user if a file with the same checksum has
-already been imported and has unbooked provisional entries.  Out of scope for
-the initial implementation.
+When the user activates a non-live row that has the same natural key as an
+existing live row, the service must warn before overwriting.  The previous live
+row should be archived (~is_live = false~, ~superseded_at~ timestamp) rather
+than deleted, to preserve history.
 
-** Manual trade drafts
+** Data Transfer → Data Export (future)
 
-The provisional blotter can also serve as a draft area for manually entered
-trades (source_type = ~manual~, no import session file).  This is a natural
-extension: the user creates a draft, fills in fields, and books it when ready.
-Out of scope here but the schema supports it without changes.
+The Data Transfer menu is designed to accommodate export alongside import.
+Export is out of scope for this plan but the menu structure should reflect it.
+
+** Workflow definition DB record
+
+The old workflow type name must be updated to ~data_import~.  Historical run
+records carry the old name — no backfill required.
 
 ** Workflow instance FSM state vs step outcome
 
-~step_outcome::completed_with_warnings~ is a property of a *step*.  The new
-~completed_with_warnings~ workflow *instance* state is distinct — it represents
-the final state of the entire run.  A workflow with five steps where only the
-import step emits ~completed_with_warnings~ (and the rest ~completed~) should
-still result in ~completed_with_warnings~ at the instance level, because the
-overall import was partial.
+~step_outcome::completed_with_warnings~ is a step property.  The workflow
+instance ~completed_with_warnings~ state is distinct: one partially-failing
+import step causes the entire run to be marked accordingly.
 
 ** Data lineage is structural, not commentary
 
-Trade provenance (source file, import session, provisional entry) is stored as
-FK columns, not text commentary.  This enables relational queries: "all
-unbooked provisional entries from session X", "which session produced live trade
-Y", "sessions with outstanding invalid entries".  A human-readable note can be
-derived from the lineage but is not the source of truth.
+Provenance is stored as FK/column data, enabling relational queries.  Human-
+readable notes can be derived but are not the source of truth.

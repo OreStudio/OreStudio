@@ -195,6 +195,22 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::*', 'Full access to all reference data operations');
 
     -- =============================================================================
+    -- Workspace Component Permissions
+    -- =============================================================================
+
+    -- Workspace management permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:read',        'List and view workspaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:write',       'Create workspaces and update own workspace metadata');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:archive',     'Archive a workspace the caller owns');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:archive_any', 'Archive any workspace regardless of ownership');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::live_workspace:archive', 'Archive the Live workspace — highly restricted');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:delete',      'Soft-delete a workspace the caller owns and its associated data');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::workspaces:delete_any',  'Soft-delete any workspace regardless of ownership');
+
+    -- Workspace component wildcard
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workspace::*', 'Full access to all workspace operations');
+
+    -- =============================================================================
     -- Variability Component Permissions
     -- =============================================================================
 

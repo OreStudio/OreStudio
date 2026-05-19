@@ -37,3 +37,17 @@ begin
     return '00000000-0000-0000-0000-000000000000'::uuid;
 end;
 $$ language plpgsql immutable;
+
+-- Live workspace sentinel UUID (version nibble 'a' is outside the valid UUID
+-- version range 1-8, so no generator will ever produce this value).
+-- Used as the stable well-known ID of the Live (root) workspace.
+-- The nil UUID is intentionally not used: it is the C++ default for
+-- boost::uuids::uuid, so an uninitialised workspace_id would silently resolve
+-- to Live. The max UUID is reserved for the system tenant.
+-- C++ equivalent: ores::utility::uuid::live_workspace_uuid_str
+create or replace function ores_utility_live_workspace_id_fn()
+returns uuid as $$
+begin
+    return 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid;
+end;
+$$ language plpgsql immutable;

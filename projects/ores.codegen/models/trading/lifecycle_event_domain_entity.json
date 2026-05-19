@@ -7,6 +7,7 @@
     "entity_plural": "lifecycle_events",
     "entity_title": "Lifecycle Event",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generator",
     "brief": "Trade lifecycle event type (e.g. New, Amendment, Novation, PartialTermination).",
     "description": "Reference data table defining valid trade lifecycle event types.\nExamples: 'New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'.",

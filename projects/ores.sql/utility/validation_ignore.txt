@@ -328,3 +328,20 @@ RLS_002 ores_mq_queue_stats_tbl
 # isolation (applied above in the create file) is the correct boundary here.
 RLS_002 ores_iam_account_parties_tbl
 
+
+# =============================================================================
+# Workspace tables — system-level cross-cutting context, not tenant-specific.
+# Workspaces are global data contexts that span tenant boundaries; tenant_id
+# has no meaning here. Multi-tenant isolation for workspace data is enforced
+# at the workspace permission level, not at the row level.
+# =============================================================================
+TENANT_001 ores_workspaces_tbl
+TENANT_001 ores_workspace_trade_scope_tbl
+TEMPORAL_004 ores_workspaces_tbl
+TEMPORAL_005 ores_workspaces_tbl
+TEMPORAL_006 ores_workspaces_tbl
+TEMPORAL_004 ores_workspace_trade_scope_tbl
+TEMPORAL_005 ores_workspace_trade_scope_tbl
+TEMPORAL_006 ores_workspace_trade_scope_tbl
+RLS_001 ores_workspaces_tbl
+RLS_001 ores_workspace_trade_scope_tbl

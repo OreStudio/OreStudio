@@ -164,11 +164,15 @@ fi
 _current_phase="(startup)"
 trap 'echo "" >&2; echo "=== FATAL: recreate_database.sh failed in phase: ${_current_phase} ===" >&2' ERR
 
+_start_time=$(date +%s)
+_start_ts=$(date '+%Y-%m-%d %H:%M:%S')
+
 echo "=== ORE Studio Database Recreation ==="
 echo "Database name: ${DB_NAME}"
 echo "Assume yes: ${ASSUME_YES:-no}"
 echo "Skip validation: ${SKIP_VALIDATION}"
 echo "Script directory: ${SCRIPT_DIR}"
+echo "Start: ${_start_ts}"
 echo ""
 
 # Change to script directory so relative paths in SQL files work
@@ -280,5 +284,11 @@ SKIP_ARG=""
 export ORES_DB_DDL_PASSWORD="${ORES_DB_DDL_PASSWORD}"
 "${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
 
+_end_time=$(date +%s)
+_duration=$(( _end_time - _start_time ))
+
 echo ""
 echo "=== Database recreation complete ==="
+echo "Start:    ${_start_ts}"
+echo "End:      $(date '+%Y-%m-%d %H:%M:%S')"
+printf "Duration: %dm %02ds\n" $(( _duration / 60 )) $(( _duration % 60 ))

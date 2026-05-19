@@ -1275,7 +1275,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
                 is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')
-                is_already_optional = col.get('cpp_type', '').startswith('std::optional<')
+                is_already_optional = (
+                    col.get('cpp_type', '').startswith('std::optional<')
+                    and not is_uuid_type
+                )
                 col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
@@ -1372,7 +1375,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 for col in domain_entity['columns']:
                     if col.get('is_uuid') or col.get('is_optional_uuid'):
                         uuid_columns.add(col['name'])
-                    if col.get('nullable', False) and not col.get('is_uuid'):
+                    if col.get('nullable', False) and not col.get('is_uuid') and not col.get('is_nullable_string'):
                         optional_columns.add(col['name'])
             _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns)
         # Copy repository section fields to top level for template access

@@ -9,6 +9,7 @@
     "entity_plural": "balance_guaranteed_swap_instruments",
     "entity_title": "Balance Guaranteed Swap Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Balance Guaranteed Swap (BGS) instrument.",
     "description": "Represents a Balance Guaranteed Swap instrument where the notional\namortises in line with an underlying pool of assets (e.g., mortgages).",

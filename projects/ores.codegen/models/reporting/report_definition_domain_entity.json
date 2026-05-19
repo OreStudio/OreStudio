@@ -7,6 +7,7 @@
     "entity_plural": "report_definitions",
     "entity_title": "Report Definition",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "brief": "Persistent template for a scheduled report.",
     "description": "The persistent template for a report. Describes what to run, when to run it,\nand how to handle concurrent executions. Type-specific configuration (e.g.\nrisk parameters) lives in a separate table keyed by report_definition_id.\n\nLifecycle is managed through the report_definition_lifecycle FSM machine.\nfsm_state_id points to the current state in ores_dq_fsm_states_tbl.\n\nscheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set\nby the scheduler service when the definition is activated (state: active).\nIt is cleared when the definition is suspended or archived.",
 

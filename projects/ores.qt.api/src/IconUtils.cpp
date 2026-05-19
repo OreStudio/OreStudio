@@ -38,6 +38,7 @@ struct IconDef {
 static IconDef getIconDef(Icon icon) {
     switch (icon) {
         case Icon::Add: return {"ic_fluent_add_20", "add-circle.svg"};
+        case Icon::Archive: return {"ic_fluent_archive_20", "archive.svg"};
         case Icon::ArrowClockwise: return {"ic_fluent_arrow_clockwise_16", "restart-circle.svg"};
         case Icon::ArrowDownload: return {"ic_fluent_arrow_download_20", "download-square.svg"};
         case Icon::ArrowLeft: return {"ic_fluent_arrow_left_20", "arrow-left.svg"};

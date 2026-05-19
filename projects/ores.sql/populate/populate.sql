@@ -208,4 +208,8 @@ from ores_compute_platforms_tbl where valid_to = ores_utility_infinity_timestamp
 union all
 select 'Analytics: Pricing Engine Types', count(*)
 from ores_analytics_pricing_engine_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+-- Workspaces (Live = id 0 is seeded at schema creation, not here)
+union all
+select 'Workspace: Workspaces', count(*)
+from ores_workspaces_tbl
 order by entity;

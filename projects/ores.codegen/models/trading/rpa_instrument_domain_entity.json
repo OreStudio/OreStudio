@@ -8,6 +8,7 @@
     "entity_plural": "rpa_instruments",
     "entity_title": "RPA Instrument",
     "has_tenant_id": true,
+    "has_workspace_id": true,
     "generator_facet_name": "generators",
     "brief": "Risk Participation Agreement (RPA) instrument.",
     "description": "Represents a Risk Participation Agreement where one bank (protection\nbuyer) pays a fee to another (protection seller) to assume a portion of\ncredit risk on a reference counterparty.",

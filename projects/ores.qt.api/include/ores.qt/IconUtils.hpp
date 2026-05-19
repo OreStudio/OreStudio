@@ -35,6 +35,7 @@ namespace ores::qt {
  */
 enum class Icon {
     Add,
+    Archive,
     ArrowClockwise,
     ArrowDownload,
     ArrowLeft,

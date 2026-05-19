@@ -50,6 +50,7 @@ create table if not exists "ores_trading_trades_tbl" (
     "execution_timestamp" timestamp with time zone null,
     "effective_date" date null,
     "termination_date" date null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -104,6 +105,10 @@ create index if not exists trades_asset_class_idx
 on "ores_trading_trades_tbl" (tenant_id, asset_class)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and asset_class is not null;
+
+create index if not exists trades_workspace_idx
+on "ores_trading_trades_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$

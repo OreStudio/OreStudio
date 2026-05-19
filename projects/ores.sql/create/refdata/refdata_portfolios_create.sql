@@ -42,6 +42,7 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "aggregation_ccy" text null,
     "is_virtual" integer not null,
     "status" text not null default 'Active',
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -74,6 +75,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists portfolios_tenant_idx
 on "ores_refdata_portfolios_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists portfolios_workspace_idx
+on "ores_refdata_portfolios_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_portfolios_insert_fn()

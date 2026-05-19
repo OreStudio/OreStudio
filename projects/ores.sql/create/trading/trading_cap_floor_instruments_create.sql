@@ -38,6 +38,7 @@ create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     "start_date" date not null,
     "maturity_date" date not null,
     "description" text null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -76,6 +77,10 @@ create unique index if not exists cap_floor_instruments_trade_id_idx
 on "ores_trading_cap_floor_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
+
+create index if not exists cap_floor_instruments_workspace_idx
+on "ores_trading_cap_floor_instruments_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_cap_floor_instruments_insert_fn()
 returns trigger as $$

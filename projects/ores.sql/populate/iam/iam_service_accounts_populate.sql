@@ -43,6 +43,7 @@
 \set http_service_pw        `echo "$ORES_HTTP_SERVER_DB_PASSWORD"`
 \set iam_service_pw    `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
 \set refdata_service_pw    `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
+\set workspace_service_pw    `echo "$ORES_WORKSPACE_SERVICE_DB_PASSWORD"`
 \set dq_service_pw    `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
 \set variability_service_pw    `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
 \set assets_service_pw    `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
@@ -114,6 +115,13 @@ select ores_iam_service_accounts_upsert_fn(
     'refdata_service@system.ores',
     'System service account for Reference Data NATS domain service',
     :'refdata_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'workspace_service_user',
+    'workspace_service@system.ores',
+    'System service account for Workspace NATS domain service',
+    :'workspace_service_pw'
 );
 
 select ores_iam_service_accounts_upsert_fn(

@@ -172,6 +172,9 @@ private:
     QWidget* partyStatusWidget_;
     QLabel*  partyStatusNameLabel_;
 
+    QWidget* envLabelWidget_;
+    QLabel*  envLabelNameLabel_;
+
     QList<QPointer<DetachableMdiSubWindow>> allDetachableWindows_;
 
     QIcon connectedIcon_;

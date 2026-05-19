@@ -43,6 +43,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "book_status" text not null,
     "is_trading_book" integer not null,
     "owner_unit_id" uuid null,
+    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -81,6 +82,10 @@ create index if not exists books_owner_unit_idx
 on "ores_refdata_books_tbl" (tenant_id, owner_unit_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and owner_unit_id is not null;
+
+create index if not exists books_workspace_idx
+on "ores_refdata_books_tbl" (workspace_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_books_insert_fn()
 returns trigger as $$

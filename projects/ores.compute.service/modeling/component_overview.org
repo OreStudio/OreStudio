@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 152c4a5e-9947-4ee1-a5d4-893305d235b5
+:END:
+#+title: ores.compute.service
+#+description: NATS service entrypoint for the compute domain.
+#+type: component
+#+level: cross
+#+filetags: :compute:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.compute.service= is the NATS service entrypoint for the compute
+orchestrator. It opens database and NATS connections, registers all message
+handlers from =ores.compute.core=, and runs the event loop.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string.
+- NATS messages from workers and Qt clients.
+
+* Outputs
+
+- A running NATS service for compute orchestration.
+
+* Entry points
+
+- =src/main.cpp=, =src/app/=, =src/config/=.
+
+* Dependencies
+
+- =ores.compute.core=, =ores.compute.api=, =ores.logging=, =nats.c=.
+
+* See also
+
+- [[id:3bffdf5c-86f5-4d57-9d9f-676d0d62b344][ores.compute.core]] — all orchestration logic.

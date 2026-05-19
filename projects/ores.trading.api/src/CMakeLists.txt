@@ -48,14 +48,12 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
-# Trading types have up to 22 fields; rfl's duplicate-field-names check performs
-# an O(N²) constexpr expansion that exhausts MSVC's default depth (512) and
-# step (100 000) budgets, producing C1202. Consumers like ores.qt.api instantiate
-# these types inside deeper template contexts (e.g. process_authenticated_request),
-# consuming extra depth budget before rfl evaluation starts, so depth must be
-# raised to 2048. PUBLIC propagates to all consumers automatically.
+# rfl's no_duplicate_field_names check is O(n²) in constexpr recursion depth.
+# The trade_instrument variant (8 alternatives, ~150 combined fields with
+# rfl::AddTagsToVariants) requires depth >> 512. PUBLIC propagates to all
+# consumers automatically so they don't need to set this independently.
 target_compile_options(${lib_target_name} PUBLIC
-    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth2048>
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth100000>
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -55,6 +55,45 @@ where =id= captures =id_=, which is =boost::uuids::uuid=, but =request.id= is
 dialog has been regenerated with the new template. It will fail on next
 regeneration of =BookHistoryDialog= or =PortfolioHistoryDialog=.
 
+** Pattern C: Missing cpp.table_display in domain entity models (runtime test failures)
+
+Three trading domain entity models (=lifecycle_event=, =trade_identifier=, =trade=)
+were created without a =cpp.table_display= array. The template
+=cpp_domain_type_table.cpp.mustache= iterates over this array to emit column
+headers and row data. With the array absent, the template generated stub
+=convert_to_table= bodies — empty header row, empty data rows — causing every
+table-based unit test to fail with =!table.empty()=.
+
+Fixed in-place by adding =cpp.table_display= to all three models and updating
+the three generated =*_table.cpp= files to match. As part of the proper codegen
+remediation, regeneration must be verified to produce identical output to
+confirm the model entries are correct.
+
+** Pattern D: tenant_id::from_string crash on bare generation_context (runtime test failures)
+
+The generator template =cpp_domain_type_generator.cpp.mustache= emits:
+
+#+begin_src cpp
+r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+#+end_src
+
+where =tid_str= defaults to ="system"= when no =tenant_id= key is present in
+the context. ="system"= is not a valid UUID, so =from_string= returns an
+unexpected value and =.value()= throws =bad access to std::expected without
+expected value=. Every unit test that calls a generator with a bare
+=generation_context{}= crashes.
+
+Fixed in template and all 23 affected generated =*_generator.cpp= files:
+
+#+begin_src cpp
+r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+    .value_or(utility::uuid::tenant_id::system());
+#+end_src
+
+As part of the proper codegen remediation, all 23 generator files must be
+regenerated from the corrected template and verified to compile and pass their
+unit tests.
+
 * Scope
 
 Stale output files requiring regeneration:
@@ -104,7 +143,34 @@ to regenerate the four stale files:
 After regeneration, confirm no new compile errors are introduced by the UUID
 branch fix.
 
-* Phase 3 — Audit Other Components
+* Phase 3 — Verify Generator and Table Regeneration
+
+After fixing the template bugs (Patterns C and D), regenerate all affected
+files and confirm the output matches the in-place fixes made during the
+=feature/workspace-id-codegen= unblock.
+
+** Generator files (Pattern D — 23 files)
+
+Regenerate all 23 =*_generator.cpp= files that had the =from_string().value()=
+call. Confirm they compile and that unit tests calling generators with a bare
+=generation_context{}= pass without exception.
+
+Affected components: =ores.reporting.api=, =ores.refdata.api= (11 files),
+=ores.trading.api= (generators + generator directories, 11 files).
+
+** Table files (Pattern C — 3 files)
+
+Regenerate:
+- =ores.trading.api/src/domain/lifecycle_event_table.cpp=
+- =ores.trading.api/src/domain/trade_identifier_table.cpp=
+- =ores.trading.api/src/domain/trade_table.cpp=
+
+Confirm output is identical to the in-place fix and that the table unit tests
+in =ores.trading.api/tests/= pass.
+
+* Phase 4 — Audit Other Components
+
+** Stale HistoryResult wrapper-struct
 
 The old wrapper-struct pattern likely exists in other Qt components that predate
 the template migration. Run:
@@ -113,9 +179,20 @@ the template migration. Run:
 grep -rln "struct HistoryResult" projects/ores.qt.*/src/
 #+end_src
 
-File any found as a follow-up story rather than blocking the current branch.
+File any found as a follow-up story rather than blocking this work.
 
-* Key Files
+** Missing table_display in other models
+
+Other domain entity models may also be missing =cpp.table_display=, causing
+silent empty-table output. Run:
+
+#+begin_src sh
+grep -rL "table_display" projects/ores.codegen/models/**/*_domain_entity.json
+#+end_src
+
+Cross-check against entities that have table unit tests to prioritise fixes.
+
+* Key Files and Templates
 
 - =projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=
 - =projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache=

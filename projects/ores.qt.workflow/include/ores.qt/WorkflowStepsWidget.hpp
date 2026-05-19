@@ -117,6 +117,16 @@ signals:
     void instanceReachedTerminalState(bool success);
 
     /**
+     * @brief Emitted on every refresh with the current step counts.
+     *
+     * @p completed  Number of steps that have finished (including warnings).
+     * @p total      Total steps known for this instance.
+     * @p hasWarnings At least one step completed with warnings.
+     * @p hasFailed   At least one step is in the failed state.
+     */
+    void progressUpdated(int completed, int total, bool hasWarnings, bool hasFailed);
+
+    /**
      * @brief Emitted when a step is found in the failed state.
      *
      * May be emitted multiple times if the same failure is observed across

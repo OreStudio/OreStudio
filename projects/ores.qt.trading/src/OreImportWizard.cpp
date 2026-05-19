@@ -499,7 +499,6 @@ void OrePortfolioPage::initializePage() {
 
     watcher->setFuture(QtConcurrent::run([cm]() -> Result {
         refdata::messaging::get_books_request req;
-        req.limit = 1000;
         const auto resp = cm->process_authenticated_request(std::move(req));
         Result books;
         if (resp) {

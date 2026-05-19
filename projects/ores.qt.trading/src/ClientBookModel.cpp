@@ -227,8 +227,6 @@ void ClientBookModel::fetch_books(
                 }
 
                 refdata::messaging::get_books_request request;
-                request.offset = offset;
-                request.limit = limit;
 
                 auto result = self->clientManager_->
                     process_authenticated_request(std::move(request));

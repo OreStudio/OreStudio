@@ -185,8 +185,6 @@ void TradeController::onImportTradesRequested() {
 
     // Fetch available books synchronously (fast, small dataset)
     refdata::messaging::get_books_request booksReq;
-    booksReq.offset = 0;
-    booksReq.limit = 10000;
     auto booksResult = clientManager_->process_authenticated_request(std::move(booksReq));
     if (!booksResult) {
         MessageBoxHelper::critical(mainWindow_, tr("Error"),

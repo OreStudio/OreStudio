@@ -148,7 +148,7 @@ void BookHistoryDialog::loadHistory() {
         }
 
         return {response_result->success, response_result->message,
-                std::move(response_result->versions)};
+                std::move(response_result->books)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

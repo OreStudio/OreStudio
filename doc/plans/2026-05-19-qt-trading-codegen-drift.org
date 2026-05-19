@@ -1,0 +1,127 @@
+#+TITLE: Qt Trading Codegen Drift Remediation
+#+DATE: 2026-05-19
+#+AUTHOR: ORE Studio Team
+#+STATUS: IN PROGRESS
+
+* Context
+
+During the =feature/workspace-id-codegen= branch build, several files in
+=ores.qt.trading= failed to compile due to stale codegen output — generated
+files that were never regenerated after their templates were updated.
+
+Two drift patterns were identified.
+
+** Pattern A: Stale HistoryResult wrapper-struct (history dialogs)
+
+All three history dialogs in =ores.qt.trading= use an old hand-struct pattern:
+
+#+begin_src cpp
+struct HistoryResult {
+    bool success;
+    std::string message;
+    std::vector<T> versions;
+};
+#+end_src
+
+The current template (=cpp_qt_history_dialog.cpp.mustache=) generates:
+
+#+begin_src cpp
+using HistoryResult = std::expected<SomeHistoryResponse, std::string>;
+#+end_src
+
+=BookHistoryDialog.cpp= additionally had the wrong response field name
+(=->versions= instead of =->books=), causing a compile error fixed in-place
+as a minimal unblock. =PortfolioHistoryDialog.cpp= and
+=BookStatusHistoryDialog.cpp= compile correctly but diverge from the template.
+
+** Pattern B: Unconditional offset/limit on non-paginated request (client models)
+
+=ClientBookModel.cpp= set =request.offset= and =request.limit= on
+=get_books_request=, which no longer has those fields. The template was already
+updated to gate these assignments on ={{#domain_entity.qt.has_pagination}}=.
+The book entity model has no =has_pagination: true= flag, so regeneration drops
+those lines. Fixed in-place as a minimal unblock.
+
+** Template bug: UUID history dialog branch
+
+In =cpp_qt_history_dialog.cpp.mustache=, the =has_uuid_primary_key= branch does:
+
+#+begin_src mustache
+request.id = id;
+#+end_src
+
+where =id= captures =id_=, which is =boost::uuids::uuid=, but =request.id= is
+=std::string=. This has never caused a build failure because no UUID-primary-key
+dialog has been regenerated with the new template. It will fail on next
+regeneration of =BookHistoryDialog= or =PortfolioHistoryDialog=.
+
+* Scope
+
+Stale output files requiring regeneration:
+
+| File | Pattern | Current state |
+|---|---|---|
+| =ores.qt.trading/src/BookHistoryDialog.cpp= | Old wrapper-struct | Compiles (field name fixed in-place) |
+| =ores.qt.trading/src/PortfolioHistoryDialog.cpp= | Old wrapper-struct | Compiles (correct field =->history=) |
+| =ores.qt.trading/src/BookStatusHistoryDialog.cpp= | Old wrapper-struct | Compiles (correct field =->history=) |
+| =ores.qt.trading/src/ClientBookModel.cpp= | Unconditional offset/limit | Compiles (assignments removed in-place) |
+
+Template bug to fix before regenerating:
+
+| File | Bug |
+|---|---|
+| =library/templates/cpp_qt_history_dialog.cpp.mustache= | UUID branch assigns =uuid= to =string= |
+
+* Phase 1 — Fix Template UUID Branch
+
+*File:* =projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=
+
+In the ={{#domain_entity.qt.has_uuid_primary_key}}= block, change:
+
+#+begin_src mustache
+        request.id = id;
+#+end_src
+
+to:
+
+#+begin_src mustache
+        request.id = boost::uuids::to_string(id);
+#+end_src
+
+Verify that =#include <boost/uuid/uuid_io.hpp>= is present in the UUID branch
+includes section of the template.
+
+* Phase 2 — Regenerate Stale ores.qt.trading Files
+
+Run the generator for the book, portfolio, and book_status domain entity models
+to regenerate the four stale files:
+
+- =BookHistoryDialog.hpp= / =.cpp=
+- =PortfolioHistoryDialog.hpp= / =.cpp=
+- =BookStatusHistoryDialog.hpp= / =.cpp= (cosmetic only — wrapper-struct drift)
+- =ClientBookModel.hpp= / =.cpp= (optional — manual fix already clean)
+
+After regeneration, confirm no new compile errors are introduced by the UUID
+branch fix.
+
+* Phase 3 — Audit Other Components
+
+The old wrapper-struct pattern likely exists in other Qt components that predate
+the template migration. Run:
+
+#+begin_src sh
+grep -rln "struct HistoryResult" projects/ores.qt.*/src/
+#+end_src
+
+File any found as a follow-up story rather than blocking the current branch.
+
+* Key Files
+
+- =projects/ores.codegen/library/templates/cpp_qt_history_dialog.cpp.mustache=
+- =projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache=
+- =projects/ores.codegen/models/refdata/book_domain_entity.json=
+- =projects/ores.codegen/models/refdata/portfolio_domain_entity.json=
+- =projects/ores.qt.trading/src/BookHistoryDialog.cpp=
+- =projects/ores.qt.trading/src/PortfolioHistoryDialog.cpp=
+- =projects/ores.qt.trading/src/BookStatusHistoryDialog.cpp=
+- =projects/ores.qt.trading/src/ClientBookModel.cpp=

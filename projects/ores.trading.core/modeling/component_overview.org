@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B
+:END:
+#+title: ores.trading.core
+#+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
+#+type: component
+#+level: cross
+#+filetags: :trading:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.trading.core= is the primary component for trade booking and lifecycle
+management in ORE Studio. It implements the domain model for financial trades
+and instruments (rates, FX, equity, credit, scripted), a four-state FSM
+(new → live → expired/cancelled) enforced via =ores.dq= infrastructure, and a
+full persistence layer with temporal versioning and amendment history. Business
+logic is exposed as NATS message handlers in the 0x5000–0x5FFF range. The
+component also ships synthetic-data generators for test and development use.
+
+* Inputs
+
+- NATS request messages from peer services and Qt clients (create/amend/cancel/
+  query operations on trades and instruments).
+- PostgreSQL connections to =ores_trading_*= tables via the =ores.dq= ORM
+  infrastructure.
+- Reference-data lookups via =ores.refdata.core= (trade types, activity types,
+  party roles).
+
+* Outputs
+
+- Trade and instrument records persisted to the =ores_trading= schema with full
+  temporal history.
+- NATS response messages returned to callers.
+- Lifecycle events and activity records for P&L attribution.
+
+* Entry points
+
+- =include/ores.trading.core/ores.trading.core.hpp= — aggregate include for all
+  public API headers.
+- =include/ores.trading.core/messaging/registrar.hpp= — registers all NATS
+  handlers with the service host.
+- =include/ores.trading.core/service/trade_service.hpp= — top-level trade
+  business-logic entry point.
+
+* Dependencies
+
+- =ores.trading.api= — shared domain types and NATS protocol schemas.
+- =ores.dq= — FSM infrastructure, ORM base classes, and data-quality checks.
+- =ores.iam.core= — identity and authorisation context.
+- =ores.refdata.core= — enumeration reference data (trade types, activity types).
+- =rfl= — JSON serialisation via reflection.
+- =fort= — formatted table output.
+- =soci= — SQL ORM for PostgreSQL persistence.
+- =nats.c= — NATS messaging client.
+
+* See also
+
+- [[id:fd34a3b5-0e24-467a-a9d7-a2f2e7480e1b][ores.trading.api]] — protocol types and domain entities.
+- [[id:0ebad7f6-f0df-4ff5-8404-c3f0ea8e8bbd][ores.trading.service]] — NATS service entrypoint.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — FSM design and state-transition rules.
+- [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.

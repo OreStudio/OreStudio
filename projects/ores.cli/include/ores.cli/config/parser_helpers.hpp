@@ -31,6 +31,7 @@
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/delete_options.hpp"
+#include "ores.cli/export.hpp"
 
 namespace ores::cli::config::parser_helpers {
 
@@ -50,7 +51,7 @@ struct simple_entity_config {
  *
  * This eliminates boilerplate code for simple entity parsers.
  */
-std::optional<options>
+ORES_CLI_EXPORT std::optional<options>
 handle_simple_entity_command(
     const simple_entity_config& cfg,
     bool has_help,
@@ -61,7 +62,7 @@ handle_simple_entity_command(
 /**
  * @brief Prints the header of the help text, applicable to all cases.
  */
-void print_help_header(std::ostream& s);
+ORES_CLI_EXPORT void print_help_header(std::ostream& s);
 
 /**
  * @brief Prints help text at the command level.
@@ -70,26 +71,26 @@ void print_help_header(std::ostream& s);
  * @param od command options.
  * @param info information stream.
  */
-void print_help_command(const std::string& command_name,
+ORES_CLI_EXPORT void print_help_command(const std::string& command_name,
     const boost::program_options::options_description& od, std::ostream& info);
 
 /**
  * @brief Adds database and logging options to an options_description.
  */
-boost::program_options::options_description
+ORES_CLI_EXPORT boost::program_options::options_description
 add_common_options(boost::program_options::options_description base);
 
 /**
  * @brief Validates that an operation is in the list of allowed operations.
  */
-void validate_operation(const std::string& entity_name,
+ORES_CLI_EXPORT void validate_operation(const std::string& entity_name,
     const std::string& operation,
     const std::vector<std::string>& allowed_operations);
 
 /**
  * @brief Prints entity-level help showing available operations.
  */
-void print_entity_help(const std::string& entity_name,
+ORES_CLI_EXPORT void print_entity_help(const std::string& entity_name,
     const std::string& description,
     const std::vector<std::pair<std::string, std::string>>& operations,
     std::ostream& info);
@@ -97,28 +98,28 @@ void print_entity_help(const std::string& entity_name,
 /**
  * @brief Creates the options related to exporting/listing.
  */
-boost::program_options::options_description make_export_options_description();
+ORES_CLI_EXPORT boost::program_options::options_description make_export_options_description();
 
 /**
  * @brief Creates the options related to deleting entities.
  */
-boost::program_options::options_description make_delete_options_description();
+ORES_CLI_EXPORT boost::program_options::options_description make_delete_options_description();
 
 /**
  * @brief Reads format from the variables map.
  */
-format read_format(const boost::program_options::variables_map& vm);
+ORES_CLI_EXPORT format read_format(const boost::program_options::variables_map& vm);
 
 /**
  * @brief Reads the export configuration from the variables map.
  */
-export_options read_export_options(
+ORES_CLI_EXPORT export_options read_export_options(
     const boost::program_options::variables_map& vm, entity e);
 
 /**
  * @brief Reads the delete configuration from the variables map.
  */
-delete_options read_delete_options(
+ORES_CLI_EXPORT delete_options read_delete_options(
     const boost::program_options::variables_map& vm, entity e);
 
 }

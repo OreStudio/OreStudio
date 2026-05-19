@@ -25,13 +25,14 @@
 #include <ostream>
 #include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.cli/export.hpp"
 
 namespace ores::cli::app {
 
 /**
  * @brief Provides hosting services to the application.
  */
-class host {
+class ORES_CLI_EXPORT host {
 private:
     inline static std::string_view logger_name =
         "ores.cli.app.host";

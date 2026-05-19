@@ -17,34 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_PARSER_HPP
-#define ORES_CLI_CONFIG_PARSER_HPP
+#ifndef ORES_CLI_EXPORT_HPP
+#define ORES_CLI_EXPORT_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.cli/config/options.hpp"
-#include "ores.cli/export.hpp"
+#include <boost/config.hpp>
 
-namespace ores::cli::config {
-
-/**
- * @brief Command-line parser implementation using boost program options.
- *
- * Note on logging: we are NOT logging any of the exceptions to the log in this
- * class. This is by design. The logger is only initialised after the options
- * have been parsed; were we to log prior to this, we would dump all the
- * messages into the cli. The output is very confusing users that are accustomed
- * to normal cli applications.
- */
-class ORES_CLI_EXPORT parser final {
-public:
-    std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
-};
-
-}
+#ifdef ORES_CLI_LIBRARY
+#  define ORES_CLI_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#  define ORES_CLI_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
 #endif

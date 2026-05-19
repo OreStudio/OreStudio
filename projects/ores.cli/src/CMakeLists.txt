@@ -28,6 +28,11 @@ set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_CLI_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -55,7 +60,10 @@ target_link_libraries(${lib_target_name}
         magic_enum::magic_enum
         cli::cli)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name}
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)

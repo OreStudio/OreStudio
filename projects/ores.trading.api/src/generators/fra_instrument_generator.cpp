@@ -39,7 +39,8 @@ domain::fra_instrument generate_synthetic_fra_instrument(
 
     domain::fra_instrument r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = ctx.generate_uuid();
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("FRA");
@@ -53,7 +54,7 @@ domain::fra_instrument generate_synthetic_fra_instrument(
     r.notional = 1000000.0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

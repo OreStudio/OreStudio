@@ -39,7 +39,8 @@ domain::report_definition generate_synthetic_report_definition(
 
     domain::report_definition r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = ctx.generate_uuid();
     r.id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun()) + "_report";
@@ -52,7 +53,7 @@ domain::report_definition generate_synthetic_report_definition(
     r.scheduler_job_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

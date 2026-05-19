@@ -106,7 +106,7 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("dataset_bundle_generator_produces_multiple_instances", tags) {

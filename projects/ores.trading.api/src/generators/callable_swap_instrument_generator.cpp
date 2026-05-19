@@ -39,7 +39,8 @@ domain::callable_swap_instrument generate_synthetic_callable_swap_instrument(
 
     domain::callable_swap_instrument r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+        .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = ctx.generate_uuid();
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("CallableSwap");
@@ -48,7 +49,7 @@ domain::callable_swap_instrument generate_synthetic_callable_swap_instrument(
     r.maturity_date = std::string("2029-01-15");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

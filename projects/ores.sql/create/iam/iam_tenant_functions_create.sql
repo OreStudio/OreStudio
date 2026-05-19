@@ -374,12 +374,13 @@ begin
         ores_utility_system_tenant_id_fn()
     );
 
-    -- During bootstrap for this tenant (no user accounts exist yet),
+    -- During bootstrap for this tenant (no active user accounts exist yet),
     -- allow any value and default empty to current_user.
     if not exists (
         select 1 from ores_iam_accounts_tbl
         where tenant_id = v_tenant_id
           and account_type != 'service'
+          and valid_to = ores_utility_infinity_timestamp_fn()
         limit 1
     ) then
         if p_username is null or p_username = '' then

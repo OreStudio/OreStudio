@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 9e64d794-0f79-4e34-96be-a637706649bf
+:END:
+#+title: Remove bootstrap mode from context
+#+description: Bootstrap mode is a startup-only concern; remove the runtime context's awareness of it now that the workflow handles itself.
+#+type: task
+#+level: s1
+#+filetags: :context:bootstrap:refactor:bootstrap_polish:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:50bb2acb-5687-4bad-b03a-12af606e8eab][Bootstrap polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-13]
+:END:
+
+** Now
+Completed 2025-12-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-13
+
+* Goal
+
+Bootstrap mode is a startup-only concern; remove the runtime context's awareness of it now that the workflow handles itself.
+
+* Acceptance
+
+- Context no longer carries a bootstrap flag.
+- Bootstrap-mode entry path lives entirely in the IAM bootstrap workflow.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Follow-on from sprint 05's authentication-bootstrap work.
+
+* Result
+
+Bootstrap state hidden from non-IAM components.

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: e7fda609-024b-4ef1-95d9-6726ed112315
+:END:
+#+title: Create handshake service in comms
+#+description: Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than as opaque read errors.
+#+type: task
+#+level: s1
+#+filetags: :comms:handshake:refactor:comms_robustness:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-10
+#+updated: 2025-12-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-10]
+:END:
+
+** Now
+Completed 2025-12-10.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-10
+
+* Goal
+
+Move the handshake logic out of session into a dedicated handshake service so failures are reported with structure rather than opaque read errors.
+
+* Acceptance
+
+- A =handshake_service= class owns the version-negotiation logic.
+- Session delegates to it on connection.
+- Failure paths return typed errors that surface to the client.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Follow-on from sprint 05's protocol-version-error work — the structural split makes future protocol changes far less painful.
+
+* Result
+
+Handshake service in place; protocol failures now structurally distinct from read failures.

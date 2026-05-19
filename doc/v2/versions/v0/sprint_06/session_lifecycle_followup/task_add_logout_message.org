@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 3bb7644c-3061-4925-99db-65d86a3b9c02
+:END:
+#+title: Add a logout message
+#+description: Add a logout message type so the client can cleanly end its session, mirroring the existing login flow.
+#+type: task
+#+level: s1
+#+filetags: :sessions:protocol:logout:session_lifecycle_followup:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-04
+#+updated: 2025-12-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-04]
+:END:
+
+** Now
+Completed 2025-12-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-04
+
+* Goal
+
+Add a logout message type so the client can cleanly end its session — mirroring the existing login flow.
+
+* Acceptance
+
+- =logout_request/response= message types in the protocol.
+- Server-side handler closes the session and logs the event.
+- Client emits logout on disconnect intent.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Plays into session cancellation: server gets a clean signal rather than seeing the connection drop.
+
+* Result
+
+Logout message shipped end-to-end.

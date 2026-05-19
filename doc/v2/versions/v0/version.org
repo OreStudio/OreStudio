@@ -61,7 +61,9 @@ is the current sprint; the rest are closed.
   introduce the Claude Code skills layer.
 - [[id:2429db80-ec7b-482c-9ff3-4d1933035863][Sprint 05]] — Authentication bootstrap; finish domain-entity
   surfaces; CLI/REPL reshape; skills layer growth.
-- Sprint 06 — (to be migrated).
+- [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]] — Session cancellation; variability service; comms
+  robustness; logging =string_view= migration; bootstrap polish.
+- Sprint 07 — (to be migrated).
 - ... through Sprint 16.
 
 * Release scope

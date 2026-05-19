@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 50bb2acb-5687-4bad-b03a-12af606e8eab
+:END:
+#+title: Bootstrap polish
+#+description: Move context to the database; remove bootstrap mode from context once it's no longer needed; surface system-level password-validation control via the manifest; verify server checks DB connectivity on startup.
+#+type: story
+#+level: s2
+#+filetags: :bootstrap:context:configuration:sprint_06:v0:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:06cb9d8b-92d5-4c51-a1d7-b73b22eb93e8][Sprint 06]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-13]
+:END:
+
+** Now
+Completed 2025-12-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-13
+
+* Goal
+
+Polish the bootstrap surface introduced in sprint 05: move the
+runtime context to the database, remove the bootstrap-mode flag from
+context now that it isn't needed at runtime, and add manifest-level
+password-validation control.
+
+* Acceptance
+
+- Context schema persisted in Postgres; rehydrated on startup.
+- Context carries no bootstrap flag.
+- =system.disable_password_validation= readable from the manifest.
+
+* Tasks
+
+In execution order:
+
+- [[id:7850a146-bc92-4639-a6ba-ab810aedf3c8][Move context to database]]
+- [[id:9e64d794-0f79-4e34-96be-a637706649bf][Remove bootstrap mode from context]]
+- [[id:08118b0f-bd80-45fb-839f-070e7d4bd5a2][Add =system.disable_password_validation= to manifest]]
+
+Additional v0 entries belonging here, not migrated as full tasks:
+
+- Server must check database connectivity on startup.
+- Remove enum exception (small refactor surfaced during context work).
+
+* Decisions
+
+- /Bootstrap state stays inside IAM/ :: other components have no
+  business knowing about bootstrap mode.
+
+* See also
+
+- [[id:a465d630-5972-484b-a2e8-ad1f91657103][Authentication bootstrap follow-up]] (sprint 05) — predecessor.
+- [[id:1d788878-759e-402b-a948-0f035cda9bf2][Implement database configuration]] (sprint 05) — sibling work in
+  the configuration thread.

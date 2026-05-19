@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: e95678aa-8849-4706-a985-f5d4d31238f1
+:END:
+#+title: Add top-level login and logout commands in shell
+#+description: Make login/logout top-level shell commands so users don't have to enter the IAM entity submenu for them.
+#+type: task
+#+level: s1
+#+filetags: :shell:ux:login:cli_entity_syntax_followup:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-13
+#+updated: 2025-12-13
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:06c56ca2-9846-4dc9-b2f3-271bf4f084ce][CLI entity syntax follow-up]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-13]
+:END:
+
+** Now
+Completed 2025-12-13.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-13
+
+* Goal
+
+Make login/logout top-level shell commands so users don't have to enter the IAM entity submenu for them.
+
+* Acceptance
+
+- =login= and =logout= work as top-level shell commands.
+- Help text reflects the special-case top-level placement.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Pragmatic ergonomics — these are the most-used commands and shouldn't be nested.
+
+* Result
+
+login/logout top-level in shell.

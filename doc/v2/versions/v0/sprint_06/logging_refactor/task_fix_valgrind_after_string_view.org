@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: d80a0088-d6b5-4a7d-a2b2-695d1ccd1193
+:END:
+#+title: Fix valgrind leaks after string view changes to logging
+#+description: The string_view change introduced dangling-view leaks at log emission; fix the lifetime issues.
+#+type: task
+#+level: s1
+#+filetags: :logging:valgrind:memory:logging_refactor:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-12
+#+updated: 2025-12-12
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-12]
+:END:
+
+** Now
+Completed 2025-12-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-12
+
+* Goal
+
+The string_view change introduced dangling-view leaks at log emission; fix the lifetime issues.
+
+* Acceptance
+
+- Valgrind clean again on the logging path.
+- Lifetime rule documented in the logging knowledge note.
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Lesson: =std::string_view= over a temporary is a common trap; documented to avoid recurrence.
+
+* Result
+
+Valgrind output clean on logging-heavy tests; lifetime rule captured.

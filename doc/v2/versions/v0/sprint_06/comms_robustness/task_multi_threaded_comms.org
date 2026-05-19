@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: a9a1e81d-9061-43ac-b566-10b40dee845b
+:END:
+#+title: Multi-threaded scenarios with comms
+#+description: Cover the comms stack under multi-threaded use; surface and fix races discovered along the way.
+#+type: task
+#+level: s1
+#+filetags: :comms:threading:testing:comms_robustness:sprint_06:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2025-12-10
+#+updated: 2025-12-10
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2025-12-10]
+:END:
+
+** Now
+Completed 2025-12-10.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2025-12-10
+
+* Goal
+
+Cover the comms stack under multi-threaded use; surface and fix races discovered along the way.
+
+* Acceptance
+
+- Multi-threaded integration tests exist for the server.
+- Identified races fixed (mutex or atomic where appropriate).
+
+* Plan
+
+(Plan was distilled into the parent story's =* Decisions= and cleared when the task closed.)
+
+* Notes
+
+- Driven by the session-cancellation work, which forced the active-sessions list to be thread-safe.
+
+* Result
+
+Multi-threaded tests in place; comms stack thread-safe.

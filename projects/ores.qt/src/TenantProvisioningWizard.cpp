@@ -631,13 +631,16 @@ TenantExecutePage::TenantExecutePage(TenantProvisioningWizard* wizard)
 
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
     stepsWidget_->setVisible(false);
-    layout->addWidget(stepsWidget_, 1);
+    stepsWidget_->setMinimumHeight(200);
+    layout->addWidget(stepsWidget_);
 
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
     logOutput_->setFont(FontUtils::monospace());
     logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
+
+    layout->addStretch(1);
 
     connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
             this, &TenantExecutePage::onWorkflowComplete);
@@ -799,7 +802,7 @@ void TenantExecutePage::onWorkflowComplete(bool success) {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Phase 1 complete: base bundle workflow succeeded";
-    appendLog(tr("Base catalogue published successfully."));
+    appendLog(tr("Reference data published successfully."));
 
     const bool isSynthetic = wizard_->dataSourceMode() ==
         TenantProvisioningWizard::DataSourceMode::synthetic;
@@ -1016,10 +1019,10 @@ void TenantExecutePage::startFinalize() {
         if (!result.success) {
             // Warn but don't block — bootstrap clearing is best-effort.
             BOOST_LOG_SEV(lg(), warn) << "Bootstrap clear failed: " << result.error_message;
-            appendLog(tr("Warning: failed to clear bootstrap flag: %1")
+            appendLog(tr("Warning: failed to activate organisation: %1")
                 .arg(QString::fromStdString(result.error_message)));
         } else {
-            appendLog(tr("Bootstrap flag cleared. Tenant is now active."));
+            appendLog(tr("Organisation activated successfully."));
         }
 
         statusLabel_->setText(tr("Setup complete!"));
@@ -1112,37 +1115,36 @@ void TenantApplyAndSummaryPage::setupUI() {
 
     layout->addStretch();
 
-    auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
-    auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
-    auto* nextStepsLabel = new QLabel(
-        tr("Log out and log back in, then select a party to complete its "
-           "operational setup. The party setup wizard will appear automatically "
-           "for each party you log into."),
+    auto* logoutBox = new QGroupBox(tr("Action Required"), this);
+    auto* logoutLayout = new QVBoxLayout(logoutBox);
+    auto* logoutLabel = new QLabel(
+        tr("<b>You must log out and log back in to continue.</b><br><br>"
+           "After logging back in, select a party from the party selector. "
+           "The party setup wizard will start automatically for each party "
+           "that has not yet been configured."),
         this);
-    nextStepsLabel->setWordWrap(true);
-    nextStepsLabel->setTextFormat(Qt::RichText);
-    nextStepsLayout->addWidget(nextStepsLabel);
-    layout->addWidget(nextStepsBox);
+    logoutLabel->setWordWrap(true);
+    logoutLabel->setTextFormat(Qt::RichText);
+    logoutLayout->addWidget(logoutLabel);
+    layout->addWidget(logoutBox);
 }
 
 void TenantApplyAndSummaryPage::initializePage() {
-    QString summary = tr("<p>Your tenant has been set up successfully.</p>");
+    QString summary = tr("<p>Your organisation has been onboarded successfully.</p>");
 
     if (!wizard_->selectedBundleCode().isEmpty()) {
-        summary += tr("<p><b>Reference data catalogue:</b> %1</p>")
+        summary += tr("<p><b>Reference data loaded:</b> %1</p>")
             .arg(wizard_->selectedBundleName());
     }
 
     const int partiesLinked = wizard_->partiesLinkedCount();
     if (partiesLinked > 0) {
-        summary += tr("<p><b>Parties created and linked:</b> %1 "
-                      "(your account has been associated with all of them)</p>")
+        summary += tr("<p><b>Trading entities created:</b> %1 "
+                      "(your administrator account has access to all of them)</p>")
             .arg(partiesLinked);
     }
 
-    summary += tr("<p>The bootstrap mode flag has been cleared. "
-                  "Log out and select a party on next login to complete "
-                  "per-party setup.</p>");
+    summary += tr("<p>Your organisation is now active and ready for use.</p>");
 
     summaryLabel_->setText(summary);
 

@@ -496,29 +496,20 @@ void ProvisionerTenantDetailsPage::setupUI() {
     auto* formLayout = new QFormLayout();
     formLayout->setSpacing(12);
 
-    // Name (drives auto-computation of Code)
+    // Name
     nameEdit_ = new QLineEdit(this);
     nameEdit_->setPlaceholderText(tr("Display name for the tenant"));
     nameEdit_->setMaxLength(200);
     formLayout->addRow(tr("Name:"), nameEdit_);
 
-    // Code (read-only by default; unlock button lets the user override)
+    // Code
     codeEdit_ = new QLineEdit(this);
-    codeEdit_->setPlaceholderText(tr("Auto-computed from name"));
+    codeEdit_->setPlaceholderText(tr("Auto-generated from name"));
     codeEdit_->setMaxLength(50);
     auto* codeValidator = new QRegularExpressionValidator(
         QRegularExpression("^[a-z][a-z0-9_]{0,49}$"), this);
     codeEdit_->setValidator(codeValidator);
-    codeEdit_->setReadOnly(true);
-
-    editCodeButton_ = new QPushButton(tr("Edit"), this);
-    editCodeButton_->setFixedWidth(60);
-    editCodeButton_->setToolTip(tr("Override the auto-computed code"));
-
-    auto* codeRow = new QHBoxLayout();
-    codeRow->addWidget(codeEdit_);
-    codeRow->addWidget(editCodeButton_);
-    formLayout->addRow(tr("Code:"), codeRow);
+    formLayout->addRow(tr("Code:"), codeEdit_);
 
     // Type
     typeCombo_ = new QComboBox(this);
@@ -548,36 +539,36 @@ void ProvisionerTenantDetailsPage::setupUI() {
 
     layout->addStretch();
 
-    // Auto-compute code from name (unless user has unlocked manual edit)
+    // Auto-generate code from name, then hostname from code
     connect(nameEdit_, &QLineEdit::textChanged,
             this, &ProvisionerTenantDetailsPage::onNameChanged);
-
-    // Auto-generate hostname from code
     connect(codeEdit_, &QLineEdit::textChanged,
             this, &ProvisionerTenantDetailsPage::onCodeChanged);
 
-    // Track manual hostname edits
+    // Track manual edits to break the auto-fill chain
+    connect(codeEdit_, &QLineEdit::textEdited,
+            this, [this]() { codeManuallyEdited_ = true; });
     connect(hostnameEdit_, &QLineEdit::textEdited,
             this, [this]() { hostnameManuallyEdited_ = true; });
 
-    // Unlock the code field for manual editing
-    connect(editCodeButton_, &QPushButton::clicked,
-            this, &ProvisionerTenantDetailsPage::onEditCodeClicked);
-
     // Register required fields
-    registerField("tenantCode*", codeEdit_);
     registerField("tenantName*", nameEdit_);
+    registerField("tenantCode*", codeEdit_);
 }
 
 void ProvisionerTenantDetailsPage::initializePage() {
     wizard()->setButtonText(QWizard::NextButton, tr("Next >"));
 
-    // Pre-fill from wizard state (single-tenant mode sets defaults)
-    if (codeEdit_->text().isEmpty() && !wizard_->tenantCode().isEmpty()) {
-        codeEdit_->setText(wizard_->tenantCode());
-    }
+    // Pre-fill from wizard state (single-tenant mode sets defaults).
+    // Set name first so the auto-fill chain (name→code→hostname) fires.
+    // Then override code/hostname if the wizard supplied explicit values that
+    // differ from what the chain produced.
     if (nameEdit_->text().isEmpty() && !wizard_->tenantName().isEmpty()) {
         nameEdit_->setText(wizard_->tenantName());
+    }
+    if (!wizard_->tenantCode().isEmpty() && codeEdit_->text() != wizard_->tenantCode()) {
+        codeManuallyEdited_ = true;
+        codeEdit_->setText(wizard_->tenantCode());
     }
     if (!wizard_->tenantType().isEmpty()) {
         int idx = typeCombo_->findText(wizard_->tenantType());
@@ -593,7 +584,6 @@ void ProvisionerTenantDetailsPage::initializePage() {
     // In single-tenant mode, lock all fields (pre-filled defaults, not editable)
     if (!wizard_->isMultiTenantMode()) {
         codeEdit_->setReadOnly(true);
-        editCodeButton_->setEnabled(false);
         nameEdit_->setReadOnly(true);
         typeCombo_->setEnabled(false);
         hostnameEdit_->setReadOnly(true);
@@ -608,14 +598,21 @@ void ProvisionerTenantDetailsPage::initializePage() {
 void ProvisionerTenantDetailsPage::onNameChanged(const QString& text) {
     if (codeManuallyEdited_)
         return;
-    // Compute code: lowercase, spaces → underscores, strip non-[a-z0-9_]
-    QString code = text.toLower();
-    code.replace(' ', '_');
-    code.remove(QRegularExpression("[^a-z0-9_]"));
-    // Ensure it starts with a letter; strip leading digits/underscores
-    while (!code.isEmpty() && !code[0].isLetter())
-        code.remove(0, 1);
-    codeEdit_->setText(code.left(50));
+
+    // Convert display name to a valid code: lowercase, spaces/hyphens to
+    // underscores, drop anything that isn't alphanumeric or underscore,
+    // ensure it starts with a letter, truncate to 50 chars.
+    QString slug = text.toLower();
+    slug.replace(QRegularExpression("[ \\-]+"), "_");
+    slug.remove(QRegularExpression("[^a-z0-9_]"));
+
+    // Strip leading non-letters
+    int start = 0;
+    while (start < slug.size() && !slug[start].isLetter())
+        ++start;
+    slug = slug.mid(start, 50);
+
+    codeEdit_->setText(slug);
 }
 
 void ProvisionerTenantDetailsPage::onCodeChanged(const QString& text) {
@@ -624,13 +621,6 @@ void ProvisionerTenantDetailsPage::onCodeChanged(const QString& text) {
     }
 }
 
-void ProvisionerTenantDetailsPage::onEditCodeClicked() {
-    codeEdit_->setReadOnly(false);
-    codeManuallyEdited_ = true;
-    editCodeButton_->setEnabled(false);
-    codeEdit_->setFocus();
-    codeEdit_->selectAll();
-}
 
 bool ProvisionerTenantDetailsPage::validatePage() {
     validationLabel_->clear();

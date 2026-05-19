@@ -35,10 +35,9 @@
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.api/domain/report_definition_template.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
-#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -265,7 +264,8 @@ void PartyReportSetupPage::initializePage() {
 }
 
 void PartyReportSetupPage::loadTemplates() {
-    using ResponseType = reporting::messaging::get_report_definition_templates_response;
+    using namespace dq::messaging;
+    using ResponseType = list_dq_report_definition_templates_response;
     ClientManager* clientManager = wizard_->clientManager();
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
@@ -279,7 +279,7 @@ void PartyReportSetupPage::loadTemplates() {
         if (!result || !result->success) {
             const QString errMsg = result
                 ? QString::fromStdString(result->message)
-                : tr("No response from reporting service.");
+                : tr("No response from data quality service.");
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to load report definition templates: "
                 << errMsg.toStdString();
@@ -294,7 +294,7 @@ void PartyReportSetupPage::loadTemplates() {
 
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
         [clientManager]() -> std::optional<ResponseType> {
-            reporting::messaging::get_report_definition_templates_request req;
+            list_dq_report_definition_templates_request req;
             auto r = clientManager->process_authenticated_request(std::move(req));
             if (!r) return std::nullopt;
             return std::move(*r);
@@ -303,7 +303,7 @@ void PartyReportSetupPage::loadTemplates() {
 }
 
 void PartyReportSetupPage::populateList(
-    const std::vector<ores::reporting::domain::report_definition_template>& templates) {
+    const std::vector<ores::dq::messaging::dq_report_definition_template>& templates) {
 
     reportList_->clear();
     for (const auto& t : templates) {
@@ -369,13 +369,16 @@ PartyExecutePage::PartyExecutePage(PartyProvisioningWizard* wizard)
 
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
     stepsWidget_->setVisible(false);
-    layout->addWidget(stepsWidget_, 1);
+    stepsWidget_->setMinimumHeight(200);
+    layout->addWidget(stepsWidget_);
 
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
     logOutput_->setFont(FontUtils::monospace());
     logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
+
+    layout->addStretch(1);
 }
 
 bool PartyExecutePage::isComplete() const {
@@ -851,33 +854,30 @@ void PartyApplyAndSummaryPage::setupUI() {
 
     layout->addStretch();
 
-    auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
-    auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
-    auto* nextStepsLabel = new QLabel(
-        tr("You can now use the full application. Some things you might "
-           "want to do:\n\n"
-           "  - Open the <b>Data Librarian</b> to manage datasets and bundles\n"
-           "  - Open <b>Parties</b> to manage your party hierarchy\n"
-           "  - Open <b>Counterparties</b> to add trading counterparties\n"
-           "  - Open <b>Accounts</b> to create additional user accounts"),
+    auto* logoutBox = new QGroupBox(tr("Action Required"), this);
+    auto* logoutLayout = new QVBoxLayout(logoutBox);
+    auto* logoutLabel = new QLabel(
+        tr("<b>Log out and log back in to start using this party.</b><br><br>"
+           "After logging back in, select this party from the party selector "
+           "to access its portfolios, trading books, counterparties, and reports."),
         this);
-    nextStepsLabel->setWordWrap(true);
-    nextStepsLabel->setTextFormat(Qt::RichText);
-    nextStepsLayout->addWidget(nextStepsLabel);
-    layout->addWidget(nextStepsBox);
+    logoutLabel->setWordWrap(true);
+    logoutLabel->setTextFormat(Qt::RichText);
+    logoutLayout->addWidget(logoutLabel);
+    layout->addWidget(logoutBox);
 }
 
 void PartyApplyAndSummaryPage::initializePage() {
-    QString summary = tr("<p>Your party setup has been completed successfully.</p>");
+    QString summary = tr("<p>This party is now active and ready for use.</p>");
 
     if (wizard_->organisationPublished()) {
-        summary += tr("<p><b>Organisation data:</b> Counterparties, business units, "
-                      "portfolios, and trading books published.</p>");
+        summary += tr("<p><b>Market data loaded:</b> Counterparties, business units, "
+                      "portfolios, and trading books are available.</p>");
     }
 
     const auto& reports = wizard_->selectedReports();
     if (!reports.empty()) {
-        summary += tr("<p><b>Report definitions created (%1):</b></p><ul>")
+        summary += tr("<p><b>Report schedules created (%1):</b></p><ul>")
             .arg(static_cast<int>(reports.size()));
         for (const auto& r : reports) {
             summary += tr("<li>%1</li>")
@@ -885,9 +885,6 @@ void PartyApplyAndSummaryPage::initializePage() {
         }
         summary += tr("</ul>");
     }
-
-    summary += tr("<p>The party setup flag has been cleared. This wizard "
-                  "will not appear on your next login.</p>");
 
     summaryLabel_->setText(summary);
 

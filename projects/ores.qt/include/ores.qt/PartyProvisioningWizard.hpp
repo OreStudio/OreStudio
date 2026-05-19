@@ -33,7 +33,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.reporting.api/domain/report_definition_template.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 
 #include "ores.qt/WorkflowStepsWidget.hpp"
 
@@ -191,7 +191,7 @@ public:
 private:
     void setupUI();
     void loadTemplates();
-    void populateList(const std::vector<ores::reporting::domain::report_definition_template>& templates);
+    void populateList(const std::vector<ores::dq::messaging::dq_report_definition_template>& templates);
 
     PartyProvisioningWizard* wizard_;
     QLabel* loadingLabel_;

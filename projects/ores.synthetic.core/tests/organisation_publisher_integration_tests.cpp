@@ -25,6 +25,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace {
 
@@ -127,8 +128,18 @@ void prepare_for_publish(generated_organisation& org,
     stamp(org.party_counterparties);
     stamp(org.business_unit_types);
     stamp(org.business_units);
-    stamp(org.portfolios);
-    stamp(org.books);
+
+    const auto tid = ores::utility::uuid::tenant_id::from_string(tenant_id).value();
+    for (auto& p : org.portfolios) {
+        p.tenant_id = tid;
+        p.modified_by = modified_by;
+        p.performed_by = modified_by;
+    }
+    for (auto& b : org.books) {
+        b.tenant_id = tid;
+        b.modified_by = modified_by;
+        b.performed_by = modified_by;
+    }
 
     // The tenant already has a system party as root. Parent the generated
     // root party under it to satisfy the root_party_uniq constraint.

@@ -21,6 +21,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/generation/tree_builder.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 #include <algorithm>
 #include <array>
@@ -714,7 +715,7 @@ void generate_portfolios(
 
         refdata::domain::portfolio p;
         p.version = 1;
-        p.tenant_id = tenant_id;
+        p.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value();
         p.party_id = root_party_id;
         p.id = ctx.generate_uuid();
         p.name = name;
@@ -828,7 +829,7 @@ void generate_books(
         for (std::size_t bi = 0; bi < options.books_per_leaf_portfolio; ++bi) {
             refdata::domain::book bk;
             bk.version = 1;
-            bk.tenant_id = tenant_id;
+            bk.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value();
             bk.id = ctx.generate_uuid();
             bk.party_id = root_party_id;
             bk.parent_portfolio_id = portfolio.id;

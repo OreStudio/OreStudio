@@ -2,7 +2,7 @@
 #+SUBTITLE: IAM party cache + NATS write APIs for workflow/ORE
 #+DATE: 2026-05-13
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS
+#+STATUS: DONE
 #+OPTIONS: toc:t num:nil
 
 * Context

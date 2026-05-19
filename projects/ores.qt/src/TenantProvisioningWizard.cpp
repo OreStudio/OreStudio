@@ -632,6 +632,7 @@ TenantExecutePage::TenantExecutePage(TenantProvisioningWizard* wizard)
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
     stepsWidget_->setVisible(false);
     stepsWidget_->setMinimumHeight(200);
+    stepsWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addWidget(stepsWidget_);
 
     logOutput_ = new QTextEdit(this);
@@ -639,8 +640,6 @@ TenantExecutePage::TenantExecutePage(TenantProvisioningWizard* wizard)
     logOutput_->setFont(FontUtils::monospace());
     logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
-
-    layout->addStretch(1);
 
     connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
             this, &TenantExecutePage::onWorkflowComplete);

@@ -239,9 +239,8 @@ void PartyReportSetupPage::setupUI() {
     reportList_ = new QListWidget(this);
     reportList_->setSpacing(2);
     reportList_->setAlternatingRowColors(true);
-    reportList_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     reportList_->hide();
-    layout->addWidget(reportList_);
+    layout->addWidget(reportList_, 1);
 
     connect(selectAllBtn, &QPushButton::clicked, this, [this]() {
         for (int i = 0; i < reportList_->count(); ++i) {
@@ -371,6 +370,7 @@ PartyExecutePage::PartyExecutePage(PartyProvisioningWizard* wizard)
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
     stepsWidget_->setVisible(false);
     stepsWidget_->setMinimumHeight(200);
+    stepsWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addWidget(stepsWidget_);
 
     logOutput_ = new QTextEdit(this);
@@ -378,8 +378,6 @@ PartyExecutePage::PartyExecutePage(PartyProvisioningWizard* wizard)
     logOutput_->setFont(FontUtils::monospace());
     logOutput_->setMaximumHeight(120);
     layout->addWidget(logOutput_);
-
-    layout->addStretch(1);
 }
 
 bool PartyExecutePage::isComplete() const {

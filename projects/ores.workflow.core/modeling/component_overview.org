@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 440294d7-385d-41ee-92cb-cab937e65e81
+:END:
+#+title: ores.workflow.core
+#+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
+#+type: component
+#+level: cross
+#+filetags: :workflow:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.workflow.core= provides workflow orchestration for ORE Studio. It manages
+workflow definitions (sequences of steps with preconditions and actions),
+execution instances (tracking progress and current state), and exposes NATS
+handlers for workflow management. Workflows coordinate multi-step operations
+such as report generation pipelines that span multiple services.
+
+* Inputs
+
+- NATS request messages for workflow definition CRUD and execution management.
+- PostgreSQL connections to =ores_workflow_*= tables.
+
+* Outputs
+
+- Workflow definition and execution records persisted to the =ores_workflow=
+  schema.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =include/ores.workflow.core/ores.workflow.core.hpp= — aggregate include.
+- =include/ores.workflow.core/messaging/registrar.hpp= — registers handlers.
+
+* Dependencies
+
+- =ores.workflow.api= — shared domain types and NATS protocol schemas.
+- =ores.dq= — ORM base classes and persistence infrastructure.
+- =ores.iam.core= — identity and authorisation context.
+- =rfl= — JSON serialisation.
+- =soci= — SQL ORM.
+- =nats.c= — NATS messaging client.
+
+* See also
+
+- [[id:85319483-4ae9-4162-91f7-d72a8201134b][ores.workflow.api]] — protocol types and domain entities.
+- [[id:1af4aec8-70ec-496c-821e-4e2e1bb303e5][ores.workflow.service]] — NATS service entrypoint.

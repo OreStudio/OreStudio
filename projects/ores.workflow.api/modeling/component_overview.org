@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 85319483-4ae9-4162-91f7-d72a8201134b
+:END:
+#+title: ores.workflow.api
+#+description: Domain types and NATS protocol schemas for the workflow component.
+#+type: component
+#+level: cross
+#+filetags: :workflow:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.workflow.api= is a header-only library defining the shared contract for
+the workflow domain. It provides workflow and workflow-step domain types with
+JSON I/O via =rfl=, and the NATS protocol schemas consumed by
+=ores.workflow.core= and Qt clients.
+
+* Inputs
+
+- Domain entity type definitions across =domain/= headers.
+
+* Outputs
+
+- C++ headers for workflow domain types with JSON I/O.
+- NATS protocol headers for workflow management operations.
+
+* Entry points
+
+- =include/ores.workflow.api/domain/= — all domain entity headers.
+- =include/ores.workflow.api/messaging/= — NATS protocol message headers.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+
+* See also
+
+- [[id:440294d7-385d-41ee-92cb-cab937e65e81][ores.workflow.core]] — business logic, persistence, and NATS handlers.

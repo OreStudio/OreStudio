@@ -18,10 +18,10 @@ file that already follows the contract in
 | knowledge | `<parent-dir>/<slug>.org` |
 | skill | `<parent-dir>/<slug>/SKILL.org` (slug becomes both the folder name and the Claude Code skill `name:`) |
 
-Each output has a fresh UUID in `:ID:`, today's date in `#+created`
-and `#+updated`, the standard frontmatter for its type, an initial
-`* Status` headline at the type's default TODO state, and skeleton
-sections.
+Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
+`--id` — see below), today's date in `#+created` and `#+updated`, the
+standard frontmatter for its type, an initial `* Status` headline at
+the type's default TODO state, and skeleton sections.
 
 ## Usage
 
@@ -40,6 +40,7 @@ projects/ores.codegen/generate_v2_doc.sh \
   [--predecessor-id <uuid>]                   # story only, cross-sprint continuation
   [--predecessor-title "<title>"]
   [--state <BACKLOG|DISCOVERED|STARTED>]
+  [--id <uuid>]                               # preserve an existing UUID (migration only)
   [--force]
 ```
 
@@ -58,6 +59,24 @@ For example, when creating a task with
 reads `.../audit_tooling/story.org`, picks up its `:ID:` and
 `#+title:`, and uses `audit_tooling` as the parent slug (from the
 folder basename).
+
+### Preserving an existing UUID (--id)
+
+When migrating a document that already has an `:ID:` to v2 format, pass
+the existing UUID via `--id`. The generator uses it verbatim instead of
+minting a fresh one. This keeps all org-roam backlinks intact.
+
+```sh
+projects/ores.codegen/generate_v2_doc.sh \
+  --type component --slug component_overview \
+  --parent-dir projects/ores.trading.core/modeling \
+  --title "ores.trading" \
+  --description "Trade booking and lifecycle management." \
+  --tags "trading,component" \
+  --id "E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B"
+```
+
+Omit `--id` for brand-new documents; the generator mints a fresh UUID.
 
 ### Interactive prompts
 

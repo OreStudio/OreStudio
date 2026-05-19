@@ -85,6 +85,11 @@
 <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/googlecode.min.css\" />
 <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
 
+;; Disable babel evaluation during export. ob-shell is still loaded for
+;; syntax highlighting, but we never want CI to execute src blocks.
+;; Developers refresh #+RESULTS: manually via the org-babel-refresh recipe.
+(setq org-export-use-babel nil)
+
 ;; Customize the HTML output
 (setq org-html-validation-link nil            ;; Don't show validation link
       org-html-head-include-scripts nil       ;; Use our own scripts

@@ -209,6 +209,10 @@ def parse_args(argv=None):
                         help="Story only. Title of the predecessor for the inline link.")
     parser.add_argument("--state", default="",
                         help="Initial TODO state. Defaults per type.")
+    parser.add_argument("--id", default="",
+                        help="Use this UUID for :ID: instead of generating a fresh one. "
+                             "Pass an existing document's UUID to preserve org-roam links "
+                             "when migrating a file to v2 format.")
     parser.add_argument("--force", action="store_true",
                         help="Overwrite the output file if it already exists.")
     return parser.parse_args(argv)
@@ -276,7 +280,7 @@ def main(argv=None):
         ancestor_slugs.insert(0, args.parent_slug)
     filetags = build_filetags(args.tags, ancestor_slugs)
     today = date.today().isoformat()
-    new_id = str(uuid.uuid4())
+    new_id = args.id if args.id else str(uuid.uuid4())
 
     variables = {
         "id": new_id,

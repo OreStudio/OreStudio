@@ -34,6 +34,14 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace {
+inline auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.qt.publish_datasets_dialog");
+    return instance;
+}
+} // namespace
 
 namespace ores::qt {
 
@@ -432,7 +440,7 @@ void ProgressPage::performPublish() {
             wizard()->page(PublishDatasetsDialog::Page_Results));
 
         if (!result) {
-            BOOST_LOG_SEV(PublishDatasetsDialog::lg(), error)
+            BOOST_LOG_SEV(lg(), error)
                 << "Failed to communicate with server for dataset publication.";
             statusLabel_->setText(tr("Publication failed!"));
             publishComplete_ = true;
@@ -441,7 +449,7 @@ void ProgressPage::performPublish() {
                 resultsPage->setResults(false,
                     tr("Failed to communicate with server."));
         } else if (!result->success) {
-            BOOST_LOG_SEV(PublishDatasetsDialog::lg(), error)
+            BOOST_LOG_SEV(lg(), error)
                 << "Dataset publication failed: " << result->message;
             statusLabel_->setText(tr("Publication failed!"));
             publishComplete_ = true;
@@ -450,7 +458,7 @@ void ProgressPage::performPublish() {
                 resultsPage->setResults(false,
                     QString::fromStdString(result->message));
         } else {
-            BOOST_LOG_SEV(PublishDatasetsDialog::lg(), info)
+            BOOST_LOG_SEV(lg(), info)
                 << "Dataset publish workflow started: instance=" << result->instance_id
                 << " datasets=" << result->datasets_dispatched;
             statusLabel_->setText(tr("Publication workflow started!"));

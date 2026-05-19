@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: b03fee7c-2156-4b80-a2bd-020a9a5b6077
+:END:
+#+title: Create Data Quality infrastructure
+#+description: Stand up ores.dq with domain types backing the user-driven sample-data workflow: dataset, lineage, provenance, classification, temporal context, data passport, granularity options.
+#+type: task
+#+level: s1
+#+filetags: :dq:component:domain_types:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-15]
+:END:
+
+** Now
+Completed 2026-01-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-15
+
+* Goal
+
+Lay out the conceptual foundations for the data-quality subsystem: how the project will manage curated sample data with full lineage and provenance.
+
+* Acceptance
+
+- Concept model documented: dataset, record, provenance, classification, lineage, temporal context, data passport.
+- Metadata-attribute schema covering provenance + classification, lineage + derivation, temporal metadata.
+- Granularity options (dataset vs record level) decided.
+- Validation constraints captured (e.g. synthetic ⇒ generation_method required).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Heavy use of LLM (Qwen) for the conceptual model; this is the design step ahead of the implementation tasks.
+
+* Result
+
+DQ concept model documented; implementation can follow.

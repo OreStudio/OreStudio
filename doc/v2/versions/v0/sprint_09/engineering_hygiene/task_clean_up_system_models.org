@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 49bd7089-c2dd-4349-807b-57646076c043
+:END:
+#+title: Clean up system models and component models
+#+description: Refresh system + component models out of sync with recent refactorings; introduce component-model-creator skill; new component docs for ores.logging, ores.http, ores.http.server, ores.wt.
+#+type: task
+#+level: s1
+#+filetags: :modeling:components:skills:documentation:engineering_hygiene:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-12]
+:END:
+
+** Now
+Completed 2026-01-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-12
+
+* Goal
+
+Bring the system and component models back in sync with recent refactorings; introduce a skill to keep them that way.
+
+* Acceptance
+
+- New =component-model-creator= skill standardises org-mode + PlantUML for new components.
+- Component docs land for =ores.logging=, =ores.http=, =ores.http.server=, =ores.wt=.
+- =ores.puml= updated to include the new components and their dependencies.
+- =skill-manager= guidelines extended to require updating the skill-dependencies diagram.
+- Doxygen main page slimmed and linked back to the website.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Modelling-as-skill: the skill ensures the next new component lands documented; the model-refresh task is a one-shot catch-up.
+
+* Result
+
+Models in sync; skill in place to keep them so.

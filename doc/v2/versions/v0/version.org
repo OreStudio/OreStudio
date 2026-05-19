@@ -69,6 +69,9 @@ is the current sprint; the rest are closed.
 - [[id:49c4e380-68ee-4d80-839a-41311a99c734][Sprint 08]] — Database overhaul; ISO countries; change-
   management infrastructure; Qt UX polish; comms substrate
   evolution; entity-creator skills; Wt + observability review.
+- [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]] — Data Quality subsystem + Data Librarian;
+  connection management; database naming refactor;
+  =ores.security=; CLI entity coverage; Qt icon refactor.
 - ... through Sprint 16.
 
 * Release scope

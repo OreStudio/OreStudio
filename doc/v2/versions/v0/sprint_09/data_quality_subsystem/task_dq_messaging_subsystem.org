@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 21dfacf9-f1cc-4c99-9e46-586fd8c6b23c
+:END:
+#+title: DQ messaging subsystem
+#+description: New 0x6000-0x6FFF subsystem in the binary protocol; CRUD + history for every DQ entity; change-management messages migrated from IAM (0x2050-0x2061) to DQ (0x6070-0x6081); protocol bump 21.3 -> 22.0.
+#+type: task
+#+level: s1
+#+filetags: :dq:comms:protocol:breaking_change:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-19]
+:END:
+
+** Now
+Completed 2026-01-19.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-19
+
+* Goal
+
+Open a new subsystem in the binary protocol for DQ messages, and migrate the change-management messages into it.
+
+* Acceptance
+
+- New subsystem 0x6000-0x6FFF reserved for DQ.
+- CRUD + history protocols for catalogs, data domains, subject areas, datasets, methodologies, coding schemes, dimensions (nature, origin, treatment).
+- Change-management messages migrated from IAM (0x2050-0x2061) to DQ (0x6070-0x6081).
+- Protocol bump 21.3 → 22.0 (breaking).
+- =dq_message_handler= + registrar processes incoming DQ traffic.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Breaking change made up-front before too many clients depend on the IAM range for change-management.
+
+* Result
+
+DQ messaging in place; change-management lives in the right place now.

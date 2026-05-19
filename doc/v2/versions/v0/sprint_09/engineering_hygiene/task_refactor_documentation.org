@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1bc0f53e-529a-4b38-a428-41ee1da7581d
+:END:
+#+title: Refactor documentation per entity
+#+description: Split recipes per entity; create a top-level domain document per entity that cross-references recipes, component model, entity implementation files (SQL included), and skills. Recipes attach to components rather than being global.
+#+type: task
+#+level: s1
+#+filetags: :documentation:refactor:structure:engineering_hygiene:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]].
+
+* BACKLOG Status
+
+** Now
+POSTPONED in sprint 09; carried forward.
+
+** Waiting on
+A sprint with the slot to land it.
+
+** Next
+Return to this once a sprint has the budget.
+
+** Last touched
+2026-01-20
+
+* Goal
+
+Restructure documentation so it composes per-entity rather than across global recipe files.
+
+* Acceptance
+
+- Recipes split per entity.
+- Top-level domain document per entity cross-referencing recipes, component model, implementation files (SQL included), and skills.
+- Recipes attach to the component they belong to, not the global =doc/recipes/=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED in v0: substantially overlaps with the v2 cybernetic information architecture work happening on the v2 branch. Some of this already lands in v2; the rest carries forward into v2 directly.
+
+* Result
+
+Not landed in sprint 09; superseded by the v2 information-architecture work.

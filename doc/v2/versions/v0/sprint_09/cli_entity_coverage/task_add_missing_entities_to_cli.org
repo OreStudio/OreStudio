@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 3d5f5bb6-056a-4533-9b18-7222d9b9b84f
+:END:
+#+title: Add missing entities to CLI
+#+description: list + delete commands for roles, permissions, countries, change_reasons, change_reason_categories; JSON and table output; lookup by UUID/code/name as appropriate.
+#+type: task
+#+level: s1
+#+filetags: :cli:entity_coverage:cli_entity_coverage:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-12]
+:END:
+
+** Now
+Completed 2026-01-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-12
+
+* Goal
+
+Bring the CLI up to date with the entities added in earlier sprints.
+
+* Acceptance
+
+- list + delete commands for roles, permissions, countries, change_reasons, change_reason_categories.
+- JSON and table output formats for list.
+- Delete lookups by UUID, code, or name depending on the entity.
+- New parser headers + implementations integrated into the existing application.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Direct exerciser of the =cli-entity-creator= skill landed in sprint 08.
+
+* Result
+
+Five new entity verbs available on the CLI.

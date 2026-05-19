@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 61485635-64ba-4c31-a35b-2f60d7fb41aa
+:END:
+#+title: Database naming refactor
+#+description: Rename ores.risk to ores.refdata; prefix every SQL entity by component (iam_, refdata_, assets_, etc.).
+#+type: story
+#+level: s2
+#+filetags: :sql:refactor:naming:refdata:sprint_09:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:af0b027b-77bf-4794-810d-39ad49a5efad][Sprint 09]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-14]
+:END:
+
+** Now
+Completed 2026-01-14.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-14
+
+* Goal
+
+Make ownership of every SQL object explicit by prefixing it with the
+component, and use the moment to rename =ores.risk= to =ores.refdata=
+to reflect what the component actually does.
+
+* Acceptance
+
+- =ores.risk= renamed to =ores.refdata= consistently.
+- Every SQL object follows =<component>_<entity>_<suffix>=.
+- C++ =tablename= constants synchronised.
+- =sql-schema-creator= docs extended.
+
+* Tasks
+
+In execution order:
+
+- [[id:aa32b9c6-9c05-4f63-bbc5-51704df4e9b6][Rename ores.risk to ores.refdata]]
+- [[id:6c292f2c-9a0a-479c-9632-59a3f5028da7][Prefix database entities with component]]
+
+* Decisions
+
+- /Rename before prefix/ :: the rename had to land first so the new prefix tree (=refdata_=) was correct from the start.
+- /Prefix + suffix together/ :: =<component>_<entity>_<suffix>= carries both ownership and object kind in the name; no need to grep schema metadata.
+
+* Out of scope
+
+- Postgres role naming convention (already covered).
+- Schema-per-component (single =ores= schema is sufficient at this scale).
+
+* See also
+
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component this story restructures.

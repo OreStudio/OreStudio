@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: efd5093d-5bf0-43f2-a2c6-443405f849e3
+:END:
+#+title: Add fake-world dataset
+#+description: Use the previously spec'd 'fake world' dataset to validate the dataset infrastructure end-to-end.
+#+type: task
+#+level: s1
+#+filetags: :dq:fake_data:validation:data_quality_subsystem:sprint_09:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3579ab5e-d5d8-45ae-8cb5-00ad1c58644f][Data Quality subsystem and Data Librarian]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-01-20]
+:END:
+
+** Now
+Completed 2026-01-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-01-20
+
+* Goal
+
+Exercise the dataset infrastructure end-to-end against the previously spec'd /fake world/ dataset.
+
+* Acceptance
+
+- Fake-world dataset loaded into the system.
+- Lineage, provenance, classification all populated.
+- Dataset visible in the Data Librarian.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Validates the infrastructure by ingesting something deliberately synthetic; if it works for fake world it'll work for the real ones.
+
+* Result
+
+Fake-world dataset present and inspectable.

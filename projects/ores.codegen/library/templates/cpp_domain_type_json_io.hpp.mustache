@@ -5,13 +5,14 @@
 
 #include <iosfwd>
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
 
 namespace ores::{{component}}::domain {
 
 /**
  * @brief Dumps the {{entity_singular}} to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
+ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
 
 }
 
@@ -23,13 +24,14 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v);
 
 #include <iosfwd>
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/export.hpp"
 
 namespace ores::{{component}}::domain {
 
 /**
  * @brief Dumps the {{name_singular}} to a stream in JSON format.
  */
-std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
+ORES_{{component_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v);
 
 }
 

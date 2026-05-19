@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_GENERATORS_BOOK_GENERATOR_HPP
-#define ORES_REFDATA_CORE_GENERATORS_BOOK_GENERATOR_HPP
+#ifndef ORES_REFDATA_GENERATORS_BOOK_GENERATOR_HPP
+#define ORES_REFDATA_GENERATORS_BOOK_GENERATOR_HPP
 
 #include <vector>
 #include "ores.refdata.api/domain/book.hpp"
-#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -30,13 +29,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic book.
  */
-ORES_REFDATA_API_EXPORT domain::book generate_synthetic_book(
+domain::book generate_synthetic_book(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic books.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::book>
+std::vector<domain::book>
 generate_synthetic_books(std::size_t n,
     utility::generation::generation_context& ctx);
 

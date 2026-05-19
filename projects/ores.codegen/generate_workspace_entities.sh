@@ -11,6 +11,7 @@ cd "$SCRIPT_DIR"
 run() {
     echo "=== $1 ==="
     python3 src/generator.py "$1" --profile domain
+    python3 src/generator.py "$1" --profile generator
     python3 src/generator.py "$1" --profile repository
 }
 

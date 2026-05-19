@@ -1,188 +1,291 @@
 {
-  "domain_entity": {
-    "schema": "public",
-    "product": "ores",
-    "component": "refdata",
-    "component_include": "refdata.api",
-    "component_core": "refdata.core",
-    "has_tenant_id": true,
-    "has_workspace_id": true,
-    "entity_singular": "book",
-    "entity_plural": "books",
-    "entity_title": "Book",
-    "brief": "Operational ledger leaf that holds trades.",
-    "description": "Operational ledger leaves. The only entity that holds trades.\nServes as the basis for accounting, ownership, and regulatory\ncapital treatment. Must belong to exactly one portfolio.",
-
-    "primary_key": {
-      "column": "id",
-      "type": "uuid",
-      "cpp_type": "boost::uuids::uuid",
-      "description": "UUID uniquely identifying this book.",
-      "detail": "Surrogate key for the book record."
-    },
-
-    "natural_keys": [
-      {
-        "column": "party_id",
-        "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
-        "description": "Party that owns this book.",
-        "detail": "References the parties table.",
-        "generator_expr": "uuid_gen()"
-      },
-      {
-        "column": "name",
-        "type": "text",
-        "cpp_type": "std::string",
-        "description": "Book name, unique within party.",
-        "detail": "e.g., 'FXO_EUR_VOL_01'.",
-        "generator_expr": "std::string(\"BOOK_\") + std::to_string(faker::number::integer(1, 999))"
-      }
-    ],
-
-    "columns": [
-      {
-        "name": "description",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Optional free-text description of the book.",
-        "generator_expr": "std::string(faker::lorem::sentence())"
-      },
-      {
-        "name": "parent_portfolio_id",
-        "type": "uuid",
-        "cpp_type": "boost::uuids::uuid",
-        "nullable": false,
-        "description": "Links to exactly one portfolio.",
-        "detail": "Mandatory: Every book must belong to a portfolio.",
-        "generator_expr": "uuid_gen()"
-      },
-      {
-        "name": "owner_unit_id",
-        "type": "uuid",
-        "cpp_type": "std::optional<boost::uuids::uuid>",
-        "nullable": true,
-        "description": "Business unit that owns this book.",
-        "detail": "Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.",
-        "generator_expr": "std::nullopt"
-      },
-      {
-        "name": "ledger_ccy",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Functional/accounting currency.",
-        "detail": "ISO 4217 currency code.",
-        "generator_expr": "std::string(\"USD\")"
-      },
-      {
-        "name": "gl_account_ref",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Reference to external General Ledger.",
-        "detail": "e.g., 'GL-10150-FXO'. Nullable if not integrated.",
-        "generator_expr": "std::string(\"GL-10150-TEST\")"
-      },
-      {
-        "name": "cost_center",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": true,
-        "description": "Internal finance code for P&L attribution.",
-        "detail": "Links to cost center in finance system.",
-        "generator_expr": "std::string(\"CC-001\")"
-      },
-      {
-        "name": "book_status",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Lifecycle status of the book.",
-        "detail": "References book_statuses lookup (Active, Closed, Frozen).",
-        "generator_expr": "std::string(\"Active\")"
-      },
-      {
-        "name": "is_trading_book",
-        "type": "integer",
-        "cpp_type": "int",
-        "nullable": false,
-        "description": "Basel III/IV classification.",
-        "detail": "1 = Trading Book, 0 = Banking Book.",
-        "generator_expr": "1"
-      }
-    ],
-
-    "sql": {
-      "tablename": "ores_refdata_books_tbl"
-    },
-
-    "repository": {
-      "entity_singular_short": "book",
-      "entity_plural_short": "books",
-      "entity_singular_words": "book",
-      "entity_plural_words": "books"
-    },
-
-    "cpp": {
-      "includes": {
-        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
-      },
-      "iterator_var": "bk",
-      "table_display": [
-        {"column": "name", "header": "Name"},
-        {"column": "party_id", "header": "Party"},
-        {"column": "ledger_ccy", "header": "Currency"},
-        {"column": "book_status", "header": "Status"},
-        {"column": "is_trading_book", "header": "Trading Book"},
-        {"column": "modified_by", "header": "Modified By"},
-        {"column": "version", "header": "Version"}
-      ]
-    },
-
-    "qt": {
-      "domain_include": "ores.refdata/domain/book.hpp",
-      "domain_class": "refdata::domain::book",
-      "protocol_include": "ores.refdata/messaging/book_protocol.hpp",
-      "collection_name": "books",
-      "item_var": "book",
-      "key_field": "name",
-      "has_uuid_primary_key": true,
-      "get_request_class": "refdata::messaging::get_books_request",
-      "get_response_class": "refdata::messaging::get_books_response",
-      "get_message_type": "get_books_request",
-      "save_request_class": "refdata::messaging::save_book_request",
-      "save_response_class": "refdata::messaging::save_book_response",
-      "save_message_type": "save_book_request",
-      "save_request_item_field": "book",
-      "delete_request_class": "refdata::messaging::delete_book_request",
-      "delete_response_class": "refdata::messaging::delete_book_response",
-      "delete_message_type": "delete_book_request",
-      "history_request_class": "refdata::messaging::get_book_history_request",
-      "history_response_class": "refdata::messaging::get_book_history_response",
-      "history_message_type": "get_book_history_request",
-      "detail_fields": [
-        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit", "is_key": true, "is_required": true, "placeholder": "Enter book name"},
-        {"field": "ledger_ccy", "label": "Ledger Currency", "widget": "ledgerCcyEdit", "type": "line_edit", "placeholder": "Enter ledger currency"},
-        {"field": "gl_account_ref", "label": "GL Account Ref", "widget": "glAccountRefEdit", "type": "line_edit", "placeholder": "Enter GL account reference"},
-        {"field": "cost_center", "label": "Cost Center", "widget": "costCenterEdit", "type": "line_edit", "placeholder": "Enter cost center"},
-        {"field": "book_status", "label": "Status", "widget": "bookStatusEdit", "type": "line_edit", "placeholder": "Enter status"}
-      ],
-      "columns": [
-        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
-        {"enum_name": "LedgerCcy", "field": "ledger_ccy", "header": "Ledger Ccy", "is_string": true, "width": 100},
-        {"enum_name": "BookStatus", "field": "book_status", "header": "Status", "is_string": true, "width": 100},
-        {"enum_name": "CostCenter", "field": "cost_center", "header": "Cost Center", "is_string": true, "width": 120},
-        {"enum_name": "IsTradingBook", "field": "is_trading_book", "header": "Trading", "is_int": true, "width": 70},
-        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
-        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
-        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
-      ],
-      "settings_group": "BookListWindow",
-      "window_title": "Books",
-      "icon": "Book"
+    "domain_entity": {
+        "schema": "public",
+        "product": "ores",
+        "component": "refdata",
+        "component_include": "refdata.api",
+        "component_core": "refdata.core",
+        "has_tenant_id": true,
+        "has_workspace_id": true,
+        "entity_singular": "book",
+        "entity_plural": "books",
+        "entity_title": "Book",
+        "brief": "Operational ledger leaf that holds trades.",
+        "description": "Operational ledger leaves. The only entity that holds trades.\nServes as the basis for accounting, ownership, and regulatory\ncapital treatment. Must belong to exactly one portfolio.",
+        "primary_key": {
+            "column": "id",
+            "type": "uuid",
+            "cpp_type": "boost::uuids::uuid",
+            "description": "UUID uniquely identifying this book.",
+            "detail": "Surrogate key for the book record."
+        },
+        "natural_keys": [
+            {
+                "column": "party_id",
+                "type": "uuid",
+                "cpp_type": "boost::uuids::uuid",
+                "description": "Party that owns this book.",
+                "detail": "References the parties table.",
+                "generator_expr": "ctx.generate_uuid()"
+            },
+            {
+                "column": "name",
+                "type": "text",
+                "cpp_type": "std::string",
+                "description": "Book name, unique within party.",
+                "detail": "e.g., 'FXO_EUR_VOL_01'.",
+                "generator_expr": "std::string(\"BOOK_\") + std::to_string(faker::number::integer(1, 999))"
+            }
+        ],
+        "columns": [
+            {
+                "name": "description",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Optional free-text description of the book.",
+                "generator_expr": "std::string(faker::lorem::sentence())"
+            },
+            {
+                "name": "parent_portfolio_id",
+                "type": "uuid",
+                "cpp_type": "boost::uuids::uuid",
+                "nullable": false,
+                "description": "Links to exactly one portfolio.",
+                "detail": "Mandatory: Every book must belong to a portfolio.",
+                "generator_expr": "ctx.generate_uuid()"
+            },
+            {
+                "name": "owner_unit_id",
+                "type": "uuid",
+                "cpp_type": "std::optional<boost::uuids::uuid>",
+                "nullable": true,
+                "description": "Business unit that owns this book.",
+                "detail": "Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.",
+                "generator_expr": "std::nullopt"
+            },
+            {
+                "name": "ledger_ccy",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Functional/accounting currency.",
+                "detail": "ISO 4217 currency code.",
+                "generator_expr": "std::string(\"USD\")"
+            },
+            {
+                "name": "gl_account_ref",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Reference to external General Ledger.",
+                "detail": "e.g., 'GL-10150-FXO'. Nullable if not integrated.",
+                "generator_expr": "std::string(\"GL-10150-TEST\")"
+            },
+            {
+                "name": "cost_center",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": true,
+                "description": "Internal finance code for P&L attribution.",
+                "detail": "Links to cost center in finance system.",
+                "generator_expr": "std::string(\"CC-001\")"
+            },
+            {
+                "name": "book_status",
+                "type": "text",
+                "cpp_type": "std::string",
+                "nullable": false,
+                "description": "Lifecycle status of the book.",
+                "detail": "References book_statuses lookup (Active, Closed, Frozen).",
+                "generator_expr": "std::string(\"Active\")"
+            },
+            {
+                "name": "is_trading_book",
+                "type": "integer",
+                "cpp_type": "int",
+                "nullable": false,
+                "description": "Basel III/IV classification.",
+                "detail": "1 = Trading Book, 0 = Banking Book.",
+                "generator_expr": "1"
+            }
+        ],
+        "sql": {
+            "tablename": "ores_refdata_books_tbl"
+        },
+        "repository": {
+            "entity_singular_short": "book",
+            "entity_plural_short": "books",
+            "entity_singular_words": "book",
+            "entity_plural_words": "books"
+        },
+        "cpp": {
+            "includes": {
+                "domain": [
+                    "<chrono>",
+                    "<optional>",
+                    "<string>",
+                    "<boost/uuid/uuid.hpp>"
+                ],
+                "entity": [
+                    "<string>",
+                    "\"sqlgen/Timestamp.hpp\"",
+                    "\"sqlgen/PrimaryKey.hpp\""
+                ]
+            },
+            "iterator_var": "bk",
+            "table_display": [
+                {
+                    "column": "name",
+                    "header": "Name"
+                },
+                {
+                    "column": "party_id",
+                    "header": "Party"
+                },
+                {
+                    "column": "ledger_ccy",
+                    "header": "Currency"
+                },
+                {
+                    "column": "book_status",
+                    "header": "Status"
+                },
+                {
+                    "column": "is_trading_book",
+                    "header": "Trading Book"
+                },
+                {
+                    "column": "modified_by",
+                    "header": "Modified By"
+                },
+                {
+                    "column": "version",
+                    "header": "Version"
+                }
+            ]
+        },
+        "qt": {
+            "domain_include": "ores.refdata/domain/book.hpp",
+            "domain_class": "refdata::domain::book",
+            "protocol_include": "ores.refdata/messaging/book_protocol.hpp",
+            "collection_name": "books",
+            "item_var": "book",
+            "key_field": "name",
+            "has_uuid_primary_key": true,
+            "get_request_class": "refdata::messaging::get_books_request",
+            "get_response_class": "refdata::messaging::get_books_response",
+            "get_message_type": "get_books_request",
+            "save_request_class": "refdata::messaging::save_book_request",
+            "save_response_class": "refdata::messaging::save_book_response",
+            "save_message_type": "save_book_request",
+            "save_request_item_field": "book",
+            "delete_request_class": "refdata::messaging::delete_book_request",
+            "delete_response_class": "refdata::messaging::delete_book_response",
+            "delete_message_type": "delete_book_request",
+            "history_request_class": "refdata::messaging::get_book_history_request",
+            "history_response_class": "refdata::messaging::get_book_history_response",
+            "history_message_type": "get_book_history_request",
+            "detail_fields": [
+                {
+                    "field": "name",
+                    "label": "Name",
+                    "widget": "nameEdit",
+                    "type": "line_edit",
+                    "is_key": true,
+                    "is_required": true,
+                    "placeholder": "Enter book name"
+                },
+                {
+                    "field": "ledger_ccy",
+                    "label": "Ledger Currency",
+                    "widget": "ledgerCcyEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter ledger currency"
+                },
+                {
+                    "field": "gl_account_ref",
+                    "label": "GL Account Ref",
+                    "widget": "glAccountRefEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter GL account reference"
+                },
+                {
+                    "field": "cost_center",
+                    "label": "Cost Center",
+                    "widget": "costCenterEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter cost center"
+                },
+                {
+                    "field": "book_status",
+                    "label": "Status",
+                    "widget": "bookStatusEdit",
+                    "type": "line_edit",
+                    "placeholder": "Enter status"
+                }
+            ],
+            "columns": [
+                {
+                    "enum_name": "Name",
+                    "field": "name",
+                    "header": "Name",
+                    "is_string": true,
+                    "width": 200
+                },
+                {
+                    "enum_name": "LedgerCcy",
+                    "field": "ledger_ccy",
+                    "header": "Ledger Ccy",
+                    "is_string": true,
+                    "width": 100
+                },
+                {
+                    "enum_name": "BookStatus",
+                    "field": "book_status",
+                    "header": "Status",
+                    "is_string": true,
+                    "width": 100
+                },
+                {
+                    "enum_name": "CostCenter",
+                    "field": "cost_center",
+                    "header": "Cost Center",
+                    "is_string": true,
+                    "width": 120
+                },
+                {
+                    "enum_name": "IsTradingBook",
+                    "field": "is_trading_book",
+                    "header": "Trading",
+                    "is_int": true,
+                    "width": 70
+                },
+                {
+                    "enum_name": "Version",
+                    "field": "version",
+                    "header": "Version",
+                    "is_int": true,
+                    "width": 80
+                },
+                {
+                    "enum_name": "ModifiedBy",
+                    "field": "modified_by",
+                    "header": "Modified By",
+                    "is_string": true,
+                    "width": 120
+                },
+                {
+                    "enum_name": "RecordedAt",
+                    "field": "recorded_at",
+                    "header": "Recorded At",
+                    "is_timestamp": true,
+                    "width": 150
+                }
+            ],
+            "settings_group": "BookListWindow",
+            "window_title": "Books",
+            "icon": "Book"
+        }
     }
-  }
 }

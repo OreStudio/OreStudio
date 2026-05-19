@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_GENERATORS_SWAP_CONVENTION_GENERATOR_HPP
-#define ORES_REFDATA_GENERATORS_SWAP_CONVENTION_GENERATOR_HPP
+#ifndef ORES_TRADING_GENERATORS_CAP_FLOOR_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_GENERATORS_CAP_FLOOR_INSTRUMENT_GENERATOR_HPP
 
 #include <vector>
-#include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::refdata::generators {
+namespace ores::trading::generators {
 
 /**
- * @brief Generates a synthetic swap_convention.
+ * @brief Generates a synthetic cap_floor_instrument.
  */
-domain::swap_convention generate_synthetic_swap_convention(
+domain::cap_floor_instrument generate_synthetic_cap_floor_instrument(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic swap_conventions.
+ * @brief Generates N synthetic cap_floor_instruments.
  */
-std::vector<domain::swap_convention>
-generate_synthetic_swap_conventions(std::size_t n,
+std::vector<domain::cap_floor_instrument>
+generate_synthetic_cap_floor_instruments(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

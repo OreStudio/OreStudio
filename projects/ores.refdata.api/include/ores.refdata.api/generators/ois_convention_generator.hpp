@@ -22,7 +22,6 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/ois_convention.hpp"
-#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -30,13 +29,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic ois_convention.
  */
-ORES_REFDATA_API_EXPORT domain::ois_convention generate_synthetic_ois_convention(
+domain::ois_convention generate_synthetic_ois_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic ois_conventions.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::ois_convention>
+std::vector<domain::ois_convention>
 generate_synthetic_ois_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

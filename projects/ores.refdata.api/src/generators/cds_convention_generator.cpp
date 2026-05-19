@@ -22,6 +22,7 @@
 #include <atomic>
 #include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
@@ -33,9 +34,13 @@ domain::cds_convention generate_synthetic_cds_convention(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::cds_convention r;
     r.version = 1;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.workspace_id = ctx.generate_uuid();
     r.id = std::string("CDS-STANDARD-CONVENTIONS") + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.settlement_days = 3;

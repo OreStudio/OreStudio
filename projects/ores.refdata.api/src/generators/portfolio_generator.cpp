@@ -20,7 +20,9 @@
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
@@ -30,23 +32,25 @@ using ores::utility::generation::generation_keys;
 domain::portfolio generate_synthetic_portfolio(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
     const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+        std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::portfolio r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.workspace_id = ctx.generate_uuid();
     r.id = ctx.generate_uuid();
-    r.name = faker::company::companyName() + " Portfolio " + std::to_string(idx);
-    r.parent_portfolio_id = std::nullopt;
+    r.party_id = ctx.generate_uuid();
+    r.name = std::string(faker::company::name()) + " Portfolio";
+    r.description = std::string(faker::lorem::sentence());
+    r.parent_portfolio_id = boost::uuids::uuid();
     r.owner_unit_id = ctx.generate_uuid();
     r.purpose_type = std::string("Risk");
     r.aggregation_ccy = std::string("USD");
     r.is_virtual = 0;
-    r.status = "Active";
+    r.status = std::string("Active");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

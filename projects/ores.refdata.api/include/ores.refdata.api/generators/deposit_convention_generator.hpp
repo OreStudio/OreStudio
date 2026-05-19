@@ -22,7 +22,6 @@
 
 #include <vector>
 #include "ores.refdata.api/domain/deposit_convention.hpp"
-#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::refdata::generators {
@@ -30,13 +29,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic deposit_convention.
  */
-ORES_REFDATA_API_EXPORT domain::deposit_convention generate_synthetic_deposit_convention(
+domain::deposit_convention generate_synthetic_deposit_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic deposit_conventions.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::deposit_convention>
+std::vector<domain::deposit_convention>
 generate_synthetic_deposit_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_SERVICE_BOOK_SERVICE_HPP
-#define ORES_REFDATA_CORE_SERVICE_BOOK_SERVICE_HPP
+#ifndef ORES_REFDATA_SERVICE_BOOK_SERVICE_HPP
+#define ORES_REFDATA_SERVICE_BOOK_SERVICE_HPP
 
 #include <string>
 #include <vector>
 #include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/book.hpp"
@@ -33,9 +32,6 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing books.
- *
- * This service provides functionality for:
- * - Managing books (CRUD operations)
  */
 class book_service {
 private:
@@ -51,53 +47,19 @@ private:
 public:
     using context = ores::database::context;
 
-    /**
-     * @brief Constructs a book_service with required repositories.
-     *
-     * @param ctx The database context.
-     */
     explicit book_service(context ctx);
 
-    /**
-     * @brief Lists all books.
-     */
     std::vector<domain::book> list_books();
 
-    /**
-     * @brief Finds a book by its ID.
-     */
     std::optional<domain::book>
-    find_book(const boost::uuids::uuid& id);
+    get_book(const std::string& id);
 
-    /**
-     * @brief Saves a book (creates or updates).
-     *
-     * @param book The book to save
-     */
-    void save_book(const domain::book& book);
+    void save_book(const domain::book& v);
 
-    /**
-     * @brief Saves multiple books (creates or updates).
-     *
-     * @param books The books to save
-     */
-    void save_books(const std::vector<domain::book>& books);
+    void remove_book(const std::string& id);
 
-    /**
-     * @brief Removes a book.
-     *
-     * @param id The ID of the book to remove
-     */
-    void remove_book(const boost::uuids::uuid& id);
-
-    /**
-     * @brief Gets the version history for a book.
-     *
-     * @param id The book ID
-     * @return Vector of all versions, newest first
-     */
     std::vector<domain::book>
-    get_book_history(const boost::uuids::uuid& id);
+    get_book_history(const std::string& id);
 
 private:
     context ctx_;

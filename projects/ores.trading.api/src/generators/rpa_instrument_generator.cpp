@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.trading.api/generators/rpa_instrument_generator.hpp"
 
 #include <atomic>
 #include <string>
@@ -25,11 +25,11 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
-namespace ores::reporting::generators {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::report_definition generate_synthetic_report_definition(
+domain::rpa_instrument generate_synthetic_rpa_instrument(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
@@ -37,19 +37,12 @@ domain::report_definition generate_synthetic_report_definition(
     const auto tid_str = ctx.env().get_or(
         std::string(generation_keys::tenant_id), std::string("system"));
 
-    domain::report_definition r;
+    domain::rpa_instrument r;
     r.version = 1;
     r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
     r.workspace_id = ctx.generate_uuid();
-    r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "_report";
-    r.party_id = boost::uuids::random_generator()();
-    r.description = std::string(faker::lorem::sentence());
-    r.report_type = std::string("risk");
-    r.fsm_state_id = std::nullopt;
-    r.schedule_expression = std::string("0 6 * * 1");
-    r.concurrency_policy = std::string("skip");
-    r.scheduler_job_id = std::nullopt;
+    r.instrument_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";
@@ -58,13 +51,13 @@ domain::report_definition generate_synthetic_report_definition(
     return r;
 }
 
-std::vector<domain::report_definition>
-generate_synthetic_report_definitions(std::size_t n,
+std::vector<domain::rpa_instrument>
+generate_synthetic_rpa_instruments(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::report_definition> r;
+    std::vector<domain::rpa_instrument> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_report_definition(ctx));
+        r.push_back(generate_synthetic_rpa_instrument(ctx));
     return r;
 }
 

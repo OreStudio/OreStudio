@@ -5,6 +5,9 @@
 #include <atomic>
 #include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+{{#has_tenant_id}}
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/has_tenant_id}}
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::{{component}}::{{generator_facet_name}} {
@@ -16,9 +19,19 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+{{#has_tenant_id}}
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
+{{/has_tenant_id}}
 
     domain::{{entity_singular}} r;
     r.version = 1;
+{{#has_tenant_id}}
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+{{/has_tenant_id}}
+{{#has_workspace_id}}
+    r.workspace_id = ctx.generate_uuid();
+{{/has_workspace_id}}
 {{#primary_key.is_text}}
     r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
         + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
@@ -27,10 +40,22 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     r.{{primary_key.column}} = ctx.generate_uuid();
 {{/primary_key.is_uuid}}
 {{#natural_keys}}
+{{#is_uuid}}
+    r.{{column}} = ctx.generate_uuid();
+{{/is_uuid}}
+{{^is_uuid}}
     r.{{column}} = {{{generator_expr}}};
+{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#generator_expr}}
     r.{{name}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+{{#is_uuid}}
+    r.{{name}} = ctx.generate_uuid();
+{{/is_uuid}}
+{{/generator_expr}}
 {{/columns}}
     r.modified_by = modified_by;
     r.performed_by = modified_by;

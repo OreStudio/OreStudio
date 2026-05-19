@@ -29,10 +29,10 @@ std::string convert_to_table(const std::vector<report_definition>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Name" << "Type" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& rd : v) {
-        table << fort::endr;
+        table << boost::uuids::to_string(rd.id) << rd.name << rd.report_type << rd.modified_by << rd.version << fort::endr;
     }
     return table.to_string();
 }

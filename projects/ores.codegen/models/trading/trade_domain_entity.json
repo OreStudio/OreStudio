@@ -253,7 +253,14 @@
       "includes": {
         "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
       },
-      "iterator_var": "tr"
+      "iterator_var": "tr",
+      "table_display": [
+        {"column": "identity.id", "header": "ID", "is_uuid": true},
+        {"column": "lifecycle.trade_date", "header": "Trade Date", "is_optional": true},
+        {"column": "classification.trade_type", "header": "Type"},
+        {"column": "audit.modified_by", "header": "Modified By"},
+        {"column": "identity.version", "header": "Version"}
+      ]
     },
 
     "qt": {

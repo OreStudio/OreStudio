@@ -138,7 +138,14 @@
         "domain": ["<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
         "entity": ["<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"]
       },
-      "iterator_var": "rd"
+      "iterator_var": "rd",
+      "table_display": [
+        {"column": "id", "header": "ID", "is_uuid": true},
+        {"column": "name", "header": "Name"},
+        {"column": "report_type", "header": "Type"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
     },
 
     "qt": {

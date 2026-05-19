@@ -84,7 +84,14 @@
       "includes": {
         "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
       },
-      "iterator_var": "ti"
+      "iterator_var": "ti",
+      "table_display": [
+        {"column": "id_value", "header": "ID Value"},
+        {"column": "id_type", "header": "ID Type"},
+        {"column": "id_scheme", "header": "Scheme"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
     }
   }
 }

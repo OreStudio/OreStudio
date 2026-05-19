@@ -58,7 +58,13 @@
                     "<boost/uuid/uuid.hpp>"
                 ]
             },
-            "iterator_var": "le"
+            "iterator_var": "le",
+            "table_display": [
+                {"column": "code", "header": "Code"},
+                {"column": "description", "header": "Description"},
+                {"column": "modified_by", "header": "Modified By"},
+                {"column": "version", "header": "Version"}
+            ]
         }
     }
 }

@@ -43,7 +43,7 @@ domain::portfolio generate_synthetic_portfolio(
     r.workspace_id = ctx.generate_uuid();
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.name = std::string(faker::company::name()) + " Portfolio";
+    r.name = std::string(faker::company::companyName()) + " Portfolio";
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = boost::uuids::uuid();
     r.owner_unit_id = ctx.generate_uuid();

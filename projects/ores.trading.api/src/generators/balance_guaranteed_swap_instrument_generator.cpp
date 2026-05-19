@@ -44,6 +44,8 @@ domain::balance_guaranteed_swap_instrument generate_synthetic_balance_guaranteed
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("BalanceGuaranteedSwap");
     r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.maturity_date = std::string("2029-01-15");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

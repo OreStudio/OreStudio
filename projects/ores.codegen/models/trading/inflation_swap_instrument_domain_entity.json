@@ -53,7 +53,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Swap effective start date.",
-                "detail": "ISO 8601 date string (YYYY-MM-DD)."
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2024-01-15\")"
             },
             {
                 "name": "maturity_date",
@@ -61,7 +62,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Swap maturity date.",
-                "detail": "Must be after start_date."
+                "detail": "Must be after start_date.",
+                "generator_expr": "std::string(\"2034-01-15\")"
             },
             {
                 "name": "inflation_index_code",
@@ -69,7 +71,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Inflation index code.",
-                "detail": "e.g., UKRPI, USCPI, EUHICPXT."
+                "detail": "e.g., UKRPI, USCPI, EUHICPXT.",
+                "generator_expr": "std::string(\"UKRPI\")"
             },
             {
                 "name": "base_cpi",

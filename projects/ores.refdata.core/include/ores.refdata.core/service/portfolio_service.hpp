@@ -88,7 +88,7 @@ public:
      *
      * @param id The ID of the portfolio to remove
      */
-    void remove_portfolio(const boost::uuids::uuid& id);
+    void remove_portfolio(const std::string& id);
 
     /**
      * @brief Gets the version history for a portfolio.
@@ -97,7 +97,7 @@ public:
      * @return Vector of all versions, newest first
      */
     std::vector<domain::portfolio>
-    get_portfolio_history(const boost::uuids::uuid& id);
+    get_portfolio_history(const std::string& id);
 
 private:
     context ctx_;

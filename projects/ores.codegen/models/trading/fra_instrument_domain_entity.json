@@ -53,7 +53,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "FRA start date.",
-                "detail": "ISO 8601 date string (YYYY-MM-DD)."
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2024-01-15\")"
             },
             {
                 "name": "end_date",
@@ -61,7 +62,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "FRA end date.",
-                "detail": "Must be after start_date."
+                "detail": "Must be after start_date.",
+                "generator_expr": "std::string(\"2025-01-15\")"
             },
             {
                 "name": "currency",
@@ -69,7 +71,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "ISO 4217 currency code.",
-                "detail": "e.g., USD, EUR, GBP."
+                "detail": "e.g., USD, EUR, GBP.",
+                "generator_expr": "std::string(\"USD\")"
             },
             {
                 "name": "rate_index",
@@ -77,7 +80,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Floating rate index code.",
-                "detail": "e.g., LIBOR, EURIBOR, SOFR."
+                "detail": "e.g., LIBOR, EURIBOR, SOFR.",
+                "generator_expr": "std::string(\"SOFR\")"
             },
             {
                 "name": "long_short",
@@ -85,7 +89,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Position direction: Long or Short.",
-                "detail": "Indicates whether the party is a buyer (Long) or seller (Short)."
+                "detail": "Indicates whether the party is a buyer (Long) or seller (Short).",
+                "generator_expr": "std::string(\"Long\")"
             },
             {
                 "name": "strike",
@@ -94,7 +99,8 @@
                 "nullable": false,
                 "description": "Fixed contract rate.",
                 "detail": "Expressed as a decimal fraction.",
-                "default_value": "0.0"
+                "default_value": "0.0",
+                "generator_expr": "0.05"
             },
             {
                 "name": "notional",
@@ -103,7 +109,8 @@
                 "nullable": false,
                 "description": "Notional principal amount.",
                 "detail": "Must be positive.",
-                "default_value": "0.0"
+                "default_value": "0.0",
+                "generator_expr": "1000000.0"
             },
             {
                 "name": "description",

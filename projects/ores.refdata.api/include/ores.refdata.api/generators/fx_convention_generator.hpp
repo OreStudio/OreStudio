@@ -21,6 +21,7 @@
 #define ORES_REFDATA_GENERATORS_FX_CONVENTION_GENERATOR_HPP
 
 #include <vector>
+#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/fx_convention.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic fx_convention.
  */
-domain::fx_convention generate_synthetic_fx_convention(
+ORES_REFDATA_API_EXPORT domain::fx_convention generate_synthetic_fx_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic fx_conventions.
  */
-std::vector<domain::fx_convention>
+ORES_REFDATA_API_EXPORT std::vector<domain::fx_convention>
 generate_synthetic_fx_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

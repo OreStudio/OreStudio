@@ -71,16 +71,16 @@ void portfolio_service::save_portfolios(
     repo_.write(ctx_, stamped);
 }
 
-void portfolio_service::remove_portfolio(const boost::uuids::uuid& id) {
+void portfolio_service::remove_portfolio(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
+    repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed portfolio: " << id;
 }
 
 std::vector<domain::portfolio>
-portfolio_service::get_portfolio_history(const boost::uuids::uuid& id) {
+portfolio_service::get_portfolio_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio: " << id;
-    return repo_.read_all(ctx_, boost::uuids::to_string(id));
+    return repo_.read_all(ctx_, id);
 }
 
 }

@@ -17,10 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/generators/trade_identifier_generator.hpp"
+#include "ores.trading.api/generator/trade_identifier_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
@@ -32,9 +34,13 @@ domain::trade_identifier generate_synthetic_trade_identifier(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::trade_identifier r;
     r.version = 1;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.workspace_id = ctx.generate_uuid();
     r.id = ctx.generate_uuid();
     r.trade_id = ctx.generate_uuid();
     r.issuing_party_id = std::nullopt;
@@ -43,7 +49,7 @@ domain::trade_identifier generate_synthetic_trade_identifier(
     r.id_scheme = std::string();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
+    r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

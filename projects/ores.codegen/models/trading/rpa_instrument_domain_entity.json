@@ -43,7 +43,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Agreement effective start date.",
-                "detail": "ISO 8601 date string (YYYY-MM-DD)."
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2024-01-15\")"
             },
             {
                 "name": "maturity_date",
@@ -51,7 +52,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Agreement maturity date.",
-                "detail": "Must be after start_date."
+                "detail": "Must be after start_date.",
+                "generator_expr": "std::string(\"2027-01-15\")"
             },
             {
                 "name": "reference_counterparty",
@@ -59,7 +61,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Identifier of the reference counterparty whose credit risk is shared.",
-                "detail": "e.g., LEI code or name of the reference entity."
+                "detail": "e.g., LEI code or name of the reference entity.",
+                "generator_expr": "std::string(\"ACME Corp\")"
             },
             {
                 "name": "participation_rate",
@@ -68,7 +71,8 @@
                 "nullable": false,
                 "description": "Participation rate (0, 1] representing the fraction of risk transferred.",
                 "detail": "Expressed as a decimal fraction (e.g., 0.5 for 50%).",
-                "default_value": "0.0"
+                "default_value": "0.0",
+                "generator_expr": "0.5"
             },
             {
                 "name": "protection_fee",

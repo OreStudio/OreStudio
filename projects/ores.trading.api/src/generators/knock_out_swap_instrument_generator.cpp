@@ -44,6 +44,10 @@ domain::knock_out_swap_instrument generate_synthetic_knock_out_swap_instrument(
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("KnockOutSwap");
     r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.maturity_date = std::string("2029-01-15");
+    r.barrier_level = 0.05;
+    r.barrier_type = std::string("UpAndOut");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

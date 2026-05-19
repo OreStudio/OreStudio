@@ -17,10 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
 
 #include <atomic>
+#include <string>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
@@ -32,14 +34,20 @@ domain::lifecycle_event generate_synthetic_lifecycle_event(
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
+    const auto tid_str = ctx.env().get_or(
+        std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::lifecycle_event r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter);
+    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.workspace_id = ctx.generate_uuid();
+    r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter) + "-"
+        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.description = std::string(faker::lorem::sentence());
+    r.fsm_state_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
+    r.change_reason_code = "system.new";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

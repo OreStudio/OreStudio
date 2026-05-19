@@ -21,6 +21,7 @@
 #define ORES_TRADING_GENERATORS_INFLATION_SWAP_INSTRUMENT_GENERATOR_HPP
 
 #include <vector>
+#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::trading::generators {
 /**
  * @brief Generates a synthetic inflation_swap_instrument.
  */
-domain::inflation_swap_instrument generate_synthetic_inflation_swap_instrument(
+ORES_TRADING_API_EXPORT domain::inflation_swap_instrument generate_synthetic_inflation_swap_instrument(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic inflation_swap_instruments.
  */
-std::vector<domain::inflation_swap_instrument>
+ORES_TRADING_API_EXPORT std::vector<domain::inflation_swap_instrument>
 generate_synthetic_inflation_swap_instruments(std::size_t n,
     utility::generation::generation_context& ctx);
 

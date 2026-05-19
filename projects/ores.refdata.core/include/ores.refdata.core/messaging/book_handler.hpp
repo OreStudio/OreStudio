@@ -21,7 +21,6 @@
 #define ORES_REFDATA_CORE_MESSAGING_BOOK_HANDLER_HPP
 
 #include <optional>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -137,9 +136,8 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
             for (const auto& id_str : req->ids)
-                svc.remove_book(gen(id_str));
+                svc.remove_book(id_str);
             BOOST_LOG_SEV(book_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, delete_book_response{.success = true});
@@ -169,12 +167,11 @@ public:
             return;
         }
         try {
-            boost::uuids::string_generator gen;
-            auto h = svc.get_book_history(gen(req->id));
+            auto h = svc.get_book_history(req->id);
             BOOST_LOG_SEV(book_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, get_book_history_response{
-                .success = true, .versions = std::move(h)});
+                .books = std::move(h), .success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(book_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

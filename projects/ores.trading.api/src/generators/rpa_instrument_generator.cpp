@@ -43,6 +43,10 @@ domain::rpa_instrument generate_synthetic_rpa_instrument(
     r.workspace_id = ctx.generate_uuid();
     r.instrument_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.maturity_date = std::string("2027-01-15");
+    r.reference_counterparty = std::string("ACME Corp");
+    r.participation_rate = 0.5;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

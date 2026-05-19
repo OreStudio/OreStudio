@@ -53,7 +53,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Option expiry date.",
-                "detail": "ISO 8601 date string (YYYY-MM-DD)."
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2025-06-15\")"
             },
             {
                 "name": "exercise_type",
@@ -61,7 +62,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Exercise type: European, Bermudan, or American.",
-                "detail": "Determines when the option may be exercised."
+                "detail": "Determines when the option may be exercised.",
+                "generator_expr": "std::string(\"European\")"
             },
             {
                 "name": "settlement_type",
@@ -69,7 +71,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Settlement type: Cash or Physical.",
-                "detail": "Determines how the swaption is settled upon exercise."
+                "detail": "Determines how the swaption is settled upon exercise.",
+                "generator_expr": "std::string(\"Physical\")"
             },
             {
                 "name": "long_short",
@@ -77,7 +80,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Position direction: Long or Short.",
-                "detail": "Indicates whether the party holds or writes the option."
+                "detail": "Indicates whether the party holds or writes the option.",
+                "generator_expr": "std::string(\"Long\")"
             },
             {
                 "name": "start_date",

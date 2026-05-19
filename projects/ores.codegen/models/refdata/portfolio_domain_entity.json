@@ -34,7 +34,7 @@
                 "cpp_type": "std::string",
                 "description": "Human-readable name for the portfolio.",
                 "detail": "e.g., 'Global Rates', 'APAC Credit'.",
-                "generator_expr": "std::string(faker::company::name()) + \" Portfolio\""
+                "generator_expr": "std::string(faker::company::companyName()) + \" Portfolio\""
             }
         ],
         "columns": [

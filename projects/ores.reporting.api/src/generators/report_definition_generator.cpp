@@ -43,7 +43,7 @@ domain::report_definition generate_synthetic_report_definition(
     r.workspace_id = ctx.generate_uuid();
     r.id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun()) + "_report";
-    r.party_id = boost::uuids::random_generator()();
+    r.party_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
     r.report_type = std::string("risk");
     r.fsm_state_id = std::nullopt;

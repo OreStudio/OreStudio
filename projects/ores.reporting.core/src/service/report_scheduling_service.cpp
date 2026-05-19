@@ -338,7 +338,10 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         repository::report_definition_repository repo;
         std::vector<domain::report_definition> unscheduled;
         try {
-            unscheduled = repo.read_latest_unscheduled(tenant_ctx);
+            auto all = repo.read_latest(tenant_ctx);
+            for (auto& d : all)
+                if (!d.scheduler_job_id)
+                    unscheduled.push_back(std::move(d));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to read unscheduled definitions for tenant "

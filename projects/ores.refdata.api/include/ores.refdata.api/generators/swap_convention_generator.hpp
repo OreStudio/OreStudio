@@ -21,6 +21,7 @@
 #define ORES_REFDATA_GENERATORS_SWAP_CONVENTION_GENERATOR_HPP
 
 #include <vector>
+#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic swap_convention.
  */
-domain::swap_convention generate_synthetic_swap_convention(
+ORES_REFDATA_API_EXPORT domain::swap_convention generate_synthetic_swap_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic swap_conventions.
  */
-std::vector<domain::swap_convention>
+ORES_REFDATA_API_EXPORT std::vector<domain::swap_convention>
 generate_synthetic_swap_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

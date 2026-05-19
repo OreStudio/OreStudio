@@ -44,6 +44,8 @@ domain::cap_floor_instrument generate_synthetic_cap_floor_instrument(
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("CapFloor");
     r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.maturity_date = std::string("2026-01-15");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

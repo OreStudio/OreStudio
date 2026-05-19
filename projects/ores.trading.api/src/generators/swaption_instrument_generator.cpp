@@ -44,6 +44,10 @@ domain::swaption_instrument generate_synthetic_swaption_instrument(
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("EuropeanSwaption");
     r.party_id = ctx.generate_uuid();
+    r.expiry_date = std::string("2025-06-15");
+    r.exercise_type = std::string("European");
+    r.settlement_type = std::string("Physical");
+    r.long_short = std::string("Long");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

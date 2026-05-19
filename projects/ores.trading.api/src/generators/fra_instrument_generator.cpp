@@ -44,6 +44,13 @@ domain::fra_instrument generate_synthetic_fra_instrument(
     r.instrument_id = ctx.generate_uuid();
     r.trade_type_code = std::string("FRA");
     r.party_id = ctx.generate_uuid();
+    r.start_date = std::string("2024-01-15");
+    r.end_date = std::string("2025-01-15");
+    r.currency = std::string("USD");
+    r.rate_index = std::string("SOFR");
+    r.long_short = std::string("Long");
+    r.strike = 0.05;
+    r.notional = 1000000.0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

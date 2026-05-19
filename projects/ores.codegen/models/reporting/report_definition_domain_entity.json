@@ -50,7 +50,7 @@
         "cpp_type": "boost::uuids::uuid",
         "nullable": false,
         "description": "Party that owns this report definition.",
-        "generator_expr": "boost::uuids::random_generator()()"
+        "generator_expr": "ctx.generate_uuid()"
       },
       {
         "name": "description",

@@ -53,7 +53,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Swap effective start date.",
-                "detail": "ISO 8601 date string (YYYY-MM-DD)."
+                "detail": "ISO 8601 date string (YYYY-MM-DD).",
+                "generator_expr": "std::string(\"2024-01-15\")"
             },
             {
                 "name": "maturity_date",
@@ -61,7 +62,8 @@
                 "cpp_type": "std::string",
                 "nullable": false,
                 "description": "Swap maturity date.",
-                "detail": "Must be after start_date."
+                "detail": "Must be after start_date.",
+                "generator_expr": "std::string(\"2029-01-15\")"
             },
             {
                 "name": "lockout_days",

@@ -21,6 +21,7 @@
 #define ORES_REFDATA_GENERATORS_IBOR_INDEX_CONVENTION_GENERATOR_HPP
 
 #include <vector>
+#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic ibor_index_convention.
  */
-domain::ibor_index_convention generate_synthetic_ibor_index_convention(
+ORES_REFDATA_API_EXPORT domain::ibor_index_convention generate_synthetic_ibor_index_convention(
     utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic ibor_index_conventions.
  */
-std::vector<domain::ibor_index_convention>
+ORES_REFDATA_API_EXPORT std::vector<domain::ibor_index_convention>
 generate_synthetic_ibor_index_conventions(std::size_t n,
     utility::generation::generation_context& ctx);
 

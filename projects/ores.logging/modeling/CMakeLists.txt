@@ -17,11 +17,9 @@
 #
 set(name "ores.logging")
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.puml")
-    set(diagram_target generate_${name}_diagram)
-    add_custom_target(${diagram_target}
-        COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
-        COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
-    add_dependencies(make_all_diagrams ${diagram_target})
-endif()
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})

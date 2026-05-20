@@ -798,7 +798,7 @@ plan's Track 1 work begins.
    as data override).  UI should show which workspace a report definition comes
    from (relevant to Phase 4 step 2).
 
-3. *Archive semantics*: resolved.  Archive is a bitemporal soft-close (sets
+2. *Archive semantics*: resolved.  Archive is a bitemporal soft-close (sets
    ~valid_to~ = now; data retained).  Status badge changes to red/Archived.
    Archived workspaces are hidden from normal selectors; a "Show archived"
    filter reveals them.  Restoration is an explicit re-open write.  The Live
@@ -807,10 +807,10 @@ plan's Track 1 work begins.
    ~workspace::workspaces:archive~; archiving another user's workspace requires
    ~workspace::workspaces:archive_any~ (TenantAdmin).
 
-4. *Workspace storage reporting*: large ORE sample imports may need per-workspace
+3. *Workspace storage reporting*: large ORE sample imports may need per-workspace
    row counts or storage estimates visible in the Data Workshop.  The product
    backlog mentions a Baobab-style map for workspace visualisation.  Deferred
    to Phase 4.
 
-5. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
+4. *UI name*: "Data Workshop" vs "Workspace Explorer" vs other.  Decide before
    Phase 4 begins.

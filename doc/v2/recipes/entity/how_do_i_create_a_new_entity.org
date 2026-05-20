@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: b6c5d4e3-f2a1-4b0c-8d9e-0f1a2b3c4d5e
+:END:
+#+title: How do I create a new entity?
+#+description: Steps to add a complete domain entity across all layers using codegen-first approach.
+#+type: recipe
+#+level: cross
+#+filetags: :entity:codegen:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* Question
+
+How do I add a new domain entity to ORE Studio?
+
+* Answer
+
+** 1. Read the standard first
+
+Every entity must conform to [[id:f3a1b2c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c][entity lifecycle]] before writing any code.
+That document specifies what each layer must contain and what the defaults
+are. Partial entities or disabled defaults without written rationale are not
+acceptable.
+
+** 2. Create the codegen model
+
+Create =projects/ores.codegen/models/{component}/{entity}_domain_entity.json=.
+Minimum required content in the =qt= section:
+
+#+begin_src json
+"qt": {
+  "has_uuid_primary_key": true,
+  "has_pagination": true,
+  "has_history": true,
+  "detail_fields": [ ... ],
+  "history_request_class":  "{component}::messaging::get_{entity}_history_request",
+  "history_response_class": "{component}::messaging::get_{entity}_history_response",
+  "history_message_type":   "get_{entity}_history_request",
+  ...
+}
+#+end_src
+
+If any of =has_history=, =has_pagination=, or =detail_fields= is absent
+or disabled, add a =deviation_rationale_{dimension}= key with a one-sentence
+justification before proceeding.
+
+** 3. Generate and integrate each layer
+
+#+begin_src sh
+cd projects/ores.codegen
+
+# SQL (table DDL, trigger, RLS, artefact table)
+./run_generator.sh models/{component}/{entity}_domain_entity.json
+
+# C++ API and core (domain type, repository, service, handler)
+./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp
+
+# Qt UI (model, MDI window, detail dialog, history dialog, controller)
+./run_generator.sh models/{component}/{entity}_domain_entity.json --profile qt
+#+end_src
+
+Follow the [[id:a9b8c7d6-e5f4-4a3b-9c2d-1e0f9a8b7c6d][entity-creator]] skill for CMakeLists integration, controller
+wiring, and PR checkpoints at each layer boundary.
+
+** 4. Validate
+
+#+begin_src sh
+# SQL schema integrity
+./projects/ores.sql/utility/validate_schemas.sh
+
+# Component documentation
+./projects/ores.codegen/validate_docs.sh
+#+end_src
+
+Ask the user to build the affected targets before raising each PR.
+
+* Script
+
+See [[id:a9b8c7d6-e5f4-4a3b-9c2d-1e0f9a8b7c6d][entity-creator]] skill for the full phase-by-phase execution guide and
+layer-specific skills for deep detail on each layer.
+
+* Tested by
+
+Build and test suite for the component under =cmake --build --preset
+linux-clang-debug-ninja --target {component}.core.tests=.

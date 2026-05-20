@@ -1,0 +1,63 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/bond_instrument_handler.hpp"
+
+namespace ores::trading::messaging::detail {
+
+std::vector<ores::nats::service::subscription>
+register_bond_handlers(ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::vector<ores::nats::service::subscription> subs;
+    constexpr auto queue = queue_name;
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_bond_instruments_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_bond_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_bond_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_bond_instrument_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
+        }));
+
+    return subs;
+}
+
+}

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: c9104347-9fb4-4b9a-ac78-8747f7e84060
+:END:
+#+title: Migrate JWT to ores.security with RS256
+#+description: Move JWT infrastructure from ores.http to ores.security; RS256 asymmetric signing (IAM mints with private key; services verify with public key); jwt_claims extended with tenant_id + party_id; ores.iam.service mints + returns JWT in login_response; protocol 49.0 (breaking).
+#+type: task
+#+level: s1
+#+filetags: :iam:jwt:security:rs256:protocol:jwt_rs256_in_security:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-04]
+:END:
+
+** Now
+Completed 2026-03-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-04
+
+* Goal
+
+Move JWT infrastructure from =ores.http= to =ores.security= and switch to RS256 asymmetric signing so services can validate tokens with just a public key.
+
+* Acceptance
+
+- JWT moved from =ores.http= to =ores.security= (shared across services).
+- RS256 asymmetric signing: IAM mints tokens with private key; other services verify with public key.
+- =jwt_claims= extended with =tenant_id= + =party_id= for distributed service auth.
+- =ores.iam.service= mints + returns RS256 JWT in =login_response=.
+- Protocol 49.0 (breaking).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Prerequisite for the NNG broker architecture; survived the NATS migration because the security model is independent of the transport.
+
+* Result
+
+JWT centralised in ores.security; RS256 in use.

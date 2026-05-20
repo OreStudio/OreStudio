@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 84559b48-546b-4724-bdd0-53dbfca2c24a
+:END:
+#+title: Reporting subsystem
+#+description: Design document, SQL schema, C++ domain + messaging + repository, Qt UI with cron widget, scheduling backend — for ores.reporting.
+#+type: story
+#+level: s2
+#+filetags: :reporting:sql:qt:cron:fsm:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-03]
+:END:
+
+** Now
+Completed 2026-03-03.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-03
+
+* Goal
+
+Stand up the =ores.reporting= subsystem from scratch: design,
+schema, C++ domain + messaging + repository, Qt UI with cron widget
++ scheduling backend, and the party-codename design that supports
+per-party queue isolation.
+
+* Acceptance
+
+- Design document captures domain model + dual FSMs + scheduler integration.
+- SQL schema in place with FSM lifecycle, RLS, NOTIFY triggers.
+- C++ component with 32 new message types.
+- Qt UI for report types / policies / definitions / instances; cron widget integrated.
+- Party codename design plan captured for the implementation that follows.
+
+* Tasks
+
+In execution order:
+
+- [[id:53f2d7b0-390b-4e0a-8a68-743bcf8f1d5e][Add reporting component design document]]
+- [[id:1af41a4b-3281-4e49-941e-98a3bd9a64c4][Add ores.reporting SQL schema]]
+- [[id:8066ad9e-31e5-41fe-a27f-712a7b5038c3][Reporting: domain types, messaging, repository]]
+- [[id:121cd665-1948-4f22-b1f0-432ad0146d04][Reporting UI: cron widget, party codename plan]]
+
+* Decisions
+
+- /Two distinct FSMs/ :: report_definition (draft/active/suspended/archived) and report_instance (pending/running/completed/failed/cancelled) — separate lifecycles.
+- /Cron widget + editor dialog/ :: takes the cron-expression UX off the user's mental load.
+- /Schedule via ores.scheduler/ :: re-use sprint-13 infrastructure (originally pg_cron-backed; later migrated to in-process).
+
+* Out of scope
+
+- Distributed execution (ores.grid) — future.
+- Report output storage strategy — open question captured.
+
+* See also
+
+- [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]] (sprint 13) — the scheduler this story consumes.
+- [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]] — the codename design from this story is implemented there.

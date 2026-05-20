@@ -9,8 +9,14 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: ed082d5a-4afb-4bf9-81db-8712f881dde3
 
 Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+Continued in: [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]]
+(sprint 14) — replaces the pg_cron-backed scheduler from this
+story with an in-process boost::asio scheduler loop alongside the
+custom MQ tables.
 
 * DONE Status
 :PROPERTIES:

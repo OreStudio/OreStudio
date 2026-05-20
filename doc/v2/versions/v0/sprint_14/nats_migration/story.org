@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 23d1f2bb-d2d3-423a-8167-657098e30542
+:END:
+#+title: NATS migration
+#+description: Replace the entire binary protocol with cnats request/reply (~107k lines removed); 10 domain services migrated; ores.shell rename; NATS telemetry sampling; tenant provisioning + RBAC + LEI handler follow-ups.
+#+type: story
+#+level: s2
+#+filetags: :nats:messaging:microservices:refactor:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-18]
+:END:
+
+** Now
+Completed 2026-03-18.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-18
+
+* Goal
+
+Replace the entire binary-protocol messaging stack with NATS — the
+sprint pivot. Cnats for request/reply; JetStream for queues;
+subject-based environment isolation. All 10 domain services
+migrated; ores.comms.shell renamed; pgmq-based ores.mq removed.
+
+* Acceptance
+
+- Binary protocol stack removed (~107k lines).
+- ores.nats component + nats::service::client interface.
+- 10 domain services migrated.
+- ores.comms.shell renamed to ores.shell.
+- NATS telemetry sampling in place.
+- Tenant provisioning, RBAC, LEI handler, audit attribution, wt-service follow-ups landed.
+
+* Tasks
+
+In execution order:
+
+- [[id:84365a4e-5921-4921-ab81-e8ea15c17eaf][Implement NATS support]]
+- [[id:6d8987a6-7f0b-40cb-8334-e149ea44b44b][Rename ores.comms.shell to ores.shell]]
+- [[id:4776490d-d9b5-4465-9bd0-21afac83ca60][Add NATS telemetry sampling]]
+- [[id:d900cdcc-3d94-46f4-b54e-94212902fe77][Remaining NATS changes]]
+
+* Decisions
+
+- /NATS over NNG/ :: standard, scalable, microservice-friendly base; much less plumbing than NNG broker for the same outcome.
+- /JetStream replaces ores.mq/ :: the custom MQ from earlier in this sprint becomes redundant once JetStream is on board.
+- /Subject-based environment isolation/ :: ores.{tier}.{instance} prefix; cleaner than separate broker instances per env.
+- /ores.shell, not ores.messaging.shell/ :: with NATS replacing the binary comms protocol, the .comms namespace doesn't apply to the shell any more.
+
+* Out of scope
+
+- NATS clustering / replication topology.
+- Multi-region NATS deployment.
+
+* See also
+
+- [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] — the path this story replaces.
+- [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]] — superseded by JetStream.

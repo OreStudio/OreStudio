@@ -89,6 +89,11 @@ is the current sprint; the rest are closed.
   login + account-party management; =ores.scheduler= over =pg_cron=;
   portfolio explorer; party isolation for books / portfolios /
   trades; tabbed dialogs; FSM into DQ; atomic batch operations.
+- [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] — Messaging infrastructure: ORE Import Wizard;
+  =ores.reporting= subsystem; trade-status FSM; CLI domain layer;
+  pgmq → custom MQ → NNG → NATS messaging pivot (~107k lines of
+  binary protocol replaced); party codename + race fixes; JWT RS256
+  in =ores.security=.
 - ... through Sprint 16.
 
 * Release scope

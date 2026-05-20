@@ -9,8 +9,13 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 05cfef69-f80b-437f-aeee-3881e4fe96f1
 
 Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+Continued in: [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]]
+(sprint 14) — attempted again and postponed again; ORE Import
+Wizard ([[id:f80bad05-2e66-458d-9223-1db0a83ef694][ore_import_wizard]]) covers a broader shape.
 
 * BACKLOG Status
 

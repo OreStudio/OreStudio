@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 1de357ff-7139-49fd-bc97-b30cd095ef53
+:END:
+#+title: JWT RS256 in ores.security
+#+description: Move JWT handling from ores.http to ores.security; RS256 asymmetric signing for distributed service auth; jwt_claims grows tenant_id + party_id; protocol 49.0.
+#+type: story
+#+level: s2
+#+filetags: :iam:jwt:security:rs256:protocol:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-04]
+:END:
+
+** Now
+Completed 2026-03-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-04
+
+* Goal
+
+Move JWT infrastructure into =ores.security= and switch to RS256
+asymmetric signing so services can validate tokens with just a
+public key — prerequisite for distributed service authentication.
+
+* Acceptance
+
+- JWT lives in ores.security (shared across services).
+- RS256: IAM private key mints; services verify with public key.
+- jwt_claims carries tenant_id + party_id.
+- Login response returns the JWT.
+- Protocol 49.0 (breaking).
+
+* Tasks
+
+In execution order:
+
+- [[id:c9104347-9fb4-4b9a-ac78-8747f7e84060][Migrate JWT to ores.security with RS256]]
+
+* Decisions
+
+- /RS256 over HS256/ :: services can verify without sharing the signing secret; necessary for the broker / NATS architecture.
+- /tenant_id + party_id in claims/ :: lets downstream services enforce isolation without a separate session lookup.
+
+* Out of scope
+
+- Key rotation tooling — separate workstream.
+
+* See also
+
+- [[id:55bf0070-33c2-4f1d-986f-a787138942f6][NNG message broker attempt]] — the JWT work was the security half of this attempt; it survives.

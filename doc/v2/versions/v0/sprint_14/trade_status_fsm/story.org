@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 86927ebe-880c-42e4-8c94-e4705c4a622a
+:END:
+#+title: Trade status FSM and activity type
+#+description: FSM for trade status (new / live / expired / cancelled); activity_type taxonomy replaces lifecycle_events; trade_status_service::resolve_status() enforces transitions.
+#+type: story
+#+level: s2
+#+filetags: :trading:fsm:activity_type:domain:sprint_14:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-02]
+:END:
+
+** Now
+Completed 2026-03-02.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-02
+
+* Goal
+
+Replace the loose lifecycle_events concept with a proper trade-
+status FSM + activity_type taxonomy so trade lifecycles are
+enforced + auditable.
+
+* Acceptance
+
+- Trade status FSM enforces valid state transitions.
+- activity_type taxonomy maps to FpML event types + FSM transitions where applicable.
+- trade_status_service::resolve_status() validates + applies transitions.
+- Cross-tenant leak fix in refdata.
+
+* Tasks
+
+In execution order:
+
+- [[id:da8ff70f-4d9e-4231-9998-377aeb8d9dfa][Implement trade status state machine]]
+
+* Decisions
+
+- /activity_type, not lifecycle_events/ :: richer taxonomy for P&L attribution and reporting.
+- /FSM in ores.dq/ :: lifecycle FSMs are DQ metadata (per the sprint-13 FSM consolidation).
+
+* Out of scope
+
+- Multi-leg trade transitions.
+- Cancellation-with-counterparty-confirmation workflow.
+
+* See also
+
+- [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — supplies the FSM home.

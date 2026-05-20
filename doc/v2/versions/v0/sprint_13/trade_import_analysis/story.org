@@ -9,8 +9,13 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: f80bad05-2e66-458d-9223-1db0a83ef694
 
 Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+Continued in: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — the analysis here
+surfaced that a directory-scanning wizard was the right shape; the
+wizard implements that.
 
 * DONE Status
 :PROPERTIES:

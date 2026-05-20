@@ -31,6 +31,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace {
 
@@ -53,7 +54,7 @@ TEST_CASE("party_generator_produces_valid_instance", tags) {
     BOOST_LOG_SEV(lg, info) << "Generated party: " << sut.full_name;
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.full_name.empty());
     CHECK(!sut.short_code.empty());
@@ -86,7 +87,7 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     auto sut = generate_synthetic_counterparty(ctx);
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.full_name.empty());
     CHECK(!sut.short_code.empty());
@@ -240,7 +241,7 @@ TEST_CASE("party_identifier_generator_produces_valid_instance", tags) {
     auto sut = generate_synthetic_party_identifier(ctx);
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.party_id.is_nil());
     CHECK(!sut.id_scheme.empty());
@@ -272,7 +273,7 @@ TEST_CASE("counterparty_identifier_generator_produces_valid_instance", tags) {
     auto sut = generate_synthetic_counterparty_identifier(ctx);
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.counterparty_id.is_nil());
     CHECK(!sut.id_scheme.empty());
@@ -304,7 +305,7 @@ TEST_CASE("party_contact_information_generator_produces_valid_instance", tags) {
     auto sut = generate_synthetic_party_contact_information(ctx);
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.party_id.is_nil());
     CHECK(!sut.contact_type.empty());
@@ -339,7 +340,7 @@ TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", 
     auto sut = generate_synthetic_counterparty_contact_information(ctx);
 
     CHECK(sut.version == 1);
-    CHECK(sut.tenant_id == "system");
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
     CHECK(!sut.id.is_nil());
     CHECK(!sut.counterparty_id.is_nil());
     CHECK(!sut.contact_type.empty());

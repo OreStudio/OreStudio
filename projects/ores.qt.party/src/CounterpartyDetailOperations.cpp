@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
@@ -43,7 +44,7 @@ operation_result counterparty_detail_operations::save_entity(
 
     refdata::domain::counterparty cpty;
     cpty.version = data.version;
-    cpty.tenant_id = data.tenant_id;
+    cpty.tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id).value();
     cpty.id = data.id;
     cpty.full_name = data.full_name;
     cpty.short_code = data.short_code;

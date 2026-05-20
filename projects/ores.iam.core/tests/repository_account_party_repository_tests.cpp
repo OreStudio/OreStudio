@@ -34,6 +34,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -50,12 +51,12 @@ const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
 boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const std::string& tid) {
+    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
         if (p.tenant_id == tid)
             return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid);
+    throw std::runtime_error("No system party for tenant: " + tid.to_string());
 }
 
 }
@@ -70,7 +71,7 @@ TEST_CASE("write_single_account_party", tags) {
     account_party_repository repo(h.context());
     party_repository party_repo(h.context());
     const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
@@ -93,7 +94,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
     account_party_repository repo(h.context());
     party_repository party_repo(h.context());
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     std::vector<account_party> aps;
     for (int i = 0; i < 3; ++i) {
@@ -124,7 +125,7 @@ TEST_CASE("read_latest_account_parties", tags) {
     account_repository acc_repo(h.context());
     party_repository party_repo(h.context());
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     std::vector<account_party> written;
     for (int i = 0; i < 3; ++i) {
@@ -167,7 +168,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     account_repository acc_repo(h.context());
     party_repository party_repo(h.context());
     const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     // Construct repo after set_party so its stored context has party IDs.
     h.set_party(party_id);

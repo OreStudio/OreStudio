@@ -3,7 +3,7 @@
 :END:
 #+title: Recipe Author Skill
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 
@@ -62,7 +62,7 @@ Create =doc/recipes/TOPIC_recipes.org= with this structure:
 #+title: TOPIC Recipes
 #+author: Marco Craveiro
 #+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 Brief description of what these recipes demonstrate.
 
@@ -188,7 +188,7 @@ Create =doc/skills/ores-TOPIC-recipes/skill.org=:
 :END:
 #+title: ORE TOPIC Recipes Skill
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 

@@ -48,6 +48,8 @@ jobs:
           emacs -Q --script .build-site.el
       - name: Setup Pages
         uses: actions/configure-pages@v6
+        with:
+          enablement: true
       - name: Doxygen
         run: |
           sudo apt-get install graphviz doxygen

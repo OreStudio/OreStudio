@@ -2,7 +2,7 @@
 :ID: 34EDDBB5-CB52-35C4-E123-E0A70FB32799
 :END:
 #+title: Sprint Backlog 01
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) doc(d) agile(a) }
 #+startup: inlineimages

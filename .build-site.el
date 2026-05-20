@@ -96,15 +96,27 @@
       org-html-head-include-default-style nil ;; Use our own styles
       org-html-head html-header)
 
+(defvar site-html-preamble "<header id='site-header'>
+  <a href='/OreStudio/readme.html'><img id='site-banner' src='/OreStudio/assets/images/ore-studio-banner.png' alt='ORE Studio'/></a>
+  <nav id='site-nav'>
+    <a href='/OreStudio/readme.html'>Home</a>
+    <a href='/OreStudio/doc/doc.html'>Documentation</a>
+    <a href='/OreStudio/doc/v2/compass.html'>V2 Compass</a>
+    <a href='/OreStudio/doxygen/html/index.html'>Doxygen</a>
+    <a href='https://github.com/OreStudio/OreStudio'>GitHub</a>
+  </nav>
+</header>")
+
 ;; Define the publishing project
 (setq org-publish-project-alist
-      '(
+      `(
         ("site:pages"
          :recursive t
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :publishing-function org-html-publish-to-html
          :publishing-directory "./build/output/site"
+         :html-preamble ,site-html-preamble
          :with-author nil
          :with-creator t
          :with-toc t

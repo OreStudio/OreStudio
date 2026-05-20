@@ -3,7 +3,7 @@
 :END:
 #+title: ORE Claude Code Skill Catalogue
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 Contains all of the [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Claude Code Skills]] used with ORE Studio. They are generated

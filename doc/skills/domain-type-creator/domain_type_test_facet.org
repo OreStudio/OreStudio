@@ -3,7 +3,7 @@
 :END:
 #+title: Domain Type Test Creation Facet
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil title:t
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t title:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 

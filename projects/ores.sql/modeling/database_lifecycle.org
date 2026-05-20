@@ -3,7 +3,7 @@
 :END:
 #+title: Database Lifecycle and Script Reference
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 Operational reference for database creation, population, and teardown in

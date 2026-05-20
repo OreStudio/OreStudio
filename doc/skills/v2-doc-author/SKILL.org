@@ -3,7 +3,7 @@
 :END:
 #+title: V2 Document Author Skill
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 #+filetags: :v2_docs:codegen:templates:skill:

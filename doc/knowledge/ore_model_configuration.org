@@ -3,7 +3,7 @@
 :END:
 #+title: ORE Model Configuration
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 This document analyses the model configuration files used by [[https://github.com/OpenSourceRisk/Engine][Open Source Risk
 Engine (ORE)]] and proposes how to represent them as persisted domain entities in

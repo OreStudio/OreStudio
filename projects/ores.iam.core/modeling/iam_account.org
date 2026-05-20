@@ -3,7 +3,7 @@
 :END:
 #+title: IAM Account
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 An Account is the fundamental digital identity and record within the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][IAM system]]

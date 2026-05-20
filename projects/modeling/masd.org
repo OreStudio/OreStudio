@@ -4,7 +4,7 @@
 :END:
 #+title: Model Assisted Software Development
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 MASD is the [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] methodology I developed as part

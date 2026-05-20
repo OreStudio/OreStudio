@@ -3,7 +3,7 @@
 :END:
 #+title: Domain
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 Project-specific notes on industry standards and data conventions the codebase
 relies upon. Broader speculative musings on the finance domain have moved out

@@ -5,7 +5,7 @@
 #+title: PostgreSQL Row-Level Security
 #+author: Marco Craveiro
 #+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 This document describes RLS in general, not the specifics of how we use it.
 

@@ -25,8 +25,6 @@
 #include <QToolBar>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_hash.hpp>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
@@ -97,11 +95,6 @@ private:
     void setupConnections();
     void updateActionStates();
     void buildTree();
-    void addTreeItems(QTreeWidgetItem* parent,
-        const boost::uuids::uuid& parent_id,
-        const std::unordered_map<boost::uuids::uuid,
-            std::vector<const workspace::domain::workspace*>,
-            boost::hash<boost::uuids::uuid>>& children_map);
 
     ClientManager* clientManager_;
     QString username_;

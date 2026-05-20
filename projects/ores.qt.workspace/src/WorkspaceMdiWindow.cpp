@@ -171,12 +171,16 @@ void WorkspaceMdiWindow::doReload() {
     model_->refresh();
 }
 
-void WorkspaceMdiWindow::addTreeItems(
-    QTreeWidgetItem* parent,
+namespace {
+
+using children_map_t = std::unordered_map<
+    boost::uuids::uuid,
+    std::vector<const workspace::domain::workspace*>,
+    boost::hash<boost::uuids::uuid>>;
+
+void addTreeItems(QTreeWidgetItem* parent,
     const boost::uuids::uuid& parent_id,
-    const std::unordered_map<boost::uuids::uuid,
-        std::vector<const workspace::domain::workspace*>,
-        boost::hash<boost::uuids::uuid>>& children_map) {
+    const children_map_t& children_map) {
 
     auto it = children_map.find(parent_id);
     if (it == children_map.end())
@@ -194,6 +198,8 @@ void WorkspaceMdiWindow::addTreeItems(
     }
 }
 
+} // namespace
+
 void WorkspaceMdiWindow::buildTree() {
     treeWidget_->clear();
 
@@ -207,9 +213,7 @@ void WorkspaceMdiWindow::buildTree() {
     for (const auto& ws : all)
         by_id[ws.id] = &ws;
 
-    std::unordered_map<boost::uuids::uuid,
-        std::vector<const workspace::domain::workspace*>,
-        boost::hash<boost::uuids::uuid>> children_map;
+    children_map_t children_map;
 
     std::vector<const workspace::domain::workspace*> roots;
     for (const auto& ws : all) {

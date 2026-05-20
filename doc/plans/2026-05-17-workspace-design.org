@@ -2,7 +2,7 @@
 #+SUBTITLE: Self-contained, layered data workspaces within OreStudio; prerequisite for ORE sample import and multi-track data import
 #+DATE: 2026-05-17
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS (2026-05-20: phases 1–2 complete, phase 3 steps 1–3 done, phase 4 step 1 done; remaining: phase 3 step 4, phase 4 steps 2+5, FK validation)
+#+STATUS: IN PROGRESS (2026-05-20: phases 1–2 complete, phase 3 all steps done, phase 4 step 1 done, FK validation done; remaining: phase 4 steps 2+5)
 #+OPTIONS: toc:t num:nil
 
 * Related Plans
@@ -766,7 +766,7 @@ This keeps the permission model simple and avoids over-engineering.
 2. ✓ Propagate workspace context to all MDI windows via a ~WorkspaceContext~
    object; ~EntityController~ event filter forwards changes to ~ClientManager~.
 3. ✓ Add workspace chip/badge to window headers (non-live windows only).
-4. Add per-window workspace selector (searchable combo in window toolbar).
+4. ✓ Add per-window workspace selector (searchable combo in window toolbar).
    Each MDI subwindow independently selects its workspace, enabling
    side-by-side comparison.  Requires per-window scoped request context
    rather than shared ~ClientManager~ workspace state.

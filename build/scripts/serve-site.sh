@@ -39,7 +39,15 @@ COMPILE=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --compile) COMPILE=1; shift ;;
-        --port)    PORT="$2"; shift 2 ;;
+        --port)
+            if [[ -n "${2:-}" && "${2:-}" != -* ]]; then
+                PORT="$2"
+                shift 2
+            else
+                echo "Error: --port requires a non-option argument" >&2
+                usage
+            fi
+            ;;
         -h|--help) usage ;;
         *) echo "Unknown option: $1" >&2; usage ;;
     esac
@@ -56,6 +64,14 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
-echo "Serving $BUILD_DIR on http://localhost:$PORT"
-cd "$BUILD_DIR"
+# The site preamble uses absolute /OreStudio/ paths (matches the GitHub
+# Pages URL structure: orestudio.github.io/OreStudio/). To make local
+# preview links resolve, serve from a tmpdir that mirrors that prefix
+# via a symlink to the build output.
+PREVIEW_TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$PREVIEW_TMP_DIR"' EXIT
+ln -s "$BUILD_DIR" "$PREVIEW_TMP_DIR/OreStudio"
+
+echo "Serving $BUILD_DIR on http://localhost:$PORT/OreStudio/"
+cd "$PREVIEW_TMP_DIR"
 exec python3 -m http.server "$PORT"

@@ -92,6 +92,23 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelInheritsFrom">
+            <property name="text">
+             <string>Inherits from:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="inheritsFromEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Live (root workspace)</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

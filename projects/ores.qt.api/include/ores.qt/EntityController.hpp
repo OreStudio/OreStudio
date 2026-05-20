@@ -86,11 +86,19 @@ public:
      * @brief Updates the client manager and username (e.g. after re-login).
      */
     void setClientManager(ClientManager* clientManager, const QString& username);
-    
+
     /**
      * @brief Updates just the username.
      */
     void setUsername(const QString& username) { username_ = username; }
+
+    /**
+     * @brief Pushes a new workspace context into the shared ClientManager.
+     *
+     * Called automatically when the MDI area's ores_workspace_context property
+     * changes.  May also be called directly by tests or subclasses.
+     */
+    void setWorkspaceContext(const WorkspaceContext& ctx);
 
     /**
      * @brief Shows the main list window for this entity.
@@ -231,6 +239,9 @@ protected:
      * Call this from derived class signal handlers connected to entity deleted signals.
      */
     void handleEntityDeleted();
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     /**

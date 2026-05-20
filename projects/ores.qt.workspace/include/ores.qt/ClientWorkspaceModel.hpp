@@ -80,6 +80,15 @@ public:
     void refresh();
 
     /**
+     * @brief Get all loaded workspaces.
+     *
+     * @return All workspaces currently loaded in the model.
+     */
+    const std::vector<workspace::domain::workspace>& workspaces() const {
+        return workspaces_;
+    }
+
+    /**
      * @brief Get workspace at the specified row.
      *
      * @param row The row index.

@@ -349,9 +349,14 @@ endif()
 #
 # Step: submit build results
 #
-# Always submit results to CDash, even if there were failures. This ensures
-# compilation errors and test failures are visible in the dashboard.
-ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay})
+# Always attempt to submit results to CDash, even if there were failures.
+# Capture the return value so that CDash being unreachable does not fail CI.
+ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+    RETURN_VALUE submit_result)
+if(submit_result)
+    message(WARNING "CDash submission failed (exit code: ${submit_result}). "
+        "Build and test results are unaffected.")
+endif()
 
 #
 # Exit with error if any step failed

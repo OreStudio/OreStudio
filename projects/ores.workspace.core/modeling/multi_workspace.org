@@ -1,0 +1,528 @@
+:PROPERTIES:
+:ID: 7C2F8A41-3B91-4D82-B7E0-9E1A5D6C4F82
+:END:
+#+title: Multi-Workspace Architecture
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+ORE Studio implements workspace-level data isolation as a third, orthogonal
+layer on top of tenant and party isolation. While tenant isolation separates
+organisations from each other (see [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]) and party
+isolation separates business units within a tenant (see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]),
+workspace isolation separates data contexts within a party. This document
+describes how workspace context flows through the system and how it differs
+fundamentally from the security layers beneath it.
+
+This is a companion document to =projects/ores.iam.core/modeling/multi_tenancy.org=
+and =projects/ores.refdata.core/modeling/multi_party.org=.
+
+* Core Concepts
+
+** Workspace
+
+A workspace is a named, isolated data context within OreStudio. It contains a
+complete or partial set of data — trades, market data, conventions, curve
+configs, pricing engine configs, today's market definitions — and can
+optionally inherit missing data from a single parent workspace.
+
+Key properties:
+
+- *Isolated by default*: data in workspace A is not visible to workspace B
+  unless an explicit parent relationship links them.
+- *Layered (single-parent)*: a workspace may declare one parent workspace. Any
+  data not present in the workspace is resolved from the parent, then the
+  grandparent, and so on — the same model as Docker image layers. The
+  resolution order is the chain from the current workspace to the root.
+- *Trade-scoped via portfolio*: a workspace optionally declares a portfolio
+  scope. Only trades in the scoped books are visible; all other inherited
+  trades are hidden. A trade whitelist can further narrow the scope to
+  specific trade IDs within those books.
+- *Non-trade data follows trades*: conventions, market data, curve configs,
+  and pricing engine configs are either stored locally (overriding the
+  parent's version for the same natural key) or inherited transparently.
+- *Durable*: workspaces are long-lived; not deleted when the session ends.
+- *Non-promotable directly*: data cannot be directly promoted from a workspace
+  to live. A deliberate copy operation is used instead.
+
+** Workspace vs Scenario
+
+These two concepts must not be confused.
+
+A *workspace* is a *data context*: a stable, named collection of trades and
+market data. It answers "what data are we working with?" It is long-lived;
+multiple users can share it; its data does not change unless someone
+explicitly edits or imports into it.
+
+A *scenario* (in the OreStudio sense) is a *computation*: one execution of a
+report definition against a workspace. Scenarios are ephemeral — they produce
+results (NPVs, sensitivities, PFE profiles) but do not change the
+workspace's data.
+
+The common risk-system usage of "scenario" (a set of market data shocks) maps
+to OreStudio as a *child workspace that inherits from a parent and overrides
+specific curves or rates*. The shocks live in the workspace; the scenario is
+the report execution that prices the trades against those shocks.
+
+** Live Workspace — Dedicated Sentinel UUID
+
+The Live workspace uses the well-known sentinel UUID
+=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa= (returned by
+=ores_utility_live_workspace_id_fn()=) as its stable identifier. It always
+exists, is the root of all inheritance chains, and cannot be archived without
+=workspace::live_workspace:archive= (SuperAdmin only).
+
+The nil UUID (=00000000-0000-0000-0000-000000000000=) is deliberately *not*
+used as the sentinel: it is the default C++ value for an uninitialised
+=boost::uuids::uuid=, so using it for Live would cause an unset =workspace_id=
+to silently resolve to the Live data space. The sentinel =aaaaaaaa-...= has
+version nibble =a= (decimal 10), which falls outside the valid UUID version
+range 1–8; no UUID generator will ever emit it.
+
+** Workspace Hierarchy
+
+Workspaces form a tree via =parent_workspace_id=. The Live workspace is always
+the root. Resolution follows the chain from the active workspace to the root:
+
+#+begin_example
+workspace 0 (Live)
+  └─ workspace 5 (EUR shock +50bps)     parent = Live
+       └─ workspace 8 (EUR+credit shock) parent = 5
+
+Resolution order for workspace 8: [8, 5, Live]
+- Data in workspace 8 wins.
+- Data absent from 8 falls through to workspace 5.
+- Data absent from 5 falls through to Live.
+#+end_example
+
+Cycle prevention is enforced by a trigger that walks the parent chain before
+any insert or update of =parent_workspace_id=.
+
+* Isolation Layers
+
+Workspace isolation is orthogonal to, and does not replace, tenant and party
+isolation. All three layers are enforced simultaneously:
+
+#+begin_example
+┌──────────────────────────────────────────────────────────────────────┐
+│                       PostgreSQL Database                             │
+│                                                                      │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │ Tenant RLS Layer (app.current_tenant_id)                       │  │
+│  │   Isolates organisations from each other                       │  │
+│  │                                                                │  │
+│  │  ┌──────────────────────────────────────────────────────────┐  │  │
+│  │  │ Party RLS Layer (app.visible_party_ids)                  │  │  │
+│  │  │   Isolates business units within a tenant                │  │  │
+│  │  │                                                          │  │  │
+│  │  │  ┌────────────────────────────────────────────────────┐  │  │  │
+│  │  │  │ Workspace Query Layer (workspace_id column)        │  │  │  │
+│  │  │  │   Scopes data to the active data context           │  │  │  │
+│  │  │  │   Applied via WHERE, not RLS                       │  │  │  │
+│  │  │  │   Resolution order enables inheritance             │  │  │  │
+│  │  │  └────────────────────────────────────────────────────┘  │  │  │
+│  │  └──────────────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+** Why workspace_id is Not in RLS
+
+Tenant and party isolation are *security* boundaries: a user must never see
+another tenant's data, and a user must only see the party hierarchy they
+belong to. These are enforced at the RLS layer using session variables.
+
+Workspace isolation is a *data context* boundary, not a security boundary.
+A user legitimately has read access to data in any workspace within their
+tenant and party scope — they want to view it scoped to a particular context.
+More importantly, the workspace inheritance model *requires* querying across
+multiple workspace IDs simultaneously:
+
+#+begin_src sql
+WHERE workspace_id = ANY(:resolution_order)
+ORDER BY array_position(:resolution_order, workspace_id)
+#+end_src
+
+If =workspace_id= were baked into RLS as
+=workspace_id = current_setting('app.current_workspace_id')=, this
+inheritance query would break — you cannot resolve a parent chain through a
+policy that restricts rows to exactly one workspace.
+
+The correct split is:
+| Concern         | Mechanism    | Handles                                  |
+|-----------------+--------------+------------------------------------------|
+| Tenant security | RLS          | Cross-organisation data leakage          |
+| Party security  | RLS          | Cross-business-unit data leakage         |
+| Data context    | WHERE clause | Workspace scoping + inheritance          |
+
+** Workspace Visibility
+
+All authenticated users within a tenant hold =workspace::workspaces:read= by
+default. Workspaces are not private ACL objects; any user within the tenant
+can see any workspace. Data restriction within a workspace is handled by the
+=scope_portfolio_id= on the workspace itself (portfolio tree scoping), not by
+per-workspace read grants. This keeps the permission model simple.
+
+* Data Model
+
+** workspace_id Column
+
+Every table that holds user or import data gains a =workspace_id= column:
+
+#+begin_src sql
+alter table <table_name>
+    add column workspace_id uuid not null
+        default ores_utility_live_workspace_id_fn();
+
+create index on <table_name> (workspace_id);
+#+end_src
+
+Tables that are genuinely global — users, IAM, parties, DQ FSM definitions,
+workflow definitions, the workspace table itself — do *not* get =workspace_id=.
+
+Affected categories:
+
+| Category        | Representative tables                                    |
+|-----------------+----------------------------------------------------------|
+| Trading         | trades, books, instruments, lifecycle events             |
+| Reference data  | conventions (all types), book, portfolio                 |
+| Market data     | fixings, yield curves, vol surfaces                      |
+| Curve config    | yield curve configs, vol configs                         |
+| Pricing engine  | engine configs                                           |
+| Today's market  | today's market definitions                               |
+| Reporting       | report definitions                                       |
+
+** Resolution Order Computation
+
+When a workspace is opened, its full ancestor chain is computed once via a
+recursive CTE and cached in the application session as an ordered UUID array:
+
+#+begin_src sql
+with recursive chain(id, depth) as (
+    select id, 0
+    from ores_workspaces_tbl
+    where id = :target_workspace_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    union all
+    select w.parent_workspace_id, c.depth + 1
+    from ores_workspaces_tbl w
+    join chain c on c.id = w.id
+    where w.parent_workspace_id is not null
+      and w.valid_to = ores_utility_infinity_timestamp_fn()
+)
+select id from chain order by depth;
+-- Returns e.g. [ws-8, ws-5, live-uuid] for a workspace two levels deep
+#+end_src
+
+This array is passed as =:resolution_order= to all workspace-aware queries.
+
+** Query Patterns
+
+*Non-trade data* (conventions, market data, curve configs, etc.) uses the
+resolution order only — no portfolio or trade filtering:
+
+#+begin_src sql
+-- List query with deduplication on natural key
+select distinct on (name) *
+from ores_curveconfig_yieldcurve_tbl
+where workspace_id = any(:resolution_order)
+order by name, array_position(:resolution_order, workspace_id);
+#+end_src
+
+*Trade queries* additionally filter by portfolio scope and (if present) the
+trade whitelist:
+
+#+begin_src sql
+select distinct on (t.id) t.*
+from ores_trading_trades_tbl t
+join ores_trading_books_tbl b on b.id = t.book_id
+left join ores_trading_portfolio_books_tbl pb
+    on pb.book_id = b.id
+    and pb.portfolio_id = (
+        select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id)
+where t.workspace_id = any(:resolution_order)
+  and (
+      (select scope_portfolio_id from ores_workspaces_tbl where id = :ws_id) is null
+      or pb.book_id is not null
+  )
+  and (
+      not exists (select 1 from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+      or t.id in (select trade_id from ores_workspace_trade_scope_tbl
+                  where workspace_id = :ws_id)
+  )
+order by t.id, array_position(:resolution_order, t.workspace_id);
+#+end_src
+
+Note: Phase 2 repositories currently use an exact-match =workspace_id = :wid=
+predicate. Phase 5 will upgrade these to the == ANY(:resolution_order)= pattern
+with =DISTINCT ON= deduplication for full inheritance support.
+
+** FK Validation
+
+Every insert trigger on a workspace-aware table must validate that
+=NEW.workspace_id= references an active workspace. Because service users hold
+no =SELECT= on =ores_workspaces_tbl= (service table isolation invariant), the
+validation function must be =SECURITY DEFINER=:
+
+#+begin_src sql
+create function ores_workspace_validate_fn(p_workspace_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    -- The Live sentinel always passes; it has no ordinary active row.
+    if p_workspace_id = ores_utility_live_workspace_id_fn() then
+        return p_workspace_id;
+    end if;
+
+    if not exists (
+        select 1 from ores_workspaces_tbl
+        where id = p_workspace_id
+          and status_code = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'workspace_id % does not reference an active workspace',
+            p_workspace_id
+            using errcode = '23503';
+    end if;
+
+    return p_workspace_id;
+end;
+$$;
+#+end_src
+
+This mirrors the pattern of =ores_iam_validate_tenant_fn=. The call is added
+to every =has_workspace_id= entity's insert trigger alongside the existing
+=ores_iam_validate_tenant_fn= call, and is generated automatically via the
+=has_workspace_id= codegen template flag.
+
+* Context Propagation
+
+** database::context
+
+The database context carries =workspace_id_= alongside =tenant_id_= and
+=party_id_=:
+
+#+begin_src cpp
+class context {
+public:
+    const std::string& workspace_id() const { return workspace_id_; }
+
+    // Returns a copy with workspace set; does not rebuild the pool.
+    [[nodiscard]] context with_workspace(std::string workspace_id) const {
+        auto copy = *this;
+        copy.workspace_id_ = std::move(workspace_id);
+        return copy;
+    }
+
+private:
+    // Defaults to the Live sentinel.
+    std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+};
+#+end_src
+
+The chain =with_tenant()= → =with_party()= → =with_workspace()= is applied in
+=make_request_context()= so that workspace is set last and is never lost by
+earlier builder calls.
+
+** make_request_context
+
+After JWT validation, =make_request_context()= reads the =X-Workspace-Id=
+NATS header and chains =with_workspace()=:
+
+#+begin_src cpp
+const auto ws_it = msg.headers.find(
+    std::string(ores::nats::headers::x_workspace_id));
+if (ws_it != msg.headers.end() && !ws_it->second.empty()) {
+    ctx = ctx.with_workspace(ws_it->second);
+}
+return ctx;
+#+end_src
+
+Absence of the header means Live workspace — the default value on
+=context::workspace_id_= ensures backwards compatibility.
+
+** NATS Header
+
+=X-Workspace-Id= is defined in =ores.nats/include/ores.nats/domain/headers.hpp=:
+
+#+begin_src cpp
+/// Active workspace for this request.
+/// Set by the Qt client from WorkspaceContext.id; forwarded on inter-service
+/// calls. Absence means Live workspace.
+inline constexpr std::string_view x_workspace_id = "X-Workspace-Id";
+#+end_src
+
+** Qt Client — WorkspaceContext
+
+The Qt client carries the active workspace in =WorkspaceContext=
+(=projects/ores.qt.api/include/ores.qt/WorkspaceContext.hpp=):
+
+#+begin_src cpp
+struct WorkspaceContext {
+    inline static const QString live_workspace_id =
+        QStringLiteral("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+    QString id = live_workspace_id;
+    QString name = QStringLiteral("Live");
+    QVector<QString> resolution_order = {live_workspace_id};
+
+    bool is_live() const { return id == live_workspace_id; }
+};
+#+end_src
+
+The =resolution_order= vector is populated at activation time by calling the
+=workspace.v1.workspaces.resolve= NATS endpoint, which runs the recursive CTE
+and returns the ancestor chain.
+
+=ClientManager= holds a =WorkspaceContext= and injects =X-Workspace-Id= into
+every authenticated NATS request via =with_workspace_id()= on the scoped
+client.
+
+* Session Management
+
+** Workspace Activation Flow
+
+#+begin_example
+┌─────────────────────────┐
+│  User selects workspace  │
+│  in Data Workshop        │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ WorkspaceMdiWindow       │
+│ emits workspaceActivated │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────────────┐
+│ WorkspaceController             │
+│ onWorkspaceActivated()          │
+│                                 │
+│  Live sentinel?                 │
+│  → set default WorkspaceContext │
+│  → emit statusMessage           │
+│                                 │
+│  Other workspace?               │
+│  → resolve_workspace_request    │
+│    (async, QtConcurrent)        │
+│  → build WorkspaceContext with  │
+│    id, name, resolution_order   │
+└────────────┬────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────┐
+│ mdiArea_->setProperty("ores_workspace_context", ctx)     │
+│   → QEvent::DynamicPropertyChange fires                  │
+│   → EntityController::eventFilter() on every controller │
+│   → clientManager_->setWorkspaceContext(ctx)             │
+│   → all subsequent requests carry X-Workspace-Id        │
+└─────────────────────────────────────────────────────────┘
+#+end_example
+
+** Current Scope: Application-Level Context
+
+The current implementation switches workspace for the entire session. All MDI
+windows share the same =ClientManager= and therefore the same workspace
+context. When the user activates workspace B, every open window immediately
+uses workspace B on its next request.
+
+Per-window workspace context (each MDI subwindow having an independent
+workspace selector, enabling side-by-side comparison of the same data in two
+different workspaces) is a planned future phase. See the UI section below.
+
+* UI Considerations
+
+** Workspace Badge in Window Titles
+
+Windows opened while a non-live workspace is active display the workspace
+name in their title bar:
+
+#+begin_example
+Trades [EUR shock +50bps]
+Market Data [EUR shock +50bps]
+#+end_example
+
+Live workspace windows show no badge — it is the default and adding a badge
+to every window would be noisy. This is applied in
+=EntityController::show_managed_window()=.
+
+** Data Workshop
+
+The =WorkspaceMdiWindow= provides a tree view of all workspaces in the tenant,
+grouped by parent/child relationships. Actions:
+
+| Action  | Description                                          |
+|---------+------------------------------------------------------|
+| Open    | Activates the selected workspace session-wide        |
+| Add     | Creates a new workspace via =WorkspaceDetailDialog=  |
+| Edit    | Opens the detail dialog for an existing workspace    |
+| Archive | Soft-closes the workspace (bitemporal close)         |
+| Delete  | Permanently removes the workspace record             |
+
+** Per-Window Workspace Selector (Future)
+
+The design calls for each MDI subwindow to carry its own workspace context,
+selectable via a compact combo box in the window toolbar:
+
+#+begin_example
++-------------------------------------------------------+
+|  TRADES  [EUR shock ▼]               [Filter] [Cols]  |
++-------------------------------------------------------+
+|  ...trade grid scoped to EUR shock workspace...        |
++-------------------------------------------------------+
+#+end_example
+
+This enables side-by-side comparison:
+
+#+begin_example
++-----------------------------+  +-----------------------------+
+|  TRADES  [Live ▼]           |  |  TRADES  [EUR shock ▼]       |
+|-----------------------------|  |-----------------------------|
+|  IRS_001  NPV:  1,234,500   |  |  IRS_001  NPV:  1,189,200   |
+|  FXF_002  NPV:    456,100   |  |  FXF_002  NPV:    455,900   |
++-----------------------------+  +-----------------------------+
+#+end_example
+
+Implementation requires either per-window =ClientManager= scopes or passing
+workspace context through individual request calls rather than storing it on
+the shared manager. This is deferred; the current MDI-area property mechanism
+is designed as a foundation for this extension.
+
+* Permissions
+
+Three tiers of workspace permission are enforced in =workspace_handler.hpp=:
+
+| Permission                          | Default holders                |
+|-------------------------------------+--------------------------------|
+| =workspace::workspaces:read=        | All authenticated users        |
+| =workspace::workspaces:write=       | All authenticated users        |
+| =workspace::workspaces:archive=     | All authenticated users (own)  |
+| =workspace::workspaces:archive_any= | TenantAdmin                    |
+| =workspace::live_workspace:archive= | SuperAdmin only                |
+
+Archive is ownership-aware: a user may archive their own workspace with
+=workspaces:archive=; archiving another user's workspace requires
+=workspaces:archive_any=.
+
+* Related Components
+
+| Component  | File                                                                               | Purpose                                     |
+|------------+------------------------------------------------------------------------------------+---------------------------------------------|
+| design     | [[proj:doc/plans/2026-05-17-workspace-design.org]]                                 | Full design rationale, phases, and SQL      |
+| codegen    | [[proj:doc/plans/2026-05-19-workspace-id-codegen-propagation.org]]                 | Template changes and affected entity list   |
+| iam        | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]            | Companion tenant isolation document         |
+| refdata    | [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]              | Companion party isolation document          |
+| utility    | [[proj:projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp]]             | live_workspace_id() sentinel function       |
+| database   | [[proj:projects/ores.database/include/ores.database/domain/context.hpp]]           | Database context with workspace_id_         |
+| nats       | [[proj:projects/ores.nats/include/ores.nats/domain/headers.hpp]]                   | X-Workspace-Id header constant              |
+| qt.api     | [[proj:projects/ores.qt.api/include/ores.qt/WorkspaceContext.hpp]]                 | Qt workspace context struct                 |
+| qt.api     | [[proj:projects/ores.qt.api/include/ores.qt/ClientManager.hpp]]                    | setWorkspaceContext() and header injection  |
+| qt.api     | [[proj:projects/ores.qt.api/src/EntityController.cpp]]                             | MDI area event filter, context propagation  |
+| workspace  | [[proj:projects/ores.workspace.core/include/ores.workspace.core/service/workspace_service.hpp]] | Workspace service                |

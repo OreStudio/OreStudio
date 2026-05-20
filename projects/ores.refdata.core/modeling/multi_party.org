@@ -620,6 +620,7 @@ Party isolation is a strict refinement of tenant isolation:
 |-----------+-----------------------------------------------------------------------------------+--------------------------------------|
 | design    | [[proj:doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org]]         | Design rationale and decisions       |
 | iam       | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]           | Companion tenant isolation document  |
+| workspace | [[id:7C2F8A41-3B91-4D82-B7E0-9E1A5D6C4F82][Multi-Workspace Architecture]]         | Companion workspace isolation document |
 | iam       | [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]]               | Account-party rules and login flow   |
 | utility   | [[proj:projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp]]            | Tenant ID wrapper type               |
 | database  | [[proj:projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp]] | Connection pool with tenant context |

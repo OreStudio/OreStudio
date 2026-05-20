@@ -88,21 +88,6 @@ struct get_trade_detail_response {
     ores::trading::domain::trade_instrument instrument;
 };
 
-// Two-phase deserialization helpers for ClientManager on MSVC.
-// Parsing trade (nested sub-structs) and trade_instrument (8-alternative
-// variant + rfl::AddTagsToVariants) in a single rfl call exceeds MSVC's
-// constexpr depth budget (C1202). Splitting into two independent reads keeps
-// each instantiation within the limit.
-struct get_trade_detail_response_base {
-    bool success = false;
-    std::string message;
-    ores::trading::domain::trade trade;
-};
-
-struct get_trade_detail_instrument_wrapper {
-    ores::trading::domain::trade_instrument instrument;
-};
-
 struct save_trade_request {
     using response_type = struct save_trade_response;
     static constexpr std::string_view nats_subject = "trading.v1.trades.save";

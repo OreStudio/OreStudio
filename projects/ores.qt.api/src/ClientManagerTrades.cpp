@@ -72,32 +72,32 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
             rfl::json::write(request),
             std::chrono::seconds(30));
 
-        auto base = rfl::json::read<
-            trading::messaging::get_trade_detail_response_base>(raw);
-        if (!base) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail deserialize error: " << base.error().what();
-            return std::nullopt;
-        }
-        if (!base->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail server error: " << base->message;
-            return std::nullopt;
-        }
-        auto inst = rfl::json::read<
-            trading::messaging::get_trade_detail_instrument_wrapper,
+        // rfl::internal::no_duplicate_field_names does O(N²) constexpr
+        // comparisons over all variant field names.  trade_instrument has 9
+        // top-level alternatives (two of which are nested variants), pushing
+        // MSVC past its default 100 000-step constexpr budget (C1202).
+#ifdef _MSC_VER
+#  pragma constexpr_depth(1024)
+#  pragma constexpr_steps(1000000)
+#endif
+        auto resp = rfl::json::read<
+            trading::messaging::get_trade_detail_response,
             rfl::AddTagsToVariants>(raw);
-        if (!inst) {
+        if (!resp) {
             BOOST_LOG_SEV(lg(), error)
-                << "getTradeDetail instrument deserialize error: "
-                << inst.error().what();
+                << "getTradeDetail deserialize error: " << resp.error().what();
+            return std::nullopt;
+        }
+        if (!resp->success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "getTradeDetail server error: " << resp->message;
             return std::nullopt;
         }
 
-        trading::messaging::trade_export_item item;
-        item.trade = std::move(base->trade);
-        item.instrument = std::move(inst->instrument);
-        return item;
+        return trading::messaging::trade_export_item{
+            .trade = std::move(resp->trade),
+            .instrument = std::move(resp->instrument)
+        };
     } catch (const ores::nats::service::nats_connect_error&) {
         throw;
     } catch (const ores::nats::service::session_expired_error& e) {

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 40574a33-82d5-4e72-83b4-2048197460fb
+:END:
+#+title: Book and Portfolio entities
+#+description: Portfolio = logical aggregation nodes (never hold trades). Book = operational ledger leaves (hold trades). Strict separation; legal ownership at Book level; trading vs banking book flag; Basel-friendly. Combined hierarchy rules documented.
+#+type: task
+#+level: s1
+#+filetags: :modelling:books:portfolios:analysis:basel:entity_modelling_books_portfolios:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-18]
+:END:
+
+** Now
+Completed 2026-02-18.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-18
+
+* Goal
+
+Model book + portfolio with strict separation: portfolios aggregate, books hold trades.
+
+* Acceptance
+
+- Portfolio: =portfolio_id= PK, self-FK, name, =owner_unit_id= FK, =purpose_type= enum, =aggregation_ccy=, =is_virtual=. No =legal_entity_id= (derived from descendant books).
+- Book: =book_id= PK, mandatory =parent_portfolio_id= FK, mandatory =legal_entity_id= FK (LEI-mapped), =ledger_ccy=, =gl_account_ref=, =cost_center=, =book_status= (Active/Closed/Frozen), =is_trading_book= (Basel III/IV).
+- Hierarchy rules: leaf invariant (only Books hold trades), single parent, multi-entity portfolio support flagged, cycle prevention.
+- Documented permissioning model: trade-permission on book, view-permission on portfolio.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Analysis from Gemini; implementation phased — see =add_portfolio_support= for the first slice.
+
+* Result
+
+Book + portfolio model documented.

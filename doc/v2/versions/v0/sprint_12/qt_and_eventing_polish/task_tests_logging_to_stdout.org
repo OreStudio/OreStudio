@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: b70593d8-65c2-4334-81ee-228c7911e067
+:END:
+#+title: Tests logging to stdout in github
+#+description: Excessive stdout output in CDash; investigated and resolved (logging disabled or routed correctly now).
+#+type: task
+#+level: s1
+#+filetags: :tests:ci:logging:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-10]
+:END:
+
+** Now
+Completed 2026-02-10.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-10
+
+* Goal
+
+Investigate excessive stdout output in CDash from unit tests.
+
+* Acceptance
+
+- Excess test stdout in CDash diagnosed.
+- Logging routed to file / dedicated sink as intended.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Resolved in passing; rationale notes /seems to log correctly now. Maybe it's because logging is disabled./
+
+* Result
+
+Test output cleaner in CI.

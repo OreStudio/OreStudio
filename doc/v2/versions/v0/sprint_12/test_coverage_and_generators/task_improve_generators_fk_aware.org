@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 5213a729-ef10-4292-8b38-c5d73219f1df
+:END:
+#+title: Improve generators with FK-aware test data
+#+description: Generators for entities with FK UUID columns no longer produce dangling references; KVP-based generation context proposed.
+#+type: task
+#+level: s1
+#+filetags: :tests:generators:fk:refactor:test_coverage_and_generators:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:4ce5cc79-dc9b-491f-a8f7-f635de33d55a][Test coverage and FK-aware generators]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-11]
+:END:
+
+** Now
+Completed 2026-02-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-11
+
+* Goal
+
+Make generators produce FK-valid test data instead of dangling random UUIDs.
+
+* Acceptance
+
+- Generators for entities with FK UUID columns accept optional parent references or generate parents first.
+- Codegen templates support FK-aware =generator_expr=.
+- Proposed: generation context with KVP so generators can leave data for downstream generators to pick up.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The KVP idea seeds the bigger generation-context refactor later in the sprint (=add_generation_context_kvp=).
+
+* Result
+
+Generators no longer produce dangling FKs.

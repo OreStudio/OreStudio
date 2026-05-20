@@ -80,6 +80,11 @@ is the current sprint; the rest are closed.
   consolidation; tenancy foundation, codegen, and test isolation;
   per-request tenant context; sqlgen improvements; telemetry
   database sink; tenant validation across surfaces.
+- [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]] — Party + counterparty + business-centre
+  domain end-to-end; GLEIF data integration; party-level RLS
+  isolation; audit trail + system account; tenant provisioning
+  wizards (GLEIF + synthetic); books / portfolios / business
+  units; FSM + trade envelope.
 - ... through Sprint 16.
 
 * Release scope

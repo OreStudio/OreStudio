@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 61f94da2-5c29-442a-9ab8-1c4066b7d45b
+:END:
+#+title: Add customer party support
+#+description: Optional dataset bundle members; OptionalDatasetsPage in publish-bundle wizard; missing LEI publication dependencies added; SQL publish skips unselected optional datasets; protocol 28.0 → 29.0.
+#+type: task
+#+level: s1
+#+filetags: :party:customer:wizard:bundles:protocol:system_and_customer_party:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-11]
+:END:
+
+** Now
+Completed 2026-02-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-11
+
+* Goal
+
+Make the publish-bundle wizard support optional dataset members so users can opt out of LEI (and similar) on first publish.
+
+* Acceptance
+
+- =optional= flag on dataset bundle members.
+- =OptionalDatasetsPage= in the publish bundle wizard.
+- Counterparty datasets initially disabled with a tooltip (pending migration).
+- Missing LEI publication dependencies added.
+- SQL publish function skips unselected optional datasets.
+- Protocol bump 28.0 → 29.0.
+- =recreate_env.sh --kill= flag to terminate active connections before recreating.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+/Customer/ here means /the customer running an evaluation/; not all of them want GLEIF.
+
+* Result
+
+Optional-dataset opt-in flow works.

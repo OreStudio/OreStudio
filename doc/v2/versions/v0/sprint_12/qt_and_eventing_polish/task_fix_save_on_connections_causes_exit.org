@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 8fbed264-99f8-4f9a-a991-cca4cbe26d7f
+:END:
+#+title: Fix save on connections causes exit
+#+description: Clicking Save asked the user to exit the application; saving repeatedly created duplicate folders.
+#+type: task
+#+level: s1
+#+filetags: :qt:connections:bug_fix:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-10]
+:END:
+
+** Now
+Completed 2026-02-10.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-10
+
+* Goal
+
+Fix two bugs in the connection browser save path.
+
+* Acceptance
+
+- Save no longer prompts for application exit.
+- Repeated saves no longer create duplicate folders.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Both bugs surfaced together; rolled as one rationale-implemented entry in v0.
+
+* Result
+
+Connections save path clean.

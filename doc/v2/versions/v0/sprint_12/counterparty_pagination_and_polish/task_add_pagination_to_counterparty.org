@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: d4c30c00-84c1-45a0-89e3-28c9caee144a
+:END:
+#+title: Add pagination to counterparty
+#+description: offset/limit on get_counterparties_request; total_available_count on response; ClientCounterpartyModel with load_page + fetchMore + set_page_size; PaginationWidget in CounterpartyMdiWindow; protocol bump 31.0.
+#+type: task
+#+level: s1
+#+filetags: :counterparty:pagination:protocol:qt:counterparty_pagination_and_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe][Counterparty pagination and polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-12]
+:END:
+
+** Now
+Completed 2026-02-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-12
+
+* Goal
+
+Bring counterparty up to the same pagination story as party.
+
+* Acceptance
+
+- Protocol: =offset= + =limit= on =get_counterparties_request=; =total_available_count= on response.
+- =ClientCounterpartyModel=: =load_page=, =fetchMore=, =set_page_size=, duplicate handling.
+- =PaginationWidget= in =CounterpartyMdiWindow=.
+- Repository + service support =read_latest(offset, limit)= + =get_total_count()=.
+- Protocol bump 31.0 (wire-format change).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Mirrors the sprint-08 native pagination work + the sprint-12 party pagination work.
+
+* Result
+
+Counterparty paginated end-to-end.

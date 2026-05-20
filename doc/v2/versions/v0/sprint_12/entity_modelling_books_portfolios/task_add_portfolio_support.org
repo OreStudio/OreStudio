@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 513272dd-7ed4-4f96-98fa-db038a4bae42
+:END:
+#+title: Add portfolio support
+#+description: Implementation of the portfolio entity based on the modelling analysis; hierarchical-tree storage following the Postgres-tree pattern.
+#+type: task
+#+level: s1
+#+filetags: :portfolios:sql:refdata:hierarchy:entity_modelling_books_portfolios:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:3afc713a-754e-42dc-ae10-022ac1dfdaba][Books, portfolios, business units modelling]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-19]
+:END:
+
+** Now
+Completed 2026-02-19.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-19
+
+* Goal
+
+First implementation slice of the portfolio entity.
+
+* Acceptance
+
+- Portfolio table created following the modelling analysis.
+- Hierarchical-tree storage following established Postgres-tree patterns.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Implementation lands incrementally — books + trade attribution land in follow-up sprints.
+
+* Result
+
+Portfolio entity implemented at the SQL layer.

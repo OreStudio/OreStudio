@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 882143c2-e9af-46bf-ab5e-b5da7637db48
+:END:
+#+title: Add party-related support to Qt
+#+description: Comprehensive Party UI: detail dialog, history dialog, MDI window, controller, client model. Configurable detail_fields in codegen; key-field handling for short_code. Existing party / counterparty / tenant screens regenerated.
+#+type: task
+#+level: s1
+#+filetags: :party:qt:codegen:ux:party_database_and_domain:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-09]
+:END:
+
+** Now
+Completed 2026-02-09.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-09
+
+* Goal
+
+Expose the party + counterparty + tenant entities through Qt.
+
+* Acceptance
+
+- Detail dialog, history dialog, MDI window, controller, client model for party.
+- Configurable =detail_fields[]= in Qt codegen.
+- Key-field handling fixed for non-standard PKs (e.g. =short_code=).
+- Party / counterparty / tenant screens regenerated through the new template.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The codegen tweaks here pay back across every subsequent entity dialog.
+
+* Result
+
+Party UI accessible from Qt.

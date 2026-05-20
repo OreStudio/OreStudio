@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8f521a37-bec0-469e-af32-87df684de3b2
+:END:
+#+title: Sprint 12 housekeeping
+#+description: Sprint backlog refinement and notebook OCR scans.
+#+type: story
+#+level: s2
+#+filetags: :agile:housekeeping:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-20]
+:END:
+
+** Now
+Completed 2026-02-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-20
+
+* Goal
+
+Recurring per-sprint housekeeping.
+
+* Acceptance
+
+- Sprint 12 backlog reflects reality at close.
+- Notebook OCR continued.
+
+* Tasks
+
+In execution order:
+
+- [[id:b9d1cd9f-7a38-4b15-99dc-fc481e66d719][Sprint and product backlog refinement]]
+- [[id:eb1eecd6-1705-4bec-9491-b3a7acc5b6f2][OCR scan notebooks for this sprint]]
+
+* Decisions
+
+- /AI summary not in v0 for this sprint/ :: skipped accordingly.
+
+* Out of scope
+
+- Backfilling AI summaries.
+
+* See also
+
+None.

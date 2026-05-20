@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 4ce5cc79-dc9b-491f-a8f7-f635de33d55a
+:END:
+#+title: Test coverage and FK-aware generators
+#+description: Bring code coverage back over 50%; FK-aware generators; enable skipped tests; expand ORE-codegened type tests; fix accounts dialog off-by-one.
+#+type: story
+#+level: s2
+#+filetags: :tests:coverage:generators:qa:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-11]
+:END:
+
+** Now
+Completed 2026-02-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-11
+
+* Goal
+
+Bring coverage back over 50%, fix the FK-dangling-references issue
+in generators, re-enable the skipped tests, expand coverage of the
+xsdcpp-generated ORE types, and fix the accounts-dialog off-by-one.
+
+* Acceptance
+
+- Coverage above 50%.
+- FK-aware generators produce valid test data.
+- Skipped-test count drops 25 → 6.
+- ORE XML round-trip tests cover 9 domain types.
+- Accounts dialog off-by-one fixed; pattern documented.
+
+* Tasks
+
+In execution order:
+
+- [[id:59eab06a-fb3a-44fd-9109-78947b30797d][Improve code coverage]]
+- [[id:5213a729-ef10-4292-8b38-c5d73219f1df][Improve generators with FK-aware test data]]
+- [[id:8a3058db-f08e-4fbf-b8e4-65910c66f69b][Enable all skipped tests]]
+- [[id:f8bb67a5-8975-4967-9751-0ca9550e237f][Expand unit test coverage for ORE codegened types]]
+- [[id:a3f4549f-3e40-47f3-bcf2-397205129c00][Fix off-by-one in accounts dialog]]
+
+* Decisions
+
+- /Generation context KVP/ :: the FK-aware-generator story plants the seed for the bigger audit-trail-and-system-account refactor.
+- /Type-safe column enums/ :: the accounts off-by-one fix establishes the public-Column-enum pattern for delegates.
+
+* Out of scope
+
+- Restoring tenant-RLS-test SKIPs — different problem domain.
+
+* See also
+
+None.

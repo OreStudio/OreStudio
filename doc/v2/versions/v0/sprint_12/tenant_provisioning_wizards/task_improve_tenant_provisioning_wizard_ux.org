@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 3af3a647-67a6-450d-abbf-2777bf967595
+:END:
+#+title: Improve tenant provisioning wizard UX
+#+description: Rename to evoke 'evaluation tenant provisioning'; move off main menu, access via tenants-dialog icon; capitalise tenant-type values; tenant code column narrower; default to evaluation; system-party name evokes 'tenant system party'; root party defaults to tenant name; password-match indicator.
+#+type: task
+#+level: s1
+#+filetags: :tenants:wizard:ux:qt:tenant_provisioning_wizards:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-15]
+:END:
+
+** Now
+Completed 2026-02-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-15
+
+* Goal
+
+Round of UX fixes on the tenant-provisioning wizard.
+
+* Acceptance
+
+- Renamed to evoke 'evaluation tenant provisioning'.
+- Moved off main menu — accessed via tenants-dialog icon only.
+- Wizard states clearly that only evaluation tenants can be provisioned.
+- Tenant type values capitalised (Production, Evaluation).
+- Tenant code column narrower in the list.
+- Default tenant type: evaluation.
+- System party name evokes 'tenant system party' (not tenant name).
+- Root party defaults to tenant name.
+- Password-match indicator (tick / cross) for new tenant account creation.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Polish round driven by usability testing the first iteration of the wizard.
+
+* Result
+
+Wizard far less confusing.

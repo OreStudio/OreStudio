@@ -9,8 +9,13 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: e8004b20-ae81-4d48-a677-cde07a300e92
 
 Parent sprint: [[id:a48c03ec-395b-4842-b60d-de93dd24bf57][Sprint 11]].
+
+Continued in: [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]] (sprint 12) — the upstream PRs
+merged but vcpkg hasn't picked up a release; adoption work remains
+blocked there.
 
 * DONE Status
 :PROPERTIES:

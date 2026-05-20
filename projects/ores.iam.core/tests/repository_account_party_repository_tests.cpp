@@ -54,7 +54,7 @@ boost::uuids::uuid find_system_party_id(
     party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
-        if (p.tenant_id == tid)
+        if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
     throw std::runtime_error("No system party for tenant: " + tid.to_string());
 }

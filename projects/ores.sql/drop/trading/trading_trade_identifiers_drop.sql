@@ -18,7 +18,7 @@
  *
  */
 
-drop rule if exists ores_trading_identifiers_delete_rule on "ores_trading_identifiers_tbl";
-drop trigger if exists ores_trading_identifiers_insert_trg on "ores_trading_identifiers_tbl";
-drop function if exists ores_trading_identifiers_insert_fn;
-drop table if exists "ores_trading_identifiers_tbl";
+drop rule if exists ores_trading_trade_identifiers_delete_rule on "ores_trading_trade_identifiers_tbl";
+drop trigger if exists ores_trading_trade_identifiers_insert_trg on "ores_trading_trade_identifiers_tbl";
+drop function if exists ores_trading_trade_identifiers_insert_fn;
+drop table if exists "ores_trading_trade_identifiers_tbl";

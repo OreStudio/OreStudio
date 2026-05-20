@@ -191,3 +191,38 @@ create table if not exists ores_workspace_trade_scope_tbl (
     trade_id      uuid  not null,
     primary key (workspace_id, trade_id)
 );
+
+-- =============================================================================
+-- Workspace FK validation function. Called from BEFORE INSERT triggers on any
+-- table that carries a workspace_id column. Defined SECURITY DEFINER because
+-- service users hold no SELECT on ores_workspaces_tbl (service table isolation).
+-- The Live sentinel UUID is accepted unconditionally — it has no ordinary row.
+-- =============================================================================
+
+create or replace function ores_workspace_validate_fn(p_workspace_id uuid)
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+    -- Live sentinel is always valid; it has no row in ores_workspaces_tbl
+    if p_workspace_id = ores_utility_live_workspace_id_fn() then
+        return p_workspace_id;
+    end if;
+
+    if not exists (
+        select 1 from ores_workspaces_tbl
+        where id = p_workspace_id
+          and status_code = 'active'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'workspace_id % does not reference an active workspace',
+            p_workspace_id
+            using errcode = '23503';
+    end if;
+
+    return p_workspace_id;
+end;
+$$;

@@ -19,7 +19,7 @@
  */
 
 /**
- * pgTAP tests for ores_trading_identifiers_tbl trigger behavior.
+ * pgTAP tests for ores_trading_trade_identifiers_tbl trigger behavior.
  *
  * Tests cover:
  * - Valid insert gets version 1
@@ -98,7 +98,7 @@ insert into ores_refdata_counterparties_tbl (
 -- Test 1: Valid insert with null issuing_party_id gets version 1
 -- =============================================================================
 
-insert into ores_trading_identifiers_tbl (
+insert into ores_trading_trade_identifiers_tbl (
     id, tenant_id, version,
     trade_id, issuing_party_id, id_value, id_type, id_scheme,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -111,7 +111,7 @@ insert into ores_trading_identifiers_tbl (
 );
 
 select is(
-    (select version from ores_trading_identifiers_tbl
+    (select version from ores_trading_trade_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -124,7 +124,7 @@ select is(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_identifiers_tbl (
+    $$insert into ores_trading_trade_identifiers_tbl (
         id, tenant_id, version,
         trade_id, issuing_party_id, id_value, id_type, id_scheme,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -145,7 +145,7 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_identifiers_tbl (
+    $$insert into ores_trading_trade_identifiers_tbl (
         id, tenant_id, version,
         trade_id, issuing_party_id, id_value, id_type, id_scheme,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -165,7 +165,7 @@ select throws_ok(
 -- Test 4: issuing_party_id validates against counterparties table
 -- =============================================================================
 
-insert into ores_trading_identifiers_tbl (
+insert into ores_trading_trade_identifiers_tbl (
     id, tenant_id, version,
     trade_id, issuing_party_id, id_value, id_type, id_scheme,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -179,7 +179,7 @@ insert into ores_trading_identifiers_tbl (
 );
 
 select is(
-    (select issuing_party_id::text from ores_trading_identifiers_tbl
+    (select issuing_party_id::text from ores_trading_trade_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000002'::uuid
        and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -192,7 +192,7 @@ select is(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_identifiers_tbl (
+    $$insert into ores_trading_trade_identifiers_tbl (
         id, tenant_id, version,
         trade_id, issuing_party_id, id_value, id_type, id_scheme,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -213,12 +213,12 @@ select throws_ok(
 -- Test 6: Soft delete
 -- =============================================================================
 
-delete from ores_trading_identifiers_tbl
+delete from ores_trading_trade_identifiers_tbl
 where id = 'd3000000-0000-0000-0000-000000000001'::uuid
   and tenant_id = ores_utility_system_tenant_id_fn();
 
 select is(
-    (select count(*)::integer from ores_trading_identifiers_tbl
+    (select count(*)::integer from ores_trading_trade_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -231,7 +231,7 @@ select is(
 -- =============================================================================
 
 select ok(
-    (select count(*) > 0 from ores_trading_identifiers_tbl
+    (select count(*) > 0 from ores_trading_trade_identifiers_tbl
      where id = 'd3000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to != ores_utility_infinity_timestamp_fn()),

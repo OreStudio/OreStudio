@@ -90,37 +90,41 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate parent_portfolio_id (soft FK to portfolios)
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
+    -- Validate parent_portfolio_id (soft FK to ores_refdata_portfolios_tbl)
     if not exists (
         select 1 from ores_refdata_portfolios_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.parent_portfolio_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.',
-            NEW.parent_portfolio_id
+        raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.', NEW.parent_portfolio_id
             using errcode = '23503';
     end if;
 
-    -- Validate party_id (soft FK to parties)
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.party_id
+        where tenant_id = NEW.tenant_id
+          and id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            NEW.party_id
+        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
             using errcode = '23503';
     end if;
 
-    -- Validate owner_unit_id (optional soft FK to business_units)
+    -- Validate owner_unit_id (optional soft FK to ores_refdata_business_units_tbl)
     if NEW.owner_unit_id is not null then
         if not exists (
             select 1 from ores_refdata_business_units_tbl
-            where tenant_id = NEW.tenant_id and id = NEW.owner_unit_id
+            where tenant_id = NEW.tenant_id
+              and id = NEW.owner_unit_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
-            raise exception 'Invalid owner_unit_id: %. No active business unit found.',
-                NEW.owner_unit_id using errcode = '23503';
+            raise exception 'Invalid owner_unit_id: %. No active business unit found.', NEW.owner_unit_id
+                using errcode = '23503';
         end if;
     end if;
 

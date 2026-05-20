@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
- * Trade Identifiers Table
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
  *
- * Junction table for trade external identifiers (UTI, USI, Internal).
+ * Trade Identifier Table
+ *
+ * Junction entity assigning external identifiers to trades.
  * Each trade can have multiple identifiers of different types.
- * issuing_party_id validates against both parties and counterparties
- * tables since UUIDs are globally unique.
- *
- * Hand-crafted: inline soft FK validations for trade_id, issuing_party_id
- * cannot be expressed by the standard templates.
+ * The issuing_party_id references either a party or counterparty.
  */
 
-create table if not exists "ores_trading_identifiers_tbl" (
+create table if not exists "ores_trading_trade_identifiers_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -57,35 +56,23 @@ create table if not exists "ores_trading_identifiers_tbl" (
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists identifiers_version_uniq_idx
-on "ores_trading_identifiers_tbl" (tenant_id, id, version)
+create unique index if not exists trade_identifiers_version_uniq_idx
+on "ores_trading_trade_identifiers_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
-create unique index if not exists identifiers_id_uniq_idx
-on "ores_trading_identifiers_tbl" (tenant_id, id)
+create unique index if not exists trade_identifiers_id_uniq_idx
+on "ores_trading_trade_identifiers_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
-create index if not exists identifiers_tenant_idx
-on "ores_trading_identifiers_tbl" (tenant_id)
+create index if not exists trade_identifiers_tenant_idx
+on "ores_trading_trade_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade index for lookups
-create index if not exists identifiers_trade_idx
-on "ores_trading_identifiers_tbl" (tenant_id, trade_id)
+create index if not exists trade_identifiers_workspace_idx
+on "ores_trading_trade_identifiers_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Identifier type + value for UTI/USI lookups
-create index if not exists identifiers_type_value_idx
-on "ores_trading_identifiers_tbl" (tenant_id, id_type, id_value)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists identifiers_workspace_idx
-on "ores_trading_identifiers_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create or replace function ores_trading_identifiers_insert_fn()
+create or replace function ores_trading_trade_identifiers_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -93,41 +80,15 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
-    if not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
-            using errcode = '23503';
-    end if;
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
-    -- Validate issuing_party_id (optional, soft FK to parties or counterparties)
-    if NEW.issuing_party_id is not null then
-        if not exists (
-            select 1 from ores_refdata_parties_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.issuing_party_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) and not exists (
-            select 1 from ores_refdata_counterparties_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.issuing_party_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid issuing_party_id: %. Must exist in parties or counterparties for tenant.', NEW.issuing_party_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate id_type
-    NEW.id_type := ores_trading_validate_trade_id_type_fn(NEW.tenant_id, NEW.id_type);
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
-    from "ores_trading_identifiers_tbl"
+    from "ores_trading_trade_identifiers_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -141,7 +102,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores_trading_identifiers_tbl"
+        update "ores_trading_trade_identifiers_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -154,21 +115,19 @@ begin
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql;
 
-create or replace trigger ores_trading_identifiers_insert_trg
-before insert on "ores_trading_identifiers_tbl"
-for each row execute function ores_trading_identifiers_insert_fn();
+create or replace trigger ores_trading_trade_identifiers_insert_trg
+before insert on "ores_trading_trade_identifiers_tbl"
+for each row execute function ores_trading_trade_identifiers_insert_fn();
 
-create or replace rule ores_trading_identifiers_delete_rule as
-on delete to "ores_trading_identifiers_tbl" do instead
-    update "ores_trading_identifiers_tbl"
+create or replace rule ores_trading_trade_identifiers_delete_rule as
+on delete to "ores_trading_trade_identifiers_tbl" do instead
+    update "ores_trading_trade_identifiers_tbl"
     set valid_to = current_timestamp
     where tenant_id = OLD.tenant_id
       and id = OLD.id

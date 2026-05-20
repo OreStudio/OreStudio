@@ -160,6 +160,11 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
 {{/domain_entity.has_tenant_in_pk}}
+{{#domain_entity.has_workspace_id}}
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
+{{/domain_entity.has_workspace_id}}
 {{#domain_entity.sql.nullable_tenant_id}}
     -- Validate tenant_id only when set (system records have NULL tenant_id)
     if NEW.tenant_id is not null then

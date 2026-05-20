@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Portfolio Table
  *
  * Represents organizational, risk, or reporting groupings.
  * Never holds trades directly. Supports hierarchical structure
@@ -35,13 +35,13 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "name" text not null,
-    "description" text not null default '',
+    "description" text null,
     "parent_portfolio_id" uuid null,
     "owner_unit_id" uuid null,
     "purpose_type" text not null,
     "aggregation_ccy" text null,
     "is_virtual" integer not null,
-    "status" text not null default 'Active',
+    "status" text not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -59,8 +59,8 @@ create table if not exists "ores_refdata_portfolios_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Unique name for active records (scoped to party)
-create unique index if not exists portfolios_name_uniq_idx
+-- Composite natural key: unique combination for active records
+create unique index if not exists portfolios_party_id_name_uniq_idx
 on "ores_refdata_portfolios_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -89,51 +89,11 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate party_id (mandatory soft FK to parties)
-    if not exists (
-        select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id and id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            NEW.party_id
-            using errcode = '23503';
-    end if;
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
-    -- Validate parent_portfolio_id (nullable self-referencing FK)
-    if NEW.parent_portfolio_id is not null then
-        if not exists (
-            select 1 from ores_refdata_portfolios_tbl
-            where tenant_id = NEW.tenant_id and id = NEW.parent_portfolio_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.',
-                NEW.parent_portfolio_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate owner_unit_id (nullable soft FK to business_units)
-    if NEW.owner_unit_id is not null then
-        if not exists (
-            select 1 from ores_refdata_business_units_tbl
-            where tenant_id = NEW.tenant_id and id = NEW.owner_unit_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid owner_unit_id: %. No active business unit found with this id.',
-                NEW.owner_unit_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate purpose_type
-    NEW.purpose_type := ores_refdata_validate_purpose_type_fn(NEW.tenant_id, NEW.purpose_type);
-
-    -- Validate aggregation_ccy (nullable)
-    if NEW.aggregation_ccy is not null and NEW.aggregation_ccy != '' then
-        NEW.aggregation_ccy := ores_refdata_validate_currency_fn(
-            NEW.tenant_id, NEW.aggregation_ccy);
-    end if;
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -163,15 +123,12 @@ begin
 
     NEW.valid_from = current_timestamp;
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql;
 
 create or replace trigger ores_refdata_portfolios_insert_trg
 before insert on "ores_refdata_portfolios_tbl"

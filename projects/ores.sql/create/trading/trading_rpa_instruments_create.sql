@@ -17,28 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Risk Participation Agreement (RPA) Instruments Table
---
--- Credit derivative written on an underlying swap. The protection seller
--- participates in the credit risk of the reference counterparty's swap.
--- ORE product type: RiskParticipationAgreement. The underlying swap legs
--- live in ores_trading_swap_legs_tbl linked by instrument_id.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * RPA Instrument Table
+ *
+ * Represents a Risk Participation Agreement where one bank (protection
+ * buyer) pays a fee to another (protection seller) to assume a portion of
+ * credit risk on a reference counterparty.
+ */
 
 create table if not exists "ores_trading_rpa_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "trade_id" uuid null,
-    "trade_type_code" text not null,
     "start_date" date not null,
     "maturity_date" date not null,
     "reference_counterparty" text not null,
-    "participation_rate" numeric(18, 10) not null,
-    "protection_fee" numeric(18, 10) null,
+    "participation_rate" double precision not null,
+    "protection_fee" double precision not null,
     "description" text null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -54,11 +55,7 @@ create table if not exists "ores_trading_rpa_instruments_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
-    check ("maturity_date" > "start_date"),
-    check ("reference_counterparty" <> ''),
-    check ("participation_rate" > 0 and "participation_rate" <= 1),
-    check ("protection_fee" is null or "protection_fee" >= 0)
+    check ("instrument_id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -66,26 +63,13 @@ create unique index if not exists rpa_instruments_version_uniq_idx
 on "ores_trading_rpa_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists rpa_instruments_id_uniq_idx
 on "ores_trading_rpa_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists rpa_instruments_tenant_idx
 on "ores_trading_rpa_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Party index for RLS
-create index if not exists rpa_instruments_party_idx
-on "ores_trading_rpa_instruments_tbl" (tenant_id, party_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
--- Soft FK back to trade (NULL for standalone instruments)
-create unique index if not exists rpa_instruments_trade_id_idx
-on "ores_trading_rpa_instruments_tbl" (tenant_id, trade_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and trade_id is not null;
 
 create index if not exists rpa_instruments_workspace_idx
 on "ores_trading_rpa_instruments_tbl" (workspace_id)
@@ -99,11 +83,8 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Set party_id from session context
-    NEW.party_id := current_setting('app.current_party_id')::uuid;
-
-    -- Validate trade_type_code
-    NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -141,7 +122,7 @@ begin
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql;
 
 create or replace trigger ores_trading_rpa_instruments_insert_trg
 before insert on "ores_trading_rpa_instruments_tbl"

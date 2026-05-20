@@ -115,9 +115,9 @@ for select using (
 -- -----------------------------------------------------------------------------
 -- Trade Identifiers
 -- -----------------------------------------------------------------------------
-alter table ores_trading_identifiers_tbl enable row level security;
+alter table ores_trading_trade_identifiers_tbl enable row level security;
 
-create policy identifiers_tenant_isolation_policy on ores_trading_identifiers_tbl
+create policy identifiers_tenant_isolation_policy on ores_trading_trade_identifiers_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

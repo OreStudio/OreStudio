@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Swaption Instrument Table
  *
  * Represents a swaption — an option granting the right to enter into an
  * interest rate swap at a future date. Exercise type may be European,
@@ -97,6 +97,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;

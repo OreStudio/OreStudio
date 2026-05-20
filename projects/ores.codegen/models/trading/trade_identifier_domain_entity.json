@@ -1,6 +1,7 @@
 {
   "domain_entity": {
     "schema": "public",
+    "product": "ores",
     "component": "trading",
     "component_include": "trading.api",
     "component_core": "trading.core",
@@ -70,7 +71,7 @@
     ],
 
     "sql": {
-      "tablename": "ores_trading_identifiers_tbl"
+      "tablename": "ores_trading_trade_identifiers_tbl"
     },
 
     "repository": {

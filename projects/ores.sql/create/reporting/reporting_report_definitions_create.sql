@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Report Definition Table
  *
  * The persistent template for a report. Describes what to run, when to run it,
  * and how to handle concurrent executions. Type-specific configuration (e.g.
@@ -109,6 +109,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 7b5e0c11-8c1f-4d91-adea-2596197cd0d4
+:END:
+#+title: Loading indicator on entity list windows
+#+description: Indeterminate progress bar + centralised reload lifecycle across 45 subclasses; rename reload() override to doReload().
+#+type: story
+#+level: s2
+#+filetags: :qt:ux:loading:refactor:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-20]
+:END:
+
+** Now
+Completed 2026-03-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-20
+
+* Goal
+
+Add a consistent loading indicator across every entity list window
+so users always know when data is being fetched.
+
+* Acceptance
+
+- Indeterminate 4px progress bar across list windows.
+- Common reload lifecycle centralised in EntityListMdiWindow.
+- doReload() rename across 45 subclasses.
+- Org + Portfolio explorers updated.
+
+* Tasks
+
+In execution order:
+
+- [[id:85d90c43-a6ea-4726-b3c4-8ad5c0dc1ebd][Add loading indicator to all entity list windows]]
+
+* Decisions
+
+- /doReload() override + base class delegates from reload()/ :: keeps the loading-state management in one place.
+
+* Out of scope
+
+- Per-row loading indicators (separate).
+
+* See also
+
+- [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]] — the AbstractClientModel + dataLoaded/loadError signals consumed here come from there.

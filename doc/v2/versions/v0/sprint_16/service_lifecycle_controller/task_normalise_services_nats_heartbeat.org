@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: d1e2865b-03df-4652-b495-5464f874f213
+:END:
+#+title: Normalise all services to NATS-based hosting with unified heartbeat
+#+description: IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute.
+#+type: task
+#+level: s1
+#+filetags: :service:nats:iam:http:wt:compute:heartbeat:service_lifecycle_controller:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-08]
+:END:
+
+** Now
+Completed 2026-04-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-08
+
+* Goal
+
+IAM + HTTP + Wt + compute wrapper migrated to ores.service unified infrastructure; signing_service_runner + wt_service_runner; on_shutdown callbacks; standard NATS telemetry heartbeats; service dashboard sole-source-of-truth from heartbeats; IAM roles + service accounts for http / wt / compute.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

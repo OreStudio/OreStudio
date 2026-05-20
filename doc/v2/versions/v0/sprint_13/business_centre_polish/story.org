@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 19ee14c8-952d-42d6-9ae1-ecea45a5efcf
+:END:
+#+title: Business centre polish
+#+description: city_name field, US country hard-coding for NY centres, WRLD UN flag + Internal source, default column tidy.
+#+type: story
+#+level: s2
+#+filetags: :business_centres:refdata:ux:data_quality:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-22]
+:END:
+
+** Now
+Completed 2026-02-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-22
+
+* Goal
+
+Data-quality + UI polish round on business centres after the
+sprint-12 CRUD landing surfaced the rough edges.
+
+* Acceptance
+
+- city_name column added + derived from descriptions.
+- NY centres hard-coded to US country.
+- WRLD = UN flag + Internal source.
+- Default columns tidied (Code + Country + City).
+- Protocol bump to 38.0.
+
+* Tasks
+
+In execution order:
+
+- [[id:a1673d39-4165-4607-bf65-93c78c436297][Polish business centre UI and data quality]]
+
+* Decisions
+
+- /Derive city_name during populate/ :: pragmatic; the FpML descriptions are inconsistent enough that runtime derivation isn't worth it.
+- /Hard-code NY country/ :: edge case; cleaner to special-case than to generalise the derivation logic.
+
+* Out of scope
+
+- Country-flag licensing audit (separate).
+
+* See also
+
+None.

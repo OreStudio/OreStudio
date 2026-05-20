@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: df3c08d8-a11e-4e2e-908a-5bd0ddc29626
+:END:
+#+title: Sprint 15 housekeeping
+#+description: Sprint backlog refinement.
+#+type: story
+#+level: s2
+#+filetags: :agile:housekeeping:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-24]
+:END:
+
+** Now
+Completed 2026-03-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-24
+
+* Goal
+
+Recurring per-sprint housekeeping.
+
+* Acceptance
+
+- Sprint 15 backlog reflects reality at close.
+
+* Tasks
+
+In execution order:
+
+- [[id:72662fdd-6362-4774-9084-7df231900596][Sprint and product backlog refinement]]
+
+* Decisions
+
+- /Compute grid is the centre of gravity/ :: the rest of the sprint ranges around it but the grid story stays primary.
+
+* Out of scope
+
+- OCR scans + AI summary — no v0 tasks this sprint.
+
+* See also
+
+None.

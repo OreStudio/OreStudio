@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: aa89b17b-0cee-4786-82d9-747b20879f14
+:END:
+#+title: Add repository integration tests for all analytics entities
+#+description: Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI.
+#+type: task
+#+level: s1
+#+filetags: :analytics:tests:repository:generators:reporting_and_analytics:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-07]
+:END:
+
+** Now
+Completed 2026-04-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-07
+
+* Goal
+
+Synthetic data generators + repository tests for pricing engine types, model configurations, products, parameters; real ORE engine type codes; unique config names to fix CI.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

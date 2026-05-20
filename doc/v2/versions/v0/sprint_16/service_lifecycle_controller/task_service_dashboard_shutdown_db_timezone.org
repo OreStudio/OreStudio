@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: b479f64e-385c-468d-a72e-264d22b3f115
+:END:
+#+title: Service dashboard, shutdown fixes and DB timezone
+#+description: Standardised exit codes; last 20 lines of logs captured on failure; PID files for supervised services; TimeZone=UTC on raw libpq connections; double-disconnect crash fix; Last Error column in dashboard; PluginRegistry lifecycle fix.
+#+type: task
+#+level: s1
+#+filetags: :controller:qt:database:utc:dashboard:service_lifecycle_controller:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-08]
+:END:
+
+** Now
+Completed 2026-04-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-08
+
+* Goal
+
+Standardised exit codes; last 20 lines of logs captured on failure; PID files for supervised services; TimeZone=UTC on raw libpq connections; double-disconnect crash fix; Last Error column in dashboard; PluginRegistry lifecycle fix.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

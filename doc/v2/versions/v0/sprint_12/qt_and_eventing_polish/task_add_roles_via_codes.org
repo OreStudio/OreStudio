@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: b058ba4f-4f33-47af-a3ae-bf90d476bcf3
+:END:
+#+title: Add roles to account via codes
+#+description: assign_role_by_name_request + revoke_role_by_name_request protocol messages; principal-based (username@hostname) + role-name lookups; shell intelligently detects UUID vs name. Protocol bump 26.2.
+#+type: task
+#+level: s1
+#+filetags: :iam:protocol:shell:rbac:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-07]
+:END:
+
+** Now
+Completed 2026-02-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-07
+
+* Goal
+
+Replace UUID-only role assignment with a name-based path so /setup system/ scripts are stable across DB refreshes.
+
+* Acceptance
+
+- =assign_role_by_name_request= + =revoke_role_by_name_request= protocol messages.
+- Server-side resolves principal → account_id and role-name → role_id.
+- Shell auto-detects UUID vs name.
+- Protocol bump to 26.2.
+- =find_account_by_username= utility in account service.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The UUID-only path made setup scripts brittle: a fresh DB regenerated UUIDs and broke everything.
+
+* Result
+
+Roles assignable by name across protocol, server, and shell.

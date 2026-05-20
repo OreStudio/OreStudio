@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: df3b299e-7fed-4411-b257-125ed35c3a9e
+:END:
+#+title: Party isolation for books, portfolios, trades
+#+description: Extend party-level RLS to books / portfolios / trades; session_data carries party context; FlagIconHelper centralised.
+#+type: story
+#+level: s2
+#+filetags: :rls:party:trading:sql:qt:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 2faf5366-2fed-4fbe-99f2-8cb46ca84aeb
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+Continued in: [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] (sprint 16). Sprint 13 extended party-level RLS to books / portfolios / trades; sprint 16 closes the remaining gaps surfaced by validate_schemas.sh.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-24]
+:END:
+
+** Now
+Completed 2026-02-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-24
+
+* Goal
+
+Extend party-level RLS to books, portfolios, and trades — currently
+visible across all parties in a tenant. Centralise flag icon setup
+while we're touching the affected dialogs.
+
+* Acceptance
+
+- RLS policies enforce party isolation for books / portfolios / trades.
+- Session + request context propagate party for these tables.
+- Portfolio detail shows party; create mode pre-populates party_id.
+- Parent-portfolio selectors land in portfolio + book dialogs.
+- FlagIconHelper centralises flag icon setup.
+
+* Tasks
+
+In execution order:
+
+- [[id:7864c825-dcbd-4f86-8609-c4739d250239][Party isolation for books, portfolios, trades]]
+
+* Decisions
+
+- /Same RLS pattern as party_counterparties/ :: extending the established sprint-12 pattern minimises new surface.
+- /Helper, not per-dialog lambdas/ :: flag-icon code was scattered; centralised in one place.
+
+* Out of scope
+
+- Currency / country party restrictions (separate story).
+
+* See also
+
+- [[id:c431b464-a3bc-4d9c-b33a-7c5b247ebea4][Party-level RLS isolation]] (sprint 12) — sibling continuation of the same RLS layer.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: f04113fc-16ab-44d2-9545-54ca632c45e9
+:END:
+#+title: Fix performed_by and modified_by stamping
+#+description: Remove current_user escape hatch from ores_iam_validate_account_username_fn; reorder foundation_populate.sql so IAM service accounts populate first; introduce ores_iam_current_actor_fn reading app.current_actor GUC; use resolved actor in all inserts under ores_iam_provision_tenant_fn; replace silent current_user defaults for assigned_by in image_tags + account_roles.
+#+type: task
+#+level: s1
+#+filetags: :audit:iam:provenance:sql:guc:provenance_and_actor:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:7b926ace-57f6-414d-8f3e-568175041f87][Provenance and actor stamping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-21]
+:END:
+
+** Now
+Completed 2026-02-21.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-21
+
+* Goal
+
+Get =performed_by= + =modified_by= stamping honest by removing the escape hatch and routing the actor through a session GUC.
+
+* Acceptance
+
+- =ores_iam_validate_account_username_fn= escape hatch (current_user fallback) removed.
+- =foundation_populate.sql= reordered so IAM service accounts seed before DQ + refdata.
+- =ores_iam_current_actor_fn= reads =app.current_actor= GUC; falls back to =current_user= only when unset.
+- All inserts in =ores_iam_provision_tenant_fn= use the resolved actor.
+- =ores_assets_image_tags_insert_fn= + =ores_iam_account_roles_insert_fn=: =assigned_by= silent-default to =current_user= replaced with =ores_iam_validate_account_username_fn= (bootstrap-aware).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Builds on sprint-12's =add_system_account=. The escape hatch defeated the whole point of having strict validation.
+
+* Result
+
+Audit stamping reliable across the write paths.

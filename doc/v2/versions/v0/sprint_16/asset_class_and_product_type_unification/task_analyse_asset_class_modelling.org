@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: bac9030f-a95d-4ba4-a78e-426fc7439894
+:END:
+#+title: Analyse asset class modelling
+#+description: Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
+#+type: task
+#+level: s1
+#+filetags: :trading:marketdata:refdata:analysis:asset_class:asset_class_and_product_type_unification:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-03]
+:END:
+
+** Now
+Completed 2026-04-03.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-03
+
+* Goal
+
+Full reconciliation audit: trading instrument_family_t, marketdata asset_class C++ enum, refdata bitemporal table, Qt hardcoded labels. Conclude that asset_class (risk taxonomy) + product_type (structural discriminator) are orthogonal and must coexist with shared refdata source of truth.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

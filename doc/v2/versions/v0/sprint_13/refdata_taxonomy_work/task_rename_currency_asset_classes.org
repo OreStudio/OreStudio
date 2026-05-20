@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 7efd1dcf-2729-4e98-bd2d-712f55bdd83d
+:END:
+#+title: Rename currency asset classes
+#+description: Avoid 'asset classes' for values that aren't usual asset classes; pick clearer naming.
+#+type: task
+#+level: s1
+#+filetags: :refdata:currency:naming:polish:refdata_taxonomy_work:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-24]
+:END:
+
+** Now
+Completed 2026-02-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-24
+
+* Goal
+
+Pick clearer naming for the currency taxonomy values that aren't really asset classes.
+
+* Acceptance
+
+- Values renamed to avoid /asset class/ overload.
+- Lookup tables + display strings updated.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Came out of immediate review feedback on the previous task.
+
+* Result
+
+Naming no longer collides with trading-domain /asset class/.

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: c431b464-a3bc-4d9c-b33a-7c5b247ebea4
+:END:
+#+title: Party-level RLS isolation
+#+description: Second RLS layer scoping data to a party subtree within a tenant; visible-party-set computation; party_counterparties as the first scoped junction.
+#+type: story
+#+level: s2
+#+filetags: :rls:party:security:sql:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 956fcd0e-41c3-46e4-9895-b64b4c143e6d
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+Continued in: [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]] (sprint 13) —
+lands the multi-party login picker + account-party management UI
+that this story scoped as a future task. The same RLS pattern is
+also extended to books / portfolios / trades
+([[id:df3b299e-7fed-4411-b257-125ed35c3a9e][party_isolation_books_portfolios_trades]]) and to refdata
+visibility ([[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][party_level_refdata_restrictions]]) in the same sprint.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-15]
+:END:
+
+** Now
+Completed 2026-02-15.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-15
+
+* Goal
+
+Add the second RLS layer: scope data to the party subtree within a
+tenant. Compute the visible-party set at login from the party
+hierarchy. Prove the pattern with =party_counterparties=.
+
+* Acceptance
+
+- SQL helpers: visible-party-set + current-party-id + visible-party-ids.
+- C++ tenant_aware_pool + context carry party context.
+- Session + handler propagation in place.
+- Login resolves party from account_parties; computes visible set.
+- party_counterparties junction with dual (tenant + party) RLS.
+- Integration tests: system sees all; leaf sees subtree only.
+
+* Tasks
+
+In execution order:
+
+- [[id:b2982628-d398-4d98-a25f-eb21c1fccc94][Implement party-level RLS isolation]]
+
+* Decisions
+
+- /Visible-party set computed at login/ :: avoids per-query recursive CTE; tradeoff is hierarchy changes need re-login.
+- /System party sees all/ :: necessary for admin paths; matches the system-tenant-cross-tenant pattern from sprint 11.
+- /party_counterparties as the first scoped junction/ :: proves the pattern end-to-end before applying broadly.
+
+* Out of scope
+
+- Party picker UI for multi-party users (deferred).
+- Live re-computation of visible set on hierarchy change.
+
+* See also
+
+- [[id:976a2745-6728-435e-970e-d1205d46dc7a][Per-request tenant context]] (sprint 11) — the tenant RLS this story extends.
+- [[id:3ec1360a-fa8d-4ef3-b545-1bee0fad4bab][Brainstorm multi-party support]] — supplies the design this story implements.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: f991419c-3c22-4545-980b-cf4b3ef6693f
+:END:
+#+title: Fix audit trail metadata for recorded_by and modified_by
+#+description: modified_by + performed_by soft FK to accounts; super-admin no longer 'modified by bootstrap'; tenant admin no longer 'recorded by onboarding'; performed_by visible in UI; terminology standardised.
+#+type: task
+#+level: s1
+#+filetags: :audit:iam:refactor:terminology:audit_trail_and_system_account:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:2901ce42-268c-4ade-a3e4-cf6e01b8668e][Audit trail and system account]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-16]
+:END:
+
+** Now
+Completed 2026-02-16.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-16
+
+* Goal
+
+Standardise audit-trail metadata across entities; surface =performed_by= in the UI; fix the inconsistencies in who-did-what.
+
+* Acceptance
+
+- =modified_by= + =performed_by= soft FK to accounts table.
+- Super admin no longer recorded as 'modified by bootstrap'.
+- Tenant admin no longer 'recorded by onboarding' — should be super admin.
+- Terminology standardised: =modified_by= = database user, =performed_by= = application actor.
+- UI surfaces =performed_by=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Audit was technically present but inconsistent in practice — every entity recorded a different /who/ as the modifier.
+
+* Result
+
+Audit metadata consistent.

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: d64eee12-9220-4fb6-b544-a6bd96d6549a
+:END:
+#+title: Add RLS-aware tenant provisioning for tests
+#+description: Tenant repository tests bypass RLS via a privileged tenant_provisioning_helper; 6 SKIP'd tenant tests re-enabled.
+#+type: task
+#+level: s1
+#+filetags: :tenants:tests:rls:iam:tenant_administration:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:00e6e192-a255-4c94-8fcc-15826f7e33ae][Tenant administration]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-12]
+:END:
+
+** Now
+Completed 2026-02-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-12
+
+* Goal
+
+Get the tenant repository tests off SKIP by adding an RLS-aware provisioning helper.
+
+* Acceptance
+
+- Privileged =tenant_provisioning_helper= bypasses RLS via role escalation.
+- Production RLS policies unchanged.
+- All 6 previously-skipped tenant repository tests re-enabled and passing.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+RLS itself was the blocker; the fix is to provide a privileged path for the test infrastructure only.
+
+* Result
+
+Tenant repository tests green.

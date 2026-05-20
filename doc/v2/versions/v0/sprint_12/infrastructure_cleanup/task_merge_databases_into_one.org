@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 78304c42-6a95-4532-81e0-ed9f0972d6c8
+:END:
+#+title: Merge all databases into one
+#+description: Remove ores_admin + ores_template dedicated databases; two-phase create (superuser then ores_ddl_user); centralised utility functions under ores_utility_ prefix.
+#+type: task
+#+level: s1
+#+filetags: :database:refactor:least_privilege:rls:infrastructure_cleanup:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:74a0b830-2f12-406f-9550-961098c11dc6][Infrastructure cleanup]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-11]
+:END:
+
+** Now
+Completed 2026-02-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-11
+
+* Goal
+
+Eliminate the ores_admin + ores_template dedicated databases; rely on RLS for test isolation.
+
+* Acceptance
+
+- =ores_admin= + =ores_template= databases removed.
+- Two-phase database creation: =create_database.sql= (superuser, infrastructure) then =setup_schema.sql= (=ores_ddl_user=, schema + data).
+- Utility functions relocated under =create/utility/= with =ores_utility_= prefix; available in every ORES database.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Template-cloning was an early choice that the multi-tenant + RLS work made obsolete.
+
+* Result
+
+Single-database deployment story; least-privilege schema setup.

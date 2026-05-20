@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: fd12bbd4-bd95-454a-a636-5f22c928c4d1
+:END:
+#+title: Fix ORE import bugs
+#+description: ORE CurrencyType mapping; status_id resolution; dynamic activity-type loading via NATS endpoint; ConnectionBrowserMdiWindow size restoration; subject_prefix on environments + connections.
+#+type: story
+#+level: s2
+#+filetags: :ore:import:bug_fix:qt:nats:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: f80bad05-2e66-458d-9223-1db0a83ef694
+#+successor: 8361bc43-bd96-433d-889e-367072bad44e
+
+Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+Continued from: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14). The wizard
+landed clean but real-data import surfaced the currency-type, status,
+and activity-type bugs cleaned up here.
+
+Continued in: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] (sprint 16) — full end-to-end
+coverage: dispatch + mappers for every instrument family + server-side
+service.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-19]
+:END:
+
+** Now
+Completed 2026-03-19.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-19
+
+* Goal
+
+Validate the sprint-14 ORE Import Wizard against real ORE samples
+and fix the bugs it surfaces.
+
+* Acceptance
+
+- CurrencyType mapping closes Invalid monetary_nature: Crypto.
+- trade_status_service::resolve_status() prevents nil status IDs.
+- Dynamic activity-type loading via trading.v1.activity_types.list.
+- ConnectionBrowserMdiWindow size + splitter restoration fix.
+- subject_prefix on environments + connections.
+- Project version bumped to 0.0.15.
+
+* Tasks
+
+In execution order:
+
+- [[id:ad9ab87a-b9fc-459c-b1ca-60e375adbe53][Fix ORE import bugs]]
+
+* Decisions
+
+- /Dynamic activity-types over hardcoded/ :: the wizard had hardcoded values that diverged from the DB; the NATS endpoint is the right shape.
+
+* Out of scope
+
+- FpML XML export — separate workstream.
+
+* See also
+
+- [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14) — predecessor.

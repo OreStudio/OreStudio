@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 76d84778-4544-4ee6-a17a-033019dbacb0
+:END:
+#+title: Party database and domain
+#+description: Land party + counterparty + identifier + contact-information at the database layer; mirror them at the C++ domain layer; expose in Qt.
+#+type: story
+#+level: s2
+#+filetags: :party:counterparty:database:domain:qt:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: ef555d10-3fd3-4928-8e43-e63284d7706f
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+Continued from: [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09). That story
+sketched the party table; the sprint-10
+[[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][party-schemes story]] landed the 13 reference-data types party
+needs; this one finally implements party + counterparty +
+identifier + contact-information end-to-end.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-09]
+:END:
+
+** Now
+Completed 2026-02-09.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-09
+
+* Goal
+
+Implement party + counterparty + identifier + contact-information at
+the database, domain, and Qt layers.
+
+* Acceptance
+
+- SQL schema + 4 lookup tables in place; codegen template support added.
+- 11 C++ domain types + 40 new message types in protocol.
+- Qt: detail dialog, history dialog, MDI window, controller, client model for party.
+- Existing party / counterparty / tenant screens regenerated through the new template.
+
+* Tasks
+
+In execution order:
+
+- [[id:e4771ce3-b53a-4644-9520-89e1a8f1412e][Implement party-related entities at the database layer]]
+- [[id:0220ffb8-e3e6-4b8d-a882-98c4c4f74024][Add party-related support at the domain level]]
+- [[id:882143c2-e9af-46bf-ab5e-b5da7637db48][Add party-related support to Qt]]
+
+* Decisions
+
+- /Codegen-driven/ :: 11 domain types and 40 messages would not have been realistic without codegen.
+- /Configurable =detail_fields[]= in Qt codegen/ :: removed manual post-codegen edits that had crept into the workflow.
+- /Subsume the analysis sub-headings/ :: =Add party entity=, =Add party identifier entity=, =Contact information entity= are all analysis-only in v0; folded into the implementation task notes.
+
+* Out of scope
+
+- Multi-party RLS isolation (separate story).
+- Advanced counterparty dialog (separate story).
+
+* See also
+
+- [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — predecessor.
+- [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] (sprint 10) — supplies the 13 reference-data types this story needs.

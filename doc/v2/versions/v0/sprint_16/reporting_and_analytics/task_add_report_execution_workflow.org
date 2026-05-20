@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 81acec3a-b462-4521-91d5-ed30e4b5a508
+:END:
+#+title: Add report execution workflow pipeline
+#+description: Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression.
+#+type: task
+#+level: s1
+#+filetags: :reporting:workflow:compute:marketdata:storage:reporting_and_analytics:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-07]
+:END:
+
+** Now
+Completed 2026-04-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-07
+
+* Goal
+
+Report execution workflow definition + messaging protocol + report_execution_handler; concurrency checks; risk_report_config domain + repository; step handlers including gather market data, assemble bundle, prepare ORE package, submit compute, collect results; MsgPack + object storage for inter-step data; gzip compression.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

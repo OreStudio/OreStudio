@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: c769c040-4ed8-4c3d-aa44-fbdd27dccca1
+:END:
+#+title: Add system party support
+#+description: System-party design lands: 'Internal' party type + 'WRLD' business centre; system tenant renamed 'Root Tenant'; system party renamed 'System Party'; tenant provisioner aligned; system parties excluded from operational root-party uniqueness.
+#+type: task
+#+level: s1
+#+filetags: :party:system_party:tenant:bootstrap:system_and_customer_party:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:d40d5971-c864-4449-91ad-ca8ab949a4a6][System and customer party]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-11]
+:END:
+
+** Now
+Completed 2026-02-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-11
+
+* Goal
+
+Land system-party design end-to-end: types, names, business-centre, tenant-provisioner alignment.
+
+* Acceptance
+
+- New 'Internal' party type + 'WRLD' (World) business centre for system/platform entities.
+- System tenant renamed 'Root Tenant'; system party renamed 'System Party'.
+- Tenant provisioner aligned.
+- System parties excluded from operational root-party uniqueness checks.
+- Detail dialogs: =QLineEdit= → =QComboBox= for Type + Status, server-populated via new =LookupFetcher=.
+- Database lifecycle docs added (=database_lifecycle.org=).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Naming pass matters: 'System Party' vs 'Root Party' was previously confusing.
+
+* Result
+
+System party model lands end-to-end.

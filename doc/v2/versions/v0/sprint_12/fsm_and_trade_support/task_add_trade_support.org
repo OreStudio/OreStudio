@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 78c1bec5-d1f6-49ec-89f5-8b485ce8fb96
+:END:
+#+title: Add trade support
+#+description: Trade envelope schema: 4 reference-data tables (trade types, lifecycle events, party role types, trade ID types) + core trade-envelope tables (trades, identifiers, party_roles) with soft-FK + RLS; ores_trade_ore_envelope_vw flattens to ORE structure. Convention drift fixes across 40 SQL files. Component renamed ores.trade → ores.trading.
+#+type: task
+#+level: s1
+#+filetags: :trade:fsm:sql:refactor:ore:fpml:fsm_and_trade_support:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-20]
+:END:
+
+** Now
+Completed 2026-02-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-20
+
+* Goal
+
+Add the trade-envelope schema using the new FSM framework.
+
+* Acceptance
+
+- 4 reference-data tables: trade types, lifecycle events, party role types, trade ID types.
+- Core trade-envelope tables: =ores_trading_trades_tbl=, =ores_trading_identifiers_tbl=, =ores_trading_party_roles_tbl= (soft-FK + RLS).
+- =ores_trade_ore_envelope_vw= flattens latest trade state into the ORE structure.
+- Sample data: booking + novation lifecycle.
+- Convention drift fixes across 40 SQL files (remove =set schema 'public'=, schema-qualified names, =for update= idioms, stale =change_reason_code <> ''= constraints, =modified_by= patterns).
+- Codegen template updates for the new conventions.
+- Component renamed =ores.trade= → =ores.trading=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Trade-envelope wording removed from comments where it didn't belong; kept where FpML uses it.
+
+* Result
+
+Trade schema landed; component name normalised.

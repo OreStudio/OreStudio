@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: c615c202-68b9-4c2d-a7e7-472b0d112d23
+:END:
+#+title: Sprint and product backlog refinement
+#+description: Maintain sprint 16 backlog and groom the product backlog.
+#+type: task
+#+level: s1
+#+filetags: :agile:backlog:sprint_16_housekeeping:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:c1db4c7a-16d7-4289-a457-a6c6ce5c8b5c][Sprint 16 housekeeping]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-17]
+:END:
+
+** Now
+Completed 2026-04-17.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-17
+
+* Goal
+
+Maintain sprint 16 backlog and groom the product backlog.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

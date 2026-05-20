@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 8826f495-5182-47ae-aa74-5475cdb09ec4
+:END:
+#+title: Display provision correlation ID on tenant summary
+#+description: TenantProvisioningWizard summary page shows the provision correlation ID for cross-referencing service logs.
+#+type: task
+#+level: s1
+#+filetags: :qt:workflow:correlation:wizard:ux:party_provisioning_saga:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:c0ed556b-57a4-4bce-9196-70bcf4fd0d63][Party provisioning saga]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-31]
+:END:
+
+** Now
+Completed 2026-03-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-31
+
+* Goal
+
+TenantProvisioningWizard summary page shows the provision correlation ID for cross-referencing service logs.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

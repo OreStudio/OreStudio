@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 8db5aac2-f451-465d-bfb7-143f88427848
+:END:
+#+title: Replace pgmq + pg_cron with custom tables and scheduler
+#+description: Remove pgmq + pg_cron extensions; custom ores_mq_* tables (party / tenant / system scope; task / channel queue types; native RLS); in-process scheduler_loop using boost::asio::steady_timer with sql_action_handler + mq_action_handler; ores_scheduler_job_instances_tbl TimescaleDB hypertable replaces cron.job_run_details; mq_service facade; protocol 48.0 (breaking).
+#+type: task
+#+level: s1
+#+filetags: :mq:scheduler:refactor:sql:boost_asio:timescale:custom_mq_scheduler:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:ed082d5a-4afb-4bf9-81db-8712f881dde3][Custom MQ tables and in-process scheduler]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-04]
+:END:
+
+** Now
+Completed 2026-03-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-04
+
+* Goal
+
+Remove the external pgmq + pg_cron extensions and replace them with custom in-process infrastructure.
+
+* Acceptance
+
+- pgmq + pg_cron extensions removed.
+- Custom =ores_mq_*= tables: =mq_queues=, =mq_messages=, =mq_message_archive=, =mq_queue_stats=, =mq_channel_messages= (stub). Three scope levels (party / tenant / system); two queue types (task / channel); native RLS.
+- In-process C++ =scheduler_loop= using =boost::asio::steady_timer=; =sql_action_handler= for executing SQL; =mq_action_handler= for sending MQ messages.
+- =ores_scheduler_job_instances_tbl= TimescaleDB hypertable replaces =cron.job_run_details=.
+- =ores.mq= component significantly updated with new domain types, repositories, =mq_service= facade.
+- MQ Monitor UI shows scope_type / queue_type / description / pending_count / processing_count.
+- Report scheduling uses the new =mq_service=.
+- Protocol 48.0 (breaking).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Decision driven by tighter integration with our RLS architecture + control over data structures + unified codebase. The pgmq + pg_cron extensions had served their purpose as a proof of concept.
+
+* Result
+
+Custom in-process MQ + scheduler lands; external extensions gone.

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 50a448ed-01f9-49b9-afbe-02204faf8ff2
+:END:
+#+title: Fix startup races, terminal bleed, analytics service setup
+#+description: ores.analytics.service launch; multi-phase process shutdown sequence (SIGTERM / SIGQUIT / SIGKILL); enhanced log monitoring in process supervisor; exponential backoff for service authentication; TLS certificate validation for NATS connections.
+#+type: task
+#+level: s1
+#+filetags: :service:analytics:startup:shutdown:nats:tls:service_lifecycle_controller:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-08]
+:END:
+
+** Now
+Completed 2026-04-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-08
+
+* Goal
+
+ores.analytics.service launch; multi-phase process shutdown sequence (SIGTERM / SIGQUIT / SIGKILL); enhanced log monitoring in process supervisor; exponential backoff for service authentication; TLS certificate validation for NATS connections.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

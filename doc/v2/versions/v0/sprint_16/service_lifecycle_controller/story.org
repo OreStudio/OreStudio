@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
+:END:
+#+title: Service lifecycle controller
+#+description: ores.controller component for managing service definitions + instances + lifecycle events; service dashboard polish; normalise all services to NATS-based hosting with unified heartbeat; menu restructure.
+#+type: story
+#+level: s2
+#+filetags: :controller:services:lifecycle:dashboard:nats:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 679da033-934a-4330-951f-5016675cc8af
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+Continued from: [[id:679da033-934a-4330-951f-5016675cc8af][Compute grid observability]] (sprint 15). Sprint 15 added the RAG service dashboard. This sprint adds the controller component that manages service definitions + instances + lifecycle events.
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-08]
+:END:
+
+** Now
+Completed 2026-04-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-08
+
+* Goal
+
+ores.controller component for managing service definitions + instances + lifecycle events; service dashboard polish; normalise all services to NATS-based hosting with unified heartbeat; menu restructure.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:ce070f4d-04f6-4b35-b46d-ee6d744c2d7f][Add service lifecycle controller and dashboard enhancements]]
+- [[id:50a448ed-01f9-49b9-afbe-02204faf8ff2][Fix startup races, terminal bleed, analytics service setup]]
+- [[id:d1e2865b-03df-4652-b495-5464f874f213][Normalise all services to NATS-based hosting with unified heartbeat]]
+- [[id:b479f64e-385c-468d-a72e-264d22b3f115][Service dashboard, shutdown fixes and DB timezone]]
+- [[id:cc2094d9-9394-4490-88bf-bf7f9c6ebd58][Service lifecycle, menu restructure, GCC 15 fix, Qt plugin split]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

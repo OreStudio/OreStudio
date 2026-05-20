@@ -10,12 +10,18 @@
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: ef555d10-3fd3-4928-8e43-e63284d7706f
+#+successor: 253ce971-c0f3-43c3-980c-276233250b86
 
 Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
 
 Continued from: [[id:ef555d10-3fd3-4928-8e43-e63284d7706f][Party database groundwork]] (sprint 09) — that story
 documented the party table; this one lands the 13 reference-data
 types needed before party can be implemented.
+
+Continued in: [[id:253ce971-c0f3-43c3-980c-276233250b86][GLEIF data integration]] (sprint 12) — turns the
+download script + CSV subsets into proper datasets. Also followed
+by [[id:76d84778-4544-4ee6-a17a-033019dbacb0][Party database and domain]] (sprint 12), which finally
+implements party + counterparty on top of these reference-data types.
 
 * DONE Status
 :PROPERTIES:

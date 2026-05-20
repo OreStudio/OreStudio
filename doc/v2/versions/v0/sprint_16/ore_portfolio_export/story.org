@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: fb0471f1-6bd2-4955-ac39-15d7800bb973
+:END:
+#+title: ORE portfolio export
+#+description: export_portfolio in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions.
+#+type: story
+#+level: s2
+#+filetags: :ore:export:qt:portfolio:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-01]
+:END:
+
+** Now
+Completed 2026-04-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-01
+
+* Goal
+
+export_portfolio in ores.ore exporter + Qt Open Instrument + Export to ORE XML actions.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:b0ac4e5f-a1db-401c-88b2-23c5cefa5950][ORE portfolio export: exporter + Qt Open Instrument + Export XML]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: afcd8728-5bd6-4fa5-8aa6-5eb5cd6b78f0
+:END:
+#+title: Move generators to api layer; split http.server
+#+description: Synthetic generators relocated from core to api layers across ores.trading + ores.reporting + ores.iam + ores.refdata + ores.compute (+ tests); auth_session_service relocated from ores.iam.core to ores.iam.api (in-memory, no core deps); domain-specific HTTP route handlers (iam, refdata, variability, assets) moved into their respective domain core modules; ores.http.server now exclusively manages generic server infrastructure (compute_routes only remaining domain-specific route); generator directories standardised to generators/ (plural); faker-cxx added as private dep on affected api libs.
+#+type: task
+#+level: s1
+#+filetags: :refactor:architecture:generators:http:faker:generators_http_server_refactor:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-25]
+:END:
+
+** Now
+Completed 2026-03-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-25
+
+* Goal
+
+Move synthetic generators to api layers + split http.server into core + infrastructure.
+
+* Acceptance
+
+- Generators relocated: ores.trading, ores.reporting, ores.iam, ores.refdata, ores.compute (+ tests).
+- auth_session_service relocated from ores.iam.core to ores.iam.api (in-memory, no core deps).
+- HTTP route handlers (iam, refdata, variability, assets) moved into respective domain core modules.
+- ores.http.server now manages generic server infrastructure only (compute_routes the only remaining domain route).
+- Generator directory renamed generator/ → generators/ in ores.trading for consistency.
+- faker-cxx::faker-cxx added as private dep to affected api libs.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the loop on the api/core migration by relocating two cross-cutting concerns (generators + HTTP routes) into the right modules.
+
+* Result
+
+Generators + HTTP routes in the right places.

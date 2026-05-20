@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 8ef061d5-9f21-4610-91b7-610a52da4c75
+:END:
+#+title: Add evaluation-tenant onboarding wizard on first login
+#+description: First-login wizard offers to install a catalogue + set up the tenant; user can cancel; stops appearing once a root party exists beyond the system party.
+#+type: task
+#+level: s1
+#+filetags: :tenants:onboarding:wizard:evaluation:tenant_provisioning_wizards:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-16]
+:END:
+
+** Now
+Completed 2026-02-16.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-16
+
+* Goal
+
+On first login to a new evaluation tenant, offer a wizard to install a catalogue + set up the tenant.
+
+* Acceptance
+
+- Wizard appears on first login when no operational root party exists.
+- User can cancel without making any changes.
+- Wizard stops appearing once a root party exists beyond the system party.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+First-time experience for evaluation tenants; should feel low-friction.
+
+* Result
+
+Onboarding wizard surfaces on first login.

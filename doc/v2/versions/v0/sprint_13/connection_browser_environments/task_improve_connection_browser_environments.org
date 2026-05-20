@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 1284cd48-5b99-48b2-8925-ce7e7c0aac1e
+:END:
+#+title: Refactor connection browser with environments
+#+description: Split server_environment into environment (host + port) and connection (credentials, optionally linked to environment); migrate existing connections automatically; unified tree (folders + environments + connections); Duplicate action; environment-linked connections show inherited tags + resolved host/port; login dialog gets unified quick-connect combo (Manual / Environments / Connections headers); new Keyboard + Copy icons.
+#+type: task
+#+level: s1
+#+filetags: :connections:environments:qt:ux:refactor:sqlite:connection_browser_environments:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:ee315a6f-8933-4738-ae3f-e63cbbf57f03][Connection browser: environments]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-24]
+:END:
+
+** Now
+Completed 2026-02-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-24
+
+* Goal
+
+Refactor the connection browser to separate the host/port from the credentials and unify the tree.
+
+* Acceptance
+
+- =server_environment= split: =environment= (host + port) + =connection= (credentials, optionally linked to environment).
+- Environment-linked connections resolve host/port live.
+- New SQLite tables for environments + connections + connection_tags; existing data migrated automatically.
+- Unified tree: folders + environments + connections in one view with distinct icons.
+- Drag-and-drop between folders restores expansion state.
+- Duplicate action via toolbar + context menu (appends / (copy)/).
+- Environment-linked connections show inherited tags as outlined badges; resolved host/port in grey italic with tooltip.
+- Login dialog: single quick-connect combo with Manual / Environments / Connections headers replaces the separate combo + button.
+- New icons: Keyboard (manual entry), Copy (duplication); Fluent UI + Solarized variants.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Subsumes the older /Add concept of named environments/ story — named environments are just first-class =environment= rows here.
+
+* Result
+
+Connection management substantially simpler.

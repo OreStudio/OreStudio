@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 94ea7333-2b7d-412e-bbc6-4e502a3979be
+:END:
+#+title: Add scheduling support
+#+description: ores.scheduler library wraps pg_cron via Quartz.NET-style fluent API: job_definition / job_instance / job_definition_builder / cron_scheduler. Hand-crafted ores_scheduler_job_definitions_tbl linked to cron.job via cron_job_id; reads from cron.job_run_details directly. croncpp for cron_expression with std::expected error handling; utility::uuid::tenant_id for tenant isolation.
+#+type: task
+#+level: s1
+#+filetags: :scheduler:pg_cron:croncpp:sql:fluent_api:scheduling_subsystem:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:a0b6c877-2fad-457a-b0c2-000d3f707a5b][Scheduling subsystem]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-27]
+:END:
+
+** Now
+Completed 2026-02-27.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-27
+
+* Goal
+
+Build the =ores.scheduler= library wrapping =pg_cron= with a Quartz.NET-style fluent API.
+
+* Acceptance
+
+- Domain types: =cron_expression= (croncpp-backed, =std::expected= errors), =job_status=, =job_definition=, =job_instance=.
+- Fluent builder: =job_definition_builder= with =with_name= / =with_command= / =with_cron_schedule=.
+- =cron_scheduler= service: invokes =cron.schedule= / =cron.unschedule= via sqlgen.
+- =ores_scheduler_job_definitions_tbl= hand-crafted (cron_job_id bigint, is_active integer don't fit the standard codegen templates); linked to =cron.job= via =cron_job_id=.
+- Job instances read directly from =cron.job_run_details= via raw SQL join (no mirror table needed in Phase 1).
+- =description= + =is_active= columns included for the future UI.
+- =cron_expression= bridges pg_cron's 5-field Unix format and croncpp's 6-field format transparently.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Quartz.NET pattern with all state in the DB: job_definition = persistent plan, job_instance = historical execution.
+
+* Result
+
+Scheduling library available end-to-end.

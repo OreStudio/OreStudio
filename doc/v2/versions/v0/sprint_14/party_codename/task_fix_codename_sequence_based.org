@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 6d79d6ce-8a63-4b76-ad74-b107f54b8456
+:END:
+#+title: Fix codename with sequence-based unique suffix
+#+description: Replace the advisory-lock + NOT-EXISTS loop with a sequence-based suffix: ores_refdata_party_codename_seq + ores_utility_to_base26_fn produce unique lowercase base-26 suffixes appended to whimsical names; simplified trigger; party_repository::write(vector) reinstated as proper batch insert.
+#+type: task
+#+level: s1
+#+filetags: :party:codename:sql:sequence:batch_insert:party_codename:sprint_14:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:9c57d467-3f17-469a-a245-5f57e6b20784][Party codename]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-12]
+:END:
+
+** Now
+Completed 2026-03-12.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-12
+
+* Goal
+
+Replace the advisory-lock + NOT-EXISTS approach with a sequence-based unique suffix so codenames are unique even under batch insert.
+
+* Acceptance
+
+- =ores_utility_to_base26_fn(bigint)= encodes sequence values into lowercase base-26 strings (satisfies codename regex constraints).
+- =ores_refdata_party_codename_seq= sequence provides unique MVCC-independent values.
+- =ores_refdata_parties_insert_fn= trigger appends the base-26 suffix to whimsical names; guarantees uniqueness per row in a batch.
+- =party_repository::write(vector)= reinstated as a proper batch insert (the per-row workaround is no longer needed).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The advisory lock from the previous task was ineffective for batch inserts; the sequence-based approach is correct by construction.
+
+* Result
+
+Codenames unique under batch insert; batch insert restored.

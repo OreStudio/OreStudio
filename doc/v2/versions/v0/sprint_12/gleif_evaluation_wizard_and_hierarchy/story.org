@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 5886ffa7-170f-471c-a9db-37996e650cb6
+:END:
+#+title: GLEIF evaluation wizard and party hierarchy
+#+description: GLEIF-based evaluation-tenant onboarding wizard; party hierarchy graph visualisation.
+#+type: story
+#+level: s2
+#+filetags: :gleif:wizard:evaluation:party:hierarchy:viz:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-19]
+:END:
+
+** Now
+Completed 2026-02-19.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-19
+
+* Goal
+
+Add the GLEIF-based evaluation-tenant onboarding wizard (separate
+from tenant provisioning) and a party-hierarchy graph visualisation.
+
+* Acceptance
+
+- GLEIF wizard available only for evaluation tenants.
+- Root LEI + descendants imported with hierarchy.
+- Party hierarchy graph visible in the UI.
+
+* Tasks
+
+In execution order:
+
+- [[id:0ad52060-dddc-43dd-b0a8-4fbbf42c7670][Add GLEIF-based evaluation tenant onboarding wizard]]
+- [[id:7ca00ff6-4d43-4663-aaae-3b074ce127dc][Add party hierarchy graph visualisation]]
+
+* Decisions
+
+- /GLEIF wizard as separate action/ :: not part of tenant provisioning; reduces blast radius.
+- /Hierarchy first as flat view, graph follows/ :: the graph viz is a follow-on improvement.
+
+* Out of scope
+
+- LEI deletion / re-import flow.
+
+* See also
+
+None.

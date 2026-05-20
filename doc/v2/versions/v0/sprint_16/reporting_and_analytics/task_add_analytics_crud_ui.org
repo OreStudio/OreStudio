@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: c609652a-0266-4cd7-b748-096924688502
+:END:
+#+title: Add Analytics CRUD UI and restructure DQ project layout
+#+description: Analytics module Qt UI for pricing engines + model configurations; refactor Data Quality module; code generator enhanced to support combo box widgets in detail dialogs.
+#+type: task
+#+level: s1
+#+filetags: :qt:analytics:dq:ui:codegen:reporting_and_analytics:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:08d2b499-53ce-4b1c-92cf-a7c26d036ec9][Reporting and analytics]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-07]
+:END:
+
+** Now
+Completed 2026-04-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-07
+
+* Goal
+
+Analytics module Qt UI for pricing engines + model configurations; refactor Data Quality module; code generator enhanced to support combo box widgets in detail dialogs.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

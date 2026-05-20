@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: c0ed556b-57a4-4bce-9196-70bcf4fd0d63
+:END:
+#+title: Party provisioning saga
+#+description: provision_parties_workflow executor; per-party Inactive status trigger; correlation IDs across services; ores.workflow.service + PartyProvisionPage UX.
+#+type: story
+#+level: s2
+#+filetags: :workflow:party:iam:provisioning:saga:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-31]
+:END:
+
+** Now
+Completed 2026-03-31.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-31
+
+* Goal
+
+provision_parties_workflow executor; per-party Inactive status trigger; correlation IDs across services; ores.workflow.service + PartyProvisionPage UX.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:f16634af-a817-4d61-b6e4-e329bc6e7914][Add provision_parties_workflow executor]]
+- [[id:8826f495-5182-47ae-aa74-5475cdb09ec4][Display provision correlation ID on tenant summary]]
+- [[id:7bf2dcbb-6df5-4626-b732-a4028abb3033][Per-party status trigger + correlation IDs + PartyProvisionPage]]
+- [[id:0ead9020-36b6-4421-baf7-3ab2c341e0db][Workflow service + correlation IDs + PartyProvisionPage UX fixes]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

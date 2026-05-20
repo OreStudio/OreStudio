@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 1ec31677-32dc-44d8-ad89-3a6cee3fb31a
+:END:
+#+title: Add shell widget to ores.qt
+#+description: REPL widget inside Qt so super-admin can do bulk setup (tenants, accounts) without leaving the application.
+#+type: task
+#+level: s1
+#+filetags: :qt:shell:repl:ux:qt_and_eventing_polish:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-07]
+:END:
+
+** Now
+Completed 2026-02-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-07
+
+* Goal
+
+Add a REPL widget inside Qt so super-admin can do bulk setup (tenants, accounts) without leaving the application.
+
+* Acceptance
+
+- Shell widget embedded in Qt.
+- Users can interact with the system directly via REPL.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Subsumes the older /Add REPL to Qt/ story.
+
+* Result
+
+REPL accessible inside Qt.

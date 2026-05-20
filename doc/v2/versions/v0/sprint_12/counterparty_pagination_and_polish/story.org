@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: af7112ba-bf04-4b6b-ae2f-8fb1c7b362fe
+:END:
+#+title: Counterparty pagination and polish
+#+description: Pagination across the counterparty path; business-centres full CRUD; identifier cardinality + non-Latin text handling.
+#+type: story
+#+level: s2
+#+filetags: :counterparty:pagination:business_centres:qt:sprint_12:v0:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-14]
+:END:
+
+** Now
+Completed 2026-02-14.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-14
+
+* Goal
+
+Bring counterparty up to the same pagination story as party;
+land a full business-centres CRUD surface; tidy the lingering
+identifier-cardinality + non-Latin issues.
+
+* Acceptance
+
+- Counterparty paginated end-to-end; protocol 31.0.
+- Business centres: backend + Qt UI + history; country_alpha2_code derived.
+- max_cardinality on identifier schemes; ResizeToContents standard; window-settings persistence centralised.
+
+* Tasks
+
+In execution order:
+
+- [[id:d4c30c00-84c1-45a0-89e3-28c9caee144a][Add pagination to counterparty]]
+- [[id:a6fa8c90-24d1-422e-a1c2-03595bb9e14c][Add support for business centres]]
+- [[id:8d524a42-38b4-421c-b910-d367e768a0d7][Improvements to counterparty and party UI]]
+
+* Decisions
+
+- /max_cardinality on schemes/ :: closes the BIC dedup bug at the schema level rather than handler.
+- /EntityListMdiWindow as the persistence base/ :: per-window settings code was drifting; centralise.
+
+* Out of scope
+
+- Counterparty advanced (5-tab) dialog — separate story.
+
+* See also
+
+None.

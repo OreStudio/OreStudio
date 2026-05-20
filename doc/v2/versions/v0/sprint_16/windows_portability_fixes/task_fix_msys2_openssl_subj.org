@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: b735153c-70d0-42d5-a549-211f3e3e25b7
+:END:
+#+title: Fix MSYS2 path mangling of openssl -subj on Windows
+#+description: Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash.
+#+type: task
+#+level: s1
+#+filetags: :windows:msys2:openssl:nats:certs:windows_portability_fixes:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-11]
+:END:
+
+** Now
+Completed 2026-04-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-11
+
+* Goal
+
+Export MSYS_NO_PATHCONV + MSYS2_ARG_CONV_EXCL to prevent path conversion in generate_nats_certs.sh on Windows / Git Bash.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

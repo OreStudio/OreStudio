@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 6deb9eac-1269-4e84-8dfc-f54d78b5c816
+:END:
+#+title: Merge bond + credit instruments into TradeDetailDialog
+#+description: PR 3 of 6: standalone bond + credit controllers removed; functionality integrated into TradeDetailDialog; review highlighted regressions for new trade creation + CDO zero values.
+#+type: task
+#+level: s1
+#+filetags: :qt:trade:bond:credit:instrument:trade_detail_dialog_unification:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:1490e130-08f9-4d43-8f80-d7e0f5022fbd][Trade detail dialog unification]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-07]
+:END:
+
+** Now
+Completed 2026-04-07.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-07
+
+* Goal
+
+PR 3 of 6: standalone bond + credit controllers removed; functionality integrated into TradeDetailDialog; review highlighted regressions for new trade creation + CDO zero values.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

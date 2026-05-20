@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 3023b0ec-b07e-4bb5-b981-064e2f49d31f
+:END:
+#+title: Gate party + counterparty wizard steps by tenant type
+#+description: Party / counterparty setup only enabled for evaluation tenants; production tenants see the steps disabled with explanation.
+#+type: task
+#+level: s1
+#+filetags: :tenants:wizard:evaluation:production:tenant_provisioning_wizards:sprint_12:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:eaf03be3-d1ec-4ec4-b18b-4f1c6f35926a][Tenant provisioning wizards]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-14]
+:END:
+
+** Now
+Completed 2026-02-14.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-14
+
+* Goal
+
+Only allow party + counterparty setup steps in the wizard for evaluation tenants. Show disabled for production.
+
+* Acceptance
+
+- Party + counterparty wizard steps disabled for production tenants.
+- Disabled state explains production needs a different workflow.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Production parties have to come from a real customer system; evaluation parties don't.
+
+* Result
+
+Wizard gated correctly.

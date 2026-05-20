@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: ba771ea9-fbf1-420e-b708-e12a3276758f
+:END:
+#+title: Make all detail dialogs tabbed
+#+description: Tabbed layout standardised; Provenance tab consolidated; Country detail moves flag to General; Currency detail relocates icon button into General; Methodology + Treatment + Catalog + others have read-only change_commentary in Provenance; Methodology Implementation grew to 300px; My Sessions + My Account converted to MDI subwindows; business-centre flag label next to combo box.
+#+type: task
+#+level: s1
+#+filetags: :qt:ux:dialogs:refactor:mdi:detail_dialogs_modernisation:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:ec6d8e8d-4421-412a-9331-9bba5b542d54][Detail dialogs modernisation]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-20]
+:END:
+
+** Now
+Completed 2026-02-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-20
+
+* Goal
+
+Convert every detail dialog to a tabbed layout with a dedicated Provenance tab; modernise My Sessions + My Account to MDI subwindows.
+
+* Acceptance
+
+- Country detail: flag moved from a separate tab into General within a group box; two tabs total (General + Provenance).
+- Currency detail: icon button moved from floating position into a General /Icon/ group box.
+- Top-level &Trading menu added between Data and System; Trades action moved.
+- &Dimensions submenu under Data Governance (Origin / Nature / Treatment).
+- Change Commentary removed from General in 8 detail dialogs (Methodology, TreatmentDimension, DataDomain, CodingSchemeAuthorityType, CodingScheme, SubjectArea, Catalog, Dataset); read-only copy retained in Provenance.
+- Methodology Implementation text area enlarged 100 → 300px.
+- My Sessions: floating QDialog → MDI subwindow with bring-to-front.
+- My Account: modal QDialog → QWidget MDI subwindow with toolbar + three tabs (General / Security / Sessions).
+- Entity detail dialog: 32×24 country flag label next to Business Centre combo, updating dynamically via image cache.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Long flat dialogs were a usability snag; tabs let each dialog grow without becoming unwieldy.
+
+* Result
+
+Detail dialog UX consistent across the application.

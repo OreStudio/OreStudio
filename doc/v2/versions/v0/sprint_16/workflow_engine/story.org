@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 4fcd03ac-51ad-47ad-8203-faefaa4211b9
+:END:
+#+title: Workflow engine
+#+description: ores.workflow component foundation; FSM state UUIDs replace ad-hoc status strings; generalised event-driven saga engine with startup recovery.
+#+type: story
+#+level: s2
+#+filetags: :workflow:saga:fsm:engine:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-06]
+:END:
+
+** Now
+Completed 2026-04-06.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-06
+
+* Goal
+
+ores.workflow component foundation; FSM state UUIDs replace ad-hoc status strings; generalised event-driven saga engine with startup recovery.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:2f43f4c3-eebb-493f-a8c2-bd0215fefcdb][Generalise workflow engine and migrate existing sagas]]
+- [[id:af7b9ece-3cc8-4e6e-a130-9d7223f40e62][Replace ad-hoc status strings with FSM state UUIDs]]
+- [[id:ece0a01d-ef94-4599-8410-db8096b46935][Add ores.workflow SQL schema and C++ scaffold]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

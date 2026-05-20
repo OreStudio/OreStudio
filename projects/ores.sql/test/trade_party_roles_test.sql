@@ -52,12 +52,14 @@ insert into ores_refdata_books_tbl (
 
 insert into ores_refdata_portfolios_tbl (
     id, tenant_id, version, party_id, name, description,
+    purpose_type, is_virtual, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'e0000000-0000-0000-0000-000000000002'::uuid,
     ores_utility_system_tenant_id_fn(), 0,
     'e0000000-0000-0000-0000-000000000010'::uuid,
     'ROLES-TEST-PORTFOLIO', 'Test portfolio for party role tests',
+    'Risk', 0, 'active',
     current_user, current_user, 'system.test', 'Test portfolio'
 );
 

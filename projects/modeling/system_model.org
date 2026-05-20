@@ -10,7 +10,7 @@ This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBC
 provides a graphical interface and data management for [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine
 (ORE)]].
 
-ORE Studio is a [[https://en.cppreference.com/w/cpp/23.html][C++-23]] application providing persistent storage, graphical user
+ORE Studio is a C++23 application providing persistent storage, graphical user
 interface, and orchestration tools for quantitative risk analysis using ORE. The
 system is built on a layered architecture with clear separation of concerns. The
 objective of this page is to describe the system architecture.
@@ -33,70 +33,117 @@ The system is organised into four architectural layers:
 
 ** Foundation Layer
 
-- [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]: UUID generation, base32/base64 encoding, string conversion,
-  faker utilities. No ores dependencies.
-- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info,
-  cross-platform time utilities. Depends on: utility.
-- [[id:1fbcc86b-8e04-4f81-8558-85c0b6c54836][ores.logging]]: Core logging infrastructure with Boost.Log integration, logger
-  factory, severity levels. Depends on: platform.
+- [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]: UUID v7 generation, Base64/Base32 encoding, string conversion,
+  datetime helpers, faker utilities, =rfl= type reflectors. No ORE Studio
+  dependencies; base of the dependency tree.
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info
+  (hostname, MAC, machine ID), cross-platform time utilities. Depends on:
+  utility.
+- [[id:1fbcc86b-8e04-4f81-8558-85c0b6c54836][ores.logging]]: Core Boost.Log infrastructure — =make_logger()= factory,
+  severity levels, lifecycle manager for console/file sinks. Extracted from
+  =ores.telemetry= to break circular dependency with =ores.database=. Depends
+  on: platform.
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Extends logging with distributed tracing (trace_id, span_id),
-  OpenTelemetry integration, log record export. Depends on: logging, platform.
-- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]: PostgreSQL connectivity, connection pooling, health monitoring,
-  repository helpers. Depends on: telemetry, utility.
-- [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management.
-- [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City database.
-  Provides country, city, and coordinate lookups for session tracking.
-- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: Postgres Database setup.
-- [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]: Shared security primitives for cryptography (password hashing
-  with scrypt, AES-256-GCM encryption) and validation (password policy, email
-  format). Used by ores.iam and ores.connections.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]: Basic code-generation utility.
+  OpenTelemetry integration, JSON Lines log export, and service identity.
+  Depends on: logging, platform.
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]: PostgreSQL access layer — connection pool, tenant/party
+  context, bitemporal CRUD, repository helpers, health monitor, and
+  LISTEN/NOTIFY integration. Depends on: telemetry.
+- [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management via
+  the =variability.v1.>= NATS namespace.
+- [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City stored in
+  PostgreSQL. Provides country, city, and coordinate lookups for IAM session
+  tracking.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: PostgreSQL schema, migration scripts, role provisioning, and
+  database lifecycle management. Enforces strict service-table isolation.
+- [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]: Shared cryptographic primitives — scrypt password hashing,
+  AES-256-GCM encryption, JWT parsing/validation, OWASP password and email
+  validators. Used by =ores.iam= and =ores.connections=.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]: Code generation utility for domain types and documentation.
 - Dependency order: utility → platform → logging → telemetry → database.
 
 ** Infrastructure Layer
 
-- ores.nats: NATS-based messaging for all inter-service and client-server
-  communication. Provides request/reply, pub/sub, and JetStream (durable
-  persistent messaging). Replaced the old ores.comms binary protocol stack.
-- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]: Catch2 integration with database isolation and logging
-  listeners.
-- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]: Event-driven architecture with in-process publish/subscribe
-  event bus, PostgreSQL LISTEN/NOTIFY integration, and entity change
-  notifications.
-- [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Asset management for images and visual resources. Binary image
-  storage, hierarchical tagging, currency-to-image linking, messaging handlers
-  (0x4000-0x4FFF).
-- [[id:b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164][ores.http]]: HTTP infrastructure for RESTful API support. JWT token parsing,
-  claims extraction, authentication middleware support.
-- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]]: Client-side server connection bookmark manager. Hierarchical
-  folder organization, tag-based categorization, encrypted credential storage
-  using AES-256-GCM with master password, SQLite local persistence.
-- Depends on: Foundation (telemetry, database).
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]: NATS messaging transport — request/reply, queue-group subscribe,
+  and JetStream for durable events. All payloads are JSON via =rfl=. Subject
+  convention: ={domain}.v1.{entity}.{operation}=. Replaced the former
+  =ores.comms= binary protocol stack.
+- [[id:9cfac175-c28f-4c03-9655-1cdc6e8c3ee0][ores.service]]: Shared NATS domain service runner — =domain_service_runner=
+  lifecycle, heartbeat publisher, per-request context, and handler helpers.
+  All =*.service= entrypoints build on this library.
+- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]: Catch2 infrastructure — unique database per test process,
+  logging and database lifecycle listeners, tenant RLS helpers, coroutine
+  test support.
+- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]: In-process publish/subscribe event bus with PostgreSQL
+  LISTEN/NOTIFY bridge for cross-service domain events.
+- [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Binary image storage with hierarchical tagging and
+  currency-to-image linking. Served via the =assets.v1.>= NATS namespace.
+- [[id:b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164][ores.http.api]]: HTTP server infrastructure — Boost.Beast/Asio async server,
+  JWT authentication middleware, path-based routing, and OpenAPI registry.
+  See also [[id:869526b6-6c82-430e-95e1-776d4a11a56b][ores.http.core]] (route implementations) and [[id:a8b318bc-8653-4d33-a58c-60793e3596d5][ores.http.server]]
+  (entrypoint).
+- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]]: Client-side server connection bookmarks with hierarchical
+  folders, tags, AES-256-GCM encrypted credentials (PBKDF2), and SQLite
+  persistence. Used by =ores.qt= and =ores.shell=.
+- [[id:ed632650-bfb1-4904-be34-cfa4b6170b8b][ores.storage]]: File storage abstractions — local filesystem paths, HTTP-based
+  file transfer, and archive pack/unpack for binary asset bundles.
+- Depends on: Foundation (telemetry, database, nats).
 
 ** Domain Layer
 
-- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]]: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
-- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: User authentication, authorisation, and session management.
-- [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]: Financial Products Markup Language (FPML) processing infrastructure for handling derivatives and securities trade representations.
-- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore]]: ORE (Open Source Risk Engine) specific code, mainly importing and exporting capabilities.
-- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]: Trade booking and lifecycle management. FSM-enforced trade status
-  (new, live, expired, cancelled), full activity type taxonomy (~30 types across
-  five categories), temporal versioning, and message API. Depends on: refdata,
-  fpml, dq.
-- Depends on: Foundation, Infrastructure
+Each domain is structured as =.api= (shared types/NATS protocol), =.core=
+(business logic and persistence), and =.service= (thin NATS entrypoint).
+
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]]: Reference data — currencies, countries, coding schemes, FPML
+  product types. XML/CSV/JSON I/O, temporal versioning. =refdata.v1.>=.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: Identity and access management — account lifecycle, login with
+  scrypt verification, RBAC, session tracking with geolocation. =iam.v1.>=.
+- [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]: Data quality — provenance, validation metadata, change management,
+  staging artefacts, and the publish-from-DQ pattern. =dq.v1.>=.
+- [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]: FpML processing infrastructure for parsing, validating, and
+  archiving derivatives trade representations. In early development.
+- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore]]: ORE XML import/export — converts between ORE Engine XML format and
+  internal domain types (currencies, curve configs). Uses =rfl= for XML I/O.
+- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]: Trade booking and lifecycle — FSM-enforced trade status (new,
+  live, expired, cancelled), ~30 activity types across five categories for P&L
+  attribution, cancel-rebook via =successor_trade_id=, full temporal versioning.
+  =trading.v1.>=. Depends on: refdata, fpml, dq.
+- [[id:759530d8-2314-44f3-a50e-71ce7ad02558][ores.marketdata]]: Market data — series, observations, fixings, import options.
+  =marketdata.v1.>=.
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]]: Synthetic market data and scenario generation for stress
+  testing. =synthetic.v1.>=.
+- [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]]: Task scheduling for compute jobs (run ORE scenarios,
+  generate reports). =scheduler.v1.>=.
+- [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]]: Report execution and result persistence — runs ORE output
+  through defined report templates. =reporting.v1.>=.
+- [[id:bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5][ores.analytics]]: Risk analytics results and aggregation — NPV, sensitivities,
+  VaR/CVaR. =analytics.v1.>=.
+- [[id:440294d7-385d-41ee-92cb-cab937e65e81][ores.workflow]]: Workflow management for multi-step compute pipelines. Tracks
+  job state across scheduler, compute, and reporting stages. =workflow.v1.>=.
+- Depends on: Foundation, Infrastructure.
 
 ** Application Layer
 
-- ores.shell: REPL client. Connects to the service layer via NATS
-  request/reply subjects.
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of entities in multiple formats,
-  exercises the database layer directly.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management.
-- [[id:19aeecd4-03ab-4d23-b2bc-9d96aaa64120][ores.http.server]]: RESTful HTTP API server for ORE Studio. Alternative to
-  NATS for web clients and integrations.
-- [[id:fe36240a-7a64-4332-9e82-8d976d458c73][ores.wt]]: Web application built with Wt framework for browser-based access.
-  Account management, currency operations, system settings via web UI.
-- Depends on: All layers
+Client applications and compute processes that consume domain services.
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]: Interactive REPL connecting to ORE Studio via NATS. Currency
+  queries, account management, auto-login from config. Developer/ops tool.
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of reference data (JSON/XML/CSV)
+  against the database directly. Used for admin and data-migration tasks.
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Qt 6 desktop application with MDI interface. Manages currencies,
+  accounts, parties, trades, and other entities via NATS services. Composed
+  of the core shell and feature modules (=ores.qt.*=).
+- [[id:869526b6-6c82-430e-95e1-776d4a11a56b][ores.http.core]] + [[id:a8b318bc-8653-4d33-a58c-60793e3596d5][ores.http.server]]: RESTful HTTP API server. =http.core=
+  implements all route handlers (IAM, assets, risk, storage, variability);
+  =http.server= wires them and runs the Boost.Asio event loop.
+- [[id:fe36240a-7a64-4332-9e82-8d976d458c73][ores.wt.service]]: Wt C++ Web Toolkit frontend — account management, currency
+  and country views, feature flags. Alternative to the Qt desktop client.
+- [[id:152c4a5e-9947-4ee1-a5d4-893305d235b5][ores.compute.service]]: ORE Engine compute wrapper — receives compute job
+  requests via NATS, spawns ORE child processes, and publishes results.
+- [[id:c871c5df-a521-4815-9572-72d07da62cc7][ores.controller.core]]: Orchestration controller — assembles compute
+  pipelines, sequences scheduler/compute/reporting stages, and tracks run
+  state.
+- Depends on: All layers.
 
 * Database Isolation
 
@@ -135,7 +182,7 @@ path from service SQL functions; ordinary DML handlers must not query
 
 * Useful Pages
 
-- To understand the binary protocol, see the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]].
+- To understand the NATS messaging protocol, see the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]].
 - To understand how we generate PlantUML diagrams see the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]
   skill.
 - To understand how to add new domain types, see the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill.

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8c447206-e447-4fa8-9761-ca80eb067427
+:END:
+#+title: Extract ores.iam.api + ores.compute.api (Phase 1)
+#+description: First phase of API/core split: ores.iam → ores.iam.api (POCOs + IO helpers + eventing + protocol headers) + ores.iam.core (handlers + services + repositories + registrars); same for ores.compute. All consuming modules updated to link the correct layer.
+#+type: task
+#+level: s1
+#+filetags: :architecture:refactor:api:core:iam:compute:api_core_migration:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-22]
+:END:
+
+** Now
+Completed 2026-03-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-22
+
+* Goal
+
+First phase of the API/core split: ores.iam + ores.compute split into .api (contracts) + .core (implementation).
+
+* Acceptance
+
+- ores.iam.api (POCOs, IO helpers, eventing, protocol/messaging headers) + ores.iam.core (handlers, service logic, repositories, registrars).
+- Same split for ores.compute.
+- All consuming modules (ores.qt, ores.cli, ores.shell, ores.http.server, ores.wt.service, ores.synthetic, ores.eventing/tests, ores.dq, ores.iam.service, ores.compute.service, ores.compute.wrapper) link to the right layer.
+- Test CMakeLists corrected to link ores.testing.lib.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Phase 1 of a longer migration; the .api modules become the contract surface, the .core modules the implementation.
+
+* Result
+
+iam + compute split landed cleanly.

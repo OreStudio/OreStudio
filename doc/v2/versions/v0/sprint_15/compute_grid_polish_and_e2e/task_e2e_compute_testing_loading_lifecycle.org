@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 7daa4131-019b-4191-802d-cb67b22d102f
+:END:
+#+title: E2E compute testing fixes and loading lifecycle refactor
+#+description: AbstractClientModel base class with dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel(); applies_to_new on change reason domain + SQL; centralised change-reason prompting in DetailDialogBase; compute RLS for app + app_versions as system-owned global registries; UUID generation in ORE app seed; ReflectCPP consteval workaround; app_version multi-platform via ores_compute_app_version_platforms_tbl junction; AppVersionDetailDialog + WorkunitDetailDialog combo boxes.
+#+type: task
+#+level: s1
+#+filetags: :compute:qt:refactor:loading:rls:multi_platform:compute_grid_polish_and_e2e:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:0dcedae5-e5f0-4af8-ae85-37c7618237a6][Compute grid polish and E2E fixes]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-22]
+:END:
+
+** Now
+Completed 2026-03-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-22
+
+* Goal
+
+Round of compute-grid polish + cross-cutting loading-lifecycle refactor.
+
+* Acceptance
+
+- AbstractClientModel base with standard dataLoaded() + loadError() signals wired to endLoading() via EntityListMdiWindow::connectModel().
+- applies_to_new on change reason domain + SQL — change-reason prompting centralised in DetailDialogBase for create/amend/delete.
+- Compute RLS for app + app_versions: visible to all tenants as system-owned global registries.
+- Hardcoded c0ffee00 UUIDs in ORE app seed replaced with gen_random_uuid() + name-based idempotency.
+- ReflectCPP consteval char/signed-char deduction bug worked around in variability routes.
+- Missing endLoading() calls in 6 compute MdiWindows fixed.
+- app_version multi-platform via ores_compute_app_version_platforms_tbl junction; CLI + Qt updated.
+- AppVersionDetailDialog + WorkunitDetailDialog get combo boxes for parent app + batch + app version (replacing UUID text boxes).
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+The loading-lifecycle refactor cascades into the loading_indicator_entity_lists story for non-compute lists.
+
+* Result
+
+Compute grid feels deliberately polished; loading lifecycle consistent.

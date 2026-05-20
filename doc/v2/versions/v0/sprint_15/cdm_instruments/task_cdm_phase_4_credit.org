@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: c97528c9-7e46-4f3e-a1ac-7213e933c601
+:END:
+#+title: CDM Phase 4: Credit instrument domain model
+#+description: Credit instruments: CreditDefaultSwap, CDSIndex, SyntheticCDO. SQL: ores_trading_credit_instruments_tbl (reference_entity, currency, notional, spread, recovery_rate, tenor, dates, day_count, payment_frequency, optional fields for index + seniority + restructuring). Domain + repo + service + Qt UI.
+#+type: task
+#+level: s1
+#+filetags: :cdm:credit:trading:instrument:domain:qt:sql:cdm_instruments:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:f8e6374b-aaaf-4d50-98ce-844da4558172][CDM instrument domain models]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-28]
+:END:
+
+** Now
+Completed 2026-03-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-28
+
+* Goal
+
+Phase 4: credit instruments (CreditDefaultSwap, CDSIndex, SyntheticCDO).
+
+* Acceptance
+
+- SQL: ores_trading_credit_instruments_tbl + notify trigger (reference_entity, currency, notional, spread, recovery_rate, tenor, start_date, maturity_date, day_count_code, payment_frequency_code, optional fields for index_name + index_series + seniority + restructuring + description); trading_create.sql + drop_trading.sql.
+- Domain: credit_instrument struct with JSON + table I/O + protocol messages.
+- Repository: entity + mapper + repository; credit_instrument_service.
+- Server: messaging handler + registrar.
+- Qt UI: ClientCreditInstrumentModel + CreditInstrumentMdiWindow + CreditInstrumentDetailDialog + CreditInstrumentHistoryDialog + CreditInstrumentController + MainWindow integration.
+- Database recreate required.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Phase 4 of the CDM rollout; landed alongside phase 3 by parallel work.
+
+* Result
+
+Credit instruments complete.

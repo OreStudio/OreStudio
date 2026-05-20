@@ -9,8 +9,13 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf
 
 Parent sprint: [[id:4bac3b0f-819f-43f3-8a59-2b48abe56938][Sprint 10]].
+
+Continued in: [[id:3ed3ca4d-8709-4f70-a1a8-1ff287adb8bf][Compute grid implementation]] (sprint 15) — the
+design lands end-to-end (with NATS JetStream replacing the PGMQ
+assumption from the original analysis).
 
 * BACKLOG Status
 

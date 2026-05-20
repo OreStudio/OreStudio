@@ -9,8 +9,12 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 169b15a7-442b-44fd-8e54-436fec8340a6
 
 Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
+
+Continued in: [[id:169b15a7-442b-44fd-8e54-436fec8340a6][JWT refresh]] (sprint 15) — closes the loop with token
+refresh, configurable lifetimes, and TimescaleDB-backed auth telemetry.
 
 * DONE Status
 :PROPERTIES:

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 1af340aa-fb79-4870-bc13-0dd2fc75af2b
+:END:
+#+title: Environment isolation for database roles
+#+description: Environment-prefixed PostgreSQL roles + users so dev environments don't contaminate each other; ORES_TEST_ENV_CMD for custom test runners; psql DO-block set_config workaround.
+#+type: story
+#+level: s2
+#+filetags: :sql:iam:environments:refactor:sprint_15:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-25]
+:END:
+
+** Now
+Completed 2026-03-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-25
+
+* Goal
+
+Stop cross-environment database contamination by prefixing
+PostgreSQL roles + users per environment; also extract
+ores.http.core to round off the api/core split.
+
+* Acceptance
+
+- Environment-prefixed PostgreSQL roles + users in place.
+- psql DO-block variable substitution worked around (set_config + current_setting).
+- ORES_TEST_ENV_CMD passes env vars to make rat.
+- Variability core tests fixed for missing system tenant UUIDs.
+- ores.http.core extracted from http.api.
+
+* Tasks
+
+In execution order:
+
+- [[id:ae604582-91d9-4bff-a8f1-d15af4241d4e][Implement full environment isolation for database roles]]
+
+* Decisions
+
+- /Roles prefixed per environment/ :: prevents tests in one env from affecting another's data + permissions.
+
+* Out of scope
+
+- Multi-tenant per-environment role rotation (separate workstream).
+
+* See also
+
+None.

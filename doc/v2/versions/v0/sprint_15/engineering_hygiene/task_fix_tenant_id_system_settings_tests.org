@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 2290bab5-8f2f-4d43-b33b-23a6a8b1f485
+:END:
+#+title: Fix missing tenant_id in system settings tests
+#+description: make_system_setting() helper in repository_system_settings_repository_tests.cpp now requires + assigns tenant_id; all 7 call sites updated; resolves Postgres invalid input syntax for type uuid: "" rejections.
+#+type: task
+#+level: s1
+#+filetags: :tests:system_settings:bug_fix:engineering_hygiene:sprint_15:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:bc195cb4-4cbf-4d9d-8685-8ce3304da3fe][Engineering hygiene]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-03-24]
+:END:
+
+** Now
+Completed 2026-03-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-03-24
+
+* Goal
+
+Fix the missing tenant_id in system-settings repository tests after the unification refactor.
+
+* Acceptance
+
+- make_system_setting() helper requires + assigns tenant_id.
+- All 7 call sites pass h.tenant_id().to_string().
+- Resolves Postgres invalid input syntax for type uuid: "" errors.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Small follow-up to the system_settings_unification story.
+
+* Result
+
+Tests pass.

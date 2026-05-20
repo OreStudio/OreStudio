@@ -10,12 +10,17 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 68c577a4-b33e-47cb-953f-f3d90a4440d6
+#+successor: fd12bbd4-bd95-454a-a636-5f22c928c4d1
 
 Parent sprint: [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]].
 
 Continued from: [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]] (sprint 13) — the
 analysis from sprint 13 informed a larger directory-scanning wizard
 shape than the single-file dialog originally planned.
+
+Continued in: [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]] (sprint 15) — real-data import
+surfaced the currency-type, status, and activity-type bugs cleaned
+up there.
 
 * DONE Status
 :PROPERTIES:

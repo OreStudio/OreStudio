@@ -94,7 +94,12 @@ is the current sprint; the rest are closed.
   pgmq → custom MQ → NNG → NATS messaging pivot (~107k lines of
   binary protocol replaced); party codename + race fixes; JWT RS256
   in =ores.security=.
-- ... through Sprint 16.
+- [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] — Compute grid: BOINC-inspired distributed grid
+  + telemetry + RAG dashboard; api/core architecture split across
+  10 services; JWT refresh; unified =system_settings= replacing
+  =feature_flags=; four CDM-inspired instrument domain models
+  (rates / FX / bond / credit).
+- Sprint 16 — (final v0 sprint).
 
 * Release scope
 

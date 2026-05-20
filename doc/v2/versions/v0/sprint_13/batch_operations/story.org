@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 0251593a-0d85-49c4-aee1-7aac673978b7
+:END:
+#+title: Batch operations
+#+description: Atomic batch save + delete across protocols; single transaction; consolidated response shape; protocol 46.0.
+#+type: story
+#+level: s2
+#+filetags: :protocol:batch:sql:atomic:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-28]
+:END:
+
+** Now
+Completed 2026-02-28.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-28
+
+* Goal
+
+Convert save + delete from per-entity loops to atomic batch
+operations. Single transaction; consolidated response shape.
+
+* Acceptance
+
+- save_*_request takes vector; save_*_response returns single outcome.
+- Batch delete uses WHERE IN; atomic across 23 entities.
+- Temporal guard for IAM entities preserves historical rows.
+- Protocol 46.0 (breaking).
+
+* Tasks
+
+In execution order:
+
+- [[id:0dab990a-3fd6-4b8e-950e-3959a5990552][Add batch support for saves and deletes]]
+
+* Decisions
+
+- /Atomic at the batch level/ :: closes partial-write bugs; consumers always see all-or-nothing.
+- /Consistent 3-layer pattern/ :: repository / service / handler all align; future entities follow the shape.
+
+* Out of scope
+
+- Streaming bulk operations.
+
+* See also
+
+None.

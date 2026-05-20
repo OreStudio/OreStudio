@@ -85,6 +85,10 @@ is the current sprint; the rest are closed.
   isolation; audit trail + system account; tenant provisioning
   wizards (GLEIF + synthetic); books / portfolios / business
   units; FSM + trade envelope.
+- [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]] — Trade + scheduling foundations: multi-party
+  login + account-party management; =ores.scheduler= over =pg_cron=;
+  portfolio explorer; party isolation for books / portfolios /
+  trades; tabbed dialogs; FSM into DQ; atomic batch operations.
 - ... through Sprint 16.
 
 * Release scope

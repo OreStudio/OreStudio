@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 68c577a4-b33e-47cb-953f-f3d90a4440d6
+:END:
+#+title: Trade import mapping analysis
+#+description: Document the mapping requirements between ORE portfolio XML and the ORES model (counterparty resolution, book assignment, portfolio mapping, batch configuration).
+#+type: story
+#+level: s2
+#+filetags: :trade:ore:xml:analysis:import:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-25]
+:END:
+
+** Now
+Completed 2026-02-25.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-25
+
+* Goal
+
+Document the mapping requirements between ORE portfolio XML and the
+ORES model; design the approach for resolving string-based ORE
+references.
+
+* Acceptance
+
+- Mapping requirements documented.
+- Counterparty / book / portfolio resolution decisions captured.
+- Mapping-dialog design ready for implementation.
+
+* Tasks
+
+In execution order:
+
+- [[id:9c80f9df-31b6-4bb8-8972-ce5569541eda][Analyse ORE trade import mapping requirements]]
+
+* Decisions
+
+- /Mapping dialog over config file/ :: tighter feedback loop for evaluation users; config can come later.
+
+* Out of scope
+
+- Implementation (sibling story; postponed).
+
+* See also
+
+- [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog (Qt UI)]] — the implementation story (BACKLOG).

@@ -9,8 +9,12 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 6ac2981b-ba0a-4916-a2c1-6b5a816a9148
 
 Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+Continued in: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] (sprint 13) — moves the FSM
+framework into the DQ layer where it conceptually belongs.
 
 * DONE Status
 :PROPERTIES:

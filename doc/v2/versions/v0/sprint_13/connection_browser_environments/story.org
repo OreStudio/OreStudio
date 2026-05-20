@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: ee315a6f-8933-4738-ae3f-e63cbbf57f03
+:END:
+#+title: Connection browser: environments
+#+description: Split server_environment into environment + connection; unified tree with named environments; login quick-connect combo; duplicate action; inherited tags.
+#+type: story
+#+level: s2
+#+filetags: :connections:environments:qt:ux:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-24]
+:END:
+
+** Now
+Completed 2026-02-24.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-24
+
+* Goal
+
+Quality-of-life refactor of the connection browser: split host/port
+from credentials, unify the tree, add a quick-connect combo, support
+duplication.
+
+* Acceptance
+
+- environment + connection split with auto-migration.
+- Unified tree (folders + environments + connections).
+- Duplicate action with copy-name suffix.
+- Inherited tags + resolved host/port for env-linked connections.
+- Login quick-connect combo (Manual / Environments / Connections).
+- New icons (Keyboard, Copy).
+
+* Tasks
+
+In execution order:
+
+- [[id:1284cd48-5b99-48b2-8925-ce7e7c0aac1e][Refactor connection browser with environments]]
+
+* Decisions
+
+- /Environments are first-class/ :: subsumes the older /named environments/ story — they're just =environment= rows now.
+- /Auto-migrate existing data/ :: backward-compatible by default.
+
+* Out of scope
+
+- Sharing connections across machines (separate).
+
+* See also
+
+- [[id:aacc71e6-3dee-47d2-b77c-e0b4847260bd][Connection management]] (sprint 09) — the original landing.

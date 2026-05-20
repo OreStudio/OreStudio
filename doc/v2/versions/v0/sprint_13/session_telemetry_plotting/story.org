@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 6f799af2-9844-4cb6-9e9c-a57c06ecbf23
+:END:
+#+title: Session telemetry and plotting
+#+description: RTT sampling + byte counters + TimescaleDB session_samples hypertable; QChartView panel plots session history.
+#+type: story
+#+level: s2
+#+filetags: :telemetry:qt:timescaledb:session:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-22]
+:END:
+
+** Now
+Completed 2026-02-22.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-22
+
+* Goal
+
+First real consumer of the TimescaleDB telemetry infrastructure:
+sample RTT + bytes per session and plot the history in My Sessions.
+
+* Acceptance
+
+- Byte counters synced from live connection before logout.
+- RTT carried in ping payloads.
+- =ores_iam_session_samples_tbl= TimescaleDB hypertable populated on logout.
+- Protocol pair for fetching samples.
+- QChartView panel plots bytes_sent + bytes_received over time.
+- TimescaleDB skill doc updated.
+
+* Tasks
+
+In execution order:
+
+- [[id:094c83ac-52a4-4ae5-9e6e-29098d682565][Add plotting of session data]]
+
+* Decisions
+
+- /qt6-charts as the chart library/ :: avoids hand-rolling and stays inside the Qt dependency story.
+- /Hypertable from day one/ :: query patterns are time-series; doing this without TimescaleDB would just be a slower hypertable.
+
+* Out of scope
+
+- Aggregated cross-session analytics.
+
+* See also
+
+None.

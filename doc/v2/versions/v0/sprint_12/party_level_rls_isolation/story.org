@@ -9,8 +9,16 @@
 #+created: 2026-05-19
 #+updated: 2026-05-19
 #+todo: BACKLOG STARTED | DONE ABANDONED
+#+successor: 956fcd0e-41c3-46e4-9895-b64b4c143e6d
 
 Parent sprint: [[id:d846b986-2d6d-434e-af68-4b3ddaaa09d8][Sprint 12]].
+
+Continued in: [[id:956fcd0e-41c3-46e4-9895-b64b4c143e6d][Account-party management and login]] (sprint 13) —
+lands the multi-party login picker + account-party management UI
+that this story scoped as a future task. The same RLS pattern is
+also extended to books / portfolios / trades
+([[id:df3b299e-7fed-4411-b257-125ed35c3a9e][party_isolation_books_portfolios_trades]]) and to refdata
+visibility ([[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][party_level_refdata_restrictions]]) in the same sprint.
 
 * DONE Status
 :PROPERTIES:

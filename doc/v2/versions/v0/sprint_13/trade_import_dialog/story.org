@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: f8caa6ce-a36f-464c-a9a2-058e796a0f81
+:END:
+#+title: Trade import mapping dialog (Qt UI)
+#+description: Qt dialog: select ORE XML, preview trades, choose target book, map counterparties, confirm import. Postponed mid-implementation.
+#+type: story
+#+level: s2
+#+filetags: :trade:qt:import:ui:ore:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* BACKLOG Status
+
+** Now
+Postponed in sprint 13; carried forward.
+
+** Waiting on
+A sprint with the slot.
+
+** Next
+Return to this once a sprint has the budget.
+
+** Last touched
+2026-02-28
+
+* Goal
+
+Qt dialog implementing the trade-import mapping approach designed in
+the analysis story. Six hours of implementation started; postponed.
+
+* Acceptance
+
+- Dialog accessible from book list toolbar.
+- Trade preview + counterparty mapping + book selection.
+- Successful import creates trades; visible in trade list.
+
+* Tasks
+
+In execution order:
+
+- [[id:63515c34-a1ea-4368-86c9-c2063ea2302c][Add trade import mapping dialog]]
+
+* Decisions
+
+- /Hand off to next sprint/ :: 6h work-in-progress carries forward.
+
+* Out of scope
+
+- Batch-import configuration (separate).
+
+* See also
+
+- [[id:68c577a4-b33e-47cb-953f-f3d90a4440d6][Trade import mapping analysis]] — the analysis story (DONE).

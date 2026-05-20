@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 7398edfc-9c13-4aa2-9dc2-c6676abde22f
+:END:
+#+title: Merge FSM into DQ
+#+description: Rename ores_fsm_* SQL identifiers to ores_dq_fsm_*; relocate FSM SQL files into dq/ subdirectories; update notification channel names; rename internal entity strings ores.fsm.* → ores.dq.fsm.*.
+#+type: task
+#+level: s1
+#+filetags: :fsm:dq:sql:refactor:naming:fsm_consolidation_into_dq:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-20]
+:END:
+
+** Now
+Completed 2026-02-20.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-20
+
+* Goal
+
+Recognise that FSM is metadata infrastructure for data-quality lifecycles and move it from a stand-alone home into the DQ layer.
+
+* Acceptance
+
+- SQL identifiers renamed =ores_fsm_*= → =ores_dq_fsm_*=.
+- FSM SQL files moved into =dq/= subdirectories (schema, triggers, RLS, populate).
+- =pg_notify= channels updated to =ores_dq_fsm_= prefix.
+- Internal entity strings =ores.fsm.*= → =ores.dq.fsm.*=.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Closes the conceptual gap left by sprint 12's FSM-as-standalone landing: state machines are DQ machinery, not their own domain.
+
+* Result
+
+FSM lives inside DQ now; four-eyes will likely follow the same home.

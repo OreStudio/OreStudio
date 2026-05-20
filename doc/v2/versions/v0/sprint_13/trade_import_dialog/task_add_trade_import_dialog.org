@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 63515c34-a1ea-4368-86c9-c2063ea2302c
+:END:
+#+title: Add trade import mapping dialog
+#+description: Qt dialog accessible from book list toolbar: pick ORE XML, preview trades (count, types, counterparties), choose target ORES book, map counterparty names (or auto-create), review + confirm; ImportTradeDialog wired through BookController.
+#+type: task
+#+level: s1
+#+filetags: :trade:qt:import:ui:ore:book:trade_import_dialog:sprint_13:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:f8caa6ce-a36f-464c-a9a2-058e796a0f81][Trade import mapping dialog (Qt UI)]].
+
+* BACKLOG Status
+
+** Now
+POSTPONED in sprint 13; carried forward.
+
+** Waiting on
+A sprint with the slot.
+
+** Next
+Return to this once a sprint has the budget.
+
+** Last touched
+2026-02-28
+
+* Goal
+
+Add the Qt dialog that walks the user through importing an ORE portfolio XML.
+
+* Acceptance
+
+- Dialog accessible from the book list toolbar when a book is selected.
+- Select XML, preview trades (count, types, counterparties), choose target ORES book, map counterparties (or auto-create), review + confirm.
+- Successful import creates trades in the selected book; trades appear in the trade list immediately.
+- =ImportTradeDialog.hpp/cpp= + =BookMdiWindow= toolbar action + =BookController= wiring.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+POSTPONED — 6 hours of implementation started but the work carries forward to sprint 14.
+
+* Result
+
+Not landed in sprint 13.

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: a0b6c877-2fad-457a-b0c2-000d3f707a5b
+:END:
+#+title: Scheduling subsystem
+#+description: ores.scheduler wrapping pg_cron with Quartz.NET-style fluent API; scheduler binary protocol (0x9000-0x9FFF, protocol 45.0); message queue infrastructure.
+#+type: story
+#+level: s2
+#+filetags: :scheduler:pg_cron:protocol:messaging:sprint_13:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-02-27]
+:END:
+
+** Now
+Completed 2026-02-27.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-02-27
+
+* Goal
+
+Stand up the scheduling subsystem end-to-end: ores.scheduler library
+wrapping pg_cron, a binary-protocol surface, and the message queue
+that supports it.
+
+* Acceptance
+
+- ores.scheduler library with fluent API (Quartz.NET-style).
+- Scheduler subsystem 0x9000-0x9FFF on the comms protocol; protocol 45.0.
+- Message queue available for async processing.
+
+* Tasks
+
+In execution order:
+
+- [[id:b74604d3-2a48-4ba9-a4dd-c2f554f7eb29][Add scheduler binary protocol]]
+- [[id:94ea7333-2b7d-412e-bbc6-4e502a3979be][Add scheduling support]]
+- [[id:4a704351-6959-4806-b164-ef8554724ac5][Add a message queue]]
+
+* Decisions
+
+- /pg_cron, not a separate scheduler/ :: lifecycles + history live in Postgres where the rest of the state already does.
+- /croncpp for the expression/ :: third-party C++ library; bridges the 5-field/6-field cron format difference.
+- /Hand-crafted job_definitions table/ :: cron_job_id bigint + is_active integer don't fit the standard codegen templates.
+
+* Out of scope
+
+- Scheduler UI (deferred).
+
+* See also
+
+None.

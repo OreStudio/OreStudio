@@ -19,14 +19,13 @@
  */
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 
-#include <unordered_map>
+#include <map>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_hash.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -173,10 +172,9 @@ void WorkspaceMdiWindow::doReload() {
 
 namespace {
 
-using children_map_t = std::unordered_map<
+using children_map_t = std::map<
     boost::uuids::uuid,
-    std::vector<const workspace::domain::workspace*>,
-    boost::hash<boost::uuids::uuid>>;
+    std::vector<const workspace::domain::workspace*>>;
 
 void addTreeItems(QTreeWidgetItem* parent,
     const boost::uuids::uuid& parent_id,
@@ -207,9 +205,7 @@ void WorkspaceMdiWindow::buildTree() {
     if (all.empty())
         return;
 
-    std::unordered_map<boost::uuids::uuid,
-        const workspace::domain::workspace*,
-        boost::hash<boost::uuids::uuid>> by_id;
+    std::map<boost::uuids::uuid, const workspace::domain::workspace*> by_id;
     for (const auto& ws : all)
         by_id[ws.id] = &ws;
 

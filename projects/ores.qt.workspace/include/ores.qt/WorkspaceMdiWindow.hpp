@@ -21,7 +21,6 @@
 #define ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 
 #include <vector>
-#include <unordered_map>
 #include <QToolBar>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>

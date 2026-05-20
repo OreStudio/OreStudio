@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: e5952f27-53bd-4c4d-85cd-556b6421b768
+:END:
+#+title: ores.analytics.service
+#+description: NATS service entrypoint for the analytics domain.
+#+type: component
+#+level: cross
+#+filetags: :analytics:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.analytics.service= is the NATS service entrypoint for the analytics
+domain. It reads configuration, opens database and NATS connections, registers
+all message handlers from =ores.analytics.core=, and runs the event loop.
+All business logic lives in =ores.analytics.core=.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string.
+- NATS request messages for analytics configuration operations.
+
+* Outputs
+
+- A running NATS service for analytics operations.
+- NATS response messages returned to callers.
+- Structured logs via =ores.logging=.
+
+* Entry points
+
+- =src/main.cpp= — process entry point.
+- =src/app/= — application bootstrap.
+- =src/config/= — configuration parsing.
+
+* Dependencies
+
+- =ores.analytics.core= — all NATS handlers, repositories, and services.
+- =ores.analytics.api= — shared protocol types.
+- =ores.logging= — structured logging.
+- =nats.c= — NATS client.
+
+* See also
+
+- [[id:bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5][ores.analytics.core]] — all business logic for the analytics domain.

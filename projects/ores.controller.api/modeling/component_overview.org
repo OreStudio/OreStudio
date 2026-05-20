@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 85d20e29-0ebd-41ff-9f32-10f60af074a8
+:END:
+#+title: ores.controller.api
+#+description: Domain types and NATS protocol schemas for the controller component.
+#+type: component
+#+level: cross
+#+filetags: :controller:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.controller.api= is a header-only library defining the shared contract for
+the controller domain. It provides domain types for service definitions,
+instances, and lifecycle events, with JSON I/O via =rfl=, and the NATS protocol
+schemas consumed by =ores.controller.core= and all services that register
+themselves at startup.
+
+* Inputs
+
+- Domain entity type definitions.
+
+* Outputs
+
+- C++ headers for controller domain types.
+- NATS protocol headers for service registration and event reporting.
+
+* Entry points
+
+- =include/ores.controller.api/domain/=, =include/ores.controller.api/messaging/=.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+
+* See also
+
+- [[id:c871c5df-a521-4815-9572-72d07da62cc7][ores.controller.core]] — registry logic and NATS handlers.

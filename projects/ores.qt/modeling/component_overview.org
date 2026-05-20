@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 25812E6F-7AD1-36E4-697B-EEC8015C4F1F
+:END:
+#+title: ores.qt
+#+description: Qt 6 desktop application — MDI interface for managing ORE Studio entities with NATS-backed async data loading.
+#+type: component
+#+level: cross
+#+filetags: :qt:desktop:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt= is the Qt 6 desktop application for ORE Studio. It provides a
+Multiple Document Interface (MDI) with detachable windows for managing
+currencies, accounts, parties, trades, and other domain entities. All data
+operations are asynchronous via NATS; the UI uses an entity-controller pattern
+where =MainWindow= delegates to domain-specific controllers (e.g.,
+=CurrencyController=) which manage their MDI windows, dialogs, and table
+models. The application is composed of the core shell and feature modules
+housed in sibling projects under =ores.qt.*=.
+
+* Inputs
+
+- NATS responses from domain services (IAM, refdata, trading, etc.).
+- User interactions: login credentials, entity create/edit/delete commands.
+- Server connection bookmarks from =ores.connections=.
+
+* Outputs
+
+- Rendered MDI desktop with entity management windows.
+- NATS request messages sent to domain services on user actions.
+
+* Entry points
+
+- =src/main.cpp= — application entry point.
+- =src/MainWindow.cpp= — MDI shell and controller wiring.
+- =src/LoginDialog.cpp= — authentication UI.
+
+* Dependencies
+
+- Qt 6 (Widgets, Network) — UI toolkit.
+- =ores.qt.api= — shared Qt types, NATS client wrapper, base controllers.
+- Domain API libraries: =ores.iam.api=, =ores.refdata.api=, =ores.trading.api=,
+  etc. — NATS protocol types.
+- =ores.connections= — server bookmark storage.
+- =ores.nats= — NATS transport.
+
+* See also
+
+-

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D
+:END:
+#+title: ores.telemetry.core
+#+description: Observability library — structured logging, distributed tracing, and JSON Lines log export.
+#+type: component
+#+level: cross
+#+filetags: :telemetry:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.telemetry.core= is the observability library for ORE Studio. It provides
+structured logging via Boost.Log with trace and span ID correlation (aligned
+with OpenTelemetry semantics), JSON Lines file exporters, and domain types for
+log records and resource identity (host, service, version). All other components
+link against this library to emit structured, correlated logs. Telemetry data is
+forwarded to =ores.telemetry.service= for centralised storage and querying.
+
+* Inputs
+
+- Log events emitted by other components via the Boost.Log sink interface.
+- Configuration for log level, output file path, and service identity.
+
+* Outputs
+
+- JSON Lines log files written to the configured export path.
+- Structured =log_record= objects forwarded to =ores.telemetry.service= via the
+  hybrid exporter for database persistence.
+
+* Entry points
+
+- =include/ores.telemetry.core/log/= — Boost.Log initialisation and lifecycle.
+- =include/ores.telemetry.core/generators/= — trace/span ID generators.
+- =include/ores.telemetry.core/domain/= — log_record, trace_id, span_id, resource.
+- =include/ores.telemetry.core/exporting/= — file and hybrid exporters.
+
+* Dependencies
+
+- Boost.Log — structured logging sink infrastructure.
+- =nats.c= — NATS client used by the hybrid exporter to forward records.
+
+* See also
+
+- [[id:df0caab9-9ddb-4fea-82d3-71fac2177eef][ores.telemetry.service]] — NATS service that receives and persists log records.
+- [[id:b73eaf3c-1384-4882-9310-8e9db594c038][ores.telemetry.database]] — persistence layer for telemetry records.
+- [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]] — NATS protocol for log forwarding.

@@ -1,0 +1,33 @@
+# ORE Studio documentation validation exceptions.
+#
+# Format: CHECK_CODE component_name
+#
+# CHECK_CODE values:
+#   MISSING_OVERVIEW    - modeling/component_overview.org not found
+#   MISSING_ID          - no :ID: UUID in :PROPERTIES: block
+#   MISSING_TYPE        - #+type: component not found
+#   MISSING_DESCRIPTION - #+description: missing or empty
+#   MISSING_SECTION     - one or more required sections absent
+#   MISSING_PUML        - no .puml diagram in modeling/
+#
+# Entries below represent known gaps to be addressed in follow-up work.
+# Remove an entry once the corresponding issue is resolved.
+
+# Qt sub-module components: component_overview.org not yet created.
+MISSING_OVERVIEW ores.qt.admin
+MISSING_OVERVIEW ores.qt.analytics
+MISSING_OVERVIEW ores.qt.api
+MISSING_OVERVIEW ores.qt.compute
+MISSING_OVERVIEW ores.qt.data_transfer
+MISSING_OVERVIEW ores.qt.mktdata
+MISSING_OVERVIEW ores.qt.party
+MISSING_OVERVIEW ores.qt.refdata
+MISSING_OVERVIEW ores.qt.scheduler
+MISSING_OVERVIEW ores.qt.trading
+MISSING_OVERVIEW ores.qt.workflow
+MISSING_OVERVIEW ores.qt.workspace
+
+# Workspace components: component_overview.org not yet created.
+MISSING_OVERVIEW ores.workspace.api
+MISSING_OVERVIEW ores.workspace.core
+MISSING_OVERVIEW ores.workspace.service

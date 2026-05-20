@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: a8b318bc-8653-4d33-a58c-60793e3596d5
+:END:
+#+title: ores.http.server
+#+description: HTTP server entrypoint — wires HTTP routes and runs the Boost.Asio event loop.
+#+type: component
+#+level: cross
+#+filetags: :http:server:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.http.server= is the HTTP server process entrypoint for ORE Studio. It
+reads configuration, opens NATS connections for domain service calls, registers
+all route handlers from =ores.http.core=, and starts the Boost.Asio event loop
+to serve HTTP requests. It is the process external REST clients connect to.
+
+* Inputs
+
+- Configuration file: bind address, port, JWT public key, NATS server URL.
+- Incoming TCP connections from external HTTP clients.
+
+* Outputs
+
+- A running HTTP/1.1 server on the configured address/port.
+- HTTP responses forwarded from NATS domain services via =ores.http.core= routes.
+
+* Entry points
+
+- =src/main.cpp= — process entry point.
+- =src/app/= — bootstrap and route wiring.
+- =src/config/= — configuration parsing.
+
+* Dependencies
+
+- =ores.http.core= — all route implementations.
+- =ores.http.api= — server infrastructure (Boost.Beast/Asio).
+- =ores.logging=, =nats.c=.
+
+* See also
+
+- [[id:b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164][ores.http.api]] — HTTP server library this entrypoint uses.
+- [[id:869526b6-6c82-430e-95e1-776d4a11a56b][ores.http.core]] — all route implementations wired here.

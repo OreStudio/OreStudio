@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: a59e121a-b8fb-43f0-a5cd-1fa5f426e66a
+:END:
+#+title: ores.compute.api
+#+description: Domain types and NATS protocol schemas for the compute component.
+#+type: component
+#+level: cross
+#+filetags: :compute:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.compute.api= is a header-only library defining the shared contract for
+the compute domain. It provides domain types for apps, app versions, compute
+hosts, batches, and results, with JSON I/O via =rfl=, and the NATS protocol
+schemas used by both the orchestrator (=ores.compute.core=) and worker nodes
+(=ores.compute.wrapper=).
+
+* Inputs
+
+- Domain entity type definitions across =domain/= headers.
+
+* Outputs
+
+- C++ headers for compute domain types with JSON I/O.
+- NATS protocol headers for batch dispatch, registration, and result reporting.
+
+* Entry points
+
+- =include/ores.compute.api/domain/=, =include/ores.compute.api/messaging/=.
+
+* Dependencies
+
+- =rfl= — JSON serialisation via reflection.
+
+* See also
+
+- [[id:3bffdf5c-86f5-4d57-9d9f-676d0d62b344][ores.compute.core]] — orchestrator side.
+- [[id:f1b19d84-a5c9-4478-bb46-ee6ea62dafca][ores.compute.wrapper]] — worker side.

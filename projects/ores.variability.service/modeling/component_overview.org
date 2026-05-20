@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 95d9e246-27ed-440f-b14a-481a546b7c4f
+:END:
+#+title: ores.variability.service
+#+description: NATS service entrypoint for the variability domain.
+#+type: component
+#+level: cross
+#+filetags: :variability:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.variability.service= is the NATS service entrypoint for the variability
+domain. It reads configuration, opens database and NATS connections, registers
+all message handlers from =ores.variability.core=, and runs the event loop.
+All business logic lives in =ores.variability.core=.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string, and
+  environment settings.
+- NATS request messages for system-setting queries and updates.
+
+* Outputs
+
+- A running NATS service handling all variability operations.
+- NATS response messages returned to callers.
+- Structured logs via =ores.logging=.
+
+* Entry points
+
+- =src/main.cpp= — process entry point.
+- =src/app/= — application bootstrap and dependency injection.
+- =src/config/= — configuration parsing and validation.
+
+* Dependencies
+
+- =ores.variability.core= — all NATS handlers, repositories, and services.
+- =ores.variability.api= — shared protocol types.
+- =ores.logging= — structured logging infrastructure.
+- =nats.c= — NATS client for connection management.
+
+* See also
+
+- [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]] — all business logic for the variability domain.

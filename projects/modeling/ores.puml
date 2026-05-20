@@ -20,504 +20,361 @@
 title ORE Studio System Architecture
 
 note as SystemNote
-C++20 application providing persistent storage, graphical interface,
+C++23 application providing persistent storage, graphical interface,
 and orchestration tools for Open Source Risk Engine (ORE).
 end note
 
+' ─────────────────────────────────────────────────────────────────────────────
 ' Foundation Layer
+' ─────────────────────────────────────────────────────────────────────────────
 package "Foundation Layer" #F2F2F2 {
     component [ores.utility] as utility #F7E5FF
-
     note right of utility
-    Foundation utilities with minimal dependencies:
-    - UUID: UUID v7 generation for time-ordered unique identifiers
-    - String: Type conversion and string manipulation
-    - Converter: Base32/Base64 encoding and decoding
-    - Program Options: Environment mapper factory for CLI configuration
-    No ores dependencies (base of the dependency tree).
-    Organized into: uuid, string, convert, program_options namespaces.
+    Foundation utilities: UUID v7, Base64/32, datetime,
+    faker, rfl reflectors, streaming operators.
+    No ORE Studio dependencies.
     end note
 
     component [ores.platform] as platform #F7E5FF
-
     note right of platform
-    Platform-specific utilities for OS and hardware interaction:
-    - Environment: Environment variable access with type conversion
-    - Filesystem: File I/O, directory operations, recursive search
-    - Network: Hostname, MAC address, machine ID, process ID
-    - Time: Cross-platform time utilities (gmtime_safe, localtime_safe)
-    Provides cross-platform abstractions for system-level operations.
-    Organized into: environment, filesystem, net, time namespaces.
-    end note
-
-    component [ores.telemetry] as telemetry #F7E5FF
-
-    note right of telemetry
-    Unified observability component for logging and distributed tracing:
-    - Logging: Boost.Log integration with lifecycle management
-    - Tracing: OpenTelemetry-aligned trace_id/span_id generation
-    - Correlation: Log records linked to traces and spans
-    - Export: JSON Lines file exporter for log shipping
-    - Resources: Machine/service identity with host_id derivation
-    Provides observability infrastructure for all ORE Studio components.
-    Organized into: domain, generators, log, exp namespaces.
-    end note
-
-    component [ores.database] as database #F7E5FF
-
-    note right of database
-    Database connectivity and health monitoring infrastructure:
-    - Connection: PostgreSQL connection management with libpq via sqlgen
-    - Pooling: Connection pool with configurable size and retry attempts
-    - Context: Database context abstraction for repository operations
-    - Health Monitor: Continuous database availability checking with callbacks
-    - Repository Helpers: Bitemporal operations, timestamp conversion, SQL generation
-    - Configuration: CLI options parsing for database credentials
-    Organized into: database (core), repository (helpers) namespaces.
-    end note
-
-    component [ores.variability] as variability #F7E5FF
-
-    note right of variability
-    System variability and configuration management infrastructure:
-    - Feature Flags: Runtime toggles for controlling system features and behavior
-    - Temporal Versioning: Bitemporal tracking of configuration changes
-    - Audit Support: Tracking who changed what and when
-    - Repository Pattern: ORM-based persistence with database integration
-    - Configuration Management: Centralized storage of system settings
-    Provides clean separation between system configuration concerns and business logic.
-    Organized into: domain (core entities) and repository (ORM and persistence) namespaces.
-    end note
-
-    component [ores.geo] as geo #F7E5FF
-
-    note right of geo
-    Geolocation services for IP-to-country lookups:
-    - PostgreSQL Storage: Stores ip2country data in ip2country table
-    - IP to Country: Maps IP addresses to country codes
-    - Thread Safe: All lookup operations are thread-safe for concurrent access
-    - GiST Indexes: Uses PostgreSQL int8range for efficient range lookups
-    Used primarily for session tracking to record login countries.
-    Organized into: service (geolocation_service) namespace.
-    end note
-
-    component [ores.security] as security #F7E5FF
-
-    note right of security
-    Shared security primitives for cryptography and validation:
-    - Crypto: Password hashing (scrypt), AES-256-GCM encryption (PBKDF2)
-    - Validation: Password policy (OWASP), email format validation
-    - RAII: Uses unique_ptr with custom deleters for OpenSSL contexts
-    All operations use OpenSSL and follow OWASP security recommendations.
-    Shared by ores.iam, ores.connections, and other components.
-    Organized into: crypto, validation namespaces.
+    OS abstractions: environment vars, filesystem,
+    hostname/MAC/machine-ID, cross-platform time.
     end note
 
     component [ores.logging] as logging #F7E5FF
-
     note right of logging
-    Core logging infrastructure for ORE Studio:
-    - Logger Factory: Creates named loggers via make_logger()
-    - Severity Levels: OpenTelemetry-compatible severity levels
-    - Lifecycle Management: Console and file sink configuration
-    - CLI Options: Command-line parsing for logging configuration
-    Extended by ores.telemetry for OTLP export and trace correlation.
-    Organized into: logging namespace.
+    Core Boost.Log infrastructure: make_logger(),
+    severity levels, lifecycle manager for sinks.
+    Extracted from ores.telemetry to break circular dep.
+    end note
+
+    component [ores.telemetry] as telemetry #F7E5FF
+    note right of telemetry
+    Extends logging with distributed tracing,
+    OpenTelemetry integration, JSON Lines export.
+    end note
+
+    component [ores.database] as database #F7E5FF
+    note right of database
+    PostgreSQL access: connection pool, tenant/party
+    context, bitemporal CRUD, health monitor,
+    LISTEN/NOTIFY integration.
+    end note
+
+    component [ores.variability] as variability #F7E5FF
+    note right of variability
+    Feature flags and runtime configuration.
+    variability.v1.> NATS namespace.
+    end note
+
+    component [ores.geo] as geo #F7E5FF
+    note right of geo
+    IP-to-location via MaxMind GeoLite2-City in
+    PostgreSQL. Used by ores.iam for session tracking.
+    end note
+
+    component [ores.security] as security #F7E5FF
+    note right of security
+    Crypto primitives: scrypt hashing, AES-256-GCM,
+    JWT validation, OWASP password/email validators.
     end note
 }
 
+' ─────────────────────────────────────────────────────────────────────────────
 ' Infrastructure Layer
+' ─────────────────────────────────────────────────────────────────────────────
 package "Infrastructure Layer" #F2F2F2 {
-    component [ores.eventing] as eventing #F7E5FF
-
-    note right of eventing
-    Event-driven architecture infrastructure for decoupled component communication:
-    - Event Bus: In-process publish/subscribe with type-safe callbacks
-    - Event Traits: Type-to-name mapping for protocol integration
-    - PostgreSQL Events: LISTEN/NOTIFY bridge for database change notifications
-    - Entity Change Events: Domain-agnostic change notification with timestamps
-    - Subscriptions: RAII-based subscription management with auto-unsubscribe
-    - Thread Safety: All event bus operations are thread-safe
-    Provides decoupled communication between components without direct dependencies.
-    Organized into: domain (event types, traits), service (event_bus, postgres_listener) namespaces.
+    component [ores.nats] as nats #F7E5FF
+    note right of nats
+    NATS transport: request/reply, queue-group
+    subscribe, JetStream. JSON payloads via rfl.
+    Subject: {domain}.v1.{entity}.{operation}.
+    Replaced ores.comms binary protocol.
     end note
 
-    component [ores.comms] as comms #F7E5FF
+    component [ores.service] as svc #F7E5FF
+    note right of svc
+    NATS service runner: domain_service_runner,
+    heartbeat publisher, request context,
+    handler helpers. All *.service entrypoints
+    build on this library.
+    end note
 
-    note right of comms
-    Custom binary protocol over SSL/TLS for secure client-server communication:
-    - Security: All connections secured with OpenSSL
-    - Protocol: Frame-based messages with headers and payloads
-    - Server: Async multi-client server with session management
-    - Client: Thread-safe client with both sync and async APIs
-    - Handshake: Connection establishment with server/client identification
-    - Dispatching: Pluggable message handlers by subsystem range
-    - Pooling: Maximum connection limits and active connection tracking
-    - Errors: Comprehensive error codes with std::expected-based APIs
-    - Connection Events: Publishes connected/disconnected/reconnecting events to event bus
+    component [ores.eventing] as eventing #F7E5FF
+    note right of eventing
+    In-process pub/sub event bus with PostgreSQL
+    LISTEN/NOTIFY bridge for cross-service events.
     end note
 
     component [ores.testing] as testing #F7E5FF
-
     note right of testing
-    Comprehensive testing infrastructure for all ORE Studio components:
-    - Framework: Catch2 with custom listeners
-    - Database Isolation: Each test process gets unique database for parallel execution
-    - Listeners: logging_listener and database_lifecycle_listener for auto-setup
-    - Logging: Boost.Log configured per-test-case with suite-based organization
-    - Database Helpers: Table truncation and context management
-    - Tenant Isolation: Tests use row-level security for isolation
-    - Configuration: Environment-driven via TEST_ORES_DB_* variables
+    Catch2 infrastructure: unique DB per process,
+    logging/database lifecycle listeners,
+    tenant RLS helpers, coroutine test support.
     end note
 
     component [ores.assets] as assets #F7E5FF
-
     note right of assets
-    Asset management for images and visual resources:
-    - Images: Binary image storage with MIME type and dimensions
-    - Tags: Hierarchical tagging system for asset organization
-    - Currency Images: Links currencies to flag/icon images
-    - Messaging: Protocol handlers for asset operations (0x4000-0x4FFF)
-    - Generators: Test data generation for images and tags
-    Provides centralized asset storage and retrieval for UI components.
-    Organized into: domain, repository, messaging, generators namespaces.
+    Binary image storage with hierarchical tagging
+    and currency-to-image linking.
+    assets.v1.> NATS namespace.
     end note
 
-    component [ores.http] as http #F7E5FF
-
-    note right of http
-    HTTP infrastructure for RESTful API support:
-    - JWT: JSON Web Token parsing and validation
-    - Claims: Extraction of user identity and permissions from tokens
-    - Error Handling: HTTP-specific error codes and responses
-    - Authentication: Token-based authentication middleware support
-    Provides HTTP/REST primitives used by ores.http.server.
-    Organized into: http namespace.
+    component [ores.http.api] as httpapi #F7E5FF
+    note right of httpapi
+    HTTP server infra: Boost.Beast/Asio async
+    server, JWT auth middleware, path-based
+    router, OpenAPI registry.
     end note
 
     component [ores.connections] as connections #F7E5FF
-
     note right of connections
-    Client-side server connection bookmark manager:
-    - Folders: Hierarchical organization of connections
-    - Tags: Flexible categorization orthogonal to folders
-    - Encrypted Credentials: AES-256-GCM with master password
-    - SQLite Storage: Local persistence for connection bookmarks
-    Used by Qt UI, shell commands, and HTTP API for managing server connections.
-    Organized into: domain, repository, service, generators namespaces.
+    Server connection bookmarks: hierarchical
+    folders, tags, AES-256-GCM credentials,
+    SQLite persistence. Used by Qt and shell.
+    end note
+
+    component [ores.storage] as storage #F7E5FF
+    note right of storage
+    File storage: local paths, HTTP-based
+    transfer, archive pack/unpack.
     end note
 }
 
+' ─────────────────────────────────────────────────────────────────────────────
 ' Domain Layer
+' ─────────────────────────────────────────────────────────────────────────────
 package "Domain Layer" #F2F2F2 {
     component [ores.refdata] as refdata #F7E5FF
-
     note right of refdata
-    Reference data domain model for currencies, countries, and other entities:
-    - Domain: Currency/country entities with temporal versioning (valid_from/valid_to)
-    - CSV Export: Structured CSV output for currencies
-    - JSON I/O: Serialization using reflection (rfl library)
-    - Table I/O: Formatted table output using fort library
-    - Persistence: ORM entities, mappers, and repositories with temporal support
-    - Message API: Request/response handlers for currency/country operations (0x3000-0x3FFF)
-    - Test Data: Synthetic data generation using faker-cxx
-    Organized into: domain, repository, csv, service, messaging, generators namespaces.
+    Currencies, countries, coding schemes, FPML
+    product types. Temporal versioning, XML/CSV/JSON.
+    refdata.v1.>
     end note
 
     component [ores.iam] as iam #F7E5FF
-
     note right of iam
-    Identity and access management (IAM) with secure authentication:
-    - Account Lifecycle: Creation, listing, and deletion of user accounts
-    - Authentication: Login with password verification, session tracking
-    - Security: Account locking after failed login attempts, unlock capability
-    - RBAC: Role-based access control with permissions and authorization
-    - Bootstrap Mode: System initialization state management using feature flags
-    - Message API: Async request/response handlers (0x2000-0x2FFF)
-    - Temporal Support: Version tracking with valid_from/valid_to fields
-    Uses ores.security for password hashing/validation and encryption.
-    Organized into: domain, repository, service, messaging, eventing, generators namespaces.
-    end note
-
-    component [ores.ore] as ore #F7E5FF
-
-    note right of ore
-    ORE (Open Source Risk Engine) specific functionality for XML import/export:
-    - ORE XML Import: Parse currency configuration from ORE XML format
-    - ORE XML Export: Generate ORE-format XML from internal domain objects
-    - Format Conversion: Map between ORE XML structures and refdata domain types
-    - Validation: Validate imported data against ORE XSD schema requirements
-    - Domain Types: CurrencyConfig, CurrencyElement for ORE XML representation
-    Uses rfl (reflect-cpp) for XML serialization/deserialization.
-    Organized into: domain (ORE XML types, mappers), xml (importer, exporter) namespaces.
+    Account lifecycle, scrypt login, RBAC, session
+    tracking with geolocation, bootstrap mode.
+    iam.v1.>
     end note
 
     component [ores.dq] as dq #F7E5FF
-
     note right of dq
-    Data Quality component for tracking and ensuring data integrity:
-    - Lineage: Data provenance and transformation history tracking
-    - Quality Metrics: Validation rules and quality scoring metadata
-    - Profiling: Data anomaly detection and profiling metadata
-    - Audit Trails: Full history of data changes and transformations
-    - Change Management: Change reasons and categories for data modifications
-    - Message API: Protocol handlers for change management operations
-    Provides centralized metadata management for data quality across all domains.
-    Organized into: domain, repository, service, messaging, eventing, generators namespaces.
+    Data quality: provenance, validation metadata,
+    change management, staging artefacts,
+    publish-from-DQ pattern. dq.v1.>
     end note
 
     component [ores.fpml] as fpml #F7E5FF
-
     note right of fpml
-    Financial Products Markup Language (FPML) processing infrastructure:
-    - Schema Support: Full support for industry-standard FPML schemas and validation
-    - Trade Representation: Domain types for representing complex financial instruments and trades
-    - Serialization: Robust serialization/deserialization of FPML documents
-    - Validation: Comprehensive validation against FPML schemas and business rules
-    - Integration: Seamless integration with ORE Studio's risk analytics and pricing engines
-    - Extensibility: Support for custom extensions and proprietary fields
-    Provides comprehensive support for parsing, validating, and processing Financial Products Markup Language documents.
-    Organized into: domain, service, repository, messaging, generators namespaces.
+    FpML processing for OTC derivative trade
+    representations. Early development.
+    end note
+
+    component [ores.ore] as ore #F7E5FF
+    note right of ore
+    ORE XML import/export: converts between ORE
+    Engine XML and internal domain types.
     end note
 
     component [ores.trading] as trading #F7E5FF
-
     note right of trading
-    Trade booking and lifecycle management for financial instruments:
-    - Domain: Trade and activity type entities with temporal versioning
-    - Trade Status FSM: Four-state machine (new, live, expired, cancelled) via ores.dq FSM infrastructure
-    - Activity Taxonomy: ~30 activity types across five categories (New Activity, Life-Cycle Event,
-      Misbooking, Valuation Change, Cancellation) for P&L attribution and reporting
-    - Amendment Model: Temporal versioning for in-place amendments; successor_trade_id for cancel-rebook
-    - Persistence: ORM entities, mappers, and repositories with full temporal support
-    - Message API: Request/response handlers for trade operations (0x5000-0x5FFF)
-    - Test Data: Synthetic trade generation using faker-cxx
-    Organized into: domain, repository, service, messaging, generators namespaces.
+    Trade booking/lifecycle: FSM-enforced status,
+    ~30 activity types, cancel-rebook, temporal
+    versioning. trading.v1.>
+    end note
+
+    component [ores.marketdata] as marketdata #F7E5FF
+    note right of marketdata
+    Market series, observations, fixings, import
+    options. marketdata.v1.>
+    end note
+
+    component [ores.synthetic] as synthetic #F7E5FF
+    note right of synthetic
+    Synthetic market data and scenario generation
+    for stress testing. synthetic.v1.>
+    end note
+
+    component [ores.scheduler] as scheduler #F7E5FF
+    note right of scheduler
+    Task scheduling for compute jobs.
+    scheduler.v1.>
+    end note
+
+    component [ores.reporting] as reporting #F7E5FF
+    note right of reporting
+    Report execution and result persistence.
+    reporting.v1.>
+    end note
+
+    component [ores.analytics] as analytics #F7E5FF
+    note right of analytics
+    Risk analytics: NPV, sensitivities, VaR/CVaR.
+    analytics.v1.>
+    end note
+
+    component [ores.workflow] as workflow #F7E5FF
+    note right of workflow
+    Multi-step compute pipeline management.
+    workflow.v1.>
     end note
 }
 
+' ─────────────────────────────────────────────────────────────────────────────
 ' Application Layer
+' ─────────────────────────────────────────────────────────────────────────────
 package "Application Layer" #F2F2F2 {
     component [ores.shell] as shell #F7E5FF
-
     note right of shell
-    Interactive REPL (Read-Eval-Print Loop) shell for connecting to ORE Studio
-    server via the binary comms protocol:
-    - Interface: Interactive command-line with command completion
-    - Connection Management: Connect/disconnect to ORE Studio server
-    - Currency Operations: List and retrieve currency data
-    - Account Operations: Create accounts, login, list accounts, unlock accounts
-    - Auto-Connect: Automatic connection and login from configuration file
-    - Configuration: Boost program_options for CLI argument parsing
-    - Command Handlers: Modular command classes for connection, currencies, and accounts
-    Organized into: config (configuration parsing), app (REPL, client manager, commands) namespaces.
+    Interactive REPL via NATS: currency queries,
+    account management, auto-login. Dev/ops tool.
     end note
 
     component [ores.cli] as cli #F7E5FF
-
     note right of cli
-    Command-line interface for importing and exporting ORE data:
-    - Import: Load currencies from JSON, XML, or CSV files into database
-    - Export: Extract currencies to JSON, XML, or CSV format
-    - Temporal Queries: Export data as-of specific timepoints or all versions
-    - Filtering: Export specific entities by key
-    - Configuration: Boost program_options parser for CLI arguments
-    - Database Integration: Direct repository access for data operations
-    Organized into: config (option parsing), app (application hosting) namespaces.
+    CLI import/export of reference data (JSON/XML/CSV)
+    directly against the database.
     end note
 
     component [ores.qt] as qt #F7E5FF
-
     note right of qt
-    Modern desktop application built with Qt 6 for visual ORE data management:
-    - MDI Interface: Multiple Document Interface with detachable windows
-    - Currency Management: List, create, edit, delete currencies with history tracking
-    - Authentication: Login dialog with secure password handling
-    - Real-time Updates: Asynchronous data loading and server synchronization
-    - Entity Controllers: Modular controller pattern for managing entity windows
-    - Custom Widgets: Specialized delegates, dialogs, and UI components
-    - Background Logo: Customizable MDI area background
-    - Connection Status: Visual indication of server connectivity
-    MainWindow delegates to entity controllers (e.g., CurrencyController) which manage
-    their own MDI windows, dialogs, and data models.
+    Qt 6 MDI desktop app: currencies, accounts,
+    parties, trades via NATS. Composed of
+    ores.qt.* feature modules.
     end note
 
-    component [ores.comms.service] as service #F7E5FF
-
-    note right of service
-    Main server application hosting all ORE Studio backend services:
-    - Server Hosting: Runs the ORE Studio comms server with SSL/TLS
-    - Subsystem Integration: Registers message handlers for accounts, risk, and other subsystems
-    - Database Access: Provides database context to all subsystems
-    - Configuration: Boost program_options parser for server, database, and logging
-    - Concurrent Connections: Supports multiple simultaneous client connections
-    - Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
-    Organized into: config (option parsing and configuration), app (application hosting) namespaces.
+    component [ores.http.core] as httpcore #F7E5FF
+    note right of httpcore
+    Concrete HTTP route handlers: IAM, assets,
+    risk, storage, variability. Translates HTTP
+    requests into NATS calls.
     end note
 
     component [ores.http.server] as httpserver #F7E5FF
-
     note right of httpserver
-    RESTful HTTP API server for ORE Studio:
-    - REST API: HTTP endpoints for all ORE Studio operations
-    - JWT Authentication: Token-based security using ores.http
-    - Domain Integration: Access to IAM, Risk, Assets, and other domains
-    - Async I/O: Built on Boost.Beast for high-performance HTTP handling
-    - Configuration: CLI options for server, database, and logging
-    Alternative to binary protocol for web clients and integrations.
-    Organized into: config, app namespaces.
+    HTTP server entrypoint: wires http.core routes
+    and runs Boost.Asio event loop.
     end note
 
-    component [ores.wt] as wt #F7E5FF
-
+    component [ores.wt.service] as wt #F7E5FF
     note right of wt
-    Web application built with Wt framework for browser-based access:
-    - Account Management: Create, edit, and manage user accounts
-    - Currency Operations: View and manage currency data
-    - Feature Flags: Toggle system features through web UI
-    - Session Management: Web-based authentication and session handling
-    - Responsive UI: Widget-based interface compatible with modern browsers
-    Alternative to Qt desktop client for web-based access.
-    Organized into: widget, dialog, model namespaces.
+    Wt C++ Web Toolkit frontend: account mgmt,
+    currency/country views, feature flags.
+    Alternative to Qt desktop.
     end note
 
-    component [ores.comms.analyser] as analyser #F7E5FF
+    component [ores.compute.service] as compute #F7E5FF
+    note right of compute
+    ORE Engine compute wrapper: receives compute
+    job requests via NATS, spawns ORE child
+    processes, publishes results.
+    end note
 
-    note right of analyser
-    Communication session analyzer for debugging protocol issues:
-    - Session Reading: Parse and decode recorded binary protocol sessions
-    - Message Inspection: Detailed view of frame headers and payloads
-    - Debugging Support: Aids in troubleshooting protocol issues
-    - CLI Tool: Command-line interface for analyzing session files
-    Used for development and debugging of the comms protocol.
-    Organized into: config, app, domain namespaces.
+    component [ores.controller] as controller #F7E5FF
+    note right of controller
+    Orchestration controller: assembles compute
+    pipelines, sequences stages, tracks run state.
     end note
 }
 
-' Dependencies - Foundation Layer (utility is the base)
+' ─────────────────────────────────────────────────────────────────────────────
+' Dependencies — Foundation Layer
+' ─────────────────────────────────────────────────────────────────────────────
 platform --> utility
 logging --> platform
 telemetry --> logging
 telemetry --> platform
 database --> telemetry
 variability --> database
-security --> variability
 security --> utility
+geo --> database
 
-' Dependencies - Infrastructure to Foundation
-eventing --> telemetry
+' ─────────────────────────────────────────────────────────────────────────────
+' Dependencies — Infrastructure to Foundation
+' ─────────────────────────────────────────────────────────────────────────────
+nats --> logging
+svc --> nats
 eventing --> database
-comms --> telemetry
-comms --> database
-comms --> eventing
-testing --> telemetry
-testing --> platform
+eventing --> nats
 testing --> database
-assets --> telemetry
+testing --> platform
 assets --> database
-http --> comms
-http --> telemetry
-http --> utility
-connections --> utility
+assets --> nats
+httpapi --> logging
 connections --> security
+storage --> platform
 
-' Dependencies - Domain to Foundation/Infrastructure
-refdata --> telemetry
-refdata --> platform
+' ─────────────────────────────────────────────────────────────────────────────
+' Dependencies — Domain to Foundation/Infrastructure
+' ─────────────────────────────────────────────────────────────────────────────
 refdata --> database
-iam --> variability
-iam --> comms
-iam --> telemetry
+refdata --> nats
 iam --> database
+iam --> nats
 iam --> geo
 iam --> security
+iam --> variability
+dq --> database
+dq --> nats
+fpml --> logging
 ore --> refdata
 ore --> logging
-ore --> platform
-ore --> utility
-dq --> eventing
-dq --> database
-dq --> utility
-dq --> comms
-dq --> iam
-
-fpml --> telemetry
-fpml --> platform
-
-trading --> telemetry
 trading --> database
-trading --> dq
+trading --> nats
 trading --> refdata
 trading --> fpml
-trading --> comms
-trading --> iam
+trading --> dq
+marketdata --> database
+marketdata --> nats
+synthetic --> database
+synthetic --> nats
+scheduler --> database
+scheduler --> nats
+reporting --> database
+reporting --> nats
+analytics --> database
+analytics --> nats
+workflow --> database
+workflow --> nats
 
-' Dependencies - Shell to Foundation/Domain/Infrastructure
-shell --> telemetry
-shell --> variability
+' ─────────────────────────────────────────────────────────────────────────────
+' Dependencies — Application to all layers
+' ─────────────────────────────────────────────────────────────────────────────
+shell --> nats
 shell --> iam
-shell --> dq
-shell --> comms
 shell --> refdata
-shell --> utility
 
-' Dependencies - Applications to all layers
-cli --> telemetry
-cli --> variability
-cli --> iam
-cli --> dq
+cli --> database
 cli --> refdata
 cli --> ore
-cli --> comms
-cli --> database
-cli --> security
-cli --> utility
 
-qt --> telemetry
+qt --> nats
 qt --> iam
 qt --> refdata
-qt --> ore
-qt --> comms
-qt --> eventing
 qt --> assets
 qt --> connections
-qt --> dq
-qt --> security
-qt --> utility
-qt --> variability
+qt --> trading
+qt --> marketdata
 
-service --> telemetry
-service --> database
-service --> iam
-service --> refdata
-service --> comms
-service --> eventing
-service --> assets
-service --> geo
-service --> dq
-service --> variability
-service --> utility
+httpcore --> nats
+httpcore --> httpapi
+httpcore --> iam
+httpcore --> assets
+httpserver --> httpcore
 
-httpserver --> http
-httpserver --> iam
-httpserver --> refdata
-httpserver --> assets
-httpserver --> variability
-httpserver --> geo
-httpserver --> telemetry
-httpserver --> database
-httpserver --> comms
-
-wt --> database
+wt --> nats
 wt --> iam
 wt --> refdata
 wt --> variability
-wt --> telemetry
-wt --> platform
-wt --> utility
 
-analyser --> comms
-analyser --> utility
+compute --> nats
+compute --> scheduler
+
+controller --> nats
+controller --> workflow
+controller --> scheduler
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"

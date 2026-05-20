@@ -28,6 +28,19 @@ commands:
 Read `projects/modeling/system_model.org` for details on the system
 architecture.
 
+## Documentation Validation
+
+Run before pushing changes that add or modify component documentation:
+
+```sh
+./projects/ores.codegen/validate_docs.sh
+```
+
+Checks every `projects/ores.*/` for `modeling/component_overview.org`, required
+v2 frontmatter (`:ID:`, `#+type: component`, `#+description:`), required sections,
+and at least one `.puml` diagram. Exceptions are in
+`projects/ores.codegen/docs_exceptions.txt`.
+
 ## Database Isolation
 
 Each domain service user (`ores_<env>_<service>_service`) holds DML only on

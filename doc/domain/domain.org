@@ -5,15 +5,16 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
-Assorted documentation about the domain of finance. These are notes I have
-collected over the years and are of some relevance to this application.
-Initially, this will be more of a documentation dump but hopefully we'll
-organise this content in a meaningful manner over time.
+Project-specific notes on industry standards and data conventions the codebase
+relies upon. Broader speculative musings on the finance domain have moved out
+to the author's personal site under [[https://mcraveiro.github.io/ore_studio/index.html][ORE Studio]] → Domain Musings.
 
 Topics:
 
-- [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Computational Finance]]: Introduction to the field and scoping of the ambitions
-  of the present effort.
-- [[id:9EB4715F-5A5D-4F14-0CAB-A4208240A813][Money and its Close Relatives]]: Fundamental concepts related to money.
+- [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial products Markup Language]]: Industry XML standard for representing
+  financial products.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]]: FpML mechanism for restricting fields to a known set of
+  values.
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]]: The standard DQ-6 dimensions in financial markets.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

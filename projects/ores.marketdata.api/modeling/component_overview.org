@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 6a62d943-fac9-4b77-9e22-f265557dcf1a
+:END:
+#+title: ores.marketdata.api
+#+description: Domain types and NATS protocol schemas for the market-data component.
+#+type: component
+#+level: cross
+#+filetags: :marketdata:api:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.marketdata.api= is a header-only library defining the shared contract for
+the market-data domain. It provides domain types for market series, observations,
+fixings, and import options, with JSON and table I/O via =rfl=, and the NATS
+protocol schemas consumed by =ores.marketdata.core= and Qt clients.
+
+* Inputs
+
+- Domain entity type definitions across =domain/= headers.
+
+* Outputs
+
+- C++ headers for market-data types with JSON and table I/O.
+- NATS protocol headers for market-data operations.
+
+* Entry points
+
+- =include/ores.marketdata.api/domain/=, =include/ores.marketdata.api/messaging/=.
+
+* Dependencies
+
+- =rfl=, =fort=.
+
+* See also
+
+- [[id:759530d8-2314-44f3-a50e-71ce7ad02558][ores.marketdata.core]] — business logic, persistence, and NATS handlers.

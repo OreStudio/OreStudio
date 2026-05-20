@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: c871c5df-a521-4815-9572-72d07da62cc7
+:END:
+#+title: ores.controller.core
+#+description: Service registry and lifecycle controller — tracks running services, instances, and health events.
+#+type: component
+#+level: cross
+#+filetags: :controller:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.controller.core= is the service registry and lifecycle controller for
+ORE Studio. It maintains a catalogue of service definitions (=service_definition=),
+running instances (=service_instance=), and lifecycle events (=service_event=),
+letting the platform monitor which services are up, track failures, and drive
+orchestrated startup/shutdown sequences. NATS handlers expose the registry to
+Qt clients and other services.
+
+* Inputs
+
+- NATS registration and heartbeat messages from all running services.
+- NATS management requests from Qt clients (service listing, event history).
+- PostgreSQL connections to =ores_controller_*= tables.
+
+* Outputs
+
+- Service-registry records persisted to the =ores_controller= schema.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =include/ores.controller.core/ores.controller.core.hpp= — aggregate include.
+- =include/ores.controller.core/messaging/registrar.hpp= — registers handlers.
+- =include/ores.controller.core/messaging/= — per-entity NATS handlers.
+
+* Dependencies
+
+- =ores.controller.api= — shared domain types and NATS protocol schemas.
+- =ores.dq=, =ores.iam.core=, =rfl=, =soci=, =nats.c=.
+
+* See also
+
+- [[id:85d20e29-0ebd-41ff-9f32-10f60af074a8][ores.controller.api]] — protocol types and domain entities.
+- [[id:1a4e357c-0b10-44cf-9096-47ee42e6f1a4][ores.controller.service]] — NATS service entrypoint.

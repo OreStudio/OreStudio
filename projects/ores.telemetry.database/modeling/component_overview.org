@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: b73eaf3c-1384-4882-9310-8e9db594c038
+:END:
+#+title: ores.telemetry.database
+#+description: Database persistence layer for telemetry log records.
+#+type: component
+#+level: cross
+#+filetags: :telemetry:database:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.telemetry.database= is the PostgreSQL persistence layer for telemetry
+log records. It provides ORM entities, mappers, and repositories for storing
+=log_record= objects (trace_id, span_id, severity, message, service identity)
+in the =ores_telemetry= schema, used by =ores.telemetry.service= when
+persisting received records.
+
+* Inputs
+
+- =log_record= objects forwarded from =ores.telemetry.service=.
+- PostgreSQL connections to =ores_telemetry_*= tables.
+
+* Outputs
+
+- Log records persisted to the =ores_telemetry= schema for querying via the
+  telemetry Qt UI.
+
+* Entry points
+
+- =include/ores.telemetry.database/= — ORM entity and repository headers.
+
+* Dependencies
+
+- =ores.telemetry.core= — domain types (log_record, resource).
+- =ores.dq= — ORM base classes.
+- =soci= — SQL ORM for PostgreSQL persistence.
+
+* See also
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — observability library that produces log records.
+- [[id:df0caab9-9ddb-4fea-82d3-71fac2177eef][ores.telemetry.service]] — service that calls this persistence layer.

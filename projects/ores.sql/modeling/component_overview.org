@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F
+:END:
+#+title: ores.sql
+#+description: PostgreSQL schema, migration scripts, role provisioning, and database lifecycle management for ORE Studio.
+#+type: component
+#+level: cross
+#+filetags: :sql:database:schema:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.sql= contains the PostgreSQL schema, migration scripts, role
+provisioning, and lifecycle management for the ORE Studio database. All tables
+use a single =public= schema with the =ores_= prefix and domain sub-prefix
+(=ores_iam_*=, =ores_refdata_*=, =ores_trading_*=, etc.). Service database
+users (=ores_<env>_<service>_service=) hold DML only on their own domain
+tables, enforcing strict service table isolation. Helper scripts handle
+database creation, reset, teardown, migration, and SQL execution.
+
+* Inputs
+
+- PostgreSQL superuser credentials for initial setup.
+- SQL DDL files under =create/= and migration files under =migrate/=.
+- Seed data files under =populate/=.
+
+* Outputs
+
+- A fully provisioned PostgreSQL database with all tables, roles, RLS
+  policies, indexes, and seed data.
+- Per-service users with exactly scoped DML grants.
+
+* Entry points
+
+- =recreate_database.sh= — drop and recreate the database from scratch.
+- =setup_database.sh= — create roles and apply DDL without dropping first.
+- =run_sql.sh= — execute a SQL file against the ORE database.
+- =migrate/= — incremental schema migration scripts.
+- =utility/validate_schemas.sh= — validate schema consistency before push.
+
+* Dependencies
+
+- PostgreSQL 15+ with =pg_trgm=, =btree_gist=, and =pgcrypto= extensions.
+
+* See also
+
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — C++ access layer that consumes this schema.
+
+

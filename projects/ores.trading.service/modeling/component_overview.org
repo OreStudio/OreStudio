@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 0ebad7f6-f0df-4ff5-8404-c3f0ea8e8bbd
+:END:
+#+title: ores.trading.service
+#+description: NATS service entrypoint for the trading domain — wires handlers, repositories, and configuration.
+#+type: component
+#+level: cross
+#+filetags: :trading:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.trading.service= is the NATS service entrypoint for the trading domain.
+It is a thin wiring layer: it reads configuration, opens database and NATS
+connections, registers all message handlers from =ores.trading.core=, and runs
+the event loop. All business logic lives in =ores.trading.core=; this component
+is responsible only for bootstrap, dependency injection, and graceful shutdown.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string, logging
+  settings, and environment name.
+- NATS request messages from Qt clients and peer services on the
+  =ores.trading.*= subject hierarchy.
+
+* Outputs
+
+- A running NATS service handling all trading operations (0x5000–0x5FFF range).
+- NATS response messages returned to callers.
+- Structured logs to the configured log sink via =ores.logging=.
+
+* Entry points
+
+- =src/main.cpp= — process entry point; initialises logging and starts the
+  application.
+- =src/application.cpp= — bootstraps all subsystems and wires dependencies.
+- =src/host.cpp= — manages the NATS connection and handler registration loop.
+- =src/config/= — configuration parsing and validation.
+
+* Dependencies
+
+- =ores.trading.core= — all NATS handlers, repositories, and domain services.
+- =ores.trading.api= — shared protocol types.
+- =ores.logging= — structured logging infrastructure.
+- =nats.c= — NATS client for connection management.
+
+* See also
+
+- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] — all business logic for the trading domain.

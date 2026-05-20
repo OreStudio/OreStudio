@@ -7,4 +7,5 @@
 # Foundation; either version 3 of the License, or (at your option) any later
 # version.
 #
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)

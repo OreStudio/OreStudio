@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: D00BEA0D-E501-C534-A013-E6F40C1A6097
+:END:
+#+title: ores.iam.core
+#+description: Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers.
+#+type: component
+#+level: cross
+#+filetags: :iam:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.iam.core= provides identity and access management for ORE Studio:
+user account lifecycle (creation, listing, deletion), secure password
+authentication (scrypt), account locking on failed login attempts, session
+and role management, and multi-tenancy / multi-party support. Business logic
+is exposed as NATS message handlers in the 0x2000–0x2FFF range. A synthetic-
+data generator produces test accounts for development and CI use.
+
+* Inputs
+
+- NATS request messages from Qt clients and peer services (account CRUD,
+  login, authorisation queries, bootstrap, reset) in the 0x2000–0x2FFF range.
+- PostgreSQL connections to =ores_iam_*= tables with temporal versioning.
+
+* Outputs
+
+- Account, role, party, session, and tenant records persisted to the =ores_iam=
+  schema with bitemporal history.
+- Authentication tokens and session state returned to callers via NATS.
+- NATS response messages for all IAM operations.
+
+* Entry points
+
+- =include/ores.iam.core/ores.iam.hpp= — aggregate include.
+- =include/ores.iam.core/messaging/registrar.hpp= — registers all NATS
+  handlers (account, auth, session, role, tenant, bootstrap, reset).
+- =include/ores.iam.core/service/account_service.hpp= — account management
+  entry point.
+- =include/ores.iam.core/service/authorization_service.hpp= — authorisation
+  and role-check entry point.
+
+* Dependencies
+
+- =ores.iam.api= — shared domain types and NATS protocol schemas.
+- =ores.dq= — ORM base classes and data-quality infrastructure.
+- =rfl= — JSON serialisation via reflection.
+- =soci= — SQL ORM for PostgreSQL persistence.
+- =nats.c= — NATS messaging client.
+- =libsodium= / scrypt — secure password hashing.
+
+* See also
+
+- [[id:4e0dc581-d74d-4bd1-87d2-7f524a36d20c][ores.iam.api]] — protocol types and domain entities.
+- [[id:70f2d886-bb3f-4fe0-929c-45509e1ce967][ores.iam.service]] — NATS service entrypoint.
+- [[id:28a7af22-1eb1-4989-b4bd-a383d09605f3][ores.iam.client]] — client-side session and token-provider library.
+- [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] — full NATS subject and message catalogue.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant isolation and bootstrap design.
+- [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — multi-party authentication sequence.
+- [[id:126F3756-77E8-9D14-B8EB-E0FF7C19A384][IAM Account]] — account entity design and state transitions.

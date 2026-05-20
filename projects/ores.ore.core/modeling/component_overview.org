@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332
+:END:
+#+title: ores.ore.core
+#+description: ORE XML import/export — currency configuration and ORE-format data exchange for the risk engine.
+#+type: component
+#+level: cross
+#+filetags: :ore:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.ore.core= provides ORE (Open Source Risk Engine) integration for ORE
+Studio. It imports and exports data in ORE's native XML formats: parsing
+currency configurations from ORE's =currencyconfig.xsd= into internal domain
+objects and exporting them back. It also supplies domain hierarchy, market
+data, and log parsing utilities used when invoking ORE risk runs.
+
+* Inputs
+
+- ORE XML files (=currencyconfig.xml= and similar) read from disk or received
+  via NATS.
+- Internal domain objects (currencies, market data) to be serialised to ORE
+  XML for submission to the risk engine.
+
+* Outputs
+
+- Parsed =CurrencyConfig= and =CurrencyElement= domain objects.
+- ORE XML output files written for ingestion by the ORE risk engine.
+
+* Entry points
+
+- =include/ores.ore.core/domain/= — ORE XML domain types and mappers.
+- =include/ores.ore.core/hierarchy/= — ORE output hierarchy parsing.
+- =include/ores.ore.core/market/= — market data utilities.
+- =include/ores.ore.core/log/= — ORE log parsing utilities.
+
+* Dependencies
+
+- =ores.ore.api= — shared domain types and NATS protocol schemas.
+- =ores.refdata.api= — currency domain types (mapped to/from ORE format).
+- =pugixml= — XML parsing.
+- =nats.c= — NATS messaging client.
+
+* See also
+
+- [[id:0f93b352-f234-4d9d-82e6-05218be645e8][ores.ore.api]] — protocol types and domain entities.
+- [[id:ef8fd20d-0b9c-4379-8bbd-b4fcf2f5f0c7][ores.ore.service]] — NATS service entrypoint.

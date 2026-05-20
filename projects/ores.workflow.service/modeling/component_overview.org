@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 1af4aec8-70ec-496c-821e-4e2e1bb303e5
+:END:
+#+title: ores.workflow.service
+#+description: NATS service entrypoint for the workflow domain.
+#+type: component
+#+level: cross
+#+filetags: :workflow:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.workflow.service= is the NATS service entrypoint for the workflow domain.
+It reads configuration, opens database and NATS connections, registers all
+message handlers from =ores.workflow.core=, and runs the event loop.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string.
+- NATS request messages for workflow management operations.
+
+* Outputs
+
+- A running NATS service for workflow operations.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =src/main.cpp=, =src/app/=, =src/config/=.
+
+* Dependencies
+
+- =ores.workflow.core=, =ores.workflow.api=, =ores.logging=, =nats.c=.
+
+* See also
+
+- [[id:440294d7-385d-41ee-92cb-cab937e65e81][ores.workflow.core]] — all business logic for the workflow domain.

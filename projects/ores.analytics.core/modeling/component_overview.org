@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: bc804c31-d6f7-4e4e-9c4f-f4578beaf4f5
+:END:
+#+title: ores.analytics.core
+#+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
+#+type: component
+#+level: cross
+#+filetags: :analytics:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.analytics.core= manages pricing model configuration for ORE Studio. It
+maintains pricing-engine types, pricing-model configurations, the mapping of
+models to product types (=pricing_model_product=), and per-product parameter
+sets (=pricing_model_product_parameter=). These configurations drive the ORE
+risk-engine runs executed by =ores.reporting.core=. A NATS handler layer
+exposes all CRUD operations to clients.
+
+* Inputs
+
+- NATS request messages for pricing-model configuration management.
+- PostgreSQL connections to =ores_analytics_*= tables.
+
+* Outputs
+
+- Pricing-model configuration records persisted to the =ores_analytics= schema.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =include/ores.analytics.core/ores.analytics.core.hpp= — aggregate include.
+- =include/ores.analytics.core/messaging/registrar.hpp= — registers all NATS
+  handlers.
+- =include/ores.analytics.core/service/= — per-entity service headers.
+
+* Dependencies
+
+- =ores.analytics.api= — shared domain types and NATS protocol schemas.
+- =ores.dq= — ORM base classes and persistence infrastructure.
+- =ores.iam.core= — identity and authorisation context.
+- =rfl= — JSON serialisation via reflection.
+- =soci= — SQL ORM for PostgreSQL persistence.
+- =nats.c= — NATS messaging client.
+
+* See also
+
+- [[id:66d3f1d6-1926-40cf-bcf5-aa42f14ad6d5][ores.analytics.api]] — protocol types and domain entities.
+- [[id:e5952f27-53bd-4c4d-85cd-556b6421b768][ores.analytics.service]] — NATS service entrypoint.

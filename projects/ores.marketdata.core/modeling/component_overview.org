@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 759530d8-2314-44f3-a50e-71ce7ad02558
+:END:
+#+title: ores.marketdata.core
+#+description: Market data management — market series, observations, fixings, and import from external sources.
+#+type: component
+#+level: cross
+#+filetags: :marketdata:core:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.marketdata.core= manages market data for ORE Studio: time series of
+market observations (prices, rates, fixings), series metadata, and import from
+external sources. It exposes NATS handlers for querying and importing market
+data, and provides the data used by =ores.reporting.core= when constructing
+ORE market data files for risk runs.
+
+* Inputs
+
+- NATS request messages for market series, observation, and fixing queries.
+- External market data imported via =import_service= (CSV, API feeds).
+- PostgreSQL connections to =ores_marketdata_*= tables.
+
+* Outputs
+
+- Market series, observation, and fixing records persisted to the
+  =ores_marketdata= schema.
+- NATS response messages returned to callers.
+
+* Entry points
+
+- =include/ores.marketdata.core/messaging/registrar.hpp= — registers handlers.
+- =include/ores.marketdata.core/service/= — series, observation, fixing, import
+  services.
+
+* Dependencies
+
+- =ores.marketdata.api= — shared domain types and NATS protocol schemas.
+- =ores.dq=, =ores.iam.core=, =rfl=, =soci=, =nats.c=.
+
+* See also
+
+- [[id:6a62d943-fac9-4b77-9e22-f265557dcf1a][ores.marketdata.api]] — protocol types and domain entities.
+- [[id:57182ece-6364-421a-a46f-73841f9961b4][ores.marketdata.service]] — NATS service entrypoint.

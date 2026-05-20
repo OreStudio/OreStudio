@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: fa64a6de-7010-4fd8-a1f8-d153b3cd96a9
+:END:
+#+title: ores.dq.service
+#+description: NATS service entrypoint for the data-quality domain — wires handlers, repositories, and configuration.
+#+type: component
+#+level: cross
+#+filetags: :dq:service:component:
+#+created: 2026-05-19
+#+updated: 2026-05-19
+
+* Summary
+
+=ores.dq.service= is the NATS service entrypoint for the data-quality domain.
+It reads configuration, opens database and NATS connections, registers all
+message handlers from =ores.dq.core=, and runs the event loop. All business
+logic lives in =ores.dq.core=; this component is responsible only for
+bootstrap, dependency injection, and graceful shutdown.
+
+* Inputs
+
+- Configuration file: NATS server URL, PostgreSQL connection string, and
+  environment settings.
+- NATS request messages from Qt clients and peer services (badge, dataset,
+  change-management operations).
+
+* Outputs
+
+- A running NATS service handling all data-quality operations.
+- NATS response messages returned to callers.
+- Structured logs via =ores.logging=.
+
+* Entry points
+
+- =src/main.cpp= — process entry point.
+- =src/app/= — application bootstrap and dependency injection.
+- =src/config/= — configuration parsing and validation.
+
+* Dependencies
+
+- =ores.dq.core= — all NATS handlers, repositories, and domain services.
+- =ores.dq.api= — shared protocol types.
+- =ores.logging= — structured logging infrastructure.
+- =nats.c= — NATS client for connection management.
+
+* See also
+
+- [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq.core]] — all business logic for the data-quality domain.

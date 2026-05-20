@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 
+#include <unordered_map>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -63,6 +64,28 @@ report_definition_repository::read_latest(context ctx) {
         ctx, query,
         [](const auto& entities) { return report_definition_mapper::map(entities); },
         lg(), "Reading latest report definitions");
+}
+
+std::vector<domain::report_definition>
+report_definition_repository::read_latest_with_resolution(
+    context ctx, const std::vector<std::string>& chain) {
+
+    if (chain.empty())
+        return read_latest(ctx);
+
+    std::vector<domain::report_definition> result;
+    std::unordered_map<std::string, bool> seen_names;
+
+    for (const auto& wid : chain) {
+        auto workspace_ctx = ctx.with_workspace(wid);
+        auto batch = read_latest(workspace_ctx);
+        for (auto& def : batch) {
+            if (seen_names.emplace(def.name, true).second)
+                result.push_back(std::move(def));
+        }
+    }
+
+    return result;
 }
 
 std::vector<domain::report_definition>

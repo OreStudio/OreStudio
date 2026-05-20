@@ -52,6 +52,9 @@ report_definition_service::report_definition_service(context ctx)
 
 std::vector<domain::report_definition> report_definition_service::list_definitions() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all report definitions";
+    const auto& chain = ctx_.workspace_resolution();
+    if (chain.size() > 1)
+        return repo_.read_latest_with_resolution(ctx_, chain);
     return repo_.read_latest(ctx_);
 }
 

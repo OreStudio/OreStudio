@@ -27,6 +27,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 #include <filesystem>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -481,6 +482,86 @@ public:
      */
     void setWorkspaceContext(const WorkspaceContext& ctx) { workspace_context_ = ctx; }
 
+    /**
+     * @brief Get the current application-level workspace context.
+     */
+    const WorkspaceContext& workspaceContext() const { return workspace_context_; }
+
+    /**
+     * @brief Process an authenticated request with an explicit workspace override.
+     *
+     * Like process_authenticated_request(request) but uses workspace_id instead
+     * of the shared workspace_context_. Used by per-window workspace selectors so
+     * each window can query a different workspace simultaneously.
+     */
+    template <nats_request RequestType>
+    auto process_authenticated_request(RequestType request,
+        const std::string& workspace_id_override,
+        std::chrono::milliseconds timeout = fast_timeout)
+        -> std::expected<typename RequestType::response_type, std::string> {
+        using ResponseType = typename RequestType::response_type;
+        try {
+            const auto raw = send_authenticated_request_with_workspace(
+                RequestType::nats_subject, rfl::json::write(request),
+                workspace_id_override, timeout);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
+            if (!result) {
+                return std::unexpected(
+                    std::string("Failed to deserialize response: ") +
+                    result.error().what());
+            }
+            return std::move(*result);
+        } catch (const ores::nats::service::nats_connect_error&) {
+            throw;
+        } catch (const ores::nats::service::session_expired_error& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
+            QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
+            return std::unexpected(std::string(e.what()));
+        } catch (const std::exception& e) {
+            return std::unexpected(std::string(e.what()));
+        }
+    }
+
+    /**
+     * @brief Process an authenticated request with a full workspace context.
+     *
+     * Like the workspace_id_override overload but also forwards the resolution
+     * chain as X-Workspace-Resolution so the server returns inherited definitions
+     * from ancestor workspaces as well as the selected workspace's own.
+     */
+    template <nats_request RequestType>
+    auto process_authenticated_request(RequestType request,
+        const WorkspaceContext& workspace_ctx,
+        std::chrono::milliseconds timeout = fast_timeout)
+        -> std::expected<typename RequestType::response_type, std::string> {
+        using ResponseType = typename RequestType::response_type;
+        try {
+            std::vector<std::string> chain;
+            for (const auto& wid : workspace_ctx.resolution_order)
+                chain.push_back(wid.toStdString());
+            const auto raw = send_authenticated_request_with_workspace_ctx(
+                RequestType::nats_subject, rfl::json::write(request),
+                workspace_ctx.id.toStdString(), std::move(chain), timeout);
+            auto result = rfl::json::read<ResponseType, rfl::AddTagsToVariants>(raw);
+            if (!result) {
+                return std::unexpected(
+                    std::string("Failed to deserialize response: ") +
+                    result.error().what());
+            }
+            return std::move(*result);
+        } catch (const ores::nats::service::nats_connect_error&) {
+            throw;
+        } catch (const ores::nats::service::session_expired_error& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
+            QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
+            return std::unexpected(std::string(e.what()));
+        } catch (const std::exception& e) {
+            return std::unexpected(std::string(e.what()));
+        }
+    }
+
 signals:
     void connected();
     void loggedIn();
@@ -537,6 +618,29 @@ private:
     std::string send_authenticated_request(
         std::string_view subject,
         std::string json_body,
+        std::chrono::milliseconds timeout);
+
+    /**
+     * @brief Like send_authenticated_request but with an explicit workspace id.
+     *
+     * Used by the per-workspace overload of process_authenticated_request so
+     * per-window requests do not mutate the shared workspace_context_.
+     */
+    std::string send_authenticated_request_with_workspace(
+        std::string_view subject,
+        std::string json_body,
+        const std::string& workspace_id,
+        std::chrono::milliseconds timeout);
+
+    /**
+     * @brief Like send_authenticated_request_with_workspace but also forwards
+     * the workspace resolution chain as X-Workspace-Resolution.
+     */
+    std::string send_authenticated_request_with_workspace_ctx(
+        std::string_view subject,
+        std::string json_body,
+        const std::string& workspace_id,
+        std::vector<std::string> resolution_chain,
         std::chrono::milliseconds timeout);
 
     // NATS session for connection and authentication

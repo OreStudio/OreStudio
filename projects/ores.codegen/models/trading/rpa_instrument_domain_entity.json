@@ -1,6 +1,7 @@
 {
     "domain_entity": {
         "schema": "public",
+        "product": "ores",
         "component": "trading",
         "component_include": "trading.api",
         "component_core": "trading.core",

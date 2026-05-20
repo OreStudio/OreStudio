@@ -56,6 +56,14 @@ inline constexpr std::string_view nats_session_id         = "Nats-Session-Id";
 /// calls.  Absence means Live workspace (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
 inline constexpr std::string_view x_workspace_id          = "X-Workspace-Id";
 
+/// Workspace resolution chain for this request (comma-separated UUID list).
+/// Set by the Qt client from WorkspaceContext.resolution_order when the
+/// selected workspace is not Live.  Enables repository-level workspace
+/// inheritance: queries use WHERE workspace_id = ANY(chain) with deduplication
+/// so that definitions from ancestor workspaces are included.
+/// Absence means single-workspace query (workspace_id exact match only).
+inline constexpr std::string_view x_workspace_resolution  = "X-Workspace-Resolution";
+
 } // namespace ores::nats::headers
 
 #endif

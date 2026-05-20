@@ -175,6 +175,27 @@ public:
     }
 
     /**
+     * @brief Gets the workspace resolution chain for this context.
+     *
+     * When non-empty, repositories should use WHERE workspace_id = ANY(chain)
+     * to return definitions from the selected workspace and all its ancestors.
+     * Empty means single-workspace query (exact workspace_id match).
+     */
+    const std::vector<std::string>& workspace_resolution() const {
+        return workspace_resolution_;
+    }
+
+    /**
+     * @brief Returns a copy of this context with the given resolution chain.
+     */
+    [[nodiscard]] context with_workspace_resolution(
+        std::vector<std::string> chain) const {
+        auto copy = *this;
+        copy.workspace_resolution_ = std::move(chain);
+        return copy;
+    }
+
+    /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
      * The service_account is preserved from the base context.
@@ -207,6 +228,7 @@ private:
     std::string service_account_;
     std::vector<std::string> roles_;
     std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    std::vector<std::string> workspace_resolution_;
 };
 
 }

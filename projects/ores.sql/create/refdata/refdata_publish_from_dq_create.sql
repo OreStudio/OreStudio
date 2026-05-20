@@ -2523,7 +2523,7 @@ begin
         insert into ores_refdata_portfolios_tbl (
             tenant_id, id, version, party_id, name, parent_portfolio_id,
             owner_unit_id, purpose_type, aggregation_ccy, is_virtual,
-            modified_by, performed_by, change_reason_code, change_commentary
+            status, modified_by, performed_by, change_reason_code, change_commentary
         )
         select
             p_target_tenant_id,
@@ -2531,6 +2531,7 @@ begin
             parent_m.new_id,
             bu_map.published_id,
             m.purpose_type, m.aggregation_ccy, m.is_virtual,
+            'active',
             coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'
         from portfolio_publish_map m

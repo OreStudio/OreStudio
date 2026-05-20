@@ -21,6 +21,7 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QSizePolicy>
 #include <QMessageBox>
 #include <optional>
 #include <QFile>
@@ -35,6 +36,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/WorkspaceSelector.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -164,6 +166,12 @@ void BookMdiWindow::setupToolbar() {
     exportXmlAction_->setEnabled(false);
     connect(exportXmlAction_, &QAction::triggered, this,
             &BookMdiWindow::exportToXml);
+
+    // Workspace selector — flush-right in the toolbar
+    auto* spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    toolbar_->addWidget(spacer);
+    toolbar_->addWidget(createWorkspaceSelector(clientManager_));
 }
 
 void BookMdiWindow::setupTable() {
@@ -248,6 +256,7 @@ void BookMdiWindow::setupConnections() {
 void BookMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading books";
     emit statusChanged(tr("Loading books..."));
+    model_->setWorkspaceContext(windowWorkspaceContext_);
     model_->refresh();
 }
 
@@ -692,6 +701,11 @@ void BookMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void BookMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 }

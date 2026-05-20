@@ -42,12 +42,12 @@ begin
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
         'entity_ids', jsonb_build_array(changed_id),
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_ois_conventions', notification_payload::text);
+    perform pg_notify('ores_refdata_ois_conventions', notification_payload::text);
 
     return null;
 end;

@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QAbstractTableModel>
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
 
 namespace ores::qt {
@@ -40,9 +41,26 @@ class ORES_QT_API AbstractClientModel : public QAbstractTableModel {
 public:
     using QAbstractTableModel::QAbstractTableModel;
 
+    /**
+     * @brief Set the workspace context for this window's data requests.
+     *
+     * When set to anything other than the Live sentinel, all fetch operations
+     * will use this workspace id in X-Workspace-Id instead of the shared
+     * ClientManager workspace context. Call before or instead of reload().
+     */
+    void setWorkspaceContext(const WorkspaceContext& ctx) { workspace_ctx_ = ctx; }
+
+    /**
+     * @brief Get the current per-window workspace context.
+     */
+    const WorkspaceContext& workspaceContext() const { return workspace_ctx_; }
+
 signals:
     void dataLoaded();
     void loadError(const QString& error_message, const QString& details = {});
+
+private:
+    WorkspaceContext workspace_ctx_;
 };
 
 }

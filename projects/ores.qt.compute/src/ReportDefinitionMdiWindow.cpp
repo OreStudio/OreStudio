@@ -21,6 +21,7 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QSizePolicy>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -28,6 +29,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/WorkspaceSelector.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -153,6 +155,11 @@ void ReportDefinitionMdiWindow::setupToolbar() {
     unscheduleAction_->setEnabled(false);
     connect(unscheduleAction_, &QAction::triggered, this,
             &ReportDefinitionMdiWindow::unscheduleSelected);
+
+    auto* spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    toolbar_->addWidget(spacer);
+    toolbar_->addWidget(createWorkspaceSelector(clientManager_));
 }
 
 void ReportDefinitionMdiWindow::setupTable() {
@@ -169,16 +176,18 @@ void ReportDefinitionMdiWindow::setupTable() {
 
     using cs = column_style;
     auto* delegate = new EntityItemDelegate({
-        cs::text_left,      // Name
-        cs::text_left,      // ReportType
-        cs::text_left,      // ScheduleExpression
-        cs::badge_centered, // ConcurrencyPolicy
-        cs::badge_centered, // Status (FSM lifecycle state)
-        cs::text_left,      // NextFire
-        cs::mono_center,    // Version
-        cs::text_left,      // ModifiedBy
+        cs::text_left,      // Name (0)
+        cs::text_left,      // Source (1)
+        cs::text_left,      // ReportType (2)
+        cs::text_left,      // ScheduleExpression (3)
+        cs::badge_centered, // ConcurrencyPolicy (4)
+        cs::badge_centered, // Status (5)
+        cs::text_left,      // NextFire (6)
+        cs::mono_center,    // Version (7)
+        cs::text_left,      // ModifiedBy (8)
+        cs::text_left,      // RecordedAt (9)
     }, tableView_);
-    delegate->set_badge_color_resolver(3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+    delegate->set_badge_color_resolver(4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
         static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
         if (!cache) return default_gray;
         auto* def = cache->resolve("report_concurrency_policy", value.toStdString());
@@ -186,7 +195,7 @@ void ReportDefinitionMdiWindow::setupTable() {
         return {QColor(QString::fromStdString(def->background_colour)),
                 QColor(QString::fromStdString(def->text_colour))};
     });
-    delegate->set_badge_color_resolver(4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+    delegate->set_badge_color_resolver(5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
         static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
         if (!cache) return default_gray;
         auto* def = cache->resolve("report_fsm_state", value.toStdString());
@@ -202,7 +211,7 @@ void ReportDefinitionMdiWindow::setupTable() {
     initializeTableSettings(tableView_, model_,
         "ReportDefinitionListWindow",
         {},
-        {900, 400}, 1);
+        {900, 400}, 2);
 }
 
 void ReportDefinitionMdiWindow::setupConnections() {
@@ -493,6 +502,11 @@ void ReportDefinitionMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
+}
+
+void ReportDefinitionMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    model_->setWorkspaceContext(ctx);
+    EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
 }
 
 }

@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_trading_trade_identifiers_notify_trg on "ores_trading_trade_identifiers_tbl";
-drop function if exists ores_trading_trade_identifiers_notify_fn;
+drop trigger if exists ores_trading_rpa_instruments_notify_trg on "ores_trading_rpa_instruments_tbl";
+drop function if exists ores_trading_rpa_instruments_notify_fn;

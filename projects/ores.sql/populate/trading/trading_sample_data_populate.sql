@@ -155,7 +155,7 @@ begin
     raise debug 'Booked IRS trade id=%', v_trade_id;
 
     -- UTI identifier
-    insert into ores_trading_identifiers_tbl (
+    insert into ores_trading_trade_identifiers_tbl (
         id, tenant_id, version,
         trade_id, issuing_party_id, id_value, id_type, id_scheme,
         modified_by, performed_by, change_reason_code, change_commentary
@@ -169,7 +169,7 @@ begin
     );
 
     -- Internal ID
-    insert into ores_trading_identifiers_tbl (
+    insert into ores_trading_trade_identifiers_tbl (
         id, tenant_id, version,
         trade_id, issuing_party_id, id_value, id_type, id_scheme,
         modified_by, performed_by, change_reason_code, change_commentary

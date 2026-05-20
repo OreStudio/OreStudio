@@ -228,8 +228,9 @@ void ClientBookModel::fetch_books(
 
                 refdata::messaging::get_books_request request;
 
+                const auto ws_id = self->workspaceContext().id.toStdString();
                 auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                    process_authenticated_request(std::move(request), ws_id);
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch books: "

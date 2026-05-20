@@ -27,6 +27,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -234,6 +235,19 @@ public:
     [[nodiscard]] nats_client with_workspace_id(std::string wid) const;
 
     /**
+     * @brief Returns a new nats_client that forwards an X-Workspace-Resolution
+     * header on every authenticated_request call.
+     *
+     * The chain is forwarded as comma-separated UUID strings, enabling
+     * repository-level workspace inheritance queries. Call after
+     * with_workspace_id() when the selected workspace is not Live.
+     *
+     * Thread-safe: the returned value is independent of *this.
+     */
+    [[nodiscard]] nats_client with_workspace_resolution(
+        std::vector<std::string> chain) const;
+
+    /**
      * @brief Return the underlying client (interactive path only).
      *
      * Returns nullptr if constructed via the service path.
@@ -265,6 +279,9 @@ private:
 
     // Optional workspace ID forwarded as X-Workspace-Id.
     std::string workspace_id_;
+
+    // Optional resolution chain forwarded as X-Workspace-Resolution.
+    std::vector<std::string> workspace_resolution_;
 };
 
 /**

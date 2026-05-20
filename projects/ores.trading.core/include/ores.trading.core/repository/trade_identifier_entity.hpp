@@ -33,7 +33,7 @@ namespace ores::trading::repository {
  */
 struct trade_identifier_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_trading_identifiers_tbl";
+    constexpr static const char* tablename = "ores_trading_trade_identifiers_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;

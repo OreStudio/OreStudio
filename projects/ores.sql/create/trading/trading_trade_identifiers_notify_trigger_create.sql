@@ -17,36 +17,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger.mustache
+ * To modify, update the template and regenerate.
+ */
 
-create or replace function ores_trading_identifiers_notify_fn()
+create or replace function ores_trading_trade_identifiers_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.trading.identifier';
+    entity_name text := 'ores.trading.trade_identifier';
     change_timestamp timestamptz := NOW();
-    changed_id text;
+    changed_id uuid;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
-        changed_id := OLD.id::text;
+        changed_id := OLD.id;
         changed_tenant_id := OLD.tenant_id::text;
     else
-        changed_id := NEW.id::text;
+        changed_id := NEW.id;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
         'entity_ids', jsonb_build_array(changed_id),
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_trading_identifiers', notification_payload::text);
+    perform pg_notify('ores_trading_trade_identifiers', notification_payload::text);
+
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_trading_identifiers_notify_trg
-after insert or update or delete on ores_trading_identifiers_tbl
-for each row execute function ores_trading_identifiers_notify_fn();
+create or replace trigger ores_trading_trade_identifiers_notify_trg
+after insert or update or delete on ores_trading_trade_identifiers_tbl
+for each row execute function ores_trading_trade_identifiers_notify_fn();

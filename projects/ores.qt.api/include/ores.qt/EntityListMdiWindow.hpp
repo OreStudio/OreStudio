@@ -31,9 +31,12 @@
 #include <QTableView>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
 
 namespace ores::qt {
+
+class ClientManager;
 
 /**
  * @brief Base class for entity list MDI windows providing stale indicator support.
@@ -192,6 +195,37 @@ protected:
     void connectModel(AbstractClientModel* model);
 
     /**
+     * @brief Create a workspace selector widget bound to this window.
+     *
+     * The selector fetches the workspace list from the server, shows a
+     * searchable QComboBox, and emits workspaceChanged. Connect its signal
+     * to the window's onWindowWorkspaceChanged to propagate changes. Add the
+     * returned widget to the window's toolbar with an expanding spacer on its
+     * left so it sits flush-right.
+     *
+     * The window's windowWorkspaceContext_ is initialised to cm->workspaceContext()
+     * and kept in sync automatically as the user makes changes.
+     *
+     * @param cm  The ClientManager (must outlive the returned widget).
+     * @return    A new WorkspaceSelector* owned by this widget.
+     */
+    class WorkspaceSelector* createWorkspaceSelector(ClientManager* cm);
+
+    /**
+     * @brief Called when the per-window workspace selection changes.
+     *
+     * The default implementation updates windowWorkspaceContext_ and calls
+     * reload(). Override to also update the underlying model before reloading:
+     * @code
+     * void MyWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+     *     model_->setWorkspaceContext(ctx);
+     *     EntityListMdiWindow::onWindowWorkspaceChanged(ctx);
+     * }
+     * @endcode
+     */
+    virtual void onWindowWorkspaceChanged(const WorkspaceContext& ctx);
+
+    /**
      * @brief Get the normal (non-stale) tooltip text for the refresh action.
      *
      * Override this to customize the tooltip text.
@@ -206,6 +240,16 @@ protected:
     virtual QString staleRefreshTooltip() const {
         return tr("Data changed on server - click to reload");
     }
+
+protected:
+    /**
+     * @brief The current per-window workspace context.
+     *
+     * Initialised to the Live workspace. Updated by onWindowWorkspaceChanged
+     * when the user changes the workspace selector. Subclasses read this to
+     * pass the workspace id to their model before each fetch.
+     */
+    WorkspaceContext windowWorkspaceContext_;
 
 private slots:
     void onPulseTimeout();

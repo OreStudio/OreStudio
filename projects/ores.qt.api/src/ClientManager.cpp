@@ -501,6 +501,44 @@ std::string ClientManager::send_authenticated_request(
         msg.data.size());
 }
 
+std::string ClientManager::send_authenticated_request_with_workspace(
+    std::string_view subject,
+    std::string json_body,
+    const std::string& workspace_id,
+    std::chrono::milliseconds timeout) {
+    if (!session_.is_logged_in())
+        throw std::runtime_error("Not logged in");
+    const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto scoped = session_
+        .with_correlation_id(cid)
+        .with_session_id(session_id_)
+        .with_workspace_id(workspace_id);
+    auto msg = scoped.authenticated_request(subject, json_body, timeout);
+    return std::string(
+        reinterpret_cast<const char*>(msg.data.data()),
+        msg.data.size());
+}
+
+std::string ClientManager::send_authenticated_request_with_workspace_ctx(
+    std::string_view subject,
+    std::string json_body,
+    const std::string& workspace_id,
+    std::vector<std::string> resolution_chain,
+    std::chrono::milliseconds timeout) {
+    if (!session_.is_logged_in())
+        throw std::runtime_error("Not logged in");
+    const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto scoped = session_
+        .with_correlation_id(cid)
+        .with_session_id(session_id_)
+        .with_workspace_id(workspace_id)
+        .with_workspace_resolution(std::move(resolution_chain));
+    auto msg = scoped.authenticated_request(subject, json_body, timeout);
+    return std::string(
+        reinterpret_cast<const char*>(msg.data.data()),
+        msg.data.size());
+}
+
 std::optional<std::vector<iam::domain::session>>
 ClientManager::getActiveSessions() {
     try {

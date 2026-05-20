@@ -26,6 +26,8 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_hash.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -171,11 +173,12 @@ void WorkspaceMdiWindow::doReload() {
 
 void WorkspaceMdiWindow::addTreeItems(
     QTreeWidgetItem* parent,
-    const QString& parent_id_str,
-    const std::unordered_map<std::string,
-        std::vector<const workspace::domain::workspace*>>& children_map) {
+    const boost::uuids::uuid& parent_id,
+    const std::unordered_map<boost::uuids::uuid,
+        std::vector<const workspace::domain::workspace*>,
+        boost::hash<boost::uuids::uuid>>& children_map) {
 
-    auto it = children_map.find(parent_id_str.toStdString());
+    auto it = children_map.find(parent_id);
     if (it == children_map.end())
         return;
 
@@ -187,7 +190,7 @@ void WorkspaceMdiWindow::addTreeItems(
         item->setText(1, QString::fromStdString(ws->status_code));
         item->setText(2, QString::fromStdString(ws->modified_by));
         item->setData(0, Qt::UserRole, id_str);
-        addTreeItems(item, id_str, children_map);
+        addTreeItems(item, ws->id, children_map);
     }
 }
 
@@ -198,22 +201,23 @@ void WorkspaceMdiWindow::buildTree() {
     if (all.empty())
         return;
 
-    std::unordered_map<std::string, const workspace::domain::workspace*> by_id;
+    std::unordered_map<boost::uuids::uuid,
+        const workspace::domain::workspace*,
+        boost::hash<boost::uuids::uuid>> by_id;
     for (const auto& ws : all)
-        by_id[boost::uuids::to_string(ws.id)] = &ws;
+        by_id[ws.id] = &ws;
 
-    std::unordered_map<std::string,
-        std::vector<const workspace::domain::workspace*>> children_map;
+    std::unordered_map<boost::uuids::uuid,
+        std::vector<const workspace::domain::workspace*>,
+        boost::hash<boost::uuids::uuid>> children_map;
 
     std::vector<const workspace::domain::workspace*> roots;
     for (const auto& ws : all) {
         if (!ws.parent_workspace_id) {
             roots.push_back(&ws);
         } else {
-            const std::string parent_str =
-                boost::uuids::to_string(*ws.parent_workspace_id);
-            if (by_id.count(parent_str)) {
-                children_map[parent_str].push_back(&ws);
+            if (by_id.count(*ws.parent_workspace_id)) {
+                children_map[*ws.parent_workspace_id].push_back(&ws);
             } else {
                 roots.push_back(&ws);
             }
@@ -228,7 +232,7 @@ void WorkspaceMdiWindow::buildTree() {
         item->setText(1, QString::fromStdString(ws->status_code));
         item->setText(2, QString::fromStdString(ws->modified_by));
         item->setData(0, Qt::UserRole, id_str);
-        addTreeItems(item, id_str, children_map);
+        addTreeItems(item, ws->id, children_map);
     }
 
     treeWidget_->expandAll();
@@ -257,9 +261,10 @@ void WorkspaceMdiWindow::onItemDoubleClicked(QTreeWidgetItem* item, int /*column
     if (!item)
         return;
 
-    const QString id_str = item->data(0, Qt::UserRole).toString();
+    const auto target_id = boost::uuids::string_generator()(
+        item->data(0, Qt::UserRole).toString().toStdString());
     for (const auto& ws : model_->workspaces()) {
-        if (QString::fromStdString(boost::uuids::to_string(ws.id)) == id_str) {
+        if (ws.id == target_id) {
             emit showWorkspaceDetails(ws);
             return;
         }
@@ -281,9 +286,11 @@ void WorkspaceMdiWindow::openSelected() {
         return;
     }
 
-    const QString id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto target_id =
+        boost::uuids::string_generator()(id_str.toStdString());
     for (const auto& ws : model_->workspaces()) {
-        if (QString::fromStdString(boost::uuids::to_string(ws.id)) == id_str) {
+        if (ws.id == target_id) {
             emit workspaceActivated(ws);
             return;
         }
@@ -304,9 +311,10 @@ void WorkspaceMdiWindow::editSelected() {
         return;
     }
 
-    const QString id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto target_id = boost::uuids::string_generator()(
+        selected.first()->data(0, Qt::UserRole).toString().toStdString());
     for (const auto& ws : model_->workspaces()) {
-        if (QString::fromStdString(boost::uuids::to_string(ws.id)) == id_str) {
+        if (ws.id == target_id) {
             emit showWorkspaceDetails(ws);
             return;
         }
@@ -326,11 +334,13 @@ void WorkspaceMdiWindow::archiveSelected() {
         return;
     }
 
-    const QString id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto target_id =
+        boost::uuids::string_generator()(id_str.toStdString());
     std::string workspace_id;
     QString workspace_name;
     for (const auto& ws : model_->workspaces()) {
-        if (QString::fromStdString(boost::uuids::to_string(ws.id)) == id_str) {
+        if (ws.id == target_id) {
             workspace_id = boost::uuids::to_string(ws.id);
             workspace_name = QString::fromStdString(ws.name);
             break;
@@ -412,11 +422,13 @@ void WorkspaceMdiWindow::deleteSelected() {
         return;
     }
 
-    const QString id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto id_str = selected.first()->data(0, Qt::UserRole).toString();
+    const auto target_id =
+        boost::uuids::string_generator()(id_str.toStdString());
     std::string workspace_id;
     QString workspace_name;
     for (const auto& ws : model_->workspaces()) {
-        if (QString::fromStdString(boost::uuids::to_string(ws.id)) == id_str) {
+        if (ws.id == target_id) {
             workspace_id = boost::uuids::to_string(ws.id);
             workspace_name = QString::fromStdString(ws.name);
             break;

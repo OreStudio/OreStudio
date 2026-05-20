@@ -27,6 +27,7 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/WorkspaceMdiWindow.hpp"
 #include "ores.qt/WorkspaceDetailDialog.hpp"
@@ -232,11 +233,10 @@ void WorkspaceController::showDetailWindow(
 void WorkspaceController::onWorkspaceActivated(
     const workspace::domain::workspace& ws) {
 
-    const std::string ws_id = boost::uuids::to_string(ws.id);
-    BOOST_LOG_SEV(lg(), debug) << "Workspace activation requested: " << ws_id;
+    BOOST_LOG_SEV(lg(), debug) << "Workspace activation requested: "
+                               << boost::uuids::to_string(ws.id);
 
-    constexpr std::string_view live_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-    if (ws_id == live_id) {
+    if (ws.id == ores::utility::uuid::live_workspace_id()) {
         WorkspaceContext ctx;
         mdiArea_->setProperty("ores_workspace_context",
             QVariant::fromValue(ctx));
@@ -245,6 +245,7 @@ void WorkspaceController::onWorkspaceActivated(
     }
 
     QPointer<WorkspaceController> self = this;
+    const std::string ws_id = boost::uuids::to_string(ws.id);
     const std::string ws_name = ws.name;
 
     struct ResolveResult {

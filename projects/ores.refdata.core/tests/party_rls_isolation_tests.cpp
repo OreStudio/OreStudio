@@ -34,6 +34,7 @@
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;
@@ -50,19 +51,19 @@ const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[rls][party_isolation]");
 
 boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const std::string& tid) {
+    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid);
+    throw std::runtime_error("No system party for tenant: " + tid.to_string());
 }
 
 party_counterparty make_pc(scoped_database_helper& h,
     const boost::uuids::uuid& party_id,
     const boost::uuids::uuid& counterparty_id) {
     party_counterparty pc;
-    pc.tenant_id = h.tenant_id().to_string();
+    pc.tenant_id = h.tenant_id();
     pc.party_id = party_id;
     pc.counterparty_id = counterparty_id;
     pc.modified_by = h.db_user();
@@ -108,7 +109,7 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
 
     // Find system party
     const auto system_party_id = find_system_party_id(
-        party_repo, tid.to_string());
+        party_repo, tid);
 
     // Create two operational parties under the system party
     auto party_a = generate_synthetic_party(gen_ctx);
@@ -171,7 +172,7 @@ TEST_CASE("party_a_sees_only_own_assignments", tags) {
     counterparty_repository cp_repo(ctx);
 
     const auto system_party_id = find_system_party_id(
-        party_repo, tid.to_string());
+        party_repo, tid);
 
     // Create two operational parties
     auto party_a = generate_synthetic_party(gen_ctx);
@@ -232,7 +233,7 @@ TEST_CASE("party_b_sees_only_own_assignments", tags) {
     counterparty_repository cp_repo(ctx);
 
     const auto system_party_id = find_system_party_id(
-        party_repo, tid.to_string());
+        party_repo, tid);
 
     auto party_a = generate_synthetic_party(gen_ctx);
     party_a.party_category = "Operational";
@@ -290,7 +291,7 @@ TEST_CASE("nested_party_hierarchy_visibility", tags) {
     counterparty_repository cp_repo(ctx);
 
     const auto system_party_id = find_system_party_id(
-        party_repo, tid.to_string());
+        party_repo, tid);
 
     // Create parent → child hierarchy
     auto parent = generate_synthetic_party(gen_ctx);

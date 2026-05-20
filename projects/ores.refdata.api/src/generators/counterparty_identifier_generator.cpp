@@ -38,7 +38,8 @@ domain::counterparty_identifier generate_synthetic_counterparty_identifier(
 
     domain::counterparty_identifier r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     static constexpr std::array<const char*, 10> id_schemes = {
         "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",

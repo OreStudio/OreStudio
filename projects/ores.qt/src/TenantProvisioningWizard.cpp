@@ -989,7 +989,7 @@ void TenantExecutePage::startPartyAssociation() {
                 iam::domain::account_party ap;
                 ap.account_id         = *accountId;
                 ap.party_id           = party.id;
-                ap.tenant_id          = party.tenant_id;
+                ap.tenant_id          = party.tenant_id.to_string();
                 ap.modified_by        = publishedBy;
                 ap.performed_by       = publishedBy;
                 ap.change_reason_code =

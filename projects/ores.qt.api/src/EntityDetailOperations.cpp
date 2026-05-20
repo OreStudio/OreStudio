@@ -26,7 +26,7 @@ namespace ores::qt {
 entity_data to_entity_data(const refdata::domain::counterparty& cpty) {
     entity_data d;
     d.version = cpty.version;
-    d.tenant_id = cpty.tenant_id;
+    d.tenant_id = cpty.tenant_id.to_string();
     d.id = cpty.id;
     d.full_name = cpty.full_name;
     d.short_code = cpty.short_code;
@@ -47,7 +47,7 @@ entity_data to_entity_data(const refdata::domain::counterparty& cpty) {
 entity_data to_entity_data(const refdata::domain::party& p) {
     entity_data d;
     d.version = p.version;
-    d.tenant_id = p.tenant_id;
+    d.tenant_id = p.tenant_id.to_string();
     d.id = p.id;
     d.full_name = p.full_name;
     d.short_code = p.short_code;

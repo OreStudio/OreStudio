@@ -38,7 +38,8 @@ domain::business_unit generate_synthetic_business_unit(
 
     domain::business_unit r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.unit_name = faker::company::companyName() + " Desk " + std::to_string(idx);

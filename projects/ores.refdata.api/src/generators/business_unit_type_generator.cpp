@@ -38,7 +38,8 @@ domain::business_unit_type generate_synthetic_business_unit_type(
 
     domain::business_unit_type r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.coding_scheme_code = "ORES-ORG";
     r.code = std::string(faker::word::noun()) + "_type_" + std::to_string(idx);

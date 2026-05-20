@@ -41,7 +41,8 @@ domain::counterparty_contact_information generate_synthetic_counterparty_contact
 
     domain::counterparty_contact_information r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.counterparty_id = ctx.generate_uuid();
     r.contact_type = std::string(contact_types[idx % contact_types.size()]);

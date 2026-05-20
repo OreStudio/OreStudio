@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 8B4C1D2E-93F7-4A68-C5B9-6D0E1F4A2B83
+:END:
+#+title: Refdata C++ Codegen: Activate Domain/Generator/Repository Generation
+#+STATUS: TODO
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+25 =*_domain_entity.json= models and 3 =*_junction.json= models exist in
+=ores.codegen/models/refdata/=.  The C++ templates
+(=cpp_domain_type_class.hpp.mustache=, =cpp_domain_type_mapper.cpp.mustache=,
+=cpp_domain_type_generator.cpp.mustache=, =cpp_domain_type_repository.cpp.mustache=,
+etc.) are fully functional and already in use for trading and workspace
+entities.
+
+However, =generate_refdata_schema.sh= only runs =--profile sql= on
+=*_entity.json= lookup tables.  It never invokes =--profile domain=,
+=--profile generator=, or =--profile repository= for the domain entities.
+As a result, all refdata domain headers, mappers, generators, and repositories
+are hand-written and drift from the templates over time.
+
+The immediate consequence was the =tenant_id= strong-type migration
+(=feature/dq-plan-resume=, 2026-05-20): 11 party-related domain types still
+used =std::string tenant_id= because the codegen template already emitted the
+correct =utility::uuid::tenant_id= type, but the hand-written files were never
+regenerated to pick it up.
+
+* Scope
+
+** Models to cover (25 domain entities + 3 junctions)
+
+| Model | Notes |
+|-------+-------|
+| =book_domain_entity.json= | |
+| =business_unit_domain_entity.json= | |
+| =cds_convention_domain_entity.json= | |
+| =contact_type_domain_entity.json= | |
+| =counterparty_contact_information_domain_entity.json= | |
+| =counterparty_domain_entity.json= | |
+| =counterparty_identifier_domain_entity.json= | |
+| =currency_market_tier_domain_entity.json= | |
+| =deposit_convention_domain_entity.json= | |
+| =fra_convention_domain_entity.json= | |
+| =fx_convention_domain_entity.json= | |
+| =ibor_index_convention_domain_entity.json= | |
+| =monetary_nature_domain_entity.json= | |
+| =ois_convention_domain_entity.json= | |
+| =overnight_index_convention_domain_entity.json= | |
+| =party_contact_information_domain_entity.json= | |
+| =party_domain_entity.json= | Has special =read_system_party= hand-mapped function |
+| =party_identifier_domain_entity.json= | |
+| =party_id_scheme_domain_entity.json= | |
+| =party_status_domain_entity.json= | |
+| =party_type_domain_entity.json= | |
+| =portfolio_domain_entity.json= | |
+| =rounding_type_domain_entity.json= | |
+| =swap_convention_domain_entity.json= | |
+| =zero_convention_domain_entity.json= | |
+| =party_counterparty_junction.json= | Junction type |
+| =party_country_junction.json= | Junction type |
+| =party_currency_junction.json= | Junction type |
+
+** Missing model
+
+=business_unit_type= has no =*_domain_entity.json= model.  Its C++ files are
+entirely hand-written.  A model must be created before its files can be brought
+under codegen.
+
+** Out of scope
+
+- =*_entity.json= lookup tables — already codegen-managed (SQL only, no C++
+  generation planned).
+- Eventing/messaging/protocol types — these are in =ores.refdata.api/eventing/=
+  and =ores.refdata.api/messaging/= and are not domain entities.
+- Any project outside =ores.refdata.api= and =ores.refdata.core=.
+
+* Template Gaps to Fix First
+
+Before running generation, two gaps in the templates must be fixed.  Both are
+in =projects/ores.codegen/library/templates/=.
+
+** Gap 1: Junction section uses =std::string tenant_id=
+
+=cpp_domain_type_class.hpp.mustache= has two sections:
+
+- ={{#domain_entity}}= (line 28): correctly emits =utility::uuid::tenant_id=
+- ={{#junction}}= (line 130): still emits =std::string tenant_id=
+
+The junction section needs the same fix:
+
+#+begin_src diff
+-{{#has_tenant_id}}
+-    /**
+-     * @brief Tenant identifier for multi-tenancy isolation.
+-     */
+-    std::string tenant_id;
+-
+-{{/has_tenant_id}}
++{{#has_tenant_id}}
++    /**
++     * @brief Tenant identifier for multi-tenancy isolation.
++     */
++    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
++
++{{/has_tenant_id}}
+#+end_src
+
+And add the include in the junction section header block alongside the other
+includes (needs =ores.utility/uuid/tenant_id.hpp=).
+
+** Gap 2: Mapper read side uses =.value_or()= instead of =.value()=
+
+=cpp_domain_type_mapper.cpp.mustache= read side (entity→domain) emits:
+
+#+begin_src c++
+r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
+    .value_or(utility::uuid::tenant_id::system());
+#+end_src
+
+The convention (see =2026-05-20-refdata-party-tenant-id-migration.org=) is
+=.value()= because a malformed UUID in the DB is a data integrity bug, not an
+expected runtime condition.  The =.value_or= form silently masks corruption.
+
+Fix the mapper template to use =.value()= for the entity→domain read side, and
+verify the junction variant is also consistent.
+
+* Implementation Plan
+
+** Phase 1 — Fix templates
+
+- [ ] Fix =cpp_domain_type_class.hpp.mustache= junction section:
+  add include, change =std::string tenant_id= → =utility::uuid::tenant_id=
+- [ ] Fix =cpp_domain_type_mapper.cpp.mustache= read side:
+  =.value_or()= → =.value()= in the entity→domain mapping
+
+** Phase 2 — Create missing model
+
+- [ ] Create =business_unit_type_domain_entity.json= in
+  =ores.codegen/models/refdata/= modelled on =business_unit_domain_entity.json=
+  (fields: =coding_scheme_code=, =code=, =name=, =level=, =description=)
+
+** Phase 3 — Add generation script
+
+- [ ] Create =generate_refdata_cpp.sh= alongside the existing scripts,
+  mirroring =generate_workspace_entities.sh=:
+  - For each =*_domain_entity.json= and =*_junction.json= in
+    =models/refdata/=: run =--profile domain=, =--profile generator=,
+    =--profile repository=
+  - Output directly into the repo tree (=projects/ores.refdata.api/= and
+    =projects/ores.refdata.core/=), not the =output/= staging directory
+- [ ] Add header =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY= to each output
+  file (handled by the template =cpp_license= block if =generated: true= is
+  set in the model)
+
+** Phase 4 — Run and diff
+
+- [ ] Run =generate_refdata_cpp.sh= against all 28 models
+- [ ] Diff generated output against each existing hand-written file
+- [ ] For each file: either the output matches (replace as-is) or there is a
+  meaningful difference (fix the template or the model before replacing)
+- [ ] Special case: =party_repository.cpp= contains a hand-written
+  =read_system_party= function that maps rows by column index (not via the
+  mapper).  This function is unlikely to be codegen-able — keep it hand-written
+  with a comment, and ensure the codegen output for the rest of the file does
+  not clobber it.
+
+** Phase 5 — Replace and verify
+
+- [ ] Replace hand-written files with codegen output
+- [ ] Build =ores.refdata.api.lib= and =ores.refdata.core.lib= cleanly
+- [ ] All refdata repository tests pass
+- [ ] All synthetic tests pass
+
+* Notes
+
+- Reference for the =generate_workspace_entities.sh= pattern (closest analogue
+  to what this script should do).
+- The =party_repository.cpp= exception: the =read_system_party= function does
+  manual column-index row mapping that the repository template does not support.
+  When generating the repository file, this function must be preserved by hand
+  or the template extended to support manual override sections.
+- Once active, any future field addition or type change to a refdata entity
+  should go through the model JSON, not the C++ files directly.  A CI check
+  (or at minimum a developer discipline) should enforce this.
+- =tenant_id= generation context cleanup: generators currently accept ="system"=
+  as a human-readable shorthand for the system tenant, converting it with
+  =from_string().value_or(system())=.  This is a leaky abstraction — the type is
+  UUID and non-UUID strings should not be silently tolerated even in test/generation
+  contexts.  When the codegen script is active, consider requiring callers to pass a
+  real UUID string (or the =tenant_id= strong type directly) and replacing the
+  =value_or= fallback with =.value()= across all generators.

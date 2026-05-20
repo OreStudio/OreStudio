@@ -23,6 +23,7 @@
 #include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -35,7 +36,7 @@ namespace ores::refdata::domain {
  */
 struct party_currency final {
     int version = 0;
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
     std::string currency_iso_code;
     std::string modified_by;

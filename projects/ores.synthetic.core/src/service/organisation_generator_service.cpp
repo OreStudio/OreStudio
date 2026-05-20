@@ -177,13 +177,15 @@ std::string make_bic(const std::string& country,
 // ============================================================================
 
 struct audit_fields {
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id;
     std::string modified_by;
 };
 
 audit_fields get_audit(generation_context& ctx) {
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     return {
-        ctx.env().get_or(generation_keys::tenant_id, "system"),
+        utility::uuid::tenant_id::from_string(tid)
+            .value_or(utility::uuid::tenant_id::system()),
         ctx.env().get_or(generation_keys::modified_by, "system")
     };
 }
@@ -715,8 +717,7 @@ void generate_portfolios(
 
         refdata::domain::portfolio p;
         p.version = 1;
-        p.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
-            .value_or(utility::uuid::tenant_id::system());
+        p.tenant_id = tenant_id;
         p.party_id = root_party_id;
         p.id = ctx.generate_uuid();
         p.name = name;
@@ -830,8 +831,7 @@ void generate_books(
         for (std::size_t bi = 0; bi < options.books_per_leaf_portfolio; ++bi) {
             refdata::domain::book bk;
             bk.version = 1;
-            bk.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
-                .value_or(utility::uuid::tenant_id::system());
+            bk.tenant_id = tenant_id;
             bk.id = ctx.generate_uuid();
             bk.party_id = root_party_id;
             bk.parent_portfolio_id = portfolio.id;

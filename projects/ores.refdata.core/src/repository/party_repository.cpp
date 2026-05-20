@@ -126,7 +126,7 @@ party_repository::read_system_party(const std::string& tenant_id) {
                 [&row](int i) { return static_cast<bool>(row[i]); })) {
             domain::party p;
             p.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-            p.tenant_id = *row[1];
+            p.tenant_id = utility::uuid::tenant_id::from_string(*row[1]).value();
             p.version = std::stoi(*row[2]);
             p.full_name = *row[3];
             p.short_code = *row[4];

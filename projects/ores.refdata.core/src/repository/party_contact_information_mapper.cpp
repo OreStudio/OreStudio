@@ -35,7 +35,7 @@ party_contact_information_mapper::map(const party_contact_information_entity& v)
 
     domain::party_contact_information r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.contact_type = v.contact_type;
@@ -64,7 +64,7 @@ party_contact_information_mapper::map(const domain::party_contact_information& v
 
     party_contact_information_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.contact_type = v.contact_type;

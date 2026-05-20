@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
@@ -44,7 +45,7 @@ operation_result party_detail_operations::save_entity(
 
     refdata::domain::party p;
     p.version = data.version;
-    p.tenant_id = data.tenant_id;
+    p.tenant_id = ores::utility::uuid::tenant_id::from_string(data.tenant_id).value();
     p.id = data.id;
     p.full_name = data.full_name;
     p.short_code = data.short_code;

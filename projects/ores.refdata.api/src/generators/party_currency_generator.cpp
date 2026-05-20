@@ -35,7 +35,8 @@ domain::party_currency generate_synthetic_party_currency(
 
     domain::party_currency r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.party_id = ctx.generate_uuid();
     r.currency_iso_code = "USD";
     r.modified_by = modified_by;

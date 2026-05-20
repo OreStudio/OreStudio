@@ -23,6 +23,7 @@
 #include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -42,7 +43,7 @@ struct counterparty_identifier final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID uniquely identifying this counterparty identifier.

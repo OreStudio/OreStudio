@@ -33,6 +33,7 @@
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;
@@ -49,19 +50,19 @@ const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository][party_currency]");
 
 boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const std::string& tid) {
+    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
-        if (p.tenant_id == tid)
+        if (p.tenant_id == tid && p.party_category == "System")
             return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid);
+    throw std::runtime_error("No system party for tenant: " + tid.to_string());
 }
 
 party_currency make_party_currency(scoped_database_helper& h,
     const boost::uuids::uuid& party_id,
     const std::string& iso_code) {
     party_currency pc;
-    pc.tenant_id = h.tenant_id().to_string();
+    pc.tenant_id = h.tenant_id();
     pc.party_id = party_id;
     pc.currency_iso_code = iso_code;
     pc.modified_by = h.db_user();
@@ -83,7 +84,7 @@ TEST_CASE("write_single_party_currency", tags) {
     party_currency_repository repo(h.context());
 
     const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
     auto gctx = ores::testing::make_generation_context(h);
     auto test_currency = generate_synthetic_currency(gctx);
     cur_repo.write(h.context(), test_currency);
@@ -104,7 +105,7 @@ TEST_CASE("write_multiple_party_currencies", tags) {
     party_currency_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto gctx = ores::testing::make_generation_context(h);
     auto test_currencies = generate_unique_synthetic_currencies(2, gctx);
@@ -129,7 +130,7 @@ TEST_CASE("read_latest_party_currencies_by_party", tags) {
     party_currency_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
     h.set_party(system_party_id);
 
     auto gctx = ores::testing::make_generation_context(h);
@@ -164,7 +165,7 @@ TEST_CASE("read_latest_party_currencies_by_currency", tags) {
     party_currency_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
     h.set_party(system_party_id);
 
     auto gctx = ores::testing::make_generation_context(h);
@@ -192,7 +193,7 @@ TEST_CASE("remove_party_currency", tags) {
     party_currency_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
     auto gctx = ores::testing::make_generation_context(h);
     auto test_currency = generate_synthetic_currency(gctx);
     cur_repo.write(h.context(), test_currency);

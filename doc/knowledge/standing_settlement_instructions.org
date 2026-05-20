@@ -4,7 +4,7 @@
 :END:
 #+title: Standing Settlement Instructions
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 In the financial world, *SSI* stands for *Standing Settlement Instructions*.
 

@@ -4,7 +4,7 @@
 :END:
 #+title: Identity and Access Management
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 /Identity and Access Management (IAM)/ is the core security component of a
 system responsible for governing and enforcing access to all system resources.

@@ -3,7 +3,7 @@
 :END:
 #+title: Recipes
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 Notebooks on how to use ORE Studio.

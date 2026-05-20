@@ -2,7 +2,7 @@
 :ID: 9CE4BE1F-0D57-4927-8344-E66CBC72D882
 :END:
 #+title: Sprint Backlog 16
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages

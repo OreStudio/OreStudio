@@ -4,7 +4,7 @@
 #+title: SQL Recipes
 #+author: Marco Craveiro
 #+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
 

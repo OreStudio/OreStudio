@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 57A7FABC-21FE-5124-45EB-9685D0712176
 :END:
-#+options: date:nil toc:nil author:nil num:nil
+#+options: date:nil toc:t author:nil num:nil
 #+title: Sprint Backlog
 
 All work undertaken is captured into stories, and these are grouped into

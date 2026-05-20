@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 558650A4-C3E5-8964-4193-7D9125E29B83
 :END:
-#+options: date:nil toc:nil author:nil num:nil
+#+options: date:nil toc:t author:nil num:nil
 #+title: Product Backlog
 #+tags: { reviewing(r) }
 #+tags: { code(c) infra(i) doc(d) agile(a) }

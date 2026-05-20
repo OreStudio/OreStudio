@@ -3,7 +3,7 @@
 :END:
 #+title: Claude Code Skills
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 As per [[https://code.claude.com/docs/en/skills][Claude documentation]]:
 

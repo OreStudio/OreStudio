@@ -2,7 +2,7 @@
 :ID: 44AD3D04-EC5A-4039-91DD-7CEA0A18CA92
 :END:
 #+title: Sprint Backlog 07
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages

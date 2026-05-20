@@ -4,7 +4,7 @@
 :END:
 #+title: Role-Based Access Control
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 Role-based access control (RBAC) is a security method that restricts system
 access to authorised users based on their job roles, rather than individual user

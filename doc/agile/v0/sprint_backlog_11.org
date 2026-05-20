@@ -2,7 +2,7 @@
 :ID: 98E12E24-FC8E-11F0-8B62-40B0768014EB
 :END:
 #+title: Sprint Backlog 11
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages

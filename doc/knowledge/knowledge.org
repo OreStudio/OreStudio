@@ -4,7 +4,7 @@
 #+title: Knowledge
 #+author: Marco Craveiro
 #+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 This folder contains assorted knowledge we picked up as part of implementing
 this project. It is mainly made up of short definitions created by LLMs (Gemini,

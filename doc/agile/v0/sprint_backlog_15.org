@@ -2,7 +2,7 @@
 :ID: 0B23D554-23BA-11F1-9F0E-40B0768014EB
 :END:
 #+title: Sprint Backlog 15
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages

@@ -3,7 +3,7 @@
 :END:
 #+title: Component Model Creator Skill
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
 
@@ -51,7 +51,7 @@ Create =projects/COMPONENT/modeling/COMPONENT.org= with this structure:
 :END:
 #+title: ORE Studio COMPONENT_TITLE Component
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 Brief description paragraph for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].

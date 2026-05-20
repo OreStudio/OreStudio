@@ -2,7 +2,7 @@
 :ID: 9A4009E7-0E6C-11F1-852D-40B0768014EB
 :END:
 #+title: Sprint Backlog 13
-#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
 #+tags: { code(c) infra(i) analysis(n) agile(a) }
 #+startup: inlineimages

@@ -4,7 +4,7 @@
 #+title: HTTP Recipes
 #+author: Marco Craveiro
 #+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 
 Recipes for exercising the ORE Studio HTTP API using Emacs [[https://github.com/federicotdn/verb][verb mode]].
 

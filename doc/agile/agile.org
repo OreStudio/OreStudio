@@ -3,7 +3,7 @@
 :END:
 #+title: Agile
 #+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
 
 Task and time tracking activities. If you want a bit of background on how we use

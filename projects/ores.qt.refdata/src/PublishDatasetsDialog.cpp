@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/PublishDatasetsDialog.hpp"
-#include "ores.qt/FontUtils.hpp"
 
 #include <algorithm>
 #include <QVBoxLayout>
@@ -27,14 +26,22 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QTimer>
-#include <QApplication>
-#include <QTextEdit>
+#include <QUuid>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
-#include "ores.dq.api/messaging/publication_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace {
+inline auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.qt.publish_datasets_dialog");
+    return instance;
+}
+} // namespace
 
 namespace ores::qt {
 
@@ -80,7 +87,6 @@ void PublishDatasetsDialog::setDatasets(
 
     datasets_ = datasets;
 
-    // Store the requested IDs
     requestedIds_.clear();
     for (const auto& ds : datasets_) {
         requestedIds_.push_back(boost::uuids::to_string(ds.id));
@@ -248,7 +254,6 @@ void ReviewPage::resolveDependencies() {
     bool resolve = wizard_->resolveDependencies();
 
     if (!resolve) {
-        // No dependency resolution - just use the selected datasets
         wizard_->resolvedDatasets() = wizard_->datasets();
         wizard_->requestedIds().clear();
         for (const auto& ds : wizard_->datasets()) {
@@ -271,14 +276,12 @@ void ReviewPage::resolveDependencies() {
     auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
 
     if (!result) {
-        // Fall back to just the selected datasets
         wizard_->resolvedDatasets() = wizard_->datasets();
         wizard_->requestedIds().clear();
         for (const auto& ds : wizard_->datasets()) {
             wizard_->requestedIds().push_back(boost::uuids::to_string(ds.id));
         }
         resolved_ = true;
-        // Include the actual error message from the server
         const auto& errMsg = result.error();
         QString errorDetail = errMsg.empty()
             ? tr("unknown error")
@@ -328,7 +331,6 @@ void ReviewPage::updatePublicationOrder() {
         auto* typeItem = new QTableWidgetItem(typeText);
 
         if (!isRequested) {
-            // Use italic for dependencies - visible in both light and dark themes
             QFont font = typeItem->font();
             font.setItalic(true);
             typeItem->setFont(font);
@@ -339,7 +341,6 @@ void ReviewPage::updatePublicationOrder() {
         orderTable_->setItem(row, 2, typeItem);
     }
 
-    // Update summary label
     if (dependencyCount > 0) {
         summaryLabel_->setText(
             tr("%1 dataset(s) will be published: %2 selected, %3 dependencies")
@@ -378,15 +379,8 @@ ProgressPage::ProgressPage(PublishDatasetsDialog* wizard)
     progressBar_->setMinimumWidth(400);
     layout->addWidget(progressBar_, 0, Qt::AlignCenter);
 
-    layout->addSpacing(10);
-
-    currentDatasetLabel_ = new QLabel(this);
-    currentDatasetLabel_->setAlignment(Qt::AlignCenter);
-    layout->addWidget(currentDatasetLabel_);
-
     layout->addStretch();
 
-    // Hide back/next buttons while publishing
     setCommitPage(true);
 }
 
@@ -394,10 +388,7 @@ void ProgressPage::initializePage() {
     publishComplete_ = false;
     publishSuccess_ = false;
     statusLabel_->setText(tr("Starting publication..."));
-    currentDatasetLabel_->clear();
-    wizard_->lastError().clear();  // Clear any previous error
 
-    // Start publishing after a short delay
     QTimer::singleShot(100, this, &ProgressPage::performPublish);
 }
 
@@ -421,60 +412,85 @@ void ProgressPage::performPublish() {
         return;
     }
 
-    // Update status
-    statusLabel_->setText(tr("Publishing %1 dataset(s)...")
+    statusLabel_->setText(tr("Submitting publish request for %1 dataset(s)...")
         .arg(resolvedDatasets.size()));
-    currentDatasetLabel_->setText(tr("Sending request to server..."));
-    QApplication::processEvents();
 
-    // Build request
-    dq::messaging::publish_datasets_request request;
-    for (const auto& ds : resolvedDatasets) {
-        request.dataset_ids.push_back(boost::uuids::to_string(ds.id));
-    }
-    request.mode = wizard_->selectedMode();
-    request.published_by = wizard_->username().toStdString();
-    request.resolve_dependencies = false;  // Already resolved
+    // Capture values for the background thread
+    std::vector<std::string> datasetIds;
+    datasetIds.reserve(resolvedDatasets.size());
+    for (const auto& ds : resolvedDatasets)
+        datasetIds.push_back(boost::uuids::to_string(ds.id));
 
-    // Send request
-    auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
+    const dq::domain::publication_mode mode = wizard_->selectedMode();
+    const std::string publishedBy = wizard_->username().toStdString();
+    ClientManager* clientManager = wizard_->clientManager();
 
-    if (!result) {
-        statusLabel_->setText(tr("Publication failed!"));
-        // Extract and display the actual error message from the server
-        const auto& errStr = result.error();
-        QString errorMsg = errStr.empty()
-            ? tr("Failed to communicate with server.")
-            : QString::fromStdString(errStr);
-        currentDatasetLabel_->setText(errorMsg);
-        // Store error for ResultsPage to display
-        wizard_->lastError() = errorMsg;
-        publishComplete_ = true;
-        publishSuccess_ = false;
+    using ResponseType = dq::messaging::publish_datasets_response;
+
+    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
+    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        auto* resultsPage = qobject_cast<ResultsPage*>(
+            wizard()->page(PublishDatasetsDialog::Page_Results));
+
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to communicate with server for dataset publication.";
+            statusLabel_->setText(tr("Publication failed!"));
+            publishComplete_ = true;
+            publishSuccess_ = false;
+            if (resultsPage)
+                resultsPage->setResults(false,
+                    tr("Failed to communicate with server."));
+        } else if (!result->success) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Dataset publication failed: " << result->message;
+            statusLabel_->setText(tr("Publication failed!"));
+            publishComplete_ = true;
+            publishSuccess_ = false;
+            if (resultsPage)
+                resultsPage->setResults(false,
+                    QString::fromStdString(result->message));
+        } else {
+            BOOST_LOG_SEV(lg(), info)
+                << "Dataset publish workflow started: instance=" << result->instance_id
+                << " datasets=" << result->datasets_dispatched;
+            statusLabel_->setText(tr("Publication workflow started!"));
+            publishComplete_ = true;
+            publishSuccess_ = true;
+            wizard_->instanceId() = result->instance_id;
+            wizard_->datasetsDispatched() = result->datasets_dispatched;
+            if (resultsPage)
+                resultsPage->setResults(true, QString());
+        }
+
         emit completeChanged();
-        wizard_->next();
-        return;
-    }
+        if (publishComplete_)
+            wizard_->next();
+    });
 
-    // Store results
-    wizard_->results() = std::move(result->results);
+    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
+        [clientManager, datasetIds, mode, publishedBy]() -> std::optional<ResponseType> {
+            dq::messaging::publish_datasets_request request;
+            request.dataset_ids = datasetIds;
+            request.mode = mode;
+            request.published_by = publishedBy;
+            request.resolve_dependencies = false;  // Already resolved by ReviewPage
 
-    statusLabel_->setText(tr("Publication complete!"));
-    currentDatasetLabel_->clear();
-    publishComplete_ = true;
-    publishSuccess_ = true;
-    emit completeChanged();
+            auto result = clientManager->process_authenticated_request(std::move(request));
+            if (!result)
+                return std::nullopt;
+            return *result;
+        }
+    );
 
-    // Notify that datasets were published (for cache refresh)
-    // Collect the codes of published datasets
-    QStringList publishedCodes;
-    for (const auto& ds : resolvedDatasets) {
-        publishedCodes.append(QString::fromStdString(ds.code));
-    }
-    emit wizard_->datasetsPublished(publishedCodes);
-
-    // Auto-advance to results
-    wizard_->next();
+    watcher->setFuture(future);
 }
 
 // ============================================================================
@@ -490,134 +506,77 @@ ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
 
     auto* layout = new QVBoxLayout(this);
 
-    summaryLabel_ = new QLabel(this);
-    summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px;");
-    summaryLabel_->setWordWrap(true);
-    layout->addWidget(summaryLabel_);
+    overallStatusLabel_ = new QLabel(this);
+    overallStatusLabel_->setWordWrap(true);
+    overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
+    layout->addWidget(overallStatusLabel_);
 
     layout->addSpacing(10);
 
-    // Log-style output for publication results
-    logOutput_ = new QTextEdit(this);
-    logOutput_->setReadOnly(true);
-    logOutput_->setMinimumHeight(200);
-    logOutput_->setStyleSheet(
-        "QTextEdit { background-color: #1e1e1e; color: #d4d4d4; "
-        + FontUtils::monospaceCssFragment() + " }");
-    layout->addWidget(logOutput_, 1);
+    stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
+    stepsWidget_->setVisible(false);
+    layout->addWidget(stepsWidget_, 1);
+
+    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
+            this, &ResultsPage::onWorkflowComplete);
+}
+
+void ResultsPage::setResults(bool success, const QString& errorMessage) {
+    overallSuccess_ = success;
+    errorMessage_ = errorMessage;
 }
 
 void ResultsPage::initializePage() {
-    logOutput_->clear();
-    const auto& results = wizard_->results();
-    const QString& lastError = wizard_->lastError();
+    workflowComplete_ = false;
+    const auto& instanceId = wizard_->instanceId();
 
-    std::uint64_t totalInserted = 0;
-    std::uint64_t totalUpdated = 0;
-    std::uint64_t totalSkipped = 0;
-    std::uint64_t totalDeleted = 0;
-    int successCount = 0;
-    int failureCount = 0;
-
-    // Check for publication error first
-    if (!lastError.isEmpty()) {
-        appendLog(tr("=== Publication Failed ==="));
-        appendError(tr("Publication error: %1").arg(lastError));
-        summaryLabel_->setText(tr("Publication failed due to an error."));
-        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #dc3545;");
-        return;
-    }
-
-    if (results.empty()) {
-        appendLog(tr("No datasets were published."));
-        summaryLabel_->setText(tr("No datasets were published."));
-        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px;");
-        return;
-    }
-
-    // Log each dataset result
-    appendLog(tr("=== Publication Results ==="));
-    appendLog("");
-
-    for (const auto& r : results) {
-        QString datasetCode = QString::fromStdString(r.dataset_code);
-        QString targetTable = QString::fromStdString(r.target_table);
-
-        if (r.success) {
-            ++successCount;
-            totalInserted += r.records_inserted;
-            totalUpdated += r.records_updated;
-            totalSkipped += r.records_skipped;
-            totalDeleted += r.records_deleted;
-
-            appendSuccess(tr("[SUCCESS] %1").arg(datasetCode));
-            appendLog(tr("  Target: %1").arg(targetTable));
-            appendLog(tr("  Records: %1 inserted, %2 updated, %3 skipped, %4 deleted")
-                .arg(r.records_inserted)
-                .arg(r.records_updated)
-                .arg(r.records_skipped)
-                .arg(r.records_deleted));
+    if (overallSuccess_) {
+        overallStatusLabel_->setText(
+            tr("Publication workflow started — waiting for completion..."));
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
+        if (!instanceId.empty()) {
+            stepsWidget_->setVisible(true);
+            stepsWidget_->setInstance(
+                QUuid::fromString(QString::fromStdString(instanceId)));
         } else {
-            ++failureCount;
-            appendError(tr("[FAILED] %1").arg(datasetCode));
-            appendLog(tr("  Target: %1").arg(targetTable));
-            if (!r.error_message.empty()) {
-                appendError(tr("  Error: %1").arg(QString::fromStdString(r.error_message)));
-            }
+            workflowComplete_ = true;
         }
-        appendLog("");
-    }
-
-    // Log summary
-    appendLog(tr("=== Summary ==="));
-    appendLog(tr("Datasets processed: %1").arg(results.size()));
-    appendLog(tr("Succeeded: %1, Failed: %2").arg(successCount).arg(failureCount));
-    appendLog(tr("Total records: %1 inserted, %2 updated, %3 skipped, %4 deleted")
-        .arg(totalInserted)
-        .arg(totalUpdated)
-        .arg(totalSkipped)
-        .arg(totalDeleted));
-
-    // Update summary label
-    QString summary;
-    if (failureCount == 0) {
-        summary = tr("Successfully published %1 dataset(s).").arg(successCount);
-        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #28a745;");
-    } else if (successCount == 0) {
-        summary = tr("Publication failed for all %1 dataset(s).").arg(failureCount);
-        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #dc3545;");
     } else {
-        summary = tr("Published %1 of %2 dataset(s) (%3 failed).")
-            .arg(successCount)
-            .arg(results.size())
-            .arg(failureCount);
-        summaryLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: #ffc107;");
+        QString msg = tr("Publication failed.");
+        if (!errorMessage_.isEmpty())
+            msg += " " + errorMessage_;
+        overallStatusLabel_->setText(msg);
+        overallStatusLabel_->setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: #cc0000;");
+        workflowComplete_ = true;
     }
-    summaryLabel_->setText(summary);
+
+    emit completeChanged();
 }
 
-void ResultsPage::appendLog(const QString& message) {
-    logOutput_->append(message);
-    // Scroll to bottom
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
+bool ResultsPage::isComplete() const {
+    return workflowComplete_;
 }
 
-void ResultsPage::appendError(const QString& message) {
-    // Use HTML for red error text
-    logOutput_->append(QString("<span style='color: #ff6b6b;'>%1</span>").arg(message.toHtmlEscaped()));
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
-}
+void ResultsPage::onWorkflowComplete(bool success) {
+    if (success) {
+        overallStatusLabel_->setText(
+            tr("Publication workflow completed successfully."));
+        overallStatusLabel_->setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: #228B22;");
 
-void ResultsPage::appendSuccess(const QString& message) {
-    // Use HTML for green success text
-    logOutput_->append(QString("<span style='color: #69db7c;'>%1</span>").arg(message.toHtmlEscaped()));
-    auto cursor = logOutput_->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    logOutput_->setTextCursor(cursor);
+        QStringList publishedCodes;
+        for (const auto& ds : wizard_->resolvedDatasets())
+            publishedCodes.append(QString::fromStdString(ds.code));
+        emit qobject_cast<PublishDatasetsDialog*>(wizard())->datasetsPublished(publishedCodes);
+    } else {
+        overallStatusLabel_->setText(
+            tr("Publication workflow completed with errors."));
+        overallStatusLabel_->setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: #cc0000;");
+    }
+    workflowComplete_ = true;
+    emit completeChanged();
 }
 
 }

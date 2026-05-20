@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -37,7 +39,7 @@ struct add_account_options final {
     std::optional<bool> admin;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_account_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_account_options& v);
 
 }
 

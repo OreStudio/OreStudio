@@ -43,7 +43,7 @@ domain::report_definition generate_synthetic_report_definition(
         .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "_report";
+    r.name = std::string(faker::word::noun()) + "_report_" + std::to_string(++counter);
     r.party_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
     r.report_type = std::string("risk");

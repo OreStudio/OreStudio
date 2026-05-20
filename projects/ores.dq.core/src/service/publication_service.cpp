@@ -424,6 +424,60 @@ domain::publication_result publication_service::call_populate_function(
 }
 
 std::vector<bundle_publishable_dataset>
+publication_service::list_publishable_datasets(
+    const std::vector<boost::uuids::uuid>& dataset_ids,
+    bool resolve_dependencies) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Resolving publishable datasets for "
+        << dataset_ids.size() << " IDs, resolve_dependencies=" << resolve_dependencies;
+
+    std::vector<domain::dataset> ordered_datasets;
+    if (resolve_dependencies) {
+        ordered_datasets = resolve_publication_order(dataset_ids);
+    } else {
+        for (const auto& id : dataset_ids) {
+            auto rows = dataset_repo_.read_latest(id);
+            if (!rows.empty())
+                ordered_datasets.push_back(rows.front());
+            else
+                BOOST_LOG_SEV(lg(), warn) << "Dataset not found: " << id;
+        }
+    }
+
+    auto cache = build_artefact_type_cache(ordered_datasets);
+
+    std::vector<bundle_publishable_dataset> result;
+    result.reserve(ordered_datasets.size());
+    for (const auto& ds : ordered_datasets) {
+        if (!ds.artefact_type.has_value() || ds.artefact_type->empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Skipping dataset without artefact_type: " << ds.code;
+            continue;
+        }
+        auto it = cache.find(*ds.artefact_type);
+        if (it == cache.end()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Artefact type not found for dataset: " << ds.code;
+            continue;
+        }
+        if (!it->second.target_subject.has_value() || it->second.target_subject->empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "No target_subject for dataset: " << ds.code;
+            continue;
+        }
+        bundle_publishable_dataset entry;
+        entry.dataset_id     = boost::uuids::to_string(ds.id);
+        entry.dataset_code   = ds.code;
+        entry.target_subject = *it->second.target_subject;
+        result.push_back(std::move(entry));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Resolved " << result.size()
+        << " publishable datasets";
+    return result;
+}
+
+std::vector<bundle_publishable_dataset>
 publication_service::list_bundle_publishable_datasets(
     const std::string& bundle_code) {
 

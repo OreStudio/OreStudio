@@ -24,6 +24,8 @@
 #include <string>
 #include "ores.cli/config/entity.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -40,7 +42,7 @@ struct delete_options final {
     std::string key;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const delete_options& v);
 
 }
 

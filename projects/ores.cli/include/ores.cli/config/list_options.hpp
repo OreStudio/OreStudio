@@ -25,6 +25,8 @@
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -53,7 +55,7 @@ struct list_options final {
     bool all_versions;
 };
 
-std::ostream& operator<<(std::ostream& s, const list_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const list_options& v);
 
 }
 

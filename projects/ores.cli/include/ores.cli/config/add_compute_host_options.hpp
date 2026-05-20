@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -38,7 +40,7 @@ struct add_compute_host_options final {
     std::optional<std::string> gpu_type;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_compute_host_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_compute_host_options& v);
 
 }
 

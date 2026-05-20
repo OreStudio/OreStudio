@@ -165,8 +165,15 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_currencies_tbl limit 1) then
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- published any currencies yet (e.g. a freshly provisioned automation
+    -- tenant).  A global empty-table check breaks when other tenants have
+    -- currencies but this one does not.
+    if not exists (
+        select 1 from ores_refdata_currencies_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+        limit 1
+    ) then
         return p_value;
     end if;
 

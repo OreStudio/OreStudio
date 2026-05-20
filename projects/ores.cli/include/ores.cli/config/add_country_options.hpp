@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -40,7 +42,7 @@ struct add_country_options final {
     std::optional<std::string> change_commentary;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_country_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_country_options& v);
 
 }
 

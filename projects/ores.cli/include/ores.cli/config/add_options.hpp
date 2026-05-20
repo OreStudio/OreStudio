@@ -42,6 +42,8 @@
 #include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -73,7 +75,7 @@ using add_options = std::variant<
     add_leg_type_options
 >;
 
-std::ostream& operator<<(std::ostream& s, const add_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_options& v);
 
 }
 

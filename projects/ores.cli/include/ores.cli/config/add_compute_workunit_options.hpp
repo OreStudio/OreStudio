@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -39,7 +41,7 @@ struct add_compute_workunit_options final {
     std::optional<int> target_redundancy;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_compute_workunit_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_compute_workunit_options& v);
 
 }
 

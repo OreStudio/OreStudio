@@ -21,20 +21,19 @@
 #define ORES_QT_PUBLISH_DATASETS_DIALOG_HPP
 
 #include <vector>
+#include <QLabel>
 #include <QWizard>
 #include <QWizardPage>
 #include <QListWidget>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QTableWidget>
-#include <QTextEdit>
-#include <QLabel>
 #include <QProgressBar>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
-#include "ores.dq.api/domain/publication_result.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 
@@ -47,8 +46,8 @@ class ClientManager;
  * 1. Review selected datasets
  * 2. Configure publication options
  * 3. Review publication order (with resolved dependencies)
- * 4. Monitor progress during publishing
- * 5. View results
+ * 4. Monitor NATS request progress
+ * 5. Watch per-step workflow progress via WorkflowStepsWidget
  */
 class PublishDatasetsDialog final : public QWizard {
     Q_OBJECT
@@ -65,16 +64,11 @@ private:
 public:
 signals:
     /**
-     * @brief Emitted when datasets are successfully published.
-     *
-     * Connect to this signal to trigger cache refreshes or UI updates.
-     *
-     * @param datasetCodes List of dataset codes that were published
+     * @brief Emitted when the publication workflow completes successfully.
      */
     void datasetsPublished(const QStringList& datasetCodes);
 
 public:
-    // Page IDs
     enum PageId {
         Page_Selection,
         Page_Options,
@@ -90,10 +84,6 @@ public:
 
     ~PublishDatasetsDialog() override = default;
 
-    /**
-     * @brief Set the datasets to publish.
-     * @param datasets The selected datasets from the data librarian.
-     */
     void setDatasets(const std::vector<dq::domain::dataset>& datasets);
 
     // Accessors for wizard pages
@@ -102,10 +92,9 @@ public:
     const std::vector<dq::domain::dataset>& datasets() const { return datasets_; }
     std::vector<dq::domain::dataset>& resolvedDatasets() { return resolvedDatasets_; }
     std::vector<std::string>& requestedIds() { return requestedIds_; }
-    std::vector<dq::domain::publication_result>& results() { return results_; }
-    QString& lastError() { return lastError_; }
+    std::string& instanceId() { return instanceId_; }
+    int& datasetsDispatched() { return datasetsDispatched_; }
 
-    // State accessors
     dq::domain::publication_mode selectedMode() const;
     bool resolveDependencies() const;
 
@@ -114,23 +103,19 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
-    std::vector<dq::domain::dataset> datasets_;  // Originally selected
-    std::vector<dq::domain::dataset> resolvedDatasets_;  // Full list including deps
-    std::vector<std::string> requestedIds_;  // IDs explicitly requested
-    std::vector<dq::domain::publication_result> results_;  // Publication results
-    QString lastError_;  // Error message from failed publication attempt
+    std::vector<dq::domain::dataset> datasets_;
+    std::vector<dq::domain::dataset> resolvedDatasets_;
+    std::vector<std::string> requestedIds_;
+    std::string instanceId_;
+    int datasetsDispatched_ = 0;
 };
 
-// Forward declarations of page classes
 class SelectionPage;
 class OptionsPage;
 class ReviewPage;
 class ProgressPage;
 class ResultsPage;
 
-/**
- * @brief Page showing the selected datasets.
- */
 class SelectionPage final : public QWizardPage {
     Q_OBJECT
 
@@ -144,9 +129,6 @@ private:
     QLabel* countLabel_;
 };
 
-/**
- * @brief Page for configuring publication options.
- */
 class OptionsPage final : public QWizardPage {
     Q_OBJECT
 
@@ -162,9 +144,6 @@ private:
     QCheckBox* resolveDependenciesCheck_;
 };
 
-/**
- * @brief Page showing the resolved publication order.
- */
 class ReviewPage final : public QWizardPage {
     Q_OBJECT
 
@@ -184,9 +163,6 @@ private:
     bool resolved_ = false;
 };
 
-/**
- * @brief Page showing progress during publication.
- */
 class ProgressPage final : public QWizardPage {
     Q_OBJECT
 
@@ -202,29 +178,29 @@ private:
     PublishDatasetsDialog* wizard_;
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
-    QLabel* currentDatasetLabel_;
     bool publishComplete_ = false;
     bool publishSuccess_ = false;
 };
 
-/**
- * @brief Page showing publication results.
- */
 class ResultsPage final : public QWizardPage {
     Q_OBJECT
 
 public:
     explicit ResultsPage(PublishDatasetsDialog* wizard);
+    void setResults(bool success, const QString& errorMessage);
     void initializePage() override;
+    bool isComplete() const override;
+
+private slots:
+    void onWorkflowComplete(bool success);
 
 private:
-    void appendLog(const QString& message);
-    void appendError(const QString& message);
-    void appendSuccess(const QString& message);
-
     PublishDatasetsDialog* wizard_;
-    QTextEdit* logOutput_;
-    QLabel* summaryLabel_;
+    QLabel* overallStatusLabel_;
+    WorkflowStepsWidget* stepsWidget_;
+    bool overallSuccess_ = false;
+    QString errorMessage_;
+    bool workflowComplete_ = false;
 };
 
 }

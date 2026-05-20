@@ -24,6 +24,8 @@
 #include <string>
 #include <optional>
 
+#include "ores.cli/export.hpp"
+
 namespace ores::cli::config {
 
 /**
@@ -35,7 +37,7 @@ struct add_compute_app_options final {
     std::optional<std::string> description;
 };
 
-std::ostream& operator<<(std::ostream& s, const add_compute_app_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_compute_app_options& v);
 
 }
 

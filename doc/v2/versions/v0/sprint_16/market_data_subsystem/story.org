@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 47ce4c06-2c59-4b8b-89b3-232d04b2da23
+:END:
+#+title: Market data subsystem
+#+description: ORE market data file types parser + serializer; market data domain model with DB schema + C++ CDM; ORE key decomposition + database repository; market data service layer; Market Data MDI UI.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:ore:timescale:qt:nats:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-01]
+:END:
+
+** Now
+Completed 2026-04-01.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-01
+
+* Goal
+
+ORE market data file types parser + serializer; market data domain model with DB schema + C++ CDM; ORE key decomposition + database repository; market data service layer; Market Data MDI UI.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:c0d16e27-cece-44c2-861e-1754642ffa5a][Add ORE market data file types]]
+- [[id:121a2d90-c196-4587-9f0d-80cc13659417][ORE market data domain model — DB schema and C++ CDM]]
+- [[id:b6b623db-de43-4658-bba6-779177a3675f][Market Data MDI UI]]
+- [[id:b277d89b-eb0d-40b9-828e-2f917828e8f1][Market data service layer]]
+- [[id:084cb4ea-28bb-424d-bb77-26e23adc39f9][ORE key decomposition and database repository]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

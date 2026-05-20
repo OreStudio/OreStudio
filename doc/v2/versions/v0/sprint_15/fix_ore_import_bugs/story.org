@@ -10,12 +10,17 @@
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: f80bad05-2e66-458d-9223-1db0a83ef694
+#+successor: 8361bc43-bd96-433d-889e-367072bad44e
 
 Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
 
 Continued from: [[id:f80bad05-2e66-458d-9223-1db0a83ef694][ORE import wizard]] (sprint 14). The wizard
 landed clean but real-data import surfaced the currency-type, status,
 and activity-type bugs cleaned up here.
+
+Continued in: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]] (sprint 16) — full end-to-end
+coverage: dispatch + mappers for every instrument family + server-side
+service.
 
 * DONE Status
 :PROPERTIES:

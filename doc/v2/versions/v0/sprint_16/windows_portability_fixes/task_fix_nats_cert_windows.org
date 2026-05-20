@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: ab7a5ad7-017d-43f6-83e6-811396c93ba0
+:END:
+#+title: Fix NATS cert generation on Windows
+#+description: Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced with MSYS2_ARG_CONV_EXCL.
+#+type: task
+#+level: s1
+#+filetags: :windows:nats:certs:openssl:windows_portability_fixes:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:cef64a10-082e-447f-8a39-f8f60d984f11][Windows portability fixes]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-11]
+:END:
+
+** Now
+Completed 2026-04-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-11
+
+* Goal
+
+Use double-slash prefix for OpenSSL subject strings on MSYS2; later replaced with MSYS2_ARG_CONV_EXCL.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

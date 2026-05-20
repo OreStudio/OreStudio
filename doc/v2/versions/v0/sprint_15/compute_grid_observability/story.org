@@ -9,8 +9,10 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-
+#+successor: 014352d4-aaa5-48e7-903d-c06b5b4f7d62
 Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+Continued in: [[id:014352d4-aaa5-48e7-903d-c06b5b4f7d62][Service lifecycle controller]] (sprint 16). Sprint 15 added the RAG service dashboard; sprint 16 adds the controller component that manages service definitions + instances + lifecycle events.
 
 * DONE Status
 :PROPERTIES:

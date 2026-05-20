@@ -9,8 +9,10 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-
+#+successor: 2faf5366-2fed-4fbe-99f2-8cb46ca84aeb
 Parent sprint: [[id:48230fc0-9061-48dc-853f-1e507c1a97ad][Sprint 13]].
+
+Continued in: [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] (sprint 16). Sprint 13 extended party-level RLS to books / portfolios / trades; sprint 16 closes the remaining gaps surfaced by validate_schemas.sh.
 
 * DONE Status
 :PROPERTIES:

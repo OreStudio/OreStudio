@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 3f1c1cf9-1df9-40d3-885f-7481ad3b512a
+:END:
+#+title: Move App/AppVersion/ClientApp/ClientHost classes to compute
+#+description: Remove dependency on ores.qt.admin library from ores.qt.compute project; classes relocated to compute plugin.
+#+type: task
+#+level: s1
+#+filetags: :qt:plugins:compute:refactor:qt_plugin_architecture:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:38c972e1-2dd2-41ae-a770-800fee90d1e6][Qt plugin architecture]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-09]
+:END:
+
+** Now
+Completed 2026-04-09.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-09
+
+* Goal
+
+Remove dependency on ores.qt.admin library from ores.qt.compute project; classes relocated to compute plugin.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

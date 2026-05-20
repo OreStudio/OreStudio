@@ -10,19 +10,22 @@
 #+updated: 2026-05-18
 #+todo: STARTED | RELEASED
 
-* STARTED Status
+* RELEASED Status
+:PROPERTIES:
+:CLOSED: [2026-04-17]
+:END:
 
 ** Now
-V0 is the active version. Sprint 16 is the current sprint.
+V0 is closed. All 16 sprints migrated to v2 information architecture.
 
 ** Waiting on
-Nothing structural; v0 is in flight.
+Nothing. V0 is released; v1 work begins on the foundation v0 laid.
 
 ** Next
-Close out remaining v0 sprints toward the definition of done.
+v1 starts.
 
 ** Last touched
-2026-05-18
+2026-05-20
 
 * Identity
 
@@ -99,7 +102,12 @@ is the current sprint; the rest are closed.
   10 services; JWT refresh; unified =system_settings= replacing
   =feature_flags=; four CDM-inspired instrument domain models
   (rates / FX / bond / credit).
-- Sprint 16 — (final v0 sprint).
+- [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] — Final v0 sprint. ORE import end-to-end;
+  workflow engine + saga orchestration; market data subsystem;
+  =ores.controller= service lifecycle; Qt plugin architecture;
+  trade detail dialog unification; per-type instrument tables;
+  reporting + analytics; asset class unification; ~20 Windows
+  portability fixes.
 
 * Release scope
 

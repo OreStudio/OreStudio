@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 1997ccef-3e2f-44c9-ab1c-9435a646bd61
+:END:
+#+title: UTC-everywhere timestamp policy
+#+description: Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; db_timestamp alias.
+#+type: story
+#+level: s2
+#+filetags: :platform:utc:timestamps:database:policy:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-08]
+:END:
+
+** Now
+Completed 2026-04-08.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-08
+
+* Goal
+
+Canonical UTC API in ores.platform; UTC sessions enforced in DB; ISO 8601 UTC timestamps in wire protocols; db_timestamp alias.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:bbc0d0d7-0060-41bf-934d-00ad9452fbd6][Enforce UTC-everywhere timestamp policy]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

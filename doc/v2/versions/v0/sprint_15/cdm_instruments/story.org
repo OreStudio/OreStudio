@@ -9,8 +9,10 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 #+todo: BACKLOG STARTED | DONE ABANDONED
-
+#+successor: ce26e56b-944f-4c89-b5a9-e0dabf521908
 Parent sprint: [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]].
+
+Continued in: [[id:ce26e56b-944f-4c89-b5a9-e0dabf521908][Per-type instrument tables]] (sprint 16). Sprint 15's four CDM instrument models lived on a shared instruments table; sprint 16 replaces it with per-type tables for rates / FX / equity.
 
 * DONE Status
 :PROPERTIES:

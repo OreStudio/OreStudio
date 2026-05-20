@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 87599263-bd70-42cf-b653-0803e12f4d0b
+:END:
+#+title: Workflow monitor + late fixes
+#+description: ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; ORE import workflow improvements.
+#+type: story
+#+level: s2
+#+filetags: :workflow:qt:monitor:plugin:fixes:sprint_16:v0:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+Parent sprint: [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-11]
+:END:
+
+** Now
+Completed 2026-04-11.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-11
+
+* Goal
+
+ores.qt.workflow plugin with workflow monitor; JetStream durability + SIGSEGV fix in engine; trade nullable dates; ORE import workflow improvements.
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+
+* Tasks
+
+In execution order:
+
+- [[id:735c8fbe-dab6-44b5-9442-9d4eeac86106][Add workflow monitor + late fixes]]
+
+* Decisions
+
+- /Final v0 sprint/ :: capture everything landed under v0 honestly; this is the closing chapter of v0.
+
+* Out of scope
+
+- Anything explicitly carried forward to v1.
+
+* See also
+
+None.

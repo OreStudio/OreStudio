@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: ff5c947a-6339-412b-a0c8-7d70d049ba77
+:END:
+#+title: Add equity and FX exotic instrument mappers
+#+description: equity_instrument_mapper; FX mapping extended to exotics (barriers, digitals, accumulators); unified trade dispatch updates + round-trip fidelity tests.
+#+type: task
+#+level: s1
+#+filetags: :ore:trading:equity:fx:mappers:exotics:ore_import_pipeline:sprint_16:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+Parent story: [[id:8361bc43-bd96-433d-889e-367072bad44e][ORE import pipeline]].
+
+* DONE Status
+:PROPERTIES:
+:CLOSED: [2026-04-04]
+:END:
+
+** Now
+Completed 2026-04-04.
+
+** Waiting on
+None.
+
+** Next
+None.
+
+** Last touched
+2026-04-04
+
+* Goal
+
+equity_instrument_mapper; FX mapping extended to exotics (barriers, digitals, accumulators); unified trade dispatch updates + round-trip fidelity tests.
+
+* Acceptance
+
+- As described in the goal above; details + caveats captured per PR in v0 sprint backlog 16.
+
+* Plan
+
+Captured during execution; cleared into the parent story on close.
+
+* Notes
+
+Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+
+* Result
+
+Landed.

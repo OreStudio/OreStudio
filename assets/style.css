@@ -35,7 +35,7 @@ body {
     align-items: center;
 }
 
-/* Site-wide preamble: banner image edge-to-edge, nav below */
+/* Site-wide preamble: top nav band */
 #preamble {
     align-self: stretch;
     margin: 0 -1.5rem 2rem;
@@ -44,15 +44,6 @@ body {
 #site-header {
     display: flex;
     flex-direction: column;
-}
-
-#site-banner {
-    display: block;
-    width: 100%;
-    height: auto;
-    margin: 0;
-    border: none;
-    border-radius: 0;
 }
 
 #site-nav {
@@ -75,6 +66,11 @@ body {
 #site-nav a:hover {
     color: var(--accent);
     text-decoration: none;
+}
+
+#site-nav a i.fab {
+    font-size: 1.05rem;
+    vertical-align: middle;
 }
 
 #content {
@@ -394,4 +390,109 @@ li {
     font-size: 0.85rem;
     color: var(--text-muted);
     text-align: center;
+}
+
+/* Index page: hero section — image flush to the box edges */
+.hero {
+    text-align: center;
+    padding: 0 0 1.75rem;
+    margin: 0 auto 2.5rem;
+    width: 100%;
+    max-width: 964px;       /* splash-screen.png native width */
+    box-sizing: border-box;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.hero .banner {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0 0 1.5rem;
+    border: none;
+    border-radius: 0;
+}
+
+.hero h1 {
+    font-size: 2rem;
+    border-bottom: none;
+    margin: 1rem 0 0.75rem;
+    padding: 0 1rem;
+    line-height: 1.25;
+}
+
+.hero p {
+    color: var(--text-muted);
+    max-width: 36rem;
+    margin: 0 auto 1.5rem;
+    padding: 0 1rem;
+}
+
+.btn {
+    display: inline-block;
+    background-color: var(--accent);
+    color: #0d1117;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    background-color: var(--accent-hover);
+    color: #0d1117;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* Index page: feature grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin: 2.5rem 0;
+}
+
+.card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-dim);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+    font-size: 1.05rem;
+}
+
+.card p {
+    margin-bottom: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+/* Index page: footer (inline, distinct from #postamble) */
+footer {
+    width: 100%;
+    max-width: var(--max-width);
+    margin-top: 3rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }

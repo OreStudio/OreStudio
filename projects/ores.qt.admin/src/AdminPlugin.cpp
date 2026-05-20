@@ -126,68 +126,70 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
 
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " identity=" << (smc.identity_menu ? "ok" : "null")
+        << " account=" << (smc.account_menu ? "ok" : "null")
         << " system=" << (smc.system_menu ? "ok" : "null")
         << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
-    // ---- Identity menu (top-level, pre-created by MainWindow) ---------------
-    if (smc.identity_menu) {
-        act_accounts_ = smc.identity_menu->addAction(
-            ico(Icon::PersonAccounts), tr("&Accounts"));
-        connect(act_accounts_, &QAction::triggered, this,
-            [this]() { if (accountController_) accountController_->showListWindow(); });
 
-        auto* actRoles = smc.identity_menu->addAction(tr("&Roles"));
-        connect(actRoles, &QAction::triggered, this,
-            [this]() { if (roleController_) roleController_->showListWindow(); });
+    if (!(smc.system_menu && smc.telemetry_menu))
+        return;
 
-        smc.identity_menu->addSeparator();
+    // ---- System > Configuration (inserted before Telemetry) --------------
+    auto* telemetryAction = smc.telemetry_menu->menuAction();
+    auto* config = new QMenu(tr("&Configuration"), smc.system_menu);
+    smc.system_menu->insertMenu(telemetryAction, config);
 
-        act_tenants_ = smc.identity_menu->addAction(
-            ico(Icon::BuildingSkyscraper), tr("&Tenants"));
-        connect(act_tenants_, &QAction::triggered, this,
-            [this]() { if (tenantController_) tenantController_->showListWindow(); });
+    act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
+    connect(act_system_settings_, &QAction::triggered, this,
+        [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
 
-        auto* actTenantTypes = smc.identity_menu->addAction(tr("Tenant &Types"));
-        connect(actTenantTypes, &QAction::triggered, this,
-            [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
+    config->addSeparator();
 
-        smc.identity_menu->addSeparator();
+    auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
+    connect(actBadgeDefs, &QAction::triggered, this,
+        [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
 
-        auto* actOnboardTenant = smc.identity_menu->addAction(tr("&Onboard Tenant..."));
-        connect(actOnboardTenant, &QAction::triggered,
-                this, &AdminPlugin::show_onboarding_wizard);
-    }
+    auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
+    connect(actBadgeSevs, &QAction::triggered, this,
+        [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
 
-    // ---- System > Configuration ------------------------------------------
-    if (smc.system_menu && smc.telemetry_menu) {
-        auto* telemetryAction = smc.telemetry_menu->menuAction();
-        auto* config = new QMenu(tr("&Configuration"), smc.system_menu);
-        smc.system_menu->insertMenu(telemetryAction, config);
+    // ---- System > Administration (appended at end, admin-only) -----------
+    smc.system_menu->addSeparator();
 
-        act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
-        connect(act_system_settings_, &QAction::triggered, this,
-            [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
+    auto* admin = smc.system_menu->addMenu(tr("&Administration"));
 
-        config->addSeparator();
+    act_accounts_ = admin->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
+    connect(act_accounts_, &QAction::triggered, this,
+        [this]() { if (accountController_) accountController_->showListWindow(); });
 
-        auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
-        connect(actBadgeDefs, &QAction::triggered, this,
-            [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
+    auto* actRoles = admin->addAction(tr("&Roles"));
+    connect(actRoles, &QAction::triggered, this,
+        [this]() { if (roleController_) roleController_->showListWindow(); });
 
-        auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
-        connect(actBadgeSevs, &QAction::triggered, this,
-            [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
-        // Apps and App Versions live in the Compute menu (see ComputePlugin).
+    admin->addSeparator();
 
-        smc.system_menu->addSeparator();
+    act_tenants_ = admin->addAction(ico(Icon::BuildingSkyscraper), tr("&Tenants"));
+    connect(act_tenants_, &QAction::triggered, this,
+        [this]() { if (tenantController_) tenantController_->showListWindow(); });
 
-        act_reset_system_ = smc.system_menu->addAction(
-            ico(Icon::Warning), tr("Reset &System..."));
-        act_reset_system_->setToolTip(
-            tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
-        connect(act_reset_system_, &QAction::triggered,
-                this, &AdminPlugin::on_reset_system);
-    }
+    auto* actTenantTypes = admin->addAction(tr("Tenant &Types"));
+    connect(actTenantTypes, &QAction::triggered, this,
+        [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
+
+    admin->addSeparator();
+
+    auto* actOnboardTenant = admin->addAction(tr("&Onboard Tenant..."));
+    connect(actOnboardTenant, &QAction::triggered,
+            this, &AdminPlugin::show_onboarding_wizard);
+
+    // ---- Reset System (appended after Administration) --------------------
+    smc.system_menu->addSeparator();
+
+    act_reset_system_ = smc.system_menu->addAction(
+        ico(Icon::Warning), tr("Reset &System..."));
+    act_reset_system_->setToolTip(
+        tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
+    connect(act_reset_system_, &QAction::triggered,
+            this, &AdminPlugin::on_reset_system);
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {

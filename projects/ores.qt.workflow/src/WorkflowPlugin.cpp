@@ -64,24 +64,30 @@ void WorkflowPlugin::on_login(const plugin_context& ctx) {
             this, &WorkflowPlugin::windowDestroyed);
 }
 
-QList<QMenu*> WorkflowPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    auto* menuWorkflows = new QMenu(tr("&Workflows"));
+void WorkflowPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " operations=" << (smc.operations_menu ? "ok" : "null");
+    if (!smc.operations_menu)
+        return;
 
-    auto* actExecutionList = menuWorkflows->addAction(
-        ico(Icon::TasksApp), tr("Execution &List"));
-    connect(actExecutionList, &QAction::triggered, this, [this]() {
+    smc.operations_menu->addSeparator();
+
+    auto* actExecutions = smc.operations_menu->addAction(
+        ico(Icon::TasksApp), tr("Workflow &Executions"));
+    connect(actExecutions, &QAction::triggered, this, [this]() {
         if (controller_) controller_->showListWindow();
     });
 
-    auto* actDefinitions = menuWorkflows->addAction(
-        ico(Icon::DocumentTable), tr("&Definitions"));
+    auto* actDefinitions = smc.operations_menu->addAction(
+        ico(Icon::DocumentTable), tr("Workflow &Definitions"));
     connect(actDefinitions, &QAction::triggered, this, [this]() {
         if (controller_) controller_->showDefinitionsWindow();
     });
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {menuWorkflows};
+QList<QMenu*> WorkflowPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "All items contributed via setup_menus — no standalone menus.";
+    return {};
 }
 
 void WorkflowPlugin::on_logout() {

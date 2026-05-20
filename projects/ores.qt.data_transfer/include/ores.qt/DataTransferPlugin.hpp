@@ -25,11 +25,11 @@
 namespace ores::qt {
 
 /**
- * @brief Qt plugin providing the Data Transfer top-level menu.
+ * @brief Qt plugin providing the Data Management top-level menu.
  *
- * Owns the pre-created data_transfer_menu handle. All menu items are
- * contributed by peer plugins (RefdataPlugin, TradingPlugin) via setup_menus.
- * Loaded as a shared library by QPluginLoader at application startup.
+ * Owns the pre-created data_management_menu handle. Items are contributed
+ * by RefdataPlugin (Data Catalogue + Librarian), TradingPlugin (Import),
+ * and WorkspacePlugin (Manage Workspaces) via setup_menus.
  */
 class DataTransferPlugin : public PluginBase {
     Q_OBJECT
@@ -51,9 +51,9 @@ public:
 private:
     plugin_context ctx_;
 
-    // The data_transfer_menu is pre-created by MainWindow and passed via
+    // The data_management_menu is pre-created by MainWindow and passed via
     // setup_menus context. We hold a reference to return it from create_menus.
-    QMenu* data_transfer_menu_{nullptr};
+    QMenu* data_management_menu_{nullptr};
 };
 
 }

@@ -354,9 +354,12 @@ namespace ores #F2F2F2 {
             +system_menu : QMenu*
             +reference_data_menu : QMenu*
             +telemetry_menu : QMenu*
-            +identity_menu : QMenu*
-            +data_transfer_menu : QMenu*
+            +account_menu : QMenu*
+            +data_management_menu : QMenu*
             +trading_codes_menu : QMenu*
+            +analytics_menu : QMenu*
+            +analytics_codes_menu : QMenu*
+            +operations_menu : QMenu*
         }
         class IPlugin {
         }

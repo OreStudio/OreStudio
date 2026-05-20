@@ -42,7 +42,7 @@ class BusinessUnitTypeController;
  *        centres, business units, and related type tables.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
- * Owns the Entities top-level menu.
+ * Contributes to the shared Reference Data menu; no standalone menu.
  */
 class PartyPlugin : public PluginBase {
     Q_OBJECT
@@ -54,9 +54,10 @@ public:
     ~PartyPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.party"); }
-    int load_order() const override { return 150; }  // owns the Entities top-level menu
+    int load_order() const override { return 105; }  // after RefdataPlugin (100)
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     QList<QAction*> toolbar_actions() override;
     void on_logout() override;

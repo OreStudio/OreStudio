@@ -55,20 +55,26 @@ void WorkspacePlugin::on_login(const plugin_context& ctx) {
             this, &WorkspacePlugin::statusMessage);
 }
 
-QList<QMenu*> WorkspacePlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    auto* menu = new QMenu(tr("&Workspaces"));
+void WorkspacePlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+    if (!smc.data_management_menu)
+        return;
 
-    act_workspaces_ = menu->addAction(
+    smc.data_management_menu->addSeparator();
+
+    act_workspaces_ = smc.data_management_menu->addAction(
         IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor),
         tr("&Manage Workspaces"));
     connect(act_workspaces_, &QAction::triggered, this, [this]() {
         if (workspaceController_)
             workspaceController_->showListWindow();
     });
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {menu};
+QList<QMenu*> WorkspacePlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "All items contributed via setup_menus — no standalone menus.";
+    return {};
 }
 
 void WorkspacePlugin::on_logout() {

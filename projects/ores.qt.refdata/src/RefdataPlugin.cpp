@@ -267,13 +267,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
         << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
-        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null")
+        << " data_management=" << (smc.data_management_menu ? "ok" : "null")
         << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
     // ---- Reference Data menu --------------------------------------------
-    auto* ref = smc.reference_data_menu;
+    reference_data_menu_ = smc.reference_data_menu;
+    auto* ref = reference_data_menu_;
     if (ref) {
         act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
         connect(act_currencies_, &QAction::triggered, this, [this]() {
@@ -415,8 +416,8 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // ---- Data Transfer menu — contribute Data Catalogue submenu + Data Librarian
-    auto* dt = smc.data_transfer_menu;
+    // ---- Data Management menu — contribute Data Catalogue submenu + Data Librarian
+    auto* dt = smc.data_management_menu;
     if (dt) {
         auto* menuCatalogue = dt->addMenu(tr("Data Ca&talogue"));
 
@@ -515,8 +516,10 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
 // ---------------------------------------------------------------------------
 QList<QMenu*> RefdataPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "No standalone menus — all entries contributed via shared menus.";
-    return {};  // all items contributed to the shared Reference Data menu
+    BOOST_LOG_SEV(lg(), debug) << "Returning pre-created Reference Data menu.";
+    if (!reference_data_menu_)
+        BOOST_LOG_SEV(lg(), warn) << "Reference Data menu not initialised via setup_menus.";
+    return reference_data_menu_ ? QList<QMenu*>{reference_data_menu_} : QList<QMenu*>{};
 }
 
 QList<QAction*> RefdataPlugin::toolbar_actions() {

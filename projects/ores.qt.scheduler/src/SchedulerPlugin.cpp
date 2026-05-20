@@ -73,32 +73,40 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
             this, &SchedulerPlugin::statusMessage);
 }
 
-QList<QMenu*> SchedulerPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    auto* menuScheduler = new QMenu(tr("&Scheduler"));
+void SchedulerPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " operations=" << (smc.operations_menu ? "ok" : "null");
+    if (!smc.operations_menu)
+        return;
 
-    auto* actJobDefs = menuScheduler->addAction(
+    operations_menu_ = smc.operations_menu;
+
+    auto* actJobDefs = operations_menu_->addAction(
         ico(Icon::TasksApp), tr("&Job Definitions"));
     connect(actJobDefs, &QAction::triggered, this, [this]() {
         if (jobDefinitionController_) jobDefinitionController_->showListWindow();
     });
 
-    auto* actJobInstances = menuScheduler->addAction(
+    auto* actJobInstances = operations_menu_->addAction(
         ico(Icon::Clock), tr("&Job Instances"));
     connect(actJobInstances, &QAction::triggered, this, [this]() {
         if (jobInstanceController_) jobInstanceController_->showListWindow();
     });
 
-    menuScheduler->addSeparator();
+    operations_menu_->addSeparator();
 
-    auto* actMonitor = menuScheduler->addAction(
-        ico(Icon::Clock), tr("&Monitor"));
+    auto* actMonitor = operations_menu_->addAction(
+        ico(Icon::Clock), tr("Job &Monitor"));
     connect(actMonitor, &QAction::triggered, this, [this]() {
         if (schedulerMonitorController_) schedulerMonitorController_->showWindow();
     });
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {menuScheduler};
+QList<QMenu*> SchedulerPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "Returning pre-created Operations menu.";
+    if (!operations_menu_)
+        BOOST_LOG_SEV(lg(), warn) << "Operations menu not initialised via setup_menus.";
+    return operations_menu_ ? QList<QMenu*>{operations_menu_} : QList<QMenu*>{};
 }
 
 void SchedulerPlugin::on_logout() {

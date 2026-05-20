@@ -28,10 +28,11 @@ namespace ores::qt {
 class WorkflowController;
 
 /**
- * @brief Qt plugin providing the top-level Workflows menu.
+ * @brief Qt plugin providing the Workflow section of the Operations menu.
  *
- * Exposes workflow monitoring to end users via a dedicated Workflows menu.
- * Loaded as a shared library by QPluginLoader at application startup.
+ * Contributes Workflow items to the pre-created Operations menu via
+ * setup_menus(); no standalone top-level menu is created.
+ * SchedulerPlugin (load_order 360) owns and returns the Operations menu.
  */
 class WorkflowPlugin : public PluginBase {
     Q_OBJECT
@@ -43,9 +44,10 @@ public:
     ~WorkflowPlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.workflow"); }
-    int load_order() const override { return 450; }
+    int load_order() const override { return 365; }  // after SchedulerPlugin (360)
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 

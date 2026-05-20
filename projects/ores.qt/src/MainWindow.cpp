@@ -424,24 +424,36 @@ MainWindow::MainWindow(QWidget* parent) :
     // System, keeping System/Window/Help always last.
     auto* systemAction = ui_->menuSystem->menuAction();
 
-    // Pre-create the shared &Identity menu (before Reference Data).
-    auto* identityMenu = new QMenu(tr("&Identity"), this);
-    menuBar()->insertMenu(systemAction, identityMenu);
-    plugin_menus_.append(identityMenu);
+    // Pre-create the shared &Account menu (personal actions only; inserted
+    // directly so it always appears first after File).
+    auto* accountMenu = new QMenu(tr("&Account"), this);
+    menuBar()->insertMenu(systemAction, accountMenu);
+    plugin_menus_.append(accountMenu);
 
-    // Pre-create the shared &Reference Data menu so RefdataPlugin and
-    // other plugins can populate it during setup_menus().
+    // Pre-create the shared &Reference Data menu. NOT inserted directly —
+    // RefdataPlugin returns it from create_menus() to control bar position.
     auto* referenceDataMenu = new QMenu(tr("&Reference Data"), this);
-    menuBar()->insertMenu(systemAction, referenceDataMenu);
-    plugin_menus_.append(referenceDataMenu);
+
+    // Pre-create &Analytics menu. NOT inserted directly — AnalyticsPlugin
+    // returns it from create_menus() to control bar position.
+    auto* analyticsMenu = new QMenu(tr("&Analytics"), this);
+
+    // Pre-create Analytics Codes submenu. Contributed to by AnalyticsPlugin
+    // and ComputePlugin via setup_menus(); appended to analyticsMenu by
+    // AnalyticsPlugin in create_menus().
+    auto* analyticsCodesMenu = new QMenu(tr("Analytics &Codes"), this);
+
+    // Pre-create &Operations menu. NOT inserted directly — SchedulerPlugin
+    // returns it from create_menus() to control bar position.
+    auto* operationsMenu = new QMenu(tr("&Operations"), this);
 
     // Pre-create trading codes menu (NOT inserted directly; TradingPlugin
     // appends it to its own Trading menu in create_menus()).
     auto* tradingCodesMenu = new QMenu(tr("Trading &Codes"), this);
 
-    // Pre-create data transfer menu (NOT inserted directly; DataTransferPlugin
-    // returns it from create_menus() so it appears in plugin load_order).
-    auto* dataTransferMenu = new QMenu(tr("&Data Transfer"), this);
+    // Pre-create &Data Management menu. NOT inserted directly; DataTransferPlugin
+    // returns it from create_menus() so it appears in plugin load_order.
+    auto* dataManagementMenu = new QMenu(tr("&Data Management"), this);
 
     // Phase 1 — let plugins contribute to shared menus.
     // Phase 2 — collect standalone menus returned by create_menus().
@@ -450,12 +462,15 @@ MainWindow::MainWindow(QWidget* parent) :
     BOOST_LOG_SEV(lg(), info) << plugins.size() << " plugin(s) registered.";
 
     shared_menus_context smc;
-    smc.system_menu        = ui_->menuSystem;
-    smc.reference_data_menu = referenceDataMenu;
-    smc.telemetry_menu     = ui_->menuTelemetry;
-    smc.identity_menu      = identityMenu;
-    smc.data_transfer_menu = dataTransferMenu;
-    smc.trading_codes_menu = tradingCodesMenu;
+    smc.system_menu          = ui_->menuSystem;
+    smc.reference_data_menu  = referenceDataMenu;
+    smc.telemetry_menu       = ui_->menuTelemetry;
+    smc.account_menu         = accountMenu;
+    smc.data_management_menu = dataManagementMenu;
+    smc.trading_codes_menu   = tradingCodesMenu;
+    smc.analytics_menu       = analyticsMenu;
+    smc.analytics_codes_menu = analyticsCodesMenu;
+    smc.operations_menu      = operationsMenu;
 
     BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";
     for (auto* plugin : plugins) {
@@ -463,23 +478,12 @@ MainWindow::MainWindow(QWidget* parent) :
         plugin->setup_menus(smc);
     }
 
-    // Prepend My Account / My Sessions to the Identity menu (after plugins
-    // have had a chance to add their items first).
-    auto* firstIdentityAction = identityMenu->actions().isEmpty()
-        ? nullptr : identityMenu->actions().first();
-    if (firstIdentityAction) {
-        auto* sep = new QAction(this);
-        sep->setSeparator(true);
-        identityMenu->insertAction(firstIdentityAction, sep);
-        identityMenu->insertAction(sep, ui_->ActionMySessions);
-        identityMenu->insertAction(ui_->ActionMySessions, ui_->ActionMyAccount);
-    } else {
-        identityMenu->addAction(ui_->ActionMyAccount);
-        identityMenu->addAction(ui_->ActionMySessions);
-    }
+    // Populate the Account menu: personal actions only.
+    // Admin items (Accounts, Roles, Tenants) live under System > Administration.
+    accountMenu->addAction(ui_->ActionMyAccount);
+    accountMenu->addAction(ui_->ActionMySessions);
 
-    // Remove My Account / My Sessions from the File menu (they now live in
-    // Identity).
+    // Remove My Account / My Sessions from the File menu (they now live in Account).
     ui_->menuFile->removeAction(ui_->ActionMyAccount);
     ui_->menuFile->removeAction(ui_->ActionMySessions);
 

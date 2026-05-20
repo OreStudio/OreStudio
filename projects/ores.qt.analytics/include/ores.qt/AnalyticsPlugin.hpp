@@ -33,9 +33,10 @@ class PricingModelProductParameterController;
 /**
  * @brief Plugin owning all analytics and pricing model controllers.
  *
- * Provides a top-level Analytics menu with:
- *   - Pricing Models submenu (pricing engine types)
- *   - Configuration submenu (model configs, products, parameters)
+ * Contributes to the shared Analytics menu (pre-created by MainWindow).
+ * setup_menus() populates the model configuration items and seeds the
+ * Analytics Codes submenu; create_menus() finalises the submenu and
+ * returns the pre-created Analytics menu for bar insertion.
  */
 class AnalyticsPlugin : public PluginBase {
     Q_OBJECT
@@ -50,11 +51,15 @@ public:
     int load_order() const override { return 350; }
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
 private:
     plugin_context ctx_;
+
+    QMenu* analytics_menu_{nullptr};
+    QMenu* analytics_codes_menu_{nullptr};
 
     std::unique_ptr<PricingEngineTypeController>            pricingEngineTypeController_;
     std::unique_ptr<PricingModelConfigController>           pricingModelConfigController_;

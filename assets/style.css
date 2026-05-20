@@ -16,6 +16,8 @@
     --accent-dim: #21262d;       /* Subtle decorative accents / borders */
 
     --border-color: #30363d;     /* Clean, thin borders */
+    --on-accent: #0d1117;        /* Text color on an accent background */
+    --shadow-card: rgba(0, 0, 0, 0.35); /* Card / surface drop shadow */
     --max-width: 920px;          /* Optimal reading line length */
 }
 
@@ -434,7 +436,7 @@ li {
 .btn {
     display: inline-block;
     background-color: var(--accent);
-    color: #0d1117;
+    color: var(--on-accent);
     font-weight: 600;
     padding: 0.55rem 1.1rem;
     border-radius: 6px;
@@ -444,7 +446,7 @@ li {
 
 .btn:hover {
     background-color: var(--accent-hover);
-    color: #0d1117;
+    color: var(--on-accent);
     text-decoration: none;
     transform: translateY(-1px);
 }
@@ -468,7 +470,7 @@ li {
 .card:hover {
     transform: translateY(-2px);
     border-color: var(--accent-dim);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 6px 18px var(--shadow-card);
 }
 
 .card h3 {

@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: e81c7fea-33e4-400a-839a-9d1618bed211
+:END:
+#+title: Qt Plugin Architecture
+#+description: IPlugin lifecycle, shared_menus_context, load_order, and the two-phase menu-building sequence in ORE Studio.
+#+type: knowledge
+#+level: cross
+#+filetags: :qt:ui:architecture:knowledge:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+ORE Studio's Qt desktop application is assembled from independently-loaded
+plugins, each implementing the =IPlugin= interface (=ores.qt.api=). Plugins
+follow a four-stage lifecycle: =on_login=, =setup_menus=, =create_menus=, and
+=on_logout=. The =load_order()= integer controls both the setup and creation
+sequences. =MainWindow= runs all =setup_menus()= calls first (one pass), then
+all =create_menus()= calls (a second pass), so every plugin can contribute
+items to a shared menu before any plugin returns its own menu for insertion.
+
+* Detail
+
+** The IPlugin interface
+
+Defined in =projects/ores.qt.api/include/ores.qt/IPlugin.hpp=. Key methods:
+
+| Method | When called | Purpose |
+|--------+-------------+---------|
+| =load_order()= | at sort time | determines call sequence for both phases |
+| =on_login(plugin_context)= | after NATS login | create controllers, cache refs |
+| =setup_menus(shared_menus_context)= | phase 1 | contribute items to shared menus |
+| =create_menus()= | phase 2 | return owned menus for insertion into menu bar |
+| =toolbar_actions()= | after create_menus | return actions to add to the toolbar |
+| =on_logout()= | on logout | destroy controllers, clear state |
+
+Plugins derive from =PluginBase : IPlugin= (which derives from =QObject=) and
+are loaded as Qt plugins via =QPluginLoader=.
+
+** The plugin_context struct
+
+Passed to =on_login=. Contains references that persist for the session:
+
+- =main_window= — the application =QMainWindow=
+- =mdi_area= — the central =QMdiArea=
+- =client_manager= — NATS client wrapper for all domain calls
+- =image_cache=, =badge_cache=, =change_reason_cache= — shared caches
+- =username= — authenticated user handle
+- =http_base_url= — base URL for HTTP fallback (e.g. ORE import)
+
+** The shared_menus_context struct
+
+Passed to =setup_menus=. Contains pointers to pre-created shared menus that
+multiple plugins contribute to:
+
+| Field | Owner plugin | Contributors |
+|-------+---------------+--------------|
+| =system_menu= | =ores.qt= (MainWindow) | AdminPlugin |
+| =account_menu= | =ores.qt= (MainWindow) | AdminPlugin |
+| =telemetry_menu= | =ores.qt= (MainWindow) | AdminPlugin |
+| =reference_data_menu= | RefdataPlugin | PartyPlugin |
+| =data_management_menu= | DataTransferPlugin | RefdataPlugin, TradingPlugin, WorkspacePlugin |
+| =trading_codes_menu= | (pre-created) | TradingPlugin, RefdataPlugin |
+| =analytics_menu= | AnalyticsPlugin | ComputePlugin |
+| =analytics_codes_menu= | AnalyticsPlugin | ComputePlugin |
+| =operations_menu= | SchedulerPlugin | WorkflowPlugin |
+
+A pointer being =nullptr= means the owning plugin has not yet called
+=setup_menus=. Always null-check before using.
+
+** The two-phase dispatch loop
+
+=MainWindow= calls plugins in two separate loops, both ordered by =load_order=:
+
+#+begin_example
+Pass 1 — setup_menus
+  for each plugin (ascending load_order):
+      plugin->setup_menus(smc)         // contribute to shared menus
+
+Pass 2 — create_menus
+  for each plugin (ascending load_order):
+      menus = plugin->create_menus()   // return owned menus
+      for each menu:
+          menuBar()->insertMenu(...)   // insert before System menu
+#+end_example
+
+This guarantees all contributions to a shared menu are complete before any
+plugin returns that menu via =create_menus()=.
+
+** load_order values (current)
+
+| load_order | Plugin |
+|------------+--------|
+| 100 | RefdataPlugin |
+| 105 | PartyPlugin |
+| 200 | TradingPlugin |
+| 210 | WorkspacePlugin |
+| 350 | AnalyticsPlugin |
+| 355 | ComputePlugin |
+| 360 | SchedulerPlugin |
+| 365 | WorkflowPlugin |
+| 375 | DataTransferPlugin |
+| 400 | AdminPlugin |
+| 450 | MktdataPlugin |
+
+** Menu bar insertion order
+
+Menus returned by =create_menus()= are inserted before the System menu using
+=menuBar()->insertMenu(systemAction, menu)=. The System menu itself is
+pre-created by =MainWindow= and is always last. Plugins with lower
+=load_order= have their menus inserted first (leftmost).
+
+** Adding a new plugin
+
+1. Implement =IPlugin= (derive from =PluginBase=).
+2. Add =Q_PLUGIN_METADATA= and =Q_INTERFACES= macros.
+3. Choose a =load_order()= value that places it correctly relative to menus
+   it contributes to (lower = earlier).
+4. Wire =on_login= / =on_logout= to create / destroy controllers.
+5. Wire =setup_menus= to contribute to any shared menus.
+6. Wire =create_menus= to return any owned menus.
+
+* See also
+
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the MainWindow shell that drives the two-phase loop.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — defines IPlugin, PluginBase, plugin_context, shared_menus_context.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — how plugins wire their controllers.

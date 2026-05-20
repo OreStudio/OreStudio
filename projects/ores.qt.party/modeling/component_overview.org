@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 6de9a7b8-f7ba-4e93-bb93-2fb10c53f9ca
+:END:
+#+title: ores.qt.party
+#+description: Qt plugin for party/organisation UI — parties, counterparties, business units, business centres, and organisation codes.
+#+type: component
+#+level: cross
+#+filetags: :qt:party:organisation:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt.party= is the Qt plugin for the party and organisation domain. It
+provides MDI windows and dialogs for managing parties, counterparties, business
+units, and business centres, and their supporting code types (party types,
+party statuses, party ID schemes, contact types, and business unit types). It
+contributes its entity actions to the Reference Data menu (owned by
+=ores.qt.refdata=) via the =setup_menus= phase.
+
+* Inputs
+
+- NATS responses for party, counterparty, business unit, business centre, and
+  organisation code entities.
+- User interactions: create/edit/delete/view-history on party entities.
+- =shared_menus_context.reference_data_menu= pointer for contributing items.
+
+* Outputs
+
+- Rendered MDI windows for party and organisation entities.
+- NATS request messages sent to the relevant party services on user actions.
+- Parties, Counterparties, Business Centres, Business Units, and Organisation
+  Codes submenu items contributed to the Reference Data menu.
+
+* Entry points
+
+- =include/ores.qt/PartyPlugin.hpp= — plugin class; contributes to Reference Data menu.
+- =include/ores.qt/PartyController.hpp= — party entity controller.
+- =include/ores.qt/CounterpartyController.hpp= — counterparty entity controller.
+- =include/ores.qt/BusinessUnitController.hpp= — business unit controller.
+
+* Dependencies
+
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
+- =ores.refdata.api= — reference data domain types used in party classification.
+- =ores.storage= — storage abstraction for party data persistence.
+
+* See also
+
+- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — reference data domain types shared with party entities.
+- [[id:621194c4-d438-4215-ae40-21fbe8ff0d85][ores.qt.refdata]] — owns the Reference Data menu that party contributes to.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: fc186d19-9421-45a2-bbcc-4355d66aa41f
+:END:
+#+title: Entity Controller Pattern
+#+description: Four-layer Qt entity UI pattern: controller, list-window, detail-dialog, and table-model — and how they wire to NATS.
+#+type: knowledge
+#+level: cross
+#+filetags: :qt:ui:architecture:knowledge:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+Every domain entity in ORE Studio's Qt UI is managed by a four-layer stack:
+a *controller* that owns MDI windows and orchestrates NATS calls, a
+*list-window* (=EntityListMdiWindow=) that displays a paginated table of
+records, a *detail-dialog* (=EntityDetailDialog=) for create/edit/view, and
+an *abstract client model* (=AbstractClientModel=) that fetches and caches
+the entity's rows from the NATS service. This pattern is implemented by base
+classes in =ores.qt.api= and followed consistently across all entity types.
+
+* Detail
+
+** The four layers
+
+*** AbstractClientModel
+
+- Subclass of =QAbstractTableModel=.
+- Sends a NATS list request on =refresh()= and populates its row cache on
+  response.
+- Emits =dataReady()= when the initial fetch completes.
+- Provides =entityAt(row)= for the list-window to feed into the detail dialog.
+- Column metadata comes from =ColumnMetadata= structs defined per entity type.
+
+*** EntityListMdiWindow
+
+- MDI sub-window containing a =QTableView= backed by an =AbstractClientModel=.
+- Toolbar: Refresh, New, Edit, View History, Delete (enabled/disabled by
+  selection state and user permissions).
+- Pagination via =PaginationWidget=.
+- Selection changes propagate to the toolbar button states.
+- Opened and closed by the controller; only one instance per entity type lives
+  in the MDI area at a time.
+
+*** EntityDetailDialog
+
+- Modal dialog for create, edit, and read-only view.
+- Opened from the list-window toolbar or via controller action.
+- On accept: sends a NATS create or update request; on completion refreshes
+  the list model.
+- Change reason dialog (=ChangeReasonDialog=) is injected from
+  =ChangeReasonCache= for entities requiring audit trail entries.
+- Temporal entities show bitemporal fields; non-temporal entities omit them.
+
+*** EntityController
+
+- Owns the model, list-window, and dialog lifecycles.
+- Created by the plugin in =on_login=; destroyed in =on_logout=.
+- =showListWindow()= — opens or raises the MDI sub-window.
+- =ClientManager= reference held throughout the session for NATS calls.
+- Emits =statusMessage= for the status bar; connected by the plugin.
+
+** NATS wiring
+
+All domain requests go through =ClientManager=, which wraps the NATS client
+and provides typed request/response helpers. The general flow:
+
+#+begin_example
+User action (button click)
+  → EntityController::onNew/onEdit
+    → EntityDetailDialog::exec()
+      → on accept: ClientManager::send<Request>(payload)
+        → NATS response callback (lambda on Qt event loop)
+          → model->refresh()  or  emit statusMessage
+#+end_example
+
+Responses arrive asynchronously; lambdas captured in the controller marshal
+back to the Qt thread via =QMetaObject::invokeMethod(..., Qt::QueuedConnection)=
+where cross-thread signalling is needed.
+
+** History dialogs
+
+For temporal entities a =HistoryDialog= shows the bitemporal record set.
+Opened via the list-window toolbar's "View History" button. Uses the same
+=ClientManager= infrastructure but sends a history-fetch request and
+displays results in a read-only table.
+
+** Naming conventions
+
+For an entity =Foo=:
+
+| Layer | Class name | File |
+|-------+------------+------|
+| Controller | =FooController= | =FooController.{hpp,cpp}= |
+| List window | =FooMdiWindow= | =FooMdiWindow.{hpp,cpp}= |
+| Detail dialog | =FooDetailDialog= | =FooDetailDialog.{hpp,cpp}= |
+| Table model | =ClientFooModel= | =ClientFooModel.{hpp,cpp}= |
+| History dialog | =FooHistoryDialog= | =FooHistoryDialog.{hpp,cpp}= |
+
+All live in the domain plugin's =include/ores.qt/= and =src/= directories.
+
+** Item delegates
+
+Complex cells (enum drop-downs, date pickers, colour swatches) use
+=QStyledItemDelegate= subclasses. Common ones live in =ores.qt.api=
+(=EntityItemDelegate=, =ClientResultItemDelegate=); entity-specific ones
+live alongside the model.
+
+* See also
+
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — how controllers are created/destroyed via the
+  plugin lifecycle.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — the base classes (EntityController, AbstractClientModel,
+  EntityListMdiWindow, EntityDetailDialog) that implement this pattern.

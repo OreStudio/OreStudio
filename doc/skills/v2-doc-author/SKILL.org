@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :v2_docs:codegen:templates:skill:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-20
 
 #+begin_export markdown
 ---
@@ -39,15 +39,26 @@ than hand-written.
    parent document for task/story/sprint, so no UUID typing is
    needed. The recipe at [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] has copy-
    pasteable invocations per type.
-4. Fill in the skeleton sections in the generated file.
-5. For stories that continue from a previous sprint, update the
+   - For component overviews specifically, always use =--slug
+     component_overview= (not the component name). See
+     [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]].
+4. *When creating multiple inter-linked documents* (e.g. a set of
+   component overviews plus a knowledge doc they all reference):
+   generate all skeleton files first, then collect their IDs with
+   =grep "^:ID:" <file>=, then fill in the content using the actual
+   IDs. Never pre-assign UUIDs — the generator always mints its own.
+   The =--id= flag is for migration of existing documents only.
+5. Fill in the skeleton sections in the generated file.
+6. For stories that continue from a previous sprint, update the
    predecessor story to add =#+successor:= and a =Continued in:=
    note in =* Decisions= (this step is manual).
 
 * Recipes
 
 - [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the master recipe with examples
-  for every type.
+  for every type, including inter-linked document sets.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific workflow
+  with section-by-section guidance and the correct slug to use.
 - [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++/SQL generator on the same
   infrastructure.
 

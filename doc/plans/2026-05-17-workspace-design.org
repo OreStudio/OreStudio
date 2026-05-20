@@ -725,7 +725,29 @@ remains Live-only; non-live workspace report definitions run on-demand only.
 10. Add indexes on ~workspace_id~; enforce cycle-prevention trigger on
     ~parent_workspace_id~ inserts/updates (updated for UUID FK).
 11. Extend ~ores_reporting_report_definitions_tbl~ with ~workspace_id~.
-12. Run ~recreate_database.sh -k -y~; validate schemas.
+12. FK validation inventory and trigger wiring:
+    a. Create ~ores_workspace_validate_fn(p_workspace_id uuid) returns uuid~
+       as ~SECURITY DEFINER~ (service users hold no SELECT on
+       ~ores_workspaces_tbl~; this mirrors the pattern of
+       ~ores_iam_validate_tenant_fn~).  Function must accept the Live sentinel
+       UUID unconditionally (it has no row in ~ores_workspaces_tbl~ that can be
+       checked via the normal active-row predicate).
+    b. Inventory every insert trigger on workspace-aware tables (the ~28+
+       entities from the codegen model list in
+       ~2026-05-19-workspace-id-codegen-propagation.org~) and add a
+       ~ores_workspace_validate_fn(NEW.workspace_id)~ call alongside the
+       existing ~ores_iam_validate_tenant_fn~ call.
+    c. Because most of these triggers are codegen-generated, add
+       ~has_workspace_id~ support to the trigger template
+       (~cpp_domain_type_create.sql.mustache~ or equivalent) so the call is
+       regenerated automatically rather than hand-wired per entity.
+13. Run ~recreate_database.sh -k -y~; validate schemas.
+
+Note on workspace visibility: all authenticated users within a tenant hold
+~workspace::workspaces:read~ by default, so workspaces are not private ACL
+objects.  Data restriction is handled by the ~scope_portfolio_id~ on the
+workspace itself (portfolio tree scoping), not by per-workspace read grants.
+This keeps the permission model simple and avoids over-engineering.
 
 ** Phase 2: Service layer
 

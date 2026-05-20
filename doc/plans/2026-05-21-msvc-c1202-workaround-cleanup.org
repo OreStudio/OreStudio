@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 7E3A9C2F-B405-4D81-A63E-F18D205B47C9
+:END:
+#+title: MSVC C1202 Workaround Cleanup
+#+STATUS: IN-PROGRESS
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+Three sets of files were split artificially to keep per-TU rfl template
+instantiation depth below MSVC's C1202 limit ("recursive type or function
+dependency context too complex").  The root cause was that
+=rfl::internal::no_duplicate_field_names= performs O(N²) constexpr comparisons
+across all variant field names; with =trade_instrument= (9 top-level alternatives,
+two of which are nested variants) and the accompanying =trade= sub-struct tree,
+the combined cost in a single translation unit exceeded MSVC's default 100 000-
+step constexpr budget.
+
+The correct fix — =[[#pragma constexpr_steps]]=  before the problematic
+=rfl::json::read= call — was applied in PR #786 (hotfix branch
+=hotfix/msvc-windows-build-errors=).  Now the artificial splits can be removed
+and the code reorganised on genuine domain lines.
+
+** Already resolved
+
+- =get_trade_detail_response_base= / =get_trade_detail_instrument_wrapper= split
+  in =trade_protocol.hpp= — removed in PR #786.
+- =get_trade_detail_response= now parsed in one =rfl::json::read= call in
+  =ClientManagerTrades.cpp= with a TU-local pragma.
+
+* Solution
+
+Three remaining groups of workarounds to clean up:
+
+1. *Items 2 & 3* — Merge =ClientManagerSetup.cpp= and =ClientManagerEvents.cpp=
+   back into =ClientManager.cpp=.
+2. *Item 4* — Decompose =register_other_instrument_handlers= into one function
+   per instrument family, matching the structure already used for FX and rates.
+
+* Item 2 & 3 — ClientManager file-split reversal
+
+** Background
+
+=ClientManagerSetup.cpp= (=testConnection=, =signup=) and
+=ClientManagerEvents.cpp= (=subscribeToEvent=, =unsubscribeFromEvent=) were each
+extracted from =ClientManager.cpp= purely to reduce the rfl instantiation count
+in that TU.  The files carry explicit comments to this effect.
+
+** Changes
+
+| File | Action |
+|------+--------|
+| =projects/ores.qt.api/src/ClientManager.cpp= | Add pragma block; absorb 4 methods |
+| =projects/ores.qt.api/src/ClientManagerSetup.cpp= | Delete |
+| =projects/ores.qt.api/src/ClientManagerEvents.cpp= | Delete |
+
+No =CMakeLists.txt= change needed — the target uses =GLOB_RECURSE *.cpp=.
+
+** Pragma placement
+
+Add once near the top of =ClientManager.cpp=, before the first =rfl::json::read=
+call:
+
+#+begin_src c++
+#ifdef _MSC_VER
+#  pragma constexpr_depth(1024)
+#  pragma constexpr_steps(1000000)
+#endif
+#+end_src
+
+** Method inventory
+
+- From =ClientManagerSetup.cpp=: =testConnection()=, =signup()=
+- From =ClientManagerEvents.cpp=: =subscribeToEvent()=, =unsubscribeFromEvent()=
+
+Strip each file's licence header and its duplicate
+=#include "ores.qt/ClientManager.hpp"= line when absorbing into =ClientManager.cpp=.
+
+* Item 4 — Decompose register_other_instrument_handlers
+
+** Background
+
+=registrar_other_instruments.cpp= registers handlers for six instrument families
+in a single function whose name ("other instruments") reflects its origin as a
+catch-all rather than a domain concept.
+
+The existing registrar structure already splits by domain family for FX
+(=registrar_fx.cpp= → =typed_fx_instrument_handler=) and rates
+(=registrar_rates.cpp= → =rates_instrument_handler=).  The same pattern should
+apply to the remaining families.
+
+** Current contents of register_other_instrument_handlers
+
+| Section | Handler class | Subjects |
+|---------+---------------+----------|
+| Bond | =bond_instrument_handler= | list, save, remove, history (4) |
+| Credit | =credit_instrument_handler= | list, save, remove, history (4) |
+| Typed equity | =typed_equity_instrument_handler= | 9 typed save operations |
+| Commodity | =commodity_instrument_handler= | list, save, remove, history (4) |
+| Composite | =composite_instrument_handler= | get_legs, list, save, remove, history (5) |
+| Scripted | =scripted_instrument_handler= | list, save, remove, history (4) |
+
+** Target state
+
+One file per family, using the same naming convention as =registrar_fx.cpp= and
+=registrar_rates.cpp=:
+
+| New file | New function | Handler class |
+|----------+--------------+---------------|
+| =registrar_bond.cpp= | =register_bond_handlers= | =bond_instrument_handler= |
+| =registrar_credit.cpp= | =register_credit_handlers= | =credit_instrument_handler= |
+| =registrar_equity.cpp= | =register_equity_handlers= | =typed_equity_instrument_handler= |
+| =registrar_commodity.cpp= | =register_commodity_handlers= | =commodity_instrument_handler= |
+| =registrar_composite.cpp= | =register_composite_handlers= | =composite_instrument_handler= |
+| =registrar_scripted.cpp= | =register_scripted_handlers= | =scripted_instrument_handler= |
+
+Delete =registrar_other_instruments.cpp=.
+
+No =CMakeLists.txt= change needed — =ores.trading.core= also uses =GLOB_RECURSE=.
+
+** registrar_detail.hpp
+
+- Remove the declaration of =register_other_instrument_handlers=.
+- Add six =ORES_TRADING_CORE_EXPORT= declarations with the same signature
+  (=nats=, =ctx=, =verifier=; no =http_base_url= — that is only needed by the
+  trade handlers).
+- Replace the MSVC C1202 comment with: /Split by instrument family for domain
+  clarity and parallel incremental builds./
+
+** registrar.cpp
+
+Replace the single =register_other_instrument_handlers= call with six new calls
+and adjust =subs.reserve(N)= to the correct total.
+
+Subscription count breakdown (verify by reading each existing registrar file):
+- =register_bond_handlers=: 4
+- =register_credit_handlers=: 4
+- =register_equity_handlers=: 9
+- =register_commodity_handlers=: 4
+- =register_composite_handlers=: 5
+- =register_scripted_handlers=: 4
+- Subtotal "other" replacement: 30
+
+Read =registrar_trades.cpp=, =registrar_rates.cpp=, =registrar_fx.cpp= to get
+their exact counts, then set =reserve= to the true total.
+
+* Commit strategy
+
+All work on the current =hotfix/msvc-windows-build-errors= branch.
+
+1. =[qt] Merge ClientManagerSetup/Events back into ClientManager= (items 2 & 3)
+2. =[trading] Split register_other_instrument_handlers by instrument family= (item 4)
+
+Then push and update PR #786.
+
+* Verification
+
+#+begin_src sh
+# No stale references remain
+grep -rn "ClientManagerSetup\|ClientManagerEvents" projects/
+grep -rn "register_other_instrument_handlers" projects/
+
+# Build the affected targets (ask user to run)
+make -C build/output/linux-clang-debug-make -j$(nproc) ores.qt.api.lib ores.trading.core.lib
+#+end_src

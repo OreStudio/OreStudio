@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include <QColor>
+#include <QFont>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
@@ -83,10 +84,19 @@ QVariant ClientReportDefinitionModel::data(
 
     const auto& definition = definitions_[row];
 
+    const auto def_ws_id = QString::fromStdString(
+        boost::uuids::to_string(definition.workspace_id));
+    const bool is_local = workspaceContext().is_live() ||
+                          (def_ws_id == workspaceContext().id);
+
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case Name:
             return QString::fromStdString(definition.name);
+        case Source:
+            if (workspaceContext().is_live())
+                return {};
+            return is_local ? tr("Local") : tr("Inherited");
         case ReportType:
             return QString::fromStdString(definition.report_type);
         case ScheduleExpression:
@@ -116,7 +126,16 @@ QVariant ClientReportDefinitionModel::data(
         }
     }
 
+    if (role == Qt::FontRole && !workspaceContext().is_live()) {
+        QFont font;
+        if (is_local)
+            font.setBold(true);
+        return font;
+    }
+
     if (role == Qt::ForegroundRole) {
+        if (!workspaceContext().is_live() && !is_local)
+            return QColor(0x9C, 0xA3, 0xAF);  // dimmed gray for inherited rows
         return recency_foreground_color(definition.name);
     }
 
@@ -131,6 +150,8 @@ QVariant ClientReportDefinitionModel::headerData(
     switch (section) {
     case Name:
         return tr("Name");
+    case Source:
+        return tr("Source");
     case ReportType:
         return tr("Type");
     case ScheduleExpression:
@@ -223,7 +244,8 @@ void ClientReportDefinitionModel::fetch_definitions(
                 reporting::messaging::get_report_definitions_request request;
 
                 auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                    process_authenticated_request(
+                        std::move(request), self->workspaceContext());
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch report definitions: "

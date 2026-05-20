@@ -53,6 +53,21 @@ public:
     void write(context ctx, const std::vector<domain::report_definition>& v);
 
     std::vector<domain::report_definition> read_latest(context ctx);
+
+    /**
+     * @brief List definitions visible from a workspace resolution chain.
+     *
+     * Iterates each workspace in the chain (most-specific first) and merges
+     * results with deduplication by name: the version from the earliest
+     * workspace in the chain wins (i.e. the most-specific override).
+     *
+     * @param ctx  Repository context (workspace_id set to the selected workspace).
+     * @param chain  Full resolution chain [selected, parent, ..., live].
+     */
+    std::vector<domain::report_definition>
+    read_latest_with_resolution(context ctx,
+        const std::vector<std::string>& chain);
+
     std::vector<domain::report_definition>
     read_latest(context ctx, const std::string& id);
     std::vector<domain::report_definition>

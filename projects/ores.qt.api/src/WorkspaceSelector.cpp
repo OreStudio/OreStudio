@@ -34,7 +34,8 @@ using namespace ores::logging;
 WorkspaceSelector::WorkspaceSelector(ClientManager* clientManager, QWidget* parent)
     : QWidget(parent),
       clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      resolve_watcher_(new QFutureWatcher<ResolveResult>(this)) {
 
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(4, 0, 4, 0);
@@ -61,6 +62,8 @@ WorkspaceSelector::WorkspaceSelector(ClientManager* clientManager, QWidget* pare
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &WorkspaceSelector::onWorkspacesLoaded);
+    connect(resolve_watcher_, &QFutureWatcher<ResolveResult>::finished,
+            this, &WorkspaceSelector::onResolutionLoaded);
     connect(combo_, QOverload<int>::of(&QComboBox::activated),
             this, &WorkspaceSelector::onComboActivated);
 
@@ -142,7 +145,49 @@ void WorkspaceSelector::onComboActivated(int index) {
     if (index < 0 || index >= static_cast<int>(entries_.size()))
         return;
     const auto& e = entries_[static_cast<std::size_t>(index)];
-    currentCtx_ = entryToContext(e);
+    if (e.id == WorkspaceContext::live_workspace_id) {
+        currentCtx_ = entryToContext(e);
+        emit workspaceChanged(currentCtx_);
+    } else {
+        resolveAndEmit(e);
+    }
+}
+
+void WorkspaceSelector::resolveAndEmit(const WorkspaceEntry& e) {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        currentCtx_ = entryToContext(e);
+        emit workspaceChanged(currentCtx_);
+        return;
+    }
+    QPointer<WorkspaceSelector> self = this;
+    const QString pending_id   = e.id;
+    const QString pending_name = e.name;
+    QFuture<ResolveResult> future = QtConcurrent::run([self, pending_id, pending_name]() -> ResolveResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, pending_id, pending_name};
+        workspace::messaging::resolve_workspace_request req;
+        req.workspace_id = pending_id.toStdString();
+        auto result = self->clientManager_->process_authenticated_request(std::move(req));
+        if (!result)
+            return {false, {}, pending_id, pending_name};
+        QVector<QString> order;
+        for (const auto& wid : result->resolution_order)
+            order.push_back(QString::fromStdString(wid));
+        if (order.isEmpty())
+            order.push_back(pending_id);
+        return {true, std::move(order), pending_id, pending_name};
+    });
+    resolve_watcher_->setFuture(future);
+}
+
+void WorkspaceSelector::onResolutionLoaded() {
+    auto result = resolve_watcher_->result();
+    WorkspaceContext ctx;
+    ctx.id   = result.pending_id;
+    ctx.name = result.pending_name;
+    ctx.resolution_order = result.success ? result.resolution_order
+                                          : QVector<QString>{result.pending_id};
+    currentCtx_ = ctx;
     emit workspaceChanged(currentCtx_);
 }
 

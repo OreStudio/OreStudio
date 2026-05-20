@@ -20,6 +20,7 @@
 #include "ores.service/service/request_context.hpp"
 
 #include <vector>
+#include <sstream>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -90,15 +91,30 @@ make_request_context(
     if (!verifier)
         return base_ctx;
 
-    // Applies workspace ID from X-Workspace-Id header to a successful context.
-    // Absence of the header leaves the default Live workspace sentinel intact.
+    // Applies workspace ID and optional resolution chain from request headers.
+    // Absence of X-Workspace-Id leaves the default Live workspace intact.
+    // Absence of X-Workspace-Resolution means single-workspace query only.
     using ctx_result_t = std::expected<ores::database::context, ores::service::error_code>;
     const auto apply_workspace = [&](ctx_result_t r) -> ctx_result_t {
         if (!r) return r;
         const auto ws_it = msg.headers.find(
             std::string(ores::nats::headers::x_workspace_id));
         if (ws_it != msg.headers.end() && !ws_it->second.empty())
-            return r->with_workspace(ws_it->second);
+            r = r->with_workspace(ws_it->second);
+
+        const auto res_it = msg.headers.find(
+            std::string(ores::nats::headers::x_workspace_resolution));
+        if (res_it != msg.headers.end() && !res_it->second.empty()) {
+            std::vector<std::string> chain;
+            std::istringstream ss(res_it->second);
+            std::string token;
+            while (std::getline(ss, token, ',')) {
+                if (!token.empty())
+                    chain.push_back(std::move(token));
+            }
+            if (!chain.empty())
+                r = r->with_workspace_resolution(std::move(chain));
+        }
         return r;
     };
 

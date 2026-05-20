@@ -82,6 +82,7 @@ signals:
 private slots:
     void onWorkspacesLoaded();
     void onComboActivated(int index);
+    void onResolutionLoaded();
 
 private:
     struct WorkspaceEntry {
@@ -95,8 +96,16 @@ private:
         QString error;
     };
 
+    struct ResolveResult {
+        bool success;
+        QVector<QString> resolution_order;
+        QString pending_id;
+        QString pending_name;
+    };
+
     void populateCombo();
     WorkspaceContext entryToContext(const WorkspaceEntry& e) const;
+    void resolveAndEmit(const WorkspaceEntry& e);
 
     ClientManager* clientManager_;
     WorkspaceContext currentCtx_;
@@ -105,6 +114,7 @@ private:
     QLabel* label_;
     QComboBox* combo_;
     QFutureWatcher<FetchResult>* watcher_;
+    QFutureWatcher<ResolveResult>* resolve_watcher_;
     bool fetching_{false};
 };
 

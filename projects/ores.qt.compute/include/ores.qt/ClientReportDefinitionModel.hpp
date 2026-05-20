@@ -59,6 +59,7 @@ public:
      */
     enum Column {
         Name,
+        Source,             // "Local" or "Inherited" — visible in workspace context
         ReportType,
         ScheduleExpression,
         ConcurrencyPolicy,

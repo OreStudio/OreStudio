@@ -112,9 +112,10 @@ void prepare_for_publish(generated_organisation& org,
     // uniqueness across multiple tests sharing the same tenant.
     const auto prefix = std::to_string(seed);
 
+    const auto tid = ores::utility::uuid::tenant_id::from_string(tenant_id).value();
     const auto stamp = [&](auto& entities) {
         for (auto& e : entities) {
-            e.tenant_id = tenant_id;
+            e.tenant_id = tid;
             e.modified_by = modified_by;
             e.performed_by = modified_by;
         }
@@ -129,7 +130,6 @@ void prepare_for_publish(generated_organisation& org,
     stamp(org.business_unit_types);
     stamp(org.business_units);
 
-    const auto tid = ores::utility::uuid::tenant_id::from_string(tenant_id).value();
     for (auto& p : org.portfolios) {
         p.tenant_id = tid;
         p.modified_by = modified_by;

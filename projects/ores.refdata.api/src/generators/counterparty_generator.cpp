@@ -38,7 +38,8 @@ domain::counterparty generate_synthetic_counterparty(
 
     domain::counterparty r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.full_name = faker::company::companyName() + " " + std::to_string(idx);
     r.short_code = std::string(faker::string::alpha(6)) + std::to_string(idx);

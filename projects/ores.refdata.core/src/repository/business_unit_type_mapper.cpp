@@ -35,7 +35,7 @@ business_unit_type_mapper::map(const business_unit_type_entity& v) {
 
     domain::business_unit_type r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.coding_scheme_code = v.coding_scheme_code;
     r.code = v.code;
@@ -58,7 +58,7 @@ business_unit_type_mapper::map(const domain::business_unit_type& v) {
 
     business_unit_type_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.coding_scheme_code = v.coding_scheme_code;
     r.code = v.code;

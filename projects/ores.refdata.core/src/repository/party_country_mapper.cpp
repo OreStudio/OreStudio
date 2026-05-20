@@ -35,7 +35,7 @@ party_country_mapper::map(const party_country_entity& v) {
 
     domain::party_country r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id.value());
     r.country_alpha2_code = v.country_alpha2_code;
     r.modified_by = v.modified_by;
@@ -54,7 +54,7 @@ party_country_mapper::map(const domain::party_country& v) {
 
     party_country_entity r;
     r.party_id = boost::uuids::to_string(v.party_id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.country_alpha2_code = v.country_alpha2_code;
     r.version = v.version;
     r.modified_by = v.modified_by;

@@ -35,7 +35,8 @@ domain::party_counterparty generate_synthetic_party_counterparty(
 
     domain::party_counterparty r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.party_id = ctx.generate_uuid();
     r.counterparty_id = ctx.generate_uuid();
     r.modified_by = modified_by;

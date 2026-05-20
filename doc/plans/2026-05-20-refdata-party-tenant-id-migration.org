@@ -2,7 +2,7 @@
 :ID: 3A7F2B1C-84E6-4D59-B2A8-5C9E0F3D1A72
 :END:
 #+title: Refdata Party Domain: tenant_id Strong-Type Migration
-#+STATUS: TODO
+#+STATUS: DONE
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: inlineimages
@@ -134,49 +134,65 @@ Affected generators (all in =ores.refdata.api/src/generators/=):
 * Implementation Checklist
 
 ** Domain headers
-- [ ] =party.hpp= — change field type, add include
-- [ ] =business_unit.hpp= — change field type, add include
-- [ ] =business_unit_type.hpp= — change field type, add include
-- [ ] =counterparty.hpp= — change field type, add include
-- [ ] =counterparty_identifier.hpp= — change field type, add include
-- [ ] =counterparty_contact_information.hpp= — change field type, add include
-- [ ] =party_contact_information.hpp= — change field type, add include
-- [ ] =party_counterparty.hpp= — change field type, add include
-- [ ] =party_country.hpp= — change field type, add include
-- [ ] =party_currency.hpp= — change field type, add include
-- [ ] =party_identifier.hpp= — change field type, add include
+- [X] =party.hpp= — change field type, add include
+- [X] =business_unit.hpp= — change field type, add include
+- [X] =business_unit_type.hpp= — change field type, add include
+- [X] =counterparty.hpp= — change field type, add include
+- [X] =counterparty_identifier.hpp= — change field type, add include
+- [X] =counterparty_contact_information.hpp= — change field type, add include
+- [X] =party_contact_information.hpp= — change field type, add include
+- [X] =party_counterparty.hpp= — change field type, add include
+- [X] =party_country.hpp= — change field type, add include
+- [X] =party_currency.hpp= — change field type, add include
+- [X] =party_identifier.hpp= — change field type, add include
 
 ** Repository mappers (=ores.refdata.core/src/repository/=)
-- [ ] =party_mapper.cpp= — both read and write sides
-- [ ] =business_unit_mapper.cpp= — both read and write sides
-- [ ] =business_unit_type_mapper.cpp= — both read and write sides
-- [ ] =counterparty_mapper.cpp= — both read and write sides
-- [ ] =counterparty_identifier_mapper.cpp= — both read and write sides
-- [ ] =counterparty_contact_information_mapper.cpp= — both read and write sides
-- [ ] =party_contact_information_mapper.cpp= — both read and write sides
-- [ ] =party_counterparty_mapper.cpp= — both read and write sides
-- [ ] =party_country_mapper.cpp= — both read and write sides
-- [ ] =party_currency_mapper.cpp= — both read and write sides
-- [ ] =party_identifier_mapper.cpp= — both read and write sides
+- [X] =party_mapper.cpp= — both read and write sides
+- [X] =business_unit_mapper.cpp= — both read and write sides
+- [X] =business_unit_type_mapper.cpp= — both read and write sides
+- [X] =counterparty_mapper.cpp= — both read and write sides
+- [X] =counterparty_identifier_mapper.cpp= — both read and write sides
+- [X] =counterparty_contact_information_mapper.cpp= — both read and write sides
+- [X] =party_contact_information_mapper.cpp= — both read and write sides
+- [X] =party_counterparty_mapper.cpp= — both read and write sides
+- [X] =party_country_mapper.cpp= — both read and write sides
+- [X] =party_currency_mapper.cpp= — both read and write sides
+- [X] =party_identifier_mapper.cpp= — both read and write sides
 
 ** Special repository cases
-- [ ] =party_repository.cpp= — manual row mapping in =read_system_party= (line 129)
+- [X] =party_repository.cpp= — manual row mapping in =read_system_party= (line 129)
 
 ** Generators (=ores.refdata.api/src/generators/=)
-- [ ] =party_generator.cpp=
-- [ ] =business_unit_generator.cpp=
-- [ ] =business_unit_type_generator.cpp=
-- [ ] =counterparty_generator.cpp=
-- [ ] =counterparty_identifier_generator.cpp=
-- [ ] =counterparty_contact_information_generator.cpp=
-- [ ] =party_contact_information_generator.cpp=
-- [ ] =party_counterparty_generator.cpp=
-- [ ] =party_country_generator.cpp=
-- [ ] =party_currency_generator.cpp=
-- [ ] =party_identifier_generator.cpp=
+- [X] =party_generator.cpp=
+- [X] =business_unit_generator.cpp=
+- [X] =business_unit_type_generator.cpp=
+- [X] =counterparty_generator.cpp=
+- [X] =counterparty_identifier_generator.cpp=
+- [X] =counterparty_contact_information_generator.cpp=
+- [X] =party_contact_information_generator.cpp=
+- [X] =party_counterparty_generator.cpp=
+- [X] =party_country_generator.cpp=
+- [X] =party_currency_generator.cpp=
+- [X] =party_identifier_generator.cpp=
+
+** Test files (=ores.refdata.core/tests/= and =ores.synthetic.core/tests/=)
+
+These were not in the original scope but required fixes to compile after the
+domain header changes.  The pattern in each: update =find_system_party_id=
+helper to take =const ores::utility::uuid::tenant_id&=, remove spurious
+=.to_string()= at call sites, and update =make_pc= / =make_party_*= helpers
+that assigned =h.tenant_id().to_string()= to =pc.tenant_id=.
+
+- [X] =party_rls_isolation_tests.cpp=
+- [X] =repository_party_counterparty_repository_tests.cpp=
+- [X] =repository_party_country_repository_tests.cpp=
+- [X] =repository_party_currency_repository_tests.cpp=
+- [X] =organisation_publisher_integration_tests.cpp= (=ores.synthetic.core=) —
+  moved =from_string()= conversion before the generic =stamp= lambda so all
+  entity types receive the strong type directly
 
 ** Build and test
-- [ ] Build =ores.refdata.api.lib= and =ores.refdata.core.lib= cleanly
+- [X] Build =ores.refdata.api.lib= and =ores.refdata.core.lib= cleanly
 - [ ] All refdata repository tests pass (=ores.refdata.core= test suite)
 - [ ] =ores.synthetic.core= tests pass (no more =bad access to std::expected=)
 
@@ -184,7 +200,9 @@ Affected generators (all in =ores.refdata.api/src/generators/=):
 
 - The mapper read side uses =.value()= (not =.value_or=) because a malformed
   UUID in the DB is a data integrity bug.  The generator uses =.value_or= because
-  the generation context allows ="system"= as a human-readable shorthand.
+  the generation context allows ="system"= as a human-readable shorthand.  This
+  shorthand is a leaky abstraction — cleanup is tracked in
+  =2026-05-20-refdata-cpp-codegen-activation.org= (Notes section).
 - No SQL migration is needed.  The DB column is already =uuid=; only the C++
   representation changes.
 - No eventing or messaging types are touched.  Downstream consumers of

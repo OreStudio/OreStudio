@@ -33,6 +33,7 @@
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;
@@ -49,19 +50,19 @@ const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository][party_counterparty]");
 
 boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const std::string& tid) {
+    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
         if (p.tenant_id == tid)
             return p.id;
-    throw std::runtime_error("No system party for tenant: " + tid);
+    throw std::runtime_error("No system party for tenant: " + tid.to_string());
 }
 
 party_counterparty make_party_counterparty(scoped_database_helper& h,
     const boost::uuids::uuid& party_id,
     const boost::uuids::uuid& counterparty_id) {
     party_counterparty pc;
-    pc.tenant_id = h.tenant_id().to_string();
+    pc.tenant_id = h.tenant_id();
     pc.party_id = party_id;
     pc.counterparty_id = counterparty_id;
     pc.modified_by = h.db_user();
@@ -84,7 +85,7 @@ TEST_CASE("write_single_party_counterparty", tags) {
     party_counterparty_repository repo(h.context());
 
     const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -106,7 +107,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     std::vector<party_counterparty> pcs;
     for (int i = 0; i < 3; ++i) {
@@ -132,7 +133,7 @@ TEST_CASE("read_latest_party_counterparties_by_party", tags) {
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -166,7 +167,7 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -193,7 +194,7 @@ TEST_CASE("remove_party_counterparty", tags) {
     party_counterparty_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id().to_string());
+        party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";

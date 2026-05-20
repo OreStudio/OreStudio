@@ -35,7 +35,8 @@ domain::party_country generate_synthetic_party_country(
 
     domain::party_country r;
     r.version = 1;
-    r.tenant_id = tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
+        .value_or(utility::uuid::tenant_id::system());
     r.party_id = ctx.generate_uuid();
     r.country_alpha2_code = "US";
     r.modified_by = modified_by;

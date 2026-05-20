@@ -65,6 +65,9 @@ public:
 public slots:
     void doReload() override;
 
+protected:
+    void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

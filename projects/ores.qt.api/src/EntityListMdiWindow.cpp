@@ -22,9 +22,13 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QProgressBar>
+#include <QWidget>
+#include <QSizePolicy>
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/UiPersistence.hpp"
+#include "ores.qt/WorkspaceSelector.hpp"
 
 namespace ores::qt {
 
@@ -229,6 +233,20 @@ void EntityListMdiWindow::connectModel(AbstractClientModel* model) {
             this, &EntityListMdiWindow::endLoading);
     connect(model, &AbstractClientModel::loadError,
             this, [this](const QString&, const QString&) { endLoading(); });
+}
+
+WorkspaceSelector* EntityListMdiWindow::createWorkspaceSelector(ClientManager* cm) {
+    windowWorkspaceContext_ = cm->workspaceContext();
+    auto* selector = new WorkspaceSelector(cm, this);
+    selector->setCurrentContext(windowWorkspaceContext_);
+    connect(selector, &WorkspaceSelector::workspaceChanged,
+            this, &EntityListMdiWindow::onWindowWorkspaceChanged);
+    return selector;
+}
+
+void EntityListMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx) {
+    windowWorkspaceContext_ = ctx;
+    reload();
 }
 
 }

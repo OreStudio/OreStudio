@@ -123,9 +123,9 @@ do instead
 
 -- =============================================================================
 -- Validation function for rounding_type
--- Validates that a code exists in the rounding_types table.
+-- Validates that a code exists in the rounding_types table for the given
+-- tenant or the system tenant (which holds the canonical value set).
 -- Returns the validated value, or default if null/empty.
--- Uses current tenant data.
 -- =============================================================================
 create or replace function ores_refdata_validate_rounding_type_fn(
     p_tenant_id uuid,
@@ -137,22 +137,27 @@ begin
         return 'Closest';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_rounding_types_tbl limit 1) then
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded rounding types yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_rounding_types_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+        limit 1
+    ) then
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
         select 1 from ores_refdata_rounding_types_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid rounding_type: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_rounding_types_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

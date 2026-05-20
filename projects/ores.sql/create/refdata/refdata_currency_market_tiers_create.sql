@@ -137,22 +137,27 @@ begin
         return 'g10';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_currency_market_tiers_tbl limit 1) then
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded market tiers yet (freshly provisioned tenant).
+    if not exists (
+        select 1 from ores_refdata_currency_market_tiers_tbl
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+        limit 1
+    ) then
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
         select 1 from ores_refdata_currency_market_tiers_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid currency_market_tier: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_currency_market_tiers_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

@@ -1,0 +1,74 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.codegen Component
+
+skinparam linetype ortho
+left to right direction
+
+package "Inputs" #E8F4FD {
+    [JSON Models\nmodels/<subject>/] as models
+    [Mustache Templates\nlibrary/templates/] as templates
+    [Static Data\nlibrary/data/] as data
+}
+
+package "Generators" #F2F2F2 {
+    [generator.py\n(C++ / SQL / Qt)] as gen
+    [v2_doc_generate.py\n(org documents)] as docgen
+    [fpml_parser.py\n(FPML XML → JSON)] as fpml
+    [plantuml_er_generate.py\n(ER diagrams)] as ergen
+}
+
+package "Shell Wrappers" #FFF8E8 {
+    [run_generator.sh] as runsh
+    [generate_v2_doc.sh] as docsh
+    [plantuml_er_generate.sh] as ersh
+}
+
+package "Outputs" #E8FDE8 {
+    [SQL\n(DQ schemas, seed data)] as sql
+    [C++ Scaffolding\n(domain types, Qt UI)] as cpp
+    [v2 Org Documents\n(component / task / sprint)] as orgdocs
+    [PlantUML ER Diagrams\n(database schema)] as erdiag
+}
+
+runsh --> gen
+docsh --> docgen
+ersh --> ergen
+
+models --> gen
+templates --> gen
+data --> gen
+
+models --> docgen
+templates --> docgen
+
+models --> fpml
+
+gen --> sql
+gen --> cpp
+
+docgen --> orgdocs
+
+ergen --> erdiag
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.codegen.puml"
+' End:
+@enduml

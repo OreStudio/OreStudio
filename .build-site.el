@@ -77,11 +77,14 @@
 ;; Load the publishing system
 (require 'ox-publish)
 
-;; IMPORTANT: update to href=\"./assets/style.css\"> testing locally.
-(defvar html-header "<link rel=\"stylesheet\" href=\"https://orestudio.github.io/OreStudio/assets/style.css\">
-<link rel=\"icon\" href=\"/assets/images/modern-icon.png\">
+;; Stylesheet uses absolute /OreStudio/ path so it resolves both in
+;; production (orestudio.github.io/OreStudio/) and under the local
+;; preview server, which symlinks the build output to /OreStudio (see
+;; build/scripts/serve-site.sh).
+(defvar html-header "<link rel=\"stylesheet\" href=\"/OreStudio/assets/style.css\">
+<link rel=\"icon\" href=\"/OreStudio/assets/images/modern-icon.png\">
 <script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js\"></script>
-<script>var hlf=function(){Array.prototype.forEach.call(document.querySelectorAll(\"pre.src\"),function(t){var e;e=t.getAttribute(\"class\"),e=e.replace(/src-(\w+)/,\"src-$1 $1\"),console.log(e),t.setAttribute(\"class\",e),hljs.highlightBlock(t)})};addEventListener(\"DOMContentLoaded\",hlf);</script>
+<script>var hlf=function(){Array.prototype.forEach.call(document.querySelectorAll(\"pre.src\"),function(t){var e;e=t.getAttribute(\"class\"),e=e.replace(/src-(\w+)/,\"src-$1 $1\"),t.setAttribute(\"class\",e),hljs.highlightBlock(t)})};addEventListener(\"DOMContentLoaded\",hlf);</script>
 <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/googlecode.min.css\" />
 <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css\">")
 
@@ -97,13 +100,12 @@
       org-html-head html-header)
 
 (defvar site-html-preamble "<header id='site-header'>
-  <a href='/OreStudio/readme.html'><img id='site-banner' src='/OreStudio/assets/images/ore-studio-banner.png' alt='ORE Studio'/></a>
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
     <a href='/OreStudio/doc/doc.html'>Documentation</a>
     <a href='/OreStudio/doc/v2/compass.html'>V2 Compass</a>
     <a href='/OreStudio/doxygen/html/index.html'>Doxygen</a>
-    <a href='https://github.com/OreStudio/OreStudio'>GitHub</a>
+    <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")
 

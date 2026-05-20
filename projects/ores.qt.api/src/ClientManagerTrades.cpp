@@ -84,6 +84,15 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
                 << "getTradeDetail server error: " << base->message;
             return std::nullopt;
         }
+        // rfl::internal::no_duplicate_field_names does O(N^2) constexpr
+        // comparisons over all variant alternatives.  trade_instrument has 9
+        // top-level alternatives (two of which are nested variants), which
+        // pushes MSVC past its default 100 000-step constexpr budget (C1202).
+        // Raise the limit for this translation unit only.
+#ifdef _MSC_VER
+#  pragma constexpr_depth(1024)
+#  pragma constexpr_steps(1000000)
+#endif
         auto inst = rfl::json::read<
             trading::messaging::get_trade_detail_instrument_wrapper,
             rfl::AddTagsToVariants>(raw);

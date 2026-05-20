@@ -193,8 +193,8 @@ that assigned =h.tenant_id().to_string()= to =pc.tenant_id=.
 
 ** Build and test
 - [X] Build =ores.refdata.api.lib= and =ores.refdata.core.lib= cleanly
-- [ ] All refdata repository tests pass (=ores.refdata.core= test suite)
-- [ ] =ores.synthetic.core= tests pass (no more =bad access to std::expected=)
+- [X] All refdata repository tests pass (=ores.refdata.core= test suite)
+- [X] =ores.synthetic.core= tests pass (no more =bad access to std::expected=)
 
 * Notes
 

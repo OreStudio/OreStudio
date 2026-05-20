@@ -107,65 +107,73 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 }
 
 // ---------------------------------------------------------------------------
-// IPlugin::create_menus — return the standalone Entities menu.
+// IPlugin::setup_menus — contribute Organisation section to Reference Data.
 // ---------------------------------------------------------------------------
-QList<QMenu*> PartyPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
+void PartyPlugin::setup_menus(const shared_menus_context& smc) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " reference_data=" << (smc.reference_data_menu ? "ok" : "null");
+    auto* ref = smc.reference_data_menu;
+    if (!ref)
+        return;
+
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
-    auto* menuEntities = new QMenu(tr("&Organisation"));
+    ref->addSeparator();
 
-    act_parties_ = menuEntities->addAction(ico(Icon::Organization), tr("&Parties"));
+    act_parties_ = ref->addAction(ico(Icon::Organization), tr("&Parties"));
     connect(act_parties_, &QAction::triggered, this, [this]() {
         if (partyController_) partyController_->showListWindow();
     });
-    act_counterparties_ = menuEntities->addAction(ico(Icon::Handshake), tr("&Counterparties"));
+    act_counterparties_ = ref->addAction(ico(Icon::Handshake), tr("&Counterparties"));
     connect(act_counterparties_, &QAction::triggered, this, [this]() {
         if (counterpartyController_) counterpartyController_->showListWindow();
     });
 
-    menuEntities->addSeparator();
+    ref->addSeparator();
 
-    act_business_centres_ = menuEntities->addAction(
-        ico(Icon::BuildingBank), tr("&Business Centres"));
+    act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
     connect(act_business_centres_, &QAction::triggered, this, [this]() {
         if (businessCentreController_) businessCentreController_->showListWindow();
     });
-    act_business_units_ = menuEntities->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
+    act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
     connect(act_business_units_, &QAction::triggered, this, [this]() {
         if (businessUnitController_) businessUnitController_->showListWindow();
     });
 
-    menuEntities->addSeparator();
+    ref->addSeparator();
 
-    // Organisation code tables
-    auto* menuEntityTypes = menuEntities->addMenu(tr("Organisation &Codes"));
-    auto* actPartyTypes = menuEntityTypes->addAction(ico(Icon::Tag), tr("Party &Types"));
+    auto* menuOrgCodes = ref->addMenu(tr("Organisation &Codes"));
+    auto* actPartyTypes = menuOrgCodes->addAction(ico(Icon::Tag), tr("Party &Types"));
     connect(actPartyTypes, &QAction::triggered, this, [this]() {
         if (partyTypeController_) partyTypeController_->showListWindow();
     });
-    auto* actPartyStatuses = menuEntityTypes->addAction(ico(Icon::Flag), tr("Party &Statuses"));
+    auto* actPartyStatuses = menuOrgCodes->addAction(ico(Icon::Flag), tr("Party &Statuses"));
     connect(actPartyStatuses, &QAction::triggered, this, [this]() {
         if (partyStatusController_) partyStatusController_->showListWindow();
     });
-    auto* actPartyIdSchemes = menuEntityTypes->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
+    auto* actPartyIdSchemes = menuOrgCodes->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
     connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
         if (partyIdSchemeController_) partyIdSchemeController_->showListWindow();
     });
-    auto* actContactTypes = menuEntityTypes->addAction(
+    auto* actContactTypes = menuOrgCodes->addAction(
         ico(Icon::PersonAccounts), tr("&Contact Types"));
     connect(actContactTypes, &QAction::triggered, this, [this]() {
         if (contactTypeController_) contactTypeController_->showListWindow();
     });
-    auto* actBizUnitTypes = menuEntityTypes->addAction(
+    auto* actBizUnitTypes = menuOrgCodes->addAction(
         ico(Icon::PeopleTeam), tr("Business Unit &Types"));
     connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
         if (businessUnitTypeController_) businessUnitTypeController_->showListWindow();
     });
+}
 
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {menuEntities};
+// ---------------------------------------------------------------------------
+// IPlugin::create_menus — no standalone menu; all items in Reference Data.
+// ---------------------------------------------------------------------------
+QList<QMenu*> PartyPlugin::create_menus() {
+    BOOST_LOG_SEV(lg(), debug) << "All items contributed via setup_menus — no standalone menus.";
+    return {};
 }
 
 QList<QAction*> PartyPlugin::toolbar_actions() {

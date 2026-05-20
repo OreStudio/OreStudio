@@ -147,106 +147,112 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
+        << " analytics=" << (smc.analytics_menu ? "ok" : "null")
         << " system=" << (smc.system_menu ? "ok" : "null")
         << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
-    if (!smc.system_menu || !smc.telemetry_menu)
-        return;
 
-    auto* telemetryAction = smc.telemetry_menu->menuAction();
+    // ---- Analytics menu: reporting + compute items ----------------------
+    if (smc.analytics_menu) {
+        smc.analytics_menu->addSeparator();
+
+        act_report_definitions_ = smc.analytics_menu->addAction(
+            ico(Icon::ChartMultiple), tr("Report &Definitions"));
+        connect(act_report_definitions_, &QAction::triggered, this, [this]() {
+            if (reportDefinitionController_)
+                reportDefinitionController_->showListWindow();
+        });
+
+        act_report_instances_ = smc.analytics_menu->addAction(
+            ico(Icon::Record), tr("Report &Instances"));
+        connect(act_report_instances_, &QAction::triggered, this, [this]() {
+            if (reportInstanceController_)
+                reportInstanceController_->showListWindow();
+        });
+
+        smc.analytics_menu->addSeparator();
+
+        auto* actDashboard = smc.analytics_menu->addAction(
+            ico(Icon::Chart), tr("&Dashboard"));
+        connect(actDashboard, &QAction::triggered, this, [this]() {
+            if (computeDashboardController_)
+                computeDashboardController_->showDashboard();
+        });
+
+        auto* actConsole = smc.analytics_menu->addAction(
+            ico(Icon::ServerLink), tr("&Console"));
+        connect(actConsole, &QAction::triggered, this, [this]() {
+            if (computeConsoleController_)
+                computeConsoleController_->showConsole();
+        });
+
+        smc.analytics_menu->addSeparator();
+
+        auto* actApps = smc.analytics_menu->addAction(
+            ico(Icon::TasksApp), tr("&Apps"));
+        connect(actApps, &QAction::triggered, this, [this]() {
+            if (appController_) appController_->showListWindow();
+        });
+
+        auto* actAppVersions = smc.analytics_menu->addAction(
+            ico(Icon::TasksApp), tr("App &Versions"));
+        connect(actAppVersions, &QAction::triggered, this, [this]() {
+            if (appVersionController_) appVersionController_->showListWindow();
+        });
+    }
+
+    // ---- Analytics Codes: report types + concurrency policies -----------
+    if (smc.analytics_codes_menu) {
+        auto* actReportTypes = smc.analytics_codes_menu->addAction(
+            ico(Icon::Chart), tr("Report &Types"));
+        connect(actReportTypes, &QAction::triggered, this, [this]() {
+            if (reportTypeController_) reportTypeController_->showListWindow();
+        });
+
+        auto* actConcurrencyPolicies = smc.analytics_codes_menu->addAction(
+            ico(Icon::Settings), tr("&Concurrency Policies"));
+        connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
+            if (concurrencyPolicyController_)
+                concurrencyPolicyController_->showListWindow();
+        });
+    }
 
     // ---- System > Message Queue (before Telemetry) -----------------------
-    auto* msgQueue = new QMenu(tr("&Message Queue"), smc.system_menu);
-    smc.system_menu->insertMenu(telemetryAction, msgQueue);
+    if (smc.system_menu && smc.telemetry_menu) {
+        auto* telemetryAction = smc.telemetry_menu->menuAction();
 
-    auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
-    connect(actQueueMonitor, &QAction::triggered, this, [this]() {
-        if (queueMonitorController_) queueMonitorController_->showListWindow();
-    });
+        auto* msgQueue = new QMenu(tr("&Message Queue"), smc.system_menu);
+        smc.system_menu->insertMenu(telemetryAction, msgQueue);
 
-    // ---- System > Telemetry > Service Dashboard (first item) ------------
-    auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty()
-        ? nullptr : smc.telemetry_menu->actions().first();
+        auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
+        connect(actQueueMonitor, &QAction::triggered, this, [this]() {
+            if (queueMonitorController_) queueMonitorController_->showListWindow();
+        });
 
-    auto* actServiceDashboard = new QAction(ico(Icon::Chart), tr("&Service Dashboard..."), this);
-    connect(actServiceDashboard, &QAction::triggered, this, [this]() {
-        if (serviceDashboardController_) serviceDashboardController_->showDashboard();
-    });
+        // ---- System > Telemetry > Service Dashboard (first item) --------
+        auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty()
+            ? nullptr : smc.telemetry_menu->actions().first();
 
-    if (firstTelemetryAction) {
-        smc.telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
-        auto* sep = new QAction(this);
-        sep->setSeparator(true);
-        smc.telemetry_menu->insertAction(firstTelemetryAction, sep);
-    } else {
-        smc.telemetry_menu->addAction(actServiceDashboard);
+        auto* actServiceDashboard = new QAction(
+            ico(Icon::Chart), tr("&Service Dashboard..."), this);
+        connect(actServiceDashboard, &QAction::triggered, this, [this]() {
+            if (serviceDashboardController_)
+                serviceDashboardController_->showDashboard();
+        });
+
+        if (firstTelemetryAction) {
+            smc.telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
+            auto* sep = new QAction(this);
+            sep->setSeparator(true);
+            smc.telemetry_menu->insertAction(firstTelemetryAction, sep);
+        } else {
+            smc.telemetry_menu->addAction(actServiceDashboard);
+        }
     }
 }
 
 QList<QMenu*> ComputePlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    QList<QMenu*> menus;
-
-    // ---- Compute --------------------------------------------------------
-    auto* menuCompute = new QMenu(tr("&Compute"));
-
-    auto* actDashboard = menuCompute->addAction(ico(Icon::Chart), tr("&Dashboard"));
-    connect(actDashboard, &QAction::triggered, this, [this]() {
-        if (computeDashboardController_) computeDashboardController_->showDashboard();
-    });
-
-    auto* actConsole = menuCompute->addAction(ico(Icon::ServerLink), tr("&Console"));
-    connect(actConsole, &QAction::triggered, this, [this]() {
-        if (computeConsoleController_) computeConsoleController_->showConsole();
-    });
-
-    menuCompute->addSeparator();
-
-    auto* actApps = menuCompute->addAction(ico(Icon::TasksApp), tr("&Apps"));
-    connect(actApps, &QAction::triggered, this, [this]() {
-        if (appController_) appController_->showListWindow();
-    });
-
-    auto* actAppVersions = menuCompute->addAction(ico(Icon::TasksApp), tr("App &Versions"));
-    connect(actAppVersions, &QAction::triggered, this, [this]() {
-        if (appVersionController_) appVersionController_->showListWindow();
-    });
-
-    // ---- Reporting (inserted before Compute in the menu bar) ------------
-    auto* menuReporting = new QMenu(tr("&Reporting"));
-
-    act_report_definitions_ = menuReporting->addAction(
-        ico(Icon::ChartMultiple), tr("Report &Definitions"));
-    connect(act_report_definitions_, &QAction::triggered, this, [this]() {
-        if (reportDefinitionController_) reportDefinitionController_->showListWindow();
-    });
-
-    act_report_instances_ = menuReporting->addAction(ico(Icon::Record), tr("Report &Instances"));
-    connect(act_report_instances_, &QAction::triggered, this, [this]() {
-        if (reportInstanceController_) reportInstanceController_->showListWindow();
-    });
-
-    menuReporting->addSeparator();
-
-    // ---- Reporting Codes submenu ----------------------------------------
-    auto* menuReportingCodes = menuReporting->addMenu(tr("Reporting &Codes"));
-
-    auto* actReportTypes = menuReportingCodes->addAction(ico(Icon::Chart), tr("Report &Types"));
-    connect(actReportTypes, &QAction::triggered, this, [this]() {
-        if (reportTypeController_) reportTypeController_->showListWindow();
-    });
-
-    auto* actConcurrencyPolicies = menuReportingCodes->addAction(
-        ico(Icon::Settings), tr("&Concurrency Policies"));
-    connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
-        if (concurrencyPolicyController_) concurrencyPolicyController_->showListWindow();
-    });
-
-    // Return Reporting before Compute so Reporting appears first in the menu bar.
-    menus.append(menuReporting);
-    menus.append(menuCompute);
-
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return menus;
+    BOOST_LOG_SEV(lg(), debug) << "All items contributed via setup_menus — no standalone menus.";
+    return {};
 }
 
 QList<QAction*> ComputePlugin::toolbar_actions() {

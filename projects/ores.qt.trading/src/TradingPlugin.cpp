@@ -95,7 +95,7 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 void TradingPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
         << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null")
-        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
+        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
     using IC = IconUtils;
     auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
 
@@ -111,9 +111,10 @@ void TradingPlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // ---- Data Transfer menu — contribute Import ORE Data ----------------
-    if (smc.data_transfer_menu) {
-        auto* actImportOre = smc.data_transfer_menu->addAction(
+    // ---- Data Management menu — contribute Import ORE Data --------------
+    if (smc.data_management_menu) {
+        smc.data_management_menu->addSeparator();
+        auto* actImportOre = smc.data_management_menu->addAction(
             ico(Icon::ImportOre), tr("&Import ORE Data..."));
         connect(actImportOre, &QAction::triggered, this, [this]() {
             if (oreImportController_) oreImportController_->trigger(ctx_.main_window);

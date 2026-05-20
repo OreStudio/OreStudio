@@ -30,12 +30,11 @@ class JobInstanceController;
 class SchedulerMonitorController;
 
 /**
- * @brief Qt plugin providing the top-level &Scheduler menu.
+ * @brief Qt plugin providing the Operations menu (job scheduling half).
  *
- * Owns all three scheduler UI controllers:
- *   - JobDefinitionController  — &Job Definitions
- *   - JobInstanceController    — &Job Instances
- *   - SchedulerMonitorController — &Monitor
+ * setup_menus() seeds the pre-created Operations menu with Job items;
+ * create_menus() returns the populated menu for bar insertion.
+ * WorkflowPlugin (load_order 365) appends the Workflow section after.
  */
 class SchedulerPlugin : public PluginBase {
     Q_OBJECT
@@ -50,11 +49,14 @@ public:
     int load_order() const override { return 360; }
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 
 private:
     plugin_context ctx_;
+
+    QMenu* operations_menu_{nullptr};
 
     std::unique_ptr<JobDefinitionController>     jobDefinitionController_;
     std::unique_ptr<JobInstanceController>       jobInstanceController_;

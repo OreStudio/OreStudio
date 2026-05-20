@@ -48,22 +48,19 @@ void DataTransferPlugin::on_login(const plugin_context& ctx) {
 }
 
 void DataTransferPlugin::setup_menus(const shared_menus_context& smc) {
-    BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Transfer menu handle."
-        << " data_transfer=" << (smc.data_transfer_menu ? "ok" : "null");
-    // Save reference so create_menus() can return the pre-created menu.
-    // RefdataPlugin and TradingPlugin contribute actions during their own
-    // setup_menus calls.
-    data_transfer_menu_ = smc.data_transfer_menu;
+    BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Management menu handle."
+        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+    data_management_menu_ = smc.data_management_menu;
 }
 
 QList<QMenu*> DataTransferPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "Building plugin menus."
-        << " data_transfer_menu=" << (data_transfer_menu_ ? "ok" : "null");
-    if (!data_transfer_menu_) {
-        BOOST_LOG_SEV(lg(), warn) << "Data Transfer menu handle is missing — no menu will appear.";
+        << " data_management_menu=" << (data_management_menu_ ? "ok" : "null");
+    if (!data_management_menu_) {
+        BOOST_LOG_SEV(lg(), warn) << "Data Management menu handle is missing — no menu will appear.";
         return {};
     }
-    return {data_transfer_menu_};
+    return {data_management_menu_};
 }
 
 void DataTransferPlugin::on_logout() {

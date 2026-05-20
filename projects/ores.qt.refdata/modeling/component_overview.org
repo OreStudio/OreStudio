@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 621194c4-d438-4215-ae40-21fbe8ff0d85
+:END:
+#+title: ores.qt.refdata
+#+description: Qt plugin for reference data UI — currencies, countries, trading conventions, coding schemes, datasets, and the data catalogue.
+#+type: component
+#+level: cross
+#+filetags: :qt:refdata:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt.refdata= is the Qt plugin for the reference data domain. It provides
+MDI windows and dialogs for currencies, countries, all trading conventions
+(swap, OIS, FRA, ibor, overnight, CDS, FX, deposit, zero), day count
+fractions, business day convention types, floating index types, payment
+frequency types, coding schemes, datasets, change reasons, and the full data
+catalogue (catalogs, dataset bundles, methodologies, and origin/nature/treatment
+dimensions). It owns the Reference Data top-level menu and the Data Librarian
+window; =ores.qt.party= contributes party-related items to the same menu.
+
+* Inputs
+
+- NATS responses from the refdata and trading services (currencies, countries,
+  conventions, coding schemes, datasets, catalogue entities).
+- User interactions: create/edit/delete/view-history on all refdata entities.
+- =shared_menus_context.reference_data_menu= and =data_management_menu=
+  pointers for menu ownership and contribution.
+
+* Outputs
+
+- Rendered MDI windows for all reference data entities and the Data Librarian.
+- NATS request messages sent to the refdata and trading services on user actions.
+- Reference Data top-level menu (returned via =create_menus=).
+- Data Catalogue and Data Librarian items contributed to the Data Management menu.
+
+* Entry points
+
+- =include/ores.qt/RefdataPlugin.hpp= — plugin class; owns Reference Data menu.
+- =include/ores.qt/CurrencyController.hpp= — currency entity controller.
+- =include/ores.qt/SwapConventionController.hpp= — swap convention controller.
+- =include/ores.qt/CatalogController.hpp= — data catalogue controller.
+
+* Dependencies
+
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
+- =ores.refdata.api= — reference data domain types and NATS schemas.
+- =ores.trading.api= — trading convention domain types and NATS schemas.
+- =ores.ore.core= — ORE model types used in convention configuration.
+- =ores.variability.api= — variability types referenced in some refdata entities.
+- =ores.dq.api= — data quality types used in dataset management.
+- =ores.storage= — storage abstraction for refdata persistence.
+
+* See also
+
+- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — domain types and NATS protocol schemas for reference data.
+- [[id:fd34a3b5-0e24-467a-a9d7-a2f2e7480e1b][ores.trading.api]] — trading convention domain types and NATS schemas.
+- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE model types used in convention configuration.
+- [[id:6de9a7b8-f7ba-4e93-bb93-2fb10c53f9ca][ores.qt.party]] — contributes party items to the Reference Data menu.
+- [[id:92492264-b67a-4ac7-8a58-7d706d9f0dab][ores.qt.data_transfer]] — receives Data Catalogue and Data Librarian items.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.

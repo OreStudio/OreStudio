@@ -32,8 +32,8 @@ class WorkspaceController;
 /**
  * @brief Workspace plugin: manage named data-isolation workspaces.
  *
- * Provides a "Workspaces" menu entry that opens the workspace list window
- * where users can view, create, and archive workspaces.
+ * Contributes "Manage Workspaces" to the shared Data Management menu;
+ * no standalone top-level menu is created.
  */
 class WorkspacePlugin : public PluginBase {
     Q_OBJECT
@@ -45,9 +45,10 @@ public:
     ~WorkspacePlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.workspace"); }
-    int load_order() const override { return 110; }
+    int load_order() const override { return 210; }  // after TradingPlugin (200)
 
     void on_login(const plugin_context& ctx) override;
+    void setup_menus(const shared_menus_context& ctx) override;
     QList<QMenu*> create_menus() override;
     void on_logout() override;
 

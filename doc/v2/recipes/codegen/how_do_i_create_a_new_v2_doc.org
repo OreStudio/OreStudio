@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:v2_docs:templates:agile:recipe:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-20
 
 For the contract every generated document follows (frontmatter,
 sections, TODO vocabulary), see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]. For background on
@@ -104,17 +104,20 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 ** New component model
 
+Component overview files are always named =component_overview.org=.
+Use =--slug component_overview= (not the component name):
+
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
-  --type component --slug ores.example \
+  --type component --slug component_overview \
   --parent-dir projects/ores.example/modeling \
   --title "ores.example" \
   --description "One-line summary of what the component does." \
-  --tags "example,scaffolding"
+  --tags "example,component"
 #+end_src
 
-The output sits directly at =projects/ores.example/modeling/ores.example.org=
-(no subfolder), matching the existing convention.
+Output: =projects/ores.example/modeling/component_overview.org=.
+See [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] for how to fill in each section.
 
 ** New recipe
 
@@ -163,6 +166,36 @@ projects/ores.codegen/generate_v2_doc.sh \
 
 Output: =doc/skills/my-new-skill/SKILL.org=.
 
+** Creating a set of inter-linked documents
+
+When creating multiple documents that will link to each other (e.g. a
+knowledge doc and several component overviews that reference it), the
+correct order is:
+
+1. *Generate all skeleton files first.* Each call mints a fresh UUID.
+   Do not pre-assign or guess UUIDs before running the script — they
+   will not match.
+
+   #+begin_src sh :results verbatim
+   projects/ores.codegen/generate_v2_doc.sh --type knowledge ...
+   projects/ores.codegen/generate_v2_doc.sh --type component --slug component_overview ...
+   projects/ores.codegen/generate_v2_doc.sh --type component --slug component_overview ...
+   #+end_src
+
+2. *Collect the generated IDs.*
+
+   #+begin_src sh :results verbatim
+   grep "^:ID:" projects/ores.foo/modeling/component_overview.org \
+                doc/v2/knowledge/topic/my_knowledge.org
+   #+end_src
+
+3. *Fill in the content of each file*, using the actual IDs in
+   =[[id:UUID][label]]= links.
+
+The =--id= flag is for *migration only* — preserving an existing UUID
+when reformatting a document that already has one. Never use it to
+pre-assign an ID to a brand-new document.
+
 * What the script does
 
 - Generates a fresh UUID and puts it in =:ID:=.
@@ -183,6 +216,9 @@ Manual smoke tests during initial development. No automated test yet
 
 * See also
 
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component-specific workflow
+  with section-by-section guidance.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component Documentation Guide]] — what makes a good component doc.
 - [[id:20d0a77d-e0c0-492e-b0ec-45c7638dd220][How do I run codegen?]] — the C++ model-driven generator on the same
   infrastructure.
 - [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — the contract every generated document follows.

@@ -1,7 +1,7 @@
 #+TITLE: Menu Structure Analysis and Simplification
 #+DATE: 2026-05-18
 #+AUTHOR: ORE Studio Team
-#+STATUS: PROPOSED
+#+STATUS: IN PROGRESS
 #+OPTIONS: toc:t num:nil
 
 * Related Plans
@@ -180,11 +180,13 @@ Secondary issues:
 - Organisation Codes (submenu: Party Types, Statuses, ID Schemes, Contact Types,
   Business Unit Types)
 
-*** Data /(renamed from Data Transfer)/
+*** Data Management /(renamed from Data Transfer; absorbs Workspaces)/
 - Data Catalogue (submenu — unchanged)
 - Data Librarian
 - /separator/
 - Import ORE Data...
+- /separator/
+- Manage Workspaces
 
 *** Operations /(replaces Scheduler + Workflows)/
 - Job Definitions, Job Instances
@@ -209,10 +211,10 @@ Secondary issues:
   - Onboard Tenant...
 
 *** Workspaces
-Removed as a top-level menu.  ~Manage Workspaces~ becomes a toolbar action
-and/or accessible from the Window menu (alongside open-window management).
-This is consistent with how workspace switching is expected to work —
-a quick-access affordance rather than a navigation destination.
+Removed as a standalone top-level menu.  ~Manage Workspaces~ moves into
+~Data Management~, where it sits naturally alongside data catalogue,
+librarian, and import functionality — all concerned with organising and
+managing data contexts.
 
 ** Items not moved
 
@@ -234,7 +236,7 @@ inserts between File and System.  The proposed changes affect:
 | ~PartyPlugin~ | No longer creates a top-level menu; contributes to Reference Data. |
 | ~SchedulerPlugin~ | No longer creates a top-level menu; contributes to Operations. |
 | ~WorkflowPlugin~ | No longer creates a top-level menu; contributes to Operations. |
-| ~WorkspacePlugin~ | ~Manage Workspaces~ promoted to toolbar action; plugin stops creating a menu. |
+| ~WorkspacePlugin~ | Contributes ~Manage Workspaces~ into ~Data Management~; stops creating its own top-level menu. |
 | ~RefdataPlugin~ | Absorbs Organisation Codes submenu from PartyPlugin. |
 
 The shared-menu mechanism (where MainWindow pre-creates a named menu and
@@ -251,7 +253,7 @@ contributing plugins can locate it without hard-coding creation order:
 |------+-------------|
 | Analytics | ~menu_analytics~ |
 | Reference Data | ~menu_refdata~ |
-| Data | ~menu_data~ |
+| Data Management | ~menu_data_management~ |
 | Operations | ~menu_operations~ |
 | System | ~menu_system~ |
 
@@ -294,17 +296,15 @@ contributing plugins can locate it without hard-coding creation order:
    ~menu_operations~.
 3. Remove ~Scheduler~ and ~Workflows~ as separate top-level entries.
 
-** Phase 6 — Data: rename Data Transfer
+** Phase 6 — Data Management: rename + absorb Workspaces
 
-1. Rename ~Data Transfer~ to ~Data~ (object name ~menu_data~, display name ~&Data~).
-2. No content changes required.
+1. Rename ~Data Transfer~ to ~Data Management~ (object name ~menu_data_management~,
+   display name ~&Data Management~).
+2. Modify ~WorkspacePlugin::create_menus()~ to contribute ~Manage Workspaces~
+   into ~menu_data_management~ instead of creating its own top-level menu.
+3. Remove ~Workspaces~ as a separate top-level entry.
 
-** Phase 7 — Workspaces: toolbar action
-
-1. Add ~Manage Workspaces~ as a toolbar action in ~WorkspacePlugin~.
-2. Remove ~WorkspacePlugin::create_menus()~ (or return ~nullptr~).
-
-** Phase 8 — Final QA
+** Phase 7 — Final QA
 
 1. Walk every menu item in the new structure; confirm no action is missing.
 2. Verify login/logout enable-disable state still works for all items.

@@ -55,7 +55,7 @@ public:
     ~ComputePlugin() override;
 
     QString name() const override { return QStringLiteral("ores.qt.compute"); }
-    int load_order() const override { return 400; }
+    int load_order() const override { return 355; }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 970667d1-8ba8-4b49-b047-0d6d4c4ce498
+:END:
+#+title: ores.qt.analytics
+#+description: Qt plugin for analytics pricing UI — model configurations, products, parameters, and pricing engine types.
+#+type: component
+#+level: cross
+#+filetags: :qt:analytics:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt.analytics= is the Qt plugin for the analytics pricing domain.
+It provides MDI windows and dialogs for managing pricing model configurations,
+pricing model products, pricing model product parameters, and pricing engine
+types. It owns the Analytics top-level menu and the Analytics Codes submenu;
+=ores.qt.compute= contributes additional reporting code types to that submenu
+during the =setup_menus= phase.
+
+* Inputs
+
+- NATS responses from the analytics service (model configs, products,
+  parameters, engine types).
+- User interactions: create/edit/delete/view-history on analytics entities.
+- =shared_menus_context.analytics_menu= and =analytics_codes_menu= pointers
+  received in =setup_menus=.
+
+* Outputs
+
+- Rendered MDI windows for pricing model entities.
+- NATS request messages sent to the analytics service on user actions.
+- Analytics and Analytics Codes menus (returned via =create_menus=, with
+  items contributed by ComputePlugin already appended).
+
+* Entry points
+
+- =include/ores.qt/AnalyticsPlugin.hpp= — plugin class; owns the Analytics menu.
+- =include/ores.qt/PricingModelConfigController.hpp= — model config controller.
+- =include/ores.qt/PricingEngineTypeController.hpp= — engine type controller.
+
+* Dependencies
+
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
+- =ores.analytics.api= — pricing model and engine type domain types and NATS schemas.
+- =ores.refdata.api= — reference data types used in pricing configuration.
+
+* See also
+
+- [[id:66d3f1d6-1926-40cf-bcf5-aa42f14ad6d5][ores.analytics.api]] — domain types and NATS protocol schemas for analytics.
+- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — reference data types used in model configuration.
+- [[id:03eae018-5e61-4005-ac9a-eff827a46178][ores.qt.compute]] — contributes report types and concurrency policies to the Analytics Codes submenu.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and the two-phase menu sequence.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.

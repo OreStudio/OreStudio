@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: db5a4924-8f0a-440c-873e-d823f430043e
+:END:
+#+title: ores.qt.admin
+#+description: Qt plugin for IAM UI — accounts, roles, tenants, system settings, badge types, and tenant onboarding.
+#+type: component
+#+level: cross
+#+filetags: :qt:iam:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt.admin= is the Qt plugin for identity and access management UI.
+It provides MDI windows and dialogs for managing accounts, roles, tenants,
+tenant types, system settings, badge definitions, and badge severities.
+It also provides the Tenant Onboarding Wizard for provisioning new tenants
+and contributes the Configuration and Administration submenus to the System
+menu. Variability (feature flags) are surfaced through the system-settings
+controllers.
+
+* Inputs
+
+- NATS responses from the IAM service (accounts, roles, tenants, tenant types,
+  system settings, badge definitions, badge severities).
+- NATS responses from the controller service (variability/system settings).
+- User interactions: create/edit/delete/view-history on IAM entities.
+
+* Outputs
+
+- Rendered MDI windows for each IAM entity type.
+- NATS request messages sent to the IAM and controller services on user actions.
+- Configuration and Administration submenus injected into the System menu.
+
+* Entry points
+
+- =include/ores.qt/AdminPlugin.hpp= — plugin class; contributes to System menu.
+- =include/ores.qt/AccountController.hpp= — account entity controller.
+- =include/ores.qt/TenantController.hpp= — tenant entity controller.
+- =include/ores.qt/TenantOnboardingWizard.hpp= — multi-step tenant provisioning.
+
+* Dependencies
+
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
+- =ores.iam.api= — account, role, tenant, badge domain types and NATS schemas.
+- =ores.controller.api= — system-setting and variability domain types.
+- =ores.variability.api= — variability/feature-flag domain types.
+
+* See also
+
+- [[id:4e0dc581-d74d-4bd1-87d2-7f524a36d20c][ores.iam.api]] — domain types and NATS protocol schemas for IAM.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — server-side IAM logic and NATS handlers.
+- [[id:85d20e29-0ebd-41ff-9f32-10f60af074a8][ores.controller.api]] — system-setting domain types.
+- [[id:26218ad6-c63e-44e8-9b92-7fb51c366566][ores.variability.api]] — variability/feature-flag domain types.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.

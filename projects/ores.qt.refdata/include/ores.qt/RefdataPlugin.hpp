@@ -92,6 +92,8 @@ private:
 
     plugin_context ctx_;
 
+    QMenu* reference_data_menu_{nullptr};
+
     QAction* act_currencies_{nullptr};
     QAction* act_countries_{nullptr};
     QAction* act_data_librarian_{nullptr};
@@ -125,7 +127,7 @@ private:
     std::unique_ptr<FxConventionController>                fxConventionController_;
     std::unique_ptr<CdsConventionController>               cdsConventionController_;
 
-    // Data Catalogue controllers (owned here, contributed to data_transfer_menu)
+    // Data Catalogue controllers (owned here, contributed to data_management_menu)
     std::unique_ptr<DataDomainController>         dataDomainController_;
     std::unique_ptr<SubjectAreaController>        subjectAreaController_;
     std::unique_ptr<CatalogController>            catalogController_;

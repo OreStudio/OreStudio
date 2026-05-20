@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 3fa355d1-38fd-4e35-9e05-2185882b8ac1
+:END:
+#+title: ores.qt.trading
+#+description: Qt plugin for trading UI — portfolios, books, trades with multi-instrument forms, portfolio/org explorers, and ORE import.
+#+type: component
+#+level: cross
+#+filetags: :qt:trading:ui:component:
+#+created: 2026-05-20
+#+updated: 2026-05-20
+
+* Summary
+
+=ores.qt.trading= is the Qt plugin for the trading domain. It provides MDI
+windows and dialogs for portfolios, books, book statuses, and trades, with
+instrument-specific forms for FX (forwards, options, Asian, barrier, digital,
+accumulator, variance swap), rates (IRS/swap, OIS, FRA), credit, equity,
+commodity, and scripted instruments. It provides a Portfolio Explorer and Org
+Explorer for hierarchical trade browsing, an ORE Import Wizard for bulk trade
+loading, and contributes Import ORE Data to the Data Management menu.
+
+* Inputs
+
+- NATS responses from the trading service (portfolios, books, book statuses, trades).
+- NATS responses from the refdata and market data services for instrument-form
+  pickers and reference look-ups.
+- ORE XML files supplied by the user for import.
+- User interactions: create/edit/delete/view-history on trading entities.
+
+* Outputs
+
+- Rendered MDI windows for portfolios, books, trades, explorers, and import wizard.
+- NATS request messages sent to the trading service on user actions.
+- Import ORE Data menu item contributed to the Data Management menu.
+
+* Entry points
+
+- =include/ores.qt/TradingPlugin.hpp= — plugin class; owns Trading menu.
+- =include/ores.qt/TradeController.hpp= — trade entity controller.
+- =include/ores.qt/PortfolioController.hpp= — portfolio entity controller.
+- =include/ores.qt/PortfolioExplorerMdiWindow.hpp= — tree-based portfolio explorer.
+- =include/ores.qt/OreImportController.hpp= — ORE XML bulk import controller.
+
+* Dependencies
+
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
+- =ores.trading.api= — trade, portfolio, book domain types and NATS schemas.
+- =ores.refdata.api= — reference data types used in instrument forms and pickers.
+- =ores.ore.core= — ORE model types for import payload parsing.
+- =ores.ore.api= — ORE API types.
+- =ores.marketdata.api= — market data types used in trade valuation context.
+- =ores.storage= — storage abstraction for trade data persistence.
+
+* See also
+
+- [[id:fd34a3b5-0e24-467a-a9d7-a2f2e7480e1b][ores.trading.api]] — trade, portfolio, book domain types and NATS schemas.
+- [[id:654be6cd-d212-4ee5-a7b4-8af125787522][ores.refdata.api]] — reference data types used in instrument forms.
+- [[id:0f93b352-f234-4d9d-82e6-05218be645e8][ores.ore.api]] — ORE model integration types.
+- [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore.core]] — ORE XML import/export for bulk trade loading.
+- [[id:6a62d943-fac9-4b77-9e22-f265557dcf1a][ores.marketdata.api]] — market data types used in trade context.
+- [[id:92492264-b67a-4ac7-8a58-7d706d9f0dab][ores.qt.data_transfer]] — receives Import ORE Data menu contribution.
+- [[id:30a3a7f4-e1a9-42fb-af9d-ff36fa0f3d21][ores.qt.api]] — shared Qt infrastructure and base classes.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.
+- [[id:fc186d19-9421-45a2-bbcc-4355d66aa41f][Entity Controller Pattern]] — controller/window/dialog/model structure.

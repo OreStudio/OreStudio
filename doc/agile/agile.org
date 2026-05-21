@@ -27,8 +27,10 @@ contract they all follow lives under [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][
 - =doc/agile/versions/= :: the composition tree (versions / sprints /
   stories / tasks). Start at the highest sprint folder
   lexicographically to find the current sprint.
-- =doc/agile/product_backlog/{near,far}/= :: [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — pre-sprint
-  ideas, split by horizon (near = next version; far = wishlist).
+- Product backlog :: [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — pre-sprint ideas, split by
+  horizon. Browse one bucket at a time:
+  - [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][Near]] — candidate work for the next version.
+  - [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][Far]] — longer-term wishlist.
 - [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] :: the frontmatter contract and section structure
   for every document under =doc/agile/=.
 - [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] :: TODO state transitions and what each state means.

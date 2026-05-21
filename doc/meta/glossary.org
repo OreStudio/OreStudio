@@ -8,7 +8,14 @@
 #+level: cross
 #+filetags: :meta:glossary:terminology:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-21
+
+Every term used across the ORE Studio information architecture has a
+single definition here. Other documents link to these entries with
+=[[id:...]]= so meaning is defined once and reused everywhere. Each
+entry says what the term is, who owns it (one of the [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic
+systems]]), how to create one if applicable, and points at a
+representative example.
 
 * Task
 :PROPERTIES:
@@ -17,7 +24,7 @@
 
 The smallest unit of executable work. One task = one PR. Bounded by a
 concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]). Owned by [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]. Create
-via [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]].
+via [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]]. Example: [[id:326556b2-f83d-4e55-9e20-63d8ef83ce8e][Update C++ standard]].
 
 * Story
 :PROPERTIES:
@@ -25,7 +32,8 @@ via [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]].
 :END:
 
 A coherent user-visible outcome, composed of one or more tasks. The unit of
-sprint planning. Owned by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]. Create via [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]].
+sprint planning. Owned by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]. Create via [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]]. Example:
+[[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (from Sprint 01).
 
 * Sprint
 :PROPERTIES:
@@ -33,7 +41,7 @@ sprint planning. Owned by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]].
 :END:
 
 A bounded period of work delivering a set of stories aligned to a sprint
-mission. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. Create via [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]].
+mission. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. Create via [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]]. Example: [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
 
 * Sprint mission
 :PROPERTIES:
@@ -41,7 +49,8 @@ mission. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. Create 
 :END:
 
 A one-sentence statement of what the sprint exists to achieve. Used to
-filter candidate stories. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]].
+filter candidate stories. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. Example: see the =* Mission=
+section of [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]].
 
 * Version
 :PROPERTIES:
@@ -67,7 +76,8 @@ distinct. Owned by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
 
 The durable statement of what ORE Studio is and is not. Used to filter
 candidate versions, far stories, and feature requests. Owned by [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]].
-Create via [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]].
+Create via [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]]. The current identity is captured in
+[[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio product identity]].
 
 * Function
 :PROPERTIES:
@@ -81,9 +91,7 @@ inputs, its outputs, the recipes and skills it draws on, and what it
 explicitly does /not/ do. Functions are role-shaped (descriptive); a
 [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]] is task-shaped (operational). When an LLM session takes on a
 function, the function doc is the priming context; the skills it lists
-are the operational tools it then uses. Examples: the six per-system
-roles ([[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] / [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] / [[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] / [[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] /
-[[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] / [[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]]) under =doc/functions/=.
+are the operational tools it then uses. Example: [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]]. Full inventory of named roles: [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][Functions]].
 
 * Skill
 :PROPERTIES:
@@ -94,20 +102,20 @@ A concrete, executable capability — /how to do a kind of work/ — in
 Claude Code's skill format (=doc/skills/<slug>/SKILL.org=). Each skill
 is self-contained: it describes when to use it, the procedure, and any
 artefacts it expects. A skill is /task-shaped/: invokable in one
-session to perform a unit of work (e.g. =semi-autonomous-developer=,
-=new-sprint=, =pr-shepherd=). Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is
+session to perform a unit of work. Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is
 /role-shaped/: a description of what someone does, listing the skills
 that role draws on. Functions compose skills; skills do not own
-functions. Create via [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]].
+functions. Create via [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]]. Example:
+[[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]].
 
 * Recipe
 :PROPERTIES:
 :ID: 117a95f9-b03d-490b-bb74-da9fe74537e2
 :END:
 
-A how-to document answering one operational question (e.g. "how do I run
-the tests"). Has executable scripts where applicable. Tested by CI.
-Create via [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]].
+A how-to document answering one operational question. Has executable
+scripts where applicable. Tested by CI. Create via [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]]. Example:
+[[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]].
 
 * Knowledge document
 :PROPERTIES:
@@ -116,7 +124,7 @@ Create via [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]].
 
 A durable factual document about the domain, architecture, or components.
 Not state, not process — just facts that outlive any sprint. Create via
-[[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]].
+[[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]]. Example: [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]].
 
 * Plan
 :PROPERTIES:
@@ -163,6 +171,7 @@ bucket) and /promoted/ (the file has been converted into a =story=).
 On promotion the file is moved into the appropriate sprint folder and
 its =#+type:= flips from =capture= to =story=; *the =:ID:= is
 preserved* so existing links keep working. Create via [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]].
+Example: [[id:cebab022-2039-47a4-aab2-bb2ffba5507c][Add a dashboard for users]] (in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket).
 
 * TODO state
 :PROPERTIES:

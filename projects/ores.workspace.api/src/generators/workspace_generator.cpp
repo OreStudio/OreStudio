@@ -37,7 +37,7 @@ domain::workspace generate_synthetic_workspace(
     domain::workspace r;
     r.version = 1;
     r.id = ctx.generate_uuid();
-    r.name = ;
+    r.name = std::string(faker::word::noun()) + "-" + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.owner_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

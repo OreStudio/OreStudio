@@ -29,7 +29,8 @@
         "column": "name",
         "type": "text",
         "cpp_type": "std::string",
-        "description": "Unique workspace name."
+        "description": "Unique workspace name.",
+        "generator_expr": "std::string(faker::word::noun()) + \"-\" + std::to_string(counter.fetch_add(1, std::memory_order_relaxed))"
       }
     ],
 

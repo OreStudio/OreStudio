@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: e9f98da1-cf33-4b53-bc4d-a034c652f3b0
+:END:
+#+title: How do I bump the project version?
+#+description: Bump ORE Studio's version number — CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, and the readme badges.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :cmake:build:release:version:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+The version bump is housekeeping that often follows [[id:1e666848-a785-437e-a463-3d5a0da0765f][opening a new
+sprint]] but is independent of it — do it as its own PR.
+
+* Question
+
+How do I bump ORE Studio's project version across every file that
+mentions it?
+
+* Answer
+
+Five files carry the version string. Edit them as a single commit.
+
+1. /Pick the new version/. The project follows =0.0.<N>= where =N=
+   tracks the sprint number; bump =N= by one.
+
+2. /Top-level =CMakeLists.txt=/:
+
+   #+begin_src diff
+   -project(OreStudio VERSION 0.0.<OLD> LANGUAGES CXX
+   +project(OreStudio VERSION 0.0.<NEW> LANGUAGES CXX
+   #+end_src
+
+3. /=vcpkg.json=/:
+
+   #+begin_src diff
+   -    "version-string": "0.0.<OLD>",
+   +    "version-string": "0.0.<NEW>",
+   #+end_src
+
+4. /The three GitHub workflow package filenames/ under
+   =.github/workflows/=:
+
+   - =continuous-linux.yml= — =orestudio_0.0.<OLD>_amd64.deb=
+   - =continuous-macos.yml= — =OreStudio-0.0.<OLD>-Darwin.dmg=
+   - =continuous-windows.yml= — =OreStudio-0.0.<OLD>-win64.*=
+
+   Each is a single =sed=-able substitution.
+
+5. /=readme.org=/ — three things:
+
+   - The sprint-number badge URL and label.
+   - The "commits-since" badge, which uses the /previous/
+     version tag — so when bumping from =0.0.<OLD>= to
+     =0.0.<NEW>=, the commits-since badge moves from
+     =v0.0.<OLD-1>= to =v0.0.<OLD>=.
+   - The example version mentioned in the documentation prose.
+
+6. /Verify/. Sanity-check that nothing else mentions the old
+   version:
+
+   #+begin_src sh :results verbatim
+   grep -rn "0\.0\.<OLD>" \
+       CMakeLists.txt vcpkg.json .github/workflows readme.org
+   #+end_src
+
+   Expect zero matches.
+
+7. /Commit/ as =[build] Bump version to 0.0.<NEW>= and open the PR
+   via [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]].
+
+* Script
+
+No wrapper — the five files are touched manually because every
+release confirms the diffs by eye.
+
+* Tested by
+
+CI builds the renamed package artefacts. If the workflow paths and
+the actual package name disagree, the artefact upload step fails on
+the post-build run.
+
+* See also
+
+- [[id:1e666848-a785-437e-a463-3d5a0da0765f][How do I open a new sprint?]] — the sibling agile-side step.
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu and project structure background.

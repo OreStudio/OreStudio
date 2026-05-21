@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 1e666848-a785-437e-a463-3d5a0da0765f
+:END:
+#+title: How do I open a new sprint?
+#+description: Scaffold a new sprint folder under the current version, set its mission, and wire it into the version manifest.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :agile:sprint:codegen:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+For the surrounding agile cycle (planning / execution / closure) and
+which cybernetic system owns the work, see [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]]. For the
+build-side version bump that often follows opening a new sprint, see
+[[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]].
+
+* Question
+
+How do I open a new sprint under the current version — scaffold the
+folder, set its mission, and link it from the version manifest?
+
+* Answer
+
+1. /Identify the current version and sprint/ via the doc tools:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_list.sh --type sprint --sort path | tail -5
+   #+end_src
+
+   The lexicographically-highest sprint folder is the current one.
+   The new sprint is current + 1 (e.g. =sprint_17= follows
+   =sprint_16=).
+
+2. /Confirm the new sprint number with the user/ before scaffolding.
+   Numbering is monotonic and cheap to reverse, but rolling
+   backwards is awkward.
+
+3. /Scaffold the sprint/. The codegen mints a fresh =:ID:=, applies
+   the right frontmatter, builds the skeleton sections, and the
+   ancestor tag chain:
+
+   #+begin_src sh :results verbatim
+   projects/ores.codegen/generate_v2_doc.sh \
+     --type sprint --slug sprint_17 \
+     --parent-dir doc/agile/versions/v0 \
+     --title "Sprint 17" \
+     --description "Sprint 17 — one-sentence mission." \
+     --tags "v0"
+   #+end_src
+
+4. /Write the sprint mission/. Open the generated
+   =doc/agile/versions/v0/sprint_17/sprint.org= and fill in
+   =* Mission= (one sentence — see [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]] in the glossary).
+
+5. /Wire into the version manifest/. Open
+   =doc/agile/versions/v0/version.org= and add the new sprint to
+   its =* Sprints= list as an id-link:
+
+   #+begin_src org
+   - [[id:<sprint-uuid>][Sprint 17]] — TBD.
+   #+end_src
+
+6. /Promote captures into stories/, if applicable. See [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile
+   Product Owner]] for the promotion flow (capture → story, ID
+   preserved).
+
+7. /Bump the project version/ as separate housekeeping — see
+   [[id:e9f98da1-cf33-4b53-bc4d-a034c652f3b0][How do I bump the project version?]]. The version-number bump
+   is decoupled from sprint opening; do not couple them in one PR.
+
+* Script
+
+The wrapper is =projects/ores.codegen/generate_v2_doc.sh=. The
+sprint template is =v2_doc_sprint.org.mustache=.
+
+* Tested by
+
+Manual. =doc_version_audit.py --check= verifies every new sprint
+file carries =#+version: 2=.
+
+* See also
+
+- [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][Sprint]] (glossary).
+- [[id:f5426198-acaf-41da-a043-ff15785e4a1d][Planning phase]] of the agile process.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New sprint".
+- [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]] — the skill that drives this recipe.

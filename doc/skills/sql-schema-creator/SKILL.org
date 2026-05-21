@@ -58,6 +58,18 @@ case, extend the template first, then generate.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] — full schema mental model and PostgreSQL setup.
 - [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
 
+* Templates
+
+Runs via =--profile sql=.  Read the template directly for the
+authoritative implementation — do not reproduce it here.
+
+| Template | Output |
+|---|---|
+| =sql_schema_domain_entity_create.mustache= | =projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql= |
+| =sql_schema_notify_trigger.mustache= | =projects/ores.sql/create/{component}/{component}_{entity_plural}_notify_trigger_create.sql= |
+| =sql_schema_domain_entity_drop.mustache= | =projects/ores.sql/drop/{component}/{component}_{entity_plural}_drop.sql= |
+| =sql_schema_notify_trigger_drop.mustache= | =projects/ores.sql/drop/{component}/{component}_{entity_plural}_notify_trigger_drop.sql= |
+
 * Artefacts                                                        :noexport:
 
 ** Licence

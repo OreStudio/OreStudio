@@ -62,6 +62,27 @@ Build after every step: =cmake --build --preset linux-clang-debug-ninja --target
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — icon selection for toolbar actions.
 - [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.
 
+* Templates
+
+Runs via =--profile qt= (12 templates).  Full output paths are in
+[[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]]§"Templates".  Read the template directly for the
+authoritative implementation — do not reproduce it here.
+
+| Template | Generates |
+|---|---|
+| =cpp_qt_client_model.hpp.mustache= | =Client{Entity}Model.hpp= |
+| =cpp_qt_client_model.cpp.mustache= | =Client{Entity}Model.cpp= |
+| =cpp_qt_mdi_window.hpp.mustache= | ={Entity}MdiWindow.hpp= |
+| =cpp_qt_mdi_window.cpp.mustache= | ={Entity}MdiWindow.cpp= |
+| =cpp_qt_detail_dialog.hpp.mustache= | ={Entity}DetailDialog.hpp= |
+| =cpp_qt_detail_dialog.cpp.mustache= | ={Entity}DetailDialog.cpp= |
+| =cpp_qt_history_dialog.hpp.mustache= | ={Entity}HistoryDialog.hpp= |
+| =cpp_qt_history_dialog.cpp.mustache= | ={Entity}HistoryDialog.cpp= |
+| =cpp_qt_controller.hpp.mustache= | ={Entity}Controller.hpp= |
+| =cpp_qt_controller.cpp.mustache= | ={Entity}Controller.cpp= |
+| =qt_detail_dialog_ui.mustache= | ={Entity}DetailDialog.ui= |
+| =qt_history_dialog_ui.mustache= | ={Entity}HistoryDialog.ui= |
+
 * Artefacts                                                        :noexport:
 
 ** Licence

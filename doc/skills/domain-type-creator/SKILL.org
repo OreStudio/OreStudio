@@ -71,6 +71,23 @@ for the manual path.
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] — writing Catch2 tests for the new domain type.
 
+* Templates
+
+Runs via =--profile all-cpp= (combines domain · generator · repository ·
+service · protocol).  Full output paths are in
+[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Complete entity file checklist".
+
+| Sub-profile | Key templates |
+|---|---|
+| =--profile domain= | =cpp_domain_type_class.hpp.mustache= (+ 6) |
+| =--profile generator= | =cpp_domain_type_generator.hpp.mustache= (+ 1) |
+| =--profile repository= | =cpp_domain_type_entity.hpp.mustache= (+ 5) |
+| =--profile service= | =cpp_service.hpp.mustache= (+ 1) |
+| =--profile protocol= | =cpp_protocol.hpp.mustache= |
+
+Read the template directly for the authoritative implementation — do not
+reproduce it here.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

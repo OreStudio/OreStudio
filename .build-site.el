@@ -120,7 +120,11 @@
 (defvar site-html-preamble "<header id='site-header'>
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
+    <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
     <a href='/OreStudio/doc/doc.html'>Documentation</a>
+    <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
+    <a href='/OreStudio/doc/skills/claude_code_skills.html'>Skills</a>
+    <a href='/OreStudio/doc/agile/versions/versions.html'>Roadmap</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
 </header>")

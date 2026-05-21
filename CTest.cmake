@@ -223,11 +223,6 @@ if(DEFINED code_coverage)
             set(cmake_args ${cmake_args} "-DWITH_PROFILING=On")
             set(CTEST_COVERAGE_EXTRA_FLAGS
                 "${CTEST_COVERAGE_EXTRA_FLAGS} --preserve-paths")
-            # Suppress the per-file "Creating '...gcov'" progress messages that
-            # gcov prints to stdout. --quiet is available since GCC 9; Ubuntu
-            # 24.04 ships GCC 13 so this is safe for all CI targets.
-            set(CTEST_COVERAGE_EXTRA_FLAGS
-                "${CTEST_COVERAGE_EXTRA_FLAGS} --quiet")
             set(WITH_COVERAGE true)
         endif()
     else()

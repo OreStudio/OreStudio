@@ -25,6 +25,11 @@ skinparam state {
     StartColor #58A6FF
     EndColor #58A6FF
 }
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
 skinparam BackgroundColor transparent
 skinparam DefaultFontColor #E3E3E6
 

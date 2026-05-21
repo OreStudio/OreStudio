@@ -2,66 +2,85 @@
 :ID: 4B6536DF-56B6-A634-C7FB-FA3CF51E916D
 :END:
 #+title: Skill Manager Skill
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+description: Create new Claude Code skills or update existing ones; rebuild the shipped skill bundle.
+#+type: skill
+#+version: 2
+#+level: cross
 #+filetags: :skills:claude_code:codegen:
 #+created: 2024-09-01
-#+updated: 2026-05-18
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
-name: skill-creator
-description: Guide for creating new Claude Code skills and updating of existing ones.
+name: skill-manager
+description: Create new Claude Code skills, port v1 skills into the v2 thin-index shape, or rebuild the shipped skill bundle.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-When the user asks to create a new Claude Code skill for ORE Studio, slim an
-existing skill into the v2 thin-index shape, or rebuild the shipped skill
-bundle.
+When the user asks to create a new Claude Code skill, port an
+existing v1 skill into the v2 thin-index shape, or rebuild the
+shipped bundle so the skill changes propagate to Claude Code.
 
 * How to use this skill
 
-1. Confirm the work is /skill-shaped/ — a thin index over recipes and a
-   knowledge document, not the recipes themselves. See =skill= in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]]
-   for the contract.
-2. Identify the recipes the skill will index. Each operational how-to belongs in
-   its own =how_do_i_<thing>.org= recipe (see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]]). If
-   a recipe doesn't exist yet, create it first using =--type recipe=.
-3. Generate the skill scaffold with the v2 doc generator (=--type skill=). The
-   slug uses =kebab-case= and doubles as the Claude Code =name:= field. See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How
-   do I create a new v2 doc?]] for the exact invocation.
-4. Fill in the skeleton:
+1. /Confirm the work is skill-shaped/. A skill is /task-shaped/ — a
+   thin index over recipes plus a reference doc, not the recipes
+   themselves. If the doc describes /what someone does/ across
+   many tasks, it is a [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], not a skill. See
+   [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]§=skill= for the contract.
+
+2. /Identify the recipes the skill will index/. Each operational
+   how-to belongs in its own =how_do_i_<thing>.org= file. If a
+   needed recipe doesn't exist yet, create it first via
+   [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]].
+
+3. /Scaffold the skill/ via the codegen. Use kebab-case for the
+   slug; it doubles as the Claude Code =name:= field and the
+   folder name (=doc/skills/<slug>/SKILL.org=). See
+   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New Claude Code skill" for
+   the exact invocation.
+
+4. /Fill in the skeleton/, in this order:
    - =* When to use this skill= — one or two sentences.
-   - =* How to use this skill= — numbered steps.
-   - =* Recipes= — id-link to every related recipe.
-   - =* Reference= — id-link to the knowledge document and the
-     component model that back the skill.
-5. Rebuild the shipped bundle to verify the skill exports cleanly — see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I
-   deploy the skills?]].
+   - =* How to use this skill= — numbered steps that mostly link
+     to recipes (do not embed procedural detail).
+   - =* Recipes= — id-links to every recipe the skill indexes.
+   - =* Reference= — id-link to the knowledge document or
+     component model that backs the skill.
+
+5. /Check the markdown export block/. The =name:= must match the
+   folder slug and the =#+title:=' kebab-case stem. The
+   =description:= is what Claude Code shows in its skill selector;
+   make it crisp and actionable.
+
+6. /Verify against the v2 contract/. The [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][skill-review]] skill is
+   the canonical checklist — frontmatter, required sections,
+   task-shape, no embedded inventories.
+
+7. /Rebuild the shipped bundle/ so Claude Code picks up the new or
+   updated skill — see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]].
 
 * Recipes
 
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the master recipe; section [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code
-  skill]] has the skill-specific invocation.
-- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — rebuild the bundle with the =deploy_skills=
-  cmake target.
-- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]] — for skills that include executable
-  blocks whose =#+RESULTS:= you want kept fresh.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New Claude Code skill" — the
+  scaffold flow.
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — for any new recipes the skill
+  needs to index.
+- [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]] — rebuild the bundle.
+- [[id:4c526597-c668-486b-a4ab-95775c01089a][How do I refresh org-babel results?]] — for skills with
+  =#+RESULTS:= snapshots you want kept fresh.
 
 * Reference
 
-- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document_types]] — the =skill= type entry defines the required sections, the
-  filename convention (=SKILL.org=), and the =kebab-case= slug rule.
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — the umbrella codegen recipe for
-  every v2 doc type; this skill specialises it for the skill flow.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]]§=skill= — the v2 skill contract.
+- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][skill-review skill]] — the sibling skill that audits a skill
+  against the contract.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the full inventory.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the component that hosts the skill template
-  (=projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=).
+  at =projects/ores.codegen/library/templates/v2_doc_skill.org.mustache=.
 
 * Artefacts                                                        :noexport:
 

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1882d6df-4012-4c6e-bf62-0d943ef805b0
+:END:
+#+title: How do I generate a PR summary?
+#+description: Walk the current branch's commits since the merge base with main and assemble a structured PR title and body.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :github:pr:summary:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+For the surrounding lifecycle — create, monitor, merge — see [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR
+Manager]].
+
+* Question
+
+I have local commits on a feature branch. How do I derive the PR
+title and the structured body from them?
+
+* Answer
+
+1. /Find the branch point/ against =main=:
+
+   #+begin_src sh :results verbatim
+   merge_base=$(git merge-base HEAD main)
+   echo "branch point: ${merge_base}"
+   #+end_src
+
+2. /Collect commit messages/ since the branch point:
+
+   #+begin_src sh :results verbatim
+   git log --pretty=format:"%s" $(git merge-base HEAD main)..HEAD
+   #+end_src
+
+3. /Derive the title/. Use the format =[COMPONENT] Description=.
+   Pick the most representative commit, or combine if the PR spans
+   multiple components (e.g. =[trading,sql]=).
+
+4. /Assemble the body/. Use this skeleton:
+
+   #+begin_src markdown
+   ## Summary
+
+   One-paragraph summary: what changes, why.
+
+   ## Changes
+
+   - Bullet per material change, grouped if the PR spans components.
+
+   ## Notes / Decisions
+
+   - Anything non-obvious about the implementation.
+   #+end_src
+
+   *Do not* add a "Test plan" section — convention in this repo per
+   =CLAUDE.md=.
+
+* Script
+
+No wrapper — the operations are bare =git= invocations.
+
+* Tested by
+
+Manual. Reviewers catch any divergence between commit set and PR
+summary.
+
+* See also
+
+- [[id:cc928252-e0c5-4c3c-a7a8-d613593e4e37][How do I create a PR?]] — the next step in the lifecycle.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] — the skill that indexes the full PR lifecycle.

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 62d39f43-5d91-4a82-b1c3-62c2af21befc
+:END:
+#+title: How do I fix a failing CI check?
+#+description: Identify the failing check via gh, read the run log, apply the fix as a new commit, and push.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :github:pr:ci:gh:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This is one branch of the [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][PR monitoring loop]]. The other branch is
+[[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][addressing review comments]].
+
+* Question
+
+A check on my PR has gone red. How do I find what failed, fix it,
+and push the fix?
+
+* Answer
+
+1. /Identify the failing check/. =gh pr checks= shows the overall
+   status; =gh run list= drills into the runs for the branch:
+
+   #+begin_src sh :results verbatim
+   gh pr checks
+   gh run list --branch "$(git branch --show-current)"
+   #+end_src
+
+2. /Read the failure log/. The =--log-failed= flag prints only the
+   failing step's output:
+
+   #+begin_src sh :results verbatim
+   gh run view <run-id> --log-failed
+   #+end_src
+
+3. /Diagnose by category/:
+
+   - /Compilation error/ → fix the source file.
+   - /Test failure/ → fix or update the failing test.
+   - /Linting / formatting/ → apply the required formatting.
+   - /Schema or doc validation/ → run the local validator
+     (=projects/ores.codegen/validate_docs.sh=,
+     =doc_version_audit.py --check=, etc.) and fix what it flags.
+
+4. /Apply the fix as a new commit/:
+
+   #+begin_src sh :results verbatim
+   git add <modified-files>
+   git commit -m "[component] Fix CI failure: <brief description>"
+   git push
+   #+end_src
+
+   *Never amend* — preserves review history.
+
+5. /Wait for the rerun/. CI re-triggers on push; return to [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][monitor
+   until green]].
+
+* Script
+
+Bare =gh= CLI plus the language-specific local validators that
+mirror what CI runs.
+
+* Tested by
+
+Manual. Validators that ship with the repo are exercised in CI;
+running them locally is the fastest way to reproduce.
+
+* See also
+
+- [[id:f6e88dcc-9240-4632-a9a3-9f36f79c9262][How do I monitor a PR until green?]] — the surrounding loop.
+- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]] — sibling branch.
+- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]].

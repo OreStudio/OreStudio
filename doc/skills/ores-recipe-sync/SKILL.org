@@ -37,14 +37,15 @@ location changes.
 1. /Pick the topic and identify its source/. Common topics in this
    repo:
 
-   | Topic   | Source-of-truth                                              | Recipe folder      |
-   |---------+--------------------------------------------------------------+--------------------|
-   | =cli=   | =projects/ores.cli/src/config/entity_parsers/=               | =doc/recipes/cli/= |
-   | =http=  | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | =doc/recipes/http/= |
-   | =shell= | =projects/ores.shell/src/app/commands/=                      | =doc/recipes/shell/= |
-   | =sql=   | =projects/ores.sql/schema/=                                  | =doc/recipes/sql/= |
-   | =cmake= | =CMakeLists.txt= + presets in =CMakePresets.json=            | =doc/recipes/cmake/= |
-   | =git=   | (none — convention-only)                                     | =doc/recipes/git/= |
+   | Topic    | Source-of-truth                                              | Recipe folder       |
+   |----------+--------------------------------------------------------------+---------------------|
+   | =cli=    | =projects/ores.cli/src/config/entity_parsers/=               | =doc/recipes/cli/=  |
+   | =http=   | =projects/ores.http.core/src/routes/= (and =ores.http.api=)  | =doc/recipes/http/= |
+   | =shell=  | =projects/ores.shell/src/app/commands/=                      | =doc/recipes/shell/= |
+   | =sql=    | =projects/ores.sql/schema/=                                  | =doc/recipes/sql/= |
+   | =cmake=  | =CMakeLists.txt= + presets in =CMakePresets.json=            | =doc/recipes/cmake/= |
+   | =git=    | (none — convention-only)                                     | =doc/recipes/git/= |
+   | =github= | =gh= CLI capabilities + this repo's PR/CI conventions        | =doc/recipes/github/= |
 
    For any other topic, read the topic's =doc/recipes/<topic>/<topic>.org=
    inventory to see what is currently documented.

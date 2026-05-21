@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: f6e88dcc-9240-4632-a9a3-9f36f79c9262
+:END:
+#+title: How do I monitor a PR until green?
+#+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with gh pr checks.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :github:pr:ci:gh:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This is the outer loop the [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] skill drives. The two
+inner branches are [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][addressing review comments]] and [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fixing failing
+CI checks]].
+
+* Question
+
+How do I keep watching a PR after it has been opened, react to
+review comments and CI failures as they arrive, and stop when
+everything is green and resolved?
+
+* Answer
+
+The preferred path is the =pr-watch.sh= background script, which
+polls cheaply via =gh= and only invokes Claude when there is
+actionable work. Fall back to the manual loop when the script is
+not suitable.
+
+** Preferred: pr-watch.sh
+
+1. /Start the watcher/ immediately after the PR is opened. The
+   script self-backgrounds, writes logs under =tmp/=, and exits
+   when CI is green /and/ every review thread is resolved.
+
+   #+begin_src sh :results verbatim
+   ./build/scripts/pr-watch.sh <PR_NUMBER>
+   ./build/scripts/pr-watch.sh <PR_NUMBER> --interval 10   # poll every 10 minutes
+   #+end_src
+
+2. /Follow progress/:
+
+   #+begin_src sh :results verbatim
+   tail -f tmp/pr-watch-<PR_NUMBER>.log
+   #+end_src
+
+   The script invokes =claude -p= with structured context when a
+   CI check fails (logs included) or a new unresolved thread
+   appears.
+
+** Manual fallback
+
+When the script is unavailable, run the loop yourself:
+
+1. /Check CI immediately/ — never sleep through a known-broken
+   build:
+
+   #+begin_src sh :results verbatim
+   gh pr checks
+   #+end_src
+
+   - All green or pending → step 2.
+   - Any failure → jump to [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fix CI failures]] first.
+
+2. /Wait the chosen interval/ (default 10 minutes is sensible —
+   long enough for CI and reviewers, short enough to be
+   responsive):
+
+   #+begin_src sh :results verbatim
+   sleep 600
+   #+end_src
+
+3. /Fetch comments/ and act on each:
+
+   #+begin_src sh :results verbatim
+   gh pr view --comments
+   #+end_src
+
+   For each open thread, follow [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][address review comments]].
+
+4. /Check CI again/. The terminal states:
+
+   | Outcome    | Action                                               |
+   |------------+------------------------------------------------------|
+   | All green  | Loop exits — PR ready for review/merge.              |
+   | Pending    | Sleep, return to step 3.                             |
+   | Any red    | Jump to [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][fix CI failures]], then return to step 2. |
+
+* Script
+
+=./build/scripts/pr-watch.sh= is the recommended driver. The manual
+loop is bare =gh= + =sleep=.
+
+* Tested by
+
+Manual. =pr-watch.sh= is exercised in normal day-to-day PR work.
+
+* See also
+
+- [[id:26c1dc06-82d2-46c4-94d6-df9231ba171b][How do I address PR review comments?]]
+- [[id:62d39f43-5d91-4a82-b1c3-62c2af21befc][How do I fix a failing CI check?]]
+- [[id:95d560c6-3551-4810-9d11-55f9f82b483c][How do I merge a PR?]]
+- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][PR Shepherd]] — the skill that drives this recipe autonomously.

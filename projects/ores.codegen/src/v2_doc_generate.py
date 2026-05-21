@@ -40,6 +40,7 @@ TYPE_TO_TEMPLATE = {
     "recipe": "v2_doc_recipe.org.mustache",
     "knowledge": "v2_doc_knowledge.org.mustache",
     "skill": "v2_doc_skill.org.mustache",
+    "product_identity": "v2_doc_product_identity.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -51,6 +52,7 @@ DEFAULT_INITIAL_STATE = {
     "recipe": "",
     "knowledge": "",
     "skill": "",
+    "product_identity": "",
 }
 
 # Composition: each type's direct parent type.
@@ -58,11 +60,14 @@ PARENT_OF_TYPE = {
     "task": "story",
     "story": "sprint",
     "sprint": "version",
-    # version, component, recipe, knowledge, skill have no composition parent.
+    # version, component, recipe, knowledge, skill, product_identity have no
+    # composition parent.
 }
 
 # Types that don't take a parent (and aren't stateful).
-PARENTLESS_TYPES = {"version", "component", "recipe", "knowledge", "skill"}
+PARENTLESS_TYPES = {
+    "version", "component", "recipe", "knowledge", "skill", "product_identity",
+}
 
 
 def build_filetags(tags_input, ancestor_slugs):
@@ -317,7 +322,7 @@ def main(argv=None):
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
-    elif args.type in ("component", "recipe", "knowledge"):
+    elif args.type in ("component", "recipe", "knowledge", "product_identity"):
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "skill":

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 2f71292f-cdb0-4e2e-b50f-4f02e10597c4
+:END:
+#+title: ORE Studio product vision
+#+description: The durable statement of what ORE Studio is. Versions (v0, v1.0, ...) come and go; this identity does not.
+#+type: product_identity
+#+version: 2
+#+level: s5
+#+filetags: :identity:vision:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* What this is
+
+ORE Studio is a graphical wrapper around [[https://github.com/OpenSourceRisk/Engine][Acadia's Open Source Risk
+Engine (ORE)]], which itself builds on [[https://github.com/lballabio/QuantLib][QuantLib]]. ORE Studio is
+independent of both projects and has no affiliation with either.
+
+It exists to make ORE approachable for learning and exploration:
+
+- Persistent database storage for every input and output ORE consumes
+  or produces, with basic CRUD support.
+- A graphical user interface for both data entry and data exploration.
+- The ability to configure and orchestrate ORE execution end-to-end
+  from inside the application.
+
+The audience is people learning quantitative finance by building or
+extending the tool — not financial institutions running it in
+production.
+
+* What this is not
+
+- A professional, enterprise-grade risk system. ORE Studio follows
+  Karpathy's "learning is enmeshed with the act of building"
+  principle; production-grade performance, multi-user features, and
+  cloud deployment are explicitly out of scope.
+- A reimplementation of ORE or QuantLib. ORE Studio wraps them; their
+  models, conventions, and limitations are inherited as-is.
+- A pricing or risk authority. Numbers come from ORE / QuantLib; ORE
+  Studio is the surface through which they flow.
+
+* Relationship to versions
+
+The product identity is durable. Versions are not. =v0= establishes
+the shape; =v1.0= and beyond extend it. When something in this
+document changes, that is a re-identification — not a version bump.
+
+* See also
+
+- [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] — the first implementation of this identity.

@@ -24,7 +24,6 @@ recipes; each topic has its own inventory that lists its recipes.
 - [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][Shell recipes]] — using the client REPL.
 - [[id:10408305-f864-4152-8fca-8132179f4df4][HTTP recipes]] — exercising the HTTP API.
 - [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — direct SQL queries against the ORE Studio database.
-- [[id:ADF4D1EB-5A83-4E14-B2FD-D204DBC91E8E][Comms analyser recipes]] — analysing session recording files (=.ores=).
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — git tips for working with the project.
 
 * See also

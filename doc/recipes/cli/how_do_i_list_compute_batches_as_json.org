@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: c3b6efb2-6a52-4f32-8aa2-10f71ab6bc5f
+:END:
+#+title: How do I list compute batches as JSON?
+#+description: List compute batches via =ores.cli= as JSON for piping into =jq=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:compute_batches:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+List compute batches via =ores.cli= as JSON for piping into =jq=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I list compute batches as JSON?
+
+* Answer
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute batches list ${db_args} ${log_args} --format json | jq .
+#+end_src

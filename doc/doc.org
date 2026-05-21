@@ -10,13 +10,23 @@
 #+created: 2024-06-15
 #+updated: 2026-05-21
 
-This page is a navigation guide. The canonical starting point for
-understanding the structure of the documentation is [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — every
-folder, every doc type, every convention is described there. *If you
-want to understand how things are organised, read Compass first.*
+This page is a navigation guide. The canonical starting point for understanding
+the structure of the documentation is [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — every folder, every doc type,
+every convention is described there. The journeys below tell you /where to go
+after that/, depending on what you came here to do.
 
-The journeys below tell you /where to go after that/, depending on
-what you came here to do.
+#+begin_note
+If you want to understand how things are organised, read [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] first.
+#+end_note
+
+* Preamble: A note on org-roam
+
+Before we proceed, a note on [[https://www.orgroam.com/manual.html][org-roam]] as we use it *extensively* in ORE Studio.
+You should be able to browse the HTML documentation without even knowing about
+org-roam; but i you want to access the full power of the documentation system,
+I'm afraid you need to be on Emacs and have org-roam installed. Sadly, I cannot
+spend time explaining org-roam since it only makes sense to Emacs users but
+think of it as [[https://www.orgroam.com/manual.html#A-Brief-Introduction-to-the-Zettelkasten-Method][Zettletasken]] over the org-mode markup format.
 
 * I am new to this project
 

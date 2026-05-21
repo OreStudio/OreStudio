@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 84d9e897-e90b-4a63-b8a7-82dd61234571
+:END:
+#+title: How do I add a new login info entry for an account?
+#+description: Add a new login info entry for an account via =ores.cli=
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:login_info:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Add a new login info entry for an account via =ores.cli=. See the [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][CLI inventory]] for sibling recipes.
+
+* Question
+
+How do I add a new login info entry for an account?
+
+* Answer
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli iam login-info add ${db_args} ${log_args} --account-id "e7bddd23-c004-4652-99e1-8d4ff5856fe1"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added login info for account: e7bddd23-c004-4652-99e1-8d4ff5856fe1
+#+end_src

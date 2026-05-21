@@ -62,3 +62,5 @@ The =build-site.yml= GitHub Action publishes the site on every push to
   skills.
 - [[id:f51360fc-24db-4276-b137-c59d118922ac][How do I generate PlantUML diagrams?]] — diagrams used inside the
   generated site.
+- [[id:d560fc97-03a3-4169-aa5a-2761e9c017ec][How do I serve the site locally?]] — preview the compiled site in a
+  browser without pushing.

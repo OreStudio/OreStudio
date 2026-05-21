@@ -1,0 +1,279 @@
+:PROPERTIES:
+:ID: A4B5C6D7-E8F9-0A1B-2C3D-4E5F6A7B8C9D
+:END:
+#+title: Entity Creator Skills Overhaul: Orchestrator, Template References, Codegen Gaps
+#+version: 1
+#+STATUS: TODO
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+The entity-creator skills ported to v2 in =2026-05-21-entity-creator-skills-v2-migration.org=
+have three remaining problems:
+
+1. *No orchestrator.* Asking an LLM to "add a new entity" invokes at most
+   one layer skill.  There is nothing that says "a complete entity requires
+   all seven layers, and you must execute all of them."  The result is
+   entities with missing layers.
+
+2. *Pattern docs contain code snippets.* The knowledge docs created in the
+   v2 migration embed =#+begin_example= C++ blocks.  These snippets drift
+   from the codebase, and they tempt the LLM to hand-write code instead of
+   using codegen.  The mustache templates in
+   =projects/ores.codegen/library/templates/= are the ground truth; the
+   docs should reference them, not duplicate them.
+
+3. *Codegen gaps are invisible.* Four layers — HTTP, CLI, Shell, Wt — have
+   no codegen profiles and no mustache templates.  The layer skills treat
+   this as normal and describe a manual workflow.  The correct response is:
+   treat the absence of a profile as a bug, document the gap explicitly in
+   the skill, and require the LLM to implement the profile before generating.
+
+Additionally there is no documentation covering Qt menu and toolbar
+wiring (plugin =on_login()= registration, MDI window toolbar construction),
+which is a required step when adding the Qt layer for any entity.
+
+* Codegen profile inventory
+
+| Profile | Templates | Covers |
+|---|---|---|
+| =--profile all= | via includes | SQL + domain + generator + repository + service + protocol |
+| =--profile sql= | 6 templates | SQL schema, notify trigger, drop scripts |
+| =--profile domain= | 7 templates | Domain class, JSON I/O, table I/O |
+| =--profile generator= | 2 templates | Test data generator |
+| =--profile repository= | 6 templates | Entity, mapper, repository (CRUD) |
+| =--profile service= | 2 templates | Service layer |
+| =--profile protocol= | 1 template | NATS messaging protocol header |
+| =--profile qt= | 12 templates | ClientModel, MdiWindow, detail/history dialogs, controller, .ui files |
+| =--profile all-cpp= | via includes | domain + generator + repository + service + protocol |
+
+*Codegen gaps (no profile, no templates):*
+
+| Layer | Component | Status |
+|---|---|---|
+| HTTP REST endpoints | =ores.http.server= | ❌ Gap |
+| CLI commands | =ores.cli= | ❌ Gap |
+| Shell REPL commands | =ores.shell= | ❌ Gap |
+| Wt web UI | =ores.wt.service= | ❌ Gap |
+
+* Scope
+
+** In scope
+
+- New =entity-creator= orchestrator skill that drives all layers via codegen.
+- Update =entity_lifecycle.org=: add canonical file checklist and template
+  references; make all-layers-mandatory explicit.
+- Rewrite all seven layer knowledge docs: remove inline code blocks;
+  reference mustache templates as ground truth.
+- Update all seven layer skills: link to templates; document codegen gap
+  (where applicable) as a first-class blocker with remediation steps.
+- New =qt_menu_toolbar_patterns.org= knowledge doc covering plugin
+  registration and MDI window toolbar construction.
+- Add Qt menu/toolbar wiring to the orchestrator as a required step.
+
+** Out of scope
+
+- Implementing the four missing codegen profiles (HTTP, CLI, Shell, Wt)
+  — that is separate work.  This plan only documents the gaps so the LLM
+  knows to stop and raise a story before hand-coding.
+- Any C++ code changes.
+- Recipe content changes (recipes are fine as-is).
+
+* Phase 1 — Orchestrator skill
+
+Create =doc/skills/entity-creator/SKILL.org= using the codegen script.
+
+The skill describes a *complete regular entity* as requiring all seven layers,
+executed in dependency order.  Each layer is a separate task the LLM creates
+with =TaskCreate= and resolves by invoking the appropriate sub-skill.
+
+** Content
+
+*** When to use
+
+When the user asks to "add a new entity", "create entity X", or similar.
+A /regular/ ORE Studio entity requires *all* of the following layers;
+skipping any layer is not permitted without explicit user approval.
+
+*** How to use
+
+1. *Model*: create (or confirm) the JSON model in
+   =projects/ores.codegen/models/{component}/=.
+
+2. *Layer tasks*: create one =TaskCreate= task per layer, then execute each
+   in order.  The task description names the sub-skill to invoke.
+
+| # | Layer | Sub-skill | Codegen command |
+|---|---|---|---|
+| 1 | Domain + SQL + repository + service + protocol | [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] | =--profile all= |
+| 2 | Qt UI | [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][qt-entity-creator]] | =--profile qt= |
+| 3 | Qt plugin wiring | =qt-menu-toolbar= | (manual; see [[id:TBD-qt-menu-toolbar][Qt menu and toolbar patterns]]) |
+| 4 | HTTP endpoints | [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] | ❌ GAP — implement profile first |
+| 5 | CLI commands | [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] | ❌ GAP — implement profile first |
+| 6 | Shell commands | [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] | ❌ GAP — implement profile first |
+| 7 | Wt UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | ❌ GAP — implement profile first |
+
+3. *Gap protocol*: when a layer is marked ❌ GAP, stop, raise a sprint
+   story to create the missing codegen profile, and link it here before
+   proceeding with that layer.
+
+4. *Tests and diagrams*: after all layers are green, invoke
+   [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]], [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]], and
+   [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]].
+
+*** Reference
+
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical file checklist and layer diagram.
+
+** Commit
+
+=[doc,skill] Add entity-creator orchestrator skill=
+
+* Phase 2 — Update entity_lifecycle.org
+
+Add two new sections:
+
+1. *Complete entity file checklist*: the canonical list of files a
+   regular entity must have across all layers (modelled on the =currency=
+   entity).  This is what reviewers check when a "complete entity" story
+   is marked done.
+
+2. *Template references*: for each layer that has a codegen profile,
+   list the mustache templates by name (e.g.
+   =cpp_domain_type_class.hpp.mustache=).  The templates are the ground
+   truth; the org doc points to them, it does not reproduce them.
+
+** Commit
+
+=[doc] Extend entity_lifecycle with file checklist and template references=
+
+* Phase 3 — Rewrite layer knowledge docs: templates, not code
+
+For each of the seven layer knowledge docs created in the v2 migration:
+
+| Doc | Templates to reference | Action |
+|---|---|---|
+| (entity_lifecycle.org) | all profiles | updated in Phase 2 |
+| =sql_entity_schema_patterns.org= | =sql_schema_domain_entity_create.mustache= + 5 others | rewrite §Detail |
+| =http_entity_patterns.org= | none (gap) | replace code with gap notice + remediation |
+| =cli_entity_patterns.org= | none (gap) | replace code with gap notice + remediation |
+| =shell_entity_patterns.org= | none (gap) | replace code with gap notice + remediation |
+| =wt_entity_patterns.org= | none (gap) | replace code with gap notice + remediation |
+| =qt_entity_patterns.org= | =cpp_qt_client_model.hpp.mustache= + 11 others | replace code blocks with template names |
+
+For docs with templates: replace =#+begin_example= code blocks with a
+table of template names and their output paths (taken from
+=profiles.json=).  Add a note: "Read the template directly for the
+authoritative implementation — do not reproduce it here."
+
+For gap docs: replace the layout pseudo-code with:
+
+#+begin_example org
+⚠ *Codegen gap*: no profile exists for this layer.  Before creating
+any {layer} entities:
+
+1. Create mustache templates in =projects/ores.codegen/library/templates/=.
+2. Add a ={layer}= profile entry to =projects/ores.codegen/library/profiles.json=.
+3. Validate against an existing entity (e.g. =currency=).
+4. Only then use codegen to generate the layer.
+
+Until the profile exists, see the recipes for the manual path — but
+treat this as a workaround, not the target state.
+#+end_example
+
+** Commit
+
+=[doc] Replace inline code with template references in layer knowledge docs=
+
+* Phase 4 — Update layer skills: template links and gap protocol
+
+Update all seven layer skills to:
+
+1. Add a *Templates* section listing the mustache templates the profile
+   runs (for codegen-covered layers).
+2. Add a *Codegen gap* section (for HTTP, CLI, Shell, Wt) that names the
+   gap and states the protocol (stop → raise story → implement profile →
+   then generate).
+3. Remove any remaining inline code from the skill itself (skills only
+   describe *when* and *how*; the templates carry the *what*).
+
+| Skill | Has profile | Action |
+|---|---|---|
+| =domain-type-creator= | ✅ =--profile all= | add Templates section |
+| =sql-schema-creator= | ✅ =--profile sql= | add Templates section |
+| =qt-entity-creator= | ✅ =--profile qt= | add Templates section |
+| =http-entity-creator= | ❌ | add Codegen gap section |
+| =cli-entity-creator= | ❌ | add Codegen gap section |
+| =shell-entity-creator= | ❌ | add Codegen gap section |
+| =wt-entity-creator= | ❌ | add Codegen gap section |
+
+** Commit
+
+=[doc,skill] Add template refs and codegen gap protocol to layer skills=
+
+* Phase 5 — Qt menus and toolbars
+
+** Knowledge doc: =doc/knowledge/qt/qt_menu_toolbar_patterns.org=
+
+Create via codegen script.  Content:
+
+- *Plugin registration* (=on_login()= pattern): how a =RefdataPlugin=-style
+  plugin adds a QAction to a named menu section using =addAction= and
+  connects it to open the entity's MDI window.
+- *MDI window toolbar*: =setMovable(false)=; =ToolButtonTextUnderIcon=;
+  standard four-button set (Reload, Add, Edit, Delete); how each button
+  connects to a slot.
+- *Naming and icon selection*: cross-link to [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] — do not
+  duplicate icon guidance here.
+- *File location*: =src/{Component}Plugin.cpp=.
+- No inline C++ code; reference the controller template
+  =cpp_qt_controller.hpp.mustache= and =cpp_qt_controller.cpp.mustache=
+  which contain the ground truth for controller + menu wiring.
+
+** Update orchestrator
+
+Add row 3 (Qt plugin wiring) in the orchestrator table to link to the
+new knowledge doc once it has an ID.
+
+** Commit
+
+=[doc,skill] Add Qt menu/toolbar patterns; wire into entity-creator orchestrator=
+
+* Phase 6 — PR
+
+- Push =feature/doc-version-marker=, open the PR.
+- PR title: =Entity creator: orchestrator, template refs, codegen gap protocol=
+- No "Test plan" section.
+
+* Critical files
+
+| File | Action |
+|---|---|
+| =doc/skills/entity-creator/SKILL.org= | New (orchestrator) |
+| =doc/knowledge/architecture/entity_lifecycle.org= | Update: file checklist + template refs |
+| =doc/knowledge/architecture/sql_entity_schema_patterns.org= | Rewrite: templates, not code |
+| =doc/knowledge/architecture/http_entity_patterns.org= | Rewrite: gap notice |
+| =doc/knowledge/architecture/cli_entity_patterns.org= | Rewrite: gap notice |
+| =doc/knowledge/architecture/shell_entity_patterns.org= | Rewrite: gap notice |
+| =doc/knowledge/architecture/wt_entity_patterns.org= | Rewrite: gap notice |
+| =doc/knowledge/qt/qt_entity_patterns.org= | Rewrite: template names, not code |
+| =doc/knowledge/qt/qt_menu_toolbar_patterns.org= | New |
+| =doc/skills/domain-type-creator/SKILL.org= | Add Templates section |
+| =doc/skills/sql-schema-creator/SKILL.org= | Add Templates section |
+| =doc/skills/qt-entity-creator/SKILL.org= | Add Templates section |
+| =doc/skills/http-entity-creator/SKILL.org= | Add Codegen gap section |
+| =doc/skills/cli-entity-creator/SKILL.org= | Add Codegen gap section |
+| =doc/skills/shell-entity-creator/SKILL.org= | Add Codegen gap section |
+| =doc/skills/wt-entity-creator/SKILL.org= | Add Codegen gap section |
+
+* Verification
+
+After every commit:
+
+1. =./projects/ores.codegen/validate_docs.sh= — must pass.
+2. No =#+begin_example= or =#+begin_src= blocks remain in any skill file.
+3. No =#+begin_example= or =#+begin_src= blocks remain in any layer knowledge doc.
+4. Every layer skill has either a *Templates* or *Codegen gap* section.
+5. The orchestrator skill table has exactly seven layer rows.

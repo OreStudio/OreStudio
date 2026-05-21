@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: e38360b6-99ff-4af0-937f-58f31bd573f5
+:END:
+#+title: Shell entity patterns
+#+description: REPL command registration, message-based communication, and operation shapes for ores.shell entity commands.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:shell:entity:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Shell entity commands live in =ores.shell= under
+=src/app/commands/{entity}_commands.cpp=. Each entity gets a
+commands class with a static =register_commands= method that creates
+a submenu and registers operations; all handlers are static methods
+that communicate with the server via a =client_session=. Phase 1
+delivers list + add; Phase 2 delivers history; Phase 3 adds recipe
+docs. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Command class layout
+
+#+begin_example
+class {entity}_commands {
+private:
+    inline static std::string_view logger_name =
+        "ores.shell.app.commands.{entity}_commands";
+    static auto& lg() { ... }  // static logger accessor
+
+public:
+    static void register_commands(cli::Menu& root_menu,
+                                  comms::net::client_session& session);
+
+    static void process_get_{entities}(std::ostream& out,
+                                       comms::net::client_session& session);
+    static void process_add_{entity}(std::ostream& out,
+                                     comms::net::client_session& session,
+                                     /* per-field params */);
+    static void process_get_{entity}_history(std::ostream& out,
+                                             comms::net::client_session& session,
+                                             const std::string& id);
+};
+#+end_example
+
+* Registration in register_commands
+
+#+begin_example
+void {entity}_commands::register_commands(
+    cli::Menu& root_menu, comms::net::client_session& session) {
+    auto {entities}_menu = root_menu.Insert("{entities}");
+    {entities}_menu->Insert("list", ...,
+        [&session](std::ostream& out) {
+            process_get_{entities}(out, session);
+        });
+    {entities}_menu->Insert("add", ...,
+        [&session](std::ostream& out, /* params */) {
+            process_add_{entity}(out, session, /* params */);
+        });
+}
+#+end_example
+
+Registration in the top-level menu occurs in
+=src/app/application.cpp= where all commands classes call
+=register_commands=.
+
+* Operation shapes
+
+| Operation | Menu path | Notes |
+|---|---|---|
+| List | ={entities} list= | Displays table via table I/O streaming |
+| Add | ={entities} add <params>= | Sends create request; displays confirmation |
+| History | ={entities} history <id>= | Shows all versions of a single entity |
+| Delete | ={entities} delete <key>= | Soft-delete; displays confirmation |
+
+* File locations
+
+| File | Path |
+|---|---|
+| Header | =include/ores.shell/app/commands/{entity}_commands.hpp= |
+| Implementation | =src/app/commands/{entity}_commands.cpp= |
+| Application | =src/app/application.cpp= (call =register_commands=) |
+
+* See also
+
+- [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] — skill that drives this workflow.
+- [[id:083c1060-f952-4505-b066-fed5684cdd5d][How do I create shell commands for a new entity?]] — recipe walkthrough.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

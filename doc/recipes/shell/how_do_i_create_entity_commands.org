@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 083c1060-f952-4505-b066-fed5684cdd5d
+:END:
+#+title: How do I create shell commands for a new entity?
+#+description: Walk through list, add, history, and delete commands for a new entity in ores.shell.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:shell:entity:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Command class layout, registration pattern, and file locations are in
+[[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]]. The [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] skill drives this process.
+
+* Question
+
+How do I add shell REPL commands for a new entity in =ores.shell=?
+
+* Answer
+
+*Phase 1 — list and add* (PR: =[shell] Add {entity} list and add commands=):
+
+1. Create ={entity}_commands.hpp= in =include/ores.shell/app/commands/=
+   with the static class shape from [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]].
+2. Implement ={entity}_commands.cpp= in =src/app/commands/=: create
+   the submenu, register list and add operations.
+3. Call ={entity}_commands::register_commands(menu, session)= from
+   =src/app/application.cpp=.
+4. Build and smoke-test: start =ores.shell= and exercise ={entities} list=
+   and ={entities} add=.
+
+*Phase 2 — history* (PR: =[shell] Add {entity} history command=):
+
+1. Add =process_get_{entity}_history= handler.
+2. Register =history= subcommand in =register_commands=.
+3. Build and smoke-test.
+
+*Phase 3 — recipe docs* (PR: =[doc] Add {entity} shell command recipes=):
+
+1. Add =how_do_i_*.org= recipes under =doc/recipes/shell/= (one per
+   operation).
+
+* Tested by
+
+Start =ores.shell=, connect, and exercise each subcommand interactively
+against a local database.
+
+* See also
+
+- [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]] — class layout, registration, file locations.
+- [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] — skill that drives this workflow.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

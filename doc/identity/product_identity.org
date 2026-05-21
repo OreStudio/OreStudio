@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 2f71292f-cdb0-4e2e-b50f-4f02e10597c4
 :END:
-#+title: ORE Studio product vision
-#+description: The durable statement of what ORE Studio is. Versions (v0, v1.0, ...) come and go; this identity does not.
+#+title: Product Identity
+#+description: The durable statement of what ORE Studio is and is not. Versions (v0, v1.0, ...) come and go; this identity does not.
 #+type: product_identity
 #+version: 2
 #+level: s5
@@ -10,41 +10,65 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-* What this is
+This is the [[id:436fb40c-422a-465b-b949-e9f0760820c1][product identity]] of ORE Studio — the [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] document in our
+[[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic information architecture]], where identity is the durable policy layer
+that constrains every level below it. It is the statement of what the product
+/is/ and what it /is not/; it predates any [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][version]] and outlives every release.
+Everything else under =doc/= — [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprints]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — is filtered
+through this page when deciding whether a candidate idea belongs in the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product
+backlog]] at all.
 
-ORE Studio is a graphical wrapper around [[https://github.com/OpenSourceRisk/Engine][Acadia's Open Source Risk
-Engine (ORE)]], which itself builds on [[https://github.com/lballabio/QuantLib][QuantLib]]. ORE Studio is
-independent of both projects and has no affiliation with either.
+#+caption: ORE Studio v0.0.17 — the main window, an early implementation of the vision below.
+[[./ore_studio-v0.0.17.jpeg]]
 
-It exists to make ORE approachable for learning and exploration:
+* Vision
 
-- Persistent database storage for every input and output ORE consumes
-  or produces, with basic CRUD support.
-- A graphical user interface for both data entry and data exploration.
-- The ability to configure and orchestrate ORE execution end-to-end
-  from inside the application.
+Here we define the vision for the product — what guides us when we think about
+ORE Studio and what can and cannot go into the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]]. Vision is one
+facet of identity: it states what we are building /toward/.
 
-The audience is people learning quantitative finance by building or
-extending the tool — not financial institutions running it in
-production.
+** Vision statement
 
-* What this is not
+The vision for ORE Studio is to build on top of [[https://github.com/OpenSourceRisk/Engine][Acadia's Open Source Risk Engine
+(ORE)]], which itself builds on [[https://github.com/lballabio/QuantLib][QuantLib]], with the aim of providing:
 
-- A professional, enterprise-grade risk system. ORE Studio follows
-  Karpathy's "learning is enmeshed with the act of building"
-  principle; production-grade performance, multi-user features, and
-  cloud deployment are explicitly out of scope.
-- A reimplementation of ORE or QuantLib. ORE Studio wraps them; their
-  models, conventions, and limitations are inherited as-is.
-- A pricing or risk authority. Numbers come from ORE / QuantLib; ORE
-  Studio is the surface through which they flow.
+- a persistent database storage for all of its inputs and outputs;
+- a graphical user interface both for data generation as well as data
+  exploration;
+- the ability to configure and orchestrate ORE execution.
+
+ORE Studio is /independent of/ both ORE and QuantLib and has no affiliation with
+either. The audience is people learning quantitative finance by building or
+extending the tool — not financial institutions running it in production.
+
+** Vision quote
+
+#+begin_quote
+People think focus means saying yes to the thing you've got to focus on. But
+that's not what it means at all. It means saying no to the hundred other good
+ideas that there are. You have to pick carefully. I'm actually as proud of the
+things we haven't done as the things I have done. Innovation is saying no to
+1,000 things. — Steve Jobs
+#+end_quote
+
+* Out of scope
+
+What ORE Studio /is not/ — equally important to what it is.
+
+- A professional, enterprise-grade risk system. ORE Studio follows Karpathy's
+  "learning is enmeshed with the act of building" principle; production-grade
+  performance, multi-user features, and cloud deployment are explicitly out of
+  scope.
+- A reimplementation of ORE or QuantLib. ORE Studio wraps them; their models,
+  conventions, and limitations are inherited as-is.
+- A pricing or risk authority. Numbers come from ORE / QuantLib; ORE Studio is
+  the surface through which they flow.
 
 * Relationship to versions
 
-The product identity is durable. Versions are not. =v0= establishes
-the shape; =v1.0= and beyond extend it. When something in this
-document changes, that is a re-identification — not a version bump.
+The product identity is durable. [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] are not. [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][v0]] establishes the shape;
+=v1.0= and beyond will extend it. When something in this document changes, that
+is a re-identification — not a version bump.
 
-* See also
-
-- [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] — the first implementation of this identity.
+See [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] for the running list of versions that have implemented this
+identity.

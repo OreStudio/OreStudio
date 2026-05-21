@@ -40,6 +40,9 @@ don't need to pass them. Run the script from a terminal and it
 prompts for any missing required field.
 
 ** New task
+:PROPERTIES:
+:ID: b7fa729c-2d42-408a-9424-b6aa90eb16b4
+:END:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
@@ -54,6 +57,9 @@ Parent story info is auto-detected from
 =doc/agile/versions/v0/sprint_17/audit_tooling/story.org=.
 
 ** New story
+:PROPERTIES:
+:ID: 6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752
+:END:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
@@ -65,6 +71,9 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 ** New story continuing from a previous sprint
+:PROPERTIES:
+:ID: 084ec5b7-8174-482e-83e5-3c22e0b57329
+:END:
 
 Add =--predecessor-id= and =--predecessor-title=. The script renders
 =#+predecessor:= in the frontmatter and a =Continued from:= line in
@@ -87,6 +96,9 @@ After the script runs, /manually/ update the predecessor story: add
 section.
 
 ** New sprint
+:PROPERTIES:
+:ID: f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12
+:END:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
@@ -98,17 +110,23 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 ** New version
+:PROPERTIES:
+:ID: 8fc15ea1-ab30-47be-993f-ed624a57f761
+:END:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type version --slug v1 \
-  --parent-dir doc/versions \
+  --parent-dir doc/agile/versions \
   --title "Version 1" \
   --description "First production release." \
   --tags "v1"
 #+end_src
 
 ** New component model
+:PROPERTIES:
+:ID: 0a28b9ca-dc07-4a1d-9942-7843eabf8a40
+:END:
 
 Component overview files are always named =component_overview.org=.
 Use =--slug component_overview= (not the component name):
@@ -126,6 +144,9 @@ Output: =projects/ores.example/modeling/component_overview.org=.
 See [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] for how to fill in each section.
 
 ** New recipe
+:PROPERTIES:
+:ID: 0c57932d-d13a-480f-b426-49525aa8ba3d
+:END:
 
 Use the =how_do_i_<thing>= slug convention. The output is
 =<parent-dir>/how_do_i_<thing>.org=:
@@ -145,6 +166,9 @@ executable in emacs (=C-c C-c=) — see [[id:aadbef95-afd8-4dc0-a4ec-505e47b07f8
 for an example that also captures a =#+RESULTS:= snapshot.
 
 ** New knowledge document
+:PROPERTIES:
+:ID: f497aa0a-f604-436a-8555-c17b14302c99
+:END:
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
@@ -156,6 +180,9 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 ** New Claude Code skill
+:PROPERTIES:
+:ID: 6054cc20-5f41-482f-a587-759512577b1d
+:END:
 
 Use kebab-case for the slug (matches existing =cmake-runner=,
 =v2-doc-author=). The slug becomes both the folder name and the
@@ -171,6 +198,46 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+end_src
 
 Output: =doc/skills/my-new-skill/SKILL.org=.
+
+** New product identity
+:PROPERTIES:
+:ID: f1311596-b8ed-43ad-8c46-76c58c0194c7
+:END:
+
+There is one product identity document per product (=product_identity.org=
+under =doc/identity/=). The codegen scaffolds a fresh one — useful
+mostly when bootstrapping a new product or migrating an existing
+identity into v2 form.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type product_identity --slug product_identity \
+  --parent-dir doc/identity \
+  --title "ORE Studio product identity" \
+  --description "The durable statement of what ORE Studio is and is not." \
+  --tags "identity,vision"
+#+end_src
+
+** New capture
+:PROPERTIES:
+:ID: 978e0a8f-197c-48da-a405-457e0aee91d9
+:END:
+
+Captures live in the product backlog under =doc/agile/product_backlog/=
+in either the =near/= bucket (candidate work for the next version) or
+=far/= (longer-term wishlist). The =--parent-dir= picks the bucket.
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/generate_v2_doc.sh \
+  --type capture --slug add_uptime_screen \
+  --parent-dir doc/agile/product_backlog/near \
+  --title "Add an uptime screen" \
+  --description "Surface live service health in the Qt UI." \
+  --tags "ui,observability"
+#+end_src
+
+The blurb in the generated file automatically picks up the bucket
+name from the =--parent-dir= basename.
 
 ** Creating a set of inter-linked documents
 

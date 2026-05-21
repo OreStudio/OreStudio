@@ -36,6 +36,8 @@ agile-specific. Agile is the loop /around/ those states.
 
 * See also
 
+- [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]] — how the loop runs: backlog refinement, opening
+  and closing sprints, sizing tasks, cross-sprint continuations.
 - [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] — what it is, near vs far, capture lifecycle.
 - [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — top-level orientation for the whole =doc/= tree.
 - [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — what every term above means.

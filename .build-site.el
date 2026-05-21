@@ -103,7 +103,7 @@
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
     <a href='/OreStudio/doc/doc.html'>Documentation</a>
-    <a href='/OreStudio/doc/v2/compass.html'>V2 Compass</a>
+    <a href='/OreStudio/doc/compass.html'>V2 Compass</a>
     <a href='/OreStudio/doxygen/html/index.html'>Doxygen</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>

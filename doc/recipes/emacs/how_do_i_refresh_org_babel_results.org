@@ -36,7 +36,7 @@ cmake --list-presets
 #+end_src
 
 #+begin_src sh :results verbatim
-FILE=doc/v2/recipes/cmake/how_do_i_list_available_presets.org
+FILE=doc/recipes/cmake/how_do_i_list_available_presets.org
 emacs --batch -Q \
   --eval "(require 'org)" \
   --eval "(require 'ob-shell)" \
@@ -56,7 +56,7 @@ alone.
 For a file where /every/ block is meant to be runnable on refresh:
 
 #+begin_src sh :results verbatim
-FILE=doc/v2/recipes/some_recipe.org
+FILE=doc/recipes/some_recipe.org
 emacs --batch -Q \
   --eval "(require 'org)" \
   --eval "(require 'ob-shell)" \

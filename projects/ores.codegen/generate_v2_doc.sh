@@ -2,7 +2,7 @@
 
 # Generate a v2 information-architecture document (task, story, sprint,
 # or version) from a Mustache template. See src/v2_doc_generate.py for
-# the contract and doc/v2/meta/document_types.org for the document
+# the contract and doc/meta/document_types.org for the document
 # format the templates follow.
 
 set -e

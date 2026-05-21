@@ -275,7 +275,7 @@ third-party APT sources.
 Every CMake command — configuring with a preset, building, running the
 test suite, deploying the site, deploying skills, generating PlantUML
 diagrams — lives as an executable recipe under
-=doc/v2/recipes/cmake/=. Start from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]], which
+=doc/recipes/cmake/=. Start from the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner skill]], which
 indexes the seven recipes plus the [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] knowledge document
 (preset menu, output directory layout, parallel-build configuration,
 test-logging knobs).

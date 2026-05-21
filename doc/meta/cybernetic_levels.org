@@ -63,7 +63,7 @@ them.
   broken links, completed work not linked to PRs, plans that outlived
   their task.
 - Executor :: scheduled scripts plus a session invoked on demand.
-- Inputs :: every document under =doc/v2/=.
+- Inputs :: every document under =doc/=.
 - Outputs :: audit reports, automatic state corrections, tasks to fix
   drift.
 - Owns :: the integrity of the system itself.

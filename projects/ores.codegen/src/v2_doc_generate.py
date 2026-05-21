@@ -17,7 +17,7 @@ Behaviour at a glance:
 - Components live directly under their parent dir as =<slug>.org=;
   everything else gets its own =<slug>/<type>.org=.
 
-See =doc/v2/meta/document_types.org= for the contract every generated
+See =doc/meta/document_types.org= for the contract every generated
 document is expected to follow.
 """
 

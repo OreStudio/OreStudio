@@ -77,4 +77,4 @@ six stories converted (2 in the first pass, 4 implied stories added in
 the second pass). Each story has 3 representative tasks migrated; the
 remaining ~25 v0 entries are listed under each story's /Additional
 tasks belonging to this story in v0 but not migrated in the drive-test/
-section. See =doc/v2/meta/= for the contract these documents follow.
+section. See =doc/meta/= for the contract these documents follow.

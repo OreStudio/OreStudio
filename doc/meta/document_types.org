@@ -12,7 +12,7 @@
 
 * Standard frontmatter
 
-Every document under =doc/v2/= begins with this block. Fields marked
+Every document under =doc/= begins with this block. Fields marked
 /required/ must be present.
 
 #+begin_src org
@@ -208,14 +208,14 @@ Single-step lateral queries:
 
 #+begin_src sh
 # every task / story / file in sprint_03
-grep -lR ":sprint_03:" doc/v2/versions/
+grep -lR ":sprint_03:" doc/versions/
 
 # every story in story currencies_end_to_end (which is one, but you
 # can grep for siblings on the same theme by switching the tag)
-grep -lR ":currencies_end_to_end:" doc/v2/versions/
+grep -lR ":currencies_end_to_end:" doc/versions/
 
 # every file in version v0
-grep -lR ":v0:" doc/v2/versions/
+grep -lR ":v0:" doc/versions/
 #+end_src
 
 The generator at =projects/ores.codegen/generate_v2_doc.sh= derives
@@ -228,7 +228,7 @@ the ancestor slugs from the =--parent-dir= path (following the
 - The audit job (System 3*) lists every tag in use and flags singletons
   (tags used exactly once) for review — they are usually typos or
   one-offs that should fold into an existing tag.
-- A canonical tag list lives at =doc/v2/meta/tags.org= and is updated
+- A canonical tag list lives at =doc/meta/tags.org= and is updated
   when audit promotes a tag from "in use" to "canonical".
 - Audit also verifies the parent-tag invariant: every task must carry
   exactly one story slug as a tag; every story must carry exactly one
@@ -493,7 +493,7 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 - Folder ::
   - Cross-cutting knowledge (not specific to one component) lives at
-    =doc/v2/knowledge/{domain,architecture,...}/=.
+    =doc/knowledge/{domain,architecture,...}/=.
   - Component-specific knowledge (deeper analyses tied to one
     component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=

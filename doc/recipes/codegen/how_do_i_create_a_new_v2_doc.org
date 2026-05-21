@@ -39,21 +39,21 @@ prompts for any missing required field.
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type task --slug fix_broken_link \
-  --parent-dir doc/v2/versions/v0/sprint_17/audit_tooling \
+  --parent-dir doc/versions/v0/sprint_17/audit_tooling \
   --title "Fix broken id-links surfaced by audit" \
   --description "Audit reports two unresolved id-links; fix them." \
   --tags "audit,bug_fix"
 #+end_src
 
 Parent story info is auto-detected from
-=doc/v2/versions/v0/sprint_17/audit_tooling/story.org=.
+=doc/versions/v0/sprint_17/audit_tooling/story.org=.
 
 ** New story
 
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug audit_tooling \
-  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --parent-dir doc/versions/v0/sprint_17 \
   --title "Audit tooling" \
   --description "Scripts that enforce the v2 information-architecture invariants." \
   --tags "audit,scripts"
@@ -68,7 +68,7 @@ the body:
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug currencies_temporal_continued \
-  --parent-dir doc/v2/versions/v0/sprint_17 \
+  --parent-dir doc/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
   --tags "currencies,temporal,reference_data" \
@@ -86,7 +86,7 @@ section.
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type sprint --slug sprint_17 \
-  --parent-dir doc/v2/versions/v0 \
+  --parent-dir doc/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
   --tags "v0"
@@ -97,7 +97,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type version --slug v1 \
-  --parent-dir doc/v2/versions \
+  --parent-dir doc/versions \
   --title "Version 1" \
   --description "First production release." \
   --tags "v1"
@@ -128,7 +128,7 @@ Use the =how_do_i_<thing>= slug convention. The output is
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type recipe --slug how_do_i_clear_the_cache \
-  --parent-dir doc/v2/recipes/cmake \
+  --parent-dir doc/recipes/cmake \
   --title "How do I clear the cache?" \
   --description "Remove the CMake binary cache to force a clean re-configure." \
   --tags "cmake,build,recipe"
@@ -144,7 +144,7 @@ for an example that also captures a =#+RESULTS:= snapshot.
 #+begin_src sh :results verbatim
 projects/ores.codegen/generate_v2_doc.sh \
   --type knowledge --slug build_system_decisions \
-  --parent-dir doc/v2/knowledge/architecture \
+  --parent-dir doc/knowledge/architecture \
   --title "Build system decisions" \
   --description "Why we picked Ninja over Make as the default generator." \
   --tags "build,architecture,knowledge"
@@ -187,7 +187,7 @@ correct order is:
 
    #+begin_src sh :results verbatim
    grep "^:ID:" projects/ores.foo/modeling/component_overview.org \
-                doc/v2/knowledge/topic/my_knowledge.org
+                doc/knowledge/topic/my_knowledge.org
    #+end_src
 
 3. *Fill in the content of each file*, using the actual IDs in

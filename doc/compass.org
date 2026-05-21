@@ -13,14 +13,14 @@
 * Purpose
 
 This is the entry point for the ORE Studio cybernetic information
-architecture. Read this first; the rest of =doc/v2/= refers back to
+architecture. Read this first; the rest of =doc/= refers back to
 it. The =meta/= subdirectory defines the /contract/ every document
 follows; this file explains the layout that contract sits inside.
 
 * Folder layout
 
 #+begin_example
-doc/v2/
+doc/
 ├── compass.org           ← this file; read first
 ├── meta/                 ← the contract: how documents are shaped
 ├── versions/             ← the composition tree (the bulk of v2)

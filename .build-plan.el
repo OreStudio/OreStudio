@@ -57,7 +57,7 @@
 (setq org-publish-project-alist
       '(
         ("plan"
-         :base-directory "./doc/v2/versions/v0/"
+         :base-directory "./doc/versions/v0/"
          :publishing-directory "./build/output/taskjuggler/"
          :publishing-function ores/org-publish-to-taskjuggler
          :base-extension "dummy"

@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include "ores.refdata.service/export.hpp"
 #include "ores.refdata.service/config/options.hpp"
 
 namespace ores::refdata::service::config {
@@ -34,7 +35,7 @@ namespace ores::refdata::service::config {
  * Note on logging: logging is not available during parsing since the logger
  * is only initialised after options have been successfully parsed.
  */
-class parser final {
+class ORES_REFDATA_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info,

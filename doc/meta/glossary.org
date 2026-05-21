@@ -48,7 +48,7 @@ filter candidate stories. Owned by System 3.
 :END:
 
 A major release target (e.g. 1.0). A coherent set of sprints. Owned by
-System 4.
+System 4. Every version of the project has an entry in [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]].
 
 * Version identity
 :PROPERTIES:

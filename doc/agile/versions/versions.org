@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 37c10313-e6e9-4d42-b82d-b6758d0a3ad9
+:END:
+#+title: Versions
+#+description: Index of every ORE Studio version — what each is for, when it ran, and which sprints compose it.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :versions:index:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This is the index of ORE Studio /versions/. A [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] is a coherent
+group of [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprints]] aligned to a single version mission — what that
+release of the product is /for/. Versions are the outermost unit of
+planning under the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]], and CMake's =MAJOR.MINOR.PATCH=
+encodes them: =MAJOR= is the version, =MINOR= is the sprint inside it.
+
+* What a version is for
+
+A version is the surface on which we agree what "shipping" means for a
+period of months. Its [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Definition of done]] is the contract: when this
+list of capabilities is met, the version can be released.
+
+Sprints are the work; the version is the destination. A version
+closes when its DoD is met; until then, every sprint inside it
+contributes to that DoD. The [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] describes how the loop
+runs at the sprint level.
+
+* Versions
+
+In lexicographic order. The lexicographically highest folder is the
+active version; the rest are released.
+
+#+ATTR_HTML: :class hug-leading
+| Version                                                         | Start      | End | State    | Mission                                                                            |
+|-----------------------------------------------------------------+------------+-----+----------+------------------------------------------------------------------------------------|
+| [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] | 2024-06-15 |     | STARTED  | Establish architecture, model all ORE inputs/outputs, add GUI for every operation. |

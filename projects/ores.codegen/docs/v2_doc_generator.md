@@ -20,8 +20,10 @@ file that already follows the contract in
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the
-standard frontmatter for its type, an initial `* Status` headline at
-the type's default TODO state, and skeleton sections.
+standard frontmatter for its type (including `#+version: 2` for the
+type-bearing templates; `#+version: 1` for the skill template, which
+predates the v2 contract), an initial `* Status` headline at the
+type's default TODO state, and skeleton sections.
 
 ## Usage
 

@@ -16,16 +16,21 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Validate ORE Studio component documentation structure.
+# Validate ORE Studio documentation structure.
 #
-# Checks every projects/ores.*/ directory for:
-#   - modeling/component_overview.org presence
-#   - Required v2 frontmatter (:ID:, #+type: component, #+description:)
-#   - Required sections (Summary, Inputs, Outputs, Entry points,
-#     Dependencies, See also)
-#   - At least one .puml file in modeling/
+# Runs two checks in sequence:
 #
-# Exceptions are read from docs_exceptions.txt in the same directory.
+#   1. validate_docs.py — component documentation structure:
+#      - modeling/component_overview.org presence
+#      - Required v2 frontmatter (:ID:, #+type: component, #+description:)
+#      - Required sections (Summary, Inputs, Outputs, Entry points,
+#        Dependencies, See also)
+#      - At least one .puml file in modeling/
+#
+#   2. scripts/doc_version_audit.py --check — every .org file in the
+#      repo carries a #+version: 1|2 marker.
+#
+# Exceptions for the component check are in docs_exceptions.txt.
 # Format: CHECK_CODE component_name (one per line, # comments ignored).
 #
 # Usage: ./validate_docs.sh
@@ -46,4 +51,5 @@ if [ ! -d "$VENV_PATH" ]; then
     python3 -m venv "$VENV_PATH"
 fi
 
-exec python3 "$SCRIPT_DIR/validate_docs.py" "$@"
+python3 "$SCRIPT_DIR/validate_docs.py" "$@"
+python3 "$SCRIPT_DIR/scripts/doc_version_audit.py" --check

@@ -36,10 +36,42 @@ Run before pushing changes that add or modify component documentation:
 ./projects/ores.codegen/validate_docs.sh
 ```
 
-Checks every `projects/ores.*/` for `modeling/component_overview.org`, required
-v2 frontmatter (`:ID:`, `#+type: component`, `#+description:`), required sections,
-and at least one `.puml` diagram. Exceptions are in
-`projects/ores.codegen/docs_exceptions.txt`.
+Two checks run in sequence:
+
+1. Component structure: every `projects/ores.*/` has `modeling/component_overview.org`,
+   required v2 frontmatter (`:ID:`, `#+type: component`, `#+description:`),
+   required sections, and at least one `.puml` diagram. Exceptions are in
+   `projects/ores.codegen/docs_exceptions.txt`.
+2. Version tagging: every `.org` file in the repo carries `#+version: 1` or
+   `#+version: 2` (see "Documentation versions" below).
+
+## Documentation versions
+
+Every `.org` file in the repo carries an org-mode marker:
+
+- `#+version: 1` — legacy v1 document, still in its original form.
+- `#+version: 2` — current cybernetic v2 document (also has `#+type:`).
+
+**Rule: touch-it-to-port-it.** When you edit a v1 doc, full-rewrite it to v2
+(satisfying the v2 frontmatter contract in `doc/meta/document_types.org`).
+Small fixes still trigger the rewrite — that's the intentional pressure to
+clear the v1 backlog.
+
+Tooling:
+
+```sh
+# Summary: tagged counts and % migrated
+python3 projects/ores.codegen/scripts/doc_version_audit.py
+
+# Remaining v1 backlog (one path per line)
+python3 projects/ores.codegen/scripts/doc_version_audit.py --list-v1
+
+# CI gate — exits non-zero if any .org file is missing #+version:
+python3 projects/ores.codegen/scripts/doc_version_audit.py --check
+
+# Stamp any newly-untagged files (idempotent)
+python3 projects/ores.codegen/scripts/doc_version_audit.py --stamp
+```
 
 ## Database Isolation
 

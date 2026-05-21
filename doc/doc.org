@@ -2,28 +2,94 @@
 :ID: C0CF98E8-082F-2F04-2533-94B2DA9BE3D2
 :END:
 #+title: Documentation
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
-#+startup: inlineimages
+#+description: How to find your way through the ORE Studio documentation, by what brought you here.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :documentation:guide:knowledge:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-Contains project documentation. This project does not use a wiki or any other
-form of documentation; it is all expected to be in git and used to generate the
-product website.
+This page is a navigation guide. The canonical starting point for
+understanding the structure of the documentation is [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — every
+folder, every doc type, every convention is described there. *If you
+want to understand how things are organised, read Compass first.*
 
-- [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][V2 Information Architecture]]: the cybernetic information architecture
-  under development — versions, sprints, stories, tasks, recipes, and
-  component models, organised around Beer's Viable System Model. Start
-  at /Compass/.
-- [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]: documentation related to the [[https://masd-project.github.io/progen/docs/mde_and_the_software_development_process.html][software development process]] used to
-  develop this project.
-- [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain Information]]: assorted documents covering finance related topics. Broad
-  (and incomplete) overview of the domain of Computational Finance.
-- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]: Assorted definitions and facts we picked up along the way.
-- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]: Notebooks on how to use ORE Studio.
-- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]: Claude code skills used in this project.
-- [[id:590DED5A-FF09-8D94-9B2B-74FC027FCFEF][Prompts]]: Set of useful prompts we've collected over time.
-- [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]]: UML models of the system and it's components.
-- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]]: Low-level C++ API documentation.
+The journeys below tell you /where to go after that/, depending on
+what you came here to do.
 
-| [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][Ore Studio Read Me]] | [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio Main Page]] |
+* I am new to this project
+
+Read these in order. Together they give you the full picture.
+
+1. [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] — top-level map of =doc/=. Tells you what every folder
+   is for and how everything fits together.
+2. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — what we mean by task, story, sprint, version,
+   capture, function, etc. Every term that appears throughout the
+   docs is defined here.
+3. [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]] — what ORE Studio /is/ and /is not/. Read
+   once; refer back to it whenever you wonder whether a candidate
+   idea is in scope.
+4. [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] — how the rolling work is organised. From here you can
+   dive into [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]] (composition tree), the [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]]
+   (ideas not yet in a sprint), or the [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] (how a sprint
+   opens, runs, and closes).
+
+Once those are read, you have the full picture. Browse [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for
+the secondary trees ([[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]], recipes, modeling).
+
+* I want to find something specific
+
+You probably want one of:
+
+- *A term's meaning* → [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]]. Every load-bearing word in the
+  system is defined there with a stable id-link.
+- *A specific sprint, story, or task* → walk down from [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]:
+  version → sprint → story → task. Or grep by tag — every doc
+  carries a =:filetags:= with its ancestor slugs, so
+  =grep -lR ":sprint_15:" doc/agile/versions/= finds every task in
+  sprint 15.
+- *A how-to ("how do I X?")* → [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]. Each recipe answers one
+  NLP question and carries the executable shell to do it.
+- *A domain or architecture topic* → [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]. Single-topic pages
+  grouped by area (Domain / Architecture / Security / Documentation).
+- *A component or file in the codebase* → [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]] (UML overview) or
+  [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]] (low-level C++ API).
+- *Pre-sprint ideas* → [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]], split by horizon
+  ([[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]]).
+
+* I am an LLM about to do work in this codebase
+
+Before generating any document, read the contract:
+
+1. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the frontmatter every doc must carry, per-type
+   required sections, the title-prefix convention for tasks /
+   stories, and the index-page convention (blurb before first
+   headline, See also is external-only).
+2. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — the TODO state machine
+   (=DISCOVERED → BACKLOG → STARTED → BLOCKED → DONE / ABANDONED=)
+   applied uniformly across every stateful type.
+3. [[id:926b916e-a57e-498e-99ab-720b583c0362][Cybernetic levels]] — which system (S1 → S5) owns which
+   decisions. Every phase in the [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] is annotated with
+   its owning system; respect that ownership in your edits.
+4. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — load it into context so the terms you encounter
+   later resolve.
+
+Then, when you need to create a doc:
+
+- Use [[id:3153aa4b-23d4-4111-9710-5a4971102edc][generate_v2_doc.sh]] to scaffold every new document — never
+  hand-write frontmatter. The codegen mints the =:ID:=, applies the
+  per-type prefix on the title, fills in dates, and produces the
+  required skeleton.
+- Every new =.org= file must carry =#+version: 2=. The audit script
+  =doc_version_audit.py --check= gates this; run it before
+  committing.
+
+Skim [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for orientation if you have not yet seen it.
+
+* See also
+
+External documentation generated from the codebase:
+
+- [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]] — low-level C++ API reference, regenerated on every
+  release.

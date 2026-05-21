@@ -189,6 +189,16 @@ table.hug-leading td:not(:last-child) {
     white-space: nowrap;
 }
 
+/* Anchor injected before headings that carry an :ID: property — see the
+   org-html headline advice in .build-site.el. Targets [[id:UUID]] links
+   so they scroll to the right heading. Invisible by design. */
+a.id-anchor {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
 th {
     background-color: var(--bg-accent);
     color: #ffffff;

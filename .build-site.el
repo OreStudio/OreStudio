@@ -99,11 +99,28 @@
       org-html-head-include-default-style nil ;; Use our own styles
       org-html-head html-header)
 
+;; Make org-roam id-links scroll to the right place. Org rewrites
+;; [[id:UUID]] links to `…#ID-UUID' on the href side, but does not stamp
+;; a matching id attribute on the target heading (it only does that for
+;; :CUSTOM_ID:). The advice below prepends an empty `<a id="ID-UUID"/>'
+;; anchor to every exported heading that carries an :ID:. Browsers
+;; scroll to the anchor; the heading's auto-generated org-html id stays
+;; intact for the table of contents.
+(defun ores/org-html-headline-id-anchor (orig-fun headline contents info)
+  "Prepend an `ID-<uuid>' anchor when HEADLINE has an :ID: property."
+  (let ((rendered (funcall orig-fun headline contents info))
+        (uuid (org-element-property :ID headline)))
+    (if uuid
+        (concat (format "<a id=\"ID-%s\" class=\"id-anchor\"></a>\n" uuid)
+                rendered)
+      rendered)))
+
+(advice-add 'org-html-headline :around #'ores/org-html-headline-id-anchor)
+
 (defvar site-html-preamble "<header id='site-header'>
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
     <a href='/OreStudio/doc/doc.html'>Documentation</a>
-    <a href='/OreStudio/doc/compass.html'>V2 Compass</a>
     <a href='/OreStudio/doxygen/html/index.html'>Doxygen</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
@@ -128,7 +145,7 @@
          :recursive t
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
-         :base-extension "png\\|jpg\\|gif\\|svg"
+         :base-extension "png\\|jpe?g\\|gif\\|svg"
          :publishing-directory "./build/output/site/"
          :publishing-function org-publish-attachment)
         ("site:style"

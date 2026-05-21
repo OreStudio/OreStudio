@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: e8231c22-cb31-4d85-a9c0-7602953764ff
+:END:
+#+title: How do I show a doc by UUID?
+#+description: Given a UUID (or unique prefix), print a document's header, blurb, outgoing links, and incoming links using doc_show.sh.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :codegen:docs:search:recipe:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+For finding the UUID in the first place by regex, tag, type, or
+folder, see [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]].
+
+* Question
+
+I have a UUID (e.g. from an =[[id:...]]= link, a =doc_list= row, or
+a glossary entry) — how do I see the document it points to, the
+context around it, and the docs that link to or from it?
+
+* Answer
+
+Run =./projects/ores.codegen/doc_show.sh= with the UUID. Any
+unambiguous prefix of 6 or more hex characters is accepted.
+
+1. /By full UUID/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_show.sh 47341fc6-b8fb-499e-aae0-f4ee0abfda05
+   #+end_src
+
+2. /By prefix/ — short but unambiguous (typically 8 chars is plenty):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_show.sh 47341fc6
+   #+end_src
+
+3. /Heading-level anchors/ resolve too — sub-headings with their own
+   =:PROPERTIES: :ID:= block (e.g. glossary entries, agile process
+   phases, =Cybernetic Levels= systems) are indexed as anchors. The
+   tool prints the parent doc and the section body:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_show.sh fabb50e5   # Release entry in glossary
+   ./projects/ores.codegen/doc_show.sh 7d72a9da   # Sprint closure phase
+   #+end_src
+
+* Output sections
+
+For a /file-level/ doc:
+
+- *Title / Type / Path / Tags / Updated / Desc* — header metadata.
+- *Blurb* — the paragraph between frontmatter and the first heading.
+- *Outgoing links* — every =[[id:UUID]]= reference in the body,
+  resolved to =uuid | type | title (path)=. Unresolved targets are
+  flagged =BROKEN=. Anchors show as type =anchor= with their parent
+  doc name.
+- *Incoming links* — every doc whose body links to this one, same
+  shape.
+
+For an /anchor/ (heading-level :ID:):
+
+- *Heading / In doc / Path / Parent* — anchor identity.
+- *Section* — the heading body down to the next sibling-or-higher
+  heading.
+- *Incoming links* — docs whose body links to this anchor.
+
+* Workflow
+
+The two doc tools compose:
+
+#+begin_src sh :results verbatim
+# 1. find — list candidates
+./projects/ores.codegen/doc_list.sh --regex 'release'
+
+# 2. focus — pick a UUID and inspect it
+./projects/ores.codegen/doc_show.sh fabb50e5
+#+end_src
+
+* Script
+
+The wrapper is =projects/ores.codegen/doc_show.sh=. It calls
+=scripts/doc_show.py=, which uses the shared =doc_index.py= library
+(file-level docs + heading anchors + inbound index, all built on a
+single walk of every =.org= file under the repo).
+
+* Tested by
+
+Manual usage — read-only over the doc tree. Broken-link detection
+relies on every doc carrying a stable =:ID:=, audited by
+[[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] / [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]].
+
+* See also
+
+- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — finding the UUID by
+  search before pivoting here.
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — the link contract every doc satisfies.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes index]].

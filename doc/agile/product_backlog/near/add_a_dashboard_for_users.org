@@ -14,11 +14,11 @@ This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near
 
 As per screenshots:
 
-[[./user_dashboard_core_ui.png]]
+[[../../../samples/user_dashboard_core_ui.png]]
 
-[[./dashboard_ideas.png]]
+[[../../../samples/dashboard_ideas.png]]
 
-[[./dashboard_ideas_II.png]]
+[[../../../samples/dashboard_ideas_II.png]]
 
 Notes:
 

@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: acf334d8-703b-4020-a48e-f8a8e5090e72
+:END:
+#+title: Wt entity patterns
+#+description: List widget, detail dialog, and application-integration patterns for ores.wt entity UI components.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:wt:entity:ui:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Wt entity UI components live in =ores.wt.service= under
+=src/app/= and follow a three-part structure: a list widget (table +
+toolbar + signals), a detail dialog (form binding for create/edit),
+and integration into the application's navigation and service layer.
+All UI components use Wt signal/slot for parent–child communication;
+the parent page or controller connects the signals and calls the
+service. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* List widget layout
+
+#+begin_example
+class {entity}_list_widget final : public Wt::WContainerWidget {
+public:
+    void set_{entities}(const std::vector<{entity}_row>& entries);
+    void refresh();
+
+    Wt::Signal<>&            add_requested();
+    Wt::Signal<>&            refresh_requested();
+    Wt::Signal<std::string>& edit_requested();    // passes primary key
+    Wt::Signal<std::string>& delete_requested();  // passes primary key
+private:
+    void setup_toolbar();
+    void setup_table();
+    void populate_table();
+    Wt::WTable* table_ = nullptr;
+    std::vector<{entity}_row> entries_;
+    // signal members
+};
+#+end_example
+
+={entity}_row= is a lightweight display-only struct containing only
+the fields needed for the table (primary key, name, version, etc.).
+
+* Detail dialog layout
+
+#+begin_example
+class {entity}_dialog final : public Wt::WDialog {
+public:
+    {entity}_dialog();
+    void set_{entity}(const domain::{entity}& e);  // populate for edit
+    domain::{entity} get_{entity}() const;          // read back for save
+    Wt::Signal<domain::{entity}>& save_requested();
+private:
+    // one WLineEdit / WComboBox per editable field
+    Wt::WLineEdit* {field}_edit_ = nullptr;
+    Wt::Signal<domain::{entity}> save_requested_;
+};
+#+end_example
+
+* Application integration
+
+1. Add the list widget and service member to the page or controller class.
+2. Connect signals: =add_requested()= → open dialog; =edit_requested()=
+   → populate dialog; =save_requested()= → call service; =delete_requested()=
+   → confirm + call service.
+3. Register the page/controller in the application's navigation setup.
+
+* File locations
+
+| File | Path |
+|---|---|
+| Row struct + list widget header | =include/ores.wt.service/app/{entity}_list_widget.hpp= |
+| List widget implementation | =src/app/{entity}_list_widget.cpp= |
+| Detail dialog header | =include/ores.wt.service/app/{entity}_dialog.hpp= |
+| Detail dialog implementation | =src/app/{entity}_dialog.cpp= |
+| Page / integration | =src/app/{entity}_page.cpp= (or equivalent) |
+
+* See also
+
+- [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] — skill that drives this workflow.
+- [[id:6fdb2f56-789f-4ad4-879e-ba5a1621f807][How do I create Wt widgets for a new entity?]] — recipe walkthrough.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

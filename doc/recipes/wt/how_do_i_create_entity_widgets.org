@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 6fdb2f56-789f-4ad4-879e-ba5a1621f807
+:END:
+#+title: How do I create Wt widgets for a new entity?
+#+description: Walk through list widget, detail dialog, and application integration for a new entity in ores.wt.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:wt:entity:ui:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Widget layout, signal conventions, and file locations are in
+[[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]]. The [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] skill drives this process.
+
+* Question
+
+How do I add Wt UI components for a new entity in =ores.wt.service=?
+
+* Answer
+
+*Phase 1 — list widget* (PR: =[wt] Add {Entity} list widget=):
+
+1. Define ={entity}_row= struct and ={entity}_list_widget= class in
+   =include/ores.wt.service/app/{entity}_list_widget.hpp=.
+2. Implement the widget (=setup_toolbar=, =setup_table=,
+   =populate_table=, signals) in =src/app/{entity}_list_widget.cpp=.
+3. Build: =cmake --build --preset linux-clang-debug-ninja --target ores.wt.service.lib=.
+
+*Phase 2 — detail dialog* (PR: =[wt] Add {Entity} dialog=):
+
+1. Create ={entity}_dialog.hpp= / =.cpp= with the detail form, field
+   editors, and =save_requested= signal.
+2. Build and verify.
+
+*Phase 3 — application integration* (PR: =[wt] Integrate {Entity} into application=):
+
+1. Add list widget and service member to the page/controller class.
+2. Connect signals: add → open dialog; edit → populate dialog;
+   save → call service; delete → confirm + call service.
+3. Register in the application's navigation setup.
+4. Build and exercise in the browser.
+
+* Tested by
+
+Start =ores.wt= and navigate to the entity page; verify list loads,
+add dialog opens, edits persist, and deletes work.
+
+* See also
+
+- [[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]] — widget layout, signal conventions, file locations.
+- [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] — skill that drives this workflow.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

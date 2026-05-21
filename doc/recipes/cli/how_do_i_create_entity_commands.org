@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 662881dc-1371-4dad-a868-72d8bae0e919
+:END:
+#+title: How do I create CLI commands for a new entity?
+#+description: Walk through list, add, delete, export, and import commands for a new entity in ores.cli.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:cli:entity:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Struct layout, parser class shape, and file locations are in
+[[id:05891220-2503-48a0-adf5-13ec95b605d7][CLI entity patterns]]. The [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] skill drives this process.
+
+* Question
+
+How do I add CLI commands for a new entity in =ores.cli=?
+
+* Answer
+
+*Phase 1 — list and export* (PR: =[cli] Add {entity} list and export commands=):
+
+1. Add the entity to the =entity= enum in
+   =include/ores.cli/config/entity.hpp=.
+2. Create ={entity}_parser.hpp= and ={entity}_parser.cpp= implementing
+   the list and export operations.
+3. Register the parser in =src/parsers/main_parser.cpp=.
+4. Build and smoke-test: =./ores.cli {entities} --help= and
+   =./ores.cli {entities} list --format table=.
+
+*Phase 2 — add and delete* (PR: =[cli] Add {entity} add and delete commands=):
+
+1. Create =include/ores.cli/config/add_{entity}_options.hpp= with the
+   options struct for the =add= command.
+2. Extend ={entity}_parser= with =add= and =delete= methods.
+3. Build and smoke-test: =./ores.cli {entities} add --help=.
+
+*Phase 3 — recipe docs* (PR: =[doc] Add {entity} CLI command recipes=):
+
+1. Add =how_do_i_*.org= recipes under =doc/recipes/cli/= (one per
+   operation, following existing naming conventions).
+
+* Tested by
+
+Build =ores.cli= and run =./{entities} --help=, =list=, =add=, =delete=
+interactively against a local database.
+
+* See also
+
+- [[id:05891220-2503-48a0-adf5-13ec95b605d7][CLI entity patterns]] — struct layout, parser shape, file locations.
+- [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] — skill that drives this workflow.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

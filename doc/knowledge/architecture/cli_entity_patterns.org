@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 05891220-2503-48a0-adf5-13ec95b605d7
+:END:
+#+title: CLI entity patterns
+#+description: Options structs, parser layout, and command-dispatch conventions for ores.cli entity commands.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:cli:entity:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+CLI entity commands live in =ores.cli= and follow a three-layer
+structure: an =entity= enum value, an =options= struct per operation,
+and an =<entity>_parser= class that owns command registration and
+dispatch. Phase 1 delivers list + export; Phase 2 delivers add +
+delete; Phase 3 adds recipe docs. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Registration steps
+
+Every new entity requires four registration points:
+
+1. Add to the =entity= enum in
+   =include/ores.cli/config/entity.hpp=.
+2. Create =add_{entity}_options.hpp= in =include/ores.cli/config/=
+   for the =add= command parameters (if applicable).
+3. Create =<entity>_parser.hpp= / =<entity>_parser.cpp= in
+   =include/ores.cli/parsers/= / =src/parsers/=.
+4. Register the parser in =src/parsers/main_parser.cpp=.
+
+* Options struct layout
+
+Each operation that takes parameters gets its own options struct:
+
+#+begin_example
+struct add_{entity}_options {
+    std::string <required_field>;
+    std::optional<std::string> <optional_field>;
+    std::string modified_by;
+};
+#+end_example
+
+Option names use hyphens on the command line (=--iso-code=) but
+snake_case in the struct (=iso_code=).
+
+* Parser class layout
+
+#+begin_example
+class {entity}_parser {
+public:
+    {entity}_parser(const database::context& ctx,
+                    const log_options& log_opts);
+    void register_commands(program_options::options_description& global);
+    int execute(const program_options::variables_map& vm);
+private:
+    // one private method per operation: list, export, add, delete
+};
+#+end_example
+
+* Operation shapes
+
+| Operation | CLI subcommand | Input | Output |
+|---|---|---|---|
+| List | =list --format {json\|table}= | pagination params | stdout |
+| Export | =export --output <file>= | optional key filter | file |
+| Import | =import --input <file>= | file path | persisted records |
+| Add | =add --<field> <value> …= | options struct | confirmation |
+| Delete | =delete --<key> <value>= | key value | confirmation |
+
+* File locations
+
+| File | Path |
+|---|---|
+| Entity enum | =include/ores.cli/config/entity.hpp= |
+| Add options | =include/ores.cli/config/add_{entity}_options.hpp= |
+| Parser header | =include/ores.cli/parsers/{entity}_parser.hpp= |
+| Parser impl | =src/parsers/{entity}_parser.cpp= |
+| Main parser | =src/parsers/main_parser.cpp= (registration) |
+
+* See also
+
+- [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][cli-entity-creator]] — skill that drives this workflow.
+- [[id:662881dc-1371-4dad-a868-72d8bae0e919][How do I create CLI commands for a new entity?]] — recipe walkthrough.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

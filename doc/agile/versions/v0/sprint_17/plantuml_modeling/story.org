@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 17c590d4-04f0-43c5-9ea5-f89c40c82a4c
+:END:
+#+title: Story: PlantUML and modeling refresh
+#+description: Component PlantUML generation script; bulk refresh of all component diagrams; migrate all component docs to v2 information architecture.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :modeling:plantuml:documentation:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add a script to generate PlantUML class diagrams for every component,
+bulk-refresh all existing component diagrams with the new script, and
+migrate all component_overview.org files to the v2 information architecture.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Add component PlantUML generation script and bulk-refresh all diagrams (#770)
+- Migrate all component docs to v2 information architecture (#779)
+
+* Decisions
+
+- (none)
+
+* Out of scope
+
+- Sequence diagrams and ER diagrams (have separate conventions docs).
+
+* See also
+
+=doc/plans/2026-05-19-uml-model-refresh.org=

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 063862a1-c02c-4f76-a212-576a57423f0f
+:END:
+#+title: Story: v2 documentation architecture
+#+description: Port all sprint retrospectives (01-16) to v2 cybernetic information architecture; site theme with dark CSS, sidebar TOC, and Pages enablement; close v0 sprint history.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :documentation:v2:site:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Port the entire sprint history (sprints 01-16) to the v2 cybernetic
+information architecture; enable and configure GitHub Pages; add dark CSS
+theme, sidebar TOC, and preamble; fix site build issues; close the v0
+sprint history.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Open Sprint 17 agile bookkeeping (#705)
+- Fix broken org-mode links in identifier-length-cleanup plan (#739)
+- v2 cybernetic information architecture: sprints 01-07 (#771)
+- v2 information architecture: sprints 08-11 (#775)
+- Add :eval never to list-presets sh block to fix site build (#776)
+- v2 information architecture: sprints 12-16; close v0 (#781)
+- Site theme: dark CSS + sidebar TOC + preamble + Pages enablement (#784)
+- Drop site banner, restore index cards, GitHub icon in nav (#787)
+
+* Decisions
+
+- /All at once/ :: the full sprint history was ported in one sprint rather
+  than incrementally, to avoid a prolonged mixed-format state.
+
+* Out of scope
+
+- v2 porting of v0 before sprint 01 (there is no earlier sprint history).
+
+* See also
+
+=doc/plans/2026-05-21-doc-version-marker-and-v2-merge.org=

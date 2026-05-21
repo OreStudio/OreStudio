@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703
+:END:
+#+title: Story: Import/export cleanup
+#+description: Composite legs, pure parser refactor, batch fetches, trade list split; wrap remaining instrument types in export_result structs.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:trading:cleanup:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Clean up import/export code accumulated across sprints: extract composite legs,
+refactor to a pure parser, add batch fetches, split the trade list, and wrap
+bond/credit/commodity/scripted instruments in typed export_result structs.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-06.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-06                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Wrap bond/credit/commodity/scripted in export_result structs (#725)
+- Import/export cleanup: composite legs, pure parser, batch fetches, trade list split (#728)
+
+* Decisions
+
+- /export_result structs/ :: wrapping all instrument types in typed
+  =export_result= structs enforces a consistent return shape across the export
+  pipeline and makes error handling uniform.
+- /Pure parser/ :: the refactor to a pure parser removes side-effects from the
+  parse step, making it testable in isolation.
+
+* Out of scope
+
+- Per-instrument-type export optimisations (deferred).
+
+* See also
+
+- [[file:../../../../plans/2026-05-05-import-export-cleanup.org][Import/export cleanup plan]]

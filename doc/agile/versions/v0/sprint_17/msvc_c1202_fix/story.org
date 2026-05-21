@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: fbe68713-40c1-4b1d-a228-1c55ab4abc34
+:END:
+#+title: Story: MSVC C1202 constexpr depth fixes
+#+description: Trade struct decomposition into rfl::Flatten sub-structs and constexpr depth/step limit raises to fix MSVC C1202 across all TUs.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :windows:msvc:constexpr:rfl:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate MSVC C1202 "constexpr evaluation exceeded" errors across all
+components. Primary fix: decompose the =trade= struct into =rfl::Flatten=
+sub-structs. Secondary: raise =/constexpr:depth= and =/constexpr:steps= limits
+where needed; undo temporary TU splits once the struct fix lands; remove the
+now-redundant workaround pragmas.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-21.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-21                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Raise MSVC constexpr limits to fix C1202 on rfl-reflected structs (#727)
+- Raise MSVC constexpr depth to 2048 for rfl trading types (#729)
+- Fix CI: export conversion_error and raise MSVC constexpr depth (#751)
+- Fix MSVC C1202 by splitting ClientManager into focused TUs (#754)
+- Fix Windows build: C1202 TU split and workflow.api export (#757)
+- Fix boost::diagnostic_information compile error in ClientManagerTradeDetail (#759)
+- Decompose trade into rfl::Flatten sub-structs to fix MSVC C1202 (#761)
+- Undo ClientManager TU split now that trade is decomposed (#763)
+- Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202 (#765)
+- Raise MSVC constexpr limits for ores.qt.api to fix C1202 (#768)
+- Raise MSVC /constexpr:depth to 100000 to fix C1202 in ores.qt.api (#769)
+- Fix MSVC linker error and C1202 in trade variant (#786)
+- Remove MSVC C1202 workaround file splits (#788)
+- Remove non-existent MSVC constexpr pragmas (#790)
+
+* Decisions
+
+- /rfl::Flatten as root-cause fix/ :: decomposing =trade= into =rfl::Flatten=
+  sub-structs reduces the constexpr evaluation depth MSVC encounters during
+  reflection, addressing the root cause rather than working around it with TU
+  splits or higher limits alone.
+- /Revert TU splits/ :: once =rfl::Flatten= landed, all ClientManager TU splits
+  were reverted to restore the simpler file layout.
+
+* Out of scope
+
+- General Windows portability fixes (carried in windows_portability story).
+
+* See also
+
+- [[file:../../../../plans/2026-05-17-msvc-c1202-rfl-tu-split.org][MSVC C1202 rfl TU split plan]]

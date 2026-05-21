@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: e16beabb-cc59-4d6c-b216-dacc1e922047
+:END:
+#+title: Story: Compute and GLEIF
+#+description: Large GLEIF counterparty bundle wiring; per-triplet app_version packages; per-platform package uploads; compute mop-up fixes.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :compute:gleif:qt:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Wire large GLEIF counterparty bundle support, add per-triplet app_version
+packages via a junction table, expose per-platform package uploads in the
+Packages tab, and clean up the compute plugin (autogen leak, URI scheme,
+per-row Retry button).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-04-28.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-28                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Large GLEIF counterparty bundle wiring, tenant reset, upload logging (#704)
+- Per-triplet app_version packages via junction table (#714)
+- Per-platform package uploads via Packages tab (#719)
+- Mop-up: autogen leak, URI scheme, per-row Retry (#722)
+
+* Decisions
+
+- (none significant)
+
+* Out of scope
+
+- Compute grid architecture changes (deferred to later sprint).
+
+* See also
+
+None.

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 7d84e735-7dfe-4215-af00-a1f4c9323bda
+:END:
+#+title: Story: Windows portability fixes
+#+description: WiX installer size limits, libpq/OpenSSL linking, libpq PostgreSQL CMake target, vcpkg Qt feature flag.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :windows:cmake:vcpkg:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Close the first wave of Windows build breakages surfaced when Windows CI came
+on-line: WiX v3 size/file-count limits, libpq link ordering, OpenSSL
+dependency, PostgreSQL CMake imported-target hygiene, and a vcpkg opt-in
+feature for Qt.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-04-22.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-04-22                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Move Cron widgets to qt.api to fix Windows link error (#706)
+- Fix Windows MSVC export and libpq link (#708)
+- Link OpenSSL for libpq on Windows (#709)
+- Analyse Windows WiX installer size and file-count limits (#710)
+- Clear WiX v3 size and file-count limits (#711)
+- Lift libpq Windows workaround to PostgreSQL imported target (#712)
+- Add opt-in qt feature for Windows users in vcpkg (#717)
+
+* Decisions
+
+- /Lift to imported target/ :: the libpq workaround that existed in multiple CMake files was consolidated into a single PostgreSQL imported target definition to avoid drift.
+
+* Out of scope
+
+- MSVC C1202 constexpr depth issues (carried in msvc_c1202_fix story).
+- Symbol visibility migration (carried in symbol_visibility story).
+
+* See also
+
+None.

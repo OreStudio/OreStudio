@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: dc1effd8-b983-48c7-835b-71333aece016
+:END:
+#+title: Story: DQ publish pattern
+#+description: Publish-from-DQ pattern; PublishDatasetsDialog with async WorkflowStepsWidget; wizard UX; IAM logging.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :dq:workflow:qt:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Implement the DQ publish pattern end-to-end: trigger a workflow from the DQ
+wizard, track its progress via an async PublishDatasetsDialog with
+WorkflowStepsWidget live updates, and log IAM actions during the publish
+flow.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- DQ publish-from-dq pattern, wizard UX, IAM logging (#767)
+- Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget (#777)
+
+* Decisions
+
+- /Async dialog/ :: the PublishDatasetsDialog polls the workflow engine via
+  NATS rather than blocking the UI thread; this allows the user to monitor
+  progress live.
+
+* Out of scope
+
+- DQ scheduling (deferred).
+
+* See also
+
+=doc/plans/2026-05-14-dq-publish-pattern.org=

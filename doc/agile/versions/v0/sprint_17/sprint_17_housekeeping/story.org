@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: a5abed76-b4f5-4e37-8ccc-220d360501b4
+:END:
+#+title: Story: Sprint 17 housekeeping
+#+description: Dependency bumps: vcpkg, ccache-action, get-cmake, setup-clang.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :agile:dependencies:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Routine dependency maintenance: vcpkg submodule update, CI action bumps
+(ccache-action, get-cmake, setup-clang).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-18.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-18                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Update vcpkg submodule to latest master (#707)
+- Bump hendrikmuhs/ccache-action from 1.2.22 to 1.2.23 (#723)
+- Bump lukka/get-cmake from 4.3.1 to 4.3.2 (#724)
+- Bump egor-tensin/setup-clang from 2.2 to 2.3 (#762)
+
+* Decisions
+
+- (none)
+
+* Out of scope
+
+- (none)
+
+* See also
+
+None.

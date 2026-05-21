@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 77bf049f-ed38-4998-afa3-672e25895f9a
+:END:
+#+title: Story: Workspace
+#+description: Bitemporal schema, service layer, UI, lifecycle operations, workspace_id codegen propagation (Phases 1-4), controller wiring, and Data Workshop UI.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :workspace:codegen:qt:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Introduce the Workspace entity: bitemporal schema, service layer, CRUD UI,
+lifecycle operations, and codegen pipeline propagation for workspace_id
+(Phases 1-4 including controller wiring and the Data Workshop UI tab).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-20.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-20                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Workspace: bitemporal schema, service layer, UI, and lifecycle operations (#766)
+- Add workspace_id to codegen pipeline (Phases 1-4) (#773)
+- Phase 3+4: controller wiring and Data Workshop UI (#778)
+- Update workspace design plan with Phase 3-4 progress (#783)
+
+* Decisions
+
+- /Bitemporal from day one/ :: the workspace schema uses bitemporal tracking
+  (valid_from / valid_to) to support audit trails and rollback without a
+  separate event log.
+
+* Out of scope
+
+- Workspace sharing / permissions (deferred to a later sprint).
+
+* See also
+
+=doc/plans/2026-05-17-workspace-design.org= and
+=doc/plans/2026-05-19-workspace-id-codegen-propagation.org=

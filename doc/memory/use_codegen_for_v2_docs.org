@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 46f83ac1-f41f-4878-9a1d-2e49742e1bfe
+:END:
+#+title: Always use codegen to create new v2 documents
+#+description: Never write v2 org files directly — always use generate_v2_doc.sh to scaffold them.
+#+type: memory
+#+memory_subtype: feedback
+#+version: 2
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Always use =generate_v2_doc.sh= to create new =.org= files in the ORE Studio
+repo. Never write them from scratch with Write or Write-equivalent tools.
+
+*Why:* The script mints a fresh =:ID:= (preserving org-roam graph integrity),
+applies per-type title prefixes, fills in dates, and produces the correct
+section skeleton. Writing files directly bypasses all of that and was
+explicitly corrected by the user.
+
+*How to apply:* Whenever creating any new =.org= file under =doc/=,
+=doc/agile/=, =doc/memory/=, =doc/recipes/=, or =doc/knowledge/=, run
+=generate_v2_doc.sh= with the appropriate =--type=, =--slug=,
+=--parent-dir=, =--title=, =--description=, and =--tags= flags. Use
+=--id= to preserve an existing UUID when migrating a v1 file. After
+scaffolding, use Edit to fill in content sections.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: f607b8ce-5d33-424f-a7c2-7ed0243d4728
+:END:
+#+title: Story: ORE conventions import
+#+description: Codegen stack for seven ORE convention types; deposit_convention Phase 2; CLI import handler (Phase 3).
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :ore:conventions:codegen:cli:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Complete ORE conventions import: analyse and pilot zero_convention, implement
+deposit_convention (Phase 2 first type), generate full codegen stacks for seven
+convention types, and add the CLI conventions import handler (Phase 3).
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-11.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-11                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- ORE import analysis and zero_convention pilot (#716)
+- deposit_convention: Phase 2 first type (#718)
+- Add full codegen stack for seven ORE convention types (#733)
+- Add conventions import handler (Phase 3) (#734)
+
+* Decisions
+
+- /zero_convention as pilot/ :: used zero_convention as the first type to
+  analyse because it has minimal fields, making it a clean vehicle for proving
+  the conventions codegen pattern before generalising.
+- /Phase 3 via CLI/ :: the import handler was implemented as a CLI command
+  consistent with the existing import pipeline pattern.
+
+* Out of scope
+
+- Conventions GUI (deferred).
+
+* See also
+
+- [[file:../../../../plans/2026-04-21-ore-import-conventions.org][ORE import conventions plan]]

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 25f0a34b-c547-4550-943b-e8f517eb0f6c
+:END:
+#+title: Story: SQL codegen drift remediation
+#+description: Replace all remaining hand-crafted SQL files with generated output; fix entity model profile dispatch and composite natural-key indexes.
+#+type: story
+#+version: 2
+#+level: s2
+#+filetags: :sql:codegen:sprint_17:v0:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate all hand-crafted SQL files that have live codegen models: fix
+Categories A and B (template and profile issues), replace
+report_definitions and three other SQL files, fix entity model profile
+dispatch and composite natural-key indexes, and add cross-platform null
+device support for psql output redirection.
+
+* Status
+
+| Field         | Value                                                  |
+|---------------+--------------------------------------------------------|
+| State         | DONE                                                   |
+| Parent sprint | [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] |
+| Now           | Completed 2026-05-17.                                  |
+| Waiting on    | None.                                                  |
+| Next          | None.                                                  |
+| Last touched  | 2026-05-17                                             |
+
+* Acceptance
+
+- All tasks complete; PR-by-PR breakdown in =git log=.
+
+* Tasks
+
+In execution order:
+
+- Add cross-platform null device support for psql output redirection (#740)
+- Codegen drift remediation: Categories A and B (#747)
+- Codegen drift remediation: template fixes + report_definitions (#752)
+- Replace 4 remaining hand-crafted SQL files with codegen (#756)
+- Fix entity model profile dispatch and composite natural-key indexes (#758)
+
+* Decisions
+
+- /Zero tolerance/ :: every SQL file with an existing codegen model must be
+  generated; hand-crafted files are a maintenance liability and a source of
+  schema drift.
+
+* Out of scope
+
+- New SQL entities without codegen models (deferred to when models are
+  added).
+
+* See also
+
+=doc/plans/2026-05-14-codegen-sql-debt.org=

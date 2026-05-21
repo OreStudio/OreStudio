@@ -44,7 +44,7 @@ results graphically inside ORE Studio.
 | Field        | Value                                                       |
 |--------------+-------------------------------------------------------------|
 | State        | STARTED                                                     |
-| Now          | Sprint 17 in flight; v0 still open.                         |
+| Now          | Sprint 17 in flight; closing v0.                            |
 | Waiting on   | Nothing.                                                    |
 | Next         | Close remaining v0 sprints, then cut v1.0.                  |
 | Last touched | 2026-05-21                                                  |
@@ -73,6 +73,7 @@ the current sprint; the rest are closed.
 | [[id:a63c60dc-c3a6-4f4f-8977-012a7bf1d566][Sprint 14]] | 2026-03-01 | 2026-03-19 | Messaging pivot to NATS (~107k LOC); ORE Import Wizard; reporting; JWT RS256.  |
 | [[id:03d189e0-1960-4f19-b71f-ee7c8d0941a7][Sprint 15]] | 2026-03-19 | 2026-03-30 | Compute grid (BOINC-style) + RAG dashboard; api/core split; CDM instruments.   |
 | [[id:1c778ce6-25d6-429b-920e-d08a2ce9a0a6][Sprint 16]] | 2026-03-30 | 2026-04-17 | ORE import e2e; workflow engine; market data; Qt plugins; Windows portability. |
+| [[id:A2B8A670-3B02-11F1-BCE2-4B06F4BBA5D7][Sprint 17]] | 2026-04-18 |            | Windows/MSVC portability, symbol visibility, ORE conventions, workspace, DQ publish, service isolation, SQL codegen, Qt UI, v2 docs. |
 
 * Release scope
 

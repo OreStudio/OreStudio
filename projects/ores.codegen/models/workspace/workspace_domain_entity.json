@@ -7,6 +7,8 @@
     "component_core": "workspace.core",
     "has_tenant_id": false,
     "has_workspace_id": false,
+    "deviation_rationale_tenant_id": "Workspace is system-wide; cross-tenant isolation is handled via IAM, not per-tenant row scoping.",
+    "deviation_rationale_workspace_id": "A workspace cannot belong to a workspace; self-referential membership is undefined.",
     "entity_singular": "workspace",
     "entity_plural": "workspaces",
     "entity_title": "Workspace",
@@ -111,7 +113,8 @@
       "has_uuid_primary_key": true,
       "has_integer_primary_key": false,
       "has_pagination": false,
-      "has_history": false,
+      "deviation_rationale_pagination": "A tenant holds at most ~20 active workspaces by product design; the tree view displaying the parent-workspace hierarchy does not support standard pagination.",
+      "has_history": true,
       "has_description_column": true,
 
       "get_request_class": "workspace::messaging::list_workspaces_request",
@@ -124,6 +127,18 @@
       "delete_request_class": "workspace::messaging::archive_workspace_request",
       "delete_response_class": "workspace::messaging::archive_workspace_response",
       "delete_message_type": "archive_workspace_request",
+      "history_request_class":  "workspace::messaging::get_workspace_history_request",
+      "history_response_class": "workspace::messaging::get_workspace_history_response",
+      "history_message_type":   "get_workspace_history_request",
+
+      "detail_fields": [
+        {"field": "name",                "label": "Name",        "widget": "nameEdit",        "type": "line_edit",      "is_key": true, "is_required": true, "placeholder": "Unique workspace name"},
+        {"field": "description",         "label": "Description", "widget": "descriptionEdit", "type": "plain_text_edit"},
+        {"field": "source_path",         "label": "Source Path", "widget": "sourcePathEdit",  "type": "line_edit",      "placeholder": "Optional data source path"},
+        {"field": "parent_workspace_id", "label": "Parent",      "widget": "parentEdit",      "type": "line_edit",      "readonly": true, "placeholder": "Inherited from (UUID)"},
+        {"field": "owner_id",            "label": "Owner",       "widget": "ownerEdit",       "type": "line_edit",      "readonly": true},
+        {"field": "status_code",         "label": "Status",      "widget": "statusEdit",      "type": "line_edit",      "readonly": true}
+      ],
 
       "columns": [
         {"enum_name": "Name",        "field": "name",        "header": "Name",        "is_string": true, "width": 200},

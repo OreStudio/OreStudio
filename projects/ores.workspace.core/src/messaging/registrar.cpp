@@ -65,6 +65,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             clear_trade_scope_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->clear_trade_scope(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_workspace_history_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     return subs;

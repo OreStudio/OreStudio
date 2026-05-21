@@ -315,6 +315,42 @@ public:
         }
     }
 
+    void history(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(workspace_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "workspace::workspaces:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::workspace_service svc(ctx);
+        get_workspace_history_response resp;
+        auto req = decode<get_workspace_history_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(workspace_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, resp);
+            return;
+        }
+        try {
+            resp.workspaces = svc.get_workspace_history(req->id);
+            resp.success = true;
+            BOOST_LOG_SEV(workspace_handler_lg(), debug)
+                << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(workspace_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
     void clear_trade_scope(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(workspace_handler_lg(), msg);

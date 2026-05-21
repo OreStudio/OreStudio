@@ -103,6 +103,9 @@ public:
      */
     void clear_trade_scope(const std::string& workspace_id);
 
+    std::vector<domain::workspace>
+    get_workspace_history(const std::string& id);
+
 private:
     context ctx_;
     repository::workspace_repository repo_{};

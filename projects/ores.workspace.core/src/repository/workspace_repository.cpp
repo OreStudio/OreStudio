@@ -101,6 +101,11 @@ void workspace_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::workspace>
+workspace_repository::read_history(context ctx, const std::string& id) {
+    return read_all(ctx, id);
+}
+
+std::vector<domain::workspace>
 workspace_repository::list_active(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Listing active workspaces.";
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));

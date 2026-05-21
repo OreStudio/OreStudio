@@ -101,4 +101,10 @@ void workspace_service::clear_trade_scope(const std::string& workspace_id) {
     repo_.clear_trade_scope(ctx_, workspace_id);
 }
 
+std::vector<domain::workspace>
+workspace_service::get_workspace_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for workspace: " << id;
+    return repo_.read_history(ctx_, id);
+}
+
 }

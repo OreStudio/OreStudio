@@ -17,20 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_HPP
-#define ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_HPP
+#ifndef ORES_WORKSPACE_GENERATORS_WORKSPACE_GENERATOR_HPP
+#define ORES_WORKSPACE_GENERATORS_WORKSPACE_GENERATOR_HPP
 
-#include <string>
 #include <vector>
-#include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.api/export.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
-namespace ores::workspace::domain {
+namespace ores::workspace::generators {
 
 /**
- * @brief Converts workspaces to the table format.
+ * @brief Generates a synthetic workspace.
  */
-ORES_WORKSPACE_API_EXPORT std::string convert_to_table(const std::vector<workspace>& v);
+ORES_WORKSPACE_API_EXPORT domain::workspace generate_synthetic_workspace(
+    utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic workspaces.
+ */
+ORES_WORKSPACE_API_EXPORT std::vector<domain::workspace>
+generate_synthetic_workspaces(std::size_t n,
+    utility::generation::generation_context& ctx);
 
 }
 

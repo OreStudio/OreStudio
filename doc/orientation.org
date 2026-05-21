@@ -16,10 +16,7 @@ every convention is described there. The journeys below tell you /where to go
 after that/, depending on what you came here to do.
 
 #+begin_note
-If you want to understand how things are organised, read [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] first.
-#+end_note
-
-* Preamble: A note on org-roam
+*Preamble: A note on org-roam*
 
 Before we proceed, a note on [[https://www.orgroam.com/manual.html][org-roam]] as we use it *extensively* in ORE Studio.
 You should be able to browse the HTML documentation without even knowing about
@@ -27,6 +24,7 @@ org-roam; but i you want to access the full power of the documentation system,
 I'm afraid you need to be on Emacs and have org-roam installed. Sadly, I cannot
 spend time explaining org-roam since it only makes sense to Emacs users but
 think of it as [[https://www.orgroam.com/manual.html#A-Brief-Introduction-to-the-Zettelkasten-Method][Zettletasken]] over the org-mode markup format.
+#+end_note
 
 * I am new to this project
 
@@ -52,21 +50,19 @@ the secondary trees ([[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]], [[i
 
 You probably want one of:
 
-- *A term's meaning* → [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]]. Every load-bearing word in the
-  system is defined there with a stable id-link.
-- *A specific sprint, story, or task* → walk down from [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]:
-  version → sprint → story → task. Or grep by tag — every doc
-  carries a =:filetags:= with its ancestor slugs, so
-  =grep -lR ":sprint_15:" doc/agile/versions/= finds every task in
-  sprint 15.
-- *A how-to ("how do I X?")* → [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]. Each recipe answers one
-  NLP question and carries the executable shell to do it.
-- *A domain or architecture topic* → [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]. Single-topic pages
-  grouped by area (Domain / Architecture / Security / Documentation).
-- *A component or file in the codebase* → [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]] (UML overview) or
-  [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]] (low-level C++ API).
-- *Pre-sprint ideas* → [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]], split by horizon
-  ([[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]]).
+- *A term's meaning* → [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]]. Every load-bearing word in the system is
+  defined there with a stable id-link.
+- *A specific sprint, story, or task* → walk down from [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]: version →
+  sprint → story → task. Or grep by tag — every doc carries a =:filetags:= with
+  its ancestor slugs, so =grep -lR ":sprint_15:" doc/agile/versions/= finds
+  every task in sprint 15.
+- *A how-to ("how do I X?")* → [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]. Each recipe answers one NLP question and
+  carries the executable shell to do it.
+- *A domain or architecture topic* → [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]. Single-topic pages grouped by
+  area (Domain / Architecture / Security / Documentation).
+- *A component or file in the codebase* → [[id:D773166D-0C91-8CB4-3323-42166BC07687][Modeling]] (UML overview) or [[https://orestudio.github.io/OreStudio/doxygen/html/index.html][Doxygen]]
+  (low-level C++ API).
+- *Pre-sprint ideas* → [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]], split by horizon ([[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]]).
 
 * I am an LLM about to do work in this codebase
 

@@ -21,7 +21,7 @@ file explains the layout that contract sits inside.
 #+begin_example
 doc/
 ├── compass.org           ← this file; read first
-├── doc.org               ← navigation guide, by reader intent
+├── orientation.org       ← navigation guide, by reader intent
 ├── meta/                 ← the contract: how documents are shaped
 ├── agile/                ← the operational tree
 │   ├── versions/         ← the composition tree (the bulk of v2)
@@ -45,26 +45,25 @@ doc/
 The five contract documents. Read in order on first contact; refer
 back to individual ones as needed.
 
-1. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][glossary]] — what we mean by [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]], [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]], [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]], [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], [[id:58d491a6-e4bd-4b0d-86bd-bb8465dfd4c7][plan]],
+1. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — what we mean by [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]], [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]], [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]], [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], [[id:58d491a6-e4bd-4b0d-86bd-bb8465dfd4c7][plan]],
    [[id:117a95f9-b03d-490b-bb74-da9fe74537e2][recipe]] and many other such terms. This is not a ORE Studio glossary --- for
    example, it will not contain Computational Finance terms such as volatility
    (vol). Instead, it is focused on terms around our information architecture.
-2. [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]] — the five levels of concern and what each
-   is responsible for.
-3. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] — every document type, its frontmatter contract,
-   filename convention, required sections.
-4. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] — Describes the =TODO= state transitions and where each state
+2. [[id:926b916e-a57e-498e-99ab-720b583c0362][Cybernetic levels]] — the five levels of concern and what each is responsible
+   for.
+3. [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — every document type, its frontmatter contract, filename
+   convention, required sections.
+4. [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][Lifecycle]] — Describes the =TODO= state transitions and where each state
    lives.
-5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]] — how LLMs and agents operate inside this
-   system.
+5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][Execution model]] — how LLMs and agents operate inside this system.
 
-** =agile/= — the operational tree
+** =agile/=: the operational tree
 
 Everything related to the rolling agile process: versions of the product, their
 sprints, the stories and tasks that compose them, and the product backlog of
 pre-sprint ideas.
 
-*** =agile/versions/= — the composition tree
+*** =agile/versions/=: the composition tree
 
 Where the operational documents live. Path shape:
 
@@ -78,7 +77,7 @@ Stories and sprints are folders (they contain children); tasks are flat files
 (they are leaves). One sprint per lexicographic step: =sprint_01=, =sprint_02=,
 ... The lexicographically-highest sprint folder is the current sprint.
 
-*** =agile/product_backlog/= — the pre-sprint queue
+*** =agile/product_backlog/=: the pre-sprint queue
 
 Holds [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — ideas not yet pulled into a sprint as stories. Split into two
 buckets:
@@ -90,14 +89,14 @@ When a capture is promoted into a sprint, the file moves into the appropriate
 sprint folder and its =#+type:= flips from =capture= to =story=. The =:ID:= is
 preserved so links keep working.
 
-** =recipes/= — how do I do X?
+** =recipes/=: how do I do X?
 
 Short, tested, executable how-tos grouped by topic
 (=recipes/<topic>/how_do_i_xxx.org=). Each recipe answers one NLP question.
 Shell commands inside =#+begin_src sh :results verbatim= blocks so they run in place via
 =C-c C-c=.
 
-** =knowledge/= — durable reference
+** =knowledge/=: durable reference
 
 Cross-cutting knowledge that outlives any sprint. Lives under
 =knowledge/<topic>/=. Component-specific knowledge (e.g. an architecture

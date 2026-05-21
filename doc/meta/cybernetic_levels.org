@@ -34,6 +34,10 @@ them.
 - Outputs :: a PR, an updated task document marked done, any discovered
   tasks filed for triage.
 - Owns :: the implementation of the task. Nothing more.
+- Lifecycle touchpoints :: runs the [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint execution]] phase — claims
+  =BACKLOG= tasks, transitions them through =STARTED= / =BLOCKED= /
+  =DONE=, opens and lands one PR per task. Files [[id:4ea506f5-c3e9-4f92-8024-a5eed0b3df43][discovered tasks]] for
+  S2 to triage.
 
 * System 2 — Coordination
 :PROPERTIES:
@@ -48,6 +52,12 @@ them.
 - Inputs :: a story document, the sprint mission, the codebase.
 - Outputs :: tasks, decisions, review of agent output, story completion.
 - Owns :: scoping, task sizing, in-story prioritisation, review.
+- Lifecycle touchpoints :: decomposes promoted stories into tasks
+  during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint planning]]; reviews S1 output and triages discovered
+  work during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint execution]]; resolves each story (=DONE= /
+  =ABANDONED= / carried) during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint closure]]. Also files
+  captures into the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] when discovered work cannot
+  fit any current story.
 
 * System 3 — Control
 :PROPERTIES:
@@ -63,6 +73,11 @@ them.
 - Inputs :: the sprint backlog, completed sprints, current sprint mission.
 - Outputs :: sprint planning, story prioritisation, retrospectives.
 - Owns :: medium-term planning, sprint coherence.
+- Lifecycle touchpoints :: drives the entire [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][sprint phases]] sequence —
+  refines the [[id:d4219199-7b17-4a89-b4bc-6019738642da][product backlog]] continuously, defines the sprint
+  mission and chooses stories in /Sprint planning/, generates release
+  notes and runs the post-mortem in /Sprint closure/, and decides
+  when a near→far demotion or far→near promotion is appropriate.
 
 * System 3* — Audit
 :PROPERTIES:
@@ -79,6 +94,11 @@ them.
 - Outputs :: audit reports, automatic state corrections, tasks to fix
   drift.
 - Owns :: the integrity of the system itself.
+- Lifecycle touchpoints :: observes the heartbeat invariant during
+  [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint execution]] (=STARTED= / =BLOCKED= staleness), checks every
+  id-link resolves, audits =DISCOVERED= tasks that overstay one
+  orchestrator session, verifies predecessor / successor symmetry on
+  cross-sprint stories.
 
 * System 4 — Intelligence
 :PROPERTIES:
@@ -94,6 +114,11 @@ them.
   identity.
 - Outputs :: version plan, sprint sequencing, release scope decisions.
 - Owns :: medium-to-long-term planning.
+- Lifecycle touchpoints :: cross-checks each sprint's mission against
+  the version mission during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint planning]]; participates in
+  /release cut/ decisions during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint closure]] (whether to publish
+  a release or land mid-version); responsible for moving captures
+  near↔far when the next version's focus changes.
 
 * System 5 — Policy / Identity
 :PROPERTIES:
@@ -111,6 +136,11 @@ them.
 - Outputs :: identity updates, scope decisions (accept / reject / defer),
   out-of-scope notes.
 - Owns :: what ORE Studio /is/ and /is not/.
+- Lifecycle touchpoints :: filters story choice during [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Sprint planning]]
+  (does each candidate fit the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]?); reviews [[id:d4219199-7b17-4a89-b4bc-6019738642da][backlog]]
+  captures for identity-fit and decides accept (the capture stays
+  in near/far) or reject (the capture is deleted, with the rationale
+  noted in commit history).
 
 * Information flow
 

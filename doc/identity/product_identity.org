@@ -56,19 +56,19 @@ data is proprietary and expensive; production quant models live inside
 institutional systems; the infrastructure of an enterprise risk platform
 tends to obscure rather than reveal the underlying domain. ORE Studio
 addresses these by providing synthetic and generated market data,
-delegating all quantitative mathematics to ORE and QuantLib, and keeping
+delegating all quantitative mathematics to [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] and [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]], and keeping
 the architecture intentionally simple (client → service layer → Postgres)
 so that domain concepts stay visible rather than buried.
 
 The target is the software developer — moderately fluent in C++ or a
 similar systems language — who wants to understand how computational
 finance works by building and extending a real system. Not by reading
-textbooks, not by running spreadsheets: by modifying code, running ORE,
+textbooks, not by running spreadsheets: by modifying code, running [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]],
 and observing what changes. A secondary audience is the developer already
-familiar with ORE or QuantLib who wants a graphical environment for
+familiar with [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] or [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] who wants a graphical environment for
 exploration and experimentation.
 
-ORE Studio is /independent of/ both ORE and QuantLib and has no
+ORE Studio is /independent of/ both [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] and [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and has no
 affiliation with either project or any financial institution.
 
 * Out of scope

@@ -138,7 +138,7 @@
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :publishing-function org-html-publish-to-html
-         :publishing-directory "./build/output/site"
+         :publishing-directory "./build/output/site/OreStudio"
          :html-preamble ,site-html-preamble
          :with-author nil
          :with-creator t
@@ -150,14 +150,14 @@
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :base-extension "png\\|jpe?g\\|gif\\|svg"
-         :publishing-directory "./build/output/site/"
+         :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:style"
          :recursive t
          :base-directory "./"
          :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\)/"
          :base-extension "css"
-         :publishing-directory "./build/output/site/"
+         :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 

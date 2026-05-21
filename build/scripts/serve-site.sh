@@ -21,7 +21,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-BUILD_DIR="$REPO_ROOT/build/output/site"
+BUILD_DIR="$REPO_ROOT/build/output/site/OreStudio"
 PORT="${PORT:-8000}"
 
 usage() {
@@ -64,14 +64,6 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
-# The site preamble uses absolute /OreStudio/ paths (matches the GitHub
-# Pages URL structure: orestudio.github.io/OreStudio/). To make local
-# preview links resolve, serve from a tmpdir that mirrors that prefix
-# via a symlink to the build output.
-PREVIEW_TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$PREVIEW_TMP_DIR"' EXIT
-ln -s "$BUILD_DIR" "$PREVIEW_TMP_DIR/OreStudio"
-
 echo "Serving $BUILD_DIR on http://localhost:$PORT/OreStudio/"
-cd "$PREVIEW_TMP_DIR"
+cd "$BUILD_DIR"
 exec python3 -m http.server "$PORT"

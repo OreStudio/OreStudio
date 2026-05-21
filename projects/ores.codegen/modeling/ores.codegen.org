@@ -159,6 +159,9 @@ harness.  See [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]
 
 * See also
 
+- [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Model Assisted Software Development]] — the conceptual model (logical
+  entities, facets, transformations) that the profile catalogue
+  implements.
 - [[id:fe693595-6693-459b-ad9b-eb7e3abbbc88][ores.codegen architecture]] — directory layout, internal modules,
   template system, model-template mapping, modeline configuration,
   features.

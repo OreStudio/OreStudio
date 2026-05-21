@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 5de55856-aa28-43dd-9cb5-ada241b12765
+:END:
+#+title: Task: [ore,trading,qt] Equity per-type migration: forwards produce variants; read-side stub deferred
+#+description: PR #2 of the four-PR instrument per-type migration series (see
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :fx_forward_equity_types:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/720
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[ore,trading,qt] Equity per-type migration: forwards produce variants; read-side stub deferred
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Now          | Completed 2026-04-24.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+PR #2 of the four-PR instrument per-type migration series (see
+\`doc/plans/2026-04-21-fx-forward-import-e2e.org\`). Addresses the latent
+FX-forward-style defect for equity: the ORE importer wrote only to the
+legacy generic \`ores_trading_equity_instruments_tbl\`, while nine
+per-type tables and their \`save_equity_<type>_instrument_request\` wire
+messages sat idle with zero callers.
+
+**What this PR lands (import-path only):**
+
+- All nine per-type equity services gain \`get_<type>_instrument\`
+  methods, ready for the read side.
+- \`equity_mapping_result\` carries \`equity_instrument_variant\` — a
+  \`std::variant\` over the nine per-type alternatives plus the legacy
+  flat \`equity_instrument\` as a migration bridge.
+- All fifteen \`forward_equity_*\` functions now produce the correct
+  per-type alternative (\`equity_option_instrument\`, \`equity_forward_instrument\`,
+  \`equity_swap_instrument\`, \`equity_variance_swap_instrument\`,
+  \`equity_barrier_option_instrument\`, \`equity_asian_option_instrument\`,
+  \`equity_digital_option_instrument\`, \`equity_accumulator_instrument\`).
+  Field renames land here (\`underlying_code\`→\`underlying_name\`,
+  \`strike_price\`→\`strike\`, \`maturity_date\`→\`expiry_date\`,
+  \`accumulation_amount\`→\`fixing_amount\`, \`cliquet_frequency_code\`→
+  \`cliquet_frequency\`, etc.).
+- Both importer dispatch sites (\`ore_import_execute_handler.cpp\` and
+  \`OreImporter.cpp\`) std::visit the variant and send the right
+  \`save_equity_<type>_instrument_request\`. \`ImportTradeDialog.cpp\`
+  and \`xml/importer.cpp\` wire \`instrument_id\` / \`trade_id\` on the
+  chosen alternative.
+
+**Commits (8):**
+
+1. \`1ddbbe766\` Phase 1 — \`get_<type>_instrument\` methods on the nine
+   per-type services.
+2. \`d966a763b\` Plan document.
+3. \`d7d00fdb1\` Plan expanded — mapper rewrite and importer flip added
+   after discovering the importer still wrote to the legacy generic
+   table.
+4. \`40cdef8b4\` Phase 2a — \`equity_instrument_variant\` + flat bridge
+   alternative + full per-type dispatch pre-wired in all importer sites.
+5. \`13aefb575\` Phase 2b — \`equity_option\` / \`equity_forward\` forwards
+   migrated.
+6. \`81334a42b\` Phase 2c — \`equity_swap\` / \`equity_variance_swap\`
+   forwards migrated.
+7. \`2a9bf1514\` Phase 2d — barrier / asian / digital forwards migrated
+   (five ORE types: EquityBarrierOption, EquityDoubleBarrierOption,
+   EquityEuropeanBarrierOption, EquityAsianOption, EquityDigitalOption,
+   EquityTouchOption).
+8. \`8a75af8a0\` Phase 2e — outperformance / accumulator / tarf /
+   cliquet / worst_of_basket_swap forwards migrated.
+
+**Bridge state (deleted in a follow-up PR):**
+
+The \`equity_instrument\` alternative of \`equity_instrument_variant\` and
+the \`flat()\` helper in \`xml_equity_mapper_roundtrip_tests\` stay put
+because \`reverse_equity_*\` signatures still take \`const
+equity_instrument&\`. Migrating reverse requires coordinating with the
+exporter and \`instrument_export_result\` changes — the read-path / bundle
+work (Phase 4 per the plan). That ships in a follow-up PR.
+
+**What's not in this PR yet:**
+
+- Phase 4: migrate \`reverse_equity_*\` signatures, add
+  \`equity_export_result\` to \`instrument_export_result\`, route
+  \`product_type::equity\` by \`trade_type_code\` in
+  \`trade_handler::populate_instrument_for_trade\`, migrate
+  \`EquityInstrumentForm::setInstrument\`. Closes Phase 2 by removing the
+  flat alternative + bridge helpers.
+- Phases 5–7: delete legacy generic wire messages, handler, C++
+  infrastructure, and SQL.
+
+**Verification:** Full \`ores.ore.tests\` suite (461 cases, 446k
+assertions) passes; trading core / Qt trading targets build clean.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

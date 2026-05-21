@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: a4bc5ab1-4f4e-4bfc-a8a8-152379e6ce7e
+:END:
+#+title: Task: Workflow engine hardening + package renames
+#+description: - Item 1: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workflow_hardening:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/742
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Workflow engine hardening + package renames
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Now          | Completed 2026-05-15.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- **Item 1**: Dynamic step lists — `workflow_instance` gains `step_count` and `materialised_steps_json` so the step sequence is persisted at instance start and survives service restarts
+- **Item 2**: Move workflow definitions to owning API packages — `workflow_step_def`, `materialised_step`, `workflow_definition`, and `workflow_registry` moved to `ores.workflow.api`; per-domain workflow definitions moved to `ores.refdata.api`, `ores.ore.api`, and `ores.reporting.api`
+- **Item 3**: Idempotency guard for workflow step handlers — domain services skip duplicate commands using the `X-Workflow-Step-Id` header
+- **Item 4**: Reusable `WorkflowStepsWidget` — Qt component for displaying live step progress, wired into the ORE import wizard's Done page
+- **Renames**: `ores.workflow` → `ores.workflow.core`, `ores.ore` → `ores.ore.core`, `ores.telemetry` → `ores.telemetry.core` to align with the standard `ores.*.core` naming convention
+- **Build**: Add sccache as compiler launcher across all CMake presets for shared compilation cache
+
+🤖 Generated with [Claude Code](https://claude.ai/claude-code)
+#+end_example
+
+* Result
+
+Landed.

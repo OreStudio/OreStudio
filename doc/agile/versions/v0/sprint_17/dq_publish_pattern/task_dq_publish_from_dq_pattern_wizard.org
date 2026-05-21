@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 7b174d52-e5ba-4a95-ad5d-dd44c59dd808
+:END:
+#+title: Task: DQ publish-from-dq pattern, wizard UX, IAM logging
+#+description: - Implement DQ publish-from-dq pattern: async workflow-based bundle publication with SQL, C++ and UI
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq_publish_pattern:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/767
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+DQ publish-from-dq pattern, wizard UX, IAM logging
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Implement DQ publish-from-dq pattern: async workflow-based bundle publication with SQL, C++ and UI
+- Fix cmake circular dependency between ores.qt.lib and ores.qt.workflow.lib
+- Guard all QFutureWatcher result() calls against propagated exceptions
+- Redesign PartyProvisioningWizard and TenantProvisioningWizard with collect-then-execute pattern
+- Fix party wizard UX: layout, report templates, language, logout prominence, progress tracking
+- Add IAM bootstrapping tenant status with complete-provisioning endpoint
+- Add Reset Tenant and Reset System UI actions with NATS handlers and SQL functions
+- Add party_setup_required logging in IAM auth and account handlers to diagnose wizard re-appearance
+- Add activation logging to party wizard and login dialog
+- Add Gemini UX analysis of party wizard re-appearance bug
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

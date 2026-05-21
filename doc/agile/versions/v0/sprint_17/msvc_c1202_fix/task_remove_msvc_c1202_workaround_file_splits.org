@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 13cce605-589e-4c28-92aa-c213cbae9cdd
+:END:
+#+title: Task: [msvc] Remove MSVC C1202 workaround file splits
+#+description: Removes three sets of artificial code splits that were introduced solely to work around MSVC C1202 (constexpr budget exc
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :msvc_c1202_fix:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/788
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[msvc] Remove MSVC C1202 workaround file splits
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Now          | Completed 2026-05-21.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Removes three sets of artificial code splits that were introduced solely to work around MSVC C1202 (constexpr budget exceeded by rfl template depth). The root fix — `#pragma constexpr_steps(1000000)` / `#pragma constexpr_depth(1024)` in the affected TU — was applied in PR #786.
+
+- **`[qt]`** Merge `ClientManagerSetup.cpp` and `ClientManagerEvents.cpp` back into `ClientManager.cpp`. The four methods (`testConnection`, `signup`, `subscribeToEvent`, `unsubscribeFromEvent`) were split out purely to reduce per-TU rfl instantiation depth. Adds a single MSVC pragma block at the top of `ClientManager.cpp` and deletes the two workaround files.
+
+- **`[trading]`** Replace `register_other_instrument_handlers` (a catch-all for 6 instrument families) with six dedicated per-family registrars matching the structure already used for FX and rates: `register_bond_handlers`, `register_credit_handlers`, `register_equity_handlers`, `register_commodity_handlers`, `register_composite_handlers`, `register_scripted_handlers`. Also corrects the stale `subs.reserve(113)` → 105 and consolidates the insert boilerplate in `registrar.cpp`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: f099eeeb-345d-419e-a0a3-f7bccaf4a7b2
+:END:
+#+title: Task: [backlog] Analyse Windows WiX installer size and file-count limits
+#+description: Analysis story for the two WiX v3 failures still blocking the Windows \`cpack\` step, following up on PR #693 and commit
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/710
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[backlog] Analyse Windows WiX installer size and file-count limits
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+Analysis story for the two WiX v3 failures still blocking the Windows \`cpack\` step, following up on PR #693 and commit 0e810380d which fixed the DLL export limit and added a 200 MB CAB split but did not clear the root issues.
+
+**LGHT0263** — \`ores.trading.core.lib\` (Debug static archive, >2 GB) exceeds WiX v3's 32-bit single-file offset limit. \`CPACK_WIX_SIZEOF_CABINET_SPLIT_SIZE\` can't break a single file across CABs.
+
+**LGHT0306** — a CAB accumulates more than 65,535 files. The 200 MB split is size-based; per-exe applocal duplication of the vcpkg DLL closure across 18 services pushes the file *count* past the limit before the size threshold triggers.
+
+The story enumerates four options for each (A–D for file size, E–H for file count) and recommends a short-term path:
+
+- **A.** Exclude static \`.lib\` archives from the Windows installer — they're developer artefacts, already baked into consumer exes.
+- **B.** Skip \`cpack\` on Debug — Release is the only deliverable.
+- **E.** Consolidate the applocal DLL closure into a single \`bin/\` copy instead of per-exe duplication.
+- **G.** Drop test executables and \`_autogen/\` output from the install set.
+
+Medium-term: consider splitting \`ores.trading.core\` on its own merits (C), and defer WiX v4 (D) unless A + E + G don't suffice.
+
+No code changes — intended to drive discussion and follow-up work. Full analysis, rationale, and task list are under the new \`Windows WiX installer\` story in \`doc/agile/product_backlog.org\`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

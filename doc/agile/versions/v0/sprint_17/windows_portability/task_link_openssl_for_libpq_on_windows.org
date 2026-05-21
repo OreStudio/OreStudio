@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 40c6968a-7d60-44f0-9b14-b2887a0525ab
+:END:
+#+title: Task: [database] Link OpenSSL for libpq on Windows
+#+description: Windows clang builds still fail linking \`ores.database.dll\` after #708:
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/709
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[database] Link OpenSSL for libpq on Windows
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+Windows clang builds still fail linking \`ores.database.dll\` after #708:
+
+\`\`\`
+lld-link: error: undefined symbol: RAND_bytes
+lld-link: error: undefined symbol: BIO_new
+lld-link: error: undefined symbol: OPENSSL_sk_num
+lld-link: error: undefined symbol: ASN1_STRING_get0_data
+\`\`\`
+
+libpq's SSL connection paths pull in OpenSSL. vcpkg's libpq cmake wrapper only attaches \`OpenSSL::SSL\` when the triplet linkage is \`static\`; the dynamic \`x64-windows\` triplet skips it. Same root cause as the pgport/pgcommon gap — extend the Windows compensation block in \`ores.database/src/CMakeLists.txt\` to also link \`OpenSSL::SSL\` and \`OpenSSL::Crypto\`.
+
+The two MSVC WiX packaging failures (\`LGHT0263\` on \`ores.trading.core.lib\` exceeding 2GB and \`LGHT0306\` on >65k files in a single CAB) are packaging-level issues, not build errors, and will be addressed separately.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

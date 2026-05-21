@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 0dee4230-d7fa-479e-9a22-91093b0eefcc
+:END:
+#+title: Task: [doc] v2 information architecture (sprints 12-16); close v0
+#+description: Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 8
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :v2_doc_architecture:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/781
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[doc] v2 information architecture (sprints 12-16); close v0
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Completes the v0 → v2 information architecture migration begun in PR #771 + #775. Five sprints (12-16) bring the final 86 stories and 252 tasks across, and mark v0 as RELEASED.
+
+### Sprint 12 — Party + counterparty foundation
+
+20 stories / 62 tasks. The largest mid-v0 sprint.
+
+- Party + counterparty + identifier + contact-information end-to-end (database, domain, Qt).
+- GLEIF data integration (datasets, central-bank LEIs, LEI-to-BIC).
+- Second RLS layer: party-level isolation scoped to the party subtree within a tenant.
+- Audit trail + system account: split =modified_by= (DB user) from =performed_by= (app actor); generation-context KVP for ~36 generators.
+- Tenant provisioning wizards (GLEIF + synthetic); books / portfolios / business units modelling.
+- FSM framework + trade-envelope schema; =ores.trade= → =ores.trading= rename.
+
+### Sprint 13 — Trade + scheduling foundations
+
+16 stories / 22 tasks. Sprint mission: trade + scheduling support.
+
+- Multi-party login picker + AccountPartiesWidget (closes sprint-12 party-RLS future-story).
+- =ores.scheduler= library wrapping =pg_cron= with Quartz.NET-style fluent API.
+- Portfolio explorer combining books + portfolios + filtered trade table.
+- Party isolation extended to books / portfolios / trades.
+- FSM moves from stand-alone home into =ores.dq=.
+- Atomic batch save + delete across 23 entities.
+
+### Sprint 14 — Messaging infrastructure pivot
+
+13 stories / 21 tasks. Sprint mission: work on messaging infrastructure.
+
+- ORE Import Wizard (seven-page directory-scan).
+- =ores.reporting= subsystem from scratch (design + schema + domain + UI).
+- Messaging pivot: pgmq + pg_cron → custom MQ → NNG broker → NATS. The NATS landing removed ~107k lines of binary-protocol code; 10 domain services migrated.
+- Party codename for per-party queue isolation (with TOCTOU + sequence-based race fixes).
+- JWT moves into =ores.security= with RS256 asymmetric signing.
+
+### Sprint 15 — Compute grid
+
+15 stories / 24 tasks. Sprint mission: implement compute grid.
+
+- BOINC-inspired distributed compute grid (=ores.compute= + =ores.compute.service= + =ores.compute.wrapper= + NATS JetStream lifecycle).
+- Compute grid observability (TimescaleDB telemetry + service heartbeat RAG dashboard).
+- =*.api= + =*.core= architecture split across all 10 service libraries.
+- JWT refresh (configurable lifetimes + auth telemetry hypertable + shell + Qt clients).
+- Unified =system_settings= (bool / int / string / JSON) replacing boolean-only =feature_flags=.
+- Four CDM instrument phases: rates / FX / bond / credit.
+
+### Sprint 16 — Final v0 sprint
+
+22 stories / 89 tasks. The largest sprint of v0; closes v0.
+
+- ORE import end-to-end: dispatch + mappers for every instrument family + supporting files (market.txt / fixings.txt / calendar / conventions) + server-side =ores.ore.service= + portfolio export + golden roundtrip tests.
+- Workflow engine generalised as event-driven saga orchestrator; party provisioning + ORE import as concrete sagas; report execution workflow pipeline.
+- Market data subsystem from scratch (parser + schema + repository + service + Qt UI).
+- =ores.controller= service lifecycle component; unified NATS heartbeats across all services.
+- Qt plugin architecture: =ores.qt.api= + 7 domain plugins (admin / compute / refdata / party / mktdata / trading / workflow).
+- Trade detail dialog unification: six instrument families merged behind =IInstrumentForm= registry.
+- Per-type instrument tables (rates / FX / equity) replace the generic instruments table from sprint 15.
+- Reporting + analytics: DQ-sourced report definitions, report execution workflow, analytics pricing engine.
+- Asset class unification: =asset_class= (risk taxonomy) and =product_type= (structural routing) treated as orthogonal.
+- UTC-everywhere timestamp policy enforced from DB to wire format.
+- ~20 Windows portability fixes (MSYS2, NATS certs, strptime, MOC dllimport, _wfopen_s, SIGQUIT, /FS, DLL export limit, MSVC PDB, xsd::vector, GLib dl-init, constexpr depth).
+
+### v0 closed
+
+=doc/v2/versions/v0/version.org= status moves from STARTED to RELEASED.
+
+Final v0 totals (all 16 sprints): ~190 stories, ~480 tasks. Sprint sizes ranged from sprint 02's 6 stories to sprint 16's 22 stories / 89 tasks. The largest were 12 (62 tasks) and 16 (89 tasks).
+
+### Notes for review
+
+- Cross-sprint linkage is bidirectional (=#+predecessor= / =#+successor= + prose "Continued from/in:" lines). Chains landed in this PR:
+  - party_database_groundwork (09) → party_schemes_and_fpml_data (10) → party_database_and_domain (12) → party_isolation_books_portfolios_trades (13) → party_isolation_rls (16).
+  - trade_import_analysis (13) → trade_import_dialog (13 BACKLOG) → trade_import_dialog_attempt (14 BACKLOG) → ore_import_wizard (14) → fix_ore_import_bugs (15) → ore_import_pipeline (16).
+  - compute_grid_analysis (10 BACKLOG) → compute_grid_implementation (15) → compute_grid_observability (15) → service_lifecycle_controller (16).
+  - scheduling_subsystem (13) → custom_mq_scheduler (14) → nng_broker_attempt (14) → nats_migration (14).
+  - jwt_rs256_in_security (14) → jwt_refresh (15).
+  - reporting_subsystem (14) → reporting_and_analytics (16).
+  - fsm_and_trade_support (12) → fsm_consolidation_into_dq (13).
+  - data_quality_subsystem (09) → librarian_polish (10).
+  - sqlgen_improvements (11) → sqlgen_followup (12, BLOCKED).
+- BLOCKED state used for two tasks in sprint 12 (sqlgen_followup) with =blocked_on= / =blocked_since= frontmatter.
+- Site builds clean post-rebase.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

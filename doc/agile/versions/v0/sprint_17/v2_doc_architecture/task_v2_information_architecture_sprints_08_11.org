@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 5b0c49bf-dbc8-442c-95aa-6ff739928e72
+:END:
+#+title: Task: [doc] v2 information architecture (sprints 08-11)
+#+description: Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :v2_doc_architecture:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/775
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[doc] v2 information architecture (sprints 08-11)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Migrates sprints 08-11 of v0 into the v2 cybernetic information architecture
+landed in PR #771. Four sprints, 43 stories, 114 tasks under
+=doc/v2/versions/v0/sprint_{08,09,10,11}/=.
+
+### Sprint 08
+
+11 stories / 31 tasks. The biggest v0 sprint to date.
+
+- =database_schema_and_seeding= — rerun SQL from scratch with TimescaleDB
+  license-tier detection; move all seeding from C++ to SQL populate.
+- =reference_data_countries= — first proper refdata entity end-to-end
+  (ISO 3166-1, bitemporal, Wt CRUD UI, shell).
+- =change_management_infrastructure= — reason taxonomy (BCBS 239 / FRTB /
+  FINRA / MiFID II); Qt UI; protocol bump to 21.1.
+- =qt_ux_polish= — currency / currencies-history / feature-flags / log-viewer
+  dialogs; accounts dialog deferred.
+- =wt_and_http_review= — validation of sprint-07 surfaces; HTTP recipes.
+- =comms_substrate_evolution= — composable options across binaries; rename
+  =ores.shell= → =ores.comms.shell=; dynamic event-channel discovery.
+- =native_pagination_support= — adopt sqlgen 0.6.0; drop the
+  single_connection aggregation hack.
+- =entity_creator_skills= — six skills (Qt, shell, HTTP, HTTP recipes, Wt,
+  CLI) for adding domain entities end-to-end.
+- =books_modelling_analysis= — first-cut FpML-anchored entities for books.
+- =observability_followup= — review-only pass; three implementations
+  carried forward.
+
+### Sprint 09
+
+9 stories / 27 tasks.
+
+- =data_quality_subsystem= — stand up =ores.dq= end-to-end: concept model,
+  10 domain types + FpML, ER refactor with catalog grouping, DQ messaging
+  subsystem (0x6000-0x6FFF, protocol 22.0 breaking), Data Librarian
+  three-panel MDI, subject-area management, DQ-IAM circular dependency fix,
+  publication wizard with Boost.Graph dependency resolution, fake-world
+  validation dataset.
+- =connection_management= — =ores.connections= (SQLite + AES-256-GCM),
+  Connection Browser MDI, modeless modernised login/sign-up dialogs.
+- =database_naming_refactor= — rename =ores.risk= → =ores.refdata=; apply
+  =<component>_<entity>_<suffix>= naming across the schema.
+- =security_module= — extract shared crypto primitives into =ores.security=
+  with RAII OpenSSL contexts.
+- =cli_entity_coverage= — list/delete for five entities; helper-driven
+  refactor.
+- =qt_visual_refresh= — centralise icons behind =enum class Icon=.
+- =engineering_hygiene= — system-model refresh, pr-manager consolidation,
+  nightly valgrind.
+- =party_database_groundwork= — party table structure documented; postponed.
+
+### Sprint 10
+
+12 stories / 30 tasks.
+
+- =codegen_infrastructure= — simple in-tree codegen; domain-types SQL; ER
+  diagram from SQL with convention validation.
+- =party_schemes_and_fpml_data= — 13 reference-data types party requires,
+  via FpML codegen + DQ artefact workflow; GLEIF Golden Copy subset.
+  Continues from sprint 09 party-database groundwork.
+- =sql_directory_refactor= — create/, drop/, populate/ reorganised by
+  component; safer teardown; =admin_*_fn=/=admin_*_view= convention.
+- =ore_xml_codegen= — new =ores.ore= component; xsdcpp integration;
+  xs:group ref expansion + xs:choice maxOccurs handling; Windows MSVC fix.
+- =dataset_bundles_and_provisioning= — metadata/production schema split;
+  dataset bundles + lifecycle functions; System Provisioner Wizard with
+  localhost-only bootstrap.
+- =external_data_reorganisation=, =image_cache_polish=, =schema_polish=,
+  =librarian_polish=, =fpml_export_import_groundwork= (BACKLOG),
+  =compute_grid_analysis= (BACKLOG).
+
+### Sprint 11
+
+11 stories / 26 tasks. The multi-tenancy sprint.
+
+- =database_role_split_and_schema_consolidation= — preconditions: split
+  the god admin account into RBAC roles; reverse sprint-10's schema split
+  back to a single =public= schema; SQL tree tidy-up.
+- =tenancy_foundation= — tenant tables + =tenant_id= on ~70 entity tables;
+  ores_iam_validate_tenant_fn; seeding scoped to system tenant; BEFORE
+  INSERT triggers populate tenant_id from session.
+- =tenancy_test_isolation= — tenant_context C++ service; per-test tenant
+  provisioning + deprovisioning; RLS policies; =--tenant= CLI flag; psqlrc
+  tenant prompt.
+- =tenancy_codegen_and_entity_types= — codegen Mustache templates emit
+  tenant-aware tables by default; pgTAP; C++ tenant entities; protocol
+  26.1.
+- =sqlgen_improvements= — libpq audit; upstream PRs for NOTICE logging and
+  bound parameters (latter BLOCKED on =getml/sqlgen#119=).
+- =telemetry_database_sink= — break the =ores.telemetry= ↔
+  =ores.database= circular dep; Boost.Log database sink; three-tier
+  tenant lifecycle (terminate / deprovision / purge); recursive-logging
+  guard.
+- =service_accounts_and_audit= — account_type classifications; session-only
+  auth for services; =performed_by= audit field across 42 tables;
+  telemetry async-sink deadlock fix.
+- =per_request_tenant_context= — tenant_aware_handler base class;
+  per-request database context from session tenant_id; type-safe
+  =tenant_id= wrapper; system tenant changes from nil UUID to max UUID
+  (RFC 9562). Closes a real cross-tenant data-leakage risk.
+- =validate_tenancy_across_surfaces= — shell scenarios; DQ metadata
+  unique indexes; Data Librarian cross-tenant publication; eventing
+  tenant_id propagation + subscription filtering.
+
+### Notes for review
+
+- Cross-sprint linkage is bidirectional (=#+predecessor= / =#+successor=
+  with prose "Continued from/in:" lines):
+  - sprint 09 =party_database_groundwork= → sprint 10
+    =party_schemes_and_fpml_data=.
+  - sprint 09 =data_quality_subsystem= → sprint 10 =librarian_polish=.
+- =BLOCKED= TODO state used for the first time on
+  =add_bound_parameters_sqlgen= (sprint 11) with =blocked_on= /
+  =blocked_since= frontmatter.
+- The metadata/production schema split landed in sprint 10 is reversed in
+  sprint 11. Both stories cross-reference each other so the trace is
+  preserved.
+- All v2 references use org-roam =[[id:UUID][text]]= form; no file-path
+  links.
+- Site builds clean after the rebase from main.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

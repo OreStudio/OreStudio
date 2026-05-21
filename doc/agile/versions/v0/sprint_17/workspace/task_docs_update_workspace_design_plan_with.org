@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: e56d4ae5-9d91-4943-ac74-f7d9d3a95987
+:END:
+#+title: Task: docs: Update workspace design plan with Phase 3–4 progress
+#+description: Update the workspace design plan document to reflect completion of Phases 1–2 and substantial progress through Phases 3–
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workspace:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/783
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+docs: Update workspace design plan with Phase 3–4 progress
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+Update the workspace design plan document to reflect completion of Phases 1–2 and substantial progress through Phases 3–4, including refinements to the implementation approach and deferral of Phase 5 work to the blotter plan.
+
+## Key Changes
+- **Status update**: Changed from "REVISED" to "IN PROGRESS" with detailed phase completion tracking
+- **Phase 3 (UI context propagation)**: Marked steps 1–3 complete; refined step 4 description to clarify per-window workspace selection via scoped request context
+- **Phase 4 (Data Workshop UI)**: Marked steps 1, 3, and 4 complete; deferred "Copy to / Run Report" actions; clarified inheritance summary implementation in `WorkspaceDetailDialog`
+- **Phase 5 deferral**: Moved ORE sample importer work to the Provisional Blotter Design plan, noting that Phases 1–4 workspace infrastructure is the prerequisite
+- **Open Questions**: Removed Phase 5–specific question about `risk_report_config` extension scope; renumbered remaining questions; clarified Phase 4 step 2 relevance for report definition name deduplication
+
+## Implementation Details
+- Workspace context propagation now uses `EntityController` event filter forwarding to `ClientManager`
+- Workspace tree view and inheritance summary implemented in `WorkspaceMdiWindow` and `WorkspaceDetailDialog` respectively
+- Per-window workspace selection requires per-window scoped request context rather than shared `ClientManager` state
+
+https://claude.ai/code/session_01SBstrpxwyveLg6HhhEspyz
+#+end_example
+
+* Result
+
+Landed.

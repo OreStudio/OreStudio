@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 7ec6a5b1-5e00-44f3-ba8b-8143621667b2
+:END:
+#+title: Task: Workspace: bitemporal schema, service layer, UI, and lifecycle operations
+#+description: Full implementation of the workspace entity as a first-class domain object with bitemporal history, a complete NATS serv
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workspace:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/766
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Workspace: bitemporal schema, service layer, UI, and lifecycle operations
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:77bf049f-ed38-4998-afa3-672e25895f9a][Workspace]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Full implementation of the workspace entity as a first-class domain object with bitemporal history, a complete NATS service layer, IAM permissions, Qt UI, and archive/delete lifecycle operations.
+
+### Schema (Phase 1)
+- Workspace table rewritten as bitemporal (UUID PK, `valid_from`/`valid_to`, full audit columns)
+- `workspace_id uuid` added to all 50+ data tables across refdata, trading, marketdata, and reporting schemas as a soft FK (no hard FK constraint — partial unique indexes are not FK-targetable in PostgreSQL)
+- Live workspace sentinel UUID (`aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`) added as utility constant
+- `ores_workspace_resolution_order_fn` recursive CTE function for ancestor chain resolution
+- `ores_workspace_trade_scope_tbl` for per-workspace trade whitelists
+- Badge system: generic `archived` badge (replaces FSM-specific `fsm_archived`)
+- SQL codegen template updated: `workspace_id` generated as soft FK with correct default
+
+### Service layer (Phase 2)
+- `ores.workspace.api`: protocol structs for list, create, archive, remove, resolve, set/clear trade scope
+- `ores.workspace.core`: entity/mapper pattern (isolates `row[N]` indexing), repository, service, NATS handler, registrar
+- IAM permissions: `workspaces:read`, `write`, `archive`, `archive_any`, `live_workspace:archive`, `delete`, `delete_any`
+- Three-tier ownership-aware permission checks on archive and delete handlers
+- Remove (soft-delete) endpoint: closes bitemporal record + clears trade scope
+
+### UI (Phases 3 & 4)
+- `WorkspaceContext` propagated via MDI area property to all windows
+- `WorkspaceMdiWindow`: paginated table, reload/add/edit/archive/delete toolbar actions
+- `WorkspaceDetailDialog`: create/edit/archive form with provenance widget
+- `ClientWorkspaceModel`: Qt item model backed by NATS list endpoint
+
+### Icons
+- `Icon::Archive` added to icon system with Fluent UI (20px regular/filled) and Solar (Linear/Bold) variants
+- Archive toolbar action uses `Icon::Archive`; delete uses existing `Icon::Delete`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 602ebc68-1a40-4fe8-b578-fd482a56ee12
+:END:
+#+title: Task: [compute] Per-triplet app_version packages via junction table
+#+description: Each app_version now carries one packaged bundle per target triplet rather than a single blob shared across platforms. T
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :compute_gleif:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/714
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[compute] Per-triplet app_version packages via junction table
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e16beabb-cc59-4d6c-b216-dacc1e922047][Compute and GLEIF]] |
+| Now          | Completed 2026-04-22.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Each app_version now carries one packaged bundle per target triplet rather than a single blob shared across platforms. The orchestrator resolves the URI at dispatch time and routes assignments on triplet-scoped NATS subjects so wrappers only receive work they can actually run.
+
+- **Schema** (`13192c3de`): `package_uri` moved from `ores_compute_app_versions_tbl` to the `ores_compute_app_version_platforms_tbl` junction; platform codes switched to vcpkg triplets (`x64-linux`, `arm64-osx`, ...) so build-time (`VCPKG_TARGET_TRIPLET`), runtime (`ORES_PLATFORM_TRIPLET`) and DB rows all share one canonical key.
+- **Wrapper version banner** (`c7d8c605f`): stamps the platform triplet into version info.
+- **C++ cutover** (`7b0acca53`): new `app_version_platform` domain type + repository (`list_for_version`, `replace_for_version`); `save_app_version_request` now carries `std::vector<app_version_platform>` and the handler syncs both tables in one request; `workunit_handler` looks up per-platform packages and publishes each assignment on `compute.v1.work.assignments.{tenant}.{triplet}`; wrappers subscribe only to their own triplet. CLI replaces `--platform`/`--package-uri` with repeatable `--platform-package '<code>=<uri>'`. Qt list model drops Platform/PackageUri columns; detail dialog and provisioner wizard build junction rows on save.
+- **Edit-mode preload** (`5d5e14794`): new `list_app_version_platforms` RPC so opening an existing app_version populates the platforms tab instead of silently wiping the set on save.
+- **Tests & diagrams** (`bffa14d9c`): domain tests for `app_version_platform`; component class diagram refreshed; ER diagram regenerated from the SQL schema.
+
+## Follow-ups (deferred)
+
+- Per-platform upload UI — today the wizard applies one URI to every selected triplet (placeholder). A row-per-platform browse/upload flow will require a separate UX pass.
+- Repository + handler integration tests for the junction sync path (the service-layer tests we have cover the domain but not the replace_for_version round-trip).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

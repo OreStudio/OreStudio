@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: b174a3c8-031f-40f1-ada0-a9cc79983ed8
+:END:
+#+title: Task: [doc] v2 cybernetic information architecture (sprints 01-07)
+#+description: Stands up the v2 information architecture under =doc/v2/= and migrates the first
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :v2_doc_architecture:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/771
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[doc] v2 cybernetic information architecture (sprints 01-07)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:063862a1-c02c-4f76-a212-576a57423f0f][v2 documentation architecture]] |
+| Now          | Completed 2026-05-19.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Stands up the v2 information architecture under =doc/v2/= and migrates the first
+half of v0 (sprints 01-07) into it. Roughly the midway point of the v0 sprint
+backfill — sprints 08-16 will follow in a separate PR.
+
+### v2 architecture
+
+- New tree organised by Beer's Viable System Model:
+  =doc/v2/{meta,versions,components,recipes,knowledge,functions,skills,product_identity}=.
+- Meta-documents define the contract every v2 doc follows
+  (=meta/document_types.org=, =compass.org=, =glossary.org=,
+  =cybernetic_levels.org=, =lifecycle.org=, =execution_model.org=).
+- Composition tree: version → sprint → story → task (one PR per task).
+- State carried as org-mode TODO keyword on the document's =* Status=
+  headline; folders encode composition, not state.
+- All cross-document references are org-roam =[[id:UUID][text]]= links —
+  no file-path links anywhere in v2.
+- Cross-sprint stories use =#+predecessor= / =#+successor= keywords plus
+  prose "Continued from/in:" lines for bidirectional audit.
+
+### Codegen
+
+- New =projects/ores.codegen/src/v2_doc_generate.py= with shell wrapper
+  =generate_v2_doc.sh= scaffolds every v2 doc type from Mustache
+  templates.
+- Auto-detects parent =:ID:= and =#+title:= from the parent doc;
+  derives ancestor tags from the path; supports interactive prompts on
+  TTY, CLI flags otherwise.
+- Doc types covered: =task=, =story=, =sprint=, =version=,
+  =component=, =recipe=, =knowledge=, =skill=.
+
+### Sprints 01-07 (v0)
+
+Each sprint migrated as a full sprint + stories + tasks tree under
+=doc/v2/versions/v0/sprint_NN/=. Task bodies are enriched from the v0
+backlog (goal, acceptance, notes, result); stories carry cross-doc
+links to components, sibling stories, and (where relevant) predecessor
+sprints.
+
+Cross-sprint linkage now in place:
+
+- sprint 02 → 03 (CLI / cobalt continuation)
+- sprint 03 → 05 (auth bootstrap)
+- sprint 04 → 07 (build platform follow-up)
+- sprint 05 → 06 (CLI entity syntax follow-up)
+
+### Recipes & knowledge
+
+- =doc/v2/recipes/cmake/= — 7 cmake recipes with executable
+  =#+begin_src sh= blocks (list presets, configure, build, run tests,
+  deploy site, deploy skills, plantuml).
+- =doc/v2/recipes/codegen/= — how to run codegen, how to create a new
+  v2 doc.
+- =doc/v2/recipes/emacs/= — how to refresh org-babel results in batch.
+- =doc/v2/knowledge/architecture/cmake_setup.org= — preset menu,
+  output layout, parallelism.
+
+### Site publishing fixes
+
+- =.build-site.el= now requires =ob-shell= so recipes with =sh=
+  source blocks publish cleanly.
+- Exclude regex anchored to directory boundaries to stop
+  =build_stabilisation_N= directories being incorrectly filtered.
+
+### Notes for review
+
+- v0 sprint backlogs and per-sprint AI summaries remain under
+  =doc/agile/v0/= for reference; they will be deleted once sprints
+  08-16 are migrated.
+- =readme.org= and =doc/doc.org= now link into the v2 compass via
+  =[[id:...]]= rather than restating the architecture.
+- The codegen doc tree itself was split: =modeling/ores.codegen.org= is
+  now a thin component doc; the implementation detail lives in
+  =projects/ores.codegen/docs/architecture.org=.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

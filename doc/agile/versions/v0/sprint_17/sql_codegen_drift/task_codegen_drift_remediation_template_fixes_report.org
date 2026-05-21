@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 73dc3a27-295d-4834-97bf-a8d6f0e1e4ca
+:END:
+#+title: Task: [sql] Codegen drift remediation: template fixes + report_definitions
+#+description: Continues codegen drift remediation from PR #747, addressing three categories of work:
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql_codegen_drift:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/752
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[sql] Codegen drift remediation: template fixes + report_definitions
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Now          | Completed 2026-05-17.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Continues codegen drift remediation from PR #747, addressing three categories of work:
+
+- **Template fix**: `sql_schema_domain_entity_create.mustache` was missing `set search_path = public, pg_temp` on the `SECURITY DEFINER` line (required by CLAUDE.md). Fixed and regenerated all 8 affected trading instrument files.
+
+- **Template extension**: Added two new capabilities to the domain entity create template:
+  - `prefix_columns` on `natural_keys` entries for compound unique indexes (e.g. `(tenant_id, party_id, name)` instead of `(tenant_id, name)`)
+  - `soft_fk_validations` block for table-existence soft FK checks (supports nullable/mandatory and current-tenant/system-tenant variants)
+
+- **reporting_report_definitions_create.sql**: Updated model with soft FK validations for `party_id` and `fsm_state_id`, compound name unique index, extra indexes, `security_definer`, simple validations for `report_type`/`concurrency_policy`, and extra checks. Replaced hand-crafted file with codegen output.
+
+- **Plan update**: Resolved all Category B DQ items (the `entity.json` models generate `_artefact_create.sql` only; those files already exist and are codegen-managed). Documented the 4 remaining Category A files as DEFERRED with specific blocking reasons.
+
+## Commits
+
+1. `[sql]` Fix SECURITY DEFINER missing set search_path in insert trigger template
+2. `[sql]` Replace hand-crafted reporting_report_definitions_create with codegen
+3. `[doc]` Update codegen SQL debt plan with PR #752 progress
+
+## Remaining deferred (require further template extensions)
+
+- `reporting_report_instances` — needs denormalization-with-fallback from `report_definitions`
+- `trading_trades` — needs party_id denormalization from book + portfolio cross-validation
+- `scheduler_job_definitions` — nullable `tenant_id` not supported by template
+- `iam_tenants` — custom RLS, system-scoped PK, bitemporal trigger (most complex)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

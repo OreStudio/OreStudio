@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: f8785fd8-fb24-4cb0-be33-119062158eb8
+:END:
+#+title: Task: [trading,qt,sql] FX forward import E2E wiring and instrument-bundle API
+#+description: Fixes a defect where FX forward trades imported via the ORE flow rendered with blank instrument economics in the Portfol
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :fx_forward_equity_types:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/715
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[trading,qt,sql] FX forward import E2E wiring and instrument-bundle API
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Now          | Completed 2026-04-22.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Fixes a defect where FX forward trades imported via the ORE flow rendered with **blank instrument economics** in the Portfolio Explorer, and in the process collapses the client's two-step trade/instrument read path onto a single bundle-returning RPC.
+
+Two defects combined to hide the bug from every existing test:
+
+1. **Shadow read path**: the ORE importer saved FX forwards to per-type tables (\`fx_forward_instruments_tbl\` and six siblings), but the UI read from the legacy generic \`fx_instruments_tbl\` — empty since the per-type migration. Deleted in 5f64df94d.
+2. **Soft-FK ordering bug**: \`trade_mapper::map()\` emits \`trade.id\` as the nil UUID and copies that into \`instrument.trade_id\`. The planner later mints a real UUID into \`trade.id\` but forgot to propagate it into the instrument. The \`trade_import\` test was vacuously green because both sides were nil at comparison time. Fixed in 5a186e0f4.
+
+On top of those two fixes, the branch reshapes the client-facing API so the same class of bug can't recur: trade listing returns per-trade *bundles* (trade + resolved instrument variant), forms become pure renderers fed by the dialog, and the standalone \`get_instrument_for_trade_request\` is retired entirely.
+
+## What's in the branch
+
+Seven commits, phased so each is independently buildable:
+
+1. \`5a186e0f4\` \`[ore]\` rewire \`instrument.trade_id\` after the planner mints the trade UUID.
+2. \`5f64df94d\` \`[trading,ore,qt,sql,codegen]\` delete legacy FX generic table; route reads by \`trade_type_code\`; rename \`find_*_instrument\` → \`get_*_instrument\` across the seventeen instrument services.
+3. \`0e67435c0\` \`[doc]\` plan document \`doc/plans/2026-04-21-fx-forward-import-e2e.org\` covering the broader analysis and the per-family migration sequencing.
+4. \`f504830ff\` \`[trading,sql,qt]\` evolve \`get_trades_request\` to a bundle response (\`trade_export_item\` × N) with a single \`node_id\` filter resolved by the new \`ores_trading_get_book_ids_for_node_fn\` (book / portfolio / business-unit). Retires \`list_trades_filtered\` / \`count_trades_filtered\`.
+5. \`657a294f3\` \`[qt]\` \`ClientManager::listTrades\` helper; all five trade-listing consumers migrate off hand-rolled \`process_authenticated_request\` onto it.
+6. \`a66810c43\` \`[qt]\` \`IInstrumentForm::setInstrument\` replaces \`loadInstrument\`. All eight family forms (Fx, Swap, Bond, Credit, Equity, Commodity, Composite, Scripted) become synchronous renderers. \`TradeDetailDialog::setTrade\` → \`setTradeBundle\`. Models cache \`vector<trade_export_item>\` instead of bare trades and expose \`get_trade_bundle(row)\`.
+7. \`d3e11a764\` \`[trading]\` delete \`instrument_handler\` and the \`get_instrument_for_trade_request\` / response pair. \`get_trades_request\` is now the sole instrument read path.
+
+Net ~350 line reduction overall, concentrated in the async \`loadInstrument\` boilerplate (−200 across the eight forms).
+
+## Follow-up (not in this PR)
+
+This is PR #1 of a four-PR series described in the plan document. The same bundle-returning shape is ready to apply to:
+
+- PR #2 — Equity (9 per-type variants; delete \`equity_instruments_tbl\`).
+- PR #3 — Bond / Credit / Commodity / Composite / Scripted (single-type families; delete legacy generic tables; rename save requests for uniformity).
+- Client-form story for the other six FX variants (\`fx_accumulator\`, \`fx_asian_forward\`, \`fx_barrier_option\`, \`fx_digital_option\`, \`fx_vanilla_option\`, \`fx_variance_swap\`); \`FxInstrumentForm\` is currently wired to \`fx_forward_instrument\` only.
+
+## Database
+
+The new SQL function \`ores_trading_get_book_ids_for_node_fn(tenant_id, node_id)\` must be applied before services will handle \`get_trades_request\`. Either recreate the DB or selectively run \`projects/ores.sql/create/trading/trading_trades_functions_create.sql\`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

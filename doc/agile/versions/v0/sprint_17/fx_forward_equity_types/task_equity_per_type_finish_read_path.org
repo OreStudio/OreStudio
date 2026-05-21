@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: f9ec0a78-2233-4241-8c18-ba08572057f5
+:END:
+#+title: Task: [ore,trading,qt,sql] Equity per-type: finish read path + delete legacy generic
+#+description: Completes the equity per-type migration begun in PR #720. That PR
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :fx_forward_equity_types:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/721
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[ore,trading,qt,sql] Equity per-type: finish read path + delete legacy generic
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:00ccc0dc-200c-4951-81e0-6aa93b1503fc][FX forward E2E and equity per-type migration]] |
+| Now          | Completed 2026-05-01.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Completes the equity per-type migration begun in PR #720. That PR
+flipped the forward (import) direction onto per-type variants; this
+PR flips the reverse (export) direction, adds the bundle API on the
+wire, migrates the client form, and deletes every piece of legacy
+generic equity infrastructure end-to-end.
+
+Four commits, each builds clean:
+
+1. **`8baa071e5` Phase 4 — read-side migration + close Phase 2 bridge.**
+   All fifteen `reverse_equity_*` functions now take the per-type
+   domain struct directly. `make_option_data` is templated. The
+   `equity_instrument` bridge alternative is removed from
+   `equity_instrument_variant`; the test-side `flat()` helper and the
+   duplicated `eq_flatten_barrier` helper are deleted. Introduces
+   `equity_export_result` in `instrument_protocol.hpp` and replaces
+   the legacy `equity_instrument` alternative in
+   `instrument_export_result`. `trade_handler::populate_instrument_for_trade`
+   routes `product_type::equity` by `trade_type_code` into the right
+   per-type service (mirroring FX). The XML exporter's equity branch
+   `std::visit`s the new variant. `EquityInstrumentForm` now holds
+   `equity_option_instrument` directly, pattern-matches the bundle on
+   `setInstrument`, and saves via `save_equity_option_instrument_request`
+   — scoped to `EquityOption` for now, matching how
+   `FxInstrumentForm` scoped to `FxForward` in PR #715.
+
+2. **`acb02bf87` Phase 5 — delete legacy generic wire messages and
+   handler.** Drops `save_equity_instrument_request`,
+   `delete_equity_instrument_request`, `get_equity_instruments_request`,
+   `get_equity_instrument_history_request` and their responses from
+   `instrument_protocol.hpp`. Deletes `equity_instrument_handler.hpp`.
+   Removes the four subscriptions from `registrar_other_instruments.cpp`.
+
+3. **`bc8dce9a6` Phase 6 — delete legacy generic C++ infrastructure.**
+   Fifteen files: `equity_instrument` domain + JSON I/O + table + table
+   I/O, `equity_instrument_entity/mapper/repository`,
+   `equity_instrument_service`. Net −1134 lines. (The
+   `ores.ore/domain/equity_instrument_mapper.{hpp,cpp}` is **not** this
+   file — it's the ORE import mapper keyed by `equity_instrument_variant`
+   and stays.)
+
+4. **`a62eb1193` Phase 7 — delete legacy generic SQL schema.** The
+   `ores_trading_equity_instruments_tbl` table, its notify trigger,
+   the drop scripts, `\ir` includes, the two RLS policies, and the
+   PlantUML entity. `validate_schemas.sh` passes (202 tables, no
+   warnings).
+
+## Verification
+
+- Trading core + Qt trading + ORE libraries build clean.
+- Full `ores.ore.tests` (461 cases, 446k assertions) passes at each
+  phase.
+- SQL schema validator passes.
+
+## What's out of scope
+
+- Extending `EquityInstrumentForm` to cover the other eight per-types
+  (barrier, digital, asian, forward, variance_swap, swap, accumulator,
+  position). Same deferred scope as FX.
+- Adding a proper basket field to `equity_option_instrument` so
+  `EquityOutperformanceOption` doesn't have to slash-join its two
+  underlyings into `underlying_name`. Schema evolution for follow-up.
+
+## Net impact
+
+~2000 line reduction across the branch. The equity family now matches
+the FX, swap, and commodity shape: per-type variants flowing through
+per-type services, a single bundle-returning RPC for reads, and no
+legacy generic table sitting silently behind them.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

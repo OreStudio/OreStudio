@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 9d673cfc-3396-4d61-950f-4888d19f1bd9
+:END:
+#+title: Task: [vcpkg] Add opt-in qt feature for Windows users
+#+description: Some Windows users struggle to install Qt externally (e.g. Qt online
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/717
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[vcpkg] Add opt-in qt feature for Windows users
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-22.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+Some Windows users struggle to install Qt externally (e.g. Qt online
+installer issues, path setup, or not wanting a system-wide Qt). Expose
+Qt behind an optional vcpkg manifest feature so they can build
+everything from a single manifest.
+
+- `qtbase` covers `Qt6::Core`, `Qt6::Gui`, `Qt6::Widgets`,
+  `Qt6::Concurrent`, and `Qt6::Network` via its default features.
+- `qtsvg` covers `Qt6::Svg`.
+- `qtcharts` covers `Qt6::Charts`.
+
+Together this matches the `find_package(Qt6 REQUIRED COMPONENTS Core
+Gui Widgets Concurrent Network Svg Charts)` in the top-level
+`CMakeLists.txt`.
+
+## Usage
+
+```
+cmake <your-windows-preset> -DVCPKG_MANIFEST_FEATURES=qt
+```
+
+Users who also want Wt should pass both — `VCPKG_MANIFEST_FEATURES`
+replaces defaults rather than appending:
+
+```
+cmake <your-windows-preset> -DVCPKG_MANIFEST_FEATURES="wt;qt"
+```
+
+## CI impact
+
+None. `qt` is not in `default-features`; only the existing `wt` default
+is active when no flag is passed.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

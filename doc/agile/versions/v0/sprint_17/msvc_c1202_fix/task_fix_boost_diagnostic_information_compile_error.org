@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 7959c3c0-9846-400b-8d8f-104cf2f2e5c0
+:END:
+#+title: Task: [hotfix] Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
+#+description: - `ClientManagerTradeDetail.cpp:75` calls `boost::diagnostic_information(e)` which requires `<boost/exception/diagnostic
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :msvc_c1202_fix:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/759
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[hotfix] Fix boost::diagnostic_information compile error in ClientManagerTradeDetail
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:fbe68713-40c1-4b1d-a228-1c55ab4abc34][MSVC C1202 constexpr depth fixes]] |
+| Now          | Completed 2026-05-17.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- `ClientManagerTradeDetail.cpp:75` calls `boost::diagnostic_information(e)` which requires `<boost/exception/diagnostic_information.hpp>` — that header is not included in this TU, causing a compile error on all Linux builds
+- Fix: replace with `e.what()`, which is what `ClientManagerTrades.cpp` uses in the equivalent catch block
+
+Fixes CI run https://github.com/OreStudio/OreStudio/actions/runs/25983392216
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

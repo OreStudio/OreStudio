@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: f936ea06-c324-42bd-925a-638159cd142e
+:END:
+#+title: Task: [iam][refdata] Phase 4.3: IAM party cache via NATS, remove cross-service DB reads
+#+description: - Removes direct IAM→refdata DB reads by introducing an in-process party cache backed by NATS
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :strict_service_isolation:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/744
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[iam][refdata] Phase 4.3: IAM party cache via NATS, remove cross-service DB reads
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e762da90-b92a-41e1-ad4d-29018f17af32][Strict service table isolation]] |
+| Now          | Completed 2026-05-15.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Removes direct IAM→refdata DB reads by introducing an in-process party cache backed by NATS
+- \`party_cache\` holds per-tenant flat maps of party records; warmed at startup for all active tenants and reloaded on \`refdata.v1.parties.changed\` events
+- Eliminates the \`ores_refdata_parties\` cross-service DML grant from the IAM service registry
+- Drops \`ores.refdata.core.lib\` link dependency from \`ores.iam.core\`
+
+## Changes
+
+**refdata (API/core/service)**
+- \`party_protocol.hpp\`: add \`read_parties_for_cache_request/response\` with subject \`refdata.v1.parties.read\`
+- \`party_handler.hpp\`: add \`read_for_cache\` method that scopes to tenant and returns all active parties
+- \`registrar.cpp\`: register the new \`refdata.v1.parties.read\` NATS subject
+- \`application.cpp\`: wire \`party_changed_event\` → \`refdata.v1.parties.changed\` publish via existing PostgreSQL LISTEN/NOTIFY pipeline
+
+**iam (core)**
+- \`service/party_cache.hpp\`: new in-process cache; \`load()\` calls \`refdata.v1.parties.read\`; \`compute_visible_party_ids()\` walks \`parent_party_id\` tree in-process; \`lookup_party()\` does O(1) UUID lookup
+- \`auth_handler.hpp\`: remove \`party_repository\` include; accept \`shared_ptr<party_cache>\`; use cache for visible-party computation and party lookup
+- \`account_handler.hpp\`: same — replace \`party_repository\` with cache
+- \`registrar.cpp\`: query \`tenant_repository::read_latest()\` at startup and call \`party_cache::load()\` for each active tenant; subscribe to \`refdata.v1.parties.changed\` to reload per-tenant on mutations; pass cache to handlers
+
+**service registry**
+- Remove \`ores_refdata_parties\` from IAM \`dml_prefixes\` (cross-service grant no longer needed)
+
+**doc**
+- Mark identifier-length-cleanup and symbol-visibility-migration plans as COMPLETE
+- Update cross-service-write-decoupling plan STATUS to IN PROGRESS
+- Sprint 17: add BLOCKED story for Phase 4.3
+
+## Notes
+
+- Cache warm-up failures (e.g. refdata service not yet up) are caught and logged; IAM continues to start and the \`{party_id}\` fallback in \`compute_visible_party_ids\` keeps login functional
+- Bootstrap flow (\`bootstrap_handler\`) does not use the party cache; provisioning works before the cache is warm
+- Phases 5.2 and 5.3 (workflow→IAM/refdata NATS write APIs) remain to be implemented
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

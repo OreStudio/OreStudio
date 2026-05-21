@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 13255aaf-c142-4a65-a56a-065d456ba952
+:END:
+#+title: Task: Import/export cleanup: composite legs, pure parser, batch fetches, trade list split
+#+description: - Phase 1: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` v
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :import_export_cleanup:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/728
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Import/export cleanup: composite legs, pure parser, batch fetches, trade list split
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:e62bf8dd-fd3b-4283-a1a9-3faf1f7a1703][Import/export cleanup]] |
+| Now          | Completed 2026-05-06.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- **Phase 1**: Unify instrument variant hierarchy — introduce `Instrument` concept, `with_legs<T,Leg>`, `trade_instrument` variant, `swap_instrument_data`, `composite_instrument_data`; replace all ad-hoc instrument carrier types
+- **Phase 2**: Fix composite legs gap in ORE importer — composite legs were silently dropped on import
+- **Phase 3**: Pure parser — strip UUID minting out of `import_portfolio_with_context`; move it to the planner layer; delete the context-free `import_portfolio` overload
+- **Phase 4**: Eliminate N+1 DB queries on bulk export — add `read_latest(ctx, ids)` batch overloads to all 30 instrument repositories, `get_TYPE_instruments(ids)` to all 30 services, and `get_swap_legs_batch` / `get_legs_batch` for the shared leg tables; replace per-trade `populate_instrument_for_trade` with `populate_instruments_for_trades` that groups by type and issues one DB call per type; fix `export_trades_to_storage` to page at 1000 instead of loading unbounded
+- **Phase 6**: Split trade list from trade detail — `get_trades_response` now returns metadata-only `vector<trade>>`; new `get_trade_detail_request` fetches a single trade's instrument on demand; Qt models cache `trade` not `trade_export_item`; `TradeController` fetches detail synchronously before opening the dialog
+
+🤖 Generated with [Claude Code](https://claude.ai/claude-code)
+#+end_example
+
+* Result
+
+Landed.

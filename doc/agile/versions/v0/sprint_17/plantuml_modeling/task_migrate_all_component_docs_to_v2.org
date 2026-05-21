@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 0d4a6b08-ab08-4a63-a768-5cbdb692fa18
+:END:
+#+title: Task: [modeling] Migrate all component docs to v2 information architecture
+#+description: - Migrates all component documentation from the legacy stub format to the v2 information architecture (`component_overvi
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :plantuml_modeling:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/779
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[modeling] Migrate all component docs to v2 information architecture
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:17c590d4-04f0-43c5-9ea5-f89c40c82a4c][PlantUML and modeling refresh]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Migrates all component documentation from the legacy stub format to the v2 information architecture (`component_overview.org` files with `#+type: component` frontmatter, standard sections: Summary, Inputs, Outputs, Entry points, Dependencies, See also)
+- Replaces 35+ legacy `ores.*.org` stub files (diagrams only, no content) with accurate, content-filled component overviews across all 17 api/core/service families and 18 standalone components
+- Updates `system_model.org` and `ores.puml` to reflect the current NATS-era architecture (removes `ores.comms`, adds `ores.nats`, `ores.service`, `ores.storage`; adds all new domain components: marketdata, synthetic, scheduler, reporting, analytics, workflow, compute, controller)
+- Adds `--id` flag to the v2 doc generator to preserve existing org-roam UUIDs on migration, keeping all backlinks intact
+- Fixes stale PNG references and removes orphan PNG files from prior diagram renames
+
+## Commits
+
+| Area | What changed |
+|------|-------------|
+| `ores.codegen` | `--id` flag for UUID preservation; generator docs |
+| `projects/modeling` | Removed 35+ legacy stubs; added `component_overview.org` for every component family and standalone component |
+| `projects/modeling/system_model.org` | Updated to C++23, NATS architecture, all new domain components |
+| `projects/modeling/ores.puml` | Rewritten to match current four-layer architecture |
+#+end_example
+
+* Result
+
+Landed.

@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 6822f0a2-bb7e-4979-8d4c-af01c1a7ce75
+:END:
+#+title: Task: Add cross-platform null device support for psql output redirection
+#+description: Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW enviro
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql_codegen_drift:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/740
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add cross-platform null device support for psql output redirection
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Now          | Completed 2026-05-14.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+Add platform-agnostic null device detection to support database setup on both Unix-like systems and Windows/MINGW environments. This change enables psql output redirection (`\o`) to work correctly across different operating systems by using `/dev/null` on Unix and `NUL` on Windows.
+
+## Changes
+- **setup_database.sh**: Added platform detection logic to identify the appropriate null device (`/dev/null` vs `NUL`) and pass it as a psql variable
+- **All populate SQL scripts**: Replaced hardcoded `/dev/null` with the `:null_dev` psql variable in `\o` (output redirection) commands across 80+ SQL files in the following modules:
+  - crypto, dq, flags, fpml, iam, ip2country, iso, lei, ore, refdata, reporting, solvaris, testdata, variability
+
+## Implementation Details
+The setup script now:
+1. Detects if `/dev/null` exists to determine the platform
+2. Sets `_null_dev` to either `/dev/null` (Unix) or `NUL` (Windows)
+3. Passes this value to psql via `-v null_dev="${_null_dev}"`
+
+All SQL populate scripts use the parameterized variable instead of hardcoded paths, ensuring compatibility across platforms without requiring separate script versions.
+
+https://claude.ai/code/session_019PvpcApb5mnTKuGRabiym4
+#+end_example
+
+* Result
+
+Landed.

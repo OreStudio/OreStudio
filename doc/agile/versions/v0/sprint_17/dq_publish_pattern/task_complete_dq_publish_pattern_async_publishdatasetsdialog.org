@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 61ea68c3-e750-431f-8552-fe6e58a567ef
+:END:
+#+title: Task: [dq] Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget
+#+description: - Replaces the synchronous text-log results page in `PublishDatasetsDialog` with async `QFutureWatcher` dispatch and `Wo
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :dq_publish_pattern:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/777
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[dq] Complete DQ publish pattern: async PublishDatasetsDialog with WorkflowStepsWidget
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:dc1effd8-b983-48c7-835b-71333aece016][DQ publish pattern]] |
+| Now          | Completed 2026-05-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Replaces the synchronous text-log results page in `PublishDatasetsDialog` with async `QFutureWatcher` dispatch and `WorkflowStepsWidget`, mirroring the established `PublishBundleWizard` pattern
+- Updates `publish_datasets_response` to carry `instance_id` / `datasets_dispatched` instead of a `vector<publication_result>`
+- Adds `publication_service::list_publishable_datasets()` to bridge from dataset UUIDs to `bundle_publishable_dataset` entries suitable for workflow dispatch
+- Updates `dataset_handler::publish()` to start a `bundle_publish_workflow` via JetStream and return the `instance_id`, making it consistent with the bundle publish path
+- Checks off the last open item in `doc/plans/2026-05-14-dq-publish-pattern.org`
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

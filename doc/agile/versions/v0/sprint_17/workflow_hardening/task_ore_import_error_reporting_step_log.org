@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 526f6418-b4f0-4d7a-a29b-7cc67fe10a0e
+:END:
+#+title: Task: [workflow] ORE import error reporting, step log, and service isolation
+#+description: - Step outcome tri-state: replaces the binary `success` flag with `step_outcome` (`completed` / `completed_with_warnings
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :workflow_hardening:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/748
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[workflow] ORE import error reporting, step log, and service isolation
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7030ab78-b8f1-425c-83ef-a6f9ebf218a8][Workflow engine hardening]] |
+| Now          | Completed 2026-05-16.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- **Step outcome tri-state**: replaces the binary `success` flag with `step_outcome` (`completed` / `completed_with_warnings` / `failed`) in `step_completed_event`. The workflow engine maps each to a distinct DB FSM state; `completed_with_warnings` is terminal but visually distinct.
+- **Step log**: adds `step_log_entry` (level + message + context) and `step_log_json` column on `workflow_steps`. The `ore_import_execute` handler emits per-trade warn/error entries and selects `completed_with_warnings` vs `failed` based on whether any trades saved successfully.
+- **Workflow UI**: new `WorkflowStepLogWidget` (colour-coded log panel); `WorkflowStepsWidget` gains amber warning state and warning-count badge; `WorkflowMdiWindow` detail dialog embeds the log panel; `WorkflowMdiWindow` instance list gains a Completed At column; `OreImportWizard` done page shows an import summary and per-item warning table.
+- **Service isolation Phase 3a**: `trade_status_service` no longer queries `ores_dq_fsm_transitions_tbl` directly. `trade_handler` fetches the FSM transition map from `dq.v1.fsm-transitions.list` via NATS (5-minute process-level cache) and passes it through `trade_service` → `trade_status_service::resolve_status`. Removes `ores.dq.core.lib` from `ores.trading.core` CMake link libraries.
+- **`workflow_engine` bug fix**: the `failed` outcome branch was passing `""` for `step_log_json` in `step_repo_.update_state`, silently discarding the log on DB write even when the handler correctly populated it.
+- **UI bug fix**: `MainWindow::performDisconnectCleanup` switched from `QtConcurrent::run` (nodiscard `QFuture<void>`) to `QThreadPool::globalInstance()->start` to fix `-Wunused-result` under `-Werror`.
+- **UI bug fix**: `ClientManager` disconnect/reconnect no longer blocks the UI thread when services are down.
+- **Currency validation fix**: `ores_refdata_currencies_check_fn` now validates against the tenant's own currencies rather than a fixed set.
+- **Test sample**: `external/ore/examples/Products/SupportedTrades/FX_Forward_Invalid.xml` — a zero-amount FX Forward that passes XML parsing but fails the DB `bought_amount > 0` constraint, producing a `completed_with_warnings` step with a per-item log entry.
+- **Doc**: workflow-engine-hardening and ore-import-error-reporting plans updated to reflect all completed work.
+#+end_example
+
+* Result
+
+Landed.

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: c755abb8-8c68-405b-a614-e451a92e8100
+:END:
+#+title: Task: Bump egor-tensin/setup-clang from 2.2 to 2.3
+#+description: Bumps [egor-tensin/setup-clang](https://github.com/egor-tensin/setup-clang) from 2.2 to 2.3.
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sprint_17_housekeeping:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/762
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump egor-tensin/setup-clang from 2.2 to 2.3
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:a5abed76-b4f5-4e37-8ccc-220d360501b4][Sprint 17 housekeeping]] |
+| Now          | Completed 2026-05-18.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+Bumps [egor-tensin/setup-clang](https://github.com/egor-tensin/setup-clang) from 2.2 to 2.3.
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/23bc15cd4207e45f1566447deb48f4ff3ef932cb"><code>23bc15c</code></a> README: update</li>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/20417b55fe943e6690ee8457a8e4e5ba26c1fcde"><code>20417b5</code></a> workflows/test: exclude README.md</li>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/e451318040f45bcae68e076fd1bfc7d0e3f847a1"><code>e451318</code></a> README: update</li>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/96bebc20457b7c5f16aba9844ddda958b2b98144"><code>96bebc2</code></a> install the rt-dev library</li>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/3443e267f2417d44a6f788c8d8cb338157e458ad"><code>3443e26</code></a> workflows/test: reschedule for my convenience</li>
+<li><a href="https://github.com/egor-tensin/setup-clang/commit/c14ed493caa325a6da8fe63fbda845507841b2ab"><code>c14ed49</code></a> workflows/test: lower the parallelism even more, just in case</li>
+<li>See full diff in <a href="https://github.com/egor-tensin/setup-clang/compare/v2.2...v2.3">compare view</a></li>
+</ul>
+</details>
+<br />
+
+
+[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=egor-tensin/setup-clang&package-manager=github_actions&previous-version=2.2&new-version=2.3)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.
+
+[//]: # (dependabot-automerge-start)
+[//]: # (dependabot-automerge-end)
+
+---
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+- `@dependabot rebase` will rebase this PR
+- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it
+- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency
+- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
+
+
+</details>
+#+end_example
+
+* Result
+
+Landed.

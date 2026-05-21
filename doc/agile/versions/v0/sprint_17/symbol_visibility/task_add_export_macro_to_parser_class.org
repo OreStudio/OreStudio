@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 7e4fb046-c920-465d-82a3-0348991c0499
+:END:
+#+title: Task: Add export macro to parser class for DLL visibility
+#+description: Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when bu
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :symbol_visibility:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/791
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add export macro to parser class for DLL visibility
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:32852964-d407-43a9-bd94-a6524bb73a8e][Symbol visibility migration]] |
+| Now          | Completed 2026-05-21.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+Add the `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class declaration to ensure proper symbol visibility when building as a shared library.
+
+## Changes
+- Include `ores.refdata.service/export.hpp` header in parser.hpp
+- Apply `ORES_REFDATA_SERVICE_EXPORT` macro to the `parser` class definition
+
+## Details
+This change ensures that the `parser` class symbols are properly exported when the refdata service is built as a dynamic library, allowing external consumers to link against and use the parser class. The export macro is a standard pattern for managing symbol visibility across library boundaries.
+
+https://claude.ai/code/session_01SiZDbJn3cgBNFDBbQy1wxq
+#+end_example
+
+* Result
+
+Landed.

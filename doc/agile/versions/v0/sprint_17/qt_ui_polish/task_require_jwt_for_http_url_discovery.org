@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: ac9b906b-7650-4df3-93b3-df24de0f00a9
+:END:
+#+title: Task: [http,qt] Require JWT for HTTP URL discovery; fail login on missing URL
+#+description: - Makes the NATS `http-server.v1.info.get` request require a JWT. Previously the handler was unauthenticated, leaking th
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :qt_ui_polish:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/713
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[http,qt] Require JWT for HTTP URL discovery; fail login on missing URL
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:d148b46a-ad14-4391-8b64-46dcfe95c5f1][Qt UI polish]] |
+| Now          | Completed 2026-04-20.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Makes the NATS `http-server.v1.info.get` request require a JWT. Previously the handler was unauthenticated, leaking the HTTP server's internal base URL to any NATS client. Rationale for not being chicken-and-egg: authentication happens over NATS (login → JWT), not HTTP, so a client has a JWT before it ever needs the HTTP URL.
+- Moves HTTP URL discovery from a best-effort, silently-swallowed step into a hard post-login requirement on `ClientManager`. Discovery now uses `process_authenticated_request`; on failure `login()` fails with a user-visible error and a server-side logout.
+- Fixes the bootstrap-flow bug where `LoginResult.http_base_url` was lost. The in-wizard login never routed through `LoginDialog::httpBaseUrlDiscovered`, so `MainWindow::httpBaseUrl_` stayed empty and `ComputePlugin` received an empty `plugin_context.http_base_url`. The symptom was *"HTTP base URL is not configured. Cannot upload package."* immediately after bootstrapping a new system. `MainWindow::onLoginSuccess` now sources the URL from `ClientManager::httpBaseUrl()`, which is populated on every login path (normal, bootstrap, tenant provisioning).
+- Removes now-dead plumbing: `LoginResult::http_base_url`, `LoginDialog::httpBaseUrlDiscovered` signal, and the `MainWindow` → `LoginDialog` connection. The `--http-base-url` CLI override still wins when present.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

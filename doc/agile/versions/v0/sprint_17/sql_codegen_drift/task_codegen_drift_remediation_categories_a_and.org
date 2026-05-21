@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 79dfd8ce-1eff-4fe5-82e2-9a93afb4b0ed
+:END:
+#+title: Task: [sql] Codegen drift remediation: Categories A and B
+#+description: - Category B (naming/missing): Fixed index naming inconsistencies and added missing `lifecycle_events` SQL that codegen 
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :sql_codegen_drift:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/747
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[sql] Codegen drift remediation: Categories A and B
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:25f0a34b-c547-4550-943b-e8f517eb0f6c][SQL codegen drift remediation]] |
+| Now          | Completed 2026-05-16.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- **Category B** (naming/missing): Fixed index naming inconsistencies and added missing `lifecycle_events` SQL that codegen should have been managing
+- **Category A – trading reference data**: Replaced 5 hand-crafted tables (`leg_types`, `day_count_fraction_types`, `floating_index_types`, `payment_frequency_types`, `business_day_convention_types`) with codegen output; extracted validate functions to separate files
+- **Category A – reporting enums**: Replaced `concurrency_policies` and `report_types` with codegen; extracted validate functions
+- **Category A – trading instruments**: Replaced all 8 rates instrument tables (`fra`, `vanilla_swap`, `cap_floor`, `swaption`, `balance_guaranteed_swap`, `callable_swap`, `knock_out_swap`, `inflation_swap`) with codegen; extended template with `security_definer`, `party_id_from_session`, `extra_checks`, `uuid_check_fn` override, and `where_extra` on indexes
+- **Template bug fixes** (found during drift audit): pg_notify channel was missing the component segment; `change_reason_code` validation was placed after version management instead of before; current-record unique index for text-PK tables used `_id_uniq_idx` instead of the PK column name (e.g. `_code_uniq_idx`); BGS instruments needed a short index prefix (`bgs_instruments_*`)
+- **Drop script gap**: Added 7 missing `_validate_fn_drop.sql` files for functions extracted from monolithic create files in earlier commits; wired into `drop_trading.sql` and `reporting_drop.sql`
+- **Validation**: Added `ores_trading_lifecycle_events_tbl` to the `RLS_001` ignore list (same category as other trading enum tables); `validate_schemas.sh` now passes clean (0 warnings, 211 tables)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

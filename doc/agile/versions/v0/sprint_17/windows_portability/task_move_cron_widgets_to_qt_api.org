@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 4097525f-66b6-48d8-9ee1-6297fe896b40
+:END:
+#+title: Task: [qt.api] Move Cron widgets to qt.api to fix Windows link error
+#+description: - `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :windows_portability:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/706
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[qt.api] Move Cron widgets to qt.api to fix Windows link error
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7d84e735-7dfe-4215-af00-a1f4c9323bda][Windows portability fixes]] |
+| Now          | Completed 2026-04-18.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+- `lld-link: undefined symbol: ores::qt::CronExpressionWidget::staticMetaObject` when linking `ores.qt.scheduler.dll` on Windows.
+- The widget lives in `ores.qt.compute` but is consumed by both `ores.qt.compute` (ReportDefinitionDetailDialog) and `ores.qt.scheduler` (JobDefinitionDetailDialog). On Windows the Qt-MOC `staticMetaObject` was not exported across the compute DLL boundary for scheduler to pick up.
+- Move `CronExpressionWidget`, `CronEditorDialog`, and `CronFieldWidget` to `ores.qt.api` — the existing home for shared cross-plugin widgets (`PaginationWidget`, `ProvenanceWidget`). Both compute and scheduler already link `ores.qt.api.lib` publicly, so no consumer changes are required.
+- Add `ores.scheduler.api.lib` to `ores.qt.api` link libraries (needed by `CronExpressionWidget::isValid` which calls `scheduler::domain::cron_expression::from_string`).
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8abed069-682b-4c7d-bb6d-192392305495
+:END:
+#+title: Task: Add full codegen stack for seven ORE convention types
+#+description: - Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_in
+#+type: task
+#+version: 2
+#+level: s1
+#+filetags: :ore_conventions_import:sprint_17:v0:
+#+owner: marco
+#+branch:
+#+pr: https://github.com/OreStudio/OreStudio/pull/733
+#+blocked_on: none
+#+blocked_since:
+#+created: 2026-05-22
+#+updated: 2026-05-22
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add full codegen stack for seven ORE convention types
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:f607b8ce-5d33-424f-a7c2-7ed0243d4728][ORE conventions import]] |
+| Now          | Completed 2026-05-10.               |
+| Waiting on   | Nothing.                               |
+| Next         | None.                                  |
+| Last touched | 2026-05-22                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+#+begin_example
+## Summary
+
+- Expands ORE import convention coverage from 2 (zero, deposit) to all 9 types: swap, ois, fra, ibor_index, overnight_index, fx, and cds
+- Seven new domain entity JSON models drive generation of the complete backend + Qt stack via `ores.codegen`
+- Replaces bare domain headers with full codegen output: JSON I/O, table I/O, generator, protocol, entity, mapper, repository, service, and NATS message handler (22 backend files × 7 = 154 files)
+- SQL create/drop scripts for all seven new tables with LISTEN/NOTIFY triggers (28 SQL files)
+- NATS registrar wires list/save/remove/history handlers for each of the 7 new types
+- Qt plugin adds controller, client model, MDI window, detail dialog, and history dialog for each type (12 Qt files × 7 = 84 files)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#+end_example
+
+* Result
+
+Landed.

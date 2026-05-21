@@ -60,7 +60,18 @@ shipped bundle so the skill changes propagate to Claude Code.
    the canonical checklist — frontmatter, required sections,
    task-shape, no embedded inventories.
 
-7. /Rebuild the shipped bundle/ so Claude Code picks up the new or
+7. /Cross-reference the new skill from the relevant [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][function]] docs/.
+   Functions list the skills each cybernetic level invokes (see
+   the =* Skills= section of each =doc/functions/s*.org=). A new
+   skill that isn't linked from at least one function is
+   effectively invisible to LLM sessions that load by function.
+   Pick the function(s) the skill belongs to — usually one, often
+   two — and add an id-link with a one-line "when to use" hint.
+
+8. /Update the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]/ — add the new skill under the
+   appropriate area heading. This is the canonical inventory.
+
+9. /Rebuild the shipped bundle/ so Claude Code picks up the new or
    updated skill — see [[id:b5f231a9-5403-482c-8f2a-12d6917c58cd][How do I deploy the skills?]].
 
 * Recipes

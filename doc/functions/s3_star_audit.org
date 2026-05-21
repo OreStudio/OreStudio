@@ -63,6 +63,13 @@ audit work:
 
 - [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][recipe-author]] — when an audit finding repeats often enough to
   warrant a recipe.
+- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][skill-review]] — checks that each Claude Code skill still
+  satisfies the v2 contract (frontmatter, required sections,
+  task-shape, no embedded inventories).
+- [[id:b5766b0e-24f0-45c3-b35d-e762bbab5206][ores-recipe-sync]] — when a recipe-topic source-of-truth has
+  drifted from its recipes; audit-driven sweep.
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-manager]] — for porting newly-discovered v1 skills to
+  v2 or creating a missing skill the audit surfaced.
 
 * Recipes
 

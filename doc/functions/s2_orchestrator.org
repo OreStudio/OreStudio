@@ -68,9 +68,16 @@ The skills you invoke as orchestrator:
   development activities unsupervised; the canonical orchestrator-side
   skill since the broader =autonomous-developer= was retired.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] — branch lifecycle around the story.
-- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][pr-shepherd]] — runs the PR after agent submission.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] — open the PR after an agent submits.
+- [[id:57b7d4d9-aaa5-427d-8d16-0e82da9d3763][pr-shepherd]] — drive the PR to green after creation.
+- [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][code-review-pr]] — self-review the agent's diff before asking
+  for human review.
 - [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][recipe-author]] — when a task surfaces a reusable how-to worth
   capturing.
+- [[id:7357c672-a49f-4974-9399-a166f761d222][ores-memory]] — when the user corrects or confirms an approach
+  in a way that should apply to future sessions.
+- [[id:b5766b0e-24f0-45c3-b35d-e762bbab5206][ores-recipe-sync]] — when a story's work reveals a recipe
+  topic that has drifted from its source.
 
 * Recipes
 

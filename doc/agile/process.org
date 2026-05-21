@@ -75,6 +75,9 @@ A sprint moves through three phases. Each phase is a distinct mode of
 work; the phase boundaries are sharp.
 
 *** Sprint planning
+:PROPERTIES:
+:ID: f5426198-acaf-41da-a043-ff15785e4a1d
+:END:
 
 *Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] vets each candidate against the
 [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][product vision]]; [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] sanity-checks the sprint mission
@@ -111,6 +114,9 @@ A sprint exists when its folder exists. To open sprint N+1:
 6. *Regenerate the version's sprint table* on the version page.
 
 *** Sprint execution
+:PROPERTIES:
+:ID: 227958a5-0f78-4cc6-a116-b83988592b68
+:END:
 
 *Owned by* [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] (does the work). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] reviews S1 output and
 triages discovered tasks; [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] audits the heartbeat
@@ -132,6 +138,9 @@ current story if they do. They must leave =DISCOVERED= within one
 orchestrator session (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 *** Sprint closure
+:PROPERTIES:
+:ID: 7d72a9da-984f-4130-bff6-97b66b233907
+:END:
 
 *Owned by* [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (drives the sequence). [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] resolves each
 story (=DONE= / =ABANDONED= / carried); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] weighs in on whether

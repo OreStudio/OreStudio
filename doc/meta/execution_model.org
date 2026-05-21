@@ -8,29 +8,33 @@
 #+level: cross
 #+filetags: :meta:execution:llm:agents:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-21
+
+This page describes /how/ the [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic information architecture]] is
+actually operated in a session — who reads what, who writes what, how
+LLMs fork subprocesses, how blocking and task-switching work. It is
+the runtime view of the architecture; the static contract lives in
+[[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]] and the role definitions in [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][functions]]. Read this when
+you want to know what concretely happens when a sprint is in flight.
 
 * Roles
 
-- User :: assigns stories to orchestrator LLMs. Invokes System 3, 4, 5
-  sessions on demand. Reviews story-level outcomes.
-- Orchestrator LLM :: operates at System 2 for one assigned story at a
-  time. Forks agents to execute tasks. Reviews agent output. Decides
-  what to do with discovered work.
-- Agent :: a subprocess (a Claude subagent) operating at System 1.
-  Executes exactly one task. Returns when the task is =DONE= or
-  =BLOCKED=.
-- System 3 session :: an LLM session, invoked on demand by the user,
-  that reasons about sprint coherence.
-- System 4 session :: an LLM session, invoked on demand by the user,
-  that reasons about version coherence.
-- System 5 session :: an LLM session, invoked on demand by the user
-  (and usually with the user collaborating), that reasons about
-  identity.
-- Audit jobs :: scripts that run periodically (e.g. nightly) to
-  enforce invariants. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]].
+The actors involved in a working session. Each role maps onto a
+cybernetic system — load the linked [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][function]] doc for the priming
+context that role uses.
 
-* Story execution loop (the System 2 orchestrator)
+#+ATTR_HTML: :class hug-leading
+| Role             | Maps to                                                    | What it does                                                                                                                            |
+|------------------+------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
+| User             | —                                                          | Assigns stories to orchestrators; invokes [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] / [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] / [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] sessions on demand; reviews story-level outcomes. |
+| Agent            | [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]] ([[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] function)                          | A Claude subagent that picks up a single task, implements it, returns when the task is =DONE= or =BLOCKED=.                            |
+| Orchestrator LLM | [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] ([[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] function)                  | Coordinates one assigned story. Forks agents, reviews their output, triages discovered work.                                            |
+| System 3 session | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] ([[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] function)                | LLM session invoked on demand that reasons about sprint coherence — opening, running, and closing a sprint.                             |
+| System 4 session | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] ([[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] function)               | LLM session invoked on demand that reasons about version coherence — sprint sequencing, release scope.                                  |
+| System 5 session | [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]] ([[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]] function)              | LLM session, usually with the user collaborating, that reasons about identity — what is in or out of scope.                             |
+| Audit jobs       | [[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]] ([[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] function)                     | Scripts run periodically (e.g. nightly) plus on-demand sessions; enforce invariants from outside the operational hierarchy.             |
+
+* Story execution loop (the [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] orchestrator)
 
 1. User assigns a story. Orchestrator reads the story document, the
    sprint mission, and any linked knowledge. It moves the story's
@@ -97,7 +101,7 @@ story's tasks in flight so that when one blocks, another can advance.
 
 ** The active-branches view
 
-Audit (System 3*) generates =audit/reports/active_branches.org= by
+Audit ([[id:ed29c99b-1507-49c9-9937-d296fffe428e][System 3*]]) generates =audit/reports/active_branches.org= by
 grepping every task document for =^\* STARTED Status= and
 =^\* BLOCKED Status=, then reading the task's frontmatter. The output
 is a table: =task | owner | branch | pr | todo | blocked_on |
@@ -118,19 +122,19 @@ a hard discipline. Tasks that fall out of sync with reality are how
 the v0 system rotted; audit enforces freshness here so it cannot
 recur.
 
-* When System 3, 4, 5 run
+* When [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]], [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][4]], [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][5]] run
 
 On demand, in their own sessions:
-- /System 3/ — when planning or closing a sprint, or when the user
+- /[[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]/ — when planning or closing a sprint, or when the user
   senses the sprint is drifting from its mission.
-- /System 4/ — when planning a version, sequencing sprints, or
+- /[[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]/ — when planning a version, sequencing sprints, or
   considering release scope.
-- /System 5/ — when a far story arrives, when the product identity
+- /[[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]/ — when a far story arrives, when the product identity
   needs refinement, or when a candidate version is being shaped.
 
 These sessions read and write the relevant documents but do not spawn
 agents. They produce structural changes (mission rewrites, story
-re-prioritisation, scope decisions) that subsequent System 2 sessions
+re-prioritisation, scope decisions) that subsequent [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] sessions
 inherit.
 
 * What this model does not yet have

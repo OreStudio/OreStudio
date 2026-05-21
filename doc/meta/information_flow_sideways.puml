@@ -1,0 +1,59 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+
+title Information flow — sideways (audit)
+
+skinparam rectangle {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam ArrowColor #ffbf00
+skinparam ArrowFontColor #E3E3E6
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+
+rectangle "S5 — Identity"  as S5
+rectangle "S4 — Intelligence" as S4
+rectangle "S3 — Control"   as S3
+rectangle "S2 — Coordination" as S2
+rectangle "S1 — Operations" as S1
+
+rectangle "S3* — Audit"    as Audit #1a1a1e;line:ffbf00
+
+S5 -[hidden]down- S4
+S4 -[hidden]down- S3
+S3 -[hidden]down- S2
+S2 -[hidden]down- S1
+
+Audit ..> S5 : observes
+Audit ..> S4 : observes
+Audit ..> S3 : observes
+Audit ..> S2 : observes
+Audit ..> S1 : observes
+
+note right of Audit
+  System 3* observes
+  all levels and
+  reports drift back
+  out of the operational
+  hierarchy.
+end note
+
+@enduml

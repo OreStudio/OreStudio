@@ -16,7 +16,8 @@
 :END:
 
 The smallest unit of executable work. One task = one PR. Bounded by a
-concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]). Owned by System 1.
+concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]). Owned by [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]. Create
+via [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]].
 
 * Story
 :PROPERTIES:
@@ -24,7 +25,7 @@ concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document typ
 :END:
 
 A coherent user-visible outcome, composed of one or more tasks. The unit of
-sprint planning. Owned by System 2.
+sprint planning. Owned by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]. Create via [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]].
 
 * Sprint
 :PROPERTIES:
@@ -32,7 +33,7 @@ sprint planning. Owned by System 2.
 :END:
 
 A bounded period of work delivering a set of stories aligned to a sprint
-mission. Owned by System 3.
+mission. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]. Create via [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]].
 
 * Sprint mission
 :PROPERTIES:
@@ -40,7 +41,7 @@ mission. Owned by System 3.
 :END:
 
 A one-sentence statement of what the sprint exists to achieve. Used to
-filter candidate stories. Owned by System 3.
+filter candidate stories. Owned by [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]].
 
 * Version
 :PROPERTIES:
@@ -48,7 +49,8 @@ filter candidate stories. Owned by System 3.
 :END:
 
 A major release target (e.g. 1.0). A coherent set of sprints. Owned by
-System 4. Every version of the project has an entry in [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]].
+[[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]. Every version of the project has an entry in
+[[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]. Create via [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][New version]].
 
 * Version identity
 :PROPERTIES:
@@ -56,7 +58,7 @@ System 4. Every version of the project has an entry in [[id:37c10313-e6e9-4d42-b
 :END:
 
 The mini-mission of a version: what it exists to deliver, what makes it
-distinct. Owned by System 4.
+distinct. Owned by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
 
 * Product identity
 :PROPERTIES:
@@ -64,16 +66,39 @@ distinct. Owned by System 4.
 :END:
 
 The durable statement of what ORE Studio is and is not. Used to filter
-candidate versions, far stories, and feature requests. Owned by System 5.
+candidate versions, far stories, and feature requests. Owned by [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]].
+Create via [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]].
 
 * Function
 :PROPERTIES:
 :ID: 66f2a9e8-0385-4d56-b4b1-0957208990dc
 :END:
 
-A named role that operates the system. Each function is one document
-describing its purpose, inputs, outputs, and the recipes it uses. Spans
-levels. Examples: PR Reviewer, Sprint Planner, Identity Steward.
+A named role that operates the system — /what someone (or some LLM
+session) does when they are wearing a given hat/. Each function is one
+document describing the role's purpose, the level it operates at, its
+inputs, its outputs, the recipes and skills it draws on, and what it
+explicitly does /not/ do. Functions are role-shaped (descriptive); a
+[[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skill]] is task-shaped (operational). When an LLM session takes on a
+function, the function doc is the priming context; the skills it lists
+are the operational tools it then uses. Examples: the six per-system
+roles ([[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent]] / [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]] / [[id:f1d99662-c6b1-4839-92e1-d061ccf6b83f][S3 Sprint Planner]] / [[id:049b086e-f131-4d7a-8244-c1b2ff297ab6][S3* Auditor]] /
+[[id:66eb6824-52b8-4603-b302-f805da9ec443][S4 Version Planner]] / [[id:5cad21da-21fb-460b-9286-8998b4c6ef52][S5 Identity Steward]]) under =doc/functions/=.
+
+* Skill
+:PROPERTIES:
+:ID: 4f6384fe-cde9-40f6-b13d-8a84b6cd77f7
+:END:
+
+A concrete, executable capability — /how to do a kind of work/ — in
+Claude Code's skill format (=doc/skills/<slug>/SKILL.org=). Each skill
+is self-contained: it describes when to use it, the procedure, and any
+artefacts it expects. A skill is /task-shaped/: invokable in one
+session to perform a unit of work (e.g. =semi-autonomous-developer=,
+=new-sprint=, =pr-shepherd=). Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is
+/role-shaped/: a description of what someone does, listing the skills
+that role draws on. Functions compose skills; skills do not own
+functions. Create via [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]].
 
 * Recipe
 :PROPERTIES:
@@ -82,6 +107,7 @@ levels. Examples: PR Reviewer, Sprint Planner, Identity Steward.
 
 A how-to document answering one operational question (e.g. "how do I run
 the tests"). Has executable scripts where applicable. Tested by CI.
+Create via [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]].
 
 * Knowledge document
 :PROPERTIES:
@@ -89,7 +115,8 @@ the tests"). Has executable scripts where applicable. Tested by CI.
 :END:
 
 A durable factual document about the domain, architecture, or components.
-Not state, not process — just facts that outlive any sprint.
+Not state, not process — just facts that outlive any sprint. Create via
+[[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]].
 
 * Plan
 :PROPERTIES:
@@ -106,7 +133,8 @@ the story before the plan is archived.
 :END:
 
 Work spotted in passing while executing another task. Filed without triage
-into =tasks/discovered/=; processed later by System 2 or System 3.
+into =tasks/discovered/=; processed later by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] or
+[[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]].
 
 * Backlog
 :PROPERTIES:
@@ -134,7 +162,7 @@ They have only two effective states: /pending/ (the file exists in a
 bucket) and /promoted/ (the file has been converted into a =story=).
 On promotion the file is moved into the appropriate sprint folder and
 its =#+type:= flips from =capture= to =story=; *the =:ID:= is
-preserved* so existing links keep working.
+preserved* so existing links keep working. Create via [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]].
 
 * TODO state
 :PROPERTIES:
@@ -182,13 +210,13 @@ linkage.
 :ID: 366d6521-79e0-42ce-97f4-5fd0f443a923
 :END:
 
-A subprocess forked by a System 2 orchestrator LLM to execute one task.
-Operates at System 1. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]].
+A subprocess forked by a [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] orchestrator LLM to execute one
+task. Operates at [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]].
 
 * Orchestrator
 :PROPERTIES:
 :ID: 32fbc685-b81d-4af8-9b10-294f9055bc75
 :END:
 
-The System 2 LLM session the user has assigned to a story. Forks agents,
-reviews their output, decides what to do with discovered work.
+The [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] LLM session the user has assigned to a story. Forks
+agents, reviews their output, decides what to do with discovered work.

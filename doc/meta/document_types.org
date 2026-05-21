@@ -259,8 +259,7 @@ the ancestor slugs from the =--parent-dir= path (following the
   (screenshots, attached data), promote that single task to a folder
   ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
   files). The default remains the flat file.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type task= to the codegen.
+- How to create :: see [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]] in the v2-doc recipe.
 
 *** Task frontmatter (additions on top of the standard set)
 
@@ -339,8 +338,7 @@ has gone stale.
 - Level :: =s2=
 - TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
   BLOCKED at story level).
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type story= to the codegen.
+- How to create :: see [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
     [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in
@@ -391,8 +389,7 @@ matching =#+successor= pointing back.
 - TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
   they exist when they exist, and lexicographic order tells you which
   is current).
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type sprint= to the codegen.
+- How to create :: see [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents a
     [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint NN*) of
@@ -418,8 +415,7 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 - Level :: =s4=
 - TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
   the rest are released).
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type version= to the codegen.
+- How to create :: see [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][New version]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — opens with =This page documents the
     [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] *Version N* of
@@ -452,8 +448,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
   references continue to resolve. The =#+type:= flips from =capture=
   to =story=; the file moves into the appropriate sprint folder; the
   capture is no longer present in its bucket.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type capture --bucket near|far=.
+- How to create :: see [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]] in the v2-doc recipe.
 - Required sections (in this order) ::
   - /Blurb/ — one sentence linking the word "capture" to the
     glossary entry and naming the bucket.
@@ -468,12 +463,12 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 
 - Folder :: =identity/=
 - Level :: =s5=
-- Files ::
-  - =product_vision.org= — what ORE Studio is.
-  - =out_of_scope.org= — what ORE Studio is not. Equally important.
+- File :: =product_identity.org= — single file covering both what
+  ORE Studio /is/ (=* Vision=) and what it /is not/ (=* Out of
+  scope=). The vision and out-of-scope are sections of the identity,
+  not separate documents.
 - Not stateful — no TODO. These documents are durable.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type product_identity= to the codegen.
+- How to create :: see [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]] in the v2-doc recipe.
 - Required sections ::
   - =* What this is= — the durable statement.
   - =* What this is not= — explicit boundaries.
@@ -482,16 +477,32 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 
 ** function
 
-- Folder :: =functions/=
+A function is /role-shaped/: it describes a named role and lists the
+operational [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]], recipes, and pre-reads that role uses. Think of
+it as the priming context an LLM session loads when it takes on that
+role — "you are S2 orchestrator, here is what you do, here is what you
+do not do, here are the skills available to you." Compare with =skill=
+below, which is /task-shaped/.
+
+- Folder :: =doc/functions/=
 - Level :: =cross= or a specific level.
+- How to create :: function codegen is not yet wired into
+  [[id:3153aa4b-23d4-4111-9710-5a4971102edc][generate_v2_doc.sh]] (no =--type function= yet); for now, copy an
+  existing function under =doc/functions/= and adjust the frontmatter
+  and sections.
 - Not stateful — no TODO.
 - Required sections ::
-  - =* Purpose=
-  - =* Operates at= — which system levels.
-  - =* Inputs=
-  - =* Outputs=
-  - =* Recipes= — id-links to the recipes the function uses.
-  - =* Owner= — which level / human / LLM role.
+  - =* Purpose= — one paragraph: what this role is for.
+  - =* Operates at= — which system level(s); link to
+    [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]].
+  - =* Inputs= — what this role consumes (documents, signals).
+  - =* Outputs= — what this role produces.
+  - =* Pre-reads= — documents that must be loaded into context before
+    the role can act. The contract docs go here.
+  - =* Skills= — id-links to the [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] this role invokes.
+  - =* Recipes= — id-links to the recipes this role exercises.
+  - =* Boundaries= — what this role explicitly does /not/ do, and
+    which other function picks it up instead.
 
 ** recipe
 
@@ -500,8 +511,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 - Filename :: starts with =how_do_i_= or similar NLP question phrasing.
 - Not stateful by TODO, but audit may set a =:stale:= tag when the
   script fails.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type recipe= to the codegen.
+- How to create :: see [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]] in the v2-doc recipe.
 - Required sections ::
   - =* Question= — the NLP question.
   - =* Answer= — the steps. Shell commands inside an =* Answer= belong
@@ -539,14 +549,21 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
 
 ** skill
 
+A skill is /task-shaped/: it tells an LLM session how to perform a
+specific unit of work end-to-end (e.g. open a new sprint, run a PR
+review, scaffold a domain type). Compare with =function= above, which
+is /role-shaped/: a description of who does what, listing the skills
+they draw on. Functions compose skills; skills don't own functions. A
+skill is loaded /into/ a session; a function /is/ the session's
+identity.
+
 - Folder :: =doc/skills/<slug>/SKILL.org= (the filename is fixed
   uppercase by Claude Code convention).
 - Level :: =cross=.
 - Slug :: =kebab-case= (matches existing =cmake-runner=, =v2-doc-author=).
   The slug doubles as the Claude Code skill =name:=.
 - Not stateful — no TODO.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type skill= to the codegen.
+- How to create :: see [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]] in the v2-doc recipe.
 - Required sections ::
   - A =#+begin_export markdown ... #+end_export= block with
     =name:= / =description:= / =license:= (Claude Code metadata).
@@ -570,8 +587,7 @@ A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] i
     component's code) lives co-located at =projects/<comp>/docs/=.
 - Level :: =cross=
 - Not stateful — no TODO. Audit may flag stale facts via a tag.
-- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
-  =--type knowledge= to the codegen.
+- How to create :: see [[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]] in the v2-doc recipe.
 
 *** Index pages (knowledge / meta variant)
 

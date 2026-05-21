@@ -29,7 +29,7 @@ doc/
 ├── recipes/              ← operational how-tos, by topic
 ├── knowledge/            ← cross-cutting reference material
 ├── identity/             ← product vision, out-of-scope
-├── functions/            ← (reserved) named roles across levels
+├── functions/            ← named roles across levels (one per system)
 └── audit/                ← (reserved) invariant-enforcement scripts
 #+end_example
 
@@ -100,8 +100,11 @@ with the code at =projects/<comp>/docs/=, not here.
 - =identity/= — system-5 docs: product vision; what's out of scope.
   Holds the durable identity statements that filter candidate
   versions and far captures.
-- =functions/= — system-spanning named roles (PR reviewer, sprint
-  planner, identity steward, audit). Empty in this branch.
+- =functions/= — system-spanning named roles. One [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]] per
+  cybernetic level (S1 Agent, S2 Orchestrator, S3 Sprint Planner,
+  S3* Auditor, S4 Version Planner, S5 Identity Steward), plus the
+  [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][index page]]. A function doc is the priming context an LLM session
+  loads when it takes on that role.
 - =audit/= — system-3 scripts and reports enforcing invariants
   (orphan tasks, stale recipes, broken links, etc.). Empty in this
   branch.

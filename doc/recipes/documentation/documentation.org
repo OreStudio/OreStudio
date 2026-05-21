@@ -12,8 +12,11 @@
 
 Recipes for working with the documentation /as a graph/ — finding
 docs, following links, and writing new ones that satisfy the v2
-contract. For the codegen scripts that generate code (not docs)
-see the [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] topic.
+contract. Authoring recipes physically live under
+=recipes/codegen/= because they drive =generate_v2_doc.sh=, but
+appear here too since they're how you /create/ doc-graph entries.
+For the codegen scripts that generate /code/ (not docs) see the
+[[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] topic.
 
 * Finding and inspecting documents
 
@@ -22,11 +25,12 @@ see the [[id:69796171-66f4-4459-913d-01523fc27e54][Codegen recipes]] topic.
 
 * Authoring documents
 
-- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]]
-- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — lives under the codegen
-  recipes; covers /every/ v2 doc type via the scaffold.
-- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — also a codegen
-  recipe, since it operates the same scaffold.
+- [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a recipe?]] — recipe-specific conventions;
+  this recipe lives here.
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — generic scaffold flow;
+  physically under =recipes/codegen/=.
+- [[id:0806c8fb-43d2-497e-900d-5f2e0b3472fd][How do I create a component overview?]] — component scaffold
+  flow; physically under =recipes/codegen/=.
 
 * See also
 

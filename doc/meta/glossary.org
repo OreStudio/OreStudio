@@ -10,91 +10,89 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-Every term used across the ORE Studio information architecture has a
-single definition here. Other documents link to these entries with
-=[[id:...]]= so meaning is defined once and reused everywhere. Each
-entry says what the term is and (where applicable) carries a small
-table covering its owner among the [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic systems]], how to
-generate one, a representative example, and the inventory page that
-lists every instance.
+Every term used across the ORE Studio information architecture has a single
+definition here. Other documents link to these entries with =[[id:...]]= so
+meaning is defined once and reused everywhere. Each entry says what the term is
+and (where applicable) carries a small table covering its owner among the
+[[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic systems]], how to generate one, a representative example, and the
+inventory page that lists every instance.
 
 * Task
 :PROPERTIES:
 :ID: 31c868b9-306e-4282-ba8c-07e647021b34
 :END:
 
-The smallest unit of executable work. One task = one PR. Bounded by a
-concrete size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]).
+The smallest unit of executable work. One task = one PR. Bounded by a concrete
+size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]).
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]                                           |
-| How to generate | [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]] in the v2-doc recipe                     |
-| Example         | [[id:326556b2-f83d-4e55-9e20-63d8ef83ce8e][Update C++ standard]]                                |
+| Field           | Value                         |
+|-----------------+-------------------------------|
+| Owner           | [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]                      |
+| How to generate | [[id:b7fa729c-2d42-408a-9424-b6aa90eb16b4][New task]] in the v2-doc recipe |
+| Example         | [[id:326556b2-f83d-4e55-9e20-63d8ef83ce8e][Update C++ standard]]           |
 
 * Story
 :PROPERTIES:
 :ID: 699a8d45-b67e-4d3e-9206-24fa17c51ada
 :END:
 
-A coherent user-visible outcome, composed of one or more tasks. The
-unit of sprint planning.
+A coherent user-visible outcome, composed of one or more tasks. The unit of
+sprint planning.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]                                           |
-| How to generate | [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]] in the v2-doc recipe                    |
-| Example         | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (from Sprint 01)                     |
+| Field           | Value                          |
+|-----------------+--------------------------------|
+| Owner           | [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]                       |
+| How to generate | [[id:6d6ddb4b-a0aa-42e6-a294-0f9b35cc0752][New story]] in the v2-doc recipe |
+| Example         | [[id:1d334356-f123-43b5-a98e-317ebad2848a][Build quality]] (from Sprint 01) |
 
 * Sprint
 :PROPERTIES:
 :ID: 0820b7fd-147c-4832-ac25-c043d38d5b61
 :END:
 
-A bounded period of work delivering a set of stories aligned to a
-[[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint mission]]. Closes with a [[id:fabb50e5-518c-42d6-901e-848644e56ca2][release]].
+A bounded period of work delivering a set of stories aligned to a [[id:198da730-d9fb-4bde-b1c0-b930cd019917][sprint
+mission]]. Closes with a [[id:fabb50e5-518c-42d6-901e-848644e56ca2][release]].
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]                                           |
-| How to generate | [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]] in the v2-doc recipe                   |
-| Example         | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                                          |
+| Field           | Value                           |
+|-----------------+---------------------------------|
+| Owner           | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]                        |
+| How to generate | [[id:f56fba9b-a3c4-4c7c-8a15-bc9c3cc98a12][New sprint]] in the v2-doc recipe |
+| Example         | [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                       |
 
 * Sprint mission
 :PROPERTIES:
 :ID: 198da730-d9fb-4bde-b1c0-b930cd019917
 :END:
 
-A one-sentence statement of what the sprint exists to achieve. Used
-to filter candidate stories.
+A one-sentence statement of what the sprint exists to achieve. Used to filter
+candidate stories.
 
 #+ATTR_HTML: :class hug-leading
-| Field   | Value                                                                                |
-|---------+--------------------------------------------------------------------------------------|
-| Owner   | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]                                                                             |
-| Example | the =* Mission= section of [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]]                                                                |
+| Field   | Value                                |
+|---------+--------------------------------------|
+| Owner   | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]                             |
+| Example | the =* Mission= section of [[id:2cf90d10-890d-4cb0-a71b-5e8c3261bc54][Sprint 01]] |
 
 * Release
 :PROPERTIES:
 :ID: fabb50e5-518c-42d6-901e-848644e56ca2
 :END:
 
-The artefact a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] produces when it closes — a tagged build
-plus release notes capturing the sprint's landed work. The release
-is the upward signal that work happened (per [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]]
-information flow). Every sprint cuts a release; not every release
-ships a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] — version-level release decisions sit with
-[[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
+The artefact a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] produces when it closes — a tagged build plus release
+notes capturing the sprint's landed work. The release is the upward signal that
+work happened (per [[id:926b916e-a57e-498e-99ab-720b583c0362][cybernetic levels]] information flow). Every sprint cuts a
+release; not every release ships a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] — version-level release decisions sit
+with [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]].
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                                                |
-|-----------------+----------------------------------------------------------------------|
-| Owner           | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (sprint-level); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] (version-level cut decision)     |
-| How to generate | See [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] in the agile process — release notes,         |
-|                 | release cut, post-mortem are steps 2–4 of the closure sequence.      |
+| Field           | Value                                                           |
+|-----------------+-----------------------------------------------------------------|
+| Owner           | [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] (sprint-level); [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] (version-level cut decision)  |
+| How to generate | See [[id:7d72a9da-984f-4130-bff6-97b66b233907][Sprint closure]] in the agile process — release notes,        |
+|                 | release cut, post-mortem are steps 2–4 of the closure sequence. |
 
 * Version
 :PROPERTIES:
@@ -104,114 +102,112 @@ ships a [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][version]] — version-level r
 A major release target (e.g. 1.0). A coherent set of sprints.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]                                           |
-| How to generate | [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][New version]] in the v2-doc recipe                  |
-| Example         | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                          |
-| Inventory       | [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]                                           |
+| Field           | Value                            |
+|-----------------+----------------------------------|
+| Owner           | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]                         |
+| How to generate | [[id:8fc15ea1-ab30-47be-993f-ed624a57f761][New version]] in the v2-doc recipe |
+| Example         | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                        |
+| Inventory       | [[id:37c10313-e6e9-4d42-b82d-b6758d0a3ad9][Versions]]                         |
 
 * Version identity
 :PROPERTIES:
 :ID: 83bc06e5-77dd-4aba-87cb-48a10ec0208a
 :END:
 
-The mini-mission of a version: what it exists to deliver, what makes
-it distinct.
+The mini-mission of a version: what it exists to deliver, what makes it
+distinct.
 
 #+ATTR_HTML: :class hug-leading
-| Field   | Value                                                                |
-|---------+----------------------------------------------------------------------|
-| Owner   | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]                                                             |
-| Example | the =* Identity= section of [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                |
+| Field   | Value                                 |
+|---------+---------------------------------------|
+| Owner   | [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]]                              |
+| Example | the =* Identity= section of [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] |
 
 * Product identity
 :PROPERTIES:
 :ID: 436fb40c-422a-465b-b949-e9f0760820c1
 :END:
 
-The durable statement of what ORE Studio is and is not. Used to
-filter candidate versions, far captures, and feature requests.
+The durable statement of what ORE Studio is and is not. Used to filter candidate
+versions, far captures, and feature requests.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                                |
-|-----------------+------------------------------------------------------|
-| Owner           | [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]                                             |
-| How to generate | [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]] in the v2-doc recipe           |
-| Example         | [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio product identity]]                          |
+| Field           | Value                                     |
+|-----------------+-------------------------------------------|
+| Owner           | [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]                                  |
+| How to generate | [[id:f1311596-b8ed-43ad-8c46-76c58c0194c7][New product identity]] in the v2-doc recipe |
+| Example         | [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio product identity]]               |
 
 * Function
 :PROPERTIES:
 :ID: 66f2a9e8-0385-4d56-b4b1-0957208990dc
 :END:
 
-A named role that operates the system — /what someone (or some LLM
-session) does when they are wearing a given hat/. Each function doc
-is the priming context an LLM session loads when it takes on the
-role: its purpose, what to pre-read, which [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] to invoke, what
-/not/ to do. Functions are role-shaped (descriptive); skills are
-task-shaped (operational). Functions compose skills; skills do not
-own functions.
+A named role that operates the system — /what someone (or some LLM session) does
+when they are wearing a given hat/. Each function doc is the priming context an
+LLM session loads when it takes on the role: its purpose, what to pre-read,
+which [[id:4f6384fe-cde9-40f6-b13d-8a84b6cd77f7][skills]] to invoke, what /not/ to do. Functions are role-shaped
+(descriptive); skills are task-shaped (operational). Functions compose skills;
+skills do not own functions.
 
 #+ATTR_HTML: :class hug-leading
-| Field     | Value                                                          |
-|-----------+----------------------------------------------------------------|
-| Owner     | cross-cutting (one function per cybernetic level)              |
-| Example   | [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]]                                                |
-| Inventory | [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][Functions]]                                                      |
+| Field     | Value                                             |
+|-----------+---------------------------------------------------|
+| Owner     | cross-cutting (one function per cybernetic level) |
+| Example   | [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator]]                                   |
+| Inventory | [[id:1a5e0079-5771-4213-b624-62fa9ac947b4][Functions]]                                         |
 
 * Skill
 :PROPERTIES:
 :ID: 4f6384fe-cde9-40f6-b13d-8a84b6cd77f7
 :END:
 
-A concrete, executable capability — /how to do a kind of work/ — in
-Claude Code's skill format (=doc/skills/<slug>/SKILL.org=). Each
-skill is self-contained: it describes when to use it, the procedure,
-and any artefacts it expects. A skill is /task-shaped/: invokable in
-one session to perform a unit of work. Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]],
-which is /role-shaped/: a description of what someone does, listing
-the skills that role draws on.
+A concrete, executable capability — /how to do a kind of work/ — in Claude
+Code's skill format (=doc/skills/<slug>/SKILL.org=). Each skill is
+self-contained: it describes when to use it, the procedure, and any artefacts it
+expects. A skill is /task-shaped/: invokable in one session to perform a unit of
+work. Contrast with [[id:66f2a9e8-0385-4d56-b4b1-0957208990dc][function]], which is /role-shaped/: a description of what
+someone does, listing the skills that role draws on.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | cross-cutting                                      |
-| How to generate | [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]] in the v2-doc recipe        |
-| Example         | [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]]                          |
+| Field           | Value                                      |
+|-----------------+--------------------------------------------|
+| Owner           | cross-cutting                              |
+| How to generate | [[id:6054cc20-5f41-482f-a587-759512577b1d][New Claude Code skill]] in the v2-doc recipe |
+| Example         | [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][semi-autonomous-developer]]                  |
+| Inventory       | [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]                                     |
 
 * Recipe
 :PROPERTIES:
 :ID: 117a95f9-b03d-490b-bb74-da9fe74537e2
 :END:
 
-A how-to document answering one operational question. Has executable
-scripts where applicable. Tested by CI.
+A how-to document answering one operational question. Has executable scripts
+where applicable. Tested by CI.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | cross-cutting                                      |
-| How to generate | [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]] in the v2-doc recipe                   |
-| Example         | [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]                            |
-| Inventory       | [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]                                            |
+| Field           | Value                           |
+|-----------------+---------------------------------|
+| Owner           | cross-cutting                   |
+| How to generate | [[id:0c57932d-d13a-480f-b426-49525aa8ba3d][New recipe]] in the v2-doc recipe |
+| Example         | [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]]         |
+| Inventory       | [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]                         |
 
 * Knowledge document
 :PROPERTIES:
 :ID: bd1f3458-f991-46be-abeb-5f06c2633375
 :END:
 
-A durable factual document about the domain, architecture, or
-components. Not state, not process — just facts that outlive any
-sprint.
+A durable factual document about the domain, architecture, or components. Not
+state, not process — just facts that outlive any sprint.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                              |
-|-----------------+----------------------------------------------------|
-| Owner           | cross-cutting                                      |
-| How to generate | [[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]] in the v2-doc recipe       |
-| Example         | [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]]                      |
-| Inventory       | [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]                                          |
+| Field           | Value                                       |
+|-----------------+---------------------------------------------|
+| Owner           | cross-cutting                               |
+| How to generate | [[id:f497aa0a-f604-436a-8555-c17b14302c99][New knowledge document]] in the v2-doc recipe |
+| Example         | [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]]               |
+| Inventory       | [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]                                   |
 
 * Plan
 :PROPERTIES:
@@ -235,112 +231,105 @@ their task.
 :ID: 4ea506f5-c3e9-4f92-8024-a5eed0b3df43
 :END:
 
-Work spotted in passing while executing another task. Filed without
-triage in =DISCOVERED= state; must leave =DISCOVERED= within one
-orchestrator session (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
+Work spotted in passing while executing another task. Filed without triage in
+=DISCOVERED= state; must leave =DISCOVERED= within one orchestrator session (see
+[[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
 
 #+ATTR_HTML: :class hug-leading
-| Field | Value                                                         |
-|-------+---------------------------------------------------------------|
-| Owner | filed by [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]; triaged by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] or [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]]              |
+| Field | Value                                              |
+|-------+----------------------------------------------------|
+| Owner | filed by [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]; triaged by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] or [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] |
 
 * Backlog
 :PROPERTIES:
 :ID: e7acb613-01ed-4351-b704-e6c279e31157
 :END:
 
-A TODO state, not a folder. Tasks and stories in =BACKLOG= have been
-triaged but not started. The /product backlog/ (work not yet pulled
-into a sprint) lives separately under
-=agile/product_backlog/{near,far}/= as a tree of [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]].
+A TODO state, not a folder. Tasks and stories in =BACKLOG= have been triaged but
+not started. The /product backlog/ (work not yet pulled into a sprint) lives
+separately under =agile/product_backlog/{near,far}/= as a tree of [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]].
 
 #+ATTR_HTML: :class hug-leading
-| Field     | Value                                              |
-|-----------+----------------------------------------------------|
-| Inventory | [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]]                                    |
+| Field     | Value           |
+|-----------+-----------------|
+| Inventory | [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] |
 
 * Capture
 :PROPERTIES:
 :ID: 671f18e4-e09c-4b3b-bd24-d33df8ae38a6
 :END:
 
-A pre-sprint idea: something we may want to do but have not yet
-pulled into a sprint as a story. Captures live at
-=doc/agile/product_backlog/{near,far}/<slug>.org=. The bucket is the
-source of truth: =near/= = candidate work for the next version,
-=far/= = longer-term wishlist. Captures are /not stateful/ — no TODO
-keyword, no =* Status= table. They have only two effective states:
-/pending/ (the file exists in a bucket) and /promoted/ (the file has
-been converted into a =story=). On promotion the file is moved into
-the appropriate sprint folder and its =#+type:= flips from =capture=
-to =story=; *the =:ID:= is preserved* so existing links keep
-working.
+A pre-sprint idea: something we may want to do but have not yet pulled into a
+sprint as a story. Captures live at
+=doc/agile/product_backlog/{near,far}/<slug>.org=. The bucket is the source of
+truth: =near/= = candidate work for the next version, =far/= = longer-term
+wishlist. Captures are /not stateful/ — no TODO keyword, no =* Status= table.
+They have only two effective states: /pending/ (the file exists in a bucket) and
+/promoted/ (the file has been converted into a =story=). On promotion the file
+is moved into the appropriate sprint folder and its =#+type:= flips from
+=capture= to =story=; *the =:ID:= is preserved* so existing links keep working.
 
 #+ATTR_HTML: :class hug-leading
-| Field           | Value                                                |
-|-----------------+------------------------------------------------------|
-| Owner           | cross-cutting (filed by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]; identity-fit reviewed |
-|                 | by [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]; horizon by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] / [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]])              |
-| How to generate | [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]] in the v2-doc recipe                    |
-| Example         | [[id:cebab022-2039-47a4-aab2-bb2ffba5507c][Add a dashboard for users]] (in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket)            |
-| Inventory       | [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] (browse via [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]])                |
+| Field           | Value                                                                                               |
+|-----------------+-----------------------------------------------------------------------------------------------------|
+| Owner           | cross-cutting: filed by [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]]; identity-fit reviewed by [[id:6df00a64-7cc3-40a7-950b-55d2b05a31c7][System 5]]; horizon by [[id:6ca8b181-bd81-4ef4-af27-64f5491d62f0][System 4]] / [[id:8f13ba75-edaa-46cc-9be2-e356d60bf4f4][System 3]] |
+| How to generate | [[id:978e0a8f-197c-48da-a405-457e0aee91d9][New capture]] in the v2-doc recipe                                                                    |
+| Example         | [[id:cebab022-2039-47a4-aab2-bb2ffba5507c][Add a dashboard for users]] (in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] bucket)                                                      |
+| Inventory       | [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]] (browse via [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]])                                                             |
 
 * TODO state
 :PROPERTIES:
 :ID: 8a246d60-6a87-4b54-a023-564ec1965c61
 :END:
 
-The TODO keyword on a stateful document's =* Status= headline. The
-full vocabulary is =DISCOVERED BACKLOG STARTED BLOCKED | DONE
-ABANDONED= (active states left of the bar, terminal states right).
-Documents that are not stateful (knowledge, recipes, functions,
-meta) have no Status headline. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] for transitions.
+The TODO keyword on a stateful document's =* Status= headline. The full
+vocabulary is =DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED= (active
+states left of the bar, terminal states right). Documents that are not stateful
+(knowledge, recipes, functions, meta) have no Status headline. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] for
+transitions.
 
 * Status headline
 :PROPERTIES:
 :ID: 26af1bc4-8b83-4aa4-a324-6fbebc2de960
 :END:
 
-The =* Status= headline inside a stateful document. Carries the TODO
-keyword (state) and four subheadings (=** Now=, =** Waiting on=,
-=** Next=, =** Last touched=) that describe the live operational
-detail. Updated every time an orchestrator or agent acts on the
-document.
+The =* Status= headline inside a stateful document. Carries the TODO keyword
+(state) and four subheadings (=** Now=, =** Waiting on=, =** Next=, =** Last
+touched=) that describe the live operational detail. Updated every time an
+orchestrator or agent acts on the document.
 
 * Predecessor story
 :PROPERTIES:
 :ID: cf9b011e-7ff1-4fdb-8b5f-148adf43a75f
 :END:
 
-A story in a prior sprint that the current story continues.
-Captured as =#+predecessor: <id>= frontmatter plus a
-=Continued from: [[id:...][...]]= line in the body. See cross-sprint
-stories in [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]].
+A story in a prior sprint that the current story continues. Captured as
+=#+predecessor: <id>= frontmatter plus a =Continued from: [[id:...][...]]= line
+in the body. See cross-sprint stories in [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]].
 
 * Successor story
 :PROPERTIES:
 :ID: 65976df1-57a0-4ba3-b6a5-a947886c20bd
 :END:
 
-A story in a later sprint that picks up where this one left off.
-Captured as =#+successor: <id>= frontmatter plus a =Continued in:
-[[id:...][...]]= note in =* Decisions=. Audit verifies bidirectional
-linkage.
+A story in a later sprint that picks up where this one left off. Captured as
+=#+successor: <id>= frontmatter plus a =Continued in: [[id:...][...]]= note in
+=* Decisions=. Audit verifies bidirectional linkage.
 
 * Agent
 :PROPERTIES:
 :ID: 366d6521-79e0-42ce-97f4-5fd0f443a923
 :END:
 
-A subprocess forked by a [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] orchestrator LLM to execute one
-task. Operates at [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]] for the role and
-[[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent function]] for the priming context.
+A subprocess forked by a [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] orchestrator LLM to execute one task. Operates
+at [[id:dbfd530b-4b56-48d1-9f03-3a0d0da16552][System 1]]. See [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]] for the role and [[id:b544713a-ba23-4d5a-9cee-084212d7c8ba][S1 Agent function]] for the
+priming context.
 
 * Orchestrator
 :PROPERTIES:
 :ID: 32fbc685-b81d-4af8-9b10-294f9055bc75
 :END:
 
-The [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] LLM session the user has assigned to a story. Forks
-agents, reviews their output, decides what to do with discovered
-work. See [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator function]] for the priming context.
+The [[id:bf4f183f-bb33-44f2-a53f-d9bd602e9be8][System 2]] LLM session the user has assigned to a story. Forks agents, reviews
+their output, decides what to do with discovered work. See [[id:eeca6981-3240-44d9-ada7-4b8c64a76b44][S2 Orchestrator
+function]] for the priming context.

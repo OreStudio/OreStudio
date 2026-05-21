@@ -85,13 +85,29 @@ Before generating any document, read the contract:
 4. [[id:47341fc6-b8fb-499e-aae0-f4ee0abfda05][Glossary]] — load it into context so the terms you encounter
    later resolve.
 
-Then, when you need to create a doc:
+When you need to /find/ something in the doc graph:
 
-- See [[id:3153aa4b-23d4-4111-9710-5a4971102edc]["How do I create a new v2 doc?"]] to scaffold every new document — never
-  hand-write frontmatter. The codegen mints the =:ID:=, applies the per-type
-  prefix on the title, fills in dates, and produces the required skeleton.
+- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — =doc_list.sh= over
+  regex, tag, =#+type:=, or path prefix. Faster than =grep -r= and
+  it understands the doctype taxonomy.
+- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — =doc_show.sh= prints a doc's
+  blurb, outgoing links, and incoming links. Accepts UUID prefixes
+  and resolves heading-level anchors (e.g. glossary entries).
+- The full set of doc-graph operations lives in the [[id:95ff6af4-2320-4cb6-a007-b016b7da16ed][Documentation
+  recipes]] inventory.
+
+When you need to /create/ a doc:
+
+- See [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] to scaffold every new document
+  — never hand-write frontmatter. The codegen mints the =:ID:=,
+  applies the per-type prefix on the title, fills in dates, and
+  produces the required skeleton.
+- For recipe-shaped docs specifically, see [[id:d4e65ef1-54f4-47e1-9388-58be9e36fbe3][How do I create a
+  recipe?]] — the conventions on filename = title = question,
+  executable babel blocks, and inventory wiring.
 - Every new =.org= file must carry =#+version: 2=. The audit script
-  =doc_version_audit.py --check= gates this; run it before committing.
+  =doc_version_audit.py --check= gates this; run it before
+  committing.
 
 Skim [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]] for orientation if you have not yet seen it.
 

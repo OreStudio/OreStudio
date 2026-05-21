@@ -16,7 +16,8 @@ co-located in its =modeling/= directory. It is a 50–100 line index
 does, what it consumes and produces, how to enter it, and where to
 look for deeper material. This document explains how to fill in
 each section and what separates a useful entry from a placeholder.
-Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+The cross-component index is the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]], which lists every
+component grouped by architectural layer. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Detail
 

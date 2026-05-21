@@ -72,14 +72,6 @@ ClientManager::getTradeDetail(const std::string& trade_id) {
             rfl::json::write(request),
             std::chrono::seconds(30));
 
-        // rfl::internal::no_duplicate_field_names does O(N²) constexpr
-        // comparisons over all variant field names.  trade_instrument has 9
-        // top-level alternatives (two of which are nested variants), pushing
-        // MSVC past its default 100 000-step constexpr budget (C1202).
-#ifdef _MSC_VER
-#  pragma constexpr_depth(1024)
-#  pragma constexpr_steps(1000000)
-#endif
         auto resp = rfl::json::read<
             trading::messaging::get_trade_detail_response,
             rfl::AddTagsToVariants>(raw);

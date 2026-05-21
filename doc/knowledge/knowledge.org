@@ -33,25 +33,40 @@ Finance concepts the codebase relies on.
 
 How the codebase is put together.
 
+- [[id:f27e5df7-6223-4b6f-80a5-cefbeb1bc756][Component architecture]] — api/core/service split, facet
+  placement, CMake dependency chain, and scaffold profiles.
 - [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu, output directory layout, the
   conventions every component build follows.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering, type mappings, and service
+  conventions for creating a full-stack entity.
 - [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =ores.qt.api= contract, IPlugin
   lifecycle, the two-phase menu-building sequence.
+- [[id:2fddc2f6-c510-4a86-8c50-d79c83eddfff][Qt entity patterns]] — ClientModel, list window, detail dialog,
+  history dialog, and async-fetch patterns.
+- [[id:e44891dc-234c-42db-90e1-9421400abd1a][Qt menu and toolbar patterns]] — plugin registration,
+  =on_login()= menu wiring, and MDI window toolbar construction.
+- [[id:05891220-2503-48a0-adf5-13ec95b605d7][CLI entity patterns]] — options structs, parser layout, and
+  command-dispatch conventions.
+- [[id:e38360b6-99ff-4af0-937f-58f31bd573f5][Shell entity patterns]] — REPL command registration,
+  message-based communication, and operation shapes.
+- [[id:579910d3-89ff-4820-9a9b-57508ff39096][HTTP entity patterns]] — REST route structure, handler skeleton,
+  and CRUD conventions.
+- [[id:acf334d8-703b-4020-a48e-f8a8e5090e72][Wt entity patterns]] — list widget, detail dialog, and
+  application-integration patterns.
+- [[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]] — naming conventions, idempotency
+  patterns, and entity-type catalogue.
 - [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — Catch2 file structure, naming,
   test-case shape, generators, database helpers.
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks both
+  PR-delta and full-component reviews apply.
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — how to write a
+  =component_overview.org= that passes audit.
 - [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — styling for component
   and system class diagrams.
 - [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — styling for the SQL schema
   ER diagram.
 
-* Quality
-
-Standards every change is held to.
-
-- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks both
-  PR-delta and full-component reviews apply.
-
-* User-facing design
+* UI
 
 How ORE Studio's surfaces look and feel.
 
@@ -68,13 +83,6 @@ Authentication, authorisation, and tenancy.
   [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]]: tenants, accounts, roles, permissions.
 - [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the RBAC model that backs IAM:
   roles compose permissions, the assignment graph.
-
-* Documentation
-
-How we write and maintain documentation.
-
-- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — how to write a
-  =component_overview.org= that passes audit.
 
 * External reference
 

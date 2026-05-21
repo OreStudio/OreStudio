@@ -28,12 +28,12 @@ TODO vocabulary: =DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED=.
 Transitions:
 
 #+begin_src text
-DISCOVERED --(triage)----------> BACKLOG
-BACKLOG    --(claim)------------> STARTED
-STARTED    --(hit a wait)-------> BLOCKED
-BLOCKED    --(wait cleared)-----> STARTED
-STARTED    --(PR merged)--------> DONE
-*          --(give up)----------> ABANDONED
+DISCOVERED  --(triage)----------> BACKLOG
+BACKLOG     --(claim)-----------> STARTED
+STARTED     --(hit a wait)------> BLOCKED
+BLOCKED     --(wait cleared)----> STARTED
+STARTED     --(PR merged)-------> DONE
+(any state) --(give up)---------> ABANDONED
 #+end_src
 
 Meaning of each state:

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 6fe5a0e1-4c96-4b13-a2b9-64590ad6db46
+:END:
+#+title: How do I ask an LLM to spec a new feature?
+#+description: Reusable prompt that drives an interview-style feature specification into the agile backlog.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:llm:prompt:agile:spec:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* Question
+
+I have a rough idea for a new feature. How do I use an LLM to turn
+it into a detailed story (or set of stories) in the agile backlog?
+
+* Answer
+
+Replace =<story summary here>= with a one-paragraph description of
+the idea, then send the prompt to Claude Code in the repo root.
+
+#+begin_example
+Consider this idea for a new feature:
+
+<story summary here>
+
+Interview me in detail using the AskUserQuestion tool about literally
+anything: technical implementation, UI & UX, concerns, tradeoffs,
+etc. Make sure the questions are not obvious.
+
+Be very in-depth and continue interviewing me continually until it's
+complete, then write a detailed user story with a specification to the
+current agile backlog as per skill
+doc/skills/agile-product-owner/SKILL.org. If you think the work is
+too large for a single story, break it into several stories, each of
+which will have its own PR.
+#+end_example
+
+* Script
+
+Use with Claude Code in the repo root. The [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] skill
+handles the backlog write.
+
+* Tested by
+
+Manual usage with Claude Code.
+
+* See also
+
+- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.
+- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — the skill invoked after the interview.

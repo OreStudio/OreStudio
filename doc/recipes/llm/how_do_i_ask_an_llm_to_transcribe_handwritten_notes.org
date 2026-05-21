@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 6faa2b35-805a-4790-acea-e168afae23c0
+:END:
+#+title: How do I ask an LLM to transcribe handwritten financial notes?
+#+description: Reusable prompt for OCR-to-org-mode transcription of handwritten financial notes.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:llm:prompt:ocr:documentation:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* Question
+
+I have pages of handwritten financial notes (images). How do I get
+an LLM to transcribe them cleanly into org-mode?
+
+* Answer
+
+Start a fresh chat (no memory) and paste the following prompt, then
+upload the note images one page at a time.
+
+#+begin_example
+You will receive a series of handwritten note pages (images). Your
+task is to:
+
+1. This is a new chat. Do not use your memory.
+
+2. Perform accurate OCR transcription.
+
+   - Clean up handwriting.
+   - Preserve meaning precisely.
+   - Expand abbreviations only when obvious (e.g., "CVA" -> "Credit
+     Valuation Adjustment").
+
+3. Convert the content into a clean, simple Emacs org-mode document,
+   using:
+
+   - * for main sections. Use normal capitalisation for
+     titles/headers.
+   - ** for subsections. Use normal capitalisation for
+     titles/headers.
+   - - bullet lists
+   - no LaTeX unless handwritten
+   - no extra commentary
+
+4. If the page contains something resembling a diagram, box, or
+   flowchart, represent it as a separate PNG image. The diagram
+   content should be clearly structured, and the background must be
+   white.
+
+5. Do NOT summarise. Transfer the meaning exactly as written, cleaning
+   only grammar and structure where absolutely necessary.
+
+6. Each page should be converted independently, as if it were a
+   section of one bigger .org file.
+
+7. The context of the notes is Financial Markets. Keep terminology
+   intact (e.g., "wrong-way risk", "funding rolls", "novation", etc.).
+
+8. Output formatting - strict:
+
+   - ONLY output the raw org-mode text.
+   - DO NOT wrap the output in Markdown code blocks.
+   - DO NOT include any conversational text, introductions, or
+     conclusions.
+   - Start directly with the first header or content line.
+
+Do not output any content which is not provided from the image to OCR.
+
+Do you understand these instructions?
+#+end_example
+
+* Tested by
+
+Manual usage across multiple LLM chat interfaces.
+
+* See also
+
+- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — index of all LLM prompts.

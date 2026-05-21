@@ -28,6 +28,7 @@ recipes; each topic has its own inventory that lists its recipes.
 - [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — direct SQL queries against the ORE Studio database.
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git recipes]] — pure git workflows (branches, submodules).
 - [[id:fcf81f0b-afbf-4169-bd24-04dbd08180a9][GitHub recipes]] — =gh= CLI, PRs, CI checks, review threads.
+- [[id:51fe4df6-d12f-4cf3-a32f-e793979aa68b][LLM prompt recipes]] — reusable prompts for LLM chat interfaces.
 
 * See also
 

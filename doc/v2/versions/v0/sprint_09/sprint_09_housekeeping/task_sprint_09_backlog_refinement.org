@@ -50,7 +50,7 @@ Captured during execution; cleared into the parent story on close.
 
 * Notes
 
-Ongoing through the sprint; the v0 backlog file =sprint_backlog_09.org= was the source of truth.
+Ongoing through the sprint; the per-PR breakdown lives in =git log=.
 
 * Result
 

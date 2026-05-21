@@ -39,7 +39,7 @@ Replace the generic instrument table with per-type tables for rates, FX, and equ
 
 * Acceptance
 
-- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+- All tasks complete; PR-by-PR breakdown in =git log=.
 
 * Tasks
 

@@ -36,7 +36,7 @@ ores.workflow component foundation; FSM state UUIDs replace ad-hoc status string
 
 * Acceptance
 
-- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+- All tasks complete; PR-by-PR breakdown in =git log=.
 
 * Tasks
 

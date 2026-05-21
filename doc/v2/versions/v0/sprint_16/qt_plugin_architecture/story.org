@@ -36,7 +36,7 @@ Extract ores.qt.api shared framework library; extract domain-specific plugins (a
 
 * Acceptance
 
-- All tasks complete; PR-by-PR breakdown captured in =doc/agile/v0/sprint_backlog_16.org=.
+- All tasks complete; PR-by-PR breakdown in =git log=.
 
 * Tasks
 

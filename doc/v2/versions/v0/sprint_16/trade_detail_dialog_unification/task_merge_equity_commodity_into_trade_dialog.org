@@ -49,7 +49,7 @@ Captured during execution; cleared into the parent story on close.
 
 * Notes
 
-Landed during the final v0 sprint. See =doc/agile/v0/sprint_backlog_16.org= for the full PR description + review feedback.
+Landed during the final v0 sprint. See =git log= for the per-PR breakdown.
 
 * Result
 

@@ -37,6 +37,15 @@ How the codebase is put together.
   conventions every component build follows.
 - [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =ores.qt.api= contract, IPlugin
   lifecycle, the two-phase menu-building sequence.
+- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — Catch2 file structure, naming,
+  test-case shape, generators, database helpers.
+
+* Quality
+
+Standards every change is held to.
+
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks both
+  PR-delta and full-component reviews apply.
 
 * Security
 

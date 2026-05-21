@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: fb797194-eb03-4837-b12d-e651dd5f16f2
+:END:
+#+title: Unit test conventions
+#+description: Catch2 patterns and file structure ORE Studio unit tests follow — file layout, naming, includes, test-case shapes, generators, database helpers.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:architecture:tests:catch2:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+ORE Studio's Catch2 unit tests follow consistent file structure,
+naming, and test-case shape. The [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] skill drives
+their authoring; this doc is the durable reference for the
+conventions every reviewer also checks (see [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review
+checklist]]§"Unit tests"). For database-integration specifics see
+[[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] inside =ores.testing=. Return
+to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* File organisation
+
+Test files live under =projects/<component>/tests/= with the
+naming pattern =<layer>_<class>_tests.cpp=. Common layers:
+
+| Layer        | Example file                              |
+|--------------+-------------------------------------------|
+| =domain=     | =domain_account_tests.cpp=                |
+| =repository= | =repository_account_repository_tests.cpp= |
+| =service=    | =service_account_service_tests.cpp=       |
+| =security=   | =security_session_tests.cpp=              |
+| =messaging=  | =messaging_account_protocol_tests.cpp=    |
+| =generators= | =generators_account_generator_tests.cpp=  |
+
+* Standard file structure
+
+Every test file opens with the GPL header, includes the system
+under test, includes Catch2, declares the suite + tag constants in
+an anonymous namespace, then defines =TEST_CASE= blocks:
+
+#+begin_src cpp
+/* GPL copyright header */
+
+#include "COMPONENT/LAYER/CLASS.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+// Additional includes as needed
+
+namespace {
+
+const std::string test_suite("COMPONENT.tests");
+const std::string tags("[LAYER]");
+
+}
+
+TEST_CASE("name_describing_behaviour", tags) {
+    // ...
+}
+#+end_src
+
+* Includes by test category
+
+| Category   | Required additions                                            |
+|------------+---------------------------------------------------------------|
+| Domain     | =<faker-cxx/faker.h>=, =ores.logging/make_logger.hpp=,        |
+|            | =<component>/domain/<class>_json_io.hpp=                      |
+| Repository | =<boost/uuid/uuid_io.hpp>=, =ores.logging/make_logger.hpp=,   |
+|            | =<component>/generators/<class>_generator.hpp=,               |
+|            | =ores.testing/database_helper.hpp=                            |
+| Messaging  | =ores.logging/make_logger.hpp=,                               |
+|            | =<component>/messaging/<protocol>_protocol.hpp=, generators   |
+| Generators | =ores.logging/make_logger.hpp=,                               |
+|            | =<component>/generators/<class>_generator.hpp=                |
+
+* Test-case naming
+
+Use descriptive snake_case names following these verb patterns:
+
+| Verb pattern                      | Use for                       |
+|-----------------------------------+-------------------------------|
+| =create_<type>_with_valid_fields= | Basic construction.           |
+| =<type>_serialization_to_json=    | JSON serialization.           |
+| =create_<type>_with_faker=        | Faker-generated data.         |
+| =write_single_<type>=             | Repository write.             |
+| =read_latest_<type>=              | Repository read (current).    |
+| =read_<type>_by_<field>=          | Repository filtered read.     |
+| =<type>_serialize_deserialize=    | Protocol roundtrip.           |
+
+* Test-case shape
+
+Every test case shares the same skeleton:
+
+#+begin_src cpp
+TEST_CASE("name", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Setup (database_helper, scoped_database_helper, etc.)
+
+    // Build system under test
+    type sut;
+    // ... initialise fields, or use a generator
+
+    BOOST_LOG_SEV(lg, info) << "Description: " << sut;
+
+    CHECK(sut.field == expected);
+    CHECK_NOTHROW(operation());
+}
+#+end_src
+
+* Tags
+
+| Tag            | When to use                                  |
+|----------------+----------------------------------------------|
+| =[domain]=     | Domain entity tests.                         |
+| =[repository]= | Database / repository tests.                 |
+| =[service]=    | Service-layer tests.                         |
+| =[security]=   | Security-related tests.                      |
+| =[messaging]=  | Protocol serialize / deserialize tests.      |
+| =[generators]= | Synthetic data generator tests.              |
+
+* Generators
+
+When a generator exists for a type, use it instead of hand-built
+construction:
+
+#+begin_src cpp
+#include "<component>/generators/<class>_generator.hpp"
+using namespace ores::<component>::generators;
+
+auto entity = generate_synthetic_<type>();          // single
+auto entities = generate_synthetic_<types>(5);      // batch
+#+end_src
+
+Test that generators themselves produce valid entities under the
+=[generators]= tag.
+
+* Database helpers
+
+Two helpers in =ores.testing=:
+
+| Helper                   | When to use                                          |
+|--------------------------+------------------------------------------------------|
+| =database_helper=        | Original pattern. Some components (DQ, IAM) pass     |
+|                          | =h.context()= to the repository constructor.         |
+| =scoped_database_helper= | Newer per-test tenant-isolated pattern; no table     |
+|                          | truncation needed. Refdata uses this.                |
+
+#+begin_src cpp
+// database_helper style
+database_helper h;
+type_repository repo(h.context());
+
+// scoped_database_helper style
+scoped_database_helper h;
+type_repository repo;
+repo.write(h.context(), entity);
+#+end_src
+
+* Best practices
+
+- *Log every test case* — =BOOST_LOG_SEV(lg, info) << sut;= helps
+  diagnose failures from logs alone.
+- *=CHECK= vs =REQUIRE=* — =CHECK= for non-fatal assertions,
+  =REQUIRE= when the rest of the case cannot run if this fails.
+- *Test both happy and edge paths* — but as separate =TEST_CASE=
+  blocks.
+- *No Catch2 =SECTION=* — separate =TEST_CASE= for each scenario
+  instead. SECTIONs hide which sub-case failed in the logs.
+- *=str.contains()= over =find() != npos=* (C++23).
+
+* See also
+
+- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer skill]] — drives authoring.
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]]§"Unit tests" — review-time enforcement.
+- [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] — deeper database-side
+  reference inside =ores.testing=.
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator skill]] — when a test goes red.

@@ -1,432 +1,93 @@
 :PROPERTIES:
 :ID: cb56337e-4839-4048-b5a7-c481812ce3d0
 :END:
-#+title: Unit Test Writer
-#+version: 1
-#+author: Marco Craveiro
-#+options: title:nil <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+title: Unit Test Writer Skill
+#+description: Generate Catch2 unit tests following the ORE Studio conventions — file structure, naming, includes, test-case shape, generators, database helpers.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:tests:catch2:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: unit-test-writer
-description: Generate Catch2 unit tests following ORE Studio conventions.
+description: Generate Catch2 unit tests for ORE Studio components — domain, repository, messaging, generators, service, security — following the project conventions.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
-
 * When to use this skill
 
-When you need to create unit tests for a component following the ORE Studio
-testing patterns and conventions.
+When you need to create or extend unit tests for an ORE Studio
+component. For investigating a /failing/ test, use the sibling
+[[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator]].
 
 * How to use this skill
 
-1. Identify the component and layer being tested (domain, repository, service,
-   etc.)
-2. Determine the type of tests needed (basic construction, JSON I/O, database
-   operations)
-3. Follow the detailed instructions to generate tests using Catch2 framework
-
-* Detailed instructions
-
-** Step 1: Understand Test File Organization
-
-Tests are located under =projects/COMPONENT/tests/= with the naming pattern:
-
-- =LAYER_CLASS_tests.cpp= - e.g., =domain_account_tests.cpp=, =repository_account_repository_tests.cpp=
-
-Common layers:
-
-- =domain= - Domain entity tests
-- =repository= - Database repository tests
-- =service= - Service layer tests
-- =security= - Security-related tests
-
-** Step 2: Standard File Structure
-
-Every test file should follow this structure:
-
-#+begin_src cpp
-/* -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- ,*
- ,* Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
- ,*
- ,* This program is free software; you can redistribute it and/or modify it under
- ,* the terms of the GNU General Public License as published by the Free Software
- ,* Foundation; either version 3 of the License, or (at your option) any later
- ,* version.
- ,*
- ,* This program is distributed in the hope that it will be useful, but WITHOUT
- ,* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- ,* FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- ,* details.
- ,*
- ,* You should have received a copy of the GNU General Public License along with
- ,* this program; if not, write to the Free Software Foundation, Inc., 51
- ,* Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- ,*
- ,*/
-#include "COMPONENT/LAYER/CLASS.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-// Additional includes as needed
-
-namespace {
-
-const std::string test_suite("COMPONENT.tests");
-const std::string tags("[LAYER]");
-
-}
-
-// Using declarations for commonly used types
-
-// TEST_CASE definitions follow
-#+end_src
-
-
-** Step 3: Required Includes
-
-Include headers based on test type:
-
-- Basic Domain Tests
-
-  #+begin_src cpp
-  #include <catch2/catch_test_macros.hpp>
-  #include <faker-cxx/faker.h> // IWYU pragma: keep.
-  #include "ores.logging/make_logger.hpp"
-  #include "COMPONENT/domain/CLASS_json_io.hpp" // IWYU pragma: keep.
-  #+end_src
-
-- Repository Tests
-
-  #+begin_src cpp
-  #include <catch2/catch_test_macros.hpp>
-  #include <boost/uuid/uuid_io.hpp>
-  #include "ores.logging/make_logger.hpp"
-  #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-  #include "COMPONENT/generators/CLASS_generator.hpp"
-  #include "ores.testing/database_helper.hpp"
-  #+end_src
-
-** Step 4: Test Case Naming Conventions
-
-Use descriptive snake_case names:
-
-- =create_TYPE_with_valid_fields= - Basic construction
-- =TYPE_serialization_to_json= - JSON serialization
-- =create_TYPE_with_faker= - Faker-generated data
-- =write_single_TYPE= - Repository write operations
-- =read_latest_TYPE= - Repository read operations
-- =read_TYPE_by_FIELD= - Repository filtered reads
-
-** Step 5: Test Case Structure
-
-Every test case follows this pattern:
-
-#+begin_src cpp
-TEST_CASE("test_name", tags) {
-    auto lg(make_logger(test_suite));
-
-    // Setup (e.g., database helper for repository tests)
-    // ...
-
-    // Create system under test
-    TYPE sut;
-    // ... initialize fields
-
-    // Log the test data
-    BOOST_LOG_SEV(lg, info) << "Description: " << sut;
-
-    // Assertions
-    CHECK(sut.field == expected_value);
-    CHECK_NOTHROW(some_operation());
-    // ...
-}
-#+end_src
-
-** Step 6: Domain Test Patterns
-
-Domain tests typically include:
-
-1. **Basic Construction**
-
-   #+begin_src cpp
-   TEST_CASE("create_TYPE_with_valid_fields", tags) {
-       auto lg(make_logger(test_suite));
-
-       TYPE sut;
-       sut.field1 = "value1";
-       sut.field2 = 42;
-       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
-
-       CHECK(sut.field1 == "value1");
-       CHECK(sut.field2 == 42);
-   }
-   #+end_src
-
-2. **JSON Serialization**
-
-   #+begin_src cpp
-   TEST_CASE("TYPE_serialization_to_json", tags) {
-       auto lg(make_logger(test_suite));
-
-       TYPE sut;
-       // ... initialize
-       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
-
-       std::ostringstream os;
-       os << sut;
-       const std::string json_output = os.str();
-
-       CHECK(!json_output.empty());
-       CHECK(json_output.contains("expected_field"));
-   }
-   #+end_src
-
-3. **Faker-Generated Data**
-
-   #+begin_src cpp
-   TEST_CASE("create_TYPE_with_faker", tags) {
-       auto lg(make_logger(test_suite));
-
-       TYPE sut;
-       sut.name = std::string(faker::word::noun());
-       sut.enabled = faker::datatype::boolean();
-       sut.description = std::string(faker::lorem::sentence());
-       BOOST_LOG_SEV(lg, info) << "TYPE: " << sut;
-
-       CHECK(!sut.name.empty());
-       CHECK(!sut.description.empty());
-   }
-   #+end_src
-
-
-** Step 7: Messaging Protocol Test Patterns
-
-Protocol tests verify binary serialize/deserialize roundtrips. They require no
-infrastructure and are fast to run.
-
-1. **Standard Includes**
-
-   #+begin_src cpp
-   #include <catch2/catch_test_macros.hpp>
-   #include "ores.logging/make_logger.hpp"
-   #include "COMPONENT/messaging/PROTOCOL_protocol.hpp"
-   // Include generators if populating domain types:
-   #include "COMPONENT/generators/TYPE_generator.hpp"
-   // Include streaming for container types:
-   #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-   #+end_src
-
-2. **Test Naming**: Use =TYPE_serialize_deserialize= pattern
-
-3. **Roundtrip Pattern** (empty/marker messages)
-
-   #+begin_src cpp
-   TEST_CASE("get_TYPES_request_serialize_deserialize", tags) {
-       auto lg(make_logger(test_suite));
-
-       get_TYPES_request e;
-       BOOST_LOG_SEV(lg, info) << "Expected: " << e;
-
-       const auto serialized = e.serialize();
-       const auto r = get_TYPES_request::deserialize(serialized);
-
-       REQUIRE(r.has_value());
-       BOOST_LOG_SEV(lg, info) << "Actual: " << r.value();
-   }
-   #+end_src
-
-4. **Roundtrip Pattern** (messages with fields)
-
-   #+begin_src cpp
-   TEST_CASE("save_TYPE_request_serialize_deserialize", tags) {
-       auto lg(make_logger(test_suite));
-
-       save_TYPE_request e;
-       e.entity = generate_synthetic_TYPE();
-       BOOST_LOG_SEV(lg, info) << "Expected: " << e;
-
-       const auto serialized = e.serialize();
-       const auto r = save_TYPE_request::deserialize(serialized);
-
-       REQUIRE(r.has_value());
-       const auto& a = r.value();
-       BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-       CHECK(a.entity.name == e.entity.name);
-       CHECK(a.entity.version == e.entity.version);
-   }
-   #+end_src
-
-5. **Tag**: =[messaging]=
-
-** Step 8: Generator Test Patterns
-
-Generator tests verify that synthetic data generators produce valid, populated
-entities.
-
-1. **Single Entity Generator**
-
-   #+begin_src cpp
-   TEST_CASE("generate_synthetic_TYPE_produces_valid_entity", tags) {
-       auto lg(make_logger(test_suite));
-
-       const auto sut = generate_synthetic_TYPE();
-       BOOST_LOG_SEV(lg, info) << "Generated: " << sut;
-
-       CHECK(!sut.name.empty());
-       CHECK(sut.id != boost::uuids::nil_generator()());
-   }
-   #+end_src
-
-2. **Batch Generator**
-
-   #+begin_src cpp
-   TEST_CASE("generate_synthetic_TYPES_produces_multiple", tags) {
-       auto lg(make_logger(test_suite));
-
-       const auto sut = generate_synthetic_TYPES(3);
-       BOOST_LOG_SEV(lg, info) << "Generated: " << sut;
-
-       REQUIRE(sut.size() == 3);
-       for (const auto& e : sut) {
-           CHECK(!e.name.empty());
-       }
-   }
-   #+end_src
-
-3. **Tag**: =[generators]=
-
-** Step 9: Repository Test Patterns
-
-Repository tests require database setup. Two helpers are available:
-
-- =database_helper= - Original pattern. Some components (DQ, IAM) pass context
-  to the repository constructor.
-- =scoped_database_helper= - Newer pattern with per-test tenant isolation. No
-  table truncation needed. Used by Refdata.
-
-1. **Write Operations** (=database_helper= style)
-
-   #+begin_src cpp
-   TEST_CASE("write_single_TYPE", tags) {
-       auto lg(make_logger(test_suite));
-
-       database_helper h;
-       TYPE_repository repo(h.context());
-       auto entity = generate_synthetic_TYPE();
-
-       BOOST_LOG_SEV(lg, debug) << "TYPE: " << entity;
-       CHECK_NOTHROW(repo.write(entity));
-   }
-   #+end_src
-
-2. **Write Operations** (=scoped_database_helper= style)
-
-   #+begin_src cpp
-   TEST_CASE("write_single_TYPE", tags) {
-       auto lg(make_logger(test_suite));
-
-       scoped_database_helper h;
-       TYPE_repository repo;
-       auto entity = generate_synthetic_TYPE();
-
-       BOOST_LOG_SEV(lg, debug) << "TYPE: " << entity;
-       CHECK_NOTHROW(repo.write(h.context(), entity));
-   }
-   #+end_src
-
-3. **Read Operations**
-
-   #+begin_src cpp
-   TEST_CASE("read_latest_TYPES", tags) {
-       auto lg(make_logger(test_suite));
-
-       database_helper h;
-       TYPE_repository repo(h.context());
-       auto written = generate_synthetic_TYPES(3);
-       repo.write(written);
-
-       auto read = repo.read_latest();
-       BOOST_LOG_SEV(lg, debug) << "Read TYPES: " << read;
-
-       CHECK(!read.empty());
-       CHECK(read.size() >= written.size());
-   }
-   #+end_src
-
-** Step 10: Using Generators
-
-When generators exist for a type, use them instead of manual construction:
-
-#+begin_src cpp
-#include "COMPONENT/generators/TYPE_generator.hpp"
-
-using namespace ores::COMPONENT::generators;
-
-TEST_CASE("test_with_generator", tags) {
-    auto lg(make_logger(test_suite));
-
-    // Single entity
-    auto entity = generate_synthetic_TYPE();
-
-    // Multiple entities
-    auto entities = generate_synthetic_TYPES(5);
-
-    // Use in tests...
-}
-#+end_src
-
-** Step 11: Common Tags
-
-Use appropriate tags for test categorization:
-
-- =[domain]= - Domain entity tests
-- =[repository]= - Repository/database tests
-- =[service]= - Service layer tests
-- =[security]= - Security-related tests
-- =[messaging]= - Message handling tests
-
-** Step 12: Best Practices
-
-1. **Logging**: Always log test data with =BOOST_LOG_SEV= for debugging
-2. **Tenant Isolation**: Use =scoped_database_helper= for tenant-isolated tests
-   (no table truncation needed). Use =database_helper= for components that pass
-   context to the repository constructor.
-3. **Descriptive Names**: Test names should clearly describe what is being tested
-4. **Assertions**: Use =CHECK= for non-fatal assertions, =REQUIRE= for fatal ones
-5. **Setup/Teardown**: Use database_helper which handles setup/teardown automatically
-6. **Faker Data**: Use faker-cxx for realistic random test data
-7. **Multiple Cases**: Test both happy paths and edge cases
-8. **Batch Operations**: Test both single and multiple entity operations for repositories
-9. **No SECTION**: Do not use Catch2 =SECTION= blocks. Create separate =TEST_CASE= for
-   each scenario instead. SECTIONs make it harder to identify which test failed in
-   the logs because the test case name alone doesn't indicate the failing section.
-10. **String containment**: Use C++23's =std::string::contains()= method instead of
-    =find() != std::string::npos= for substring checks. It's cleaner and more readable:
-
-    #+begin_src cpp
-    // Good: Use contains()
-    CHECK(output.contains("expected"));
-
-    // Bad: Avoid npos pattern
-    CHECK(output.find("expected") != std::string::npos);
-    #+end_src
-
-* See Also
-
-See [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] to understand how Unit Tests integrate
-with the database.
+The canonical reference for /how an ORE Studio test looks/ is
+[[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — file layout, naming patterns, includes,
+test-case shape, tags, generators, database helpers. Read it first
+if you have not seen the contract.
+
+1. /Identify component and layer/ — domain, repository, service,
+   security, messaging, or generators. This sets the file name
+   (=<layer>_<class>_tests.cpp=), the include set, and the
+   default tag (=[<layer>]=).
+
+2. /Pick the test categories/ you need:
+   - /Domain/: basic construction, JSON serialisation,
+     faker-generated data.
+   - /Repository/: write single, write batch, read latest, read
+     by field, temporal queries.
+   - /Messaging/: serialize/deserialize roundtrip (empty +
+     populated).
+   - /Generators/: generator produces valid entity, batch
+     generator produces N.
+
+3. /Write each test case/ following the standard shape from
+   [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]§"Test-case shape":
+   - =auto lg(make_logger(test_suite));= at the top.
+   - Build the system under test (use a generator when available).
+   - =BOOST_LOG_SEV(lg, info) << sut;= before assertions.
+   - =CHECK= for non-fatal; =REQUIRE= for "rest of case is
+     pointless if this fails".
+
+4. /Pick the right database helper/ for repository tests
+   (=database_helper= vs =scoped_database_helper= — see
+   [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]]§"Database helpers"). New components
+   prefer =scoped_database_helper= (tenant-isolated, no
+   truncation needed).
+
+5. /Build and run the new tests/ via [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]]
+   and [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — confirm everything passes locally
+   before pushing.
+
+6. /Self-check against the reviewer checklist/ — the "Unit tests"
+   section of [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] is what reviewers will apply.
+
+* Recipes
+
+- [[id:f176fca1-68d5-420d-b076-75a65fee5ebb][How do I build the system?]] — build the test target.
+- [[id:20d2cb34-4e2f-45d3-8fa2-f1c5b4c7b22f][How do I run the tests?]] — run the new tests.
+- [[id:4bf2516d-f37e-4e31-ad7b-124f2639b9ab][How do I enable test logging?]] — if you want to see your
+  =BOOST_LOG_SEV= output during iteration.
+
+* Reference
+
+- [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — the canonical patterns and helpers.
+- [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]]§"Unit tests" — reviewer-side checks.
+- [[id:A8C7D341-5E92-4F8A-B9E2-1A3D6F8C2E5B][Unit Test Database Integration Guide]] — deeper database-side
+  reference inside =ores.testing=.
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][test-failure-investigator]] — sibling skill for when a test goes
+  red.
 
 * Artefacts                                                        :noexport:
 
 ** Licence
 
-#+BEGIN_SRC fundamental :tangle LICENSE.txt
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License, or

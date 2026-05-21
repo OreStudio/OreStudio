@@ -433,6 +433,37 @@ discovery (see [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]]).
     Start / End / Theme=.
   - =* Release scope= — what is in, what is deferred.
 
+** capture
+
+A pre-sprint idea — see [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][Capture]] in the glossary.
+
+- Folder :: =doc/agile/product_backlog/{near,far}/<slug>.org= — flat
+  files inside the bucket. =near/= = candidate work for the next
+  version; =far/= = longer-term wishlist.
+- Level :: =cross= (sits between product identity and the operational
+  tree; not tied to a specific level).
+- Slug :: =snake_case=. Becomes the filename.
+- Title :: free-form (the idea itself); no type prefix.
+- Not stateful — no TODO, no =* Status= table. Captures have two
+  effective states only: /pending/ (file present in a bucket) and
+  /promoted/ (file converted into a =story=).
+- *ID preservation* :: when a capture is promoted to a story, the
+  destination =story.org= keeps the capture's =:ID:= so existing
+  references continue to resolve. The =#+type:= flips from =capture=
+  to =story=; the file moves into the appropriate sprint folder; the
+  capture is no longer present in its bucket.
+- How to create :: see [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — pass
+  =--type capture --bucket near|far=.
+- Required sections (in this order) ::
+  - /Blurb/ — one sentence linking the word "capture" to the
+    glossary entry and naming the bucket.
+  - =* What= — one paragraph: the idea.
+  - =* Why= — motivation, problem being solved, related context.
+  - =* References= — links and inspiration (images, external articles,
+    related captures). Optional.
+  - =* See also= — related captures, knowledge docs, components.
+    Optional.
+
 ** product_identity
 
 - Folder :: =identity/=

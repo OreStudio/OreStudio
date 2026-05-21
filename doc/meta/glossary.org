@@ -114,10 +114,27 @@ into =tasks/discovered/=; processed later by System 2 or System 3.
 :END:
 
 A TODO state, not a folder. Tasks and stories in =BACKLOG= have been
-triaged but not started. The product backlog (work not yet pulled into
-a sprint) is the union of =BACKLOG= stories outside the current sprint,
-plus the broader product wishlist; it is split into =near/= and =far/=
-collections at the product-identity level.
+triaged but not started. The /product backlog/ (work not yet pulled
+into a sprint) lives separately under =agile/product_backlog/{near,far}/=
+as a tree of [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — see below.
+
+* Capture
+:PROPERTIES:
+:ID: 671f18e4-e09c-4b3b-bd24-d33df8ae38a6
+:END:
+
+A pre-sprint idea: something we may want to do but have not yet pulled
+into a sprint as a story. Captures live at
+=doc/agile/product_backlog/{near,far}/<slug>.org=. The bucket is the
+source of truth: =near/= = candidate work for the next version,
+=far/= = longer-term wishlist.
+
+Captures are /not stateful/ — no TODO keyword, no =* Status= table.
+They have only two effective states: /pending/ (the file exists in a
+bucket) and /promoted/ (the file has been converted into a =story=).
+On promotion the file is moved into the appropriate sprint folder and
+its =#+type:= flips from =capture= to =story=; *the =:ID:= is
+preserved* so existing links keep working.
 
 * TODO state
 :PROPERTIES:

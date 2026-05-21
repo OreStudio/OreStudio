@@ -41,6 +41,7 @@ TYPE_TO_TEMPLATE = {
     "knowledge": "v2_doc_knowledge.org.mustache",
     "skill": "v2_doc_skill.org.mustache",
     "product_identity": "v2_doc_product_identity.org.mustache",
+    "capture": "v2_doc_capture.org.mustache",
 }
 
 DEFAULT_INITIAL_STATE = {
@@ -53,6 +54,7 @@ DEFAULT_INITIAL_STATE = {
     "knowledge": "",
     "skill": "",
     "product_identity": "",
+    "capture": "",
 }
 
 # Composition: each type's direct parent type.
@@ -67,6 +69,7 @@ PARENT_OF_TYPE = {
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "skill", "product_identity",
+    "capture",
 }
 
 
@@ -302,6 +305,9 @@ def main(argv=None):
     today = date.today().isoformat()
     new_id = args.id if args.id else str(uuid.uuid4())
 
+    # Captures derive their bucket (near | far) from the parent-dir name.
+    bucket = parent_dir.name if args.type == "capture" else ""
+
     variables = {
         "id": new_id,
         "slug": args.slug,
@@ -315,6 +321,7 @@ def main(argv=None):
         "parent_title": args.parent_title,
         "predecessor_id": args.predecessor_id or "",
         "predecessor_title": args.predecessor_title or "",
+        "bucket": bucket,
     }
 
     template_path = TEMPLATE_DIR / TYPE_TO_TEMPLATE[args.type]
@@ -337,7 +344,11 @@ def main(argv=None):
         leaf = args.slug if args.slug.startswith("task_") else f"task_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
-    elif args.type in ("component", "recipe", "knowledge", "product_identity"):
+    elif args.type in ("component", "recipe", "knowledge", "product_identity",
+                       "capture"):
+        # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
+        # caller passes --parent-dir as that bucket directory; we validate
+        # the bucket name only loosely (audit can tighten later).
         out_dir = parent_dir
         out_file = out_dir / f"{args.slug}.org"
     elif args.type == "skill":

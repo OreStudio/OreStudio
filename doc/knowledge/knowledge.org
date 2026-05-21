@@ -2,27 +2,68 @@
 :ID: 7474935C-95D1-3034-B833-83DCD9FB3A09
 :END:
 #+title: Knowledge
-#+version: 1
-#+author: Marco Craveiro
-#+startup: inlineimages
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+description: Index of durable cross-cutting knowledge — domain concepts, architecture, security, and supporting topics.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:index:
+#+created: 2024-06-15
+#+updated: 2026-05-21
 
-This folder contains assorted knowledge we picked up as part of implementing
-this project. It is mainly made up of short definitions created by LLMs (Gemini,
-Grok, etc) and is there to help us when we are looking at certain aspects of the
-code; we can then rely on org-roam to get the required context for some
-technical terms. This page serves as a "general index" of the knowledge.
+Durable, cross-cutting knowledge that outlives any sprint. Each entry
+is a single-topic page — a definition, a convention, an explanation of
+how some piece of the system works — that other documents can link to
+without restating it. If you find yourself explaining the same concept
+in two places, that concept belongs here.
 
-* ORE / Risk Analytics
+Knowledge is grouped by topic; jump to the section that fits what you
+are looking for.
 
-- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]]
+* Domain
 
-* C++ Architecture
+Finance and ORE concepts the codebase relies on.
 
-- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared Library Symbol Visibility]]
+- [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine (ORE)]] — the upstream risk-analytics
+  library ORE Studio wraps.
+- [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] — the de-facto open-source quantitative-finance library
+  ORE itself builds on.
+- [[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][Financial Products Markup Language (FpML)]] — industry XML standard
+  for representing financial products.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] — FpML mechanism for restricting fields to a known
+  set of values.
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the standard DQ-6 dimensions and their meaning in
+  financial markets.
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — how ORE configures its pricing /
+  risk models from XML and what each block means.
+- [[id:0929B047-1A31-3514-9EDB-EF7B4F012C5D][Standing settlement instructions]] — what SSIs are and how they
+  flow through the trading lifecycle.
+
+* Architecture
+
+How the codebase is put together.
+
+- [[id:5aae6900-8488-4e22-9f31-a1b9d5320efb][CMake setup]] — preset menu, output directory layout, the
+  conventions every component build follows.
+- [[id:A1C3E5F7-92B4-4D6A-B8C2-3F1D7E9A0B5C][Shared library symbol visibility]] — why the project uses explicit
+  =__attribute__((visibility))= / =__declspec(dllexport)= and the
+  rules each component follows.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — =ores.qt.api= contract, IPlugin
+  lifecycle, the two-phase menu-building sequence.
 
 * Security
 
-- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
-- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
-- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]]
+Authentication, authorisation, and tenancy.
+
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — IAM concepts as used in the
+  codebase: tenants, accounts, roles, permissions.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — RBAC model: how roles compose
+  permissions, how the assignment graph works.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — the RLS pattern this project
+  uses for tenant and party isolation.
+
+* Documentation
+
+How we write and maintain documentation.
+
+- [[id:b9d3d469-9e59-465f-8c18-34546b680d13][Component documentation guide]] — how to write a
+  =component_overview.org= that passes audit.

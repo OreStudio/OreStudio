@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1cbdea40-5fae-4f04-bd21-2bb29172b5aa
+:END:
+#+title: Open Source Risk Engine (ORE)
+#+description: The upstream risk-analytics library ORE Studio wraps.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :ore:risk:upstream:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* Summary
+
+The [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE) is a C++ library for pricing and
+risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and extends
+it with industry-grade XVA, sensitivities, regulatory scenarios, and a
+broad set of financial instruments. ORE Studio is a graphical wrapper
+around ORE — it does not modify ORE itself, has /no affiliation/ with
+the ORE project, and inherits ORE's models, conventions, and
+limitations as-is.
+
+* Detail
+
+** Where it lives
+
+- /Upstream/ — [[https://github.com/OpenSourceRisk/Engine][github.com/OpenSourceRisk/Engine]].
+- /Project site/ — [[https://www.opensourcerisk.org/][opensourcerisk.org]] (Acadia).
+- /In this repo/ — vendored under =external/ore/= (examples, =xsd/=
+  schemas, =packages/=, =methodology.txt=). This is a /reference copy/
+  the build draws against; it is not a fork.
+
+** How ORE Studio relates to ORE
+
+ORE Studio:
+
+- Imports ORE XML inputs (trade definitions, market data, model
+  configuration, conventions, fixings, calendars, …) into a
+  persistent database.
+- Drives ORE execution via configuration the user assembled in the
+  GUI.
+- Renders ORE outputs (NPV, XVA, sensitivities, scenarios) back to
+  the user.
+
+ORE Studio /does not/:
+
+- Reimplement ORE's pricing or risk models.
+- Modify ORE's source. Patches that belong upstream should be sent
+  there.
+
+** What ORE provides
+
+From the ORE README: /contemporary risk analytics and value
+adjustments (XVAs); interfaces for trade/market data and system
+configuration (API and XML); simple application launchers in Excel,
+LibreOffice, Python, Jupyter; comprehensive test suites/. The full
+breadth lives in upstream docs; the slices we care about in this
+project are documented in component-specific knowledge docs (e.g.
+[[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]]).
+
+** Versioning
+
+ORE Studio targets the /latest/ version of ORE only. We do not carry
+patches against older releases; if the latest ORE changes its
+interface, the v0 [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][version]] absorbs that and moves on.
+
+* See also
+
+- [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]] — upstream repo.
+- [[https://www.opensourcerisk.org/][opensourcerisk.org]] — project home page.
+- [[https://acadia.inc/][acadia.inc]] — Acadia.

@@ -44,8 +44,8 @@
 
 * In a nutshell
 
-ORE Studio is a graphical wrapper around [[https://www.opensourcerisk.org/][Acadia's]] [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine (ORE)]],
-which itself builds atop of [[https://github.com/lballabio/QuantLib][QuantLib]]. Please note that this open source project
+ORE Studio is a graphical wrapper around the [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open Source Risk Engine]] (ORE),
+which itself builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]]. Please note that this open source project
 has *no affiliation whatsoever* with ORE or QuantLib, but you cannot understand
 ORE Studio without at least a basic understanding of both of these projects.
 

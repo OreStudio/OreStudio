@@ -18,8 +18,8 @@
 #+HTML: </section>
 
 *ORE Studio* is a new and independent open-source project with the goal of
-providing a graphical wrapper around Acadia’s [[https://github.com/OpenSourceRisk/Engine][ORE]]. ORE itself builds on top of
-[[https://github.com/lballabio/QuantLib][QuantLib]], the de-facto standard open-source library for quantitative finance.
+providing a graphical wrapper around Acadia's [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]]. ORE itself builds on top of
+[[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]], the de-facto standard open-source library for quantitative finance.
 *ORE Studio* aims to augment ORE's robust analytics to eventually provide full
 life-cycle management for all entities within the trading system,
 point-and-click reporting, trade modelling and market-data management.

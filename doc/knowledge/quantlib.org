@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0412444a-0a4c-4611-887c-09353a3cb253
+:END:
+#+title: QuantLib
+#+description: The upstream quantitative-finance library that ORE — and through it ORE Studio — depends on.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :quantlib:quantitative_finance:upstream:knowledge:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+* Summary
+
+[[https://www.quantlib.org/][QuantLib]] is a free, open-source library "aimed at providing a
+comprehensive software framework for quantitative finance — modelling,
+trading, and risk management in real life." It has been the de-facto
+standard quantitative-finance library in C++ for over twenty years.
+[[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] builds on top of it; ORE Studio depends on QuantLib transitively
+through ORE.
+
+* Detail
+
+** Where it lives
+
+- /Upstream/ — [[https://github.com/lballabio/QuantLib][github.com/lballabio/QuantLib]] (Luigi Ballabio et al).
+- /Project site/ — [[https://www.quantlib.org/][quantlib.org]].
+- /In this repo/ — not vendored directly. We pull QuantLib via the
+  same dependency chain as ORE (vcpkg / packaging that ORE specifies).
+
+** How ORE Studio relates to QuantLib
+
+QuantLib is /two hops upstream/. ORE Studio interacts with QuantLib
+only through ORE's wrappers; nothing in the codebase calls QuantLib
+APIs directly, and QuantLib's instruments / day counters / calendars
+appear in our data only because [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][ORE]] surfaces them.
+
+ORE Studio /does not/ extend or modify QuantLib. Any QuantLib bug,
+limitation, or convention is inherited as-is. Patches that belong
+upstream should be sent there.
+
+** Versioning
+
+We track whatever QuantLib version ORE pins. Bumps come from ORE
+releases; we do not pin or override.
+
+* See also
+
+- [[https://github.com/lballabio/QuantLib][lballabio/QuantLib]] — upstream repo.
+- [[https://www.quantlib.org/][quantlib.org]] — project home page.
+- [[https://en.wikipedia.org/wiki/QuantLib][Wikipedia: QuantLib]] — independent description.

@@ -25,13 +25,14 @@
 #include <ostream>
 #include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.compute.wrapper/export.hpp"
 
 namespace ores::compute::wrapper::app {
 
 /**
  * @brief Provides hosting services to the wrapper application.
  */
-class host {
+class ORES_COMPUTE_WRAPPER_EXPORT host {
 private:
     inline static std::string_view logger_name = "ores.compute.wrapper.app.host";
 

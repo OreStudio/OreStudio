@@ -10,17 +10,12 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This is the top-level orientation for the =doc/= tree. Read it first
-on a new contact; come back to it any time you need to remember
-where something lives. It links to every top-level folder under
-=doc/= and explains what each contains.
-
-* Purpose
-
 This is the entry point for the ORE Studio cybernetic information
-architecture. Read this first; the rest of =doc/= refers back to
-it. The =meta/= subdirectory defines the /contract/ every document
-follows; this file explains the layout that contract sits inside.
+architecture and the top-level orientation for the =doc/= tree. Read
+it first on a new contact; come back to it any time you need to
+remember where something lives. The =meta/= subdirectory defines the
+/contract/ every document follows; this file explains the layout
+that contract sits inside.
 
 * Folder layout
 
@@ -107,7 +102,7 @@ with the code at =projects/<comp>/docs/=, not here.
   versions and far captures.
 - =functions/= — system-spanning named roles (PR reviewer, sprint
   planner, identity steward, audit). Empty in this branch.
-- =audit/= — system-3* scripts and reports enforcing invariants
+- =audit/= — system-3 scripts and reports enforcing invariants
   (orphan tasks, stale recipes, broken links, etc.). Empty in this
   branch.
 

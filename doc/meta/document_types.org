@@ -580,7 +580,7 @@ summarises a tree of related documents and links to them — it is
 called an /index page/. Examples in this repo: [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]],
 [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:d4219199-7b17-4a89-b4bc-6019738642da][Product backlog]], the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] and [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] bucket indexes.
 
-Index pages have two extra requirements on top of the usual
+Index pages have three extra requirements on top of the usual
 knowledge / meta contract:
 
 1. /Blurb before the first headline/. One paragraph between the
@@ -589,14 +589,18 @@ knowledge / meta contract:
    a heading with no orientation. The blurb hyperlinks key terms (the
    things this page is indexing) to their glossary entries or to the
    downstream pages.
-2. /Links to related pages/. The body either is the navigation (a
-   list of links with one-line descriptions per entry, as in
-   [[id:b69989f6-19e1-430d-ac6d-b2416e4c433f][Compass]]) or carries an explicit =* See also= section linking out.
-   An index page that does not link anywhere is just a knowledge doc
-   that happens to be short.
+2. /Internal links woven into content/. Cross-references to other
+   docs in this repo sit inline in the prose or in the bullet lists
+   they pertain to — /not/ in a separate "See also" dumping ground.
+   Every section should link somewhere relevant when the topic
+   demands it.
+3. /=* See also= is for external references only/. Blog essays,
+   external standards, vendor docs — material that lives outside
+   =doc/=. If the only thing you'd put in See also is an internal
+   id-link, the link belongs in the body instead.
 
-If both rules hold, the page is acting as an index. If neither, it is
-a normal knowledge document — no extra obligations.
+If all three rules hold, the page is acting as an index. If none do,
+it is a normal knowledge document — no extra obligations.
 - Required sections ::
   - =* Summary= — 3–5 sentence overview.
   - =* Detail= — the content.

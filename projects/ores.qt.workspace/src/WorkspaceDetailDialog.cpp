@@ -22,8 +22,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include "ui_WorkspaceDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -65,14 +64,10 @@ void WorkspaceDetailDialog::setupUi() {
     ui_->saveButton->setEnabled(false);
 
     ui_->deleteButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Archive, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-
-    // ID is always auto-generated — hide the id field entirely
-    ui_->labelId->setVisible(false);
-    ui_->codeEdit->setVisible(false);
 }
 
 void WorkspaceDetailDialog::setupConnections() {
@@ -84,8 +79,14 @@ void WorkspaceDetailDialog::setupConnections() {
             &WorkspaceDetailDialog::onCloseClicked);
 
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+            &WorkspaceDetailDialog::onCodeChanged);
+    connect(ui_->sourcePathEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->parentEdit, &QLineEdit::textChanged, this,
+            &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->ownerEdit, &QLineEdit::textChanged, this,
+            &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->statusEdit, &QLineEdit::textChanged, this,
             &WorkspaceDetailDialog::onFieldChanged);
 }
 
@@ -105,54 +106,54 @@ void WorkspaceDetailDialog::setWorkspace(
 
 void WorkspaceDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
-    setProvenanceEnabled(false);
+    setProvenanceEnabled(!createMode);
+    if (createMode) {
+        workspace_.id = boost::uuids::random_generator()();
+    }
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void WorkspaceDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(readOnly);
-    ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->nameEdit->setReadOnly(true);
+    ui_->sourcePathEdit->setReadOnly(readOnly);
+    ui_->parentEdit->setReadOnly(readOnly);
+    ui_->ownerEdit->setReadOnly(readOnly);
+    ui_->statusEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void WorkspaceDetailDialog::updateUiFromWorkspace() {
     ui_->nameEdit->setText(QString::fromStdString(workspace_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(workspace_.description));
+    ui_->sourcePathEdit->setText(QString::fromStdString(workspace_.source_path));
+    ui_->parentEdit->setText(QString::fromStdString(workspace_.parent_workspace_id));
+    ui_->ownerEdit->setText(QString::fromStdString(workspace_.owner_id));
+    ui_->statusEdit->setText(QString::fromStdString(workspace_.status_code));
 
-    if (workspace_.parent_workspace_id) {
-        ui_->inheritsFromEdit->setText(QString::fromStdString(
-            boost::uuids::to_string(*workspace_.parent_workspace_id)));
-    } else {
-        ui_->inheritsFromEdit->setText(QString());
-    }
-
-    if (workspace_.version > 0 && provenanceWidget()) {
-        provenanceWidget()->populate(
-            workspace_.version,
-            workspace_.modified_by,
-            workspace_.performed_by,
-            workspace_.recorded_at,
-            workspace_.change_reason_code,
-            workspace_.change_commentary);
-        setProvenanceEnabled(true);
-    } else {
-        clearProvenance();
-    }
+    populateProvenance(workspace_.version,
+                       workspace_.modified_by,
+                       workspace_.performed_by,
+                       workspace_.recorded_at,
+                       workspace_.change_reason_code,
+                       workspace_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void WorkspaceDetailDialog::updateWorkspaceFromUi() {
-    workspace_.name = ui_->nameEdit->text().trimmed().toStdString();
-    workspace_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    if (createMode_) {
+        workspace_.name = ui_->nameEdit->text().trimmed().toStdString();
+    }
+    workspace_.source_path = ui_->sourcePathEdit->text().trimmed().toStdString();
+    workspace_.parent_workspace_id = ui_->parentEdit->text().trimmed().toStdString();
+    workspace_.owner_id = ui_->ownerEdit->text().trimmed().toStdString();
+    workspace_.status_code = ui_->statusEdit->text().trimmed().toStdString();
     workspace_.modified_by = username_;
-    if (workspace_.change_reason_code.empty())
-        workspace_.change_reason_code = "system.new_record";
 }
 
 void WorkspaceDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -171,7 +172,11 @@ void WorkspaceDetailDialog::updateSaveButtonState() {
 }
 
 bool WorkspaceDetailDialog::validateInput() {
-    return !ui_->nameEdit->text().trimmed().isEmpty();
+    const QString name_val = ui_->nameEdit->text().trimmed();
+
+    return true
+        && !name_val.isEmpty()
+    ;
 }
 
 void WorkspaceDetailDialog::onSaveClicked() {
@@ -189,14 +194,14 @@ void WorkspaceDetailDialog::onSaveClicked() {
 
     updateWorkspaceFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Creating workspace: " << workspace_.name;
+    BOOST_LOG_SEV(lg(), info) << "Saving workspace: "
+        << workspace_.name;
 
     QPointer<WorkspaceDetailDialog> self = this;
 
     struct SaveResult {
         bool success;
         std::string message;
-        std::string id;
     };
 
     auto task = [self, workspace = workspace_]() -> SaveResult {
@@ -213,7 +218,7 @@ void WorkspaceDetailDialog::onSaveClicked() {
             return {false, "Failed to communicate with server"};
         }
 
-        return {response_result->success, response_result->message, response_result->id};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -223,12 +228,13 @@ void WorkspaceDetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Workspace created with id: " << result.id;
-            QString code = QString::fromStdString(result.id);
+            BOOST_LOG_SEV(lg(), info) << "Workspace saved successfully";
+            QString code = QString::fromStdString(
+                self->workspace_.name);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->workspaceSaved(code);
-            self->notifySaveSuccess(tr("Workspace '%1' created").arg(code));
+            self->notifySaveSuccess(tr("Workspace '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -244,41 +250,37 @@ void WorkspaceDetailDialog::onSaveClicked() {
 void WorkspaceDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot archive workspace while disconnected from server.");
+            "Cannot delete workspace while disconnected from server.");
         return;
     }
 
-    QString name = QString::fromStdString(workspace_.name);
-    auto reply = MessageBoxHelper::question(this, "Archive Workspace",
-        QString("Are you sure you want to archive workspace '%1'?").arg(name),
+    QString code = QString::fromStdString(
+        workspace_.name);
+    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
+        QString("Are you sure you want to delete workspace '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Archiving workspace id: "
-                              << boost::uuids::to_string(workspace_.id);
+    BOOST_LOG_SEV(lg(), info) << "Deleting workspace: "
+        << workspace_.name;
 
     QPointer<WorkspaceDetailDialog> self = this;
 
-    struct ArchiveResult {
+    struct DeleteResult {
         bool success;
         std::string message;
     };
 
-    const std::string ws_id = boost::uuids::to_string(workspace_.id);
-    const std::string actor = username_;
-    auto task = [self, ws_id, actor]() -> ArchiveResult {
+    auto task = [self, id = workspace_.id]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         workspace::messaging::archive_workspace_request request;
-        request.id = ws_id;
-        request.modified_by = actor;
-        request.change_reason_code = "user.archive";
-        request.change_commentary = "Archived by user";
+        request.ids = {id};
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 
@@ -289,27 +291,27 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         return {response_result->success, response_result->message};
     };
 
-    auto* watcher = new QFutureWatcher<ArchiveResult>(self);
-    connect(watcher, &QFutureWatcher<ArchiveResult>::finished,
-            self, [self, name, watcher]() {
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Workspace archived successfully";
+            BOOST_LOG_SEV(lg(), info) << "Workspace deleted successfully";
             emit self->statusMessage(
-                QString("Workspace '%1' archived").arg(name));
-            emit self->workspaceDeleted(name);
+                QString("Workspace '%1' deleted").arg(code));
+            emit self->workspaceDeleted(code);
             self->requestClose();
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Archive failed: " << result.message;
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
             emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Archive Failed", errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
         }
     });
 
-    QFuture<ArchiveResult> future = QtConcurrent::run(task);
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 

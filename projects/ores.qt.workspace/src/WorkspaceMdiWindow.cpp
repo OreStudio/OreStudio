@@ -50,6 +50,7 @@ WorkspaceMdiWindow::WorkspaceMdiWindow(
       addAction_(nullptr),
       openAction_(nullptr),
       editAction_(nullptr),
+      historyAction_(nullptr),
       archiveAction_(nullptr),
       deleteAction_(nullptr) {
 
@@ -113,6 +114,15 @@ void WorkspaceMdiWindow::setupToolbar() {
     editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this,
             &WorkspaceMdiWindow::editSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View workspace version history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this,
+            &WorkspaceMdiWindow::onHistoryRequested);
 
     archiveAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
@@ -275,6 +285,7 @@ void WorkspaceMdiWindow::updateActionStates() {
     const bool has_selection = !treeWidget_->selectedItems().isEmpty();
     openAction_->setEnabled(has_selection);
     editAction_->setEnabled(has_selection);
+    historyAction_->setEnabled(has_selection);
     archiveAction_->setEnabled(has_selection);
     deleteAction_->setEnabled(has_selection);
 }
@@ -297,6 +308,24 @@ void WorkspaceMdiWindow::openSelected() {
     }
     BOOST_LOG_SEV(lg(), warn) << "Could not find workspace for id: "
                               << id_str.toStdString();
+}
+
+void WorkspaceMdiWindow::onHistoryRequested() {
+    auto selected = treeWidget_->selectedItems();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "History requested but no item selected";
+        return;
+    }
+
+    const auto target_id = boost::uuids::string_generator()(
+        selected.first()->data(0, Qt::UserRole).toString().toStdString());
+    for (const auto& ws : model_->workspaces()) {
+        if (ws.id == target_id) {
+            emit showWorkspaceHistory(ws);
+            return;
+        }
+    }
+    BOOST_LOG_SEV(lg(), warn) << "Could not find workspace for history request";
 }
 
 void WorkspaceMdiWindow::addNew() {

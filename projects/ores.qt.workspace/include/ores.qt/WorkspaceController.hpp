@@ -74,11 +74,16 @@ protected:
 private slots:
     void onShowDetails(const workspace::domain::workspace& workspace);
     void onAddNewRequested();
+    void onShowHistory(const workspace::domain::workspace& workspace);
     void onWorkspaceActivated(const workspace::domain::workspace& workspace);
+    void onRevertVersion(const workspace::domain::workspace& workspace);
+    void onOpenVersion(const workspace::domain::workspace& workspace,
+                       int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const workspace::domain::workspace& workspace);
+    void showHistoryWindow(const workspace::domain::workspace& workspace);
 
     WorkspaceMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

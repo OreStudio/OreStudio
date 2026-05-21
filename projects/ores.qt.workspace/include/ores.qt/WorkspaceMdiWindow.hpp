@@ -62,6 +62,7 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showWorkspaceDetails(const workspace::domain::workspace& workspace);
+    void showWorkspaceHistory(const workspace::domain::workspace& workspace);
     void addNewRequested();
     void workspaceDeleted(const QString& code);
     void workspaceActivated(const workspace::domain::workspace& workspace);
@@ -81,6 +82,7 @@ private slots:
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onItemDoubleClicked(QTreeWidgetItem* item, int column);
+    void onHistoryRequested();
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -107,6 +109,7 @@ private:
     QAction* addAction_;
     QAction* openAction_;
     QAction* editAction_;
+    QAction* historyAction_;
     QAction* archiveAction_;
     QAction* deleteAction_;
 };

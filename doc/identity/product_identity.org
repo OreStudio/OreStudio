@@ -29,8 +29,9 @@ facet of identity: it states what we are building /toward/.
 
 ** Vision statement
 
-The vision for ORE Studio is to build on top of [[https://github.com/OpenSourceRisk/Engine][Acadia's Open Source Risk Engine
-(ORE)]], which itself builds on [[https://github.com/lballabio/QuantLib][QuantLib]], with the aim of providing:
+The vision for ORE Studio is to build on top of Acadia's [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open
+Source Risk Engine (ORE)]], which itself builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]], with the
+aim of providing:
 
 - a persistent database storage for all of its inputs and outputs;
 - a graphical user interface both for data generation as well as data

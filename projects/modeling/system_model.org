@@ -11,14 +11,11 @@
 #+updated: 2026-05-21
 #+startup: inlineimages
 
-This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system. ORE
-Studio provides a graphical interface and data management for [[id:1cbdea40-5fae-4f04-bd21-2bb29172b5aa][Open
-Source Risk Engine (ORE)]]. It is a C++23 application providing
-persistent storage, graphical user interface, and orchestration tools
-for quantitative risk analysis using ORE. The system is built on a
-layered architecture with clear separation of concerns; this page is
-the index from which each component's =component_overview.org=
-hangs.
+This file documents the architecture of the [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]] system —
+what /it is/ and what it's /for/ live in [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]]. This
+page is the index from which each component's
+=component_overview.org= hangs, organised into the four
+architectural layers below.
 
 
 #+attr_html: :class note

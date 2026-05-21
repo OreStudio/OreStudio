@@ -120,8 +120,8 @@
 (defvar site-html-preamble "<header id='site-header'>
   <nav id='site-nav'>
     <a href='/OreStudio/readme.html'>Home</a>
+    <a href='/OreStudio/doc/orientation.html'>Orientation</a>
     <a href='/OreStudio/doc/identity/product_identity.html'>Product</a>
-    <a href='/OreStudio/doc/doc.html'>Documentation</a>
     <a href='/OreStudio/projects/modeling/system_model.html'>Architecture</a>
     <a href='/OreStudio/doc/recipes/recipes.html'>Recipes</a>
     <a href='/OreStudio/doc/skills/claude_code_skills.html'>Skills</a>

@@ -10,20 +10,18 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This document is the generic state machine that applies to every
-stateful v2 document — [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprints]], and [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][versions]]. It
-defines what each TODO keyword means, the legal transitions between
-them, and the rules audit uses to verify the system is healthy. It
-is /not/ agile-specific (the rhythm /around/ these states lives in
-[[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][Agile process]]) and it is /not/ document-type-specific (per-type
-frontmatter and section requirements live in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]]).
+This document is the generic state machine that applies to every stateful v2
+document — [[id:31c868b9-306e-4282-ba8c-07e647021b34][tasks]], [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][stories]], [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprints]], and [[id:ca4d4bde-2eab-4f0a-bc8b-7c0bcb17bc82][versions]]. It defines what each [[https://orgmode.org/manual/TODO-Basics.html][TODO
+keyword]] means, the legal transitions between them, and the rules audit uses to
+verify the system is healthy. It is /not/ agile-specific --- the rhythm /around/
+these states lives in [[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process]] --- and it is /not/ document-type-specific
+--- per-type frontmatter and section requirements live in [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]].
 
 * Principle
 
-State lives /inside/ the document, as the TODO keyword on the
-=* Status= headline. The folder structure encodes composition only —
-which version, sprint, story, or task the document belongs to. Folders
-never carry state.
+State lives /inside/ the document, as the TODO keyword on the =* Status=
+headline. The folder structure encodes composition only — which version, sprint,
+story, or task the document belongs to. Folders never carry state.
 
 Transitions are TODO keyword changes (one edit, or =C-c C-t= in emacs).
 Org auto-stamps the transition in the headline's =LOGBOOK= and adds

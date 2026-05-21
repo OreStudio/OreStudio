@@ -10,12 +10,11 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-This is the entry point for the ORE Studio cybernetic information
-architecture and the top-level orientation for the =doc/= tree. Read
-it first on a new contact; come back to it any time you need to
-remember where something lives. The =meta/= subdirectory defines the
-/contract/ every document follows; this file explains the layout
-that contract sits inside.
+This is the entry point for the [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][ORE Studio]] cybernetic information architecture
+and the top-level orientation for the =doc/= tree. Read it first on a new
+contact; come back to it any time you need to remember where something lives.
+The =meta/= subdirectory defines the /contract/ every document follows; this
+file explains the layout that contract sits inside.
 
 * Folder layout
 

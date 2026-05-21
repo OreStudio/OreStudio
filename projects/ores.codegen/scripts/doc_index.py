@@ -29,6 +29,7 @@ DESC_RE     = re.compile(r"^#\+description:\s*(.*?)\s*$",  re.MULTILINE | re.IGN
 TYPE_RE     = re.compile(r"^#\+type:\s*(\S+)",             re.MULTILINE | re.IGNORECASE)
 FILETAGS_RE = re.compile(r"^#\+filetags:\s*(.+?)\s*$",     re.MULTILINE | re.IGNORECASE)
 UPDATED_RE  = re.compile(r"^#\+updated:\s*(\S+)",          re.MULTILINE | re.IGNORECASE)
+VERSION_RE  = re.compile(r"^#\+version:\s*(\S+)",          re.MULTILINE | re.IGNORECASE)
 LINK_RE     = re.compile(r"\[\[id:([0-9A-Fa-f-]+)(?:\]\[([^\]]+))?\]\]")
 HEADING_RE  = re.compile(r"^(\*+)\s+(.*?)\s*$")
 
@@ -39,6 +40,7 @@ class Doc:
     title: str
     description: str
     doctype: str | None
+    version: str | None
     tags: list[str]
     path: Path
     rel_path: str
@@ -163,6 +165,7 @@ def parse_doc(path: Path) -> Doc | None:
     type_m    = TYPE_RE.search(text)
     tags_m    = FILETAGS_RE.search(text)
     updated_m = UPDATED_RE.search(text)
+    version_m = VERSION_RE.search(text)
 
     seen, outbound = {doc_id}, []
     for m in LINK_RE.finditer(text):
@@ -176,6 +179,7 @@ def parse_doc(path: Path) -> Doc | None:
         title=(title_m.group(1).strip() if title_m else ""),
         description=(desc_m.group(1).strip() if desc_m else ""),
         doctype=(type_m.group(1).strip().lower() if type_m else None),
+        version=(version_m.group(1).strip() if version_m else None),
         tags=parse_tags(tags_m.group(1)) if tags_m else [],
         path=path,
         rel_path=str(path.relative_to(REPO_ROOT)),

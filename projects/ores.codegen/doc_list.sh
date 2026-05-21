@@ -25,6 +25,7 @@
 #   --regex PATTERN   Case-insensitive regex against title OR description.
 #   --tag TAG         Require this filetag. Repeatable; all required.
 #   --type TYPE       Require this #+type: (recipe, knowledge, task, ...).
+#   --version V       Require this #+version: (1 or 2).
 #   --under PATH      Restrict to this path prefix. Repeatable.
 #   --sort {title,updated,path}    Sort key (default: path).
 #   --count           Print match count only.

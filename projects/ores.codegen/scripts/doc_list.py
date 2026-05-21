@@ -9,6 +9,7 @@ Filters:
   --regex PATTERN   Match (case-insensitive) against title OR description.
   --tag TAG         Require this filetag (repeatable; tags must all match).
   --type TYPE       Require this #+type: (e.g. recipe, knowledge, task).
+  --version V       Require this #+version: (1 or 2).
   --under PATH      Restrict to docs under repo path (e.g. doc/recipes,
                     doc/agile/versions/v0). Repeatable.
   --sort {title,updated,path}   Sort key (default: path).
@@ -19,6 +20,9 @@ Filters:
 Examples:
   # All recipe docs mentioning "trade"
   doc_list.py --type recipe --regex trade
+
+  # Skills still on v1 (migration backlog)
+  doc_list.py --type skill --version 1
 
   # All docs under agile with the build_quality tag
   doc_list.py --under doc/agile --tag build_quality
@@ -40,6 +44,8 @@ def main() -> int:
     ap.add_argument("--regex", help="case-insensitive regex on title or description")
     ap.add_argument("--tag", action="append", default=[], help="require this filetag (repeatable)")
     ap.add_argument("--type", dest="doctype", help="require this #+type:")
+    ap.add_argument("--version", dest="docversion",
+                    help="require this #+version: (1 or 2)")
     ap.add_argument("--under", action="append", default=[],
                     help="restrict to docs under this path (repeatable)")
     ap.add_argument("--sort", choices=["title", "updated", "path"], default="path")
@@ -49,6 +55,7 @@ def main() -> int:
 
     pattern = re.compile(args.regex, re.IGNORECASE) if args.regex else None
     type_filter = args.doctype.lower() if args.doctype else None
+    version_filter = args.docversion.strip() if args.docversion else None
     under = [str((REPO_ROOT / u).resolve()) for u in args.under]
 
     docs = load_all()
@@ -57,6 +64,8 @@ def main() -> int:
         if pattern and not d.matches_text(pattern):
             continue
         if type_filter and d.doctype != type_filter:
+            continue
+        if version_filter and d.version != version_filter:
             continue
         if args.tag and not all(d.has_tag(t) for t in args.tag):
             continue
@@ -81,9 +90,10 @@ def main() -> int:
 
     for d in results:
         type_label = d.doctype or "?"
+        ver_label  = f"v{d.version}" if d.version else "v?"
         desc = d.description.replace("\n", " ").strip()
         title = d.title.replace("\n", " ").strip()
-        line = f"{d.id} | {type_label:<14} | {title}"
+        line = f"{d.id} | {ver_label} | {type_label:<14} | {title}"
         if desc:
             line += f"  —  {desc}"
         line += f"   ({d.rel_path})"

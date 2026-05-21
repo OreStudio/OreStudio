@@ -8,7 +8,12 @@
 #+level: cross
 #+filetags: :meta:overview:entry_point:
 #+created: 2026-05-18
-#+updated: 2026-05-18
+#+updated: 2026-05-21
+
+This is the top-level orientation for the =doc/= tree. Read it first
+on a new contact; come back to it any time you need to remember
+where something lives. It links to every top-level folder under
+=doc/= and explains what each contains.
 
 * Purpose
 

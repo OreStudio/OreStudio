@@ -10,6 +10,11 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
+This is the entry point to the product backlog. It explains what the
+backlog /is/, what the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] and [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] buckets are for, how to choose
+between them when adding a new [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]], and how a capture is
+eventually promoted into a sprint as a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]].
+
 * Summary
 
 The /product backlog/ is the set of ideas we may want to do but have

@@ -10,7 +10,7 @@
 #+created: 2026-05-18
 #+updated: 2026-05-21
 
-Every term used across the ORE Studio information architecture has a single
+Every term used across the ORE Studio [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][information architecture]] has a single
 definition here. Other documents link to these entries with =[[id:...]]= so
 meaning is defined once and reused everywhere. Each entry says what the term is
 and (where applicable) carries a small table covering its owner among the
@@ -22,8 +22,8 @@ inventory page that lists every instance.
 :ID: 31c868b9-306e-4282-ba8c-07e647021b34
 :END:
 
-The smallest unit of executable work. One task = one PR. Bounded by a concrete
-size limit (see [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]]).
+The smallest unit of executable work. One task should correspond to one PR.
+Bounded by a concrete size limit as per [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][document types]].
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                         |
@@ -304,7 +304,7 @@ facts and architecture belong in [[id:bd1f3458-f991-46be-abeb-5f06c2633375][know
 :ID: 8a246d60-6a87-4b54-a023-564ec1965c61
 :END:
 
-The TODO keyword on a stateful document's =* Status= headline. The full
+The [[https://orgmode.org/manual/TODO-Items.html][TODO keyword]] on a stateful document's =* Status= headline. The full
 vocabulary is =DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED= (active
 states left of the bar, terminal states right). Documents that are not stateful
 (knowledge, recipes, functions, meta) have no Status headline. See [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] for

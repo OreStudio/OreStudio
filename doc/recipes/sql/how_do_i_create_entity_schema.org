@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 479f858e-aa31-4db4-abe9-a0ed7cebf098
+:END:
+#+title: How do I create a new entity SQL schema?
+#+description: Walk through tables, indexes, grants, and history trigger for a new ORE Studio entity.
+#+type: recipe
+#+version: 2
+#+level: cross
+#+filetags: :recipe:sql:entity:schema:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+Naming conventions and idempotency rules are in
+[[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]]. The [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] skill drives this
+process; codegen is mandatory.
+
+* Question
+
+How do I create the SQL schema for a new entity in ORE Studio?
+
+* Answer
+
+1. Create a JSON model under =projects/ores.codegen/models/{component}/=
+   using =*_domain_entity.json= (UUID PK) or =*_junction.json=
+   (composite text PK) naming.
+
+2. Generate the SQL schema file (written directly to =projects/ores.sql/=):
+
+#+begin_src sh
+cd projects/ores.codegen
+./run_generator.sh models/{component}/{entity}_domain_entity.json --profile sql
+#+end_src
+
+3. Register the new file in the orchestration script for the component
+   (typically =projects/ores.sql/scripts/{component}_schema.sh=).
+
+4. Run schema validation:
+
+#+begin_src sh
+./projects/ores.sql/utility/validate_schemas.sh
+#+end_src
+
+5. Raise a PR with title =[sql] Add {entity} schema=.
+
+* Tested by
+
+=./projects/ores.sql/utility/validate_schemas.sh= — verifies
+idempotency and naming conventions for all schema files.
+
+* See also
+
+- [[id:5cb31a0e-4e38-4521-b0ee-e4396c3e2936][SQL entity schema patterns]] — naming conventions and idempotency rules.
+- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] — skill that drives this workflow.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering overview.

@@ -2,465 +2,74 @@
 :ID: b1450696-8c51-4cc5-8910-84912a411ab6
 :END:
 #+title: Domain Type Creator
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:domain:codegen:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: domain-type-creator
-description: Guide for creating new domain types with full JSON I/O, table I/O, generators, and repository support.
+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-When you need to add a new domain type to the ORE Studio project with complete
-support for JSON I/O, table I/O, test data generation, and database persistence
-with CRUD operations.
+When you need to add a new domain type to an ORE Studio component with
+JSON I/O, table I/O, a test data generator, and repository CRUD
+support. This is the mandatory first step before any exposure layer
+(SQL schema, HTTP, CLI, shell, Wt, Qt) can be built. See the
+[[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] overview for the full layer ordering.
 
 * How to use this skill
 
-*Recommended approach*: Use code generation first. The =ores.codegen= project can
-generate all domain type artefacts from JSON models, ensuring consistency and
-reducing boilerplate errors.
-
-** Priority order
-
-1. *Use code generation*: Create a JSON model and generate all artefacts using
-   the appropriate profiles. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for details.
-2. *Update templates*: If the domain type doesn't fit existing templates, modify
-   the Mustache templates in =library/templates/= to support the new pattern.
-3. *Manual creation*: Only create artefacts manually as a last resort when code
-   generation cannot support the required pattern.
-
-** Code generation workflow
-
-Profile-based generation writes files directly to the project tree — no manual
-copy step is needed. Omit the =output/= argument when using a named profile.
-
-1. Create a JSON model in =projects/ores.codegen/models/{component}/=
-2. Generate all C++ artefacts:
-   #+begin_src sh
-   cd projects/ores.codegen
-   # Generate all C++ facets (domain, repository, service, protocol, generator)
-   ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp
-   #+end_src
-   Files are written directly to =projects/ores.{component}/= under the repo root.
-3. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
-4. Build and verify
-5. Raise PRs at designated checkpoints
-
-** Manual workflow (last resort)
-
-1. Gather information about the domain type (name, fields, project location).
-2. Follow the detailed instructions to create all required artefacts in order.
-3. Build and test the new domain type.
-4. Raise PRs at designated checkpoints and wait for review before proceeding.
-
-* Related skills
-
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]]: For building and testing the component.
-- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]]: Update class diagrams for the component.
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage branch transitions between phases.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]]: Create a new Pull Request (PR).
-
-* PR strategy
-
-Creating a complete domain type involves significant work across multiple files.
-To keep PRs reviewable, the implementation is split into phases with designated
-checkpoints.
-
-| Phase | Steps | Focus                        | PR Title Template                           |
-|-------+-------+------------------------------+---------------------------------------------|
-|     1 |   1-3 | Domain class and I/O support | [COMPONENT] Add <Entity> domain type        |
-|     2 |     4 | Test data generator          | [COMPONENT] Add <Entity> generator          |
-|     3 |   5-6 | Repository and persistence   | [COMPONENT] Add <Entity> repository         |
-|     4 |  7-10 | Tests and documentation      | [COMPONENT] Add <Entity> tests and diagrams |
-
-** Phase checkpoints
-
-After completing each phase:
-
-1. Using [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] skill, build and verify there are no errors.
-2. Commit all changes with an appropriate message.
-3. Push the branch and use [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] skill to raise a PR with the suggested
-   title.
-4. Wait for review feedback and address any comments.
-5. Once approved, merge the PR back to main.
-6. Use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to the next phase.
-
-* Detailed instructions
-
-The following sections describe the step-by-step process for creating a complete
-domain type.
-
-** Gather requirements
-
-Before starting, gather the following information from the user:
-
-- *Domain type name*: the name of the new type (e.g., =currency=, =account=).
-- *Component location*: which component the domain type belongs to (e.g.,
-  =ores.refdata=, =ores.accounts=).
-- *Fields*: list of fields with their types and descriptions.
-
-** Phase 1: Domain class and I/O support
-
-*** Step 1: Create the domain class definition
-
-Follow the instructions in [[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]].
-
-*** Step 2: Create JSON I/O support
-
-Follow the instructions in [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]].
-
-*** Step 3: Create table I/O support
-
-Follow the instructions in [[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]].
-
-*** Phase 1 checkpoint
-
-At this point you have a complete domain type with JSON and table I/O support.
-
-1. Build the component library to verify there are no errors.
-2. Commit with message: =[COMPONENT] Add <Entity> domain type=
-3. Push and raise PR: =[COMPONENT] Add <Entity> domain type=
-4. Wait for review and merge before continuing.
-5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 2.
-
-** Phase 2: Test data generator
-
-*** Step 4: Create generator support
-
-Follow the instructions in [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]].
-
-*** Phase 2 checkpoint
-
-At this point you have a test data generator for the domain type.
-
-1. Build the component library to verify there are no errors.
-2. Commit with message: =[COMPONENT] Add <Entity> generator=
-3. Push and raise PR: =[COMPONENT] Add <Entity> generator=
-4. Wait for review and merge before continuing.
-5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 3.
-
-** Phase 3: Repository and persistence
-
-*** Step 5: Create repository entity and mapper
-
-Follow the instructions in [[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]].
-
-*** Step 6: Create repository with CRUD operations
-
-Follow the instructions in [[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]].
-
-*** Phase 3 checkpoint
-
-At this point you have full repository support for the domain type.
-
-1. Build the component library to verify there are no errors.
-2. Commit with message: =[COMPONENT] Add <Entity> repository=
-3. Push and raise PR: =[COMPONENT] Add <Entity> repository=
-4. Wait for review and merge before continuing.
-5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 4.
-
-** Phase 4: Tests and documentation
-
-*** Step 7: Update CMakeLists.txt
-
-Follow the instructions in [[id:842baa5a-d2fa-4294-8714-ae3f3bb1229a][Domain Type CMakeLists Update Facet]].
-
-*** Step 8: Create tests
-
-Follow the instructions in [[id:f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb][Domain Type Test Creation Facet]].
-
-*** Step 9: Update UML diagrams
-
-Update the component's UML diagrams to include the new domain type:
-
-1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update class diagrams showing the
-   new domain type and its relationships.
-2. If repository support was added, use the [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] skill to update
-   the database ER diagram with the new table.
-3. Build the diagrams using the appropriate CMake targets.
-
-*** Step 9: Build and verify
-
-Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] skill:
-
-1. Configure the project (reconfigure to pick up new files).
-2. Build the component library (=COMPONENT.lib= target).
-3. Build and run the component tests (=test_COMPONENT.tests= target).
-
-*** Step 10: Update UML diagrams
-
-Update the component's UML diagrams to include the new domain type:
-
-1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update class diagrams showing the
-   new domain type and its relationships.
-3. Build the diagrams using the appropriate CMake targets.
-
-*** Phase 4 checkpoint
-
-This is the final phase. At this point you have complete domain type support with
-tests and documentation.
-
-1. Build and run all tests to verify everything works.
-2. Commit with message: =[COMPONENT] Add <Entity> tests and diagrams=
-3. Push and raise PR: =[COMPONENT] Add <Entity> tests and diagrams=
-4. Wait for review and merge.
-
-The domain type implementation is now complete.
-
-* Using the Code Generator
-
-The code generator can automatically create most domain type artefacts from JSON
-model definitions. This is the recommended approach for new domain types.
-
-** Generator location
-
-#+begin_example
-projects/ores.codegen/
-├── run_generator.sh           # Main entry point
-├── src/generator.py           # Generator implementation
-├── library/templates/         # Mustache templates
-└── models/                    # Model definitions
-    └── dq/
-        ├── dataset_bundle_domain_entity.json
-        └── dataset_bundle_member_junction.json
-#+end_example
-
-** Model types
-
-*** Domain Entity models (=*_domain_entity.json=)
-
-For types with UUID primary key and natural key constraints.
-
-*** Junction models (=*_junction.json=)
-
-For association tables with composite text primary keys.
-
-** Available templates
-
-| Template                          | Output                           | Purpose                       |
-|-----------------------------------+----------------------------------+-------------------------------|
-| =cpp_domain_type_class.hpp=       | =domain/{entity}.hpp=            | Domain class definition       |
-| =cpp_domain_type_json_io.hpp=     | =io/{entity}_json_io.hpp=        | JSON serialization header     |
-| =cpp_domain_type_json_io.cpp=     | =io/{entity}_json_io.cpp=        | JSON serialization impl       |
-| =cpp_domain_type_table.hpp=       | =io/{entity}_table.hpp=          | Table I/O header              |
-| =cpp_domain_type_table.cpp=       | =io/{entity}_table.cpp=          | Table I/O impl                |
-| =cpp_domain_type_table_io.hpp=    | =io/{entity}_table_io.hpp=       | Table model header            |
-| =cpp_domain_type_table_io.cpp=    | =io/{entity}_table_io.cpp=       | Table model impl              |
-| =cpp_domain_type_generator.hpp=   | =generator/{entity}_generator.hpp= | Test data generator header  |
-| =cpp_domain_type_generator.cpp=   | =generator/{entity}_generator.cpp= | Test data generator impl    |
-| =cpp_domain_type_entity.hpp=      | =repository/{entity}_entity.hpp= | Repository entity header      |
-| =cpp_domain_type_entity.cpp=      | =repository/{entity}_entity.cpp= | Repository entity impl        |
-| =cpp_domain_type_mapper.hpp=      | =repository/{entity}_mapper.hpp= | Entity/domain mapper header   |
-| =cpp_domain_type_mapper.cpp=      | =repository/{entity}_mapper.cpp= | Entity/domain mapper impl     |
-| =cpp_domain_type_repository.hpp=  | =repository/{entity}_repository.hpp= | Repository CRUD header    |
-| =cpp_domain_type_repository.cpp=  | =repository/{entity}_repository.cpp= | Repository CRUD impl      |
-| =cpp_service.hpp=                 | =service/{entity}_service.hpp=   | Service layer header          |
-| =cpp_service.cpp=                 | =service/{entity}_service.cpp=   | Service layer impl            |
-| =cpp_protocol.hpp=                | =messaging/{entity}_protocol.hpp= | Binary protocol header       |
-| =cpp_protocol.cpp=                | =messaging/{entity}_protocol.cpp= | Binary protocol impl         |
-| =sql_schema_domain_entity_create= | =sql/{component}_{entity}_create.sql= | SQL table schema         |
-| =sql_schema_junction_create=      | =sql/{component}_{entity}_create.sql= | SQL junction schema      |
-
-** Running the generator
-
-#+begin_src sh
-cd projects/ores.codegen
-
-# Generate all C++ files for a domain entity
-./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/
-
-# Generate specific template only
-./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
-    --template cpp_domain_type_class.hpp.mustache
-
-# Generate service and protocol (commonly needed for messaging)
-./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
-    --template cpp_service.hpp.mustache
-./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
-    --template cpp_protocol.hpp.mustache
-#+end_src
-
-** Workflow with code generation
-
-1. Create a JSON model in =projects/ores.codegen/models/{component}/=
-2. Run the generator to produce C++ files
-3. Review the output in =output/=
-4. Copy files to the appropriate =projects/ores.{component}/= directories
-5. Update =CMakeLists.txt= if needed (files picked up automatically via GLOB)
-6. Build and verify
-
-** Model structure
-
-Example domain entity model with full C++ support:
-
-#+begin_src json
-{
-  "domain_entity": {
-    "component": "dq",
-    "entity_singular": "dataset_bundle",
-    "entity_plural": "dataset_bundles",
-    "entity_title": "Dataset Bundle",
-    "brief": "A named collection of datasets.",
-    "description": "Detailed multi-line description...",
-
-    "primary_key": {
-      "column": "id",
-      "type": "uuid",
-      "cpp_type": "boost::uuids::uuid",
-      "description": "UUID uniquely identifying this bundle."
-    },
-
-    "natural_keys": [
-      {
-        "column": "code",
-        "type": "text",
-        "cpp_type": "std::string",
-        "description": "Unique code for stable referencing.",
-        "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
-      }
-    ],
-
-    "columns": [
-      {
-        "name": "description",
-        "type": "text",
-        "cpp_type": "std::string",
-        "nullable": false,
-        "description": "Detailed description of the bundle.",
-        "generator_expr": "std::string(faker::lorem::sentence())"
-      }
-    ],
-
-    "sql": {"tablename": "dq_dataset_bundles_tbl"},
-
-    "repository": {
-      "entity_singular_short": "bundle",
-      "entity_plural_short": "bundles"
-    },
-
-    "cpp": {
-      "includes": {
-        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
-      },
-      "iterator_var": "b"
-    }
-  }
-}
-#+end_src
-
-** Benefits of code generation
-
-- Consistency across all domain types
-- Reduces boilerplate errors
-- Single source of truth for entity definitions
-- Easy to update all instances when patterns change
-- Supports both domain entity and junction table patterns
-
-** Type mappings
-
-The following table shows the standard type mappings between database types and
-C++ types. These MUST be used consistently across all domain types.
-
-| Database Type | C++ Type                              | Include Required               |
-|---------------+---------------------------------------+--------------------------------|
-| uuid          | boost::uuids::uuid                    | <boost/uuid/uuid.hpp>          |
-| text          | std::string                           | <string>                       |
-| integer       | int                                   | (built-in)                     |
-| bigint        | std::int64_t                          | <cstdint>                      |
-| boolean       | bool                                  | (built-in)                     |
-| timestamp     | std::chrono::system_clock::time_point | <chrono>                       |
-| real          | double                                | (built-in)                     |
-| bytea         | std::vector<std::byte>                | <vector>, <cstddef>            |
-| uuid (FK)     | boost::uuids::uuid                    | <boost/uuid/uuid.hpp>          |
-| uuid (opt)    | std::optional<boost::uuids::uuid>     | <optional>, <boost/uuid/...>   |
-
-*** Primary key types
-
-Domain entities can use either UUID or text primary keys:
-
-- *UUID primary keys*: Used for entities like =tenant=, =account=, =role=. The
-  primary key column is typically named =id= with type =uuid=.
-
-- *Text primary keys*: Used for reference data entities like =tenant_type=,
-  =tenant_status=, =currency=. The primary key column uses a domain-specific
-  name (e.g., =type=, =status=, =iso_code=) with type =text=.
-
-The code generator automatically detects the primary key type from the model and
-generates appropriate serialization code (=write_uuid=/=read_uuid= for UUIDs,
-=write_string=/=read_string= for text).
-
-* Common patterns and conventions
-
-** Naming conventions
-
-- Use snake_case for all C++ identifiers (classes, methods, variables)
-- File names should match the class name exactly
-- Headers use =.hpp= extension
-- Implementation files use =.cpp= extension
-
-** Code organization
-
-- Group related functionality in logically named files
-- Standard library includes first, then third-party, then project headers
-- Use namespace aliases to reduce verbosity
-
-** Documentation
-
-- Add doxygen comments for all public APIs
-- Explain the "why" in comments, not the "what"
-- Include =@brief= tags for all documented items
-
-** Service layer patterns
-
-When creating a service class to expose repository operations, follow these
-patterns:
-
-*** Use save_* for upsert semantics
-
-The repository =write()= method has *upsert semantics* - it creates a new record
-or updates an existing one. The service layer should expose this same behavior
-through =save_*= methods:
-
-#+begin_src cpp
-// CORRECT: Single save_* method with upsert semantics
-void currency_service::save_currency(const domain::currency& currency) {
-    currency_repo_.write(currency);
-}
-#+end_src
-
-*DO NOT* create separate =create_*= and =update_*= methods at the service level:
-
-#+begin_src cpp
-// WRONG: Separate create/update methods duplicate repository semantics
-void currency_service::create_currency(const domain::currency& c);  // Don't do this
-void currency_service::update_currency(const domain::currency& c);  // Don't do this
-#+end_src
-
-*** Service method naming convention
-
-| Operation         | Method Name Pattern          | Notes                            |
-|-------------------+------------------------------+----------------------------------|
-| Create or update  | =save_<entity>=              | Upsert via repository write()    |
-| Delete            | =remove_<entity>=            | Soft delete via repository       |
-| Find by key       | =find_<entity>=              | Returns std::optional            |
-| List all          | =list_<entities>=            | Returns vector                   |
-| List with filter  | =list_<entities>_by_<key>=   | Filtered list                    |
-| List since time   | =list_<entities>_since=      | Incremental loading support      |
-| Get history       | =get_<entity>_history=       | All versions of an entity        |
-
-*** Reference implementation
-
-See =projects/ores.refdata/src/service/currency_service.cpp= for a correct
-implementation of the service layer pattern.
+Codegen is the primary path. Manual creation is a last resort and must
+be justified in the file header.
+
+1. /Create a JSON model/ in =projects/ores.codegen/models/{component}/=
+   following the =*_domain_entity.json= or =*_junction.json= naming
+   convention. See [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] for the model schema and
+   available fields. Type mappings are in [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]]§"Type
+   mappings".
+
+2. /Generate all C++ artefacts/ (files written directly to the project
+   tree — no copy step):
+   =cd projects/ores.codegen && ./run_generator.sh models/{component}/{entity}_domain_entity.json --profile all-cpp=
+
+3. /Build and verify/: use [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] to confirm the component
+   library compiles cleanly.
+
+4. /Raise PRs at phase boundaries/ — Phase 1: domain + I/O; Phase 2:
+   generator; Phase 3: repository; Phase 4: tests + diagrams. Use
+   [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition between branches and
+   [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] to open each PR.
+
+5. /Update diagrams/ after Phase 4: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] for the
+   class diagram; [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] for the ER diagram.
+
+If codegen cannot express the pattern, extend the Mustache templates
+in =library/templates/= first, then regenerate. Use the facet docs
+([[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]], [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]],
+[[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]], [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]],
+[[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]],
+[[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]]) only as a last resort
+for the manual path.
+
+* Recipes
+
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — layer ordering, type mappings, service naming.
+
+* Reference
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, and template catalogue.
+- [[id:608675e1-4284-4902-99ac-4da565390afb][Entity lifecycle]] — canonical type mappings and service method naming.
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] — build and test commands.
+- [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]] — writing Catch2 tests for the new domain type.
 
 * Artefacts                                                        :noexport:
 

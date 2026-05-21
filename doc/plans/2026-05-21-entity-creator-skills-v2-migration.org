@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: 3F7A2C1D-84BE-4E9F-B261-5C0D9A3E7B48
+:END:
+#+title: Entity Creator Skills: v1 → v2 Migration
+#+version: 1
+#+STATUS: TODO
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Problem
+
+Seven entity-creator skills — =domain-type-creator=, =sql-schema-creator=,
+=http-entity-creator=, =cli-entity-creator=, =shell-entity-creator=,
+=wt-entity-creator=, and =qt-entity-creator= — are all v1 format.  Together
+they span 7,802 lines, 30–52% of which is inline code blocks used as embedded
+reference material.
+
+The v2 skill contract (=doc/meta/document_types.org= §skill) targets 50–80
+lines per skill: a thin index of *When/How/Recipes/Reference* that delegates
+detail to separate recipe and architecture docs.  These v1 skills embed
+everything inline, making them maintenance liabilities that drift from the
+codebase and from each other.
+
+** Current state
+
+| Skill | Lines | Inline code % | Notes |
+|---|---|---|---|
+| =qt-entity-creator= | 2375 | 52% | 40 C++ src blocks; Qt model/view/dialog/history patterns |
+| =sql-schema-creator= | 1457 | 30% | Naming conventions table; idempotency patterns; entity-type catalogue |
+| =wt-entity-creator= | 983 | 51% | Wt widget/dialog/integration patterns |
+| =shell-entity-creator= | 956 | 43% | REPL command patterns; message-based communication |
+| =http-entity-creator= | 845 | 45% | REST route patterns; request/response handling |
+| =cli-entity-creator= | 702 | 30% | CLI options structs; parser patterns |
+| =domain-type-creator= | 484 | 15% | Leanest; mostly defers to codegen already |
+
+** What is missing
+
+There is no umbrella document that explains how the layers relate.  The
+mental model — domain type → SQL schema → HTTP/CLI/shell API → Wt/Qt UI —
+exists only implicitly across seven files with no overview, no dependency
+ordering, and no diagram.
+
+* Scope
+
+** In scope
+
+- Create one umbrella entity-lifecycle architecture document.
+- For each skill: extract inline content (patterns, conventions, reference code)
+  into a dedicated knowledge doc and/or new recipes; rewrite the skill to v2.
+- All seven skills reach v2 (50–80 lines, no embedded code blocks, correct
+  frontmatter).
+
+** Out of scope
+
+- Changing any C++ code or SQL schema.
+- Retiring or merging skills into each other.
+- Adding new entity types or fields to any model.
+
+* Target layout after migration
+
+#+begin_src
+doc/knowledge/architecture/
+  entity_lifecycle.org           ← new: umbrella overview + layer diagram
+  sql_entity_schema_patterns.org ← new: naming, idempotency, entity-type catalogue
+  http_entity_patterns.org       ← new: REST route patterns, request/response
+  cli_entity_patterns.org        ← new: CLI options, parser, command structure
+  shell_entity_patterns.org      ← new: REPL command patterns, messaging
+  wt_entity_patterns.org         ← new: Wt widget/dialog/integration patterns
+
+doc/knowledge/qt/
+  qt_entity_patterns.org         ← new: Qt model/view/dialog/history patterns
+
+doc/recipes/sql/
+  how_do_i_create_entity_schema.org   ← new
+doc/recipes/http/
+  how_do_i_create_entity_endpoints.org ← new
+doc/recipes/cli/
+  how_do_i_create_entity_commands.org  ← new
+doc/recipes/shell/
+  how_do_i_create_entity_commands.org  ← new
+doc/recipes/wt/                  ← new directory
+  how_do_i_create_entity_widgets.org
+doc/recipes/qt/                  ← new directory
+  how_do_i_create_entity_ui.org
+#+end_src
+
+* Phase 0 — Entity lifecycle architecture doc
+
+Create =doc/knowledge/architecture/entity_lifecycle.org= as the umbrella
+document.  It must:
+
+- Explain the seven layers (domain → SQL → HTTP → CLI → shell → Wt → Qt) and
+  the dependency ordering between them.
+- Include a PlantUML component or sequence diagram showing how the layers
+  compose for a new entity.
+- Cross-link each layer to its future per-layer pattern doc (can be forward
+  references; the docs are created in later phases).
+- Reference =domain-type-creator= as the mandatory first step.
+- Carry correct v2 frontmatter (=#+type: knowledge=, =#+version: 2=, required
+  fields per =doc/meta/document_types.org=).
+
+** Commit
+
+=[doc] Add entity lifecycle architecture overview=
+
+* Phase 1 — Port domain-type-creator to v2
+
+=domain-type-creator= is the leanest skill (484 lines, 15% inline code) and
+the prerequisite for all other layers.  It is the natural pilot.
+
+- [ ] Read the existing skill end-to-end.  Identify any inline content that
+  belongs in a knowledge doc vs. content that is genuinely skill-level guidance.
+- [ ] The skill already delegates heavy lifting to =ores.codegen=; the main
+  v2 task is trimming procedural prose and replacing it with id-links to the
+  codegen component model and any extracted patterns.
+- [ ] Rewrite =doc/skills/domain-type-creator/SKILL.org= to v2:
+  - =#+type: skill=, =#+version: 2=, required frontmatter fields.
+  - Sections: When / How / Recipes / Reference / Artefacts.
+  - No =#+begin_src= blocks in the skill itself.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port domain-type-creator to v2=
+
+* Phase 2 — Port sql-schema-creator to v2
+
+=sql-schema-creator= is the second layer after domain type creation.  Its
+1457 lines contain reusable SQL naming conventions and idempotency patterns
+that belong in a permanent knowledge doc, not inside the skill.
+
+- [ ] Create =doc/knowledge/architecture/sql_entity_schema_patterns.org= (v2,
+  =#+type: knowledge=) containing:
+  - Entity naming conventions (component prefixes, entity-type suffix table).
+  - Idempotency patterns for DDL (=CREATE TABLE IF NOT EXISTS=,
+    =CREATE INDEX IF NOT EXISTS=, etc.).
+  - The entity-type catalogue (21 types: history, audit, junction, etc.) with
+    SQL examples.
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/sql/how_do_i_create_entity_schema.org= (v2,
+  =#+type: recipe=) with a walkthrough of the full schema creation workflow
+  for a new entity (tables, indexes, grants, history trigger).
+- [ ] Rewrite =doc/skills/sql-schema-creator/SKILL.org= to v2:
+  - Sections: When / How / Recipes / Reference.
+  - References: id-link to =sql_entity_schema_patterns.org=, the new recipe,
+    and the codegen component model.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port sql-schema-creator to v2; extract SQL schema patterns=
+
+* Phase 3 — Port http-entity-creator to v2
+
+- [ ] Create =doc/knowledge/architecture/http_entity_patterns.org= (v2,
+  =#+type: knowledge=) containing:
+  - REST route structure (list, save, delete, history endpoints).
+  - C++ handler skeleton (request parsing, response construction, error
+    handling conventions).
+  - Authentication and authorisation hook points.
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/http/how_do_i_create_entity_endpoints.org= (v2,
+  =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list + save;
+  Phase 2: delete + history; Phase 3: recipe docs).
+- [ ] Rewrite =doc/skills/http-entity-creator/SKILL.org= to v2.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port http-entity-creator to v2; extract HTTP entity patterns=
+
+* Phase 4 — Port cli-entity-creator to v2
+
+- [ ] Create =doc/knowledge/architecture/cli_entity_patterns.org= (v2,
+  =#+type: knowledge=) containing:
+  - CLI options struct layout and Boost.Program_options parser patterns.
+  - Command dispatch and application-layer wiring.
+  - Import/export/list/delete command structure.
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/cli/how_do_i_create_entity_commands.org= (v2,
+  =#+type: recipe=) with a phase-by-phase walkthrough.
+- [ ] Rewrite =doc/skills/cli-entity-creator/SKILL.org= to v2.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port cli-entity-creator to v2; extract CLI entity patterns=
+
+* Phase 5 — Port shell-entity-creator to v2
+
+- [ ] Create =doc/knowledge/architecture/shell_entity_patterns.org= (v2,
+  =#+type: knowledge=) containing:
+  - REPL command registration patterns.
+  - Message-based communication (request/response message types).
+  - List, add, history, delete command shapes.
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/shell/how_do_i_create_entity_commands.org= (v2,
+  =#+type: recipe=) with a phase-by-phase walkthrough.
+- [ ] Rewrite =doc/skills/shell-entity-creator/SKILL.org= to v2.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port shell-entity-creator to v2; extract shell entity patterns=
+
+* Phase 6 — Port wt-entity-creator to v2
+
+- [ ] Create =doc/knowledge/architecture/wt_entity_patterns.org= (v2,
+  =#+type: knowledge=) containing:
+  - Wt list widget structure (model, view, pagination).
+  - Detail dialog and form-binding patterns.
+  - Application integration points (menu registration, navigation).
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/wt/= directory (new).
+- [ ] Create =doc/recipes/wt/how_do_i_create_entity_widgets.org= (v2,
+  =#+type: recipe=) with a phase-by-phase walkthrough.
+- [ ] Rewrite =doc/skills/wt-entity-creator/SKILL.org= to v2.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port wt-entity-creator to v2; extract Wt entity patterns=
+
+* Phase 7 — Port qt-entity-creator to v2
+
+=qt-entity-creator= is the largest skill (2375 lines, 52% inline C++).  It
+covers several distinct concerns — client model, list window, detail dialog,
+history dialog, async fetching, recency highlighting, icon selection — each
+of which warrants a clear home.
+
+- [ ] Create =doc/knowledge/qt/qt_entity_patterns.org= (v2, =#+type: knowledge=)
+  containing:
+  - ClientModel pattern (async fetch, exception handling, pagination).
+  - List window structure (table model, proxy, toolbar).
+  - Detail dialog structure (form layout, save/cancel, field validation).
+  - History dialog structure (read-only table, pagination).
+  - Recency highlighting pattern.
+  - Icon selection guidance (cross-link to =icon-guidelines= skill).
+  - Cross-link to =entity_lifecycle.org=.
+- [ ] Create =doc/recipes/qt/= directory (new).
+- [ ] Create =doc/recipes/qt/how_do_i_create_entity_ui.org= (v2,
+  =#+type: recipe=) with a phase-by-phase walkthrough (Phase 1: list
+  window + client model; Phase 2: detail dialog; Phase 3: history dialog;
+  Phase 4: recipe docs).
+- [ ] Rewrite =doc/skills/qt-entity-creator/SKILL.org= to v2.
+  - Target: 60–80 lines.
+- [ ] Verify =./projects/ores.codegen/validate_docs.sh= passes.
+
+** Commit
+
+=[doc,skill] Port qt-entity-creator to v2; extract Qt entity patterns=
+
+* Phase 8 — PR
+
+- Push the feature branch.
+- PR title: =Entity creator skills: v1 → v2 migration=.
+- PR body must quote the before/after audit numbers:
+  =python3 projects/ores.codegen/scripts/doc_version_audit.py=
+- No "Test plan" section (project convention).
+
+* Critical files
+
+| File | Action |
+|---|---|
+| =doc/knowledge/architecture/entity_lifecycle.org= | New |
+| =doc/knowledge/architecture/sql_entity_schema_patterns.org= | New |
+| =doc/knowledge/architecture/http_entity_patterns.org= | New |
+| =doc/knowledge/architecture/cli_entity_patterns.org= | New |
+| =doc/knowledge/architecture/shell_entity_patterns.org= | New |
+| =doc/knowledge/architecture/wt_entity_patterns.org= | New |
+| =doc/knowledge/qt/qt_entity_patterns.org= | New |
+| =doc/recipes/sql/how_do_i_create_entity_schema.org= | New |
+| =doc/recipes/http/how_do_i_create_entity_endpoints.org= | New |
+| =doc/recipes/cli/how_do_i_create_entity_commands.org= | New |
+| =doc/recipes/shell/how_do_i_create_entity_commands.org= | New |
+| =doc/recipes/wt/= | New directory |
+| =doc/recipes/wt/how_do_i_create_entity_widgets.org= | New |
+| =doc/recipes/qt/= | New directory |
+| =doc/recipes/qt/how_do_i_create_entity_ui.org= | New |
+| =doc/skills/domain-type-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/sql-schema-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/http-entity-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/cli-entity-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/shell-entity-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/wt-entity-creator/SKILL.org= | Rewrite to v2 |
+| =doc/skills/qt-entity-creator/SKILL.org= | Rewrite to v2 |
+
+* Verification
+
+After every phase:
+
+1. =./projects/ores.codegen/validate_docs.sh= — must pass.
+2. =python3 projects/ores.codegen/scripts/doc_version_audit.py= — v1 count
+   decreases by the number of skills ported in that phase.
+
+Final check before PR:
+
+3. All seven skills report =#+version: 2= and are under 100 lines.
+4. All new knowledge docs and recipes carry correct v2 frontmatter.
+5. No =#+begin_src= blocks remain inside any of the seven skill files.
+
+* Notes
+
+- Do phases in order: each phase's knowledge doc is a potential cross-link
+  target for later phases.
+- The =domain-type-creator= is a dependency of all other skills; port it
+  first so later skill rewrites can id-link to a v2 doc.
+- The =entity_lifecycle.org= umbrella (Phase 0) intentionally uses forward
+  id-references to the per-layer docs; these resolve once later phases
+  create those files.
+- When writing Qt knowledge docs, check whether =doc/knowledge/qt/= already
+  contains any relevant material to merge rather than duplicate.

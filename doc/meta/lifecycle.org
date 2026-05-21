@@ -143,6 +143,12 @@ Closing a sprint requires:
 No =BACKLOG= for sprints: a sprint exists when its folder exists.
 Future sprints are not pre-allocated.
 
+The /process/ a sprint goes through — planning (define mission,
+choose stories, decompose), execution (run tasks), closure (release
+notes, release, post-mortem) — is detailed in
+[[id:46dfe47f-967b-4c24-95bf-3e21f97cfd20][agile process / Sprint phases]]. The state machine here is just the
+two endpoints those phases bracket.
+
 * Version lifecycle
 
 TODO vocabulary: =STARTED | RELEASED=.

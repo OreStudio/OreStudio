@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 7046b813-4542-4a42-9426-f5e9e891e1a7
+:END:
+#+title: Consider using sqls for LSP
+#+description: Consider using sqls for LSP
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We are presently testing postgrestools. If that does not work well, we should
+consider sqls.
+
+Links:
+
+- [[https://www.reddit.com/r/emacs/comments/ijbvwv/eglot_sqls_sql_client/][eglot + sqls = SQL client?]]

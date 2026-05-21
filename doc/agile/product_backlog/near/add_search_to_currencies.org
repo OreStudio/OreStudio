@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 5e3e4ff0-f215-4833-a3bf-ddd908e951f8
+:END:
+#+title: Add search to currencies
+#+description: Add search to currencies
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.

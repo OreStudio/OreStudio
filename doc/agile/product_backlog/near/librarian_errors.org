@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 30000917-5a85-4301-9d36-7c44cb51707f
+:END:
+#+title: Librarian errors
+#+description: Librarian errors
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+When there is a failure publishing a dataset we just see "failed" in the wizard
+without any further details. Server log file says:
+
+#+begin_src logview
+2026-01-21 22:21:07.676351 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.currencies with artefact_type: Solvaris Currencies
+2026-01-21 22:21:07.676381 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Currencies for dataset: slovaris.currencies
+2026-01-21 22:21:07.676412 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.currencies: Unknown artefact_type: Solvaris Currencies
+2026-01-21 22:21:07.676437 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags (Solvaris Country Flag Images)
+2026-01-21 22:21:07.676460 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.country_flags with artefact_type: Solvaris Country Flag Images
+2026-01-21 22:21:07.676491 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Country Flag Images for dataset: slovaris.country_flags
+2026-01-21 22:21:07.676518 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.country_flags: Unknown artefact_type: Solvaris Country Flag Images
+2026-01-21 22:21:07.676542 [INFO] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries (Solvaris Countries)
+2026-01-21 22:21:07.676566 [DEBUG] [ores.dq.service.publication_service] Publishing dataset: slovaris.countries with artefact_type: Solvaris Countries
+2026-01-21 22:21:07.676592 [ERROR] [ores.dq.service.publication_service] Unknown artefact_type: Solvaris Countries for dataset: slovaris.countries
+2026-01-21 22:21:07.676618 [ERROR] [ores.dq.service.publication_service] Failed to publish slovaris.countries: Unknown artefact_type: Solvaris Countries
+#+end_src
+
+To reproduce, change artefact type in codegen back to "Solvaris Currencies".

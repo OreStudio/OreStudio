@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: bf06ba65-50be-4589-abb7-34a3ef114d9c
+:END:
+#+title: Create named profiles
+#+description: Create named profiles
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Users should be able to move windows around the screen and get them in the right
+positions and shapes (including detached windows etc) and then save them to the
+database as a named profile. Then, after login:
+
+- if there is only one named profile against the user, just load it.
+- if there is more than one, give the user a selector.
+
+Note that the profile may be created against a specific party. Needs some
+thinking.

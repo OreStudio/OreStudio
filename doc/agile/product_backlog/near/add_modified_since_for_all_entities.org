@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 0bf9b9ee-054d-4783-ae9c-634b80ab63dc
+:END:
+#+title: Add modified since for all entities
+#+description: Add modified since for all entities
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We added support for this only for images. We need to update all types such as
+currencies etc with support for point in time gets.

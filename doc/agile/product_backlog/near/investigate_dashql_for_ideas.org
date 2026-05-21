@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 6763f42b-c8ce-4047-b609-ffc5b9361c3e
+:END:
+#+title: Investigate dashql for ideas
+#+description: Investigate dashql for ideas
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+#+begin_quote
+A Dash-based wrapper for QuantLib
+#+end_quote
+
+Links:
+
+- Options: https://options.plotly.app
+- Rates: https://rates.plotly.app
+- Source Code: https://github.com/mkipnis/DashQL
+- Dev guide (Options): https://mkipnis.substack.com/p/plotly-dash-and-quantlib-vanilla

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: a339e53b-f8be-4f6a-b8d5-526e97efc2fa
+:END:
+#+title: Setup Qt properly on Windows
+#+description: Setup Qt properly on Windows
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Seems like our package is still missing Qt DLLs. Use the windows tool to
+determine what is missing. Consider installing Qt in the build machine via the
+built packages.

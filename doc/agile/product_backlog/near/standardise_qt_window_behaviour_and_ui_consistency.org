@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: 1b4ea854-17c0-4192-a781-205a2e81fa8f
+:END:
+#+title: Standardise Qt window behaviour and UI consistency
+#+description: Standardise Qt window behaviour and UI consistency
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Several inconsistencies in window behaviour across the application.
+
+- Remove maximise button from MDI child windows.
+- Standardise window type: main entity windows should behave the same as
+  history/detail dialogs (consistent minimise/maximise button behaviour).
+- Generate button should only appear in "new" mode, not "edit".
+- Add save button to currency list (needed for generation workflow).
+- Add configuration option to disable quit confirmation dialog.
+- Allow password visibility toggle in password input fields.

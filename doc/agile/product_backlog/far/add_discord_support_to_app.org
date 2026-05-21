@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 13324c58-bfe7-40f1-95a1-3901c3566dd8
+:END:
+#+title: Add discord support to app
+#+description: Add discord support to app
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+It would be nice if we could post messages from the app into discord.
+
+Links:
+
+- [[https://github.com/RealTimeChris/DiscordCoreAPI][DiscordCoreAPI]]

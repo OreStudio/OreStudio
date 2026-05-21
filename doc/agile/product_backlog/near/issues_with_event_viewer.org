@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: e5a1fe44-e476-4697-8f64-300ad3a821cc
+:END:
+#+title: Issues with event viewer
+#+description: Issues with event viewer
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- no icon.
+- can't filter by event type.
+- always collect events in ring buffer. Search for story on this.

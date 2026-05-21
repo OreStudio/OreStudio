@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: faa4cb74-c7fe-47b1-ab11-5c6a92fcc6b1
+:END:
+#+title: Add coloured icons
+#+description: Add coloured icons
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we are using black and white icons. These are a bit hard to see. We
+should try the coloured ones and see if it improves readability.

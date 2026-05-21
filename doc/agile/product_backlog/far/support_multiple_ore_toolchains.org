@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: af985f3d-6667-4ae7-b93c-37c0e3f664e8
+:END:
+#+title: Support multiple ORE "toolchains"
+#+description: Support multiple ORE "toolchains"
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Much like with an IDE, where one can have multiple toolchains configured, we
+need to also support multiple versions of ORE. Unlike with IDEs, it may be
+desirable to run computations with more than one version of ORE for comparison
+purposes. This means we need a way to associate outputs with their ORE version.
+This approach does not necessarily fit the existing example code, because these
+have a single "output directory". However, we just need  way to associate N
+toolchains with a given workspace or possibly component; when present, the
+output directory starts to reflect the toolchain configuration. For example,
+with CMake we use presets:
+
+- =linux-clang-debug=
+- =linux-clang-release=
+- =linux-gcc-debug=
+- =linux-gcc-release=
+
+For ORE the only dimension under which variability is possible is the version.
+We can then have pricing engine configurations that are either the same, or
+possibly different:
+
+- for a workspace;
+- for a component;
+- for a toolchain version.
+
+In addition we also want to support multiple versions:
+
+- Nightly / Latest.
+- Release vX
+- AAD version.

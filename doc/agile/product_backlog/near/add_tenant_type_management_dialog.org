@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 80f17029-f692-4092-8b3d-621c4e55e1b0
+:END:
+#+title: Add tenant type management dialog
+#+description: Add tenant type management dialog
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+There is currently no UI to view or manage tenant types. Add a dialog accessible
+from the administration menu to list, view, and edit tenant type reference data.

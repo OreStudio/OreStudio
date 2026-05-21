@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: 0be07732-fe6c-40c9-87bc-22d3e651ad3f
+:END:
+#+title: Suppress staging dataset publication warnings
+#+description: Suppress staging dataset publication warnings
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Staging datasets (e.g. =gleif.lei_entities.small=, =gleif.lei_relationships.small=)
+show confusing "No populate_function for artefact_type" warnings during bundle
+publication. These datasets are dependencies that load into staging tables and
+don't publish to production directly — this is working as designed. Suppress or
+reclassify these log messages to avoid confusion.

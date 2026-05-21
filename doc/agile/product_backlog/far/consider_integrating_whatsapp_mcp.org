@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 07221149-f4c7-4190-ade4-b21021ea32a9
+:END:
+#+title: Consider integrating whatsapp-mcp
+#+description: Consider integrating whatsapp-mcp
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+#+begin_quote
+A Model Context Protocol (MCP) server that bridges WhatsApp and AI assistants
+like Claude. It exposes your WhatsApp messages through standardized MCP tools,
+prompts, and resources - allowing AI to read, search, and send messages on your
+behalf.
+
+The Vision: Let AI handle your WhatsApp conversations intelligently, with full
+context and natural language understanding.
+#+end_quote
+
+Links:
+
+- [[https://github.com/felipeadeildo/whatsapp-mcp/issues/24][GH: whatsapp-mcp]]

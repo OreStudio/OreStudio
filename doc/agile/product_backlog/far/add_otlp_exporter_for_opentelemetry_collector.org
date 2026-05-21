@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 3a227ebb-ec45-4936-b98e-a06da6cbc3fb
+:END:
+#+title: Add OTLP exporter for OpenTelemetry collector
+#+description: Add OTLP exporter for OpenTelemetry collector
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+For production observability, export telemetry data to an OpenTelemetry
+collector using the OTLP protocol.
+
+Tasks:
+
+- Add OTLP protocol buffer definitions or use existing C++ OTLP library.
+- Implement =otlp_log_exporter= for log records.
+- Implement =otlp_span_exporter= for traces.
+- Add configuration for collector endpoint.
+- Consider gRPC vs HTTP transport.
+
+Links:
+
+- [[https://opentelemetry.io/docs/specs/otlp/][OTLP Specification]]
+- [[https://github.com/open-telemetry/opentelemetry-cpp][opentelemetry-cpp]]

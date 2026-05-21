@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: ea444872-9567-4ee1-b5d7-ef2140c70b7c
+:END:
+#+title: Add support for staging
+#+description: Add support for staging
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- on import, are we importing one currency at a time? should import the entire
+  file.

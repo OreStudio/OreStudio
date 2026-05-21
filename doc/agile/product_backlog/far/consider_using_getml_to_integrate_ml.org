@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 7740297f-7552-4bae-bfce-ac16a7e88096
+:END:
+#+title: Consider using getML to integrate ML
+#+description: Consider using getML to integrate ML
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://github.com/getml/getml-community][GH: getml]]: "getML is a tool for automating feature engineering on relational
+  data and time series. It includes a specifically customized database Engine
+  for this very purpose."
+- [[https://getml.com/latest/user_guide/quick_start/][user guide quick start]]

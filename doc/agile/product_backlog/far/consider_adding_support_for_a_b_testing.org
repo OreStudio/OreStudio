@@ -1,0 +1,211 @@
+:PROPERTIES:
+:ID: 98fd02ef-2ef6-410c-85b6-566f29f8560e
+:END:
+#+title: Consider adding support for A/B testing
+#+description: Consider adding support for A/B testing
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present feature flags are global. However, we may want to enable a feature
+for a subset of the population. Analysis:
+
+#+begin_src markdown
+To support **gradual rollout (ramping)** of features—e.g., enabling a feature
+for 10% of users, then 50%, then 100%—you need to extend your feature flag
+system beyond a simple boolean toggle. The current temporal table design
+(`feature_flags` with validity periods) is great for time-based control, but
+,**not sufficient for user-based targeting**.
+
+Here’s a practical, scalable approach that integrates well with your C++23/Qt/PostgreSQL stack:
+
+---
+
+### 🎯 Goal
+Enable a feature **conditionally** based on:
+- User identity (e.g., user ID, tenant ID, or client ID)
+- A **rollout percentage** (e.g., 10%)
+- Optional: user attributes (role, region, etc.)
+
+---
+
+### ✅ Step 1: Enhance the Feature Flag Schema
+
+Add **rollout strategy metadata** to your `feature_flags` table:
+
+```sql
+ALTER TABLE oresdb.feature_flags
+ADD COLUMN rollout_percentage INTEGER CHECK (rollout_percentage BETWEEN 0 AND 100) DEFAULT 100,
+ADD COLUMN targeting_criteria JSONB; -- optional, for advanced rules
+```
+
+Now each flag version can specify:
+- `rollout_percentage = 10` → enable for ~10% of users
+- `targeting_criteria = '{"role": "beta_tester"}'` → (future extensibility)
+
+> Keep your temporal primary key and exclusion constraint — they still apply.
+
+---
+
+### ✅ Step 2: Determine a Stable User Identifier
+
+Your client must provide a **consistent, hashable ID** per user or session, such as:
+- User ID (if authenticated)
+- Device ID / client UUID (if anonymous)
+- Tenant ID (for multi-tenant apps)
+
+This ID must be **stable** across sessions so the same user doesn’t see the feature flicker on/off.
+
+> 💡 In your Qt client, generate or retrieve this ID at startup and pass it to the feature flag service.
+
+---
+
+### ✅ Step 3: Implement Consistent Hash-Based Sampling in C++
+
+Use a **deterministic hash** to map user IDs into a 0–99 bucket:
+
+```cpp
+#include <functional>
+#include <string>
+
+bool should_enable_for_user(std::string_view feature_name,
+                            std::string_view user_id,
+                            int rollout_percentage) {
+    if (rollout_percentage <= 0) return false;
+    if (rollout_percentage >= 100) return true;
+
+    // Combine feature name + user ID to avoid correlation across features
+    std::string key = std::string(feature_name) + ":" + std::string(user_id);
+
+    // Use a stable hash (e.g., std::hash, but note: not guaranteed consistent across runs)
+    // For production, prefer a consistent hash like FNV-1a or CityHash
+    auto hash = std::hash<std::string>{}(key);
+    int bucket = static_cast<int>(hash % 100);
+    return bucket < rollout_percentage;
+}
+```
+
+> ⚠️ **Warning**: `std::hash` is **not guaranteed to be stable across program runs or platforms**.
+> For reliable rollout, use a **stable hashing algorithm** like **FNV-1a**, **MurmurHash3**, or **xxHash**.
+
+Example with a simple FNV-1a (C++23-friendly):
+
+```cpp
+constexpr uint32_t fnv1a_32(std::string_view s) {
+    uint32_t hash = 2166136261u; // FNV offset basis
+    for (char c : s) {
+        hash ^= static_cast<uint8_t>(c);
+        hash *= 16777619u; // FNV prime
+    }
+    return hash;
+}
+
+bool should_enable_for_user(std::string_view feature_name,
+                            std::string_view user_id,
+                            int rollout_percentage) {
+    if (rollout_percentage <= 0) return false;
+    if (rollout_percentage >= 100) return true;
+
+    std::string key{feature_name};
+    key += ':';
+    key += user_id;
+
+    uint32_t hash = fnv1a_32(key);
+    return (hash % 100) < static_cast<uint32_t>(rollout_percentage);
+}
+```
+
+This ensures:
+- Same user → same decision
+- Uniform distribution across users
+- Independent per-feature rollout
+
+---
+
+### ✅ Step 4: Update Your Feature Flag Service
+
+Modify your C++ `FeatureFlagService`:
+
+```cpp
+class FeatureFlagService {
+public:
+    // Returns true if the feature is enabled AND user qualifies
+    bool is_enabled_for_user(Feature f, std::string_view user_id) const;
+
+private:
+    struct FlagConfig {
+        bool enabled;
+        int rollout_percentage; // 0–100
+        // add targeting_criteria later if needed
+    };
+    std::unordered_map<Feature, FlagConfig> cache_;
+};
+```
+
+Implementation:
+
+```cpp
+bool FeatureFlagService::is_enabled_for_user(Feature f, std::string_view user_id) const {
+    auto it = cache_.find(f);
+    if (it == cache_.end() || !it->second.enabled) {
+        return false;
+    }
+    return should_enable_for_user(to_string(f), user_id, it->second.rollout_percentage);
+}
+```
+
+---
+
+### ✅ Step 5: Integrate in Qt UI
+
+```cpp
+QString userId = getCurrentUserId(); // from auth, settings, etc.
+
+if (featureFlagService.is_enabled_for_user(Feature::ExperimentalUI, userId.toStdString())) {
+    ui->experimentalPanel->show();
+}
+```
+
+---
+
+### ✅ Optional: Advanced Targeting (Future-Proofing)
+
+Use the `targeting_criteria JSONB` column to store rules like:
+```json
+{
+  "min_version": "2.1.0",
+  "regions": ["EU", "NA"],
+  "roles": ["admin", "beta"]
+}
+```
+
+Then evaluate these in C++ (or push filtering to DB with JSONB queries if you fetch per-user flags).
+
+But for **simple ramp-up**, percentage-based hashing is sufficient and efficient.
+
+---
+
+### ✅ Operational Benefits
+
+- **No client-side config changes** needed to ramp from 10% → 50% → 100% — just update the DB.
+- **Auditability**: Every rollout change is versioned in your temporal table.
+- **Safety**: You can instantly roll back by setting `rollout_percentage = 0`.
+
+---
+
+### Summary
+
+| Component           | Change |
+|---------------------|--------|
+| **Database**        | Add `rollout_percentage INT` to `feature_flags` |
+| **C++ Service**     | Add `is_enabled_for_user(feature, user_id)` |
+| **Hashing**         | Use stable hash (e.g., FNV-1a) over `feature:user_id` |
+| **Qt UI**           | Pass user ID to flag checks |
+
+This gives you **safe, gradual, observable rollouts** while keeping your architecture clean and performant.
+#+end_src

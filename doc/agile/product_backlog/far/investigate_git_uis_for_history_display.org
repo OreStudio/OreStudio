@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: 52d63fd2-6d8f-444a-95cc-e9c3bfd53546
+:END:
+#+title: Investigate git UIs for history display
+#+description: Investigate git UIs for history display
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Links:
+
+- [[https://github.com/Murmele/Gittyup][Gittyup]]: "Gittyup is a graphical Git client designed to help you understand
+  and manage your source code history. "

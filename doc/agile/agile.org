@@ -23,8 +23,8 @@ following essays may be of interest (in no particular order).
 All agile related information is kept in /Backlogs/. There are two types of
 backlogs:
 
-- [[id:558650A4-C3E5-8964-4193-7D9125E29B83][Product Backlog]]: Contains all of the captured stories that have not yet been
-  assigned to a sprint.
+- Product Backlog (=doc/agile/product_backlog/{near,far}/=): captures
+  that have not yet been pulled into a sprint as stories.
 - [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]]: Either archives of stories we have worked on or the stories we
   are currently working on.
 

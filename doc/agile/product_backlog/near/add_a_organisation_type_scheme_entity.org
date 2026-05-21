@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 74d1ceab-402a-4f2e-abe2-7678ea550577
+:END:
+#+title: Add a organisation type scheme entity
+#+description: Add a organisation type scheme entity
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+Indicates a type of organization.
+
+- Obtained on 2016-06-13
+- Version 2-0
+- URL: http://www.fpml.org/coding-scheme/organization-type-2-0.xml
+
+- Code: MSP
+- Name: Major Swap Participant
+- Description: A significant participant in the swaps market, for example as
+  defined by the Dodd-Frank Act.
+
+- Code: NaturalPerson
+- Name: Natural Person
+- Description: A human being.
+
+- Code: non-SD/MSP
+- Name: Non Swap Dealer or Major Swap Participant
+- Description: A firm that is neither a swap dealer nor a major swaps participant under the Dodd-Frank Act.
+
+- Code: SD
+- Name: Swap Dealer
+- Description: Registered swap dealer.

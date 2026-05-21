@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: aeea4556-cf7f-4ab5-9610-a35b084ebe16
+:END:
+#+title: Add skill to update vcpkg
+#+description: Add skill to update vcpkg
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :infra:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+As per instructions in [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][readme]].

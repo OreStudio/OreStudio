@@ -1,0 +1,16 @@
+:PROPERTIES:
+:ID: 2849ec13-f352-4f8f-a3cd-996632da87c3
+:END:
+#+title: Automated SQL generation
+#+description: Automated SQL generation
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we are manually creating the SQL. We should be able to do it from
+sqlgen.

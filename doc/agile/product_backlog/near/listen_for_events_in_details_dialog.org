@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: aa75c52c-7980-4400-8342-46b36b9da354
+:END:
+#+title: Listen for events in details dialog
+#+description: Listen for events in details dialog
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+At present we are only listening for details in the main dialogs (accounts,
+currencies). It would be nice to be able to listen to events in the details
+dialogs. however, it needs to listen to events only for that specific entity
+(e.g. currency pair, account etc). Not sure we are setup for this.

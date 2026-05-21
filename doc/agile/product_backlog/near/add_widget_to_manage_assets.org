@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 938afdaa-d427-404a-a09b-393e93ae96ad
+:END:
+#+title: Add widget to manage assets
+#+description: Add widget to manage assets
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:near:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *near* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+We can't upload flags etc.
+
+Merged stories:
+
+*Add an image browser*
+
+At present we can't add or remove images.
+
+- update existing image browser to show tags and allow switching them on and
+  off.

@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 968f901f-464d-48a7-9e71-79ccd7cb9b1d
+:END:
+#+title: Investigate time series forecasting with LLMs
+#+description: Investigate time series forecasting with LLMs
+#+type: capture
+#+version: 2
+#+level: cross
+#+filetags: :code:capture:far:
+#+created: 2026-05-21
+#+updated: 2026-05-21
+
+This page is a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the *far* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+- [[https://timecopilot.dev/][TimeCopilot]]: "TimeCopilot is an open-source forecasting agent that combines
+  the power of large language models with state-of-the-art time series
+  foundation models (Amazon Chronos, Salesforce Moirai, Google TimesFM, Nixtla
+  TimeGPT, etc.). It automates and explains complex forecasting workflows,
+  making time series analysis more accessible while maintaining
+  professional-grade accuracy."
+- [[https://research.google/blog/a-decoder-only-foundation-model-for-time-series-forecasting/][A decoder-only foundation model for time-series forecasting]]: "TimesFM is a
+  forecasting model, pre-trained on a large time-series corpus of 100 billion
+  real world time-points, that displays impressive zero-shot performance on a
+  variety of public benchmarks from different domains and granularities."
+- [[https://github.com/google-research/timesfm][GH: timesfm:]] "TimesFM (Time Series Foundation Model) is a pretrained
+  time-series foundation model developed by Google Research for time-series
+  forecasting."
+- [[https://huggingface.co/shinfxh/reverso][HF: reverso]]: "Efficient time-series foundation models for zero-shot
+  forecasting."
+- [[https://github.com/shinfxh/reverso][reverso]]: "By combining long convolutions with linear RNN layers, Reverso
+  matches the performance of transformer-based models that are over 100x
+  larger."

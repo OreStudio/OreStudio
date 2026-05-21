@@ -22,6 +22,9 @@ of concerns. Higher levels do not override lower ones; they /constrain/
 them.
 
 * System 1 — Operations
+:PROPERTIES:
+:ID: dbfd530b-4b56-48d1-9f03-3a0d0da16552
+:END:
 
 - Scope :: a single task.
 - Time horizon :: hours to a day.
@@ -33,6 +36,9 @@ them.
 - Owns :: the implementation of the task. Nothing more.
 
 * System 2 — Coordination
+:PROPERTIES:
+:ID: bf4f183f-bb33-44f2-a53f-d9bd602e9be8
+:END:
 
 - Scope :: a story and its tasks.
 - Time horizon :: days.
@@ -44,6 +50,9 @@ them.
 - Owns :: scoping, task sizing, in-story prioritisation, review.
 
 * System 3 — Control
+:PROPERTIES:
+:ID: 8f13ba75-edaa-46cc-9be2-e356d60bf4f4
+:END:
 
 - Scope :: the current sprint, with awareness of the previous and next.
 - Time horizon :: weeks.
@@ -56,6 +65,9 @@ them.
 - Owns :: medium-term planning, sprint coherence.
 
 * System 3* — Audit
+:PROPERTIES:
+:ID: ed29c99b-1507-49c9-9937-d296fffe428e
+:END:
 
 - Scope :: the whole information architecture.
 - Time horizon :: continuous.
@@ -69,6 +81,9 @@ them.
 - Owns :: the integrity of the system itself.
 
 * System 4 — Intelligence
+:PROPERTIES:
+:ID: 6ca8b181-bd81-4ef4-af27-64f5491d62f0
+:END:
 
 - Scope :: the current major version.
 - Time horizon :: months.
@@ -81,6 +96,9 @@ them.
 - Owns :: medium-to-long-term planning.
 
 * System 5 — Policy / Identity
+:PROPERTIES:
+:ID: 6df00a64-7cc3-40a7-950b-55d2b05a31c7
+:END:
 
 - Scope :: the product as a whole.
 - Time horizon :: indefinite.

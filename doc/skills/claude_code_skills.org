@@ -76,11 +76,12 @@ See [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] for the deployment
 
 * Design
 
-- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]] — explore user intent, requirements, and design
-  through collaborative dialogue before implementation.
-- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Claude Design Skill]] — user interface design.
-- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] — visual language reference for consistent
-  iconography.
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]] — turn a fuzzy idea into a validated design via
+  one-question-at-a-time dialogue.
+- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Design Principles]] — apply the ORE Studio UI design system
+  (Jony Ive-level precision with intentional personality).
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] — pick the right Fluent UI icon and variant
+  for a UI element from the visual-language catalogue.
 
 * Code review
 

@@ -2,269 +2,115 @@
 :ID: 460c89da-50d2-40c3-88b2-be52e430d170
 :END:
 #+title: Brainstorming Skill
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+description: Turn a fuzzy idea into a validated design through one-question-at-a-time dialogue; then file the result as the right kind of v2 doc.
+#+type: skill
+#+version: 2
+#+level: cross
+#+filetags: :skills:claude_code:design:dialogue:
+#+created: 2024-09-01
+#+updated: 2026-05-21
 
 #+begin_export markdown
 ---
 name: brainstorming
-description: Explore user intent, requirements and design through collaborative dialogue before implementation.
+description: Explore user intent and design through collaborative dialogue — one question at a time, alternatives with trade-offs, incremental validation — then file the outcome as the appropriate v2 doc (story plan, knowledge doc, or product-backlog capture).
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
 * When to use this skill
 
-Use this skill before creative work:
-
-- Creating new features.
-- Building new components.
-- Adding significant functionality.
-- Modifying existing behaviour.
-- Designing new domain types or services.
-- Planning architectural changes.
-
-This skill turns ideas into fully formed designs through natural collaborative
-dialogue.
+Before creative work — a new feature, component, domain type,
+service, or architectural change. The skill turns ideas into
+fully-formed designs through natural collaborative dialogue.
 
 * How to use this skill
 
-1. Understand the current project context.
-2. Ask questions one at a time to refine the idea.
-3. Explore 2-3 different approaches with trade-offs.
-4. Present the design in small sections, validating each.
-5. Write the validated design to =doc/plans/=.
-6. Optionally proceed to implementation.
+** Phase 1 — understand the idea
 
-* Detailed instructions
+1. /Gather context/. Read related code, recent commits, relevant
+   skills and knowledge docs before asking. Use the doc tools:
 
-** Phase 1: Understanding the idea
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/doc_list.sh --regex '<keyword>'
+   #+end_src
 
-*** Gather context
+2. /Ask questions one at a time/. Multiple choice when possible;
+   open-ended only when the topic genuinely needs it. Focus on
+   /purpose/, /constraints/, /success criteria/, /scope/.
 
-Before asking questions, understand the current project state:
+** Phase 2 — explore approaches
 
-- Read relevant existing files and documentation.
-- Check recent commits for context.
-- Understand which component(s) will be affected.
-- Review related skills for patterns to follow.
+3. /Propose 2–3 alternatives/ with trade-offs (a small table is
+   usually best). Lead with the recommended option; explain why;
+   invite feedback.
 
-*** Ask questions one at a time
+4. /Apply YAGNI ruthlessly/. Defer "nice to have" features. Avoid
+   premature abstractions.
 
-| Principle                 | Description                                                 |
-|---------------------------+-------------------------------------------------------------|
-| One question per message  | Don't overwhelm with multiple questions.                    |
-| Multiple choice preferred | Easier to answer than open-ended when possible.             |
-| Open-ended when needed    | Complex topics may require free-form responses.             |
-| Explore further           | If a topic needs more exploration, use follow-up questions. |
+** Phase 3 — present the design
 
-Focus questions on understanding:
+5. /Break the design into 200–300 word sections/ — overview,
+   architecture, domain model, data flow, API/protocol, error
+   handling, testing strategy, migration. Present one section at a
+   time; ask "does this look right so far?" after each.
 
-- *Purpose*: What problem does this solve? Who benefits?
-- *Constraints*: What limitations exist (time, technology, compatibility)?
-- *Success criteria*: How will we know when this is done correctly?
-- *Scope*: What is explicitly in and out of scope?
+** Phase 4 — file the design
 
-** Phase 2: Exploring approaches
+This is where v2 differs from v1: pick the /right shape/ for the
+output. Always scaffold via the codegen — never hand-write.
 
-*** Propose alternatives
+6. /If the design is one story/'s plan → put it in the story's
+   =* Plan= section. The story itself is scaffolded via [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I
+   create a new v2 doc?]] §"New story".
 
-Always propose 2-3 different approaches with trade-offs:
+7. /If the design captures durable, cross-cutting rationale/ → file
+   as a [[id:bd1f3458-f991-46be-abeb-5f06c2633375][knowledge]] doc under =doc/knowledge/<topic>/=. Scaffold via
+   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New knowledge document".
 
-| Approach | Pros | Cons |
-|----------+------+------|
-| Option A | ...  | ...  |
-| Option B | ...  | ...  |
-| Option C | ...  | ...  |
+8. /If the design is pre-sprint and not yet committed to a
+   version/ → file as a [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][capture]] in the [[id:9a17e8df-7e94-4f55-8a14-bcb7d9a16d6b][near]] / [[id:c1bf2c4f-2db3-49c1-94e9-7d2b3e4f1ab8][far]] bucket via
+   [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] §"New capture".
 
-*** Lead with your recommendation
+9. /If the design is a one-off cross-cutting analysis/ — e.g. a
+   migration plan that spans many stories — file as
+   =doc/plans/YYYY-MM-DD-<topic>-design.org= for historical
+   record. (There is no codegen template for one-off plans yet;
+   when one is added, switch this step to it.)
 
-Present options conversationally:
-
-- Lead with your recommended option.
-- Explain why you recommend it.
-- Be clear about trade-offs.
-- Invite feedback and discussion.
-
-*** Apply YAGNI ruthlessly
-
-Remove unnecessary features from all designs:
-
-- Only include what's needed for the stated requirements.
-- Defer "nice to have" features to future iterations.
-- Avoid premature abstractions.
-- Question every layer of complexity.
-
-** Phase 3: Presenting the design
-
-*** Incremental validation
-
-Once you understand what you're building:
-
-1. Break the design into sections of 200-300 words.
-2. Present one section at a time.
-3. Ask after each section: "Does this look right so far?"
-4. Be ready to go back and clarify if something doesn't make sense.
-
-*** Design sections to cover
-
-| Section          | Description                                    |
-|------------------+------------------------------------------------|
-| Overview         | Problem statement, goals, success criteria.    |
-| Architecture     | High-level structure, components involved.     |
-| Domain model     | New or modified domain types.                  |
-| Data flow        | How data moves through the system.             |
-| API/Protocol     | New messages, endpoints, or interfaces.        |
-| Error handling   | Failure modes and recovery strategies.         |
-| Testing strategy | How the feature will be tested.                |
-| Migration        | If modifying existing behaviour, upgrade path. |
-
-*** Reference existing skills
-
-Link to relevant skills for implementation details:
-
-- Components: [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]]
-- Domain types: [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]]
-- Messaging: [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]]
-- Diagrams: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]]
-- Tests: [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]]
-
-** Phase 4: After the design
-
-*** Document the design
-
-Write the validated design to a org-mode file:
-
-- Location: =doc/plans/YYYY-MM-DD-<topic>-design.org=
-- Use clear, concise writing.
-- Include all validated sections.
-- Add diagrams if helpful (ASCII or PlantUML references).
-
-Example structure:
-
-#+begin_example
-:PROPERTIES:
-:ID: NEW_GUID
-:END:
-#+title: Feature Name Design
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
-#+startup: inlineimages
-
-,* Overview
-
-Brief description and goals.
-
-,** Architecture
-
-High-level design decisions.
-
-,** Domain Model
-
-New types and their relationships.
-
-,** Data Flow
-
-How data moves through the system.
-
-,** API Changes
-
-New messages or endpoints.
-
-,** Error Handling
-
-Failure modes and recovery.
-
-,** Testing Strategy
-
-How the feature will be tested.
-
-,** Open Questions
-
-Any unresolved decisions.
-#+end_example
-
-*** Commit the design
-
-Commit the design document:
-
-#+begin_example
-git add doc/plans/YYYY-MM-DD-topic-design.org
-git commit -m "[design] Add design for topic"
-#+end_example
-
-*** Proceed to implementation (optional)
-
-If continuing to implementation:
-
-1. Ask: "Ready to set up for implementation?"
-2. Create stories in the sprint backlog per [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] skill.
-3. Break the design into implementable tasks.
-4. Reference the design document in story notes.
+10. /Commit/ the new doc and, if the conversation is ready,
+    proceed to scaffold the implementation stories/tasks via
+    [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]].
 
 * Key principles
 
-| Principle                 | Description                                            |
-|---------------------------+--------------------------------------------------------|
-| One question at a time    | Don't overwhelm with multiple questions.               |
-| Multiple choice preferred | Easier to answer than open-ended when possible.        |
-| YAGNI ruthlessly          | Remove unnecessary features from all designs.          |
-| Explore alternatives      | Always propose 2-3 approaches before settling.         |
-| Incremental validation    | Present design in sections, validate each.             |
-| Be flexible               | Go back and clarify when something doesn't make sense. |
-| Reference skills          | Don't duplicate, link to existing skills.              |
+| Principle              | Description                                          |
+|------------------------+------------------------------------------------------|
+| One question at a time | Don't overwhelm.                                     |
+| Multiple choice first  | Easier to answer; open-ended only when needed.       |
+| YAGNI ruthlessly       | Trim the design to what is actually required.        |
+| Explore alternatives   | 2–3 approaches before settling.                      |
+| Incremental validation | Present design in sections; validate each.           |
+| Reference, don't dup   | Link existing skills and knowledge; don't restate.   |
+| Codegen always         | Never hand-write doc frontmatter — always scaffold.  |
 
-* Example dialogue
+* Recipes
 
-** Initial exploration
+- [[id:3153aa4b-23d4-4111-9710-5a4971102edc][How do I create a new v2 doc?]] — for every output of the
+  brainstorm (story / plan section / capture / knowledge doc).
+- [[id:d1ae0786-5f2f-4437-8449-0e480c278a1b][How do I find docs matching a pattern?]] — gather context
+  before asking the first question.
+- [[id:e8231c22-cb31-4d85-a9c0-7602953764ff][How do I show a doc by UUID?]] — inspect any doc the
+  conversation references.
 
-#+begin_example
-User: I want to add caching to the currency lookups.
-Claude: Let me understand your requirements. Looking at ores.refdata, I see
-currency lookups happen in the repository layer. First question:
+* Reference
 
-What is the primary goal - reducing database load, or improving response time
-for the client?
-
-A) Reduce database queries (server-side caching)
-B) Faster client responses (could be client or server side)
-C) Both are equally important
-
-User: B - faster client responses.
-
-Claude: Got it. Since you want faster client responses, we have options about
-where to cache. Second question:
-
-Should the cache be:
-
-A) Server-side (in ores.service memory, shared across all clients)
-B) Client-side (in ores.qt, each client caches locally)
-C) Both levels (server reduces DB load, client reduces network calls)
-
-User: A - server side for now, we can add client later.
-#+end_example
-
-** Presenting design
-
-#+begin_example
-Claude: Based on our discussion, here is the proposed design for server-side
-currency caching.
-
-*Overview*
-
-Add an in-memory cache to the currency service that stores recently accessed
-currencies. The cache will use a time-based expiration to ensure data freshness
-while reducing database queries for repeated lookups.
-
-Does this overview capture your intent?
-
-User: Yes, but we also need to invalidate when currencies are updated.
-
-Claude: Good point. Let me revise...
-#+end_example
+- [[id:8b29a8d8-e004-4e87-b81d-abeaf68f2b98][Document types]] — picks the right shape for the design output.
+- [[id:2f71292f-cdb0-4e2e-b50f-4f02e10597c4][Product identity]] — checks the design against what ORE
+  Studio /is/ and /is not/.
+- [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] — for filing the implementation stories.
+- [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][system-architect]] — sibling skill for migrations spanning
+  multiple components.
 
 * Artefacts                                                        :noexport:
 

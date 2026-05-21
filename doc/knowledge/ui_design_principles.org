@@ -1,26 +1,20 @@
 :PROPERTIES:
-:ID: 89935F29-7C6C-1E84-EAD3-EC4BD20421F5
+:ID: 6743f6e3-578c-4e4b-9dd6-d5a0df6734c8
 :END:
-#+title: Claude Design Skill
-#+version: 1
-#+author: Marco Craveiro
-#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
-#+startup: inlineimages
-#+export_exclude_tags: noexport
+#+title: UI design principles
+#+description: The ORE Studio UI design system — Jony Ive-level precision; design direction, typography, colour, spacing, motion, and the rules that hold them together.
+#+type: knowledge
+#+version: 2
+#+level: cross
+#+filetags: :knowledge:ui:design:
+#+created: 2026-05-21
+#+updated: 2026-05-21
 
-#+begin_export markdown
----
-name: design-principles
-description: Enforce a precise, minimal design system inspired by Linear, Notion, and Stripe. Use this skill when building dashboards, admin interfaces, or any UI that needs Jony Ive-level precision - clean, modern, minimalist with taste. Every pixel matters.
----
-#+end_export
-
-* Design Principles
-
-This skill enforces precise, crafted design for enterprise software, SaaS
-dashboards, admin interfaces, and web applications. The philosophy is Jony
-Ive-level precision with intentional personality — every interface is polished,
-and each is designed for its specific context.
+The design system the ORE Studio UI is built against — Jony
+Ive-level precision with intentional personality. Use this to set
+direction before any new interface or major refactor; reach for
+[[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] for the icon vocabulary that sits on top. The
+[[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles]] skill drives application. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 * Design Direction (REQUIRED)
 
@@ -322,30 +316,10 @@ wants trust and sophistication. Let the product context guide the aesthetic.
 The goal: intricate minimalism with appropriate personality. Same quality bar,
 context-driven execution.
 
-* Artefacts                                                        :noexport:
 
-** Licence
+* See also
 
-#+BEGIN_SRC fundamental :tangle LICENCE.txt
-MIT License
-
-Copyright (c) 2026 Damola Akinleye
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-#+END_SRC
+- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles skill]] — the task-shaped entry point.
+- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the icon vocabulary.
+- [[id:e81c7fea-33e4-400a-839a-9d1618bed211][Qt plugin architecture]] — where these principles meet the
+  Qt-side technical contract.

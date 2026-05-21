@@ -39,6 +39,10 @@ How the codebase is put together.
   lifecycle, the two-phase menu-building sequence.
 - [[id:fb797194-eb03-4837-b12d-e651dd5f16f2][Unit test conventions]] — Catch2 file structure, naming,
   test-case shape, generators, database helpers.
+- [[id:271f40da-d0ea-4d08-a4f8-3d2b835df5e7][PlantUML class diagram conventions]] — styling for component
+  and system class diagrams.
+- [[id:496dc90b-8951-42a6-a63e-b1762df496c6][PlantUML ER diagram conventions]] — styling for the SQL schema
+  ER diagram.
 
 * Quality
 
@@ -46,6 +50,15 @@ Standards every change is held to.
 
 - [[id:0fb2ea84-ebb8-45c8-a8c8-f5815431c2d2][Code review checklist]] — the categorised checks both
   PR-delta and full-component reviews apply.
+
+* User-facing design
+
+How ORE Studio's surfaces look and feel.
+
+- [[id:6743f6e3-578c-4e4b-9dd6-d5a0df6734c8][UI design principles]] — the Jony Ive-level rulebook: design
+  direction, typography, colour, spacing, depth, motion.
+- [[id:6ef42145-cee7-4035-806a-a4200a3e003a][Icon guidelines]] — the visual-language catalogue (Fluent UI
+  System Icons) grouped by semantic category.
 
 * Security
 

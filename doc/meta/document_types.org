@@ -214,14 +214,14 @@ Single-step lateral queries:
 
 #+begin_src sh
 # every task / story / file in sprint_03
-grep -lR ":sprint_03:" doc/versions/
+grep -lR ":sprint_03:" doc/agile/versions/
 
 # every story in story currencies_end_to_end (which is one, but you
 # can grep for siblings on the same theme by switching the tag)
-grep -lR ":currencies_end_to_end:" doc/versions/
+grep -lR ":currencies_end_to_end:" doc/agile/versions/
 
 # every file in version v0
-grep -lR ":v0:" doc/versions/
+grep -lR ":v0:" doc/agile/versions/
 #+end_src
 
 The generator at =projects/ores.codegen/generate_v2_doc.sh= derives

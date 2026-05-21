@@ -23,10 +23,12 @@ follows; this file explains the layout that contract sits inside.
 doc/
 ├── compass.org           ← this file; read first
 ├── meta/                 ← the contract: how documents are shaped
-├── versions/             ← the composition tree (the bulk of v2)
+├── agile/                ← the operational tree
+│   ├── versions/         ← the composition tree (the bulk of v2)
+│   └── product_backlog/  ← pre-sprint ideas (near / far buckets)
 ├── recipes/              ← operational how-tos, by topic
 ├── knowledge/            ← cross-cutting reference material
-├── identity/             ← (reserved) product vision, out-of-scope
+├── identity/             ← product vision, out-of-scope
 ├── functions/            ← (reserved) named roles across levels
 └── audit/                ← (reserved) invariant-enforcement scripts
 #+end_example
@@ -46,20 +48,38 @@ back to individual ones as needed.
 5. [[id:f58ca9e7-c65f-4d17-a9a7-95fde25b9ebd][execution model]] — how LLMs and agents operate inside this
    system.
 
-** =versions/= — the composition tree
+** =agile/= — the operational tree
+
+Everything related to the rolling agile process: versions of the
+product, their sprints, the stories and tasks that compose them, and
+the product backlog of pre-sprint ideas.
+
+*** =agile/versions/= — the composition tree
 
 Where the operational documents live. Path shape:
 
 #+begin_example
-versions/<version>/<sprint>/<story_folder>/<task_slug>.org
-                                          ↑       ↑
-                                          story.org sits at this level too
+agile/versions/<version>/<sprint>/<story_folder>/<task_slug>.org
+                                                ↑       ↑
+                                                story.org sits at this level too
 #+end_example
 
 Stories and sprints are folders (they contain children); tasks are
 flat files (they are leaves). One sprint per lexicographic step:
 =sprint_01=, =sprint_02=, ... The lexicographically-highest sprint
 folder is the current sprint.
+
+*** =agile/product_backlog/= — the pre-sprint queue
+
+Holds [[id:671f18e4-e09c-4b3b-bd24-d33df8ae38a6][captures]] — ideas not yet pulled into a sprint as stories.
+Split into two buckets:
+
+- =near/= — candidate work for the next version.
+- =far/= — longer-term wishlist.
+
+When a capture is promoted into a sprint, the file moves into the
+appropriate sprint folder and its =#+type:= flips from =capture= to
+=story=. The =:ID:= is preserved so links keep working.
 
 ** =recipes/= — how do I do X?
 
@@ -78,8 +98,8 @@ with the code at =projects/<comp>/docs/=, not here.
 ** Reserved folders
 
 - =identity/= — system-5 docs: product vision; what's out of scope.
-  Empty in this branch; will hold the durable identity statements
-  that filter candidate versions and far stories.
+  Holds the durable identity statements that filter candidate
+  versions and far captures.
 - =functions/= — system-spanning named roles (PR reviewer, sprint
   planner, identity steward, audit). Empty in this branch.
 - =audit/= — system-3* scripts and reports enforcing invariants

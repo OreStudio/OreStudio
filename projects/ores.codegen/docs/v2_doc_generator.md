@@ -57,7 +57,7 @@ typically only need `--type`, `--slug`, `--parent-dir`, `--title`,
 you.
 
 For example, when creating a task with
-`--parent-dir doc/versions/v0/sprint_17/audit_tooling`, the script
+`--parent-dir doc/agile/versions/v0/sprint_17/audit_tooling`, the script
 reads `.../audit_tooling/story.org`, picks up its `:ID:` and
 `#+title:`, and uses `audit_tooling` as the parent slug (from the
 folder basename).
@@ -151,7 +151,7 @@ Components have no parent in the composition tree, so `--parent-id`,
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type sprint --slug sprint_17 \
-  --parent-dir doc/versions/v0 \
+  --parent-dir doc/agile/versions/v0 \
   --title "Sprint 17" \
   --description "Sprint 17 — describe its mission in one sentence." \
   --tags "v0" \
@@ -165,7 +165,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug improve_audit_signals \
-  --parent-dir doc/versions/v0/sprint_17 \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Improve audit signals" \
   --description "Surface stale tasks, orphan plans, and broken links." \
   --tags "audit,scripts" \
@@ -179,7 +179,7 @@ projects/ores.codegen/generate_v2_doc.sh \
 ```sh
 projects/ores.codegen/generate_v2_doc.sh \
   --type story --slug currencies_temporal_continued \
-  --parent-dir doc/versions/v0/sprint_17 \
+  --parent-dir doc/agile/versions/v0/sprint_17 \
   --title "Currencies temporal (continued)" \
   --description "Pick up where sprint 02 left off." \
   --tags "currencies,temporal,reference_data" \

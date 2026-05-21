@@ -2,7 +2,7 @@
 :ID: 1c778ce6-25d6-429b-920e-d08a2ce9a0a6
 :END:
 #+title: Sprint 16
-#+description: Final v0 sprint. ORE import end-to-end; workflow engine + saga orchestration; market data subsystem; service lifecycle controller; Qt plugin architecture; trade detail dialog unification; per-type instrument tables; reporting + analytics; asset class unification; massive Windows portability sweep.
+#+description: ORE import end-to-end, plus the cross-cutting infrastructure it depends on: workflow engine + sagas, market data subsystem, service lifecycle controller, Qt plugin split, reporting + analytics, asset-class / product-type separation, and a ~20-fix Windows portability sweep.
 #+type: sprint
 #+version: 2
 #+level: s3
@@ -11,45 +11,47 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 16*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 16*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
-/Work on ORE import./ Delivered ORE import end-to-end (dispatch
-pipeline + mappers for every instrument family + server-side
-=ores.ore.service= + supporting market + fixings + calendar +
-conventions import + golden roundtrip tests + portfolio export).
-Plus: workflow engine + saga orchestration (party provisioning + ORE
-import + report execution); market data subsystem from scratch
-(parser + schema + repository + service + UI); =ores.controller=
-service lifecycle component; Qt plugin architecture (=ores.qt.api= +
-7 domain plugins); trade detail dialog unification (six instrument
-families merged behind =IInstrumentForm= registry); per-type
-instrument tables (rates / FX / equity); reporting subsystem +
-analytics pricing engine; asset class unification (asset_class as
-risk taxonomy / product_type as structural discriminator); UTC-
-everywhere timestamp policy; ~20 Windows portability fixes; party-
-isolation RLS gaps closed.
+Make ORE import work end-to-end, and land the cross-cutting
+infrastructure it leans on.
 
-The largest v0 sprint by clock (157h) and by task count (89). It
-closes v0.
+- ORE import end-to-end: dispatch pipeline, mappers for every
+  instrument family, server-side =ores.ore.service=, supporting
+  market / fixings / calendar / conventions, golden roundtrip tests,
+  portfolio export.
+- Infrastructure import depends on: workflow engine + saga
+  orchestration, market data subsystem from scratch, =ores.controller=
+  service lifecycle, Qt plugin architecture, reporting + analytics
+  stack.
+- Surrounding cleanup: trade detail dialog unification, per-type
+  instrument tables, asset-class / product-type separation, UTC-
+  everywhere policy, ~20 Windows portability fixes, party-isolation
+  RLS gaps closed.
+
+The largest v0 sprint to date (157h, 89 tasks across 22 stories).
 
 * Status
 
 | Field          | Value                                                  |
 |----------------+--------------------------------------------------------|
 | State          | DONE                                                   |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]] |
-| Now            | Sprint closed 2026-04-17. Final v0 sprint — closes v0. |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                              |
+| Now            | Sprint closed 2026-04-17.                              |
 | Waiting on     | None.                                                  |
-| Next           | v1 work begins on the basis laid by v0.                |
+| Next           | Sprint 17 (active) continues v0.                       |
 | Last touched   | 2026-04-17                                             |
 
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                 | State | Theme                                                                                                                 |
-|---------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------------------------------------------------|
+| Story                                    | State | Theme                                                                                                                 |
+|------------------------------------------+-------+-----------------------------------------------------------------------------------------------------------------------|
 | [[id:c1db4c7a-16d7-4289-a457-a6c6ce5c8b5c][Sprint 16 housekeeping]]                   | DONE  | backlog refinement.                                                                                                   |
 | [[id:ffc60db1-b82a-4c8a-961e-2c6720379508][Asset class and product_type unification]] | DONE  | rename + analysis + implementation.                                                                                   |
 | [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]]             | DONE  | close the gaps. Continues from sprint 13 party_isolation_books_portfolios_trades.                                     |
@@ -136,14 +138,12 @@ closes v0.
 - Windows is a first-class build target with the ~20 portability
   fixes that landed this sprint.
 
-** Closing v0
+** Where v0 stands after this sprint
 
-This is the final v0 sprint. v0's mission was to /establish the
-main architectural tiers (database, services, UI), model all ORE
-inputs and outputs, and add GUI support for every data operation/.
-That mission is delivered: every ORE entity type is modelled +
-importable + manageable through the GUI; the platform has multi-
-tenant + multi-party RLS, JWT-based auth, NATS-based microservices,
-a compute grid, a scheduler, a workflow engine, an analytics +
-reporting stack, and a Qt plugin architecture. v1 work picks up
-from here.
+The bulk of v0's mission is now delivered: every ORE entity type is
+modelled, importable, and manageable through the GUI; the platform
+has multi-tenant + multi-party RLS, JWT-based auth, NATS-based
+microservices, a compute grid, a scheduler, a workflow engine, an
+analytics + reporting stack, and a Qt plugin architecture. v0
+remains open — Sprint 17 carries the remaining work and any
+follow-ups surfaced here.

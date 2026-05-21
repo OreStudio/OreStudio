@@ -618,9 +618,12 @@ knowledge / meta contract:
 If all three rules hold, the page is acting as an index. If none do,
 it is a normal knowledge document — no extra obligations.
 - Required sections ::
-  - =* Summary= — 3–5 sentence overview.
+  - /Blurb/ — the 3-5 sentence overview, between the frontmatter and
+    the first =*= heading. Knowledge docs do /not/ carry a separate
+    =* Summary= section; the summary is the blurb.
   - =* Detail= — the content.
-  - =* See also= — cross-references.
+  - /See also/ — optional, for external cross-references only
+    (internal references weave into the body).
 
 ** plan
 

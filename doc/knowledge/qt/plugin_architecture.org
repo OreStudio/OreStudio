@@ -10,8 +10,6 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
-* Summary
-
 ORE Studio's Qt desktop application is assembled from independently-loaded
 plugins, each implementing the =IPlugin= interface (=ores.qt.api=). Plugins
 follow a four-stage lifecycle: =on_login=, =setup_menus=, =create_menus=, and

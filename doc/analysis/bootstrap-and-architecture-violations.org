@@ -8,8 +8,6 @@
 #+startup: inlineimages
 #+status: OPEN
 
-* Summary
-
 This document is a follow-up to
 [[file:wsl-db-permission-investigation.org][WSL DB Permission Errors:
 Cross-Service Grant Investigation]]. That investigation correctly identified

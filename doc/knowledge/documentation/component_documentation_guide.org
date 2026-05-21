@@ -10,8 +10,6 @@
 #+created: 2026-05-20
 #+updated: 2026-05-20
 
-* Summary
-
 Every component in ORE Studio carries a =component_overview.org= co-located
 in its =modeling/= directory. It is a 50–100 line index — not a reference
 manual — that tells a reader what the component does, what it consumes and

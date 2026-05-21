@@ -10,8 +10,6 @@
 #+created: 2026-05-18
 #+updated: 2026-05-18
 
-* Summary
-
 ORE Studio uses CMake with CMakePresets to drive its build across
 Linux, macOS, and Windows. Presets fix the compiler, build type, and
 generator in one name. A small wrapper (=build/scripts/build.sh=)

@@ -10,8 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-* Summary
-
 This doc describes how the agile loop runs in practice — distinct from
 the generic [[id:8810e0f9-c5b9-4cfa-a710-774ad6c771dd][lifecycle]] (which covers TODO state transitions across
 every stateful document type). Lifecycle is the state machine on each

@@ -10,8 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-* Summary
-
 [[https://www.quantlib.org/][QuantLib]] is a free, open-source library "aimed at providing a
 comprehensive software framework for quantitative finance — modelling,
 trading, and risk management in real life." It has been the de-facto

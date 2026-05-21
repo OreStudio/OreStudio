@@ -10,8 +10,6 @@
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-* Summary
-
 The [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE) is a C++ library for pricing and
 risk analytics maintained by [[https://acadia.inc/][Acadia]]. It builds on [[id:0412444a-0a4c-4611-887c-09353a3cb253][QuantLib]] and extends
 it with industry-grade XVA, sensitivities, regulatory scenarios, and a

@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+!pragma layout smetana
+
+title Task lifecycle
+
+skinparam state {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+    AttributeFontColor #A1A1AA
+    ArrowColor #8AB4F8
+    ArrowFontColor #E3E3E6
+    StartColor #58A6FF
+    EndColor #58A6FF
+}
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+
+state DISCOVERED
+state BACKLOG
+state STARTED
+state BLOCKED
+state DONE      <<end>>
+state ABANDONED <<end>>
+
+[*]         --> DISCOVERED : found while\nexecuting another task
+DISCOVERED  --> BACKLOG    : triage
+BACKLOG     --> STARTED    : claim
+STARTED     --> BLOCKED    : hit a wait
+BLOCKED     --> STARTED    : wait cleared
+STARTED     --> DONE       : PR merged
+DISCOVERED  --> ABANDONED  : give up
+BACKLOG     --> ABANDONED  : give up
+STARTED     --> ABANDONED  : give up
+BLOCKED     --> ABANDONED  : give up
+
+note right of BLOCKED
+  Reason in =#+blocked_on=
+  (review / ci / local_build / external);
+  timestamp in =#+blocked_since=.
+end note
+
+note right of DONE
+  Org auto-stamps =CLOSED:=
+  on the Status headline.
+end note
+
+note right of ABANDONED
+  Reason recorded in
+  =* Notes= section.
+end note
+
+@enduml

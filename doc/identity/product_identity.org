@@ -38,10 +38,6 @@ aim of providing:
   exploration;
 - the ability to configure and orchestrate ORE execution.
 
-ORE Studio is /independent of/ both ORE and QuantLib and has no affiliation with
-either. The audience is people learning quantitative finance by building or
-extending the tool — not financial institutions running it in production.
-
 ** Vision quote
 
 #+begin_quote
@@ -51,6 +47,29 @@ ideas that there are. You have to pick carefully. I'm actually as proud of the
 things we haven't done as the things I have done. Innovation is saying no to
 1,000 things. — Steve Jobs
 #+end_quote
+
+* Audience
+
+ORE Studio exists to lower the barrier to learning quantitative finance
+through hands-on building. The primary barriers are /access/: real market
+data is proprietary and expensive; production quant models live inside
+institutional systems; the infrastructure of an enterprise risk platform
+tends to obscure rather than reveal the underlying domain. ORE Studio
+addresses these by providing synthetic and generated market data,
+delegating all quantitative mathematics to ORE and QuantLib, and keeping
+the architecture intentionally simple (client → service layer → Postgres)
+so that domain concepts stay visible rather than buried.
+
+The target is the software developer — moderately fluent in C++ or a
+similar systems language — who wants to understand how computational
+finance works by building and extending a real system. Not by reading
+textbooks, not by running spreadsheets: by modifying code, running ORE,
+and observing what changes. A secondary audience is the developer already
+familiar with ORE or QuantLib who wants a graphical environment for
+exploration and experimentation.
+
+ORE Studio is /independent of/ both ORE and QuantLib and has no
+affiliation with either project or any financial institution.
 
 * Out of scope
 

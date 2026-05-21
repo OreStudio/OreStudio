@@ -12,7 +12,7 @@
 #+updated: 2025-10-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build stabilisation* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ac14558d-a526-4be2-adb6-81bcfe0e7292][Build stabilisation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

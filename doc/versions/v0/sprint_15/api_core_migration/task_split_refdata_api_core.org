@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *API/core architecture migration* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7631c4d3-43c5-4238-a180-337bea863c7f][API/core architecture migration]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Trade import mapping dialog (second attempt)* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:05cfef69-f80b-437f-aeee-3881e4fe96f1][Trade import mapping dialog (second attempt)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

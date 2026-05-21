@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Workflow monitor + late fixes* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:87599263-bd70-42cf-b653-0803e12f4d0b][Workflow monitor + late fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

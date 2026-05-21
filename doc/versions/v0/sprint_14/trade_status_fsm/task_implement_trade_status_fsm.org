@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Trade status FSM and activity type* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:86927ebe-880c-42e4-8c94-e4705c4a622a][Trade status FSM and activity type]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

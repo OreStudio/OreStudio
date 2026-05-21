@@ -16,7 +16,7 @@
 #+updated: 2025-12-12
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Logging refactor (std::string_view)* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d9c5fcef-da11-45da-b7fb-2a7b62c8aa0b][Logging refactor (std::string_view)]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

@@ -11,23 +11,22 @@
 #+updated: 2025-11-30
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 04*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 04*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
 LLM-driven code review and follow-on refactors; complete the currencies
 UI; introduce the Claude Code skills layer.
 
-(Synthesised from the v0 mission: /code review all code using LLMs/ and
-/implement Claude Code skills for common functionality/. The currencies
-UI thread emerged organically and dominated the sprint by volume.)
-
 * Status
 
 | Field          | Value                                                                                                                                                                      |
 |----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                       |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                     |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                  |
 | Now            | Sprint closed 2025-11-30. LLM-driven review pass complete across the first three components; currencies UI feature-complete; the Claude Code skills layer is in the build. |
 | Waiting on     | None.                                                                                                                                                                      |
 | Next           | None.                                                                                                                                                                      |
@@ -36,8 +35,8 @@ UI thread emerged organically and dominated the sprint by volume.)
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                        | State | Theme                                                                                  |
-|------------------------------------------------------------------------------+-------+----------------------------------------------------------------------------------------|
+| Story                           | State | Theme                                                                                  |
+|---------------------------------+-------+----------------------------------------------------------------------------------------|
 | [[id:d0a1c624-dc57-424e-a958-279f68956976][Sprint 04 housekeeping]]          | DONE  | backlog refinement plus a new pie-chart resourcing report.                             |
 | [[id:a9055a54-ae06-4cc4-8b51-2cb9627e0d5a][Test infrastructure follow-up]]   | DONE  | successor of sprint 03's BLOCKED CTest item.                                           |
 | [[id:50b83ce1-6e12-44e7-afeb-f6bac09ddc14][Claude Code skills introduction]] | DONE  | first skill, CMake deploy targets, weaving analysis.                                   |
@@ -63,12 +62,3 @@ UI thread emerged organically and dominated the sprint by volume.)
   03 → sprint 04 for the CTest item) is the first concrete use of
   the cross-sprint predecessor/successor link mechanism. Worth
   preserving in subsequent sprints.
-
-
-* Notes on the conversion
-
-22 of 45 v0 entries migrated as standalone tasks; the rest are listed
-under each story's /Additional v0 entries belonging here, not
-migrated as full tasks/ section. The longest single v0 entry
-(=Review all code created so far with an LLM=, ~15h) is preserved
-intact.

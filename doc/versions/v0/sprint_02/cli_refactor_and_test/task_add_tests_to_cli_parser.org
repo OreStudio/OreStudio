@@ -12,7 +12,7 @@
 #+updated: 2025-10-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CLI refactor and test* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:cf13ffb1-4d84-4965-ad65-c38b1d4849ab][CLI refactor and test]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Generators to api layer + http.server split* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4837265a-934c-4cfc-9f7a-edc3f86f37c6][Generators to api layer + http.server split]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

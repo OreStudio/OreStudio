@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Scheduler UI complete* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2d496a77-5238-4b5b-8cc6-c61fc59fa9c1][Scheduler UI complete]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

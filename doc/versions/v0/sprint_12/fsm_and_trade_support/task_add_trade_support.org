@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *FSM and trade support* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:bd4110c2-fdf7-47b0-a726-f4cd83ded8e5][FSM and trade support]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

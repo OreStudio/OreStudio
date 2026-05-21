@@ -11,7 +11,10 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 15*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 15*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -29,7 +32,7 @@ FX, bond, credit).
 | Field          | Value                                                                                                                |
 |----------------+----------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                 |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                               |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                            |
 | Now            | Sprint closed 2026-03-30. No BACKLOG carry-overs this sprint.                                                        |
 | Waiting on     | None.                                                                                                                |
 | Next           | Sprint 16 closes out v0 — likely the three-level provisioning workflow + remaining CDM phases + RBAC handler guards. |
@@ -38,8 +41,8 @@ FX, bond, credit).
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                    | State | Theme                                                                   |
-|------------------------------------------------------------------------------------------+-------+-------------------------------------------------------------------------|
+| Story                                       | State | Theme                                                                   |
+|---------------------------------------------+-------+-------------------------------------------------------------------------|
 | [[id:df3c08d8-a11e-4e2e-908a-5bd0ddc29626][Sprint 15 housekeeping]]                      | DONE  | backlog refinement.                                                     |
 | [[id:fd12bbd4-bd95-454a-a636-5f22c928c4d1][Fix ORE import bugs]]                         | DONE  | real-data shakedown of the sprint-14 wizard.                            |
 | [[id:7b5e0c11-8c1f-4d91-adea-2596197cd0d4][Loading indicator on entity list windows]]    | DONE  | UI consistency.                                                         |

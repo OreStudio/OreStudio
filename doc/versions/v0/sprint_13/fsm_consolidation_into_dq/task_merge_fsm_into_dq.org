@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *FSM consolidation into DQ* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6ac2981b-ba0a-4916-a2c1-6b5a816a9148][FSM consolidation into DQ]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

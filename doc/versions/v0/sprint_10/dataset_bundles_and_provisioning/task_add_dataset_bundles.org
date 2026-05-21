@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Dataset bundles and provisioning* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2d3d3854-748e-4df7-8bbe-e6498c598c2d][Dataset bundles and provisioning]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

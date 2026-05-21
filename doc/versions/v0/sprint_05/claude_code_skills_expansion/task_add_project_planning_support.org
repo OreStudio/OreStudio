@@ -16,7 +16,7 @@
 #+updated: 2025-11-17
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Claude Code skills expansion* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

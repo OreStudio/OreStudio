@@ -12,7 +12,7 @@
 #+updated: 2024-06-15
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Project bootstrap* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:64e55e42-12eb-46cf-8269-6b30da277a1b][Project bootstrap]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

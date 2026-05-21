@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party-level refdata restrictions* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:241a6de6-8978-4daf-a052-7e1cf06a8fc8][Party-level refdata restrictions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

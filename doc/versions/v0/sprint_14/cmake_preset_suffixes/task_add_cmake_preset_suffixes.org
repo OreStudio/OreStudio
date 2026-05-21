@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CMake preset build-tool suffixes* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:05cbd9fa-b1f2-4b53-8f83-2952a892c94d][CMake preset build-tool suffixes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

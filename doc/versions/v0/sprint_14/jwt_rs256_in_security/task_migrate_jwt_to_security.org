@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *JWT RS256 in ores.security* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1de357ff-7139-49fd-bc97-b30cd095ef53][JWT RS256 in ores.security]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

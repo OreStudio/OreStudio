@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Qt and eventing polish* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

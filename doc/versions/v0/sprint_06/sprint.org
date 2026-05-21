@@ -11,7 +11,10 @@
 #+updated: 2025-12-15
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 06*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 06*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -29,7 +32,7 @@ later sprints with the codegen-driven approach.)
 | Field          | Value                                                                                                                                                                                                                                                                          |
 |----------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                                                                                           |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                                                         |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                                                                                                      |
 | Now            | Sprint closed 2025-12-15. Session cancellation live; variability is its own service; comms substrate has handshake/protocol split and retry; logging migrated to =std::string_view= (with the inevitable post-migration cleanup); two predecessor links from sprint 05 closed. |
 | Waiting on     | None.                                                                                                                                                                                                                                                                          |
 | Next           | None.                                                                                                                                                                                                                                                                          |
@@ -38,8 +41,8 @@ later sprints with the codegen-driven approach.)
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                            | State | Theme                                                                                                      |
-|----------------------------------------------------------------------------------+-------+------------------------------------------------------------------------------------------------------------|
+| Story                               | State | Theme                                                                                                      |
+|-------------------------------------+-------+------------------------------------------------------------------------------------------------------------|
 | [[id:193a779f-a313-414c-9236-d075b84a2f67][Sprint 06 housekeeping]]              | DONE  | backlog, AI summary via the skill, OCR.                                                                    |
 | [[id:4b50a7e5-d862-47a6-aebe-353cad55b058][Session lifecycle follow-up]]         | DONE  | successor of sprint 05's authentication bootstrap; lands session cancellation + logout + client heartbeat. |
 | [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]]                    | DONE  | split protocol, handshake service, multi-thread coverage, retry-with-give-up.                              |
@@ -64,13 +67,3 @@ later sprints with the codegen-driven approach.)
 - /Carry forward to v2/ :: the LISTEN/NOTIFY thread started here but
   the full client fan-out is incomplete; expect a successor story in
   a later sprint when the event bus gets its second consumer.
-
-
-* Notes on the conversion
-
-23 of 42 v0 entries migrated as standalone tasks. The
-session-cancellation task preserves the full v0 detail (Asio
-limitation, pivot to explicit list, Gemini code-review notes) — it's
-the kind of decision narrative that's worth keeping. Predecessor
-links: sprint 05's =authentication_bootstrap_followup= and
-=cli_repl_reshape= now both carry =#+successor:= keywords.

@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Nats-Session-Id for session-level correlation* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:ba5268af-df0e-4338-a6ce-1d5f84e1166d][Nats-Session-Id for session-level correlation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

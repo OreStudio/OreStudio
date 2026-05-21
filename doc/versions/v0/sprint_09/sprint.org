@@ -11,7 +11,10 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 09*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 09*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -29,7 +32,7 @@ coverage of the entities that landed in earlier sprints.
 | Field          | Value                                                                                                                                                      |
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                       |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                     |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                  |
 | Now            | Sprint closed 2026-01-20. Two items carry forward: the per-entity documentation refactor (already mostly absorbed into v2) and the party-table groundwork. |
 | Waiting on     | None.                                                                                                                                                      |
 | Next           | Sprint 10 takes the next refdata entity and starts the party domain layer on top of the table-structure groundwork from this sprint.                       |
@@ -38,8 +41,8 @@ coverage of the entities that landed in earlier sprints.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                  | State   | Theme                                                                                   |
-|----------------------------------------------------------------------------------------+---------+-----------------------------------------------------------------------------------------|
+| Story                                     | State   | Theme                                                                                   |
+|-------------------------------------------+---------+-----------------------------------------------------------------------------------------|
 | [[id:1e7a8abc-1abc-4a37-bdce-1d8dfb9d21ff][Sprint 09 housekeeping]]                    | DONE    | backlog + OCR.                                                                          |
 | [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]]                       | DONE    | list/delete commands for the five entities the CLI was missing; helper-driven refactor. |
 | [[id:e7ddb653-ceaa-4922-b0f9-8bd5393a747e][Engineering hygiene]]                       | DONE    | model refresh + pr-manager skill + valgrind fixes; documentation refactor postponed.    |

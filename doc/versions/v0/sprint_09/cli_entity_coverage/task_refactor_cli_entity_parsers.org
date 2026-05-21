@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *CLI entity coverage* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:09a8d544-22f3-491a-82a9-306b1aa7c756][CLI entity coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

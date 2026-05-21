@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Refdata taxonomy work* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:7ae49d47-624c-41c6-8c07-cdbeb71d85ec][Refdata taxonomy work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

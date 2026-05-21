@@ -16,7 +16,7 @@
 #+updated: 2025-11-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Build and packaging* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:c2e401c5-3f2b-4910-a91a-82dcf1b826e1][Build and packaging]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

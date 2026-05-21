@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Sprint 07 housekeeping* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:a5060b3b-a3c0-40ff-b5d3-36ed1e74b609][Sprint 07 housekeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

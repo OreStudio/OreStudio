@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Multi-party brainstorm and short codes* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:d0e2fb0d-24f0-4fa4-a403-872e01e60fb6][Multi-party brainstorm and short codes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

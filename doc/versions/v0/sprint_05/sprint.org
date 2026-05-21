@@ -11,7 +11,10 @@
 #+updated: 2025-12-01
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 05*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 05*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -19,16 +22,12 @@ Implement the authentication bootstrap workflow; finish up the
 domain-entity surfaces (currencies, accounts); expand the Claude Code
 skills layer.
 
-(Synthesised from the v0 mission: /implement bootstrap mode/ +
-/finish up all remaining tasks around domain entities/. The skills
-expansion thread surfaced organically and earned its own story.)
-
 * Status
 
 | Field          | Value                                                                                                                                                                                                |
 |----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                                 |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                               |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                            |
 | Now            | Sprint closed 2025-12-01. Bootstrap workflow live; CLI/REPL reshape landed; currency messaging collapsed to =save_currency=; skills layer grew to cover sprint-opening and release-notes generation. |
 | Waiting on     | None.                                                                                                                                                                                                |
 | Next           | None.                                                                                                                                                                                                |
@@ -37,8 +36,8 @@ expansion thread surfaced organically and earned its own story.)
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                           | State | Theme                                                                                                   |
-|---------------------------------------------------------------------------------+-------+---------------------------------------------------------------------------------------------------------|
+| Story                              | State | Theme                                                                                                   |
+|------------------------------------+-------+---------------------------------------------------------------------------------------------------------|
 | [[id:de3eee9f-331e-440c-b62c-abdefe1d87e2][Sprint 05 housekeeping]]             | DONE  | backlog, AI sprint summary, OCR notebooks.                                                              |
 | [[id:656eabb7-c9d1-4fdd-8cac-0ab77adcd9b2][Claude Code skills expansion]]       | DONE  | new-sprint skill, release-notes skill, project-planning support.                                        |
 | [[id:69c49095-a91f-41d9-9d7e-0e9478143e93][Valgrind leaks follow-up]]           | DONE  | successor of sprint 03's OpenSSL BLOCKED item; sweeps up sqlgen residuals and comms-test leaks.         |
@@ -62,13 +61,3 @@ expansion thread surfaced organically and earned its own story.)
 - /Carry forward to v2/ :: =POSTPONED: Troubleshoot skills in Claude=
   and =POSTPONED: Implement session cancellation= will become
   successor stories or product-backlog candidates in a later sprint.
-
-
-* Notes on the conversion
-
-22 of 43 v0 entries migrated as standalone tasks. Two cross-sprint
-successors land: authentication bootstrap (predecessor =
-sprint 03's =login_and_sessions=) and Valgrind leaks (predecessor =
-sprint 03's =logging_and_observability=). The merged-currency-messages
-v0 entry has a particularly detailed migration plan that's worth
-preserving verbatim — the task captures it in its =* Notes=.

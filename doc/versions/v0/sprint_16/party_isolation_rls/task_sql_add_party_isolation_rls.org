@@ -16,7 +16,7 @@
 #+updated: 2026-05-20
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Party isolation RLS policies* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:2faf5366-2fed-4fbe-99f2-8cb46ca84aeb][Party isolation RLS policies]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

@@ -16,7 +16,7 @@
 #+updated: 2025-12-10
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Comms robustness* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:88971afe-e0b4-4e54-b0d7-b1c627c2f239][Comms robustness]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

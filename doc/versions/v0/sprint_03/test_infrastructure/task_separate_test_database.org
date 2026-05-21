@@ -16,7 +16,7 @@
 #+updated: 2025-12-01
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Test infrastructure* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:22efe1e8-427f-488a-94a3-8ca78f180966][Test infrastructure]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

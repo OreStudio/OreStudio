@@ -16,7 +16,7 @@
 #+updated: 2025-11-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Currencies UI* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:1e99eee4-dca5-4384-942e-0ce28b0a467c][Currencies UI]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

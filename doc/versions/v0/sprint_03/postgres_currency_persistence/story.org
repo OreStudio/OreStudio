@@ -11,7 +11,7 @@
 #+updated: 2025-11-25
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in *Sprint 03*. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699a8d45-b67e-4d3e-9206-24fa17c51ada][story]] in [[id:3bc3b9ed-60c8-4a86-a6f1-925e58c74b6e][Sprint 03]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 

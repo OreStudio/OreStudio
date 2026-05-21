@@ -11,7 +11,10 @@
 #+updated: 2026-05-20
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 12*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 12*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -28,7 +31,7 @@ out the largest v0 sprint to date.
 | Field          | Value                                                                                                                                                                                           |
 |----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                                                                                            |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                          |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                                                                                       |
 | Now            | Sprint closed 2026-02-20. Three items carry forward: sqlgen follow-up (BLOCKED on vcpkg release of merged upstream features) and the caching analysis (POSTPONED for design / scoping reasons). |
 | Waiting on     | vcpkg release of sqlgen with the merged features.                                                                                                                                               |
 | Next           | Sprint 13 picks up trade lifecycles on top of the FSM framework + trade envelope landed here.                                                                                                   |
@@ -37,8 +40,8 @@ out the largest v0 sprint to date.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                                            | State   | Theme                                                                                                                      |
-|--------------------------------------------------------------------------------------------------+---------+----------------------------------------------------------------------------------------------------------------------------|
+| Story                                               | State   | Theme                                                                                                                      |
+|-----------------------------------------------------+---------+----------------------------------------------------------------------------------------------------------------------------|
 | [[id:8f521a37-bec0-469e-af32-87df684de3b2][Sprint 12 housekeeping]]                              | DONE    | backlog + OCR.                                                                                                             |
 | [[id:e8004b20-ae81-4d48-a677-cde07a300e92][sqlgen follow-up]]                                    | ?       | BLOCKED on vcpkg.                                                                                                          |
 | [[id:5b48d17b-f510-4458-8fb9-95832f9782c2][Qt and eventing polish]]                              | DONE    | shell widget; name-based roles; several small fixes.                                                                       |

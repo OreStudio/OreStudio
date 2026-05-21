@@ -12,7 +12,7 @@
 #+updated: 2025-09-25
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Client/server foundations* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:145adede-c3dd-4b51-ad3b-d6b5506c6c37][Client/server foundations]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

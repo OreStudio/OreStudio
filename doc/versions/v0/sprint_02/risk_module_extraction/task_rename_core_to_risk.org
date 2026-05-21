@@ -12,7 +12,7 @@
 #+updated: 2025-10-02
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *Risk module extraction* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:6c63d2b2-7065-4afc-ae54-86220c427b20][Risk module extraction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

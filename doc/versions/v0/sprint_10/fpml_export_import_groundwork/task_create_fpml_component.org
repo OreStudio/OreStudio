@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *FPML export and import groundwork* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:4c7782d0-1382-4fed-a9f3-c209a45caf7e][FPML export and import groundwork]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 

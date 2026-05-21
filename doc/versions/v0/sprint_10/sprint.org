@@ -11,7 +11,10 @@
 #+updated: 2026-05-19
 #+todo: STARTED | DONE
 
-This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 10*) of ORE Studio v0. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
+This page documents a [[id:0820b7fd-147c-4832-ac25-c043d38d5b61][sprint]] (*Sprint 10*) of ORE Studio v0. It captures the
+sprint's mission, current status, and the stories that compose it. For the
+surrounding context — version goals, sprint order, and product identity — see
+[[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]].
 
 * Mission
 
@@ -28,7 +31,7 @@ Wizard that uses them.
 | Field          | Value                                                                                                                         |
 |----------------+-------------------------------------------------------------------------------------------------------------------------------|
 | State          | DONE                                                                                                                          |
-| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                        |
+| Parent version | [[id:e6fd30ed-963e-4705-b414-91bf471c23d0][Version 0]]                                                                                                                     |
 | Now            | Sprint closed 2026-01-27. Two stories carry forward: the FPML export/import implementation and the BOINC compute-grid design. |
 | Waiting on     | None — carried items scheduled forward.                                                                                       |
 | Next           | Sprint 11 picks up from the dataset-bundles + provisioning work; the party domain layer also has its prerequisites now.       |
@@ -37,8 +40,8 @@ Wizard that uses them.
 * Stories
 
 #+ATTR_HTML: :class hug-leading
-| Story                                                                              | State   | Theme                                                                                                               |
-|------------------------------------------------------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------|
+| Story                                 | State   | Theme                                                                                                               |
+|---------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------|
 | [[id:61f6ab0b-bb2e-43e7-9735-447a7e3d55de][Sprint 10 housekeeping]]                | DONE    | backlog + OCR + misspell-CI fix.                                                                                    |
 | [[id:49a3b815-b5e9-4b3d-9213-100bf96c266d][Codegen infrastructure]]                | DONE    | simple in-tree codegen; domain-types SQL; ER diagram from SQL.                                                      |
 | [[id:700d4325-2ad1-4e0d-b6af-900abbe1a66e][Party schemes and FPML reference data]] | DONE    | 13 types via FpML codegen + DQ artefact workflow; GLEIF subset. Continues from sprint 09 party-database groundwork. |

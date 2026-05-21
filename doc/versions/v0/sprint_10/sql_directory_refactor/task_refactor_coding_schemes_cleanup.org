@@ -16,7 +16,7 @@
 #+updated: 2026-05-19
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the *SQL directory refactor* story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31c868b9-306e-4282-ba8c-07e647021b34][task]] in the [[id:38b6dddf-c02b-4072-b599-41ab3bcc9c28][SQL directory refactor]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
